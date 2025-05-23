@@ -1,2 +1,10 @@
-/NMOX-Studio-sample/target/
-/branding/target/
+# Maven build directories
+**/target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
