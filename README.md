@@ -1,32 +1,51 @@
 # NMOX Studio
 
-**Professional Media Development Environment**
+**Professional Cloud Deployment and Microservices IDE**
 
 [![Build and Test](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Java Version](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-22.0-green.svg)](https://netbeans.apache.org/)
 
-NMOX Studio is a professional, modular media development environment built on the NetBeans Rich Client Platform (RCP). It provides a comprehensive workspace for media professionals with advanced project management, editing capabilities, and extensible tooling.
+NMOX Studio is a powerful integrated development environment for managing cloud deployments, microservices, and containerized applications. Built on the robust NetBeans Rich Client Platform, it provides comprehensive tools for deploying, monitoring, and scaling applications across AWS, Azure, Google Cloud, and Kubernetes clusters.
 
 ## Features
 
-### 🏗️ **Professional Architecture**
-- **Modular Design**: Clean separation of concerns with dedicated modules for core, UI, editor, project management, and tools
-- **Service-Oriented**: Robust service management system with automatic discovery and lifecycle management
-- **Extensible**: Plugin-ready architecture supporting custom extensions and integrations
+### ☁️ **Cloud Provider Integration**
+- **Multi-Cloud Support**: Deploy to AWS, Azure, Google Cloud Platform
+- **Unified Interface**: Single pane of glass for all cloud resources
+- **Cost Management**: Track and forecast cloud spending across providers
+- **Resource Management**: Create, configure, and manage VMs, networks, and storage
 
-### 🖥️ **Rich User Interface**
-- **Modern UI**: Professional workspace with dockable windows and customizable layouts
-- **Project Explorer**: Comprehensive project navigation and file management
-- **Multi-Window Support**: Advanced window management with persistence
-- **Custom Branding**: Professional application branding and theming
+### 🐳 **Container & Orchestration**
+- **Docker Integration**: Full Docker container lifecycle management
+- **Kubernetes Support**: Deploy and manage applications on K8s clusters
+- **Container Registry**: Push/pull images from Docker Hub, ECR, ACR, GCR
+- **Helm Charts**: Deploy complex applications using Helm
 
-### 🛠️ **Development Tools**
-- **Integrated Editor**: Advanced text and media editing capabilities
-- **Build System**: Professional Maven-based build system with automated testing
-- **Deployment**: One-click distribution packages and installers
-- **Testing Framework**: Comprehensive test suite with JUnit 5 and AssertJ
+### 🚀 **Deployment Management**
+- **CI/CD Pipeline**: Integrated deployment pipelines
+- **Blue-Green Deployments**: Zero-downtime deployment strategies
+- **Rollback Support**: One-click rollback to previous versions
+- **Environment Management**: Dev, staging, and production environments
+
+### 📊 **Monitoring & Observability**
+- **Real-time Metrics**: CPU, memory, network, and custom metrics
+- **Log Aggregation**: Centralized log viewing across all services
+- **Health Checks**: Automatic health monitoring and alerting
+- **Performance Analysis**: Identify bottlenecks and optimize resources
+
+### 🕸️ **Microservices Architecture**
+- **Service Discovery**: Automatic service registration and discovery
+- **API Gateway Management**: Configure and manage API gateways
+- **Service Mesh**: Integration with Istio and Linkerd
+- **Dependency Visualization**: Interactive service topology maps
+
+### 🖥️ **Professional IDE Features**
+- **Modern UI**: Dockable windows with customizable layouts
+- **Project Management**: Organize deployments, services, and configurations
+- **Integrated Terminal**: Execute commands directly within the IDE
+- **Git Integration**: Version control for infrastructure as code
 
 ## Quick Start
 
@@ -67,28 +86,40 @@ mvn nbm:run-platform
 ```
 NMOX-Studio/
 ├── core/                    # Core services and infrastructure
-├── ui/                      # User interface components and windows
-├── editor/                  # Editor components and file support
-├── project/                 # Project management and navigation
-├── tools/                   # Development tools and utilities
-├── branding/                # Application branding and theming
-├── application/             # Main application assembly
-├── NMOX-Studio-sample/      # Sample module and resources
-├── build.sh                 # Build script
-├── run.sh                   # Development run script
-└── README.md               # This file
+├── cloud/                   # Cloud provider abstraction layer
+│   ├── api/                # Provider interfaces
+│   ├── providers/          # AWS, Azure, GCP implementations
+│   └── services/           # Cloud service management
+├── deployment/             # Deployment management
+│   ├── ui/                # Deployment UI components
+│   ├── services/          # Deployment orchestration
+│   └── model/             # Deployment models
+├── containers/             # Container and orchestration
+│   ├── docker/            # Docker integration
+│   ├── kubernetes/        # Kubernetes client
+│   └── ui/               # Container management UI
+├── ui/                     # Core UI components
+├── project/               # Project management
+├── tools/                 # Development tools
+├── branding/              # Application branding
+├── application/           # Main application assembly
+├── build.sh              # Build script
+├── run.sh               # Development run script
+└── README.md           # This file
 ```
 
 ### Module Overview
 
 | Module | Description | Key Components |
 |--------|-------------|----------------|
-| **core** | Core services, service management, and infrastructure | `ServiceManager`, `NMOXStudioCore` |
-| **ui** | Main windows, actions, and UI components | `MainWindow`, `NewProjectAction` |
-| **editor** | Text and media editing capabilities | Editor support, file types |
-| **project** | Project management and file navigation | `ProjectExplorerTopComponent` |
-| **tools** | Development tools and utilities | Tool windows, utilities |
-| **branding** | Application theming and customization | Splash screen, about dialog, icons |
+| **core** | Core services and infrastructure | `ServiceManager`, `NMOXStudioCore` |
+| **cloud** | Cloud provider abstraction and management | `CloudProvider`, `CloudInstance`, `CloudMetrics` |
+| **deployment** | Application deployment management | `DeploymentManager`, `DeploymentService` |
+| **containers** | Docker and Kubernetes integration | `DockerService`, `KubernetesService` |
+| **ui** | Main windows and UI components | `MainWindow`, Actions |
+| **project** | Project and resource management | `ProjectExplorerTopComponent` |
+| **tools** | Development and debugging tools | Tool windows, utilities |
+| **branding** | Application theming | Splash screen, icons |
 
 ## Architecture
 
