@@ -5,7 +5,10 @@
       "Bash(mv:*)",
       "Bash(chmod:*)",
       "Bash(rm:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     
-    <artifactId>deployment</artifactId>
+    <artifactId>NMOX-Studio-deployment</artifactId>
     <packaging>nbm</packaging>
     
     <name>NMOX Studio - Deployment Management</name>
@@ -50,12 +50,12 @@
         <!-- Module dependencies -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>NMOX-Studio-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>cloud</artifactId>
+            <artifactId>NMOX-Studio-cloud</artifactId>
             <version>${project.version}</version>
         </dependency>
         

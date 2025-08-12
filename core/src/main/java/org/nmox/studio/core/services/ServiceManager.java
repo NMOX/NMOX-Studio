@@ -79,7 +79,9 @@ public class ServiceManager {
     private void discoverServices() {
         Collection<? extends Service> discoveredServices = serviceResult.allInstances();
         for (Service service : discoveredServices) {
-            registerService(service.getClass(), service);
+            @SuppressWarnings("unchecked")
+            Class<Service> serviceClass = (Class<Service>) service.getClass();
+            registerService(serviceClass, service);
         }
     }
     

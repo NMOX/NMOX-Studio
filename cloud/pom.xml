@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     
-    <artifactId>cloud</artifactId>
+    <artifactId>NMOX-Studio-cloud</artifactId>
     <packaging>nbm</packaging>
     
     <name>NMOX Studio - Cloud Infrastructure</name>
@@ -40,11 +40,12 @@
         <!-- Core module dependency -->
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>NMOX-Studio-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         
         <!-- Cloud SDKs (optional, can be loaded dynamically) -->
+        <!-- Commented out for initial build
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ec2</artifactId>
@@ -65,18 +66,23 @@
             <artifactId>google-cloud-compute</artifactId>
             <version>1.42.0</version>
         </dependency>
+        -->
         
         <!-- Docker/Kubernetes clients -->
+        <!-- Commented out for initial build
         <dependency>
             <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java-core</artifactId>
             <version>3.3.4</version>
         </dependency>
+        -->
+        <!-- Commented out for initial build
         <dependency>
             <groupId>io.kubernetes</groupId>
             <artifactId>client-java</artifactId>
             <version>18.0.1</version>
         </dependency>
+        -->
         
         <!-- Testing -->
         <dependency>

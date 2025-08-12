@@ -70,9 +70,11 @@
         <module>editor</module>
         <module>project</module>
         <module>tools</module>
+        <!-- Temporarily disabled for initial build
         <module>cloud</module>
         <module>deployment</module>
         <module>containers</module>
+        -->
         <module>application</module>
         <module>NMOX-Studio-sample</module>
     </modules>

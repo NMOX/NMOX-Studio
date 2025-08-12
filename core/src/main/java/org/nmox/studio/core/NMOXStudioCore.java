@@ -42,7 +42,7 @@ public class NMOXStudioCore extends ModuleInstall {
 
     private void initializeCore() {
         System.setProperty("nmox.studio.version", "1.0.0");
-        System.setProperty("nmox.studio.name", Bundle.NMOXStudioCore_name());
+        System.setProperty("nmox.studio.name", NbBundle.getMessage(NMOXStudioCore.class, "NMOXStudioCore.name"));
     }
 
     private void shutdownCore() {
@@ -54,6 +54,6 @@ public class NMOXStudioCore extends ModuleInstall {
     }
 
     public String getName() {
-        return Bundle.NMOXStudioCore_name();
+        return NbBundle.getMessage(NMOXStudioCore.class, "NMOXStudioCore.name");
     }
 }

@@ -3,6 +3,7 @@ package org.nmox.studio.ui;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
@@ -34,8 +35,8 @@ public final class MainWindow extends TopComponent {
 
     public MainWindow() {
         initComponents();
-        setName(Bundle.CTL_MainWindowTopComponent());
-        setToolTipText(Bundle.HINT_MainWindowTopComponent());
+        setName(NbBundle.getMessage(MainWindow.class, "CTL_MainWindowTopComponent"));
+        setToolTipText(NbBundle.getMessage(MainWindow.class, "HINT_MainWindowTopComponent"));
     }
 
     private void initComponents() {

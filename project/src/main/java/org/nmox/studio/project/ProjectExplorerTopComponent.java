@@ -3,6 +3,7 @@ package org.nmox.studio.project;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.explorer.ExplorerManager;
@@ -44,8 +45,8 @@ public final class ProjectExplorerTopComponent extends TopComponent implements E
 
     public ProjectExplorerTopComponent() {
         initComponents();
-        setName(Bundle.CTL_ProjectExplorerTopComponent());
-        setToolTipText(Bundle.HINT_ProjectExplorerTopComponent());
+        setName(NbBundle.getMessage(ProjectExplorerTopComponent.class, "CTL_ProjectExplorerTopComponent"));
+        setToolTipText(NbBundle.getMessage(ProjectExplorerTopComponent.class, "HINT_ProjectExplorerTopComponent"));
         
         // Initialize with root node
         explorerManager.setRootContext(createRootNode());
