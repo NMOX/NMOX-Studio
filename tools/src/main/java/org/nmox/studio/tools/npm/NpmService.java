@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 @ServiceProvider(service = NpmService.class)
 public class NpmService {
@@ -116,7 +119,16 @@ public class NpmService {
 
     private CompletableFuture<String> runCommand(File workingDir, String... command) {
         return CompletableFuture.supplyAsync(() -> {
+            InputOutput io = IOProvider.getDefault().getIO("NPM Output", false);
+            io.select();
+            OutputWriter out = io.getOut();
+            OutputWriter err = io.getErr();
+            
             try {
+                out.println("Running: " + String.join(" ", command));
+                out.println("Directory: " + workingDir.getAbsolutePath());
+                out.println("----------------------------------------");
+                
                 ProcessBuilder pb = new ProcessBuilder(command);
                 pb.directory(workingDir);
                 pb.redirectErrorStream(true);
@@ -128,20 +140,42 @@ public class NpmService {
                         new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
+                        out.println(line);
                         output.append(line).append("\n");
                     }
                 }
                 
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
+                    err.println("Command failed with exit code: " + exitCode);
                     throw new RuntimeException("Command failed with exit code: " + exitCode + "\nOutput: " + output);
+                } else {
+                    out.println("----------------------------------------");
+                    out.println("Command completed successfully");
                 }
                 
                 return output.toString();
             } catch (IOException | InterruptedException e) {
+                err.println("Failed to execute command: " + e.getMessage());
                 throw new RuntimeException("Failed to execute command: " + String.join(" ", command), e);
+            } finally {
+                out.close();
+                err.close();
             }
         });
+    }
+    
+    /**
+     * Run a simple command string (for compatibility with NpmExplorerTopComponent)
+     */
+    public void runCommand(File projectDir, String command) {
+        String[] parts = command.split("\\s+");
+        List<String> cmdList = new ArrayList<>();
+        cmdList.add(getCommand(detectPackageManager(projectDir)));
+        for (String part : parts) {
+            cmdList.add(part);
+        }
+        runCommand(projectDir, cmdList.toArray(new String[0]));
     }
 
     public static NpmService getInstance() {

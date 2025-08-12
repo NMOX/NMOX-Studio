@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<fontscolors>
+    <!-- JavaScript syntax highlighting colors for dark theme -->
+    
+    <!-- Keywords (function, const, let, var, etc.) -->
+    <fontcolor name="keyword" default="keyword" />
+    
+    <!-- String literals -->
+    <fontcolor name="string" default="string" />
+    
+    <!-- Number literals -->
+    <fontcolor name="number" default="number" />
+    
+    <!-- Boolean literals (true, false) -->
+    <fontcolor name="boolean" default="keyword" />
+    
+    <!-- null and undefined -->
+    <fontcolor name="null" default="keyword" />
+    <fontcolor name="undefined" default="keyword" />
+    
+    <!-- Regular expressions -->
+    <fontcolor name="regex" default="string" />
+    
+    <!-- Identifiers (variable names, function names) -->
+    <fontcolor name="identifier" default="identifier" />
+    
+    <!-- Operators (+, -, *, /, ==, etc.) -->
+    <fontcolor name="operator" default="operator" />
+    
+    <!-- Delimiters (parentheses, brackets, etc.) -->
+    <fontcolor name="delimiter" default="separator" />
+    
+    <!-- Comments -->
+    <fontcolor name="comment" default="comment" />
+    
+    <!-- Template strings (ES6 backticks) -->
+    <fontcolor name="template" default="string" />
+    <fontcolor name="template-expression" default="identifier" />
+    
+    <!-- Whitespace -->
+    <fontcolor name="whitespace" default="whitespace" />
+    
+    <!-- Errors -->
+    <fontcolor name="error" default="error" />
+</fontscolors>
