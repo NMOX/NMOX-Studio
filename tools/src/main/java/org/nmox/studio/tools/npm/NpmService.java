@@ -103,7 +103,7 @@ public class NpmService {
         return PackageManager.NPM;
     }
 
-    private String getCommand(PackageManager manager) {
+    public String getCommand(PackageManager manager) {
         switch (manager) {
             case YARN:
                 return YARN_COMMAND;
