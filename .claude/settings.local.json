@@ -8,7 +8,8 @@
       "Bash(true)",
       "Bash(git push:*)",
       "Bash(grep:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git tag:*)"
     ],
     "deny": []
   }
