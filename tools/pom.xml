@@ -53,6 +53,13 @@
             <artifactId>org-openide-actions</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        
+        <!-- WebSocket support for debugging -->
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
+        </dependency>
 
         <!-- Testing dependencies -->
         <dependency>
