@@ -6,6 +6,8 @@ import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Main window for NMOX Studio.
@@ -32,11 +34,33 @@ import org.openide.windows.TopComponent;
     "HINT_MainWindowTopComponent=This is the main window"
 })
 public final class MainWindow extends TopComponent {
+    
+    private static MainWindow instance;
+    private static final String PREFERRED_ID = "MainWindowTopComponent";
 
     public MainWindow() {
         initComponents();
         setName(NbBundle.getMessage(MainWindow.class, "CTL_MainWindowTopComponent"));
         setToolTipText(NbBundle.getMessage(MainWindow.class, "HINT_MainWindowTopComponent"));
+        putClientProperty(TopComponent.PROP_MAXIMIZATION_DISABLED, Boolean.TRUE);
+    }
+    
+    public static synchronized MainWindow getDefault() {
+        if (instance == null) {
+            instance = new MainWindow();
+        }
+        return instance;
+    }
+    
+    public static synchronized MainWindow findInstance() {
+        TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
+        if (win == null) {
+            return getDefault();
+        }
+        if (win instanceof MainWindow) {
+            return (MainWindow) win;
+        }
+        return getDefault();
     }
 
     private void initComponents() {
@@ -70,12 +94,17 @@ public final class MainWindow extends TopComponent {
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        requestActive();
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        // Clean up resources if needed
+    }
+    
+    @Override
+    protected String preferredID() {
+        return PREFERRED_ID;
     }
 
     void writeProperties(java.util.Properties p) {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.nmox.NMOX.Studio.ui" spec="1.0"/>
+    <instanceof class="org.nmox.studio.ui.MainWindow"/>
+    <instanceof class="org.openide.windows.TopComponent"/>
+    <instanceof class="java.awt.Component"/>
+    <instanceof class="java.lang.Object"/>
+    <instance class="org.nmox.studio.ui.MainWindow" method="getDefault"/>
+</settings>
