@@ -5,17 +5,37 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Lexer for JavaScript language.
  * Provides syntax highlighting by tokenizing JavaScript source code.
+ * Optimized for performance with caching and efficient character processing.
  */
 public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     
     private static final int EOF = LexerInput.EOF;
     
+    private static final Map<String, JavaScriptTokenId> KEYWORD_CACHE = new HashMap<>();
+    static {
+        for (JavaScriptTokenId tokenId : JavaScriptTokenId.values()) {
+            if (tokenId.primaryCategory().startsWith("keyword")) {
+                KEYWORD_CACHE.put(tokenId.name().toLowerCase(), tokenId);
+            }
+        }
+    }
+    
     private final LexerInput input;
     private final TokenFactory<JavaScriptTokenId> tokenFactory;
+    private final StringBuilder buffer = new StringBuilder(128);
+    private LexerState state = LexerState.NORMAL;
+    
+    private enum LexerState {
+        NORMAL,
+        IN_TEMPLATE_LITERAL,
+        IN_TEMPLATE_EXPRESSION
+    }
     
     public JavaScriptLexer(LexerRestartInfo<JavaScriptTokenId> info) {
         this.input = info.input();
@@ -27,27 +47,32 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
         while (true) {
             int ch = input.read();
             
-            switch (ch) {
-                case EOF:
-                    return null;
-                    
-                case ' ':
-                case '\t':
-                case '\n':
-                case '\r':
+            if (ch == EOF) {
+                return null;
+            }
+            
+            if (state == LexerState.IN_TEMPLATE_LITERAL) {
+                return continueTemplateLiteral(ch);
+            }
+            
+            if (ch <= ' ') {
+                if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r') {
                     return finishWhitespace();
-                    
+                }
+            }
+            
+            switch (ch) {
                 case '/':
-                    switch (input.read()) {
-                        case '/':
-                            return finishLineComment();
-                        case '*':
-                            return finishBlockComment();
-                        case '=':
-                            return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
-                        default:
-                            input.backup(1);
-                            return finishRegexOrOperator();
+                    int next = input.read();
+                    if (next == '/') {
+                        return finishLineComment();
+                    } else if (next == '*') {
+                        return finishBlockComment();
+                    } else if (next == '=') {
+                        return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
+                    } else {
+                        input.backup(1);
+                        return finishRegexOrOperator();
                     }
                     
                 case '"':
@@ -55,6 +80,7 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
                     return finishStringLiteral(ch);
                     
                 case '`':
+                    state = LexerState.IN_TEMPLATE_LITERAL;
                     return finishTemplateLiteral();
                     
                 case '0': case '1': case '2': case '3': case '4':
@@ -83,37 +109,34 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     }
     
     private Token<JavaScriptTokenId> finishWhitespace() {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF || !Character.isWhitespace(ch)) {
-                input.backup(1);
-                break;
-            }
+        int ch;
+        while ((ch = input.read()) != EOF && ch <= ' ' && 
+               (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')) {
+        }
+        if (ch != EOF) {
+            input.backup(1);
         }
         return tokenFactory.createToken(JavaScriptTokenId.WHITESPACE);
     }
     
     private Token<JavaScriptTokenId> finishLineComment() {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF || ch == '\n' || ch == '\r') {
-                input.backup(1);
-                break;
-            }
+        int ch;
+        while ((ch = input.read()) != EOF && ch != '\n' && ch != '\r') {
+        }
+        if (ch != EOF) {
+            input.backup(1);
         }
         return tokenFactory.createToken(JavaScriptTokenId.LINE_COMMENT);
     }
     
     private Token<JavaScriptTokenId> finishBlockComment() {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF) {
-                break;
-            }
+        int ch;
+        while ((ch = input.read()) != EOF) {
             if (ch == '*') {
-                if (input.read() == '/') {
+                int next = input.read();
+                if (next == '/') {
                     break;
-                } else {
+                } else if (next != EOF) {
                     input.backup(1);
                 }
             }
@@ -122,19 +145,21 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     }
     
     private Token<JavaScriptTokenId> finishStringLiteral(int quote) {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF || ch == '\n' || ch == '\r') {
-                input.backup(1);
-                break;
-            }
+        int ch;
+        while ((ch = input.read()) != EOF) {
             if (ch == quote) {
                 break;
             }
+            if (ch == '\n' || ch == '\r') {
+                input.backup(1);
+                break;
+            }
             if (ch == '\\') {
-                ch = input.read(); // Skip escaped character
-                if (ch == EOF || ch == '\n' || ch == '\r') {
-                    input.backup(1);
+                int next = input.read();
+                if (next == EOF || next == '\n' || next == '\r') {
+                    if (next != EOF) {
+                        input.backup(1);
+                    }
                     break;
                 }
             }
@@ -143,23 +168,38 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     }
     
     private Token<JavaScriptTokenId> finishTemplateLiteral() {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF) {
-                break;
-            }
-            if (ch == '`') {
+        int ch;
+        int depth = 0;
+        while ((ch = input.read()) != EOF) {
+            if (ch == '`' && depth == 0) {
+                state = LexerState.NORMAL;
                 break;
             }
             if (ch == '\\') {
-                ch = input.read(); // Skip escaped character
-                if (ch == EOF) {
+                int next = input.read();
+                if (next == EOF) {
                     break;
                 }
+            } else if (ch == '$') {
+                int next = input.read();
+                if (next == '{') {
+                    depth++;
+                } else if (next != EOF) {
+                    input.backup(1);
+                }
+            } else if (ch == '}' && depth > 0) {
+                depth--;
             }
-            // Note: In a full implementation, we'd handle ${} expressions
         }
         return tokenFactory.createToken(JavaScriptTokenId.TEMPLATE_STRING);
+    }
+    
+    private Token<JavaScriptTokenId> continueTemplateLiteral(int ch) {
+        if (ch == '`') {
+            state = LexerState.NORMAL;
+            return tokenFactory.createToken(JavaScriptTokenId.DELIMITER);
+        }
+        return finishTemplateLiteral();
     }
     
     private Token<JavaScriptTokenId> finishNumberLiteral() {
@@ -211,17 +251,29 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     }
     
     private Token<JavaScriptTokenId> finishIdentifier() {
-        while (true) {
-            int ch = input.read();
-            if (ch == EOF || !Character.isJavaIdentifierPart(ch)) {
-                input.backup(1);
-                break;
-            }
+        buffer.setLength(0);
+        int ch = input.read();
+        
+        if (ch != EOF) {
+            input.backup(1);
         }
         
-        // Check if this identifier is a keyword
+        while ((ch = input.read()) != EOF && Character.isJavaIdentifierPart(ch)) {
+            buffer.append((char) ch);
+        }
+        
+        if (ch != EOF) {
+            input.backup(1);
+        }
+        
         CharSequence text = input.readText();
-        JavaScriptTokenId keywordId = JavaScriptLanguageHierarchy.getToken(text.toString());
+        String str = text.toString();
+        
+        JavaScriptTokenId keywordId = KEYWORD_CACHE.get(str);
+        if (keywordId == null) {
+            keywordId = JavaScriptLanguageHierarchy.getToken(str);
+        }
+        
         if (keywordId != null) {
             return tokenFactory.createToken(keywordId);
         }
@@ -231,11 +283,12 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     
     @Override
     public Object state() {
-        return null; // No state needed for this simple lexer
+        return state;
     }
     
     @Override
     public void release() {
-        // Nothing to release
+        buffer.setLength(0);
+        state = LexerState.NORMAL;
     }
 }

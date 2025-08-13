@@ -62,23 +62,34 @@ class ServiceManagerTest {
     }
 
     @Test
-    void testServiceListener() {
+    void testServiceListener() throws InterruptedException {
         serviceManager.addServiceListener(mockListener);
         
         TestService testService = new TestService();
         serviceManager.registerService(TestService.class, testService);
+        
+        // Wait for async notification
+        Thread.sleep(100);
         
         verify(mockListener).serviceRegistered(TestService.class, testService);
     }
 
     @Test
-    void testServiceListenerUnregistration() {
+    void testServiceListenerUnregistration() throws InterruptedException {
         serviceManager.addServiceListener(mockListener);
         
         TestService testService = new TestService();
         serviceManager.registerService(TestService.class, testService);
+        
+        // Wait for registration notification
+        Thread.sleep(100);
+        
         serviceManager.unregisterService(TestService.class);
         
+        // Wait for unregistration notification
+        Thread.sleep(100);
+        
+        verify(mockListener).serviceRegistered(TestService.class, testService);
         verify(mockListener).serviceUnregistered(TestService.class, testService);
     }
 
