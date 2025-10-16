@@ -2,6 +2,16 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Actions">
+        <folder name="File">
+            <file name="org-nmox-studio-ui-actions-OpenFileAction.instance">
+                <attr name="instanceCreate" methodvalue="org.nmox.studio.ui.actions.OpenFileAction.new"/>
+                <attr name="displayName" stringvalue="Open File..."/>
+            </file>
+            <file name="org-nmox-studio-ui-actions-OpenFolderAction.instance">
+                <attr name="instanceCreate" methodvalue="org.nmox.studio.ui.actions.OpenFolderAction.new"/>
+                <attr name="displayName" stringvalue="Open Folder..."/>
+            </file>
+        </folder>
         <folder name="Window">
             <file name="org-nmox-studio-ui-MainWindow.instance">
                 <attr name="component" methodvalue="org.nmox.studio.ui.MainWindow.create"/>
@@ -11,11 +21,29 @@
         </folder>
     </folder>
     <folder name="Menu">
+        <folder name="File">
+            <file name="org-nmox-studio-ui-actions-OpenFileAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFileAction.instance"/>
+                <attr name="position" intvalue="50"/>
+            </file>
+            <file name="org-nmox-studio-ui-actions-OpenFolderAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+                <attr name="position" intvalue="60"/>
+            </file>
+        </folder>
         <folder name="Window">
             <file name="MainWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-MainWindow.instance"/>
             </file>
         </folder>
+    </folder>
+    <folder name="Shortcuts">
+        <file name="D-O.shadow">
+            <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFileAction.instance"/>
+        </file>
+        <file name="DS-O.shadow">
+            <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+        </file>
     </folder>
     <folder name="Windows2">
         <folder name="Components">

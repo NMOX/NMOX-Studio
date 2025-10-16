@@ -89,6 +89,18 @@
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <configuration>
+                    <etcConfFile>src/main/resources/nmoxstudio.conf</etcConfFile>
+                    <additionalArguments>
+                        <additionalArgument>--add-opens=java.base/java.net=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.base/java.lang=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.base/java.io=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.base/java.util=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.desktop/java.awt=ALL-UNNAMED</additionalArgument>
+                    </additionalArguments>
+                </configuration>
             </plugin>
             <!-- Permits NbModuleSuite to be run in integration-test phase: -->
             <plugin>
