@@ -8,3 +8,6 @@
 
 # OS files
 .DS_Store
+
+# JDK installations should not be committed
+jdk17/
