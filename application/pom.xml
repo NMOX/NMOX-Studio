@@ -25,6 +25,13 @@
             <version>${netbeans.version}</version>
             <type>pom</type>
         </dependency>
+        <!-- Include IDE cluster for editor and parsing features -->
+        <dependency>
+            <groupId>org.netbeans.cluster</groupId>
+            <artifactId>ide</artifactId>
+            <version>${netbeans.version}</version>
+            <type>pom</type>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-branding</artifactId>
@@ -96,7 +103,9 @@
                         <additionalArgument>--add-opens=java.base/java.lang=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.base/java.io=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.base/java.security=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.base/java.util=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.desktop/java.awt=ALL-UNNAMED</additionalArgument>
                     </additionalArguments>
