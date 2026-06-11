@@ -47,7 +47,13 @@ public class BrowserDevice extends RackDevice {
         try {
             if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(URI.create(url));
-                onEdt(() -> openedLed.setOn(true));
+                onEdt(() -> {
+                    // momentary: SENT means "just sent", not "sent once ever"
+                    openedLed.setOn(true);
+                    javax.swing.Timer off = new javax.swing.Timer(450, ev -> openedLed.setOn(false));
+                    off.setRepeats(false);
+                    off.start();
+                });
                 emit("opened", Signal.trigger());
             }
         } catch (Exception ex) {

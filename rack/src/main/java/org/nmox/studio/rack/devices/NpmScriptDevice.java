@@ -33,7 +33,8 @@ public class NpmScriptDevice extends CommandDevice {
         runButton.addActionListener(e -> primaryAction());
         stopButton.addActionListener(e -> stopProcess());
 
-        param("script", scriptKnob);
+        // by name: script indexes shift per project, names travel
+        paramByName("script", scriptKnob);
         param("manager", managerKnob);
     }
 

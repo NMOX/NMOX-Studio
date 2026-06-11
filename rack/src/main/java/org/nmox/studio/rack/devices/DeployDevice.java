@@ -41,6 +41,8 @@ public class DeployDevice extends CommandDevice {
             }
         });
 
+        // ARM is deliberately NOT persisted: a loaded patch must never
+        // come up with the deploy pad hot
         param("target", targetKnob);
     }
 

@@ -19,7 +19,6 @@ import java.util.function.Supplier;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.nmox.studio.rack.engine.CommandExecutor;
-import org.nmox.studio.rack.ui.controls.Fader;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.RackStyle;
@@ -249,9 +248,14 @@ public abstract class RackDevice extends JPanel {
         paramSetters.put(key, v -> toggle.setOn(Boolean.parseBoolean(v)));
     }
 
-    protected void param(String key, Fader fader) {
-        paramGetters.put(key, () -> String.valueOf(fader.getValue()));
-        paramSetters.put(key, v -> fader.setValue(Double.parseDouble(v)));
+    /**
+     * Persists a stepped knob by option NAME rather than index - for
+     * knobs whose option list is dynamic (npm scripts), where an index
+     * is meaningless across projects. Reads legacy numeric values too.
+     */
+    protected void paramByName(String key, Knob knob) {
+        paramGetters.put(key, () -> String.valueOf(knob.getSelectedOption()));
+        paramSetters.put(key, knob::selectOption);
     }
 
     protected void param(String key, LcdDisplay lcd) {
