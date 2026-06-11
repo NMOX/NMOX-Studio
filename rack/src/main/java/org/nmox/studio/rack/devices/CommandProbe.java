@@ -23,7 +23,13 @@ final class CommandProbe {
         Thread t = new Thread(() -> {
             int code = -1;
             try {
-                Process p = new ProcessBuilder(command).directory(dir).redirectErrorStream(true).start();
+                ProcessBuilder pb = new ProcessBuilder(
+                        org.nmox.studio.rack.engine.ToolLocator.resolveCommand(command))
+                        .directory(dir)
+                        .redirectErrorStream(true);
+                pb.environment().put("PATH", org.nmox.studio.rack.engine.ToolLocator.augmentedPath());
+                pb.environment().put("GIT_TERMINAL_PROMPT", "0");
+                Process p = pb.start();
                 try (BufferedReader r = new BufferedReader(
                         new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
                     String line;

@@ -46,6 +46,10 @@ public class TempoDevice extends RackDevice {
 
         addInPort("run", "RUN", SignalType.TRIGGER);
         addInPort("halt", "HALT", SignalType.TRIGGER);
+        // gate-driven clock: patch SURGE's RUNNING gate in and the clock
+        // ticks exactly while the dev server lives - health checks,
+        // recurring scans, whatever is cabled to TICK, only when it matters
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("tick", "TICK", SignalType.TRIGGER);
         addOutPort("bar", "BAR", SignalType.TRIGGER);
         addOutPort("running", "RUNNING", SignalType.GATE);
@@ -97,6 +101,7 @@ public class TempoDevice extends RackDevice {
         switch (in.getId()) {
             case "run" -> onEdt(() -> runSwitch.setOn(true));
             case "halt" -> onEdt(() -> runSwitch.setOn(false));
+            case "enable" -> onEdt(() -> runSwitch.setOn(signal.high()));
             default -> {
             }
         }

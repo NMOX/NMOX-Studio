@@ -51,9 +51,19 @@ public final class CommandExecutor {
 
         Process process;
         try {
-            ProcessBuilder pb = new ProcessBuilder(command)
+            // resolve the tool against the augmented path: a Finder-launched
+            // IDE has a bare PATH with no node/npm/git on it
+            ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(command))
                     .directory(dir)
-                    .redirectErrorStream(true);
+                    .redirectErrorStream(true)
+                    // no terminal is attached: an interactive prompt would
+                    // hang forever, so give prompts an empty stdin instead
+                    .redirectInput(devNull());
+            pb.environment().put("PATH", ToolLocator.augmentedPath());
+            // belt and braces against prompts and ANSI art:
+            pb.environment().put("npm_config_yes", "true");   // npx auto-confirms downloads
+            pb.environment().put("GIT_TERMINAL_PROMPT", "0"); // git fails fast, never prompts
+            pb.environment().put("NO_COLOR", "1");            // tools that honor it skip ANSI
             pb.environment().putAll(env);
             process = pb.start();
         } catch (IOException ex) {
@@ -80,10 +90,11 @@ public final class CommandExecutor {
                     new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    String clean = stripAnsi(line);
                     if (out != null) {
-                        out.println(line);
+                        out.println(clean);
                     }
-                    safeAccept(onLine, line);
+                    safeAccept(onLine, clean);
                 }
             } catch (IOException ignored) {
                 // stream closes when the process dies or is killed
@@ -126,6 +137,21 @@ public final class CommandExecutor {
                 return process.isAlive();
             }
         };
+    }
+
+    /** ANSI CSI/OSC escape sequences, e.g. color codes from vite/vitest. */
+    private static final java.util.regex.Pattern ANSI = java.util.regex.Pattern.compile(
+            "\\u001B(?:\\[[0-9;?]*[ -/]*[@-~]|\\][^\\u0007\\u001B]*(?:\\u0007|\\u001B\\\\)?)");
+
+    /** Removes ANSI escapes so LCDs and the output window show clean text. */
+    static String stripAnsi(String line) {
+        return line.indexOf('\u001B') < 0 ? line : ANSI.matcher(line).replaceAll("");
+    }
+
+    /** The platform's empty input stream (no terminal is attached). */
+    private static File devNull() {
+        return new File(System.getProperty("os.name", "").toLowerCase().contains("win")
+                ? "NUL" : "/dev/null");
     }
 
     private static void safeAccept(Consumer<String> onLine, String line) {

@@ -63,6 +63,25 @@ public enum RackPresets {
         }
     },
 
+    UPTIME_WATCH("Uptime Watch",
+            "While the dev server runs, TEMPO clocks PING health checks") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
+            RackDevice browser = add(rack, DeviceType.BROWSER, null);
+            // 30s health-check clock, gated by the server's RUNNING state
+            RackDevice tempo = add(rack, DeviceType.TEMPO, Map.of("rate", "2", "running", "false"));
+            RackDevice ping = add(rack, DeviceType.HTTP, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            rack.connect(server.getPort("url"), browser.getPort("url"));
+            rack.connect(server.getPort("ready"), browser.getPort("open"));
+            rack.connect(server.getPort("running"), tempo.getPort("enable"));
+            rack.connect(server.getPort("url"), ping.getPort("url"));
+            rack.connect(tempo.getPort("tick"), ping.getPort("send"));
+            rack.connect(ping.getPort("body"), console.getPort("in"));
+        }
+    },
+
     SHIP_LANE("Ship Lane",
             "Prod build → security scan → armed deploy, with console trail") {
         @Override
