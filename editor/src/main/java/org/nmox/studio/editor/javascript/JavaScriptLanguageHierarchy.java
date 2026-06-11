@@ -1,9 +1,8 @@
 package org.nmox.studio.editor.javascript;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -14,25 +13,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * Defines the structure and tokens for the JavaScript language.
  */
 public class JavaScriptLanguageHierarchy extends LanguageHierarchy<JavaScriptTokenId> {
-    
-    private static final List<JavaScriptTokenId> tokens = Arrays.asList(new JavaScriptTokenId[] {
-        JavaScriptTokenId.KEYWORD,
-        JavaScriptTokenId.STRING,
-        JavaScriptTokenId.NUMBER,
-        JavaScriptTokenId.BOOLEAN,
-        JavaScriptTokenId.NULL,
-        JavaScriptTokenId.UNDEFINED,
-        JavaScriptTokenId.REGEX,
-        JavaScriptTokenId.IDENTIFIER,
-        JavaScriptTokenId.OPERATOR,
-        JavaScriptTokenId.DELIMITER,
-        JavaScriptTokenId.LINE_COMMENT,
-        JavaScriptTokenId.BLOCK_COMMENT,
-        JavaScriptTokenId.WHITESPACE,
-        JavaScriptTokenId.ERROR,
-        JavaScriptTokenId.TEMPLATE_STRING,
-        JavaScriptTokenId.TEMPLATE_EXPRESSION
-    });
     
     private static final Map<String, JavaScriptTokenId> flyweights = new HashMap<>();
     
@@ -68,7 +48,9 @@ public class JavaScriptLanguageHierarchy extends LanguageHierarchy<JavaScriptTok
     
     @Override
     protected synchronized Collection<JavaScriptTokenId> createTokenIds() {
-        return tokens;
+        // computed here, not in a static field: a static reference to the
+        // enum constants re-creates the TokenId<->Hierarchy init cycle
+        return EnumSet.allOf(JavaScriptTokenId.class);
     }
     
     @Override

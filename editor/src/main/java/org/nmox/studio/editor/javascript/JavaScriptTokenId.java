@@ -48,10 +48,20 @@ public enum JavaScriptTokenId implements TokenId {
         return category;
     }
     
-    private static final Language<JavaScriptTokenId> language = 
-            new JavaScriptLanguageHierarchy().language();
-    
+    /**
+     * Lazy holder: building the Language touches JavaScriptLanguageHierarchy,
+     * which references this enum's constants. Initializing it eagerly here
+     * creates a static-init cycle that blows up with "Ids cannot be null"
+     * whenever the hierarchy class happens to load first (order depends on
+     * which test or caller runs first). The holder defers construction until
+     * language() is called, after both classes are fully initialized.
+     */
+    private static final class LanguageHolder {
+        static final Language<JavaScriptTokenId> LANGUAGE =
+                new JavaScriptLanguageHierarchy().language();
+    }
+
     public static Language<JavaScriptTokenId> language() {
-        return language;
+        return LanguageHolder.LANGUAGE;
     }
 }
