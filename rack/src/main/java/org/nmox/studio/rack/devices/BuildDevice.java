@@ -10,8 +10,23 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 /**
  * FORGE Build Engine: drives the project's bundler. AUTO uses the
  * package.json build script; the other positions call the tool directly.
+ *
+ * In WATCH mode the process never exits, so FORGE listens to the build
+ * output instead and fires OK/FAIL on every rebuild - patch OK into
+ * VERITAS or PING and each save ripples down the pipeline.
  */
 public class BuildDevice extends CommandDevice {
+
+    /** Rebuild-finished markers across vite, webpack/CRA, rollup, esbuild. */
+    private static final String[] WATCH_OK_MARKERS = {
+        "built in", "compiled successfully", "build completed", "build finished", "created "
+    };
+    private static final String[] WATCH_FAIL_MARKERS = {
+        "build failed", "failed to compile", "error in ", "[!] error", "error ts"
+    };
+    private static final long WATCH_FIRE_COOLDOWN_MS = 1500;
+
+    private volatile long lastWatchFire;
 
     private static final String[] TOOLS = {"auto", "vite", "webpack", "rollup", "esbuild", "parcel"};
 
@@ -34,6 +49,41 @@ public class BuildDevice extends CommandDevice {
         param("tool", toolKnob);
         param("prod", prodSwitch);
         param("watch", watchSwitch);
+    }
+
+    @Override
+    protected void onLine(String line) {
+        if (!watchSwitch.isOn() || !isProcessRunning()) {
+            return;
+        }
+        String lower = line.toLowerCase();
+        boolean ok = matchesAny(lower, WATCH_OK_MARKERS);
+        boolean fail = !ok && matchesAny(lower, WATCH_FAIL_MARKERS);
+        if (!ok && !fail) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (now - lastWatchFire < WATCH_FIRE_COOLDOWN_MS) {
+            return;
+        }
+        lastWatchFire = now;
+        onEdt(() -> {
+            okLed.setOn(ok);
+            failLed.setOn(fail);
+            statusLcd.setTextColor(ok ? org.nmox.studio.rack.ui.controls.RackStyle.LCD_TEXT
+                    : new Color(255, 90, 80));
+            statusLcd.setText(ok ? "REBUILT — WATCHING" : "REBUILD FAILED — WATCHING");
+        });
+        emit(ok ? "ok" : "fail", org.nmox.studio.rack.model.Signal.trigger(ok));
+    }
+
+    private static boolean matchesAny(String line, String[] markers) {
+        for (String marker : markers) {
+            if (line.contains(marker)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

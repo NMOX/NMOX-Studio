@@ -104,10 +104,25 @@ public final class RackTopComponent extends TopComponent {
         rack.addListener(new Rack.Listener() {
             @Override
             public void projectChanged() {
-                javax.swing.SwingUtilities.invokeLater(RackTopComponent.this::updateProjectLabel);
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    updateProjectLabel();
+                    autoLoadPatch();
+                });
             }
         });
         followOpenProjects();
+    }
+
+    /**
+     * A project that carries a saved patch gets it mounted automatically
+     * the moment the rack aims at it - the rack file is part of the
+     * project, like its package.json.
+     */
+    private void autoLoadPatch() {
+        File patch = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
+        if (patch.isFile()) {
+            loadPatch(patch);
+        }
     }
 
     /**
@@ -165,13 +180,8 @@ public final class RackTopComponent extends TopComponent {
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setDialogTitle("Select Project Directory");
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                // a saved patch in the chosen project loads automatically
                 rack.setProjectDir(chooser.getSelectedFile());
-                File patch = new File(chooser.getSelectedFile(), RackIO.DEFAULT_FILENAME);
-                if (patch.isFile() && JOptionPane.showConfirmDialog(this,
-                        "This project has a saved rack patch. Load it?", "Task Rack",
-                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    loadPatch(patch);
-                }
             }
         });
         bar.add(chooseProject);
