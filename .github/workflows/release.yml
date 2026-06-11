@@ -26,6 +26,10 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: maven
+      - name: Stamp version into branding
+        run: |
+          sed -i "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
+            branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Portable zip
@@ -52,6 +56,10 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: maven
+      - name: Stamp version into branding
+        run: |
+          sed -i '' "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
+            branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Build DMG
@@ -71,6 +79,11 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: maven
+      - name: Stamp version into branding
+        shell: pwsh
+        run: |
+          $f = "branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties"
+          (Get-Content $f) -replace 'currentVersion=NMOX Studio .*', 'currentVersion=NMOX Studio ${{ needs.version.outputs.version }}' | Set-Content $f
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Install Inno Setup
