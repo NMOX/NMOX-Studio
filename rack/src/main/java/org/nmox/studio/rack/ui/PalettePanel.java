@@ -76,6 +76,13 @@ public class PalettePanel extends JPanel {
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getViewport().setBackground(RackStyle.RACK_BG);
         add(scroll, BorderLayout.CENTER);
+
+        JLabel hint = new JLabel("<html>Drag a device onto the rack &middot; Tab flips the rack"
+                + " &middot; drag jacks to patch cables</html>");
+        hint.setForeground(RackStyle.SILKSCREEN_DIM);
+        hint.setFont(RackStyle.TINY_FONT);
+        hint.setBorder(BorderFactory.createEmptyBorder(6, 10, 8, 10));
+        add(hint, BorderLayout.SOUTH);
         setPreferredSize(new Dimension(228, 400));
     }
 

@@ -47,6 +47,25 @@ public final class Rack {
     private volatile File projectDir = new File(System.getProperty("user.home"));
     private int cableColorCursor;
 
+    /** Dev servers and watchers must not outlive the IDE as orphans. */
+    private final Thread processReaper = new Thread(() -> {
+        for (RackDevice d : getDevices()) {
+            try {
+                d.panic();
+            } catch (RuntimeException ignored) {
+                // best effort during JVM shutdown
+            }
+        }
+    }, "nmox-rack-reaper");
+
+    public Rack() {
+        try {
+            Runtime.getRuntime().addShutdownHook(processReaper);
+        } catch (IllegalStateException ignored) {
+            // already shutting down
+        }
+    }
+
     // ---- devices ----
 
     public synchronized List<RackDevice> getDevices() {
@@ -247,5 +266,10 @@ public final class Rack {
             d.dispose();
         }
         router.shutdownNow();
+        try {
+            Runtime.getRuntime().removeShutdownHook(processReaper);
+        } catch (IllegalStateException ignored) {
+            // already shutting down
+        }
     }
 }

@@ -3,6 +3,7 @@ package org.nmox.studio.rack.devices;
 import java.awt.Color;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.Signal;
@@ -23,6 +24,9 @@ import org.nmox.studio.rack.ui.controls.VuMeter;
  */
 public abstract class CommandDevice extends RackDevice {
 
+    /** Exit codes from STOP-button kills (SIGINT/SIGKILL/SIGTERM); not real failures. */
+    private static final Set<Integer> KILL_EXIT_CODES = Set.of(130, 137, 143);
+
     protected final VuMeter activity = new VuMeter("ACTIVITY", false);
     protected final Led runLed = new Led("RUN", new Color(255, 190, 60));
     protected final Led okLed = new Led("OK", new Color(80, 235, 100));
@@ -30,6 +34,7 @@ public abstract class CommandDevice extends RackDevice {
     protected final LcdDisplay statusLcd;
 
     private volatile long startedAt;
+    private volatile long lastToastAt;
 
     protected CommandDevice(String typeId, String title, String tagline, Color accent, int units) {
         super(typeId, title, tagline, accent, units);
@@ -92,8 +97,36 @@ public abstract class CommandDevice extends RackDevice {
                 statusLcd.setText((ok ? "OK" : "FAIL [" + code + "]") + "  " + (elapsed / 1000.0) + "s");
             });
             onFinished(code);
+            if (!ok && !KILL_EXIT_CODES.contains(code)) {
+                toastFailure(code);
+            }
             emit(ok ? "ok" : "fail", Signal.trigger(ok));
             emit("done", Signal.trigger(ok));
+        });
+    }
+
+    /**
+     * Surfaces a real failure as an IDE notification balloon so a broken
+     * chained pipeline is noticed even with the rack window buried.
+     * Rate-limited per device; STOP-button kills never toast.
+     */
+    private void toastFailure(int code) {
+        long now = System.currentTimeMillis();
+        if (now - lastToastAt < 10_000) {
+            return;
+        }
+        lastToastAt = now;
+        onEdt(() -> {
+            try {
+                org.openide.awt.NotificationDisplayer.getDefault().notify(
+                        getTitle() + " failed (exit " + code + ")",
+                        javax.swing.UIManager.getIcon("OptionPane.errorIcon"),
+                        "Project: " + projectDir().getName()
+                                + " — see the \"Rack: " + getTitle() + "\" output tab",
+                        null);
+            } catch (RuntimeException | LinkageError ignored) {
+                // notification service unavailable (tests, stripped platform)
+            }
         });
     }
 
