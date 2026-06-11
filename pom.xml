@@ -87,6 +87,7 @@
         <module>editor</module>
         <module>project</module>
         <module>tools</module>
+        <module>rack</module>
         <!-- Temporarily disabled for initial build
         <module>cloud</module>
         <module>deployment</module>
