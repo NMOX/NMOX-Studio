@@ -37,9 +37,17 @@ class ProjectTemplatesTest {
             assertThat(json.getString("name")).isEqualTo("demo-app");
             assertThat(json.getJSONObject("scripts").keySet()).isNotEmpty();
 
-            // housekeeping
+            // housekeeping + editor/formatter/linter configs
             assertThat(dir.toPath().resolve(".gitignore")).exists();
             assertThat(dir.toPath().resolve("README.md")).exists();
+            assertThat(dir.toPath().resolve(".editorconfig")).exists();
+            assertThat(dir.toPath().resolve(".prettierrc")).exists();
+            if (template.lintable()) {
+                assertThat(dir.toPath().resolve("eslint.config.mjs"))
+                        .as(template + " eslint config").exists();
+                assertThat(json.getJSONObject("devDependencies").has("eslint"))
+                        .as(template + " eslint dependency").isTrue();
+            }
 
             // the infra patch mounts: devices present, cables patched
             Path patch = dir.toPath().resolve(RackIO.DEFAULT_FILENAME);
