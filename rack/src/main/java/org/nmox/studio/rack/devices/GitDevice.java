@@ -49,6 +49,12 @@ public class GitDevice extends CommandDevice {
         });
     }
 
+    /** Git works in any repository, package.json or not. */
+    @Override
+    protected boolean requiresPackageJson() {
+        return false;
+    }
+
     @Override
     protected void onAttached() {
         refreshBranch();

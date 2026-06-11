@@ -25,7 +25,7 @@ public class BrowserDevice extends RackDevice {
         super("browser", "SCOPE", "BROWSER LINK", new Color(54, 174, 222), 2);
 
         urlLcd = place(new LcdDisplay(300, 1), 44, 46);
-        urlLcd.setText("http://localhost:3000");
+        urlLcd.setText("http://localhost:5173"); // matches SURGE's default port
         urlLcd.setEditable("URL to open");
         RackButton open = place(new RackButton("OPEN", new Color(80, 235, 100)), 354, 52);
         openedLed = place(new Led("SENT", new Color(64, 200, 255)), 422, 58);

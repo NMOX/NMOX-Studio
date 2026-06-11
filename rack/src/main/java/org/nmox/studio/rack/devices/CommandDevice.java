@@ -66,11 +66,28 @@ public abstract class CommandDevice extends RackDevice {
     }
 
     /**
+     * Whether this device only makes sense inside an npm project. When
+     * true (the default), launches are refused unless the project dir
+     * has a package.json - running eslint or npm install against the
+     * user's home directory is never what anyone wanted.
+     */
+    protected boolean requiresPackageJson() {
+        return true;
+    }
+
+    /**
      * Launches a command with the full standard treatment: LEDs, meter,
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
     protected void launch(List<String> command) {
         if (command == null || command.isEmpty()) {
+            return;
+        }
+        if (requiresPackageJson() && !new java.io.File(projectDir(), "package.json").isFile()) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("NO PACKAGE.JSON — USE PROJECT… TO AIM THE RACK");
+            });
             return;
         }
         startedAt = System.currentTimeMillis();
@@ -121,9 +138,8 @@ public abstract class CommandDevice extends RackDevice {
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
                         getTitle() + " failed (exit " + code + ")",
                         javax.swing.UIManager.getIcon("OptionPane.errorIcon"),
-                        "Project: " + projectDir().getName()
-                                + " — see the \"Rack: " + getTitle() + "\" output tab",
-                        null);
+                        "Project: " + projectDir().getName() + " — click to open the output",
+                        e -> org.nmox.studio.rack.engine.CommandExecutor.showOutput(getTitle()));
             } catch (RuntimeException | LinkageError ignored) {
                 // notification service unavailable (tests, stripped platform)
             }

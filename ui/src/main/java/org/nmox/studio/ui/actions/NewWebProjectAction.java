@@ -19,7 +19,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionRegistration(
         displayName = "#CTL_NewWebProjectAction"
 )
-@ActionReference(path = "Menu/File", position = 100)
+@ActionReference(path = "Menu/File", position = 120)
 @Messages("CTL_NewWebProjectAction=New Web Project...")
 public final class NewWebProjectAction implements ActionListener {
 
