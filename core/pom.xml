@@ -20,12 +20,6 @@
 
     <dependencies>
         <!-- FlatLaf for modern UI theme -->
-        <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>3.2.5</version>
-        </dependency>
-        
         <!-- NetBeans Platform APIs -->
         <dependency>
             <groupId>org.netbeans.api</groupId>

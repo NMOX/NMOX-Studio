@@ -11,6 +11,10 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
 
+@org.netbeans.api.editor.mimelookup.MimeRegistrations({
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class)
+})
 public class JavaScriptCompletionProvider implements CompletionProvider {
     
     private static final Map<String, List<JavaScriptMethod>> GLOBAL_OBJECTS = new HashMap<>();
@@ -194,6 +198,7 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
                     addKeywordCompletions(resultSet, context, caretOffset);
                     addGlobalObjectCompletions(resultSet, context, caretOffset);
                     addSnippetCompletions(resultSet, context, caretOffset);
+                    addDocumentIdentifiers(resultSet, doc, context, caretOffset);
                 }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
@@ -249,6 +254,42 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
             }
         }
         
+        /**
+         * Every identifier already in the document is a completion
+         * candidate - the poor man's symbol table, via the real lexer so
+         * strings and comments contribute nothing.
+         */
+        private void addDocumentIdentifiers(CompletionResultSet resultSet, Document doc,
+                JavaScriptContext context, int caretOffset) throws BadLocationException {
+            String prefix = context.prefix;
+            String source = doc.getText(0, doc.getLength());
+            org.netbeans.api.lexer.Language<org.nmox.studio.editor.javascript.JavaScriptTokenId> language =
+                    "text/typescript".equals(doc.getProperty("mimeType"))
+                            ? org.nmox.studio.editor.typescript.TypeScriptLanguage.language()
+                            : org.nmox.studio.editor.javascript.JavaScriptTokenId.language();
+            org.netbeans.api.lexer.TokenSequence<org.nmox.studio.editor.javascript.JavaScriptTokenId> ts =
+                    org.netbeans.api.lexer.TokenHierarchy.create(source, language).tokenSequence(language);
+            java.util.Set<String> seen = new java.util.TreeSet<>();
+            while (ts != null && ts.moveNext()) {
+                if (ts.token().id() == org.nmox.studio.editor.javascript.JavaScriptTokenId.IDENTIFIER) {
+                    String name = ts.token().text().toString();
+                    // skip the fragment being typed right now
+                    if (ts.offset() + name.length() == caretOffset) {
+                        continue;
+                    }
+                    if (name.length() > 1 && !KEYWORDS.contains(name)
+                            && !GLOBAL_OBJECTS.containsKey(name)
+                            && name.toLowerCase().startsWith(prefix.toLowerCase())) {
+                        seen.add(name);
+                    }
+                }
+            }
+            for (String name : seen) {
+                resultSet.addItem(new JavaScriptObjectCompletionItem(
+                        name, caretOffset - prefix.length(), prefix.length()));
+            }
+        }
+
         private void addKeywordCompletions(CompletionResultSet resultSet, JavaScriptContext context, int caretOffset) {
             String prefix = context.prefix.toLowerCase();
             

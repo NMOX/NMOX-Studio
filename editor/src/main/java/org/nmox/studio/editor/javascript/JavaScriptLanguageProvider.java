@@ -23,6 +23,9 @@ public class JavaScriptLanguageProvider extends LanguageProvider {
         if (MIME_TYPE.equals(mimeType)) {
             return JavaScriptTokenId.language();
         }
+        if ("text/typescript".equals(mimeType)) {
+            return org.nmox.studio.editor.typescript.TypeScriptLanguage.language();
+        }
         return null;
     }
 

@@ -41,12 +41,51 @@
         </folder>
     </folder>
     
-    <!-- Editor font and color settings -->
+    <!-- Lexer language bindings + token coloring. The language.instance
+         entries are what make syntax highlighting actually happen: they
+         hand the editor infrastructure our Language for each MIME type. -->
     <folder name="Editors">
         <folder name="text">
             <folder name="javascript">
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="javascript/codetemplates.xml"/>
+                    </folder>
+                </folder>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.nmox.studio.editor.javascript.JavaScriptTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontsColors.xml" url="javascript/syntax-colors.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="FlatLaf Dark">
+                        <folder name="Defaults">
+                            <file name="FontsColors.xml" url="javascript/syntax-colors.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="typescript">
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codetemplates.xml" url="javascript/codetemplates.xml"/>
+                    </folder>
+                </folder>
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.nmox.studio.editor.typescript.TypeScriptLanguage.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="FontsColors.xml" url="javascript/syntax-colors.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="FlatLaf Dark">
                         <folder name="Defaults">
                             <file name="FontsColors.xml" url="javascript/syntax-colors.xml"/>
                         </folder>

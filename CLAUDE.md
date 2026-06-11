@@ -108,7 +108,7 @@ NMOX-Studio/
 
 | Module | Purpose | Key Components |
 |--------|---------|----------------|
-| **core** | Platform services and infrastructure | `ServiceManager`, `ThemeInstaller`, `FileCache`, `PerformanceMonitor` |
+| **core** | Platform services and infrastructure | `ServiceManager`, `FileCache`, `PerformanceMonitor` |
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
 | **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 20 task devices (incl. TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
@@ -276,7 +276,7 @@ Centralized service lifecycle management via `ServiceManager`:
 
 See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
-1. **No JavaScript syntax highlighting** - Lexer exists but not fully integrated
+1. ~~No JavaScript syntax highlighting~~ - Fixed: lexer Language layer-registered for text/javascript and text/typescript with the NMOX Phosphor color scheme
 2. **Hardcoded project templates** - Should be extensible
 3. **Limited error handling** - NPM errors need better user messages
 4. **No settings UI** - Configuration is hardcoded
