@@ -29,9 +29,9 @@ import org.openide.util.lookup.ServiceProvider;
         preferredID = "MainWindowTopComponent"
 )
 @Messages({
-    "CTL_MainWindowAction=Main Window",
-    "CTL_MainWindowTopComponent=Main Window",
-    "HINT_MainWindowTopComponent=This is the main window"
+    "CTL_MainWindowAction=Welcome",
+    "CTL_MainWindowTopComponent=Welcome",
+    "HINT_MainWindowTopComponent=Start here: new project, Project Studio, Task Rack"
 })
 public final class MainWindow extends TopComponent {
     
@@ -65,31 +65,101 @@ public final class MainWindow extends TopComponent {
 
     private void initComponents() {
         setLayout(new java.awt.BorderLayout());
-        
-        // Welcome panel
-        javax.swing.JPanel welcomePanel = new javax.swing.JPanel();
-        welcomePanel.setLayout(new java.awt.BorderLayout());
-        
-        javax.swing.JLabel welcomeLabel = new javax.swing.JLabel();
-        welcomeLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        welcomeLabel.setText("Welcome to NMOX Studio");
-        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(24.0f));
-        
-        javax.swing.JLabel subtitleLabel = new javax.swing.JLabel();
-        subtitleLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        subtitleLabel.setText("Professional Media Development Environment");
-        subtitleLabel.setFont(subtitleLabel.getFont().deriveFont(14.0f));
-        
-        javax.swing.JPanel centerPanel = new javax.swing.JPanel();
-        centerPanel.setLayout(new javax.swing.BoxLayout(centerPanel, javax.swing.BoxLayout.Y_AXIS));
-        centerPanel.add(javax.swing.Box.createVerticalGlue());
-        centerPanel.add(welcomeLabel);
-        centerPanel.add(javax.swing.Box.createVerticalStrut(10));
-        centerPanel.add(subtitleLabel);
-        centerPanel.add(javax.swing.Box.createVerticalGlue());
-        
-        welcomePanel.add(centerPanel, java.awt.BorderLayout.CENTER);
-        add(welcomePanel, java.awt.BorderLayout.CENTER);
+        add(new WelcomePanel(), java.awt.BorderLayout.CENTER);
+    }
+
+    /**
+     * The launch surface: rack-styled dark panel with the three doors
+     * into the studio. Buttons resolve windows by preferredID so the ui
+     * module needs no compile dependency on the rack module.
+     */
+    private static final class WelcomePanel extends javax.swing.JPanel {
+
+        WelcomePanel() {
+            setLayout(new java.awt.GridBagLayout());
+            java.awt.GridBagConstraints gc = new java.awt.GridBagConstraints();
+            gc.gridx = 0;
+            gc.insets = new java.awt.Insets(6, 0, 6, 0);
+
+            javax.swing.JLabel title = new javax.swing.JLabel("NMOX STUDIO");
+            title.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.BOLD, 42));
+            title.setForeground(new java.awt.Color(235, 236, 240));
+
+            javax.swing.JLabel tagline = new javax.swing.JLabel(
+                    "The web studio with a rack — wire your tools like a synth.");
+            tagline.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, 15));
+            tagline.setForeground(new java.awt.Color(150, 152, 158));
+
+            javax.swing.JPanel buttons = new javax.swing.JPanel(
+                    new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 14, 0));
+            buttons.setOpaque(false);
+            buttons.add(launchButton("Project Studio",
+                    "Create, browse and configure projects", "ProjectStudioTopComponent",
+                    new java.awt.Color(64, 156, 255)));
+            buttons.add(launchButton("Task Rack",
+                    "Wire build, test, serve and deploy like a synth rack", "RackTopComponent",
+                    new java.awt.Color(236, 106, 168)));
+            buttons.add(launchButton("NPM Explorer",
+                    "Browse scripts and dependencies", "NpmExplorerTopComponent",
+                    new java.awt.Color(203, 56, 55)));
+
+            javax.swing.JLabel hint = new javax.swing.JLabel(
+                    "New Project lives in the Project Studio toolbar · Tab flips the rack");
+            hint.setFont(new java.awt.Font(java.awt.Font.SANS_SERIF, java.awt.Font.PLAIN, 12));
+            hint.setForeground(new java.awt.Color(110, 112, 118));
+
+            gc.gridy = 0;
+            add(title, gc);
+            gc.gridy = 1;
+            add(tagline, gc);
+            gc.gridy = 2;
+            gc.insets = new java.awt.Insets(28, 0, 6, 0);
+            add(buttons, gc);
+            gc.gridy = 3;
+            gc.insets = new java.awt.Insets(18, 0, 6, 0);
+            add(hint, gc);
+        }
+
+        private static javax.swing.JButton launchButton(String label, String tooltip,
+                String topComponentId, java.awt.Color accent) {
+            javax.swing.JButton button = new javax.swing.JButton(
+                    "<html><div style='text-align:center'><b>" + label + "</b></div></html>");
+            button.setToolTipText(tooltip);
+            button.setPreferredSize(new java.awt.Dimension(190, 64));
+            button.setBackground(new java.awt.Color(45, 46, 50));
+            button.setForeground(new java.awt.Color(230, 231, 235));
+            button.setFocusPainted(false);
+            button.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                    javax.swing.BorderFactory.createMatteBorder(0, 0, 3, 0, accent),
+                    javax.swing.BorderFactory.createEmptyBorder(10, 16, 9, 16)));
+            button.addActionListener(e -> {
+                TopComponent tc = WindowManager.getDefault().findTopComponent(topComponentId);
+                if (tc != null) {
+                    tc.open();
+                    tc.requestActive();
+                }
+            });
+            return button;
+        }
+
+        @Override
+        protected void paintComponent(java.awt.Graphics g) {
+            super.paintComponent(g);
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setPaint(new java.awt.GradientPaint(0, 0, new java.awt.Color(30, 30, 34),
+                    0, getHeight(), new java.awt.Color(22, 22, 25)));
+            g2.fillRect(0, 0, getWidth(), getHeight());
+            // rack-rail nod: accent pinstripes along the top
+            java.awt.Color[] stripes = {
+                new java.awt.Color(236, 106, 168), new java.awt.Color(64, 156, 255),
+                new java.awt.Color(232, 166, 35), new java.awt.Color(99, 197, 70)};
+            int w = getWidth() / stripes.length + 1;
+            for (int i = 0; i < stripes.length; i++) {
+                g2.setColor(stripes[i]);
+                g2.fillRect(i * w, 0, w, 4);
+            }
+            g2.dispose();
+        }
     }
 
     @Override

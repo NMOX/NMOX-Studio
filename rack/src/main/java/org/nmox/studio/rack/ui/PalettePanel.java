@@ -37,13 +37,54 @@ public class PalettePanel extends JPanel {
         JLabel header = new JLabel("DEVICE SHELF");
         header.setForeground(RackStyle.SILKSCREEN_DIM);
         header.setFont(RackStyle.LABEL_FONT);
-        header.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
-        add(header, BorderLayout.NORTH);
+        header.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 10));
+
+        javax.swing.JTextField search = new javax.swing.JTextField();
+        search.setToolTipText("Filter devices by name or task");
+        search.putClientProperty("JTextField.placeholderText", "Search devices…");
+        search.setBackground(new java.awt.Color(34, 34, 38));
+        search.setForeground(RackStyle.SILKSCREEN);
+        search.setCaretColor(RackStyle.SILKSCREEN);
+        search.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new java.awt.Color(10, 10, 12)),
+                BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+
+        JPanel north = new JPanel(new BorderLayout());
+        north.setBackground(RackStyle.RACK_BG);
+        north.add(header, BorderLayout.NORTH);
+        north.add(search, BorderLayout.SOUTH);
+        north.setBorder(BorderFactory.createEmptyBorder(0, 6, 6, 6));
+        add(north, BorderLayout.NORTH);
 
         DefaultListModel<DeviceType> model = new DefaultListModel<>();
-        for (DeviceType t : DeviceType.values()) {
-            model.addElement(t);
-        }
+        Runnable refilter = () -> {
+            String query = search.getText().trim().toLowerCase();
+            model.clear();
+            for (DeviceType t : DeviceType.values()) {
+                if (query.isEmpty()
+                        || t.getTitle().toLowerCase().contains(query)
+                        || t.getDescription().toLowerCase().contains(query)) {
+                    model.addElement(t);
+                }
+            }
+        };
+        refilter.run();
+        search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                refilter.run();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                refilter.run();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                refilter.run();
+            }
+        });
         JList<DeviceType> list = new JList<>(model);
         list.setBackground(RackStyle.RACK_BG);
         list.setCellRenderer(new DeviceRenderer());
