@@ -48,6 +48,13 @@ public class DevServerDevice extends CommandDevice {
         param("port", portKnob);
     }
 
+    /** Static servers (http-server, serve) happily serve plain folders. */
+    @Override
+    protected boolean requiresPackageJson() {
+        String server = serverKnob.getSelectedOption();
+        return !"http-server".equals(server) && !"serve".equals(server);
+    }
+
     private String port() {
         return PORTS[portKnob.getSelectedIndex()];
     }

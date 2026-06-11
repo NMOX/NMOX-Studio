@@ -138,11 +138,21 @@ public final class CommandExecutor {
 
     private static InputOutput getIO(String tabName) {
         try {
-            InputOutput io = IOProvider.getDefault().getIO("Rack: " + tabName, false);
-            io.select();
-            return io;
+            // never select(): stealing focus on every run is hostile, and a
+            // select before the window system settles detaches the output
+            // into a broken floating window. The failure toast offers an
+            // explicit way in instead.
+            return IOProvider.getDefault().getIO("Rack: " + tabName, false);
         } catch (RuntimeException ex) {
             return null; // headless (tests) or window system not ready
+        }
+    }
+
+    /** Focuses a device's output tab - for explicit user requests only. */
+    public static void showOutput(String tabName) {
+        try {
+            IOProvider.getDefault().getIO("Rack: " + tabName, false).select();
+        } catch (RuntimeException ignored) {
         }
     }
 }
