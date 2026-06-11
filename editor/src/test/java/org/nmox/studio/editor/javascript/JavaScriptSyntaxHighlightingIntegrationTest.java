@@ -225,7 +225,7 @@ public class JavaScriptSyntaxHighlightingIntegrationTest {
         assertEquals("text/javascript", hierarchy.mimeType());
         
         JavaScriptLanguageProvider provider = new JavaScriptLanguageProvider();
-        assertEquals("JavaScript", provider.getDisplayName());
+        assertEquals(JavaScriptTokenId.language(), provider.findLanguage("text/javascript"));
     }
     
     @Test

@@ -103,9 +103,10 @@ public class JavaScriptLexerTest {
         // Test the language provider integration
         JavaScriptLanguageProvider provider = new JavaScriptLanguageProvider();
         assertNotNull(provider);
-        
-        assertEquals("JavaScript", provider.getDisplayName());
-        assertNotNull(provider.getLexerLanguage());
+
+        assertNotNull(provider.findLanguage("text/javascript"));
+        assertEquals(JavaScriptTokenId.language(), provider.findLanguage("text/javascript"));
+        assertNull(provider.findLanguage("text/x-other"));
     }
     
     @Test
