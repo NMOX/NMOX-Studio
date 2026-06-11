@@ -31,6 +31,13 @@
             <artifactId>ide</artifactId>
             <version>${netbeans.version}</version>
             <type>pom</type>
+            <exclusions>
+                <!-- GUI-test tooling; depends on test harness modules not shipped in the app -->
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-modules-jellytools-ide</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -75,6 +82,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-tools</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>NMOX-Studio-rack</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

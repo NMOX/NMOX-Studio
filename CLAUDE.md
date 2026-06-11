@@ -93,6 +93,7 @@ NMOX-Studio/
 ├── core/                    # Core services, ServiceManager, caching, performance monitoring
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
 ├── tools/                   # NPM integration, build tools, debugging, test runners
+├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
 ├── project/                 # Project templates, scaffolding, project explorer UI
 ├── ui/                      # Main windows, actions, welcome screen, startup logic
 ├── branding/               # Application theming, splash screen, icons
@@ -110,6 +111,7 @@ NMOX-Studio/
 | **core** | Platform services and infrastructure | `ServiceManager`, `ThemeInstaller`, `FileCache`, `PerformanceMonitor` |
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
+| **rack** | Reason-style virtual task rack | `RackTopComponent`, `Rack`/`RackDevice` model, 14 task devices, patch-cable wiring, `RackIO` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
 | **branding** | Application identity | Splash screen, icons, custom branding |

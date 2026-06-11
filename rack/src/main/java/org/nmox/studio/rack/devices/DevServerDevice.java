@@ -1,0 +1,134 @@
+package org.nmox.studio.rack.devices;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.nmox.studio.rack.model.Port;
+import org.nmox.studio.rack.model.Signal;
+import org.nmox.studio.rack.model.SignalType;
+import org.nmox.studio.rack.ui.controls.Knob;
+import org.nmox.studio.rack.ui.controls.Led;
+import org.nmox.studio.rack.ui.controls.RackButton;
+
+/**
+ * SURGE Dev Server: starts and stops the local development server.
+ * While the server lives, the RUNNING gate is high; the READY trigger
+ * fires once on first output, and URL emits the local address - patch
+ * it into SCOPE Browser Link to auto-open a tab.
+ */
+public class DevServerDevice extends CommandDevice {
+
+    private static final String[] SERVERS = {"auto", "vite", "http-server", "serve"};
+    private static final String[] PORTS = {"3000", "4200", "5173", "8000", "8080", "9000"};
+
+    private final Knob serverKnob;
+    private final Knob portKnob;
+    private final Led liveLed;
+    private final AtomicBoolean readyFired = new AtomicBoolean();
+
+    public DevServerDevice() {
+        super("dev-server", "SURGE", "DEV SERVER", new Color(64, 156, 255), 2);
+
+        serverKnob = place(new Knob("SERVER", SERVERS, 0), 44, 40);
+        portKnob = place(new Knob("PORT", PORTS, 2), 118, 40);
+        RackButton start = place(new RackButton("START", new Color(80, 235, 100)), 196, 52);
+        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 260, 52);
+        liveLed = place(new Led("LIVE", new Color(64, 200, 255)), 330, 58);
+
+        start.addActionListener(e -> primaryAction());
+        stop.addActionListener(e -> shutdown());
+
+        addInPort("stop", "STOP", SignalType.TRIGGER);
+        addOutPort("running", "RUNNING", SignalType.GATE);
+        addOutPort("ready", "READY", SignalType.TRIGGER);
+        addOutPort("url", "URL", SignalType.DATA);
+
+        param("server", serverKnob);
+        param("port", portKnob);
+    }
+
+    private String port() {
+        return PORTS[portKnob.getSelectedIndex()];
+    }
+
+    private String localUrl() {
+        return "http://localhost:" + port();
+    }
+
+    @Override
+    protected void primaryAction() {
+        readyFired.set(false);
+        emit("running", Signal.gate(true));
+        onEdt(() -> liveLed.setBlinking(true));
+        launch(buildCommand());
+    }
+
+    private void shutdown() {
+        stopProcess();
+    }
+
+    /** AUTO resolves to the project's dev/start script, else vite, else a static server. */
+    private String effectiveServer() {
+        String server = serverKnob.getSelectedOption();
+        if (!"auto".equals(server)) {
+            return server;
+        }
+        if (ProjectInspector.hasScript(projectDir(), "dev")
+                || ProjectInspector.hasScript(projectDir(), "start")) {
+            return "npm-script";
+        }
+        if (ProjectInspector.firstDependency(projectDir(), "vite") != null) {
+            return "vite";
+        }
+        return "http-server";
+    }
+
+    @Override
+    protected List<String> buildCommand() {
+        List<String> cmd = new ArrayList<>();
+        switch (effectiveServer()) {
+            case "vite" -> cmd.addAll(List.of("npx", "vite", "--port", port()));
+            case "http-server" -> cmd.addAll(List.of("npx", "http-server", "-p", port()));
+            case "serve" -> cmd.addAll(List.of("npx", "serve", "-l", port()));
+            default -> cmd.addAll(List.of("npm", "run",
+                    ProjectInspector.hasScript(projectDir(), "dev") ? "dev" : "start"));
+        }
+        return cmd;
+    }
+
+    @Override
+    protected void onLine(String line) {
+        if (readyFired.compareAndSet(false, true)) {
+            onEdt(() -> {
+                liveLed.setBlinking(false);
+                liveLed.setOn(true);
+            });
+            emit("ready", Signal.trigger());
+            emit("url", Signal.data(localUrl()));
+        }
+    }
+
+    @Override
+    protected void onFinished(int exitCode) {
+        emit("running", Signal.gate(false));
+        onEdt(() -> {
+            liveLed.setBlinking(false);
+            liveLed.setOn(false);
+        });
+    }
+
+    @Override
+    public void receive(Port in, Signal signal) {
+        if ("stop".equals(in.getId())) {
+            shutdown();
+        } else {
+            super.receive(in, signal);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+}

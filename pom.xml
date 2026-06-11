@@ -45,6 +45,10 @@
                         <compilerArgs>
                             <arg>-Xlint:all</arg>
                             <arg>-Xlint:-processing</arg>
+                            <!-- JDK 23+ defaults to -proc:none; NetBeans annotations
+                                 (@TopComponent.Registration, @ServiceProvider, @Messages)
+                                 need processing to generate layer/service registrations -->
+                            <arg>-proc:full</arg>
                         </compilerArgs>
                     </configuration>
                 </plugin>
@@ -83,6 +87,7 @@
         <module>editor</module>
         <module>project</module>
         <module>tools</module>
+        <module>rack</module>
         <!-- Temporarily disabled for initial build
         <module>cloud</module>
         <module>deployment</module>
