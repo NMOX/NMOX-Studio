@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+  linux:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Stamp version into branding
+        run: |
+          sed -i "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
+            branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
+      - name: Build application
+        run: mvn -B clean package -DskipTests
+      - name: Portable zip
+        run: |
+          cp application/target/NMOX-Studio-app-*.zip \
+             "NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip"
+      - name: Linux tar.gz and deb
+        run: ./packaging/linux/build-packages.sh "${{ needs.version.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifacts
+          path: |
+            NMOX-Studio-*-portable.zip
+            application/target/dist/NMOX-Studio-*-linux.tar.gz
+            application/target/dist/nmox-studio_*_all.deb
+
+  macos:
+    needs: version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Stamp version into branding
+        run: |
+          sed -i '' "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
+            branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
+      - name: Build application
+        run: mvn -B clean package -DskipTests
+      - name: Build DMG
+        run: ./packaging/macos/build-dmg.sh "${{ needs.version.outputs.version }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-artifacts
+          path: application/target/dist/NMOX-Studio-*-macos.dmg
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - name: Stamp version into branding
+        shell: pwsh
+        run: |
+          $f = "branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties"
+          (Get-Content $f) -replace 'currentVersion=NMOX Studio .*', 'currentVersion=NMOX Studio ${{ needs.version.outputs.version }}' | Set-Content $f
+      - name: Build application
+        run: mvn -B clean package -DskipTests
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            /DAppVersion=${{ needs.version.outputs.version }} `
+            packaging\windows\nmox-studio.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-artifacts
+          path: application/target/dist/NMOX-Studio-*-windows-setup.exe
+
+  release:
+    needs: [version, linux, macos, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: artifacts
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: NMOX Studio ${{ needs.version.outputs.version }}
+          draft: false
+          generate_release_notes: true
+          files: |
+            artifacts/**/NMOX-Studio-*-portable.zip
+            artifacts/**/NMOX-Studio-*-linux.tar.gz
+            artifacts/**/nmox-studio_*_all.deb
+            artifacts/**/NMOX-Studio-*-macos.dmg
+            artifacts/**/NMOX-Studio-*-windows-setup.exe
