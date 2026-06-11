@@ -196,9 +196,17 @@ public abstract class RackDevice extends JPanel {
      * Only one process per device at a time; a second call stops the first.
      */
     protected void exec(List<String> command, Consumer<String> onLine, IntConsumer onExit) {
+        exec(command, Map.of(), onLine, onExit);
+    }
+
+    /** Like {@link #exec} with additional environment for this launch only. */
+    protected void exec(List<String> command, Map<String, String> extraEnv,
+            Consumer<String> onLine, IntConsumer onExit) {
         stopProcess();
-        running = CommandExecutor.run(title, projectDir(),
-                rack != null ? rack.getEnvOverrides() : Map.of(),
+        Map<String, String> env = new LinkedHashMap<>(
+                rack != null ? rack.getEnvOverrides() : Map.of());
+        env.putAll(extraEnv);
+        running = CommandExecutor.run(title, projectDir(), env,
                 command, onLine, code -> {
                     running = null;
                     onExit.accept(code);

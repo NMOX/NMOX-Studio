@@ -96,6 +96,12 @@ public class BuildDevice extends CommandDevice {
         if (!"auto".equals(tool)) {
             return tool;
         }
+        // non-Node toolchains build with their own tool
+        ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(projectDir());
+        if (kind != ProjectInspector.ProjectKind.NODE
+                && kind != ProjectInspector.ProjectKind.NONE) {
+            return "kind:" + kind.name();
+        }
         if (ProjectInspector.hasScript(projectDir(), "build")) {
             return "npm-script";
         }
@@ -104,12 +110,32 @@ public class BuildDevice extends CommandDevice {
         return dep != null ? dep : "npm-script";
     }
 
+    /** The build command for non-Node toolchains. */
+    private List<String> kindCommand(ProjectInspector.ProjectKind kind, boolean prod) {
+        return switch (kind) {
+            case RUST -> prod ? List.of("cargo", "build", "--release") : List.of("cargo", "build");
+            case GO -> List.of("go", "build", "./...");
+            case MAVEN -> List.of("mvn", "-q", "package", "-DskipTests");
+            case GRADLE -> List.of("gradle", "build", "-x", "test");
+            case CMAKE -> List.of("cmake", "--build", "build");
+            case MAKE -> List.of("make");
+            case PYTHON -> List.of("python3", "-m", "compileall", "-q", ".");
+            case RUBY -> List.of("rake", "build");
+            case PHP -> List.of("composer", "install", "--no-dev", "--optimize-autoloader");
+            default -> List.of("npm", "run", "build");
+        };
+    }
+
     @Override
     protected List<String> buildCommand() {
         boolean prod = prodSwitch.isOn();
         boolean watch = watchSwitch.isOn();
         List<String> cmd = new ArrayList<>();
-        switch (effectiveTool()) {
+        String tool = effectiveTool();
+        if (tool.startsWith("kind:")) {
+            return kindCommand(ProjectInspector.ProjectKind.valueOf(tool.substring(5)), prod);
+        }
+        switch (tool) {
             case "vite" -> {
                 cmd.addAll(List.of("npx", "vite", "build"));
                 if (watch) {

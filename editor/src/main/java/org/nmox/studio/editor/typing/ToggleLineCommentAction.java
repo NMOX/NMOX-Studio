@@ -18,11 +18,21 @@ import org.netbeans.editor.Utilities;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/javascript"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/typescript")
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/typescript"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-java"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-c"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-cpp"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-rust"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-php5"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-go"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-python"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-ruby"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/sh"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-toml"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-yaml"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-properties")
 })
 public class ToggleLineCommentAction extends BaseAction {
-
-    private static final String PREFIX = "//";
 
     public ToggleLineCommentAction() {
         super("toggle-comment");
@@ -34,18 +44,23 @@ public class ToggleLineCommentAction extends BaseAction {
             return;
         }
         BaseDocument doc = (BaseDocument) target.getDocument();
+        String prefix = org.nmox.studio.editor.polyglot.LanguageComments
+                .lineCommentFor((String) doc.getProperty("mimeType"));
+        if (prefix == null) {
+            return;
+        }
         int selStart = Math.min(target.getSelectionStart(), target.getSelectionEnd());
         int selEnd = Math.max(target.getSelectionStart(), target.getSelectionEnd());
         doc.runAtomicAsUser(() -> {
             try {
-                toggle(doc, selStart, selEnd);
+                toggle(doc, selStart, selEnd, prefix);
             } catch (BadLocationException ex) {
                 Utilities.setStatusBoldText(target, "Toggle comment failed");
             }
         });
     }
 
-    static void toggle(Document doc, int selStart, int selEnd) throws BadLocationException {
+    static void toggle(Document doc, int selStart, int selEnd, String prefix) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
         int firstLine = root.getElementIndex(selStart);
         // a selection ending exactly at a line start doesn't include that line
@@ -54,7 +69,7 @@ public class ToggleLineCommentAction extends BaseAction {
         boolean allCommented = true;
         for (int i = firstLine; i <= lastLine; i++) {
             String line = lineText(doc, root.getElement(i));
-            if (!line.isBlank() && !line.trim().startsWith(PREFIX)) {
+            if (!line.isBlank() && !line.trim().startsWith(prefix)) {
                 allCommented = false;
                 break;
             }
@@ -70,10 +85,10 @@ public class ToggleLineCommentAction extends BaseAction {
             int lineStart = line.getStartOffset();
             if (allCommented) {
                 int prefixAt = lineStart + indent;
-                int len = text.stripLeading().startsWith(PREFIX + " ") ? 3 : 2;
+                int len = text.stripLeading().startsWith(prefix + " ") ? prefix.length() + 1 : prefix.length();
                 doc.remove(prefixAt, len);
             } else {
-                doc.insertString(lineStart + indent, PREFIX + " ", null);
+                doc.insertString(lineStart + indent, prefix + " ", null);
             }
         }
     }

@@ -67,7 +67,7 @@ public class BenchDevice extends CommandDevice {
 
     /** Benching needs a URL, not a package.json. */
     @Override
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         return false;
     }
 

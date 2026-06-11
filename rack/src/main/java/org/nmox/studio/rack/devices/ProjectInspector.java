@@ -15,6 +15,52 @@ public final class ProjectInspector {
     private ProjectInspector() {
     }
 
+    /** The toolchain a project belongs to, detected from its manifest. */
+    public enum ProjectKind {
+        NODE("package.json"),
+        RUST("Cargo.toml"),
+        GO("go.mod"),
+        MAVEN("pom.xml"),
+        GRADLE("build.gradle", "build.gradle.kts"),
+        PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
+        RUBY("Gemfile", "Rakefile"),
+        PHP("composer.json"),
+        CMAKE("CMakeLists.txt"),
+        MAKE("Makefile"),
+        NONE();
+
+        private final String[] manifests;
+
+        ProjectKind(String... manifests) {
+            this.manifests = manifests;
+        }
+
+        public String manifest() {
+            return manifests.length > 0 ? manifests[0] : "";
+        }
+    }
+
+    /**
+     * Detects the project's toolchain. Order expresses precedence: a
+     * repo with both package.json and a Makefile is a Node project that
+     * happens to have a Makefile.
+     */
+    public static ProjectKind detectKind(File projectDir) {
+        for (ProjectKind kind : ProjectKind.values()) {
+            for (String manifest : kind.manifests) {
+                if (new File(projectDir, manifest).isFile()) {
+                    return kind;
+                }
+            }
+        }
+        return ProjectKind.NONE;
+    }
+
+    /** True when the directory carries any recognized project manifest. */
+    public static boolean hasProjectManifest(File projectDir) {
+        return detectKind(projectDir) != ProjectKind.NONE;
+    }
+
     private static JSONObject read(File projectDir) {
         File pkg = new File(projectDir, "package.json");
         if (!pkg.isFile()) {

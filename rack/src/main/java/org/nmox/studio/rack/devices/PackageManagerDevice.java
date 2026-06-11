@@ -15,7 +15,7 @@ import org.nmox.studio.rack.ui.controls.RackButton;
  */
 public class PackageManagerDevice extends CommandDevice {
 
-    private static final String[] MANAGERS = {"npm", "yarn", "pnpm"};
+    private static final String[] MANAGERS = {"auto", "npm", "yarn", "pnpm"};
 
     private final Knob managerKnob;
     private final LcdDisplay depsLcd;
@@ -34,7 +34,7 @@ public class PackageManagerDevice extends CommandDevice {
         depsLcd.setToolTipText("dependencies + devDependencies declared in package.json");
 
         install.addActionListener(e -> launch(cmd("install")));
-        update.addActionListener(e -> launch(cmd(manager().equals("yarn") ? "upgrade" : "update")));
+        update.addActionListener(e -> launch(cmd("update")));
         outdated.addActionListener(e -> launch(cmd("outdated")));
         stop.addActionListener(e -> stopProcess());
 
@@ -42,11 +42,58 @@ public class PackageManagerDevice extends CommandDevice {
     }
 
     private String manager() {
-        return MANAGERS[managerKnob.getSelectedIndex()];
+        String selected = MANAGERS[managerKnob.getSelectedIndex()];
+        return "auto".equals(selected) ? "npm" : selected;
     }
 
+    private boolean isAuto() {
+        return managerKnob.getSelectedIndex() == 0;
+    }
+
+    /**
+     * In AUTO the verb maps onto whatever toolchain the project uses;
+     * an explicit npm/yarn/pnpm selection always talks Node.
+     */
     private List<String> cmd(String verb) {
-        return List.of(manager(), verb);
+        ProjectInspector.ProjectKind kind = isAuto()
+                ? ProjectInspector.detectKind(projectDir())
+                : ProjectInspector.ProjectKind.NODE;
+        return switch (kind) {
+            case RUST -> switch (verb) {
+                case "update" -> List.of("cargo", "update");
+                case "outdated" -> List.of("cargo", "update", "--dry-run");
+                default -> List.of("cargo", "fetch");
+            };
+            case GO -> switch (verb) {
+                case "update" -> List.of("go", "get", "-u", "./...");
+                case "outdated" -> List.of("go", "list", "-u", "-m", "all");
+                default -> List.of("go", "mod", "download");
+            };
+            case MAVEN -> switch (verb) {
+                case "update", "outdated" -> List.of("mvn", "-q", "versions:display-dependency-updates");
+                default -> List.of("mvn", "-q", "dependency:resolve");
+            };
+            case GRADLE -> List.of("gradle", "--quiet", "dependencies");
+            case PYTHON -> switch (verb) {
+                case "update" -> List.of("pip", "install", "--upgrade", "-r", "requirements.txt");
+                case "outdated" -> List.of("pip", "list", "--outdated");
+                default -> new java.io.File(projectDir(), "requirements.txt").isFile()
+                        ? List.of("pip", "install", "-r", "requirements.txt")
+                        : List.of("pip", "install", "-e", ".");
+            };
+            case RUBY -> switch (verb) {
+                case "update" -> List.of("bundle", "update");
+                case "outdated" -> List.of("bundle", "outdated");
+                default -> List.of("bundle", "install");
+            };
+            case PHP -> switch (verb) {
+                case "update" -> List.of("composer", "update");
+                case "outdated" -> List.of("composer", "outdated");
+                default -> List.of("composer", "install");
+            };
+            default -> List.of(manager(),
+                    "update".equals(verb) && "yarn".equals(manager()) ? "upgrade" : verb);
+        };
     }
 
     @Override
@@ -72,8 +119,10 @@ public class PackageManagerDevice extends CommandDevice {
 
     private void refreshDepsLcd() {
         int[] counts = ProjectInspector.dependencyCounts(projectDir());
+        ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(projectDir());
         onEdt(() -> {
-            depsLcd.setText(counts == null ? "NO PKG" : counts[0] + "+" + counts[1] + " DEPS");
+            depsLcd.setText(counts != null ? counts[0] + "+" + counts[1] + " DEPS"
+                    : kind != ProjectInspector.ProjectKind.NONE ? kind.manifest() : "NO PROJECT");
             depsLcd.setToolTipText(counts == null
                     ? "No package.json in the project"
                     : counts[0] + " dependencies, " + counts[1] + " devDependencies");

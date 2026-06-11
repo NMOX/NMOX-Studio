@@ -49,9 +49,9 @@ public class GitDevice extends CommandDevice {
         });
     }
 
-    /** Git works in any repository, package.json or not. */
+    /** Git works in any repository, project manifest or not. */
     @Override
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         return false;
     }
 

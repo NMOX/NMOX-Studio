@@ -68,10 +68,12 @@ public abstract class CommandDevice extends RackDevice {
     /**
      * Whether this device only makes sense inside an npm project. When
      * true (the default), launches are refused unless the project dir
-     * has a package.json - running eslint or npm install against the
-     * user's home directory is never what anyone wanted.
+     * has a recognized project manifest (package.json, Cargo.toml,
+     * go.mod, pom.xml, pyproject.toml, Gemfile, composer.json,
+     * Makefile...) - running tools against the user's home directory
+     * is never what anyone wanted.
      */
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         return true;
     }
 
@@ -80,13 +82,18 @@ public abstract class CommandDevice extends RackDevice {
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
     protected void launch(List<String> command) {
+        launchWithEnv(command, Map.of());
+    }
+
+    /** {@link #launch} with extra environment for this run only (e.g. MAVEN_OPTS). */
+    protected void launchWithEnv(List<String> command, Map<String, String> extraEnv) {
         if (command == null || command.isEmpty()) {
             return;
         }
-        if (requiresPackageJson() && !new java.io.File(projectDir(), "package.json").isFile()) {
+        if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PACKAGE.JSON — USE PROJECT… TO AIM THE RACK");
+                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             });
             return;
         }
@@ -98,7 +105,7 @@ public abstract class CommandDevice extends RackDevice {
             statusLcd.setTextColor(RackStyle.LCD_AMBER);
             statusLcd.setText("RUNNING " + String.join(" ", command));
         });
-        exec(command, line -> {
+        exec(command, extraEnv, line -> {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));

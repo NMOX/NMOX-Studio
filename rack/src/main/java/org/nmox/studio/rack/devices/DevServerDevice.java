@@ -55,7 +55,7 @@ public class DevServerDevice extends CommandDevice {
 
     /** Static servers (http-server, serve) happily serve plain folders. */
     @Override
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         String server = serverKnob.getSelectedOption();
         return !"http-server".equals(server) && !"serve".equals(server);
     }
