@@ -105,16 +105,27 @@ public abstract class CommandDevice extends RackDevice {
         }, code -> {
             long elapsed = System.currentTimeMillis() - startedAt;
             boolean ok = code == 0;
+            boolean stopped = KILL_EXIT_CODES.contains(code);
             onEdt(() -> {
                 runLed.setBlinking(false);
                 runLed.setOn(false);
                 okLed.setOn(ok);
-                failLed.setOn(!ok);
-                statusLcd.setTextColor(ok ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
-                statusLcd.setText((ok ? "OK" : "FAIL [" + code + "]") + "  " + (elapsed / 1000.0) + "s");
+                failLed.setOn(!ok && !stopped);
+                if (stopped) {
+                    statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                    statusLcd.setText("STOPPED  " + (elapsed / 1000.0) + "s");
+                } else {
+                    statusLcd.setTextColor(ok ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                    statusLcd.setText((ok ? "OK" : "FAIL [" + code + "]") + "  " + (elapsed / 1000.0) + "s");
+                }
             });
             onFinished(code);
-            if (!ok && !KILL_EXIT_CODES.contains(code)) {
+            if (stopped) {
+                // a deliberate stop is not a failure: no toast, and no
+                // ok/fail triggers rippling down a pipeline someone just halted
+                return;
+            }
+            if (!ok) {
                 toastFailure(code);
             }
             emit(ok ? "ok" : "fail", Signal.trigger(ok));

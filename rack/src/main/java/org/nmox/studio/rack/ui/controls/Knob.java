@@ -142,6 +142,28 @@ public class Knob extends JComponent {
         return options != null;
     }
 
+    /**
+     * Selects a stepped option by its text; falls back to parsing a
+     * numeric index (the legacy patch format). Unknown values keep the
+     * current selection.
+     */
+    public void selectOption(String value) {
+        if (options == null || value == null) {
+            return;
+        }
+        for (int i = 0; i < options.length; i++) {
+            if (options[i].equals(value)) {
+                setSelectedIndex(i);
+                return;
+            }
+        }
+        try {
+            setSelectedIndex(Integer.parseInt(value));
+        } catch (NumberFormatException ignored) {
+            // neither a known option nor an index; keep current
+        }
+    }
+
     public String getSelectedOption() {
         return options == null ? null : options[selectedIndex];
     }

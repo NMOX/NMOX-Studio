@@ -35,6 +35,23 @@ public final class ProjectInspector {
     }
 
     /**
+     * Counts of [dependencies, devDependencies] declared in package.json,
+     * or null when there is no readable package.json.
+     */
+    public static int[] dependencyCounts(File projectDir) {
+        JSONObject json = read(projectDir);
+        if (json == null) {
+            return null;
+        }
+        JSONObject deps = json.optJSONObject("dependencies");
+        JSONObject devDeps = json.optJSONObject("devDependencies");
+        return new int[]{
+            deps == null ? 0 : deps.length(),
+            devDeps == null ? 0 : devDeps.length()
+        };
+    }
+
+    /**
      * The first of the candidate packages found in dependencies or
      * devDependencies, or null. Order expresses preference.
      */

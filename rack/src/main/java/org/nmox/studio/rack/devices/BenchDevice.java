@@ -45,9 +45,24 @@ public class BenchDevice extends CommandDevice {
 
         fire.addActionListener(e -> primaryAction());
 
+        // accept a URL by cable, like PING and SCOPE: patch SURGE's or
+        // WORMHOLE's URL out straight into the bench
+        addInPort("url", "URL", org.nmox.studio.rack.model.SignalType.DATA);
+
         param("duration", durationKnob);
         param("connections", connectionsKnob);
         param("url", urlLcd);
+    }
+
+    @Override
+    public void receive(org.nmox.studio.rack.model.Port in, org.nmox.studio.rack.model.Signal signal) {
+        if ("url".equals(in.getId())) {
+            if (signal.payload() != null && signal.payload().startsWith("http")) {
+                onEdt(() -> urlLcd.setText(signal.payload()));
+            }
+        } else {
+            super.receive(in, signal);
+        }
     }
 
     /** Benching needs a URL, not a package.json. */
