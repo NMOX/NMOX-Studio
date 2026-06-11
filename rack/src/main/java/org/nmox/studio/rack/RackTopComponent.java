@@ -55,7 +55,7 @@ import org.openide.windows.TopComponent;
 })
 public final class RackTopComponent extends TopComponent {
 
-    private final Rack rack = new Rack();
+    private final Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
     private final RackPanel rackPanel;
     private final JLabel projectLabel = new JLabel();
     private JToggleButton flipToggle;
@@ -83,7 +83,6 @@ public final class RackTopComponent extends TopComponent {
         setLayout(new BorderLayout());
 
         rackPanel = new RackPanel(rack);
-        loadDefaultRack();
 
         JScrollPane scroll = new JScrollPane(rackPanel);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -104,69 +103,9 @@ public final class RackTopComponent extends TopComponent {
         rack.addListener(new Rack.Listener() {
             @Override
             public void projectChanged() {
-                javax.swing.SwingUtilities.invokeLater(() -> {
-                    updateProjectLabel();
-                    autoLoadPatch();
-                });
+                javax.swing.SwingUtilities.invokeLater(RackTopComponent.this::updateProjectLabel);
             }
         });
-        followOpenProjects();
-    }
-
-    /**
-     * A project that carries a saved patch gets it mounted automatically
-     * the moment the rack aims at it - the rack file is part of the
-     * project, like its package.json.
-     */
-    private void autoLoadPatch() {
-        File patch = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
-        if (patch.isFile()) {
-            loadPatch(patch);
-        }
-    }
-
-    /**
-     * Aims the rack at whatever the IDE has open: the first open project
-     * with a package.json wins (it is what the devices know how to drive),
-     * else the first open project. Manual Project… choice still works and
-     * holds until the open-project set changes again.
-     */
-    private void followOpenProjects() {
-        try {
-            org.netbeans.api.project.ui.OpenProjects open =
-                    org.netbeans.api.project.ui.OpenProjects.getDefault();
-            open.addPropertyChangeListener(evt -> {
-                if (org.netbeans.api.project.ui.OpenProjects.PROPERTY_OPEN_PROJECTS
-                        .equals(evt.getPropertyName())) {
-                    javax.swing.SwingUtilities.invokeLater(this::aimAtOpenProject);
-                }
-            });
-            aimAtOpenProject();
-        } catch (RuntimeException | LinkageError ex) {
-            // project APIs unavailable (tests, stripped platform); manual choice only
-        }
-    }
-
-    private void aimAtOpenProject() {
-        org.netbeans.api.project.Project[] projects =
-                org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
-        File fallback = null;
-        for (org.netbeans.api.project.Project p : projects) {
-            File dir = org.openide.filesystems.FileUtil.toFile(p.getProjectDirectory());
-            if (dir == null) {
-                continue;
-            }
-            if (new File(dir, "package.json").isFile()) {
-                rack.setProjectDir(dir);
-                return;
-            }
-            if (fallback == null) {
-                fallback = dir;
-            }
-        }
-        if (fallback != null) {
-            rack.setProjectDir(fallback);
-        }
     }
 
     private JToolBar buildToolbar() {
@@ -181,7 +120,8 @@ public final class RackTopComponent extends TopComponent {
             chooser.setDialogTitle("Select Project Directory");
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 // a saved patch in the chosen project loads automatically
-                rack.setProjectDir(chooser.getSelectedFile());
+                org.nmox.studio.rack.service.RackService.getDefault()
+                        .openProject(chooser.getSelectedFile());
             }
         });
         bar.add(chooseProject);
@@ -224,6 +164,28 @@ public final class RackTopComponent extends TopComponent {
             }
         });
         bar.add(load);
+
+        JButton presets = new JButton("Presets ▾");
+        presets.setToolTipText("Wire a ready-made pipeline into the rack");
+        presets.addActionListener(e -> {
+            javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+            for (org.nmox.studio.rack.projectstudio.RackPresets preset
+                    : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
+                item.setToolTipText(preset.getDescription());
+                item.addActionListener(a -> {
+                    try {
+                        RackIO.fromJson(rack, preset.buildPatch());
+                    } catch (RuntimeException ex) {
+                        JOptionPane.showMessageDialog(this, "Preset failed: " + ex.getMessage(),
+                                "Task Rack", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+                menu.add(item);
+            }
+            menu.show(presets, 0, presets.getHeight());
+        });
+        bar.add(presets);
         bar.addSeparator();
 
         JButton stopAll = new JButton("Stop All");
@@ -252,39 +214,6 @@ public final class RackTopComponent extends TopComponent {
         projectLabel.setToolTipText(rack.getProjectDir().getAbsolutePath());
     }
 
-    /**
-     * Starter rack: a working web pipeline. MAESTRO fires install; a
-     * green install builds; a green build tests; test output scrolls on
-     * the console. Independently, starting SURGE hands its URL to SCOPE
-     * and pops the browser the moment the dev server answers.
-     */
-    private void loadDefaultRack() {
-        RackDevice master = DeviceType.MASTER.create();
-        RackDevice deps = DeviceType.PACKAGE_MANAGER.create();
-        RackDevice build = DeviceType.BUILD.create();
-        RackDevice test = DeviceType.TEST.create();
-        RackDevice server = DeviceType.DEV_SERVER.create();
-        RackDevice browser = DeviceType.BROWSER.create();
-        RackDevice console = DeviceType.CONSOLE.create();
-        rack.addDevice(master);
-        rack.addDevice(deps);
-        rack.addDevice(build);
-        rack.addDevice(test);
-        rack.addDevice(server);
-        rack.addDevice(browser);
-        rack.addDevice(console);
-
-        // CI lane: install -> build -> test -> console
-        rack.connect(master.getPort("trig1"), deps.getPort("run"));
-        rack.connect(deps.getPort("ok"), build.getPort("run"));
-        rack.connect(build.getPort("ok"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-
-        // dev lane: server URL + ready trigger open the browser
-        rack.connect(server.getPort("url"), browser.getPort("url"));
-        rack.connect(server.getPort("ready"), browser.getPort("open"));
-    }
-
     @Override
     public void componentOpened() {
         java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
@@ -309,7 +238,7 @@ public final class RackTopComponent extends TopComponent {
         if (dir != null) {
             File f = new File(dir);
             if (f.isDirectory()) {
-                rack.setProjectDir(f);
+                org.nmox.studio.rack.service.RackService.getDefault().openProject(f);
             }
         }
     }
