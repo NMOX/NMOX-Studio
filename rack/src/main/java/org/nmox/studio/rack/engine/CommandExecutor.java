@@ -29,6 +29,14 @@ public final class CommandExecutor {
     public interface Handle {
         void kill();
 
+        /**
+         * Kills synchronously: TERM, wait up to the grace period, then
+         * KILL the whole tree and wait again. For shutdown paths (the
+         * JVM exits when the hooks return, so async escalation threads
+         * never get their turn) - guarantees no orphaned dev servers.
+         */
+        void killAndWait(long graceMillis);
+
         boolean isAlive();
     }
 
@@ -68,7 +76,7 @@ public final class CommandExecutor {
             pb.environment().putAll(env);
             process = pb.start();
         } catch (IOException ex) {
-            String msg = "launch failed: " + ex.getMessage();
+            String msg = friendlyLaunchFailure(command, ex);
             if (out != null) {
                 out.println(msg);
             }
@@ -78,6 +86,10 @@ public final class CommandExecutor {
             return new Handle() {
                 @Override
                 public void kill() {
+                }
+
+                @Override
+                public void killAndWait(long graceMillis) {
                 }
 
                 @Override
@@ -131,10 +143,51 @@ public final class CommandExecutor {
             }
 
             @Override
+            public void killAndWait(long graceMillis) {
+                java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
+                process.descendants().forEach(tree::add);
+                tree.forEach(ProcessHandle::destroy);
+                process.destroy();
+                try {
+                    if (!process.waitFor(graceMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                        tree.forEach(ProcessHandle::destroyForcibly);
+                        process.destroyForcibly();
+                        process.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
+                    }
+                    // descendants may outlive the parent's exit; sweep them
+                    for (ProcessHandle h : tree) {
+                        if (h.isAlive()) {
+                            h.destroyForcibly();
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            @Override
             public boolean isAlive() {
                 return process.isAlive();
             }
         };
+    }
+
+    /**
+     * Translates launch IOExceptions into something a developer can act
+     * on: the usual cause is simply that the tool is not installed or
+     * not on the PATH the IDE sees.
+     */
+    static String friendlyLaunchFailure(List<String> command, IOException ex) {
+        String tool = command.isEmpty() ? "?" : command.get(0);
+        String raw = String.valueOf(ex.getMessage());
+        if (raw.contains("error=2") || raw.contains("No such file")) {
+            return tool.toUpperCase() + " NOT FOUND — install it, or launch the IDE "
+                    + "from a terminal so your PATH carries it";
+        }
+        if (raw.contains("error=13") || raw.contains("Permission denied")) {
+            return tool.toUpperCase() + " IS NOT EXECUTABLE — check its permissions";
+        }
+        return "launch failed: " + raw;
     }
 
     /**
