@@ -34,11 +34,21 @@ public final class FlightRecorder implements RackBus.Listener {
         private long count;
         private double avgMs;
         private long lastMs = -1;
+        private long lastOkAt = -1;
 
         void addOk(long ms) {
             lastMs = ms;
             count++;
             avgMs += (ms - avgMs) / count;
+        }
+
+        void stampOk(long at) {
+            lastOkAt = at;
+        }
+
+        /** When this device last went green; -1 if never this tape. */
+        public long lastOkAt() {
+            return lastOkAt;
         }
 
         public long count() {
@@ -98,7 +108,9 @@ public final class FlightRecorder implements RackBus.Listener {
                 Long started = launchAt.remove(device);
                 long ms = started == null ? -1 : now - started;
                 if (code == 0) {
-                    stats.computeIfAbsent(device, d -> new Stats()).addOk(ms);
+                    Stats st = stats.computeIfAbsent(device, d -> new Stats());
+                    st.addOk(ms);
+                    st.stampOk(now);
                     record(new Event(now, device, Kind.EXIT_OK, "OK", ms));
                 } else {
                     record(new Event(now, device, Kind.EXIT_FAIL, "exit " + code, ms));

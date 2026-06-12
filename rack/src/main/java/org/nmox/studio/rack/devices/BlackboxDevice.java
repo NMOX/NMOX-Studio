@@ -98,6 +98,21 @@ public class BlackboxDevice extends RackDevice {
         }
         int errors = rec.errorsSince(System.currentTimeMillis() - 600_000).size();
         String creep = rec.slowCreep();
+        if (last != null && last.kind() == Kind.EXIT_FAIL) {
+            // the senior-dev question, answered: what changed since green?
+            FlightRecorder.Stats s = rec.statistics().get(last.device());
+            long since = s == null ? -1 : s.lastOkAt();
+            if (since > 0) {
+                int changed = org.nmox.studio.rack.engine.ChangedSince
+                        .scan(projectDir(), since).size();
+                if (changed > 0) {
+                    healthLcd.setTextColor(RackStyle.LCD_AMBER);
+                    healthLcd.setText(changed + " FILE" + (changed == 1 ? "" : "S")
+                            + " CHANGED SINCE LAST GREEN — VIEW LISTS THEM");
+                    return;
+                }
+            }
+        }
         if (creep != null) {
             FlightRecorder.Stats s = rec.statistics().get(creep);
             healthLcd.setTextColor(RackStyle.LCD_AMBER);
@@ -199,6 +214,46 @@ public class BlackboxDevice extends RackDevice {
             stats.add(l);
         }
 
+        Event latest = FlightRecorder.getDefault().last();
+        if (latest != null && latest.kind() == Kind.EXIT_FAIL) {
+            FlightRecorder.Stats st = FlightRecorder.getDefault()
+                    .statistics().get(latest.device());
+            long since = st == null ? -1 : st.lastOkAt();
+            if (since > 0) {
+                java.util.List<java.io.File> changed = org.nmox.studio.rack.engine.ChangedSince
+                        .scan(projectDir(), since);
+                if (!changed.isEmpty()) {
+                    JPanel blame = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                    JLabel head = new JLabel("Changed since " + latest.device()
+                            + " last went green: ");
+                    head.setForeground(new Color(230, 150, 40));
+                    blame.add(head);
+                    StringBuilder names = new StringBuilder();
+                    for (int i = 0; i < Math.min(6, changed.size()); i++) {
+                        if (i > 0) {
+                            names.append("  ·  ");
+                        }
+                        names.append(changed.get(i).getName());
+                    }
+                    if (changed.size() > 6) {
+                        names.append("  (+").append(changed.size() - 6).append(" more)");
+                    }
+                    JLabel list = new JLabel(names.toString());
+                    list.setToolTipText("newest first, dependency directories skipped");
+                    blame.add(list);
+                    JPanel north = new JPanel(new BorderLayout());
+                    north.add(stats, BorderLayout.NORTH);
+                    north.add(blame, BorderLayout.SOUTH);
+                    dialog.add(north, BorderLayout.NORTH);
+                    dialog.add(new JScrollPane(table), BorderLayout.CENTER);
+                    dialog.add(south, BorderLayout.SOUTH);
+                    dialog.setSize(900, 560);
+                    dialog.setLocationRelativeTo(this);
+                    dialog.setVisible(true);
+                    return;
+                }
+            }
+        }
         dialog.add(stats, BorderLayout.NORTH);
         dialog.add(new JScrollPane(table), BorderLayout.CENTER);
         dialog.add(south, BorderLayout.SOUTH);
