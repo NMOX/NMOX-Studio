@@ -12,6 +12,10 @@ public class FlightRecorderStart implements Runnable {
 
     @Override
     public void run() {
-        FlightRecorder.getDefault();
+        FlightRecorder recorder = FlightRecorder.getDefault();
+        String userdir = System.getProperty("netbeans.user");
+        if (userdir != null) {
+            recorder.attachJournal(new java.io.File(userdir, "var/nmox/flight.jsonl"));
+        }
     }
 }
