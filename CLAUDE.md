@@ -92,7 +92,7 @@ The project is organized as a multi-module Maven build using NetBeans Platform:
 NMOX-Studio/
 ├── core/                    # Core services, ServiceManager, caching, performance monitoring
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
-├── tools/                   # NPM integration, build tools, debugging, test runners
+├── tools/                   # NPM integration, build tools
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
 ├── infra/                   # Node-RED-style DigitalOcean infrastructure designer
 ├── project/                 # Project templates, scaffolding, project explorer UI
@@ -111,7 +111,7 @@ NMOX-Studio/
 |--------|---------|----------------|
 | **core** | Platform services and infrastructure | `ServiceManager`, `FileCache`, `PerformanceMonitor` |
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
-| **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
+| **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService` |
 | **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 23 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
@@ -177,7 +177,7 @@ public class JavaScriptDataObject extends MultiDataObject {
 
 - **core** has minimal dependencies (base NetBeans APIs only)
 - **editor** depends on core + editor/lexer APIs
-- **tools** depends on core + project APIs + external libs (JSON, WebSocket)
+- **tools** depends on core + project APIs + external libs (JSON)
 - **ui** depends on core + windowing APIs
 - **application** depends on all active modules
 
@@ -280,9 +280,8 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
 1. **Hardcoded project templates** - templates live in code (ProjectTemplates.java); should be extensible/data-driven
 2. **core utility classes unused** - ServiceManager/FileCache/PerformanceMonitor are tested but nothing in the product uses them yet; integrate or remove
-3. **tools build/test/debug windows are legacy** - BuildOutput/TestResults/Debugger TopComponents predate the rack, which does these jobs better; consider folding them in
-4. **Performance** - startup time ~5 seconds, memory ~400MB
-5. **JS/TS use a custom lexer pipeline** while the other 28 languages ride TextMate+CSL; two code paths to maintain
+3. **Performance** - startup time ~5 seconds, memory ~400MB
+4. **JS/TS use a custom lexer pipeline** while the other 28 languages ride TextMate+CSL; two code paths to maintain
 
 ## Version History
 

@@ -3,8 +3,10 @@ package org.nmox.studio.tools.build;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.*;
-import org.nmox.studio.tools.build.ui.BuildOutputTopComponent;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  * Manages build tasks and their execution.
@@ -97,11 +99,9 @@ public class BuildTaskManager {
     private void executeTask(BuildTask task) {
         runningTasks.put(task.getId(), task);
         notifyTaskStarted(task);
-        
-        // Show in build output window
-        BuildOutputTopComponent output = BuildOutputTopComponent.getInstance();
-        output.startBuild(task.getName());
-        
+
+        reportStart(task);
+
         CompletableFuture<BuildResult> future = null;
         
         switch (task.getType()) {
@@ -129,26 +129,94 @@ public class BuildTaskManager {
                 if (error != null) {
                     task.setStatus(BuildTask.Status.FAILED);
                     task.setError(error.getMessage());
-                    output.appendError("Build failed: " + error.getMessage());
                 } else {
                     task.setResult(result);
-                    task.setStatus(result.isSuccess() ? 
+                    task.setStatus(result.isSuccess() ?
                         BuildTask.Status.COMPLETED : BuildTask.Status.FAILED);
-                    
-                    // Display result in output
-                    output.endBuild(result);
-                    
-                    // Display messages
-                    for (BuildResult.BuildMessage msg : result.getMessages()) {
-                        output.appendBuildMessage(msg);
-                    }
                 }
-                
+
                 task.setEndTime(System.currentTimeMillis());
+                reportCompletion(task, error);
                 runningTasks.remove(task.getId());
                 addToHistory(task);
                 notifyTaskCompleted(task);
             });
+        }
+    }
+
+    /** The shared Output window tab all build tasks report into. */
+    private static InputOutput buildIO() {
+        try {
+            return IOProvider.getDefault().getIO("Build", false);
+        } catch (RuntimeException | LinkageError ex) {
+            // output window unavailable (tests, stripped platform)
+            return null;
+        }
+    }
+
+    private void reportStart(BuildTask task) {
+        InputOutput io = buildIO();
+        if (io == null) {
+            return;
+        }
+        io.select();
+        io.getOut().println("Starting " + task.getName() + ": "
+                + task.getProjectDir().getName());
+    }
+
+    private void reportCompletion(BuildTask task, Throwable error) {
+        InputOutput io = buildIO();
+        if (io == null) {
+            return;
+        }
+        OutputWriter out = io.getOut();
+        OutputWriter err = io.getErr();
+        if (error != null) {
+            err.println(task.getName() + " failed: " + error.getMessage());
+            return;
+        }
+        BuildResult result = task.getResult();
+        for (BuildResult.BuildMessage msg : result.getMessages()) {
+            OutputWriter w = msg.getType() == BuildResult.BuildMessage.Type.ERROR ? err : out;
+            StringBuilder line = new StringBuilder();
+            switch (msg.getType()) {
+                case ERROR -> line.append("[ERROR] ");
+                case WARNING -> line.append("[WARN] ");
+                case INFO -> line.append("[INFO] ");
+                case SUCCESS -> line.append("[OK] ");
+            }
+            if (msg.getFile() != null) {
+                line.append(msg.getFile());
+                if (msg.getLine() > 0) {
+                    line.append(':').append(msg.getLine());
+                    if (msg.getColumn() > 0) {
+                        line.append(':').append(msg.getColumn());
+                    }
+                }
+                line.append(' ');
+            }
+            line.append(msg.getMessage());
+            w.println(line.toString());
+        }
+        BuildResult.BuildStatistics stats = result.getStatistics();
+        if (stats.getErrors() > 0 || stats.getWarnings() > 0) {
+            out.println(stats.getErrors() + " error(s), " + stats.getWarnings() + " warning(s)");
+        }
+        String duration = formatDuration(result.getDuration());
+        if (result.isSuccess()) {
+            out.println(task.getName() + " completed successfully (" + duration + ")");
+        } else {
+            err.println(task.getName() + " failed (" + duration + ")");
+        }
+    }
+
+    private static String formatDuration(long millis) {
+        if (millis < 1000) {
+            return millis + "ms";
+        } else if (millis < 60000) {
+            return String.format("%.1fs", millis / 1000.0);
+        } else {
+            return String.format("%dm %ds", millis / 60000, (millis % 60000) / 1000);
         }
     }
     

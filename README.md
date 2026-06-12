@@ -7,7 +7,20 @@
 [![Java Version](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-22.0-green.svg)](https://netbeans.apache.org/)
 
+![NMOX Studio — the Task Rack](docs/images/task-rack.png)
+
 NMOX Studio is a powerful integrated development environment for managing cloud deployments, microservices, and containerized applications. Built on the robust NetBeans Rich Client Platform, it provides comprehensive tools for deploying, monitoring, and scaling applications across AWS, Azure, Google Cloud, and Kubernetes clusters.
+
+## Screenshots
+
+*The web studio with a rack — wire your tools like a synth.*
+
+| | |
+|---|---|
+| ![Welcome screen](docs/images/welcome.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
+| *Welcome screen* | *Flip the rack (Tab) and patch task pipelines by cable* |
+| ![Editor](docs/images/editor.png) | ![Workbench and Infra Designer](docs/images/workbench-infra.png) |
+| *Phosphor-on-dark editing, 30+ languages* | *Workbench home base beside the multi-cloud Infra Designer* |
 
 ## Features
 

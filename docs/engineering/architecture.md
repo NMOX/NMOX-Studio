@@ -44,17 +44,18 @@ NMOX Studio is built on a modular, plugin-based architecture leveraging the NetB
 - Language Server Protocol client
 
 #### 2. Tools Module (`org.nmox.studio.tools`)
-**Responsibility:** Build tools, package managers, debugging
+**Responsibility:** Build tools, package managers
 
 **Key Components:**
 - `NpmService` - NPM/Yarn/PNPM integration
 - `BuildToolService` - Webpack/Vite/Parcel
-- `ChromeDebuggerService` - CDP implementation
-- `TestRunnerService` - Jest/Mocha/Vitest
+
+Build, test, and debug *execution surfaces* live in the rack module
+(FORGE, VERITAS, INSPECTOR devices); tools keeps the services the
+Build menu uses.
 
 **Dependencies:**
 - Process management
-- WebSocket client
 - JSON parsing
 
 #### 3. Platform Module (`org.nmox.studio.platform`)
@@ -100,26 +101,6 @@ public class TypeScriptLanguageClient {
     public CompletableFuture<CompletionList> getCompletions(Position position) {
         return rpcClient.request("textDocument/completion", 
             new CompletionParams(document, position));
-    }
-}
-```
-
-### Chrome DevTools Protocol (CDP)
-
-```
-IDE <---> CDP Client <---> Chrome/Node
-            │                   │
-            └── WebSocket ──────┘
-```
-
-**Implementation:**
-```java
-public class ChromeDebuggerService {
-    private final WebSocketClient cdpClient;
-    
-    public void setBreakpoint(String url, int line) {
-        cdpClient.send("Debugger.setBreakpointByUrl", 
-            Map.of("url", url, "lineNumber", line));
     }
 }
 ```
