@@ -27,6 +27,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>NMOX-Studio-rack</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-tools</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -143,9 +148,6 @@
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-                        <manifestEntries>
-                            <OpenIDE-Module-Layer>org/nmox/studio/ui/layer.xml</OpenIDE-Module-Layer>
-                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

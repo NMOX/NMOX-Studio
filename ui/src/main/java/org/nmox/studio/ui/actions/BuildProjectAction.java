@@ -178,15 +178,16 @@ public final class BuildProjectAction extends AbstractAction {
     }
     
     private static File getCurrentProjectDirectory() {
-        // This would normally get the current project from the IDE context
-        // For now, return a default or prompt the user
-        String userHome = System.getProperty("user.home");
-        File projectsDir = new File(userHome, "WebProjects");
-        if (projectsDir.exists() && projectsDir.isDirectory()) {
-            File[] projects = projectsDir.listFiles(File::isDirectory);
-            if (projects != null && projects.length > 0) {
-                return projects[0]; // Return first project for simplicity
+        try {
+            // the project the IDE is aimed at - the same source the
+            // rack, studio, and workbench all share
+            File dir = org.nmox.studio.rack.service.RackService.getDefault()
+                    .getRack().getProjectDir();
+            if (dir != null && dir.isDirectory()) {
+                return dir;
             }
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable (stripped platform); no project to build
         }
         return null;
     }

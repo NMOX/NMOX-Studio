@@ -36,7 +36,19 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/x-lisp", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-lua", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-swift", service = TokenListProvider.class),
-    @MimeRegistration(mimeType = "text/x-kotlin", service = TokenListProvider.class)
+    @MimeRegistration(mimeType = "text/x-kotlin", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-csharp", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-fsharp", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-groovy", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-perl", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-r", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-julia", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-dart", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-scala", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-haskell", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-zig", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-ocaml", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-crystal", service = TokenListProvider.class)
 })
 public class CodeSpellTokenListProvider implements TokenListProvider {
 

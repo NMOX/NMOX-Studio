@@ -67,7 +67,22 @@ public final class NpmExplorerTopComponent extends TopComponent {
         if (npmService == null) {
             npmService = new NpmService(); // Fallback
         }
-        
+
+        // follow the aimed project: when the rack re-aims, this explorer
+        // re-reads the new project's package.json automatically
+        try {
+            org.nmox.studio.rack.service.RackService.getDefault().getRack()
+                    .addListener(new org.nmox.studio.rack.model.Rack.Listener() {
+                @Override
+                public void projectChanged() {
+                    javax.swing.SwingUtilities.invokeLater(
+                            NpmExplorerTopComponent.this::refreshProjectView);
+                }
+            });
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable; manual Refresh still works
+        }
+
         refreshProjectView();
     }
 
@@ -202,6 +217,20 @@ public final class NpmExplorerTopComponent extends TopComponent {
     }
 
     private FileObject findProjectDirectory() {
+        // First choice: the project the IDE is aimed at (rack/workbench),
+        // using the Node manifest directory in mixed monorepos
+        try {
+            File aimed = org.nmox.studio.rack.devices.ProjectInspector.kindDir(
+                    org.nmox.studio.rack.service.RackService.getDefault()
+                            .getRack().getProjectDir(),
+                    org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.NODE);
+            if (aimed != null && new File(aimed, "package.json").isFile()) {
+                return FileUtil.toFileObject(aimed);
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable; fall through to context detection
+        }
+
         // Try to get from current context
         Lookup.Result<DataObject> result = Utilities.actionsGlobalContext().lookupResult(DataObject.class);
         for (DataObject dobj : result.allInstances()) {

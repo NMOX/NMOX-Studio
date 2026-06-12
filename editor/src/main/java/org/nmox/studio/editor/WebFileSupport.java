@@ -15,12 +15,12 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#LBL_Web_LOADER",
         mimeType = "text/html",
         extension = {"html", "htm", "xhtml", "css", "scss", "sass", "less", "js", "jsx", "ts", "tsx", "json"},
-        position = 300
+        position = 979
 )
 @DataObject.Registration(
         mimeType = "text/html",
         displayName = "#LBL_Web_LOADER",
-        position = 300
+        position = 979
 )
 public class WebFileSupport extends MultiDataObject {
 

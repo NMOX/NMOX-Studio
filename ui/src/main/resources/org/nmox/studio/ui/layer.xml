@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-<!-- All actions and windows in this module are registered via annotations
-     (@ActionRegistration, @TopComponent.Registration); they generate
-     META-INF/generated-layer.xml at compile time. This file exists only
-     because the manifest declares it; do not duplicate registrations here. -->
-<filesystem>
-</filesystem>

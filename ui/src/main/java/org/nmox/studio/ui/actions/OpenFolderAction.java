@@ -8,7 +8,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -49,17 +48,16 @@ public final class OpenFolderAction implements ActionListener {
 
     private void openFolder(File folder) {
         try {
-            org.openide.filesystems.FileObject folderObject = FileUtil.toFileObject(folder);
-            if (folderObject != null) {
-                // Find Project Explorer and activate it
-                TopComponent projectExplorer = WindowManager.getDefault().findTopComponent("ProjectExplorerTopComponent");
-                if (projectExplorer != null) {
-                    projectExplorer.open();
-                    projectExplorer.requestActive();
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            // aim the whole IDE - rack, studio, workbench - at the folder
+            org.nmox.studio.rack.service.RackService.getDefault().openProject(folder);
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable; still surface the workbench below
+        }
+        TopComponent workbench = WindowManager.getDefault()
+                .findTopComponent("ProjectExplorerTopComponent");
+        if (workbench != null) {
+            workbench.open();
+            workbench.requestActive();
         }
     }
 }

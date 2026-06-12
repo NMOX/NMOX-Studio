@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NMOX Studio is a NetBeans Platform-based IDE for modern web development, with first-class polyglot support (JS/TS, Java, C/C++, Python, Ruby, Rust, Go, PHP, shell + configs), NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
 
-**Status**: v0.1 shipped with working JavaScript file support, NPM project recognition, command execution, and project templates.
+**Status**: pre-1.0. Shipped: polyglot editing (28 TextMate grammars activated through CSL, LSP providers for 31 MIMEs), the Reason-style task rack (28 devices, stderr monitor bus, presets, CI export), the Workbench home base (open/recent files, projects, tooling shelf), the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare), settings UI, installers for all three OSes, and a tag-triggered release workflow.
 
 ## Build and Run Commands
 
@@ -278,16 +278,17 @@ Centralized service lifecycle management via `ServiceManager`:
 
 See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
-1. ~~No JavaScript syntax highlighting~~ - Fixed: lexer Language layer-registered for text/javascript and text/typescript with the NMOX Phosphor color scheme
-2. **Hardcoded project templates** - Should be extensible
-3. **Limited error handling** - NPM errors need better user messages
-4. **No settings UI** - Configuration is hardcoded
-5. **Performance** - Startup time ~5 seconds, memory ~400MB
+1. **Hardcoded project templates** - templates live in code (ProjectTemplates.java); should be extensible/data-driven
+2. **core utility classes unused** - ServiceManager/FileCache/PerformanceMonitor are tested but nothing in the product uses them yet; integrate or remove
+3. **tools build/test/debug windows are legacy** - BuildOutput/TestResults/Debugger TopComponents predate the rack, which does these jobs better; consider folding them in
+4. **Performance** - startup time ~5 seconds, memory ~400MB
+5. **JS/TS use a custom lexer pipeline** while the other 28 languages ride TextMate+CSL; two code paths to maintain
 
 ## Version History
 
 - **v0.1** (shipped): Basic JavaScript/TypeScript support, NPM integration, project templates
-- **v0.2** (planned): Polish, performance improvements, settings system, better error handling
+- **current** (unreleased, post-v0.1): task rack, polyglot editor (TextMate+CSL), LSP everywhere, infra designer, Workbench, packaging + CI/release pipelines
+- **v1.0.0**: not yet; tagging it triggers the release workflow (5 artifacts)
 
 ## Documentation
 

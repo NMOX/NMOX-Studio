@@ -20,7 +20,7 @@ import org.openide.NotifyDescriptor;
 )
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 110),
-    @ActionReference(path = "Toolbars/File", position = 100),
+    @ActionReference(path = "Toolbars/File", position = 95),
     @ActionReference(path = "Shortcuts", name = "D-N")
 })
 @Messages("CTL_NewProjectAction=New Project...")
