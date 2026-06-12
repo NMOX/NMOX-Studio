@@ -18,6 +18,7 @@ public class FormatDevice extends CommandDevice {
         super("format", "GLOSS", "CODE FORMATTER", new Color(73, 196, 184), 2);
 
         RackButton run = place(new RackButton("FORMAT", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        run.setCommandPreview(this::commandPreview);
         writeSwitch = place(new ToggleSwitch("MODE", true, "WRITE", "CHECK"), 112, 42);
         run.addActionListener(e -> primaryAction());
 

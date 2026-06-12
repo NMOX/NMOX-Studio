@@ -37,6 +37,7 @@ public class TunnelDevice extends CommandDevice {
         super("tunnel", "WORMHOLE", "PUBLIC TUNNEL", new Color(156, 89, 209), 2);
 
         RackButton open = place(new RackButton("OPEN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        open.setCommandPreview(this::commandPreview);
         RackButton close = place(new RackButton("CLOSE", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         providerKnob = place(new Knob("CARRIER", PROVIDERS, 0), 180, 40);
         portKnob = place(new Knob("PORT", PORTS, 2), 254, 40);

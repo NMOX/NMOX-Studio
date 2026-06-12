@@ -36,6 +36,7 @@ public class DebugDevice extends CommandDevice {
         super("debug", "INSPECTOR", "DEBUG LAUNCHER", new Color(186, 85, 255), 2);
 
         RackButton attach = place(new RackButton("LAUNCH", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        attach.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         targetKnob = place(new Knob("TARGET", TARGETS, 0), 180, 40);
         endpointLcd = place(new LcdDisplay(210, 1), 254, 52);

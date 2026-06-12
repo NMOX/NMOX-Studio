@@ -14,9 +14,21 @@ public class WebProjectFactory implements ProjectFactory {
 
     public static final String PACKAGE_JSON = "package.json";
 
+    /** Every manifest the rack understands makes a real platform project. */
+    private static final String[] MANIFESTS = {
+        "package.json", "Cargo.toml", "go.mod", "mix.exs", "rebar.config",
+        "deps.edn", "project.clj", "Package.swift", "pom.xml", "build.gradle",
+        "build.gradle.kts", "pyproject.toml", "requirements.txt", "Gemfile",
+        "composer.json", "angular.json"};
+
     @Override
     public boolean isProject(FileObject projectDirectory) {
-        return projectDirectory.getFileObject(PACKAGE_JSON) != null;
+        for (String manifest : MANIFESTS) {
+            if (projectDirectory.getFileObject(manifest) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -186,6 +186,27 @@ public final class RackTopComponent extends TopComponent {
             menu.show(presets, 0, presets.getHeight());
         });
         bar.add(presets);
+
+        JButton exportCi = new JButton("Export CI…");
+        exportCi.setToolTipText("Compile this patch into .github/workflows/nmox-rack.yml —"
+                + " the same commands the rack runs, as a GitHub Actions pipeline");
+        exportCi.addActionListener(e -> {
+            try {
+                String yaml = org.nmox.studio.rack.projectstudio.CiExporter.toWorkflowYaml(rack);
+                File dir = new File(rack.getProjectDir(), ".github/workflows");
+                java.nio.file.Files.createDirectories(dir.toPath());
+                File out = new File(dir, "nmox-rack.yml");
+                java.nio.file.Files.writeString(out.toPath(), yaml);
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Exported " + out.getAbsolutePath());
+                org.nmox.studio.rack.engine.FileLink.open(
+                        new org.nmox.studio.rack.engine.FileLink.Location(out, 1));
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Export failed: " + ex.getMessage(),
+                        "Task Rack", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        bar.add(exportCi);
         bar.addSeparator();
 
         JButton stopAll = new JButton("Stop All");

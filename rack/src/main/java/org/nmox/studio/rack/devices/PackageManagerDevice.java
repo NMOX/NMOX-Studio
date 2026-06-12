@@ -25,6 +25,7 @@ public class PackageManagerDevice extends CommandDevice {
         super("package-manager", "CRATE", "PACKAGE MANAGER", new Color(214, 121, 41), 2);
 
         RackButton install = place(new RackButton("INSTALL", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        install.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 180, 40);
         RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 254, 52);

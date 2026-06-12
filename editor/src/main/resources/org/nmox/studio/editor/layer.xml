@@ -93,5 +93,17 @@
                 </folder>
             </folder>
         </folder>
+        <folder name="text">
+            <folder name="x-python">
+                <file name="DAPBreakpoints.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
+                </file>
+            </folder>
+            <folder name="x-go">
+                <file name="DAPBreakpoints.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

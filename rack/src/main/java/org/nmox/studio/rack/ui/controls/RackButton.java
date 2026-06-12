@@ -69,6 +69,32 @@ public class RackButton extends JComponent {
         listeners.add(l);
     }
 
+    private java.util.function.Supplier<String> commandPreview;
+
+    /**
+     * Transparency: hovering the button shows exactly what it will run
+     * and where, computed live so knob changes are reflected.
+     */
+    public void setCommandPreview(java.util.function.Supplier<String> preview) {
+        this.commandPreview = preview;
+        setToolTipText(label); // ensure tooltip machinery is registered
+    }
+
+    @Override
+    public String getToolTipText(java.awt.event.MouseEvent e) {
+        if (commandPreview != null) {
+            try {
+                String preview = commandPreview.get();
+                if (preview != null && !preview.isBlank()) {
+                    return preview;
+                }
+            } catch (RuntimeException ignored) {
+                // preview must never break hovering
+            }
+        }
+        return super.getToolTipText(e);
+    }
+
     public void setLit(boolean lit) {
         if (this.lit != lit) {
             this.lit = lit;

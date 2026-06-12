@@ -36,9 +36,14 @@ public enum CloudProvider {
         };
     }
 
+    /** The explicit prefs node shared with the Options panel. */
+    private static java.util.prefs.Preferences prefs() {
+        return NbPreferences.root().node("nmox/cloud");
+    }
+
     /** Stored token, else the provider's env var, else null. */
     public String token() {
-        String stored = NbPreferences.forModule(CloudProvider.class).get(prefKey, "");
+        String stored = prefs().get(prefKey, "");
         if (!stored.isBlank()) {
             return stored;
         }
@@ -47,7 +52,7 @@ public enum CloudProvider {
     }
 
     public void storeToken(String token) {
-        NbPreferences.forModule(CloudProvider.class).put(prefKey, token == null ? "" : token.trim());
+        prefs().put(prefKey, token == null ? "" : token.trim());
     }
 
     public boolean hasToken() {

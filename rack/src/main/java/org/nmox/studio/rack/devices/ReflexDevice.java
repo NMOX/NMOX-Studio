@@ -85,7 +85,9 @@ public class ReflexDevice extends RackDevice {
         }
         int filter = filterKnob.getSelectedIndex();
         Set<String> extensions = filter == 0 ? null : FILTER_EXTENSIONS.get(filter);
-        watcher = new FileWatcher(projectDir(), 1200, extensions, this::filesChanged);
+        int interval = org.openide.util.NbPreferences.forModule(ReflexDevice.class)
+                .getInt("reflexIntervalMs", 1200);
+        watcher = new FileWatcher(projectDir(), interval, extensions, this::filesChanged);
         watcher.start();
     }
 

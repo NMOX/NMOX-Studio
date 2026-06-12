@@ -33,6 +33,7 @@ public class TypecheckDevice extends CommandDevice {
         super("typecheck", "TYPEGUARD", "TYPE CHECKER", new Color(49, 120, 198), 2);
 
         RackButton check = place(new RackButton("CHECK", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        check.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         watchSwitch = place(new ToggleSwitch("WATCH", false), 180, 42);
         strictSwitch = place(new ToggleSwitch("STRICT", false), 250, 42);
@@ -48,16 +49,6 @@ public class TypecheckDevice extends CommandDevice {
     }
 
     @Override
-    protected void primaryAction() {
-        onEdt(() -> {
-            cleanLed.setOn(false);
-            errorLcd.setTextColor(RackStyle.LCD_TEXT);
-            errorLcd.setText("E:-");
-        });
-        launch(buildCommand());
-    }
-
-    @Override
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>(List.of("npx", "tsc", "--noEmit", "--pretty", "false"));
         if (strictSwitch.isOn()) {
@@ -69,8 +60,25 @@ public class TypecheckDevice extends CommandDevice {
         return cmd;
     }
 
+    private final java.util.List<org.nmox.studio.rack.engine.DiagnosticsBus.Problem> collected =
+            java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    private static final java.util.regex.Pattern TSC_LOC = java.util.regex.Pattern.compile(
+            "^(.+?)\\((\\d+),(\\d+)\\):\\s+(error|warning)\\s+TS\\d+:\\s+(.*)$");
+
     @Override
     protected void onLine(String line) {
+        java.util.regex.Matcher loc = TSC_LOC.matcher(line);
+        if (loc.find()) {
+            java.io.File f = new java.io.File(loc.group(1));
+            if (!f.isAbsolute()) {
+                f = new java.io.File(commandDir(), loc.group(1));
+            }
+            if (f.isFile()) {
+                collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
+                        f, Integer.parseInt(loc.group(2)), loc.group(5),
+                        "error".equals(loc.group(4))));
+            }
+        }
         Matcher m = FOUND_ERRORS.matcher(line);
         if (!m.find()) {
             return;
@@ -99,7 +107,20 @@ public class TypecheckDevice extends CommandDevice {
     }
 
     @Override
+    protected void primaryAction() {
+        collected.clear();
+        onEdt(() -> {
+            cleanLed.setOn(false);
+            errorLcd.setTextColor(RackStyle.LCD_TEXT);
+            errorLcd.setText("E:-");
+        });
+        launch(buildCommand());
+    }
+
+    @Override
     protected void onFinished(int exitCode) {
         onEdt(() -> cleanLed.setOn(exitCode == 0));
+        org.nmox.studio.rack.engine.DiagnosticsBus.publish("tsc",
+                new java.util.ArrayList<>(collected));
     }
 }
