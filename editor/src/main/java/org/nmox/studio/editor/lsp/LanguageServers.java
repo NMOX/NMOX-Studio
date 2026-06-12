@@ -2,6 +2,7 @@ package org.nmox.studio.editor.lsp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
@@ -16,8 +17,12 @@ import org.openide.util.Lookup;
  * own server over stdio and hands it to the platform's LSP client -
  * definitions, hover, semantic completion, rename and live
  * diagnostics arrive wholesale. Servers are found through ToolLocator
- * (Homebrew, npm, cargo, go installs); a missing server degrades
- * silently to the TextMate-level experience.
+ * (Homebrew, npm, cargo, go, dotnet tool, coursier, gem installs); a
+ * missing server degrades silently to the TextMate-level experience.
+ *
+ * Where an ecosystem has competing servers the provider tries them in
+ * preference order (ruby-lsp before solargraph, csharp-ls before
+ * OmniSharp) so whichever one the developer actually installed wins.
  */
 public final class LanguageServers {
 
@@ -47,6 +52,42 @@ public final class LanguageServers {
         }
     }
 
+    /** The first candidate that launches wins; null when none can. */
+    @SafeVarargs
+    static LanguageServerProvider.LanguageServerDescription launchFirst(
+            Lookup lookup, List<String>... candidates) {
+        for (List<String> candidate : candidates) {
+            LanguageServerProvider.LanguageServerDescription server = launch(lookup, candidate);
+            if (server != null) {
+                return server;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * For npm-distributed servers: prefer the project's own
+     * node_modules/.bin install over the global binary, so the server
+     * version matches what the project pinned.
+     */
+    static LanguageServerProvider.LanguageServerDescription launchNpm(
+            Lookup lookup, String bin, String... args) {
+        File dir = projectDir(lookup);
+        if (dir != null) {
+            File local = new File(dir, "node_modules/.bin/" + bin);
+            if (local.canExecute()) {
+                List<String> cmd = new ArrayList<>();
+                cmd.add(local.getAbsolutePath());
+                cmd.addAll(List.of(args));
+                return launch(lookup, cmd);
+            }
+        }
+        List<String> cmd = new ArrayList<>();
+        cmd.add(bin);
+        cmd.addAll(List.of(args));
+        return launch(lookup, cmd);
+    }
+
     private static boolean onPath(String name) {
         for (String dir : ToolLocator.augmentedPath().split(File.pathSeparator)) {
             if (new File(dir, name).canExecute()) {
@@ -69,15 +110,7 @@ public final class LanguageServers {
     public static final class TypeScriptServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            File dir = projectDir(lookup);
-            // prefer the project's own install, then the global binary
-            if (dir != null) {
-                File local = new File(dir, "node_modules/.bin/typescript-language-server");
-                if (local.canExecute()) {
-                    return launch(lookup, List.of(local.getAbsolutePath(), "--stdio"));
-                }
-            }
-            return launch(lookup, List.of("typescript-language-server", "--stdio"));
+            return launchNpm(lookup, "typescript-language-server", "--stdio");
         }
     }
 
@@ -108,12 +141,242 @@ public final class LanguageServers {
         }
     }
 
-    /** Elixir via elixir-ls (when installed as language_server.sh on PATH). */
+    /** Elixir via elixir-ls (brew wrapper or language_server.sh on PATH). */
     @MimeRegistration(mimeType = "text/x-elixir", service = LanguageServerProvider.class)
     public static final class ElixirServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("elixir-ls"));
+            return launchFirst(lookup,
+                    List.of("elixir-ls"),
+                    List.of("language_server.sh"));
+        }
+    }
+
+    /** C and C++ via clangd (ships with Xcode CLT and every LLVM install). */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/x-c", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-cpp", service = LanguageServerProvider.class)
+    })
+    public static final class ClangdServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("clangd", "--background-index"));
+        }
+    }
+
+    /** Java via Eclipse JDT Language Server. */
+    @MimeRegistration(mimeType = "text/x-java", service = LanguageServerProvider.class)
+    public static final class JavaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("jdtls"));
+        }
+    }
+
+    /** C# via csharp-ls, falling back to OmniSharp. */
+    @MimeRegistration(mimeType = "text/x-csharp", service = LanguageServerProvider.class)
+    public static final class CSharpServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchFirst(lookup,
+                    List.of("csharp-ls"),
+                    List.of("OmniSharp", "-lsp"));
+        }
+    }
+
+    /** F# via fsautocomplete (dotnet tool install -g fsautocomplete). */
+    @MimeRegistration(mimeType = "text/x-fsharp", service = LanguageServerProvider.class)
+    public static final class FSharpServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("fsautocomplete"));
+        }
+    }
+
+    /** PHP via intelephense (project-local first), falling back to phpactor. */
+    @MimeRegistration(mimeType = "text/x-php5", service = LanguageServerProvider.class)
+    public static final class PhpServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            LanguageServerDescription server = launchNpm(lookup, "intelephense", "--stdio");
+            return server != null ? server
+                    : launch(lookup, List.of("phpactor", "language-server"));
+        }
+    }
+
+    /** Ruby via ruby-lsp, falling back to solargraph. */
+    @MimeRegistration(mimeType = "text/x-ruby", service = LanguageServerProvider.class)
+    public static final class RubyServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchFirst(lookup,
+                    List.of("ruby-lsp"),
+                    List.of("solargraph", "stdio"));
+        }
+    }
+
+    /** Dart via the SDK's built-in language server. */
+    @MimeRegistration(mimeType = "text/x-dart", service = LanguageServerProvider.class)
+    public static final class DartServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("dart", "language-server", "--protocol=lsp"));
+        }
+    }
+
+    /** Scala via Metals (coursier install metals). */
+    @MimeRegistration(mimeType = "text/x-scala", service = LanguageServerProvider.class)
+    public static final class ScalaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("metals"));
+        }
+    }
+
+    /** Kotlin via kotlin-language-server. */
+    @MimeRegistration(mimeType = "text/x-kotlin", service = LanguageServerProvider.class)
+    public static final class KotlinServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("kotlin-language-server"));
+        }
+    }
+
+    /** Swift via sourcekit-lsp (ships with the Swift toolchain and Xcode). */
+    @MimeRegistration(mimeType = "text/x-swift", service = LanguageServerProvider.class)
+    public static final class SwiftServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("sourcekit-lsp"));
+        }
+    }
+
+    /** Haskell via haskell-language-server (ghcup install hls). */
+    @MimeRegistration(mimeType = "text/x-haskell", service = LanguageServerProvider.class)
+    public static final class HaskellServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("haskell-language-server-wrapper", "--lsp"));
+        }
+    }
+
+    /** Zig via zls. */
+    @MimeRegistration(mimeType = "text/x-zig", service = LanguageServerProvider.class)
+    public static final class ZigServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("zls"));
+        }
+    }
+
+    /** Erlang via erlang_ls. */
+    @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
+    public static final class ErlangServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("erlang_ls", "--transport", "stdio"));
+        }
+    }
+
+    /** Clojure via clojure-lsp. */
+    @MimeRegistration(mimeType = "text/x-clojure", service = LanguageServerProvider.class)
+    public static final class ClojureServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("clojure-lsp"));
+        }
+    }
+
+    /** Common Lisp via cl-lsp, when someone has gone to the trouble. */
+    @MimeRegistration(mimeType = "text/x-lisp", service = LanguageServerProvider.class)
+    public static final class LispServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("cl-lsp"));
+        }
+    }
+
+    /** Lua via lua-language-server. */
+    @MimeRegistration(mimeType = "text/x-lua", service = LanguageServerProvider.class)
+    public static final class LuaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("lua-language-server"));
+        }
+    }
+
+    /** OCaml via ocamllsp (opam install ocaml-lsp-server). */
+    @MimeRegistration(mimeType = "text/x-ocaml", service = LanguageServerProvider.class)
+    public static final class OCamlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("ocamllsp"));
+        }
+    }
+
+    /** Crystal via crystalline. */
+    @MimeRegistration(mimeType = "text/x-crystal", service = LanguageServerProvider.class)
+    public static final class CrystalServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("crystalline"));
+        }
+    }
+
+    /** Julia via LanguageServer.jl, falling back fast if it isn't installed. */
+    @MimeRegistration(mimeType = "text/x-julia", service = LanguageServerProvider.class)
+    public static final class JuliaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("julia", "--startup-file=no", "--history-file=no",
+                    "-e", "using LanguageServer; runserver()"));
+        }
+    }
+
+    /** R via the languageserver package. */
+    @MimeRegistration(mimeType = "text/x-r", service = LanguageServerProvider.class)
+    public static final class RServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("R", "--no-echo", "-e", "languageserver::run()"));
+        }
+    }
+
+    /** Perl via PLS, falling back to Perl::LanguageServer. */
+    @MimeRegistration(mimeType = "text/x-perl", service = LanguageServerProvider.class)
+    public static final class PerlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchFirst(lookup,
+                    List.of("pls"),
+                    List.of("perl", "-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"));
+        }
+    }
+
+    /** Groovy via groovy-language-server, when installed. */
+    @MimeRegistration(mimeType = "text/x-groovy", service = LanguageServerProvider.class)
+    public static final class GroovyServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("groovy-language-server"));
+        }
+    }
+
+    /** Shell scripts via bash-language-server. */
+    @MimeRegistration(mimeType = "text/sh", service = LanguageServerProvider.class)
+    public static final class ShellServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "bash-language-server", "start");
+        }
+    }
+
+    /** JSON via vscode-json-language-server (vscode-langservers-extracted). */
+    @MimeRegistration(mimeType = "text/x-json", service = LanguageServerProvider.class)
+    public static final class JsonServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vscode-json-language-server", "--stdio");
         }
     }
 
