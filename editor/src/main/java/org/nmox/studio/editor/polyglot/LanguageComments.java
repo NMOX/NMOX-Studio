@@ -23,7 +23,14 @@ public final class LanguageComments {
             Map.entry("text/sh", "#"),
             Map.entry("text/x-toml", "#"),
             Map.entry("text/x-yaml", "#"),
-            Map.entry("text/x-properties", "#"));
+            Map.entry("text/x-properties", "#"),
+            Map.entry("text/x-erlang", "%"),
+            Map.entry("text/x-elixir", "#"),
+            Map.entry("text/x-clojure", ";;"),
+            Map.entry("text/x-lisp", ";;"),
+            Map.entry("text/x-lua", "--"),
+            Map.entry("text/x-swift", "//"),
+            Map.entry("text/x-kotlin", "//"));
 
     private LanguageComments() {
     }

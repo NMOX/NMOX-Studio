@@ -115,6 +115,10 @@ public class BuildDevice extends CommandDevice {
         return switch (kind) {
             case RUST -> prod ? List.of("cargo", "build", "--release") : List.of("cargo", "build");
             case GO -> List.of("go", "build", "./...");
+            case ELIXIR -> List.of("mix", "compile");
+            case ERLANG -> List.of("rebar3", "compile");
+            case CLOJURE -> List.of("clojure", "-P"); // prepare deps; build aliases vary
+            case SWIFT -> prod ? List.of("swift", "build", "-c", "release") : List.of("swift", "build");
             case MAVEN -> List.of("mvn", "-q", "package", "-DskipTests");
             case GRADLE -> List.of("gradle", "build", "-x", "test");
             case CMAKE -> List.of("cmake", "--build", "build");

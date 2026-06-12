@@ -122,15 +122,30 @@ public final class InfraDesignerTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
 
-        JButton token = new JButton("Token…");
-        token.setToolTipText("Set the DigitalOcean API token (or export DIGITALOCEAN_TOKEN)");
+        JButton token = new JButton("Tokens…");
+        token.setToolTipText("Set API tokens: DigitalOcean / Hetzner Cloud / Cloudflare "
+                + "(or export DIGITALOCEAN_TOKEN / HCLOUD_TOKEN / CLOUDFLARE_API_TOKEN)");
         token.addActionListener(e -> {
-            JPasswordField field = new JPasswordField(32);
-            int ok = JOptionPane.showConfirmDialog(this, field,
-                    "DigitalOcean API token (stored in IDE settings)",
+            var providers = org.nmox.studio.infra.api.CloudProvider.values();
+            JPasswordField[] fields = new JPasswordField[providers.length];
+            javax.swing.JPanel panel = new javax.swing.JPanel(
+                    new java.awt.GridLayout(providers.length * 2, 1, 0, 2));
+            for (int i = 0; i < providers.length; i++) {
+                fields[i] = new JPasswordField(32);
+                String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
+                panel.add(new JLabel(providers[i].displayName() + current));
+                panel.add(fields[i]);
+            }
+            int ok = JOptionPane.showConfirmDialog(this, panel,
+                    "Cloud API tokens (stored in IDE settings; blank = keep current)",
                     JOptionPane.OK_CANCEL_OPTION);
             if (ok == JOptionPane.OK_OPTION) {
-                DigitalOceanClient.storeToken(new String(field.getPassword()).trim());
+                for (int i = 0; i < providers.length; i++) {
+                    String value = new String(fields[i].getPassword()).trim();
+                    if (!value.isEmpty()) {
+                        providers[i].storeToken(value);
+                    }
+                }
                 refreshToken();
             }
         });
@@ -307,9 +322,17 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     private void refreshToken() {
-        boolean has = DigitalOceanClient.hasToken();
-        tokenLabel.setText(has ? "● connected" : "○ no token (dry-run)");
-        tokenLabel.setForeground(has ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
+        StringBuilder sb = new StringBuilder();
+        int connected = 0;
+        for (var provider : org.nmox.studio.infra.api.CloudProvider.values()) {
+            boolean has = provider.hasToken();
+            connected += has ? 1 : 0;
+            sb.append(has ? "●" : "○");
+        }
+        boolean any = connected > 0;
+        tokenLabel.setText(sb + (any ? " " + connected + "/3 clouds" : " no tokens (dry-run)"));
+        tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
+        tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
     }
 
     private void refreshCost() {

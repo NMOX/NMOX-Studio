@@ -81,9 +81,10 @@ public final class DigitalOceanClient {
             onStep.accept(node, "creating…");
             try {
                 String bodyText = step.body() == null ? "" : step.body().toString();
-                bodyText = resolvePlaceholders(bodyText, ids, ips, onStep, node);
-                String path = resolvePlaceholders(step.path(), ids, ips, onStep, node);
-                JSONObject response = send(step.method(), path, bodyText);
+                bodyText = resolvePlaceholders(bodyText, graph, ids, ips, onStep, node);
+                String path = resolvePlaceholders(step.path(), graph, ids, ips, onStep, node);
+                CloudProvider provider = node != null ? node.kind.provider() : CloudProvider.DIGITALOCEAN;
+                JSONObject response = send(provider, step.method(), path, bodyText);
                 String doId = extractId(node == null ? null : node.kind, response);
                 if (node != null && doId != null && node.doId == null) {
                     node.doId = doId;
@@ -98,7 +99,7 @@ public final class DigitalOceanClient {
         return true;
     }
 
-    private String resolvePlaceholders(String text, Map<String, String> ids,
+    private String resolvePlaceholders(String text, InfraGraph graph, Map<String, String> ids,
             Map<String, String> ips, BiConsumer<InfraNode, String> onStep,
             InfraNode forNode) throws IOException, InterruptedException {
         Matcher m = PLACEHOLDER.matcher(text);
@@ -116,7 +117,10 @@ public final class DigitalOceanClient {
                 value = ips.computeIfAbsent(nodeId, k -> null);
                 if (value == null) {
                     onStep.accept(forNode, "waiting for IP of " + nodeId + "…");
-                    value = waitForDropletIp(ids.get(nodeId));
+                    InfraNode source = graph.node(nodeId);
+                    value = source != null && source.kind.provider() == CloudProvider.HETZNER
+                            ? waitForHetznerIp(ids.get(nodeId))
+                            : waitForDropletIp(ids.get(nodeId));
                     ips.put(nodeId, value);
                 }
             }
@@ -145,15 +149,34 @@ public final class DigitalOceanClient {
         throw new IOException("droplet " + dropletId + " got no public IP in time");
     }
 
+    /** Hetzner servers report their IPv4 immediately; poll briefly anyway. */
+    private String waitForHetznerIp(String serverId) throws IOException, InterruptedException {
+        for (int i = 0; i < 10; i++) {
+            JSONObject response = send(CloudProvider.HETZNER, "GET", "/servers/" + serverId, "");
+            String ip = response.getJSONObject("server")
+                    .getJSONObject("public_net").getJSONObject("ipv4").optString("ip", "");
+            if (!ip.isEmpty()) {
+                return ip;
+            }
+            Thread.sleep(2000);
+        }
+        throw new IOException("Hetzner server " + serverId + " got no public IP in time");
+    }
+
     // ---- raw API ----
 
     private JSONObject send(String method, String path, String body)
             throws IOException, InterruptedException {
-        String tok = token();
+        return send(CloudProvider.DIGITALOCEAN, method, path, body);
+    }
+
+    private JSONObject send(CloudProvider provider, String method, String path, String body)
+            throws IOException, InterruptedException {
+        String tok = provider.token();
         if (tok == null) {
-            throw new IOException("no API token configured");
+            throw new IOException("no " + provider.displayName() + " API token configured");
         }
-        HttpRequest.Builder rb = HttpRequest.newBuilder(URI.create(API + path))
+        HttpRequest.Builder rb = HttpRequest.newBuilder(URI.create(provider.apiBase() + path))
                 .header("Authorization", "Bearer " + tok)
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofSeconds(60));
@@ -195,6 +218,13 @@ public final class DigitalOceanClient {
                 case GRADIENT_AI -> response.getJSONObject("agent").optString("uuid", null);
                 case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
                     response.getJSONObject("database").getString("id");
+                case HZ_SERVER -> String.valueOf(response.getJSONObject("server").getLong("id"));
+                case HZ_NETWORK -> String.valueOf(response.getJSONObject("network").getLong("id"));
+                case HZ_LB -> String.valueOf(response.getJSONObject("load_balancer").getLong("id"));
+                case HZ_VOLUME -> String.valueOf(response.getJSONObject("volume").getLong("id"));
+                case HZ_FIREWALL -> String.valueOf(response.getJSONObject("firewall").getLong("id"));
+                case HZ_FLOATING_IP -> String.valueOf(response.getJSONObject("floating_ip").getLong("id"));
+                case CF_DNS_RECORD, CF_R2_BUCKET -> response.getJSONObject("result").optString("id", null);
                 default -> null;
             };
         } catch (RuntimeException ex) {

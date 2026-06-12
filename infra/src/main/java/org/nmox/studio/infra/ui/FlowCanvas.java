@@ -327,6 +327,8 @@ public class FlowCanvas extends JPanel {
             case STORAGE -> "▤";
             case DATABASES -> "◫";
             case OPS -> "✚";
+            case HETZNER -> "▦";
+            case CLOUDFLARE -> "☁";
         };
     }
 

@@ -141,6 +141,50 @@ public enum NodeKind {
                     "v1/insights/droplet/disk_utilization_percent"),
                 Prop.number("threshold", "Threshold %", 80),
                 Prop.text("email", "Alert email", "ops@example.com")),
+            0.0),
+
+    // ---- Hetzner Cloud ----
+    HZ_SERVER("HZ Server", Category.HETZNER,
+            List.of(
+                Prop.choice("serverType", "Type", "cx22",
+                    "cx22", "cx32", "cx42", "cpx11", "cpx21", "cpx31", "cax11", "cax21"),
+                Prop.choice("location", "Location", "fsn1", "fsn1", "nbg1", "hel1", "ash", "hil", "sin"),
+                Prop.choice("image", "Image", "ubuntu-24.04",
+                    "ubuntu-24.04", "ubuntu-22.04", "debian-12", "fedora-40", "rocky-9")),
+            4.59),
+    HZ_NETWORK("HZ Network", Category.HETZNER,
+            List.of(Prop.text("ipRange", "IP range", "10.0.0.0/16")),
+            0.0),
+    HZ_LB("HZ Load Balancer", Category.HETZNER,
+            List.of(
+                Prop.choice("lbType", "Type", "lb11", "lb11", "lb21", "lb31"),
+                Prop.choice("location", "Location", "fsn1", "fsn1", "nbg1", "hel1", "ash", "hil")),
+            6.41),
+    HZ_VOLUME("HZ Volume", Category.HETZNER,
+            List.of(
+                Prop.number("sizeGb", "Size (GiB)", 50),
+                Prop.choice("location", "Location", "fsn1", "fsn1", "nbg1", "hel1", "ash", "hil"),
+                Prop.choice("format", "Filesystem", "ext4", "ext4", "xfs")),
+            2.60),
+    HZ_FIREWALL("HZ Firewall", Category.HETZNER,
+            List.of(Prop.text("inbound", "Inbound (port/cidr)", "22/0.0.0.0/0, 80/0.0.0.0/0, 443/0.0.0.0/0")),
+            0.0),
+    HZ_FLOATING_IP("HZ Floating IP", Category.HETZNER,
+            List.of(Prop.choice("homeLocation", "Home location", "fsn1", "fsn1", "nbg1", "hel1", "ash", "hil")),
+            3.92),
+
+    // ---- Cloudflare ----
+    CF_DNS_RECORD("CF DNS Record", Category.CLOUDFLARE,
+            List.of(
+                Prop.text("zoneId", "Zone ID", ""),
+                Prop.text("name", "Record name", "app.example.com"),
+                Prop.choice("recordType", "Type", "A", "A", "AAAA", "CNAME", "TXT"),
+                Prop.bool("proxied", "Proxied (orange cloud)", true)),
+            0.0),
+    CF_R2_BUCKET("CF R2 Bucket", Category.CLOUDFLARE,
+            List.of(
+                Prop.text("accountId", "Account ID", ""),
+                Prop.text("bucket", "Bucket name", "my-bucket")),
             0.0);
 
     /** Node-RED-ish category palette. */
@@ -149,7 +193,9 @@ public enum NodeKind {
         NETWORKING(new Color(0xE8, 0x9A, 0x3C)),
         STORAGE(new Color(0x8F, 0x6B, 0xD6)),
         DATABASES(new Color(0x4E, 0xC9, 0x8B)),
-        OPS(new Color(0xD6, 0x5C, 0x6E));
+        OPS(new Color(0xD6, 0x5C, 0x6E)),
+        HETZNER(new Color(0xD5, 0x0C, 0x2D)),
+        CLOUDFLARE(new Color(0xF6, 0x82, 0x1F));
 
         public final Color color;
 
@@ -205,17 +251,23 @@ public enum NodeKind {
             case FIREWALL -> Set.of(DROPLET, GPU_DROPLET);
             case VOLUME -> Set.of(DROPLET, GPU_DROPLET);
             case RESERVED_IP -> Set.of(DROPLET, GPU_DROPLET);
-            case DROPLET, GPU_DROPLET -> Set.of(LOAD_BALANCER, DOMAIN, MONITOR_ALERT);
+            case DROPLET, GPU_DROPLET -> Set.of(LOAD_BALANCER, DOMAIN, MONITOR_ALERT, CF_DNS_RECORD);
             case KUBERNETES -> Set.of(MONITOR_ALERT);
-            case LOAD_BALANCER -> Set.of(DOMAIN);
-            case APP_PLATFORM, FUNCTIONS -> Set.of(DOMAIN);
+            case LOAD_BALANCER -> Set.of(DOMAIN, CF_DNS_RECORD);
+            case APP_PLATFORM, FUNCTIONS -> Set.of(DOMAIN, CF_DNS_RECORD);
             case SPACES -> Set.of(CDN);
             case CERTIFICATE -> Set.of(LOAD_BALANCER, CDN);
             case CONTAINER_REGISTRY -> Set.of(KUBERNETES, APP_PLATFORM);
             case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
                 Set.of(APP_PLATFORM, KUBERNETES);
             case GRADIENT_AI -> Set.of(APP_PLATFORM, FUNCTIONS);
-            case CDN, DOMAIN, MONITOR_ALERT -> Set.of();
+            case HZ_NETWORK -> Set.of(HZ_SERVER, HZ_LB);
+            case HZ_FIREWALL -> Set.of(HZ_SERVER);
+            case HZ_VOLUME -> Set.of(HZ_SERVER);
+            case HZ_FLOATING_IP -> Set.of(HZ_SERVER);
+            case HZ_SERVER -> Set.of(HZ_LB, CF_DNS_RECORD);
+            case HZ_LB -> Set.of(CF_DNS_RECORD);
+            case CDN, DOMAIN, MONITOR_ALERT, CF_DNS_RECORD, CF_R2_BUCKET -> Set.of();
         };
     }
 
@@ -224,8 +276,21 @@ public enum NodeKind {
      * before an action call) rather than creation-time references.
      */
     public boolean attachesTo(NodeKind target) {
-        return (this == VOLUME || this == RESERVED_IP || this == FIREWALL)
-                && (target == DROPLET || target == GPU_DROPLET);
+        if ((this == VOLUME || this == RESERVED_IP || this == FIREWALL)
+                && (target == DROPLET || target == GPU_DROPLET)) {
+            return true;
+        }
+        return (this == HZ_VOLUME || this == HZ_FLOATING_IP || this == HZ_FIREWALL)
+                && target == HZ_SERVER;
+    }
+
+    /** Which cloud's API realizes this kind. */
+    public org.nmox.studio.infra.api.CloudProvider provider() {
+        return switch (category) {
+            case HETZNER -> org.nmox.studio.infra.api.CloudProvider.HETZNER;
+            case CLOUDFLARE -> org.nmox.studio.infra.api.CloudProvider.CLOUDFLARE;
+            default -> org.nmox.studio.infra.api.CloudProvider.DIGITALOCEAN;
+        };
     }
 
     private final String displayName;
@@ -258,6 +323,8 @@ public enum NodeKind {
         return switch (this) {
             case DROPLET -> DROPLET_PRICES.getOrDefault(values.getOrDefault("size", "s-1vcpu-1gb"), base);
             case VOLUME -> 0.10 * parseInt(values.get("sizeGb"), 100);
+            case HZ_VOLUME -> 0.052 * parseInt(values.get("sizeGb"), 50);
+            case HZ_SERVER -> HZ_SERVER_PRICES.getOrDefault(values.getOrDefault("serverType", "cx22"), 4.59);
             case KUBERNETES -> {
                 double node = DROPLET_PRICES.getOrDefault(values.getOrDefault("nodeSize", "s-2vcpu-4gb"), 24.0);
                 double ha = Boolean.parseBoolean(values.getOrDefault("ha", "false")) ? 40.0 : 0.0;
@@ -282,6 +349,11 @@ public enum NodeKind {
             java.util.Map.entry("c-2", 42.0),
             java.util.Map.entry("c-4", 84.0),
             java.util.Map.entry("g-2vcpu-8gb", 63.0));
+
+    private static final java.util.Map<String, Double> HZ_SERVER_PRICES = java.util.Map.of(
+            "cx22", 4.59, "cx32", 8.09, "cx42", 19.52,
+            "cpx11", 4.85, "cpx21", 8.59, "cpx31", 16.18,
+            "cax11", 4.05, "cax21", 7.55);
 
     private static final java.util.Map<String, Double> DB_PRICES = java.util.Map.of(
             "db-s-1vcpu-1gb", 15.0,

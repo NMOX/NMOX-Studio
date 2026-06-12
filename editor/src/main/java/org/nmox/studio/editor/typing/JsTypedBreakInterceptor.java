@@ -90,7 +90,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         @MimeRegistration(mimeType = "text/x-php5", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/sh", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-go", service = TypedBreakInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-json", service = TypedBreakInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-json", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-erlang", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-elixir", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-clojure", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lisp", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lua", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-swift", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedBreakInterceptor.Factory.class)
     })
     public static class Factory implements TypedBreakInterceptor.Factory {
         @Override

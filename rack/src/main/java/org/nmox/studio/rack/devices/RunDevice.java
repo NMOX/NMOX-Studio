@@ -21,7 +21,7 @@ import org.nmox.studio.rack.ui.controls.RackButton;
  */
 public class RunDevice extends CommandDevice {
 
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "maven", "gradle", "ruby", "php", "make"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "maven", "gradle", "ruby", "php", "make"};
 
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
@@ -79,6 +79,10 @@ public class RunDevice extends CommandDevice {
         return switch (effectiveKind()) {
             case NODE -> "node";
             case RUST -> "rust";
+            case ELIXIR -> "elixir";
+            case ERLANG -> "erlang";
+            case CLOJURE -> "clojure";
+            case SWIFT -> "swift";
             case GO -> "go";
             case MAVEN -> "maven";
             case GRADLE -> "gradle";
@@ -94,6 +98,10 @@ public class RunDevice extends CommandDevice {
     private static ProjectInspector.ProjectKind kindForTarget(String target) {
         return switch (target) {
             case "rust" -> ProjectInspector.ProjectKind.RUST;
+            case "elixir" -> ProjectInspector.ProjectKind.ELIXIR;
+            case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
+            case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
+            case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "go" -> ProjectInspector.ProjectKind.GO;
             case "maven" -> ProjectInspector.ProjectKind.MAVEN;
             case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
@@ -127,6 +135,10 @@ public class RunDevice extends CommandDevice {
             case "python" -> List.of("python3", entryPoint("main.py", "app.py", "src/main.py"));
             case "go" -> List.of("go", "run", ".");
             case "rust" -> List.of("cargo", "run");
+            case "elixir" -> List.of("mix", "run", "--no-halt");
+            case "erlang" -> List.of("rebar3", "compile"); // BEAM apps run under mix/releases; compile is the honest floor
+            case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention
+            case "swift" -> List.of("swift", "run");
             case "maven" -> List.of("mvn", "-q", "compile", "exec:java");
             case "gradle" -> List.of("gradle", "run", "--quiet");
             case "ruby" -> new File(commandDir(), "config.ru").isFile()

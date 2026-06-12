@@ -320,11 +320,126 @@ public final class DeployPlanner {
                 yield DoRequest.post("/v2/monitoring/alerts", body, node.id,
                         "Create alert " + node.label);
             }
+
+            // ---- Hetzner Cloud (paths are relative to api.hetzner.cloud/v1) ----
+            case HZ_NETWORK -> {
+                String range = p.getOrDefault("ipRange", "10.0.0.0/16");
+                body.put("name", node.label)
+                        .put("ip_range", range)
+                        .put("subnets", new JSONArray().put(new JSONObject()
+                                .put("type", "cloud")
+                                .put("network_zone", "eu-central")
+                                .put("ip_range", range)));
+                yield DoRequest.post("/networks", body, node.id, "Create Hetzner network " + node.label);
+            }
+            case HZ_SERVER -> {
+                body.put("name", node.label)
+                        .put("server_type", p.getOrDefault("serverType", "cx22"))
+                        .put("location", p.getOrDefault("location", "fsn1"))
+                        .put("image", p.getOrDefault("image", "ubuntu-24.04"));
+                JSONArray networks = new JSONArray();
+                for (InfraNode prov : providers) {
+                    if (prov.kind == NodeKind.HZ_NETWORK) {
+                        networks.put(idOf(prov));
+                    }
+                }
+                if (!networks.isEmpty()) {
+                    body.put("networks", networks);
+                }
+                yield DoRequest.post("/servers", body, node.id, "Create Hetzner server " + node.label);
+            }
+            case HZ_LB -> {
+                body.put("name", node.label)
+                        .put("load_balancer_type", p.getOrDefault("lbType", "lb11"))
+                        .put("location", p.getOrDefault("location", "fsn1"))
+                        .put("services", new JSONArray().put(new JSONObject()
+                                .put("protocol", "http")
+                                .put("listen_port", 80)
+                                .put("destination_port", 80)));
+                JSONArray targets = new JSONArray();
+                for (InfraNode prov : providers) {
+                    if (prov.kind == NodeKind.HZ_SERVER) {
+                        targets.put(new JSONObject()
+                                .put("type", "server")
+                                .put("server", new JSONObject().put("id", idOf(prov))));
+                    }
+                }
+                if (!targets.isEmpty()) {
+                    body.put("targets", targets);
+                }
+                yield DoRequest.post("/load_balancers", body, node.id,
+                        "Create Hetzner load balancer " + node.label);
+            }
+            case HZ_VOLUME -> {
+                body.put("name", node.label)
+                        .put("size", Integer.parseInt(p.getOrDefault("sizeGb", "50")))
+                        .put("location", p.getOrDefault("location", "fsn1"))
+                        .put("format", p.getOrDefault("format", "ext4"));
+                yield DoRequest.post("/volumes", body, node.id, "Create Hetzner volume " + node.label);
+            }
+            case HZ_FIREWALL -> {
+                JSONArray rules = new JSONArray();
+                for (String rule : p.getOrDefault("inbound", "").split(",")) {
+                    String[] parts = rule.trim().split("/", 2);
+                    if (parts.length == 2) {
+                        rules.put(new JSONObject()
+                                .put("direction", "in")
+                                .put("protocol", "tcp")
+                                .put("port", parts[0].trim())
+                                .put("source_ips", new JSONArray().put(parts[1].trim())));
+                    }
+                }
+                body.put("name", node.label).put("rules", rules);
+                yield DoRequest.post("/firewalls", body, node.id, "Create Hetzner firewall " + node.label);
+            }
+            case HZ_FLOATING_IP -> {
+                body.put("type", "ipv4")
+                        .put("home_location", p.getOrDefault("homeLocation", "fsn1"))
+                        .put("name", node.label);
+                yield DoRequest.post("/floating_ips", body, node.id, "Create Hetzner floating IP");
+            }
+
+            // ---- Cloudflare ----
+            case CF_DNS_RECORD -> {
+                String content = "";
+                for (InfraNode prov : providers) {
+                    content = switch (prov.kind) {
+                        case DROPLET, GPU_DROPLET, HZ_SERVER -> "${ip-of:" + prov.id + "}";
+                        case LOAD_BALANCER, HZ_LB -> "${ip-of:" + prov.id + "}";
+                        default -> content;
+                    };
+                }
+                body.put("type", p.getOrDefault("recordType", "A"))
+                        .put("name", p.getOrDefault("name", node.label))
+                        .put("content", content.isEmpty() ? "192.0.2.1" : content)
+                        .put("proxied", Boolean.parseBoolean(p.getOrDefault("proxied", "true")));
+                yield DoRequest.post("/zones/" + p.getOrDefault("zoneId", "") + "/dns_records",
+                        body, node.id, "Create Cloudflare DNS record " + p.get("name"));
+            }
+            case CF_R2_BUCKET -> {
+                body.put("name", p.getOrDefault("bucket", node.label));
+                yield DoRequest.post("/accounts/" + p.getOrDefault("accountId", "") + "/r2/buckets",
+                        body, node.id, "Create R2 bucket " + p.get("bucket"));
+            }
         };
     }
 
     private static DoRequest attachmentRequest(InfraNode from, InfraNode to) {
         return switch (from.kind) {
+            case HZ_VOLUME -> DoRequest.post(
+                    "/volumes/" + idOf(from) + "/actions/attach",
+                    new JSONObject().put("server", idOf(to)).put("automount", true),
+                    from.id, "Attach " + from.label + " to " + to.label);
+            case HZ_FLOATING_IP -> DoRequest.post(
+                    "/floating_ips/" + idOf(from) + "/actions/assign",
+                    new JSONObject().put("server", idOf(to)),
+                    from.id, "Assign floating IP to " + to.label);
+            case HZ_FIREWALL -> DoRequest.post(
+                    "/firewalls/" + idOf(from) + "/actions/apply_to_resources",
+                    new JSONObject().put("apply_to", new JSONArray().put(new JSONObject()
+                            .put("type", "server")
+                            .put("server", new JSONObject().put("id", idOf(to))))),
+                    from.id, "Apply " + from.label + " to " + to.label);
             case VOLUME -> DoRequest.post(
                     "/v2/volumes/" + idOf(from) + "/actions",
                     new JSONObject().put("type", "attach")

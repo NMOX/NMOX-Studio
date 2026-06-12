@@ -61,7 +61,14 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-php5", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/sh", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-go", service = TypedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-json", service = TypedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-json", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-erlang", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-elixir", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-clojure", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lisp", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lua", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-swift", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedTextInterceptor.Factory.class)
     })
     public static class Factory implements TypedTextInterceptor.Factory {
         @Override
