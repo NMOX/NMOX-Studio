@@ -31,6 +31,7 @@ public class LintDevice extends CommandDevice {
         super("lint", "PURITY", "LINT FILTER", new Color(168, 110, 221), 2);
 
         RackButton run = place(new RackButton("LINT", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        run.setCommandPreview(this::commandPreview);
         linterKnob = place(new Knob("LINTER", LINTERS, 0), 112, 40);
         fixSwitch = place(new ToggleSwitch("FIX", false), 182, 42);
         countLcd = place(new LcdDisplay(120, 1), 252, 52);
@@ -41,15 +42,6 @@ public class LintDevice extends CommandDevice {
 
         param("linter", linterKnob);
         param("fix", fixSwitch);
-    }
-
-    @Override
-    protected void primaryAction() {
-        onEdt(() -> {
-            cleanLed.setOn(false);
-            countLcd.setText("E:- W:-");
-        });
-        launch(buildCommand());
     }
 
     @Override
@@ -66,8 +58,25 @@ public class LintDevice extends CommandDevice {
         return cmd;
     }
 
+    private final java.util.List<org.nmox.studio.rack.engine.DiagnosticsBus.Problem> collected =
+            java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+    private volatile java.io.File currentFile;
+    private static final java.util.regex.Pattern ESLINT_LOC =
+            java.util.regex.Pattern.compile("^\\s+(\\d+):(\\d+)\\s+(error|warning)\\s+(.*?)(?:\\s\\s+[\\w@/-]+)?$");
+
     @Override
     protected void onLine(String line) {
+        if (!line.startsWith(" ") && !line.isBlank() && (line.contains("/") || line.endsWith(".js") || line.endsWith(".ts"))) {
+            java.io.File f = new java.io.File(line.trim());
+            currentFile = f.isAbsolute() ? f : new java.io.File(commandDir(), line.trim());
+        }
+        java.util.regex.Matcher loc = ESLINT_LOC.matcher(line);
+        java.io.File file = currentFile;
+        if (loc.find() && file != null && file.isFile()) {
+            collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
+                    file, Integer.parseInt(loc.group(1)), loc.group(4).trim(),
+                    "error".equals(loc.group(3))));
+        }
         Matcher m = SUMMARY.matcher(line);
         if (m.find()) {
             String errors = m.group(2), warnings = m.group(3);
@@ -80,7 +89,20 @@ public class LintDevice extends CommandDevice {
     }
 
     @Override
+    protected void primaryAction() {
+        collected.clear();
+        currentFile = null;
+        onEdt(() -> {
+            cleanLed.setOn(false);
+            countLcd.setText("E:- W:-");
+        });
+        launch(buildCommand());
+    }
+
+    @Override
     protected void onFinished(int exitCode) {
         onEdt(() -> cleanLed.setOn(exitCode == 0));
+        org.nmox.studio.rack.engine.DiagnosticsBus.publish("eslint",
+                new java.util.ArrayList<>(collected));
     }
 }

@@ -31,6 +31,7 @@ public class TestDevice extends CommandDevice {
         super("test", "VERITAS", "TEST HARNESS", new Color(99, 197, 70), 2);
 
         RackButton run = place(new RackButton("TEST", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        run.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         frameworkKnob = place(new Knob("RUNNER", FRAMEWORKS, 0), 180, 40);
         coverageSwitch = place(new ToggleSwitch("COVER", false), 254, 42);

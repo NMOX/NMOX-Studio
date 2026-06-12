@@ -39,6 +39,7 @@ public class BuildDevice extends CommandDevice {
         super("build", "FORGE", "BUILD ENGINE", new Color(232, 166, 35), 2);
 
         RackButton build = place(new RackButton("BUILD", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        build.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         toolKnob = place(new Knob("TOOL", TOOLS, 0), 180, 40);
         prodSwitch = place(new ToggleSwitch("MODE", true, "PROD", "DEV"), 254, 42);

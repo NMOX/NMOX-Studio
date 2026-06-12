@@ -92,7 +92,16 @@ public final class CommandExecutor {
                 while ((line = reader.readLine()) != null) {
                     String clean = stripAnsi(line);
                     if (out != null) {
-                        out.println(clean);
+                        FileLink.Location loc = FileLink.find(clean, dir);
+                        if (loc != null) {
+                            try {
+                                out.println(clean, FileLink.opener(loc));
+                            } catch (IOException ex) {
+                                out.println(clean);
+                            }
+                        } else {
+                            out.println(clean);
+                        }
                     }
                     safeAccept(onLine, clean);
                 }

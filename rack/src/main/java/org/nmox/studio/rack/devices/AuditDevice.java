@@ -25,6 +25,7 @@ public class AuditDevice extends CommandDevice {
         super("audit", "SENTRY", "SECURITY ANALYZER", new Color(188, 42, 48), 3);
 
         RackButton scan = place(new RackButton("SCAN", RackStyle.GO), 44, 52);
+        scan.setCommandPreview(this::commandPreview);
         clearLed = place(new Led("SECURE", RackStyle.GO), 112, 58);
         place(critMeter, 170, 44);
         place(highMeter, 206, 44);

@@ -127,6 +127,35 @@ public final class ProjectStudioTopComponent extends TopComponent {
             }
         });
         bar.add(configure);
+        bar.addSeparator();
+
+        JButton asProject = new JButton("Projects Tab");
+        asProject.setToolTipText("Open this folder as a platform project: git colors, history,"
+                + " diff and search light up in the Projects view");
+        asProject.addActionListener(e -> {
+            try {
+                org.openide.filesystems.FileObject dir = org.openide.filesystems.FileUtil
+                        .toFileObject(rack.getProjectDir());
+                org.netbeans.api.project.Project project =
+                        org.netbeans.api.project.ProjectManager.getDefault().findProject(dir);
+                if (project != null) {
+                    org.netbeans.api.project.ui.OpenProjects.getDefault()
+                            .open(new org.netbeans.api.project.Project[]{project}, false, true);
+                } else {
+                    org.openide.awt.StatusDisplayer.getDefault()
+                            .setStatusText("No recognized project manifest in this folder");
+                }
+            } catch (Exception ex) {
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Open as project failed: " + ex.getMessage());
+            }
+        });
+        bar.add(asProject);
+
+        JButton terminal = new JButton("Terminal");
+        terminal.setToolTipText("Open the interactive terminal in the project directory");
+        terminal.addActionListener(e -> openTerminal());
+        bar.add(terminal);
         return bar;
     }
 
@@ -154,5 +183,40 @@ public final class ProjectStudioTopComponent extends TopComponent {
     }
 
     void readProperties(java.util.Properties p) {
+    }
+
+    /** Finds the platform's terminal action wherever the module registered it. */
+    private void openTerminal() {
+        for (String id : new String[]{
+                "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
+                "LocalTerminalAction"}) {
+            javax.swing.Action action = org.openide.awt.Actions.forID("Window", id);
+            if (action != null) {
+                action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
+                return;
+            }
+        }
+        // fallback: hunt the actions folder for anything terminal-flavored
+        org.openide.filesystems.FileObject actions = org.openide.filesystems.FileUtil
+                .getConfigFile("Actions/Window");
+        if (actions != null) {
+            for (org.openide.filesystems.FileObject child : actions.getChildren()) {
+                if (child.getName().toLowerCase().contains("terminal")) {
+                    try {
+                        Object instance = org.openide.loaders.DataObject.find(child)
+                                .getLookup().lookup(org.openide.cookies.InstanceCookie.class)
+                                .instanceCreate();
+                        if (instance instanceof javax.swing.Action action) {
+                            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
+                            return;
+                        }
+                    } catch (Exception ignored) {
+                        // try the next candidate
+                    }
+                }
+            }
+        }
+        org.openide.awt.StatusDisplayer.getDefault()
+                .setStatusText("Terminal: Window → IDE Tools → Terminal");
     }
 }

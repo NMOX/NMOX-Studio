@@ -37,6 +37,7 @@ public class DevServerDevice extends CommandDevice {
         super("dev-server", "SURGE", "DEV SERVER", new Color(64, 156, 255), 2);
 
         RackButton start = place(new RackButton("START", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        start.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         serverKnob = place(new Knob("SERVER", SERVERS, 0), 180, 40);
         portKnob = place(new Knob("PORT", PORTS, 2), 254, 40);

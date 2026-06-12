@@ -36,6 +36,7 @@ public class RunDevice extends CommandDevice {
         argsLcd.setEditable("Program arguments");
         argsLcd.setToolTipText("Arguments passed to the program (double-click to edit)");
         RackButton ignite = place(new RackButton("IGNITE", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        ignite.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         targetKnob = place(new Knob("TARGET", TARGETS, 0), 180, 40);
         liveLed = place(new Led("LIVE", new Color(255, 94, 58)), 444, 58);

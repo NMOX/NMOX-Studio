@@ -39,6 +39,7 @@ public class BenchDevice extends CommandDevice {
         urlLcd.setText("http://localhost:5173");
         urlLcd.setEditable("URL to bench");
         RackButton fire = place(new RackButton("FIRE", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
+        fire.setCommandPreview(this::commandPreview);
         RackButton stopBench = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 46);
         stopBench.addActionListener(e -> stopProcess());
         resultLcd = place(new LcdDisplay(120, 1), 328, 82);

@@ -85,6 +85,41 @@ public abstract class CommandDevice extends RackDevice {
         return ProjectInspector.kindDir(projectDir(), effectiveKind());
     }
 
+    /** The primary command, exposed for the CI exporter; null = no step. */
+    public final List<String> exportCommand() {
+        try {
+            return buildCommand();
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
+    /** Where the exported step runs, for the CI exporter. */
+    public final java.io.File exportDir() {
+        try {
+            return commandDir();
+        } catch (RuntimeException ex) {
+            return projectDir();
+        }
+    }
+
+    /**
+     * What the primary button will run, for transparency tooltips:
+     * the exact command line and the directory it runs in.
+     */
+    protected String commandPreview() {
+        try {
+            List<String> cmd = buildCommand();
+            if (cmd == null || cmd.isEmpty()) {
+                return null;
+            }
+            return "<html><code>$ " + String.join(" ", cmd)
+                    + "</code><br>in " + commandDir().getAbsolutePath() + "</html>";
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
     /** The action triggered by the RUN input jack; defaults to launching. */
     protected void primaryAction() {
         launch(buildCommand());
