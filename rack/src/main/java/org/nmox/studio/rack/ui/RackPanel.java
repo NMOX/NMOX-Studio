@@ -47,6 +47,22 @@ public class RackPanel extends JPanel implements Rack.Listener {
     // device reordering (front view)
     private RackDevice reordering;
 
+    // the selected device (front view): Delete unracks it
+    private RackDevice selected;
+
+    // palette drag-over insertion slot (-1 = no drag in progress)
+    private int dropIndex = -1;
+    private long dropSeenAt;
+    private final Timer dropClearTimer = new Timer(150, e -> {
+        if (dropIndex >= 0 && System.currentTimeMillis() - dropSeenAt > 300) {
+            dropIndex = -1;
+            repaint();
+        }
+        if (dropIndex < 0) {
+            ((Timer) e.getSource()).stop();
+        }
+    });
+
     // recent signal flashes per cable, for the glow animation
     private final Map<Cable, Long> flashes = new HashMap<>();
     private final Timer flashTimer = new Timer(60, e -> {
@@ -66,7 +82,38 @@ public class RackPanel extends JPanel implements Rack.Listener {
         rack.addListener(this);
 
         setTransferHandler(new PaletteDropHandler());
+
+        // clicking the rails or empty rack deselects
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                setSelected(null);
+            }
+        });
         rebuild();
+    }
+
+    // ---- selection ----
+
+    /** The device a Delete keypress would unrack. */
+    public RackDevice getSelected() {
+        return selected;
+    }
+
+    private void setSelected(RackDevice device) {
+        if (selected != device) {
+            selected = device;
+            repaint();
+        }
+    }
+
+    /** Unracks the selected device (the Delete key, routed by the window). */
+    public void removeSelected() {
+        if (selected != null) {
+            RackDevice doomed = selected;
+            selected = null;
+            rack.removeDevice(doomed);
+        }
     }
 
     public Rack getRack() {
@@ -98,6 +145,9 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
     private void rebuild() {
         removeAll();
+        if (selected != null && !rack.getDevices().contains(selected)) {
+            selected = null;
+        }
         for (RackDevice d : rack.getDevices()) {
             d.setAlignmentX(CENTER_ALIGNMENT);
             d.setFront(front);
@@ -165,9 +215,12 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     dragPoint = SwingUtilities.convertPoint(device, e.getPoint(), RackPanel.this);
                     repaint();
                 }
-            } else if (device.isGrip(e.getPoint())) {
-                reordering = device;
-                setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.MOVE_CURSOR));
+            } else {
+                setSelected(device);
+                if (device.isGrip(e.getPoint())) {
+                    reordering = device;
+                    setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.MOVE_CURSOR));
+                }
             }
         }
 
@@ -243,6 +296,8 @@ public class RackPanel extends JPanel implements Rack.Listener {
                 menu.addSeparator();
             }
             JMenuItem remove = new JMenuItem("Remove " + device.getTitle());
+            remove.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                    java.awt.event.KeyEvent.VK_DELETE, 0));
             remove.addActionListener(a -> rack.removeDevice(device));
             menu.add(remove);
             menu.show(device, e.getX(), e.getY());
@@ -316,13 +371,61 @@ public class RackPanel extends JPanel implements Rack.Listener {
         g.setColor(RackStyle.RAIL_EDGE);
         g.drawRect(railX1, -1, 10, getHeight() + 1);
         g.drawRect(railX2 - 10, -1, 10, getHeight() + 1);
+        paintRailHardware(g, railX1, railX2);
+        if (rack.getDevices().isEmpty()) {
+            paintEmptyRack(g, railX1, railX2);
+        }
         g.dispose();
+    }
+
+    /**
+     * Cage-nut holes punched down both rails on the half-unit grid, with
+     * a unit number etched at every unit boundary - the part of a real
+     * rack you line the screws up against.
+     */
+    private void paintRailHardware(Graphics2D g, int railX1, int railX2) {
+        int unit = RackStyle.UNIT;
+        g.setFont(RackStyle.TINY_FONT);
+        for (int y = unit / 4; y < getHeight(); y += unit / 2) {
+            for (int x : new int[]{railX1 + 2, railX2 - 8}) {
+                // square hole, punched dark with a lit bottom edge
+                g.setColor(new Color(8, 8, 10));
+                g.fillRoundRect(x, y - 3, 6, 6, 2, 2);
+                g.setColor(new Color(255, 255, 255, 28));
+                g.drawLine(x, y + 3, x + 6, y + 3);
+            }
+        }
+        g.setColor(new Color(120, 122, 128, 110));
+        for (int u = 0; u * unit < getHeight(); u++) {
+            String n = String.format("%02d", u + 1);
+            g.drawString(n, railX1 - g.getFontMetrics().stringWidth(n) - 3, u * unit + unit / 2 + 3);
+        }
+    }
+
+    /** An empty rack invites: etched silkscreen between bare rails. */
+    private void paintEmptyRack(Graphics2D g, int railX1, int railX2) {
+        int cx = (railX1 + railX2) / 2;
+        int cy = Math.max(70, getHeight() / 3);
+        g.setFont(RackStyle.TITLE_FONT);
+        g.setColor(new Color(255, 255, 255, 40));
+        String big = "RACK EMPTY";
+        g.drawString(big, cx - g.getFontMetrics().stringWidth(big) / 2, cy);
+        g.setFont(RackStyle.LABEL_FONT);
+        g.setColor(new Color(255, 255, 255, 30));
+        String hint = "Drag a device in from the shelf — or load a preset from the toolbar";
+        g.drawString(hint, cx - g.getFontMetrics().stringWidth(hint) / 2, cy + 22);
     }
 
     @Override
     public void paint(Graphics gr) {
         super.paint(gr);
         if (front) {
+            Graphics2D g = (Graphics2D) gr.create();
+            RackStyle.antialias(g);
+            paintSeams(g);
+            paintSelection(g);
+            paintInsertionSlot(g);
+            g.dispose();
             return;
         }
         Graphics2D g = (Graphics2D) gr.create();
@@ -357,6 +460,70 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     hint, 0.6f);
         }
         g.dispose();
+    }
+
+    /**
+     * Ambient occlusion at every device boundary: each unit throws a
+     * sliver of shadow onto the one below, the way stacked hardware does.
+     */
+    private void paintSeams(Graphics2D g) {
+        var devices = rack.getDevices();
+        for (int i = 1; i < devices.size(); i++) {
+            RackDevice d = devices.get(i);
+            int y = d.getY();
+            g.setPaint(new java.awt.GradientPaint(0, y, new Color(0, 0, 0, 90),
+                    0, y + 5, new Color(0, 0, 0, 0)));
+            g.fillRect(d.getX(), y, d.getWidth(), 5);
+        }
+    }
+
+    /** The selected device wears its accent as a halo; lifted = brighter. */
+    private void paintSelection(Graphics2D g) {
+        RackDevice d = reordering != null ? reordering : selected;
+        if (d == null) {
+            return;
+        }
+        Color accent = d.getAccent();
+        boolean lifted = reordering != null;
+        g.setColor(new Color(accent.getRed(), accent.getGreen(), accent.getBlue(),
+                lifted ? 200 : 130));
+        g.setStroke(new BasicStroke(lifted ? 2.5f : 1.6f));
+        g.drawRect(d.getX(), d.getY(), d.getWidth() - 1, d.getHeight() - 1);
+        if (lifted) {
+            // a lifted unit floats: deepen its shadow on the device below
+            g.setPaint(new java.awt.GradientPaint(0, d.getY() + d.getHeight(),
+                    new Color(0, 0, 0, 130),
+                    0, d.getY() + d.getHeight() + 12, new Color(0, 0, 0, 0)));
+            g.fillRect(d.getX(), d.getY() + d.getHeight(), d.getWidth(), 12);
+        }
+    }
+
+    /** The lit slot a palette drag would drop into. */
+    private void paintInsertionSlot(Graphics2D g) {
+        if (dropIndex < 0) {
+            return;
+        }
+        var devices = rack.getDevices();
+        int x = (getWidth() - RackStyle.RACK_WIDTH) / 2;
+        int y = dropIndex < devices.size()
+                ? devices.get(dropIndex).getY()
+                : (devices.isEmpty() ? 8
+                        : devices.get(devices.size() - 1).getY()
+                        + devices.get(devices.size() - 1).getHeight());
+        g.setColor(new Color(RackStyle.GO.getRed(), RackStyle.GO.getGreen(),
+                RackStyle.GO.getBlue(), 70));
+        g.fillRect(x, y - 3, RackStyle.RACK_WIDTH, 6);
+        g.setColor(RackStyle.GO);
+        g.setStroke(new BasicStroke(2f));
+        g.drawLine(x, y, x + RackStyle.RACK_WIDTH, y);
+        // chevrons pointing at the slot from both rails
+        var left = new java.awt.Polygon(
+                new int[]{x - 12, x - 2, x - 12}, new int[]{y - 6, y, y + 6}, 3);
+        var right = new java.awt.Polygon(
+                new int[]{x + RackStyle.RACK_WIDTH + 12, x + RackStyle.RACK_WIDTH + 2,
+                    x + RackStyle.RACK_WIDTH + 12}, new int[]{y - 6, y, y + 6}, 3);
+        g.fill(left);
+        g.fill(right);
     }
 
     private void paintCable(Graphics2D g, Point a, Point b, Color color, float glow) {
@@ -418,21 +585,38 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
         @Override
         public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(DataFlavor.stringFlavor);
+            boolean ok = support.isDataFlavorSupported(DataFlavor.stringFlavor);
+            if (ok && support.isDrop()) {
+                // light the slot the device would land in
+                int index = indexForY(support.getDropLocation().getDropPoint().y);
+                dropSeenAt = System.currentTimeMillis();
+                if (index != dropIndex) {
+                    dropIndex = index;
+                    repaint();
+                }
+                if (!dropClearTimer.isRunning()) {
+                    dropClearTimer.start();
+                }
+            }
+            return ok;
         }
 
         @Override
         public boolean importData(TransferSupport support) {
+            int index = dropIndex >= 0 && support.isDrop()
+                    ? dropIndex
+                    : rack.getDevices().size();
+            dropIndex = -1;
+            repaint();
             try {
                 String id = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
                 DeviceType type = DeviceType.byId(id);
                 if (type == null) {
                     return false;
                 }
-                int index = support.isDrop()
-                        ? indexForY(support.getDropLocation().getDropPoint().y)
-                        : rack.getDevices().size();
-                rack.addDevice(type.create(), index);
+                RackDevice fresh = type.create();
+                rack.addDevice(fresh, index);
+                setSelected(fresh);
                 return true;
             } catch (Exception ex) {
                 return false;

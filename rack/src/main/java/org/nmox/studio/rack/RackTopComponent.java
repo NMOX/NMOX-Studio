@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
 public final class RackTopComponent extends TopComponent {
 
     private final Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
-    private final RackPanel rackPanel;
+    private RackPanel rackPanel;
     private final JLabel projectLabel = new JLabel();
     private JToggleButton flipToggle;
 
@@ -67,11 +67,20 @@ public final class RackTopComponent extends TopComponent {
      * focus manager, exactly while the rack is the activated TopComponent.
      */
     private final java.awt.KeyEventDispatcher tabFlipDispatcher = e -> {
-        if (e.getID() == KeyEvent.KEY_PRESSED
-                && e.getKeyCode() == KeyEvent.VK_TAB
-                && e.getModifiersEx() == 0
-                && TopComponent.getRegistry().getActivated() == RackTopComponent.this) {
+        if (e.getID() != KeyEvent.KEY_PRESSED || e.getModifiersEx() != 0
+                || TopComponent.getRegistry().getActivated() != RackTopComponent.this) {
+            return false;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_TAB) {
             flipToggle.doClick();
+            return true;
+        }
+        if ((e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
+                && rackPanel.getSelected() != null
+                // never swallow Delete while something editable has focus
+                && !(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                        .getFocusOwner() instanceof javax.swing.text.JTextComponent)) {
+            rackPanel.removeSelected();
             return true;
         }
         return false;

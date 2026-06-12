@@ -20,8 +20,12 @@ import javax.swing.SwingUtilities;
  */
 public class LcdDisplay extends JComponent {
 
+    /** One scrolled line and the color it glows in (null = panel default). */
+    private record Entry(String text, Color color) {
+    }
+
     private final int lines;
-    private final LinkedList<String> buffer = new LinkedList<>();
+    private final LinkedList<Entry> buffer = new LinkedList<>();
     private String text = "";
     private Color textColor = RackStyle.LCD_TEXT;
     private boolean editable;
@@ -75,8 +79,13 @@ public class LcdDisplay extends JComponent {
 
     /** Multi-line mode: append a line, scrolling old ones off. */
     public void appendLine(String line) {
+        appendLine(line, null);
+    }
+
+    /** Multi-line mode with a per-line glow color (null = panel default). */
+    public void appendLine(String line, Color color) {
         synchronized (buffer) {
-            buffer.add(line == null ? "" : line);
+            buffer.add(new Entry(line == null ? "" : line, color));
             while (buffer.size() > lines) {
                 buffer.removeFirst();
             }
@@ -131,16 +140,17 @@ public class LcdDisplay extends JComponent {
             }
             g.drawString(t, 7, h / 2 + fm.getAscent() / 2 - 2);
         } else {
-            List<String> snapshot;
+            List<Entry> snapshot;
             synchronized (buffer) {
                 snapshot = new ArrayList<>(buffer);
             }
             int y = 4 + fm.getAscent();
-            for (String line : snapshot) {
-                String t = line;
+            for (Entry entry : snapshot) {
+                String t = entry.text();
                 while (t.length() > 1 && fm.stringWidth(t) > w - 14) {
                     t = t.substring(0, t.length() - 1);
                 }
+                g.setColor(entry.color() != null ? entry.color() : textColor);
                 g.drawString(t, 7, y);
                 y += 15;
             }
