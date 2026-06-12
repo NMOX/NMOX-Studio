@@ -30,41 +30,47 @@ Grab **[the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)
 
 ## Features
 
-### ☁️ **Cloud Provider Integration**
-- **Multi-Cloud Support**: Deploy to AWS, Azure, Google Cloud Platform
-- **Unified Interface**: Single pane of glass for all cloud resources
-- **Cost Management**: Track and forecast cloud spending across providers
-- **Resource Management**: Create, configure, and manage VMs, networks, and storage
+### 🎛️ The Task Rack
+Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
+Wire OK jacks together (Tab flips the rack) and one keypress runs install →
+build → test, with output scrolling on a phosphor monitor. 31 devices:
+package managers, bundlers, test runners, dev servers, linters, formatters,
+git, deploy, HTTP, tunnels, load bench, file watcher, clock, and more.
+Patches persist per project, ship as presets, and export to GitHub Actions.
 
-### 🐳 **Container & Orchestration**
-- **Docker Integration**: Full Docker container lifecycle management
-- **Kubernetes Support**: Deploy and manage applications on K8s clusters
-- **Container Registry**: Push/pull images from Docker Hub, ECR, ACR, GCR
-- **Helm Charts**: Deploy complex applications using Helm
+### 🧠 The rack remembers, sees, and survives
+- **BLACKBOX** records every launch, exit, duration, and error on a session
+  timeline that persists across restarts — with a slow-creep alarm that
+  notices when your build quietly doubles.
+- **SONAR** maps every listening port to its owning process (docker
+  containers labeled) with one-click kill. EADDRINUSE, solved.
+- **Session Resurrection**: crash, `kill -9`, or power loss — relaunch and
+  the IDE offers your running dev servers back. One click and they're alive.
 
-### 🚀 **Deployment Management**
-- **CI/CD Pipeline**: Integrated deployment pipelines
-- **Blue-Green Deployments**: Zero-downtime deployment strategies
-- **Rollback Support**: One-click rollback to previous versions
-- **Environment Management**: Dev, staging, and production environments
+### 🐳 First-class Docker
+The HARBOR device tracks the daemon (containers up, images held, disk
+reclaimable) and opens the Docker Panel: a disk-reclaim ledger, live
+container management with browser-jump ports, image tooling, volumes,
+networks — and **Dockerize**, which generates production multi-stage
+Dockerfiles from your project's detected toolchain.
 
-### 📊 **Monitoring & Observability**
-- **Real-time Metrics**: CPU, memory, network, and custom metrics
-- **Log Aggregation**: Centralized log viewing across all services
-- **Health Checks**: Automatic health monitoring and alerting
-- **Performance Analysis**: Identify bottlenecks and optimize resources
+### ⌨️ Polyglot editing
+30+ languages with syntax highlighting (TextMate grammars through NetBeans
+CSL), LSP for 31 MIMEs with ordered server fallbacks, typing intelligence,
+comment-aware spellcheck, and the NMOX Phosphor dark theme.
 
-### 🕸️ **Microservices Architecture**
-- **Service Discovery**: Automatic service registration and discovery
-- **API Gateway Management**: Configure and manage API gateways
-- **Service Mesh**: Integration with Istio and Linkerd
-- **Dependency Visualization**: Interactive service topology maps
+### 🏗️ Projects and infrastructure
+The Workbench home base (toolchain chips, open/recent files, tooling
+shelf), Project Studio templates that scaffold versioned, rack-wired
+projects, and a Node-RED-style Infra Designer for DigitalOcean, Hetzner,
+and Cloudflare with cost estimates and dry-run planning.
 
-### 🖥️ **Professional IDE Features**
-- **Modern UI**: Dockable windows with customizable layouts
-- **Project Management**: Organize deployments, services, and configurations
-- **Integrated Terminal**: Execute commands directly within the IDE
-- **Git Integration**: Version control for infrastructure as code
+### ✅ Proven, not promised
+CI runs real `npm install`/build/test/serve through the actual rack devices
+on every commit. Quitting the IDE reaps every child process — no orphaned
+dev servers, guaranteed and tested.
+
+See the [CHANGELOG](CHANGELOG.md) for the full release history.
 
 ## Quick Start
 
