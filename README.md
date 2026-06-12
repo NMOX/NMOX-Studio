@@ -1,6 +1,6 @@
 # NMOX Studio
 
-**Professional Cloud Deployment and Microservices IDE**
+**The web studio with a rack — wire your tools like a synth.**
 
 [![Build and Test](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
@@ -9,7 +9,13 @@
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is a powerful integrated development environment for managing cloud deployments, microservices, and containerized applications. Built on the robust NetBeans Rich Client Platform, it provides comprehensive tools for deploying, monitoring, and scaling applications across AWS, Azure, Google Cloud, and Kubernetes clusters.
+NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (30+ languages via TextMate grammars, NetBeans CSL, and LSP), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+
+## Download
+
+Grab **[v1.0.0 from Releases](https://github.com/NMOX/NMOX-Studio/releases/tag/v1.0.0)** — DMG (macOS), installer (Windows), tar.gz/deb (Linux), or portable zip. Requires Java 17+.
+
+> **macOS note:** the app is not yet notarized. If Gatekeeper objects, right-click the app and choose *Open*, or run `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
 ## Screenshots
 
