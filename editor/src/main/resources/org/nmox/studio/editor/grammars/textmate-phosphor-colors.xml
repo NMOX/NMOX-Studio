@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<!-- NMOX Phosphor colorings for TextMate-tokenized languages
+     (Java, C, C++, Python, Ruby, Rust, PHP, Shell, Erlang, Elixir,
+     Clojure, Lisp, Lua, Swift, Kotlin, JSON...).
+
+     The platform's textmate-lexer ships these names only under the
+     "NetBeans" profile; running FlatLaf Dark, the lookup found nothing
+     and every grammar rendered plain. This file fills the dark profile
+     with the same palette the JS/TS lexer uses. -->
+<fontscolors>
+    <fontcolor name="comment"                   foreColor="6e7b8b"/>
+    <fontcolor name="keyword"                   foreColor="ff6ac1"/>
+    <fontcolor name="keyword.operator"          foreColor="9aedfe"/>
+    <fontcolor name="storage"                   foreColor="ff6ac1"/>
+    <fontcolor name="string"                    foreColor="5af78e"/>
+    <fontcolor name="constant.numeric"          foreColor="f3f99d"/>
+    <fontcolor name="constant.language"         foreColor="ff9f43"/>
+    <fontcolor name="constant.character"        foreColor="5af78e"/>
+    <fontcolor name="constant.character.escape" foreColor="ff9f43"/>
+    <fontcolor name="constant.other"            foreColor="f3f99d"/>
+    <fontcolor name="entity.name.function"      foreColor="9aedfe"/>
+    <fontcolor name="variable.language"         foreColor="ff9f43"/>
+    <fontcolor name="support.function"          foreColor="9aedfe"/>
+    <fontcolor name="support.constant"          foreColor="f3f99d"/>
+    <fontcolor name="invalid"                   foreColor="ff5c57" waveUnderlined="ff5c57"/>
+    <fontcolor name="markup.heading"            foreColor="ff6ac1"/>
+    <fontcolor name="markup.bold"               foreColor="e6e7eb"/>
+    <fontcolor name="markup.italic"             foreColor="b2b6be"/>
+    <fontcolor name="markup.underline"          underline="9aedfe"/>
+</fontscolors>
