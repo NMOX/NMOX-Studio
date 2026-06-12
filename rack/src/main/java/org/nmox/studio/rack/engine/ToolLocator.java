@@ -107,6 +107,13 @@ public final class ToolLocator {
         dirs.add("/opt/homebrew/opt/dart/libexec/bin");
         dirs.add(home + "/.ghcup/bin");
         dirs.add(home + "/.opam/default/bin");
+        // language-server install homes
+        dirs.add(home + "/.dotnet/tools");                           // csharp-ls, fsautocomplete
+        dirs.add(home + "/Library/Application Support/Coursier/bin"); // metals (macOS)
+        dirs.add(home + "/.local/share/coursier/bin");               // metals (Linux)
+        dirs.add(home + "/.cabal/bin");                              // haskell-language-server
+        dirs.add(home + "/.mix/escripts");                           // elixir escripts
+        dirs.add(home + "/.juliaup/bin");                            // julia
         // polyglot toolchains
         dirs.add(home + "/.cargo/bin");                              // rust
         dirs.add("/usr/local/go/bin");                               // go
