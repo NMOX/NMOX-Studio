@@ -37,7 +37,9 @@ public enum DeviceType {
     TYPECHECK("typecheck", "TYPEGUARD", "Type Checker — tsc, watch-aware", new Color(49, 120, 198), TypecheckDevice::new),
     TUNNEL("tunnel", "WORMHOLE", "Public Tunnel — cloudflared/ngrok/localtunnel", new Color(156, 89, 209), TunnelDevice::new),
     BENCH("bench", "GAUNTLET", "Load Bench — autocannon throughput", new Color(224, 122, 47), BenchDevice::new),
-    DOCKER("docker", "HARBOR", "Docker Engine — panel, prune, status", new Color(36, 150, 237), DockerDevice::new);
+    DOCKER("docker", "HARBOR", "Docker Engine — panel, prune, status", new Color(36, 150, 237), DockerDevice::new),
+    BLACKBOX("blackbox", "BLACKBOX", "Flight Recorder — session timeline, slow-creep alarm", new Color(255, 122, 36), BlackboxDevice::new),
+    SONAR("sonar", "SONAR", "Port Radar — who owns every port, one-click kill", new Color(80, 220, 190), SonarDevice::new);
 
     private final String id;
     private final String title;
@@ -92,7 +94,7 @@ public enum DeviceType {
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
-            case CONSOLE, TERMINAL, BENCH, DEBUG -> PaletteCategory.OBSERVE;
+            case CONSOLE, TERMINAL, BENCH, DEBUG, BLACKBOX, SONAR -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
         };
@@ -129,6 +131,8 @@ public enum DeviceType {
             case ENV -> "Sets NODE_ENV/CI/custom vars for every command the rack runs.\nWhat the knob says is what every device gets.";
             case ROSETTA -> "Mixed repo? Pin every AUTO knob to one toolchain with the dial.\nAUTO follows detection; KIND out reports the choice.";
             case DOCKER -> "The ENGINE LED tracks the daemon; LCDs show containers up, images held, disk reclaimable.\nPANEL opens the full control room — containers, images, volumes, networks, and one-click Dockerize.";
+            case BLACKBOX -> "The rack's session memory: every launch, exit, duration, and error, timestamped.\nVIEW scrolls the timeline; the health line warns when a build quietly slows past its average.";
+            case SONAR -> "SWEEP maps every listening port to its owning process — docker containers labeled.\nVIEW opens the field: BROWSE any port, KILL any squatter. EADDRINUSE, solved.";
         };
     }
 
