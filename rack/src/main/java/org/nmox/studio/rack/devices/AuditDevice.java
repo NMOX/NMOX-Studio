@@ -5,6 +5,7 @@ import java.util.List;
 import org.json.JSONObject;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.VuMeter;
 
 /**
@@ -23,8 +24,8 @@ public class AuditDevice extends CommandDevice {
     public AuditDevice() {
         super("audit", "SENTRY", "SECURITY ANALYZER", new Color(188, 42, 48), 3);
 
-        RackButton scan = place(new RackButton("SCAN", new Color(80, 235, 100)), 44, 52);
-        clearLed = place(new Led("SECURE", new Color(80, 235, 100)), 112, 58);
+        RackButton scan = place(new RackButton("SCAN", RackStyle.GO), 44, 52);
+        clearLed = place(new Led("SECURE", RackStyle.GO), 112, 58);
         place(critMeter, 170, 44);
         place(highMeter, 206, 44);
         place(modMeter, 242, 44);

@@ -5,6 +5,7 @@ import java.util.List;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 
 /**
@@ -26,8 +27,8 @@ public class DeployDevice extends CommandDevice {
 
         targetKnob = place(new Knob("TARGET", TARGETS, 0), 44, 40);
         armSwitch = place(new ToggleSwitch("ARM", false, "ARMED", "SAFE"), 124, 42);
-        launchButton = place(new RackButton("LAUNCH", new Color(255, 70, 60)), 192, 52);
-        armedLed = place(new Led("ARMED", new Color(255, 70, 60)), 260, 58);
+        launchButton = place(new RackButton("LAUNCH", RackStyle.STOP), 192, 52);
+        armedLed = place(new Led("ARMED", RackStyle.STOP), 260, 58);
 
         launchButton.setEnabledLook(false);
         armSwitch.addChangeListener(() -> {

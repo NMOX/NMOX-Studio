@@ -48,16 +48,16 @@ public class AngularDevice extends CommandDevice {
         versionLcd = place(new LcdDisplay(210, 1), 44, 40);
         versionLcd.setText("v? → ?");
         versionLcd.setToolTipText("installed @angular/core → latest on the registry");
-        currentLed = place(new Led("CURRENT", new Color(80, 235, 100)), 262, 46);
-        outdatedLed = place(new Led("OUTDATED", new Color(255, 190, 60)), 318, 46);
-        RackButton check = place(new RackButton("CHECK", new Color(70, 170, 235)), 382, 40);
-        RackButton update = place(new RackButton("UPDATE", new Color(255, 190, 60)), 446, 40);
+        currentLed = place(new Led("CURRENT", RackStyle.GO), 262, 46);
+        outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 318, 46);
+        RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 382, 40);
+        RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 446, 40);
 
         // ---- row 2: run/build/test + schematics ----
-        RackButton serve = place(new RackButton("SERVE", new Color(80, 235, 100)), 44, 96);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 108, 96);
+        RackButton serve = place(new RackButton("SERVE", RackStyle.GO), 44, 96);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 108, 96);
         prodSwitch = place(new ToggleSwitch("BUILD AS", true, "PROD", "DEV"), 174, 88);
-        RackButton build = place(new RackButton("BUILD", new Color(232, 166, 35)), 240, 96);
+        RackButton build = place(new RackButton("BUILD", RackStyle.GO), 240, 96);
         RackButton test = place(new RackButton("TEST", new Color(99, 197, 70)), 304, 96);
         schematicKnob = place(new Knob("SCHEMATIC", SCHEMATICS, 0), 380, 84);
         nameLcd = place(new LcdDisplay(130, 1), 452, 96);

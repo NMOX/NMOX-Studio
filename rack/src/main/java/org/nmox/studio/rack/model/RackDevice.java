@@ -43,6 +43,35 @@ public abstract class RackDevice extends JPanel {
 
     private Rack rack;
     private boolean front = true;
+    /** Recent signal per port, for the front patch-bay strip. */
+    private final java.util.Map<Port, Long> portActivity = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Rack.Listener bayListener = new Rack.Listener() {
+        @Override
+        public void signalTravelled(org.nmox.studio.rack.model.Cable cable) {
+            boolean mine = false;
+            if (cable.getFrom().getDevice() == RackDevice.this) {
+                portActivity.put(cable.getFrom(), System.currentTimeMillis());
+                mine = true;
+            }
+            if (cable.getTo().getDevice() == RackDevice.this) {
+                portActivity.put(cable.getTo(), System.currentTimeMillis());
+                mine = true;
+            }
+            if (mine) {
+                onEdt(() -> {
+                    repaint();
+                    javax.swing.Timer fade = new javax.swing.Timer(450, e -> repaint());
+                    fade.setRepeats(false);
+                    fade.start();
+                });
+            }
+        }
+
+        @Override
+        public void cablesChanged() {
+            onEdt(RackDevice.this::repaint);
+        }
+    };
     private int inPortCount;
     private int outPortCount;
     private volatile CommandExecutor.Handle running;
@@ -86,6 +115,7 @@ public abstract class RackDevice extends JPanel {
 
     void attach(Rack rack) {
         this.rack = rack;
+        rack.addListener(bayListener);
         onAttached();
     }
 
@@ -99,6 +129,9 @@ public abstract class RackDevice extends JPanel {
 
     /** Kill any running process and release resources. */
     public void dispose() {
+        if (rack != null) {
+            rack.removeListener(bayListener);
+        }
         stopProcess();
     }
 
@@ -156,6 +189,13 @@ public abstract class RackDevice extends JPanel {
 
     @Override
     public String getToolTipText(java.awt.event.MouseEvent e) {
+        if (front && e.getY() > getHeight() - 20
+                && e.getX() > getWidth() - RackStyle.EAR_WIDTH - 20 - getPorts().size() * 12) {
+            long cabled = rack == null ? 0
+                    : getPorts().stream().filter(p -> !rack.cablesAt(p).isEmpty()).count();
+            return "<html><b>Patch bay</b> — " + cabled + " of " + getPorts().size()
+                    + " ports cabled<br>Press Tab to flip the rack and patch</html>";
+        }
         if (!front) {
             Port p = portAt(e.getPoint());
             if (p != null) {
@@ -342,6 +382,7 @@ public abstract class RackDevice extends JPanel {
             int bw = g.getFontMetrics().stringWidth(brand);
             g.drawString(brand, w - RackStyle.EAR_WIDTH - bw - 12, 20);
             paintFront(g, w, h);
+            paintPatchBay(g, w, h);
         } else {
             RackStyle.paintBackPanel(g, w, h);
             paintEars(g, h);
@@ -406,6 +447,50 @@ public abstract class RackDevice extends JPanel {
         g.setColor(p.getDirection() == Port.Direction.IN ? RackStyle.SILKSCREEN : RackStyle.LCD_AMBER);
         int lw = g.getFontMetrics().stringWidth(p.getLabel());
         g.drawString(p.getLabel(), x - lw / 2, y + 26);
+    }
+
+    /**
+     * The patch bay: one mini-LED per port along the bottom-right of the
+     * faceplate. Dim = nothing cabled, steady = cabled, bright flash = a
+     * signal just passed. The rack's wiring stays visible - and visibly
+     * ALIVE - without ever flipping it around.
+     */
+    private void paintPatchBay(Graphics2D g, int w, int h) {
+        if (ports.isEmpty() || rack == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        int cell = 12;
+        int x0 = w - RackStyle.EAR_WIDTH - 14 - ports.size() * cell;
+        int y = h - 13;
+        g.setFont(RackStyle.TINY_FONT);
+        g.setColor(RackStyle.SILKSCREEN_DIM);
+        String label = "PATCH";
+        g.drawString(label, x0 - g.getFontMetrics().stringWidth(label) - 8, y + 8);
+        for (int i = 0; i < ports.size(); i++) {
+            Port p = ports.get(i);
+            Color c = p.getType().cableColor(0);
+            boolean cabled = !rack.cablesAt(p).isEmpty();
+            Long flash = portActivity.get(p);
+            boolean hot = flash != null && now - flash < 450;
+            int alpha = hot ? 255 : cabled ? 165 : 38;
+            int x = x0 + i * cell;
+            if (hot) {
+                g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), 80));
+                g.fillRoundRect(x - 2, y - 2, 12, 12, 6, 6);
+            }
+            g.setColor(new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha));
+            g.fillRoundRect(x, y, 8, 8, 3, 3);
+            g.setColor(new Color(0, 0, 0, 120));
+            g.drawRoundRect(x, y, 8, 8, 3, 3);
+            // direction tick: inputs notch on the left, outputs on the right
+            g.setColor(new Color(255, 255, 255, cabled || hot ? 150 : 50));
+            if (p.getDirection() == Port.Direction.IN) {
+                g.drawLine(x - 2, y + 4, x, y + 4);
+            } else {
+                g.drawLine(x + 8, y + 4, x + 10, y + 4);
+            }
+        }
     }
 
     /** Subclasses may paint extra front-panel decoration (group boxes etc). */

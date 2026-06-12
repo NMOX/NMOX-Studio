@@ -51,7 +51,7 @@ public class TerminalDevice extends RackDevice {
         place(scroll, RackStyle.EAR_WIDTH + 14, 44);
 
         int sideX = RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 92;
-        RackButton clear = place(new RackButton("CLEAR", new Color(255, 190, 60)), sideX, 44);
+        RackButton clear = place(new RackButton("CLEAR", RackStyle.MUTATE), sideX, 44);
         followSwitch = place(new ToggleSwitch("FOLLOW", true), sideX, 96);
 
         clear.addActionListener(e -> {

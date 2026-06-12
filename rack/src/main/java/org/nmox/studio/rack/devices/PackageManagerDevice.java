@@ -6,6 +6,7 @@ import java.util.List;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * CRATE Package Manager: dependency installation and maintenance.
@@ -23,12 +24,11 @@ public class PackageManagerDevice extends CommandDevice {
     public PackageManagerDevice() {
         super("package-manager", "CRATE", "PACKAGE MANAGER", new Color(214, 121, 41), 2);
 
-        managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 44, 40);
-
-        RackButton install = place(new RackButton("INSTALL", new Color(80, 235, 100)), 122, 52);
-        RackButton update = place(new RackButton("UPDATE", new Color(255, 190, 60)), 186, 52);
-        RackButton outdated = place(new RackButton("CHECK", new Color(70, 170, 235)), 250, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 314, 52);
+        RackButton install = place(new RackButton("INSTALL", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 180, 40);
+        RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 254, 52);
+        RackButton outdated = place(new RackButton("CHECK", RackStyle.QUERY), 318, 52);
         depsLcd = place(new LcdDisplay(96, 1), 382, 52);
         depsLcd.setText("—");
         depsLcd.setToolTipText("dependencies + devDependencies declared in package.json");

@@ -36,10 +36,10 @@ public class TunnelDevice extends CommandDevice {
     public TunnelDevice() {
         super("tunnel", "WORMHOLE", "PUBLIC TUNNEL", new Color(156, 89, 209), 2);
 
-        providerKnob = place(new Knob("CARRIER", PROVIDERS, 0), 44, 40);
-        portKnob = place(new Knob("PORT", PORTS, 2), 118, 40);
-        RackButton open = place(new RackButton("OPEN", new Color(80, 235, 100)), 196, 52);
-        RackButton close = place(new RackButton("CLOSE", new Color(255, 70, 60)), 260, 52);
+        RackButton open = place(new RackButton("OPEN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton close = place(new RackButton("CLOSE", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        providerKnob = place(new Knob("CARRIER", PROVIDERS, 0), 180, 40);
+        portKnob = place(new Knob("PORT", PORTS, 2), 254, 40);
         urlLcd = place(new LcdDisplay(150, 1), 328, 52);
         urlLcd.setText("—");
         liveLed = place(new Led("LIVE", new Color(156, 89, 209)), 442, 58);
@@ -49,7 +49,7 @@ public class TunnelDevice extends CommandDevice {
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addOutPort("url", "URL", SignalType.DATA);
-        addOutPort("live", "LIVE", SignalType.GATE);
+        addOutPort("live", "RUNNING", SignalType.GATE);
 
         param("provider", providerKnob);
         param("port", portKnob);

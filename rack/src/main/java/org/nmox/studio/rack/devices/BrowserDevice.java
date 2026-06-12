@@ -10,6 +10,7 @@ import org.nmox.studio.rack.model.SignalType;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * SCOPE Browser Link: opens the system browser at the dialed URL.
@@ -24,11 +25,11 @@ public class BrowserDevice extends RackDevice {
     public BrowserDevice() {
         super("browser", "SCOPE", "BROWSER LINK", new Color(54, 174, 222), 2);
 
-        urlLcd = place(new LcdDisplay(300, 1), 44, 46);
+        urlLcd = place(new LcdDisplay(300, 1), 112, 46);
         urlLcd.setText("http://localhost:5173"); // matches SURGE's default port
         urlLcd.setEditable("URL to open");
-        RackButton open = place(new RackButton("OPEN", new Color(80, 235, 100)), 354, 52);
-        openedLed = place(new Led("SENT", new Color(64, 200, 255)), 422, 58);
+        RackButton open = place(new RackButton("OPEN", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
+        openedLed = place(new Led("SENT", new Color(64, 200, 255)), 424, 52);
 
         open.addActionListener(e -> openBrowser());
 

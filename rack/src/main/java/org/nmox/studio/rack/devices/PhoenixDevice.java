@@ -50,14 +50,14 @@ public class PhoenixDevice extends CommandDevice {
         versionLcd = place(new LcdDisplay(200, 1), 44, 40);
         versionLcd.setText("phx ? → ?");
         versionLcd.setToolTipText(":phoenix in mix.exs → latest on Hex");
-        currentLed = place(new Led("CURRENT", new Color(80, 235, 100)), 252, 46);
-        outdatedLed = place(new Led("OUTDATED", new Color(255, 190, 60)), 308, 46);
-        RackButton check = place(new RackButton("CHECK", new Color(70, 170, 235)), 372, 40);
+        currentLed = place(new Led("CURRENT", RackStyle.GO), 252, 46);
+        outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 308, 46);
+        RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 372, 40);
         RackButton migrate = place(new RackButton("MIGRATE", new Color(99, 197, 70)), 444, 40);
-        RackButton rollback = place(new RackButton("ROLLBACK", new Color(255, 190, 60)), 508, 40);
+        RackButton rollback = place(new RackButton("ROLLBACK", RackStyle.MUTATE), 508, 40);
 
-        RackButton server = place(new RackButton("SERVER", new Color(80, 235, 100)), 44, 96);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 108, 96);
+        RackButton server = place(new RackButton("SERVER", RackStyle.GO), 44, 96);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 108, 96);
         RackButton test = place(new RackButton("TEST", new Color(99, 197, 70)), 172, 96);
         genKnob = place(new Knob("GENERATOR", GENERATORS, 0), 248, 84);
         genArgsLcd = place(new LcdDisplay(220, 1), 322, 96);

@@ -10,6 +10,7 @@ import org.nmox.studio.rack.model.SignalType;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * SURGE Dev Server: starts and stops the local development server.
@@ -35,10 +36,10 @@ public class DevServerDevice extends CommandDevice {
     public DevServerDevice() {
         super("dev-server", "SURGE", "DEV SERVER", new Color(64, 156, 255), 2);
 
-        serverKnob = place(new Knob("SERVER", SERVERS, 0), 44, 40);
-        portKnob = place(new Knob("PORT", PORTS, 2), 118, 40);
-        RackButton start = place(new RackButton("START", new Color(80, 235, 100)), 196, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 260, 52);
+        RackButton start = place(new RackButton("START", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        serverKnob = place(new Knob("SERVER", SERVERS, 0), 180, 40);
+        portKnob = place(new Knob("PORT", PORTS, 2), 254, 40);
         liveLed = place(new Led("LIVE", new Color(64, 200, 255)), 330, 58);
 
         start.addActionListener(e -> primaryAction());

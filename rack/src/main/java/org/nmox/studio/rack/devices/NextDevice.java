@@ -38,13 +38,13 @@ public class NextDevice extends CommandDevice {
 
         versionLcd = place(new LcdDisplay(190, 1), 44, 40);
         versionLcd.setText("next ? → ?");
-        currentLed = place(new Led("CURRENT", new Color(80, 235, 100)), 242, 46);
-        outdatedLed = place(new Led("OUTDATED", new Color(255, 190, 60)), 298, 46);
-        RackButton check = place(new RackButton("CHECK", new Color(70, 170, 235)), 360, 40);
+        currentLed = place(new Led("CURRENT", RackStyle.GO), 242, 46);
+        outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 298, 46);
+        RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 360, 40);
 
-        RackButton dev = place(new RackButton("DEV", new Color(80, 235, 100)), 44, 88);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 108, 88);
-        RackButton build = place(new RackButton("BUILD", new Color(232, 166, 35)), 172, 88);
+        RackButton dev = place(new RackButton("DEV", RackStyle.GO), 44, 88);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 108, 88);
+        RackButton build = place(new RackButton("BUILD", RackStyle.GO), 172, 88);
         RackButton start = place(new RackButton("START", new Color(64, 156, 255)), 236, 88);
         RackButton lint = place(new RackButton("LINT", new Color(168, 110, 221)), 300, 88);
 

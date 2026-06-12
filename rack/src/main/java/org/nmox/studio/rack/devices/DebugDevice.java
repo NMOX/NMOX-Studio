@@ -35,20 +35,20 @@ public class DebugDevice extends CommandDevice {
     public DebugDevice() {
         super("debug", "INSPECTOR", "DEBUG LAUNCHER", new Color(186, 85, 255), 2);
 
-        targetKnob = place(new Knob("TARGET", TARGETS, 0), 44, 40);
-        RackButton attach = place(new RackButton("LAUNCH", new Color(80, 235, 100)), 122, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 186, 52);
-        endpointLcd = place(new LcdDisplay(210, 1), 256, 52);
+        RackButton attach = place(new RackButton("LAUNCH", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        targetKnob = place(new Knob("TARGET", TARGETS, 0), 180, 40);
+        endpointLcd = place(new LcdDisplay(210, 1), 254, 52);
         endpointLcd.setText("—");
         endpointLcd.setToolTipText("Attach your debugger client here");
-        armedLed = place(new Led("WIRED", new Color(186, 85, 255)), 480, 58);
+        armedLed = place(new Led("WIRED", new Color(186, 85, 255)), 254 + 216, 84);
 
         attach.addActionListener(e -> primaryAction());
         stop.addActionListener(e -> stopProcess());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addOutPort("endpoint", "ENDPOINT", SignalType.DATA);
-        addOutPort("live", "LIVE", SignalType.GATE);
+        addOutPort("live", "RUNNING", SignalType.GATE);
 
         param("target", targetKnob);
     }

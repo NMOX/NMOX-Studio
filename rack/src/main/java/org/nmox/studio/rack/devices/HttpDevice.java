@@ -38,16 +38,16 @@ public class HttpDevice extends RackDevice {
     public HttpDevice() {
         super("http", "PING", "REQUEST PROBE", new Color(96, 180, 100), 2);
 
-        methodKnob = place(new Knob("METHOD", METHODS, 0), 44, 40);
-        urlLcd = place(new LcdDisplay(260, 1), 118, 46);
+        methodKnob = place(new Knob("METHOD", METHODS, 0), 112, 40);
+        urlLcd = place(new LcdDisplay(260, 1), 184, 46);
         urlLcd.setText("http://localhost:3000");
         urlLcd.setEditable("Request URL");
-        RackButton send = place(new RackButton("SEND", new Color(80, 235, 100)), 392, 52);
+        RackButton send = place(new RackButton("SEND", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         statusLcd = place(new LcdDisplay(120, 1), 460, 46);
         statusLcd.setText("—");
         latencyMeter = place(new VuMeter("LATENCY", false), 460, 80);
-        okLed = place(new Led("2XX", new Color(80, 235, 100)), 600, 52);
-        failLed = place(new Led("ERR", new Color(255, 70, 60)), 640, 52);
+        okLed = place(new Led("2XX", RackStyle.GO), 600, 52);
+        failLed = place(new Led("ERR", RackStyle.STOP), 640, 52);
 
         send.addActionListener(e -> fire());
 

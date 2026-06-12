@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 
 /**
@@ -29,11 +30,11 @@ public class TestDevice extends CommandDevice {
     public TestDevice() {
         super("test", "VERITAS", "TEST HARNESS", new Color(99, 197, 70), 2);
 
-        frameworkKnob = place(new Knob("RUNNER", FRAMEWORKS, 0), 44, 40);
-        coverageSwitch = place(new ToggleSwitch("COVER", false), 120, 42);
-        RackButton run = place(new RackButton("TEST", new Color(80, 235, 100)), 184, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 248, 52);
-        tallyLcd = place(new LcdDisplay(120, 1), 320, 52);
+        RackButton run = place(new RackButton("TEST", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        frameworkKnob = place(new Knob("RUNNER", FRAMEWORKS, 0), 180, 40);
+        coverageSwitch = place(new ToggleSwitch("COVER", false), 254, 42);
+        tallyLcd = place(new LcdDisplay(120, 1), 324, 52);
         tallyLcd.setText("P:0 F:0");
 
         run.addActionListener(e -> primaryAction());

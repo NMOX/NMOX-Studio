@@ -7,6 +7,7 @@ import org.nmox.studio.rack.model.Signal;
 import org.nmox.studio.rack.model.SignalType;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * MAESTRO Master Control: the transport section. One big RUN button
@@ -21,11 +22,11 @@ public class MasterControlDevice extends RackDevice {
     public MasterControlDevice() {
         super("master", "MAESTRO", "MASTER CONTROL", new Color(240, 196, 25), 2);
 
-        RackButton run = new RackButton("RUN SEQUENCE", new Color(80, 235, 100));
+        RackButton run = new RackButton("RUN SEQUENCE", RackStyle.GO);
         run.setPreferredSize(new Dimension(130, 48));
         place(run, 44, 48);
 
-        RackButton stopAll = new RackButton("STOP ALL", new Color(255, 70, 60));
+        RackButton stopAll = new RackButton("STOP ALL", RackStyle.STOP);
         stopAll.setPreferredSize(new Dimension(100, 48));
         place(stopAll, 188, 48);
 

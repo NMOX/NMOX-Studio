@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 
 /**
@@ -37,11 +38,11 @@ public class BuildDevice extends CommandDevice {
     public BuildDevice() {
         super("build", "FORGE", "BUILD ENGINE", new Color(232, 166, 35), 2);
 
-        toolKnob = place(new Knob("TOOL", TOOLS, 0), 44, 40);
-        prodSwitch = place(new ToggleSwitch("MODE", true, "PROD", "DEV"), 120, 42);
-        watchSwitch = place(new ToggleSwitch("WATCH", false), 180, 42);
-        RackButton build = place(new RackButton("BUILD", new Color(80, 235, 100)), 244, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 308, 52);
+        RackButton build = place(new RackButton("BUILD", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        toolKnob = place(new Knob("TOOL", TOOLS, 0), 180, 40);
+        prodSwitch = place(new ToggleSwitch("MODE", true, "PROD", "DEV"), 254, 42);
+        watchSwitch = place(new ToggleSwitch("WATCH", false), 324, 42);
 
         build.addActionListener(e -> primaryAction());
         stop.addActionListener(e -> stopProcess());

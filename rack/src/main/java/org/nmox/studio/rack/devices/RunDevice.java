@@ -11,6 +11,7 @@ import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * IGNITION Runtime: starts the program, whatever language it speaks.
@@ -30,13 +31,13 @@ public class RunDevice extends CommandDevice {
     public RunDevice() {
         super("run", "IGNITION", "POLYGLOT RUNTIME", new Color(255, 94, 58), 2);
 
-        targetKnob = place(new Knob("TARGET", TARGETS, 0), 44, 40);
-        argsLcd = place(new LcdDisplay(180, 1), 122, 46);
+        argsLcd = place(new LcdDisplay(180, 1), 254, 46);
         argsLcd.setText("");
         argsLcd.setEditable("Program arguments");
         argsLcd.setToolTipText("Arguments passed to the program (double-click to edit)");
-        RackButton ignite = place(new RackButton("IGNITE", new Color(80, 235, 100)), 314, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 378, 52);
+        RackButton ignite = place(new RackButton("IGNITE", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        targetKnob = place(new Knob("TARGET", TARGETS, 0), 180, 40);
         liveLed = place(new Led("LIVE", new Color(255, 94, 58)), 444, 58);
 
         ignite.addActionListener(e -> primaryAction());
