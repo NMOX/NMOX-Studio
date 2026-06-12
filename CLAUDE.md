@@ -94,6 +94,7 @@ NMOX-Studio/
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
 ├── tools/                   # NPM integration, build tools, debugging, test runners
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
+├── infra/                   # Node-RED-style DigitalOcean infrastructure designer
 ├── project/                 # Project templates, scaffolding, project explorer UI
 ├── ui/                      # Main windows, actions, welcome screen, startup logic
 ├── branding/               # Application theming, splash screen, icons
@@ -112,6 +113,7 @@ NMOX-Studio/
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
 | **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 23 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
 | **branding** | Application identity | Splash screen, icons, custom branding |
