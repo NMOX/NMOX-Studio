@@ -58,6 +58,9 @@ public final class CommandExecutor {
         if (out != null) {
             out.println("$ " + String.join(" ", command));
         }
+        // lifecycle markers travel the bus too, so the flight recorder
+        // (and an all-tap MONITOR) sees launches, not just output
+        RackBus.publish(tabName, "$ " + String.join(" ", command), false);
 
         Process process;
         try {
@@ -119,6 +122,7 @@ public final class CommandExecutor {
             if (out != null) {
                 out.println("[exit " + code + "]");
             }
+            RackBus.publish(tabName, "[exit " + code + "]", code != 0);
             onExit.accept(code);
         }, "nmox-rack-pump-" + tabName);
         pump.setDaemon(true);

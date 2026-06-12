@@ -53,8 +53,11 @@ class CommandExecutorTest {
                     deviceLines::add, code -> done.countDown());
 
             assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
-            assertThat(busLines).containsExactlyInAnyOrder(
+            assertThat(busLines).contains(
                     "streams|plain|false", "streams|broken|true");
+            // lifecycle markers ride the bus too - the flight recorder needs them
+            assertThat(busLines).anyMatch(l -> l.startsWith("streams|$ sh"));
+            assertThat(busLines).anyMatch(l -> l.startsWith("streams|[exit 0]"));
             // the device callback still hears both streams (parsers need both)
             assertThat(deviceLines).containsExactlyInAnyOrder("plain", "broken");
         } finally {
