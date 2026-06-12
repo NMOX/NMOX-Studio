@@ -20,6 +20,10 @@ public final class ProjectInspector {
         NODE("package.json"),
         RUST("Cargo.toml"),
         GO("go.mod"),
+        ELIXIR("mix.exs"),
+        ERLANG("rebar.config"),
+        CLOJURE("deps.edn", "project.clj"),
+        SWIFT("Package.swift"),
         MAVEN("pom.xml"),
         GRADLE("build.gradle", "build.gradle.kts"),
         PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
@@ -157,6 +161,20 @@ public final class ProjectInspector {
     public static boolean hasAngular(File projectDir) {
         return new File(projectDir, "angular.json").isFile()
                 || new File(kindDir(projectDir, ProjectKind.NODE), "angular.json").isFile();
+    }
+
+    /** Extracts a dependency version from mix.exs using the given pattern. */
+    public static String mixDependencyVersion(File projectDir, java.util.regex.Pattern pattern) {
+        File mixExs = new File(projectDir, "mix.exs");
+        if (!mixExs.isFile()) {
+            return null;
+        }
+        try {
+            java.util.regex.Matcher m = pattern.matcher(Files.readString(mixExs.toPath()));
+            return m.find() ? m.group(1) : null;
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     /** The declared version constraint of a dependency, or null. */

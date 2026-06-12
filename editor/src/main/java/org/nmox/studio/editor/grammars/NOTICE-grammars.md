@@ -16,6 +16,14 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | shell.tmLanguage.json | extensions/shellscript | atom/language-shellscript (MIT) |
 | json.tmLanguage.json | extensions/json | microsoft/vscode-JSON.tmLanguage (MIT) |
 
+| elixir.tmLanguage.json | — | elixir-lsp/vscode-elixir-ls (MIT) |
+| erlang.tmLanguage.json | — | erlang-ls/grammar (Apache-2.0), converted plist→JSON |
+| clojure.tmLanguage.json | extensions/clojure | atom/language-clojure (MIT) |
+| commonlisp.tmLanguage.json | — | qingpeng9802/vscode-common-lisp (MIT) |
+| lua.tmLanguage.json | extensions/lua | sumneko/lua.tmbundle (MIT) |
+| swift.tmLanguage.json | extensions/swift | textmate/swift.tmbundle (MIT) |
+| kotlin.tmLanguage.json | — | fwcd/vscode-kotlin (MIT) |
+
 To refresh: bump the tag in this table and re-download; the holder
 classes in this package register each grammar with the platform's
 textmate-lexer module.

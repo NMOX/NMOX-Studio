@@ -16,7 +16,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
 
@@ -63,6 +63,10 @@ public class TestDevice extends CommandDevice {
         ProjectInspector.ProjectKind kind = effectiveKind();
         switch (kind) {
             case RUST: return "cargo";
+            case ELIXIR: return "mix";
+            case ERLANG: return "rebar3";
+            case CLOJURE: return "clojure";
+            case SWIFT: return "swift";
             case GO: return "go";
             case MAVEN: return "mvn";
             case GRADLE: return "gradle";
@@ -87,6 +91,10 @@ public class TestDevice extends CommandDevice {
     protected java.io.File commandDir() {
         ProjectInspector.ProjectKind kind = switch (effectiveFramework()) {
             case "cargo" -> ProjectInspector.ProjectKind.RUST;
+            case "mix" -> ProjectInspector.ProjectKind.ELIXIR;
+            case "rebar3" -> ProjectInspector.ProjectKind.ERLANG;
+            case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
+            case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "go" -> ProjectInspector.ProjectKind.GO;
             case "mvn" -> ProjectInspector.ProjectKind.MAVEN;
             case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
@@ -109,6 +117,10 @@ public class TestDevice extends CommandDevice {
             case "cypress" -> cmd.addAll(List.of("npx", "cypress", "run"));
             case "pytest" -> cmd.addAll(List.of("python3", "-m", "pytest"));
             case "cargo" -> cmd.addAll(List.of("cargo", "test"));
+            case "mix" -> cmd.addAll(List.of("mix", "test"));
+            case "rebar3" -> cmd.addAll(List.of("rebar3", "eunit"));
+            case "clojure" -> cmd.addAll(List.of("clojure", "-X:test"));
+            case "swift" -> cmd.addAll(List.of("swift", "test"));
             case "go" -> cmd.addAll(List.of("go", "test", "./..."));
             case "mvn" -> cmd.addAll(List.of("mvn", "-q", "test"));
             case "gradle" -> cmd.addAll(List.of("gradle", "test"));

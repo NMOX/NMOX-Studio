@@ -36,54 +36,108 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-rust", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-php5", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/sh", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-go", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/x-go", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-erlang", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-elixir", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-clojure", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-lisp", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-lua", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-swift", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-kotlin", service = CompletionProvider.class)
 })
 public class PolyglotCompletionProvider implements CompletionProvider {
 
     private static final Pattern WORD = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]{1,}");
 
-    static final Map<String, Set<String>> KEYWORDS = Map.of(
-            "text/x-java", set("abstract assert boolean break byte case catch char class const continue "
+    static final Map<String, Set<String>> KEYWORDS = Map.ofEntries(
+            Map.entry("text/x-java", set("abstract assert boolean break byte case catch char class const continue "
                     + "default do double else enum extends final finally float for goto if implements import "
                     + "instanceof int interface long native new package private protected public record return "
                     + "sealed short static strictfp super switch synchronized this throw throws transient try "
-                    + "var void volatile while yield true false null String List Map Set Optional Stream"),
-            "text/x-c", set("auto break case char const continue default do double else enum extern float for "
+                    + "var void volatile while yield true false null String List Map Set Optional Stream")),
+            Map.entry("text/x-c", set("auto break case char const continue default do double else enum extern float for "
                     + "goto if inline int long register restrict return short signed sizeof static struct switch "
                     + "typedef union unsigned void volatile while size_t uint8_t uint16_t uint32_t uint64_t "
-                    + "int8_t int16_t int32_t int64_t bool true false NULL printf malloc free"),
-            "text/x-cpp", set("alignas alignof auto bool break case catch char class concept const consteval "
+                    + "int8_t int16_t int32_t int64_t bool true false NULL printf malloc free")),
+            Map.entry("text/x-cpp", set("alignas alignof auto bool break case catch char class concept const consteval "
                     + "constexpr constinit continue decltype default delete do double else enum explicit export "
                     + "extern false final float for friend goto if inline int long mutable namespace new noexcept "
                     + "nullptr operator override private protected public requires return short signed sizeof "
                     + "static struct switch template this throw true try typedef typename union unsigned using "
-                    + "virtual void volatile while std string vector map unique_ptr shared_ptr"),
-            "text/x-python", set("False None True and as assert async await break class continue def del elif "
+                    + "virtual void volatile while std string vector map unique_ptr shared_ptr")),
+            Map.entry("text/x-python", set("False None True and as assert async await break class continue def del elif "
                     + "else except finally for from global if import in is lambda nonlocal not or pass raise "
                     + "return try while with yield self cls print len range enumerate zip dict list set tuple "
-                    + "str int float bool isinstance super __init__ __name__ __main__"),
-            "text/x-ruby", set("BEGIN END alias and begin break case class def defined? do else elsif end ensure "
+                    + "str int float bool isinstance super __init__ __name__ __main__")),
+            Map.entry("text/x-ruby", set("BEGIN END alias and begin break case class def defined? do else elsif end ensure "
                     + "false for if in module next nil not or redo rescue retry return self super then true undef "
                     + "unless until when while yield require require_relative attr_accessor attr_reader "
-                    + "attr_writer puts initialize new lambda proc each map select reject"),
-            "text/x-rust", set("as async await break const continue crate dyn else enum extern false fn for if "
+                    + "attr_writer puts initialize new lambda proc each map select reject")),
+            Map.entry("text/x-rust", set("as async await break const continue crate dyn else enum extern false fn for if "
                     + "impl in let loop match mod move mut pub ref return self Self static struct super trait "
                     + "true type unsafe use where while String Vec Option Some None Result Ok Err Box Rc Arc "
-                    + "println eprintln vec format derive Debug Clone Copy"),
-            "text/x-php5", set("abstract and array as break callable case catch class clone const continue "
+                    + "println eprintln vec format derive Debug Clone Copy")),
+            Map.entry("text/x-php5", set("abstract and array as break callable case catch class clone const continue "
                     + "declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch "
                     + "endwhile enum extends final finally fn for foreach function global goto if implements "
                     + "include instanceof insteadof interface isset list match namespace new or print private "
                     + "protected public readonly require return static switch throw trait try unset use var "
-                    + "while xor yield true false null this self parent"),
-            "text/sh", set("if then else elif fi case esac for while until do done function return exit break "
+                    + "while xor yield true false null this self parent")),
+            Map.entry("text/sh", set("if then else elif fi case esac for while until do done function return exit break "
                     + "continue local readonly export unset shift eval exec source alias echo printf read cd "
-                    + "test true false set trap wait"),
-            "text/x-go", set("break case chan const continue default defer else fallthrough for func go goto if "
+                    + "test true false set trap wait")),
+            Map.entry("text/x-go", set("break case chan const continue default defer else fallthrough for func go goto if "
                     + "import interface map package range return select struct switch type var bool byte "
                     + "complex64 complex128 error float32 float64 int int8 int16 int32 int64 rune string uint "
                     + "uint8 uint16 uint32 uint64 uintptr true false nil iota append cap close copy delete len "
-                    + "make new panic print println recover fmt Println Printf Errorf"));
+                    + "make new panic print println recover fmt Println Printf Errorf")),
+            Map.entry("text/x-erlang", set("after begin case catch cond end fun if let of receive try when "
+                    + "and andalso band bnot bor bsl bsr bxor div not or orelse rem xor "
+                    + "module export import record define spec type behaviour gen_server gen_statem "
+                    + "supervisor application start_link init handle_call handle_cast handle_info "
+                    + "terminate code_change spawn spawn_link self exit error ok undefined true false "
+                    + "lists maps proplists ets io format")),
+            Map.entry("text/x-elixir", set("def defp defmodule defmacro defmacrop defstruct defprotocol "
+                    + "defimpl defexception defguard defdelegate do end fn when case cond if unless else "
+                    + "receive after rescue catch try raise throw import require alias use quote unquote "
+                    + "with for true false nil and or not in __MODULE__ __DIR__ "
+                    + "GenServer Supervisor Agent Task Enum Stream Map MapSet Keyword String Integer "
+                    + "Float Process IO Kernel Application Registry send self spawn spawn_link "
+                    + "start_link init handle_call handle_cast handle_info |> def_impl")),
+            Map.entry("text/x-clojure", set("def defn defn- defmacro defmulti defmethod defprotocol "
+                    + "defrecord deftype defonce let letfn fn if if-let if-not when when-let when-not "
+                    + "cond condp case do loop recur for doseq dotimes while try catch finally throw "
+                    + "ns require import use refer-clojure true false nil and or not "
+                    + "map filter reduce apply partial comp juxt assoc dissoc conj cons first rest "
+                    + "seq vec list set get-in update-in swap! reset! atom ref agent future promise "
+                    + "println prn str keyword symbol namespace")),
+            Map.entry("text/x-lisp", set("defun defmacro defvar defparameter defconstant defclass "
+                    + "defmethod defgeneric defstruct defpackage lambda let let* flet labels "
+                    + "if when unless cond case ecase typecase progn prog1 prog2 block return-from "
+                    + "loop do do* dolist dotimes mapcar mapc reduce remove-if remove-if-not "
+                    + "car cdr cons list append nth first rest setf setq push pop incf decf "
+                    + "format print princ prin1 quote function funcall apply values multiple-value-bind "
+                    + "in-package use-package require provide t nil eq eql equal equalp")),
+            Map.entry("text/x-lua", set("and break do else elseif end false for function goto if in "
+                    + "local nil not or repeat return then true until while "
+                    + "print pairs ipairs next type tostring tonumber pcall xpcall error assert "
+                    + "require table string math io os coroutine setmetatable getmetatable rawget rawset")),
+            Map.entry("text/x-swift", set("actor any as associatedtype async await borrowing break case "
+                    + "catch class consuming continue convenience default defer deinit didSet do dynamic "
+                    + "else enum extension fallthrough false fileprivate final for func get guard if import "
+                    + "in indirect infix init inout internal is lazy let mutating nil nonisolated nonmutating "
+                    + "open operator optional override postfix precedencegroup prefix private protocol public "
+                    + "repeat required rethrows return self set some static struct subscript super switch "
+                    + "throw throws true try typealias unowned var weak where while willSet "
+                    + "String Int Double Bool Array Dictionary Set Optional Result Task print")),
+            Map.entry("text/x-kotlin", set("abstract actual annotation as break by catch class companion "
+                    + "const constructor continue crossinline data do dynamic else enum expect external "
+                    + "false final finally for fun get if import in infix init inline inner interface "
+                    + "internal is lateinit noinline null object open operator out override package private "
+                    + "protected public reified return sealed set super suspend tailrec this throw true try "
+                    + "typealias val var vararg when where while "
+                    + "String Int Long Double Boolean List MutableList Map MutableMap Set println listOf "
+                    + "mapOf setOf mutableListOf let also apply run with takeIf takeUnless lazy")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));

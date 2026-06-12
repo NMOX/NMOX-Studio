@@ -54,7 +54,14 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-php5", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/sh", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-go", service = DeletedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-json", service = DeletedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-json", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-erlang", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-elixir", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-clojure", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lisp", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-lua", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-swift", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-kotlin", service = DeletedTextInterceptor.Factory.class)
     })
     public static class Factory implements DeletedTextInterceptor.Factory {
         @Override

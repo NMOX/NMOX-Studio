@@ -68,6 +68,21 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> List.of("cargo", "update", "--dry-run");
                 default -> List.of("cargo", "fetch");
             };
+            case ELIXIR -> switch (verb) {
+                case "update" -> List.of("mix", "deps.update", "--all");
+                case "outdated" -> List.of("mix", "hex.outdated");
+                default -> List.of("mix", "deps.get");
+            };
+            case ERLANG -> switch (verb) {
+                case "update" -> List.of("rebar3", "upgrade", "--all");
+                default -> List.of("rebar3", "get-deps");
+            };
+            case CLOJURE -> List.of("clojure", "-P");
+            case SWIFT -> switch (verb) {
+                case "update" -> List.of("swift", "package", "update");
+                case "outdated" -> List.of("swift", "package", "show-dependencies");
+                default -> List.of("swift", "package", "resolve");
+            };
             case GO -> switch (verb) {
                 case "update" -> List.of("go", "get", "-u", "./...");
                 case "outdated" -> List.of("go", "list", "-u", "-m", "all");
