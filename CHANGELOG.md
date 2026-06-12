@@ -6,6 +6,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **PREFLIGHT Ship Check** — "done" as a machine state, not a feeling.
+  CHECK runs the readiness list planned from your project (git clean,
+  tests, build, lint, audit), one verdict per item on the phosphor
+  checklist, and a final READY TO SHIP / NOT READY verdict. Patch its
+  OK jack into LAUNCHPAD and unverified code physically cannot deploy.
+- **BLACKBOX answers "what changed since it last worked?"** — when a
+  run fails, the health line counts files modified since that device
+  last went green, and the timeline lists them (newest first,
+  dependency directories skipped).
+
 ## [1.3.0] — 2026-06-12
 
 ### Added
