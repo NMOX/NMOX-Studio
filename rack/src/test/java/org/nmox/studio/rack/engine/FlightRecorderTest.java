@@ -125,4 +125,30 @@ class FlightRecorderTest {
         rec2.attachJournal(journal);
         assertThat(rec2.timeline()).hasSize(1);
     }
+
+    @Test
+    @DisplayName("The journal rotates at its cap, keeping the newer half, still loadable")
+    void journalRotates(@org.junit.jupiter.api.io.TempDir java.io.File dir) {
+        java.io.File journal = new java.io.File(dir, "flight.jsonl");
+        FlightRecorder writer = new FlightRecorder(now::get);
+        writer.attachJournal(journal);
+
+        // ~20k events at ~90 bytes/line crosses the 1.5MB cap and rotates
+        for (int i = 0; i < 20_000; i++) {
+            tick(1);
+            writer.line("FORGE", "$ build-" + i, false);
+        }
+
+        assertThat(journal.length())
+                .as("rotation must keep the file near its cap, not unbounded")
+                .isLessThan(2_000_000);
+
+        FlightRecorder reborn = new FlightRecorder(now::get);
+        reborn.attachJournal(journal);
+        assertThat(reborn.timeline()).isNotEmpty();
+        var lastLoaded = reborn.timeline().get(reborn.timeline().size() - 1);
+        assertThat(lastLoaded.text())
+                .as("the newest event survives rotation")
+                .isEqualTo("build-19999");
+    }
 }
