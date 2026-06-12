@@ -41,6 +41,23 @@
         </folder>
     </folder>
     
+    <!-- TextMate languages read their colorings from the pseudo-mime
+         text/textmate; the platform only fills the "NetBeans" profile,
+         so the dark profile gets the NMOX Phosphor palette here. -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="textmate">
+                <folder name="FontsColors">
+                    <folder name="FlatLaf Dark">
+                        <folder name="Defaults">
+                            <file name="textmate-phosphor-colors.xml" url="grammars/textmate-phosphor-colors.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <!-- Lexer language bindings + token coloring. The language.instance
          entries are what make syntax highlighting actually happen: they
          hand the editor infrastructure our Language for each MIME type. -->
