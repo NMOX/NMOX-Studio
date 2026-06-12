@@ -25,6 +25,7 @@ public class RackService {
 
     private final Rack rack = new Rack();
     private boolean initialized;
+    private volatile boolean aimed;
 
     public static RackService getDefault() {
         RackService service = Lookup.getDefault().lookup(RackService.class);
@@ -60,8 +61,18 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
+        aimed = true;
         addRecentProject(dir);
         getRack().setProjectDir(dir);
+    }
+
+    /**
+     * True once anything has aimed the rack this session. Passive
+     * followers (persisted window state, the open-projects listener)
+     * must never clobber an aim the user already made.
+     */
+    public boolean isAimed() {
+        return aimed;
     }
 
     // ---- recent projects ----
@@ -142,6 +153,9 @@ public class RackService {
     }
 
     private void aimAtOpenProject() {
+        if (aimed) {
+            return; // an explicit choice always outranks the follower
+        }
         org.netbeans.api.project.Project[] projects =
                 org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         File fallback = null;

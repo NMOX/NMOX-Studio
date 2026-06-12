@@ -206,6 +206,7 @@ public class NewProjectDialog extends JDialog {
         }
 
         createdProject = dir;
+        ProjectTemplates.initGitRepo(dir);
         // aim the rack: the template's patch mounts automatically
         RackService.getDefault().openProject(dir);
 

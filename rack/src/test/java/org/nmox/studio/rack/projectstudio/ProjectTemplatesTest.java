@@ -80,4 +80,33 @@ class ProjectTemplatesTest {
         org.junit.jupiter.api.Assertions.assertThrows(java.io.IOException.class,
                 () -> ProjectTemplates.VANILLA.generate(dir, "demo"));
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("A new project starts versioned: git init + first commit")
+    void newProjectStartsVersioned() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(gitAvailable(), "git not installed");
+        java.io.File dir = parent.resolve("versioned-app").toFile();
+        ProjectTemplates.values()[0].generate(dir, "versioned-app");
+
+        ProjectTemplates.initGitRepo(dir);
+
+        org.assertj.core.api.Assertions.assertThat(new java.io.File(dir, ".git"))
+                .as("repo must exist").isDirectory();
+        Process log = new ProcessBuilder("git", "-C", dir.getAbsolutePath(), "log", "--oneline")
+                .redirectErrorStream(true).start();
+        String out = new String(log.getInputStream().readAllBytes());
+        log.waitFor();
+        org.assertj.core.api.Assertions.assertThat(out)
+                .as("the first commit").contains("Initial commit");
+    }
+
+    private static boolean gitAvailable() {
+        for (String d : org.nmox.studio.rack.engine.ToolLocator.augmentedPath()
+                .split(java.io.File.pathSeparator)) {
+            if (new java.io.File(d, "git").canExecute()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
