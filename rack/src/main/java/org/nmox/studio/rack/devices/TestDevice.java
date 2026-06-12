@@ -17,7 +17,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
 
@@ -69,6 +69,13 @@ public class TestDevice extends CommandDevice {
             case ERLANG: return "rebar3";
             case CLOJURE: return "clojure";
             case SWIFT: return "swift";
+            case DOTNET: return "dotnet";
+            case DART: return "dart";
+            case SCALA: return "sbt";
+            case HASKELL: return "stack";
+            case ZIG: return "zig";
+            case OCAML: return "dune";
+            case CRYSTAL: return "crystal";
             case GO: return "go";
             case MAVEN: return "mvn";
             case GRADLE: return "gradle";
@@ -97,6 +104,13 @@ public class TestDevice extends CommandDevice {
             case "rebar3" -> ProjectInspector.ProjectKind.ERLANG;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
+            case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
+            case "dart" -> ProjectInspector.ProjectKind.DART;
+            case "sbt" -> ProjectInspector.ProjectKind.SCALA;
+            case "stack" -> ProjectInspector.ProjectKind.HASKELL;
+            case "zig" -> ProjectInspector.ProjectKind.ZIG;
+            case "dune" -> ProjectInspector.ProjectKind.OCAML;
+            case "crystal" -> ProjectInspector.ProjectKind.CRYSTAL;
             case "go" -> ProjectInspector.ProjectKind.GO;
             case "mvn" -> ProjectInspector.ProjectKind.MAVEN;
             case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
@@ -123,6 +137,13 @@ public class TestDevice extends CommandDevice {
             case "rebar3" -> cmd.addAll(List.of("rebar3", "eunit"));
             case "clojure" -> cmd.addAll(List.of("clojure", "-X:test"));
             case "swift" -> cmd.addAll(List.of("swift", "test"));
+            case "dotnet" -> cmd.addAll(List.of("dotnet", "test"));
+            case "dart" -> cmd.addAll(List.of("dart", "test"));
+            case "sbt" -> cmd.addAll(List.of("sbt", "test"));
+            case "stack" -> cmd.addAll(List.of("stack", "test"));
+            case "zig" -> cmd.addAll(List.of("zig", "build", "test"));
+            case "dune" -> cmd.addAll(List.of("dune", "runtest"));
+            case "crystal" -> cmd.addAll(List.of("crystal", "spec"));
             case "go" -> cmd.addAll(List.of("go", "test", "./..."));
             case "mvn" -> cmd.addAll(List.of("mvn", "-q", "test"));
             case "gradle" -> cmd.addAll(List.of("gradle", "test"));

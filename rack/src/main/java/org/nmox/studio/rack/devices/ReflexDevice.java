@@ -29,7 +29,9 @@ public class ReflexDevice extends RackDevice {
             Set.of("js", "jsx", "ts", "tsx", "mjs", "cjs", "vue", "svelte", "json",
                     "py", "rb", "rs", "go", "java", "c", "h", "cpp", "hpp", "hh", "php", "sh",
                     "ex", "exs", "erl", "hrl", "clj", "cljs", "cljc", "lisp", "cl",
-                    "lua", "swift", "kt", "kts"),
+                    "lua", "swift", "kt", "kts",
+                    "cs", "fs", "groovy", "pl", "pm", "r", "jl", "dart", "scala", "sbt",
+                    "hs", "zig", "ml", "mli", "cr"),
             Set.of("css", "scss", "sass", "less", "styl"),
             Set.of("html", "htm", "md", "mdx", "xml", "svg"));
 

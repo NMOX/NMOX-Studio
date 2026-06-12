@@ -19,25 +19,9 @@ import org.netbeans.editor.Utilities;
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/javascript"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/typescript"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-java"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-c"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-cpp"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-rust"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-php5"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-go"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-python"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-ruby"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/sh"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-toml"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-yaml"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-properties"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-erlang"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-elixir"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-clojure"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-lisp"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-lua"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-swift"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-kotlin")
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-properties")
 })
 public class ToggleLineCommentAction extends BaseAction {
 

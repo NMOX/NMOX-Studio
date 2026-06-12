@@ -61,7 +61,19 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-lisp", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-lua", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-swift", service = DeletedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-kotlin", service = DeletedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-kotlin", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-csharp", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-fsharp", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-groovy", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-perl", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-r", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-julia", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-dart", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scala", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-haskell", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-zig", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-ocaml", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-crystal", service = DeletedTextInterceptor.Factory.class)
     })
     public static class Factory implements DeletedTextInterceptor.Factory {
         @Override

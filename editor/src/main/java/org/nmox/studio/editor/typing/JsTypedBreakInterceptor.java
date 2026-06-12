@@ -97,7 +97,19 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         @MimeRegistration(mimeType = "text/x-lisp", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-lua", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-swift", service = TypedBreakInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedBreakInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-csharp", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-fsharp", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-groovy", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-perl", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-r", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-julia", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-dart", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scala", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-haskell", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-zig", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-ocaml", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-crystal", service = TypedBreakInterceptor.Factory.class)
     })
     public static class Factory implements TypedBreakInterceptor.Factory {
         @Override

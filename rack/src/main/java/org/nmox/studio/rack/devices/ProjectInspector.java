@@ -24,6 +24,13 @@ public final class ProjectInspector {
         ERLANG("rebar.config"),
         CLOJURE("deps.edn", "project.clj"),
         SWIFT("Package.swift"),
+        DOTNET(), // *.csproj / *.fsproj / *.sln - glob-detected below
+        DART("pubspec.yaml"),
+        SCALA("build.sbt"),
+        HASKELL("stack.yaml", "cabal.project"),
+        ZIG("build.zig"),
+        OCAML("dune-project"),
+        CRYSTAL("shard.yml"),
         MAVEN("pom.xml"),
         GRADLE("build.gradle", "build.gradle.kts"),
         PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
@@ -72,6 +79,9 @@ public final class ProjectInspector {
     }
 
     private static File manifestDirFor(File root, ProjectKind kind) {
+        if (kind == ProjectKind.DOTNET) {
+            return dotnetDir(root);
+        }
         for (String manifest : kind.manifests) {
             if (new File(root, manifest).isFile()) {
                 return root;
@@ -95,6 +105,35 @@ public final class ProjectInspector {
             }
         }
         return null;
+    }
+
+    /** .NET projects carry *.csproj/*.fsproj/*.sln - extension-detected. */
+    private static File dotnetDir(File root) {
+        if (hasDotnetManifest(root)) {
+            return root;
+        }
+        File[] children = root.listFiles(File::isDirectory);
+        if (children == null) {
+            return null;
+        }
+        java.util.Arrays.sort(children, java.util.Comparator.comparing(File::getName));
+        int scanned = 0;
+        for (File child : children) {
+            String name = child.getName();
+            if (name.startsWith(".") || SKIP_DIRS.contains(name) || ++scanned > MAX_CHILD_SCAN) {
+                continue;
+            }
+            if (hasDotnetManifest(child)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasDotnetManifest(File dir) {
+        String[] names = dir.list((d, name) -> name.endsWith(".csproj")
+                || name.endsWith(".fsproj") || name.endsWith(".sln"));
+        return names != null && names.length > 0;
     }
 
     /**

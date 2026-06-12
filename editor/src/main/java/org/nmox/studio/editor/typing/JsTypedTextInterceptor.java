@@ -68,7 +68,19 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-lisp", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-lua", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-swift", service = TypedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-kotlin", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-csharp", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-fsharp", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-groovy", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-perl", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-r", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-julia", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-dart", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scala", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-haskell", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-zig", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-ocaml", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-crystal", service = TypedTextInterceptor.Factory.class)
     })
     public static class Factory implements TypedTextInterceptor.Factory {
         @Override

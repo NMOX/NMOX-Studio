@@ -24,6 +24,14 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | swift.tmLanguage.json | extensions/swift | textmate/swift.tmbundle (MIT) |
 | kotlin.tmLanguage.json | — | fwcd/vscode-kotlin (MIT) |
 
+| csharp/fsharp/groovy/perl/r/julia .tmLanguage.json | extensions/* | VS Code 1.95.0 bundled (MIT-compatible) |
+| dart.tmLanguage.json | — | Dart-Code/Dart-Code (MIT) |
+| scala.tmLanguage.json | — | scala/vscode-scala-syntax (MIT) |
+| haskell.tmLanguage.json | — | JustusAdam/language-haskell (BSD-3), converted YAML→JSON |
+| zig.tmLanguage.json | — | ziglang/vscode-zig (MIT) |
+| ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
+| crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
+
 To refresh: bump the tag in this table and re-download; the holder
 classes in this package register each grammar with the platform's
 textmate-lexer module.

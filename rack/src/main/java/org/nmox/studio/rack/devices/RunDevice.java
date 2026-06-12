@@ -22,7 +22,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class RunDevice extends CommandDevice {
 
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "maven", "gradle", "ruby", "php", "make"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make"};
 
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
@@ -85,6 +85,13 @@ public class RunDevice extends CommandDevice {
             case ERLANG -> "erlang";
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
+            case DOTNET -> "dotnet";
+            case DART -> "dart";
+            case SCALA -> "scala";
+            case HASKELL -> "haskell";
+            case ZIG -> "zig";
+            case OCAML -> "ocaml";
+            case CRYSTAL -> "crystal";
             case GO -> "go";
             case MAVEN -> "maven";
             case GRADLE -> "gradle";
@@ -104,6 +111,13 @@ public class RunDevice extends CommandDevice {
             case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
+            case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
+            case "dart" -> ProjectInspector.ProjectKind.DART;
+            case "scala" -> ProjectInspector.ProjectKind.SCALA;
+            case "haskell" -> ProjectInspector.ProjectKind.HASKELL;
+            case "zig" -> ProjectInspector.ProjectKind.ZIG;
+            case "ocaml" -> ProjectInspector.ProjectKind.OCAML;
+            case "crystal" -> ProjectInspector.ProjectKind.CRYSTAL;
             case "go" -> ProjectInspector.ProjectKind.GO;
             case "maven" -> ProjectInspector.ProjectKind.MAVEN;
             case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
@@ -141,6 +155,13 @@ public class RunDevice extends CommandDevice {
             case "erlang" -> List.of("rebar3", "compile"); // BEAM apps run under mix/releases; compile is the honest floor
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention
             case "swift" -> List.of("swift", "run");
+            case "dotnet" -> List.of("dotnet", "run");
+            case "dart" -> List.of("dart", "run");
+            case "scala" -> List.of("sbt", "run");
+            case "haskell" -> List.of("stack", "run");
+            case "zig" -> List.of("zig", "build", "run");
+            case "ocaml" -> List.of("dune", "exec", entryPoint("bin/main.exe", "./bin/main.exe"));
+            case "crystal" -> List.of("shards", "run");
             case "maven" -> List.of("mvn", "-q", "compile", "exec:java");
             case "gradle" -> List.of("gradle", "run", "--quiet");
             case "ruby" -> new File(commandDir(), "config.ru").isFile()
