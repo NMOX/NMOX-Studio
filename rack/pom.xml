@@ -137,6 +137,7 @@
                         <publicPackage>org.nmox.studio.rack.devices</publicPackage>
                         <publicPackage>org.nmox.studio.rack.service</publicPackage>
                         <publicPackage>org.nmox.studio.rack.engine</publicPackage>
+                        <publicPackage>org.nmox.studio.rack.projectstudio</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

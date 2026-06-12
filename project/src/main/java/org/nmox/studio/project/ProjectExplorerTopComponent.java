@@ -1,22 +1,43 @@
 package org.nmox.studio.project;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.nmox.studio.rack.devices.ProjectInspector;
+import org.nmox.studio.rack.service.RackService;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import java.awt.BorderLayout;
-import javax.swing.JScrollPane;
+import org.openide.windows.WindowManager;
 
 /**
- * Project Explorer window for NMOX Studio.
- * Provides navigation and management of project files and resources.
+ * The Workbench: a developer's home base in the left dock. Answers the
+ * three questions every arrival asks - what am I working on (current
+ * project + its toolchains), where was I (open and recent files,
+ * recent projects), and what can this thing do (the tooling shelf).
+ * One click aims the whole IDE: rack, studio, and trail follow.
  */
 @ConvertAsProperties(
         dtd = "-//org.nmox.studio.project//ProjectExplorer//EN",
@@ -34,67 +55,429 @@ import javax.swing.JScrollPane;
         preferredID = "ProjectExplorerTopComponent"
 )
 @Messages({
-    "CTL_ProjectExplorerAction=Project Explorer",
-    "CTL_ProjectExplorerTopComponent=Project Explorer",
-    "HINT_ProjectExplorerTopComponent=Project Explorer window for navigating files and resources"
+    "CTL_ProjectExplorerAction=Workbench",
+    "CTL_ProjectExplorerTopComponent=Workbench",
+    "HINT_ProjectExplorerTopComponent=Your home base: current project, open and recent files, projects and tooling"
 })
-public final class ProjectExplorerTopComponent extends TopComponent implements ExplorerManager.Provider {
+public final class ProjectExplorerTopComponent extends TopComponent {
 
-    private final ExplorerManager explorerManager = new ExplorerManager();
-    private BeanTreeView treeView;
+    // the workbench palette: the rack's dark-hardware language, lighter weight
+    private static final Color BG = new Color(25, 26, 29);
+    private static final Color SECTION = new Color(140, 142, 148);
+    private static final Color TEXT = new Color(206, 208, 212);
+    private static final Color TEXT_DIM = new Color(140, 142, 148);
+    private static final Color HOVER = new Color(42, 43, 48);
+    private static final Color ACCENT = new Color(80, 235, 100);
+    private static final Color MODIFIED = new Color(255, 190, 60);
+    private static final Color CHIP_BG = new Color(46, 47, 52);
+    private static final Font NAME_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 14);
+    private static final Font ROW_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
+    private static final Font ROW_BOLD = new Font(Font.SANS_SERIF, Font.BOLD, 12);
+    private static final Font TINY = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
+    private static final Font CHIP_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 10);
+
+    private final JPanel content = new JPanel();
+    private final JPanel header = new JPanel();
+
+    private final PropertyChangeListener registryListener = (PropertyChangeEvent evt) -> {
+        String p = evt.getPropertyName();
+        if (TopComponent.Registry.PROP_OPENED.equals(p)
+                || TopComponent.Registry.PROP_ACTIVATED.equals(p)) {
+            refresh();
+        }
+    };
 
     public ProjectExplorerTopComponent() {
-        initComponents();
         setName(NbBundle.getMessage(ProjectExplorerTopComponent.class, "CTL_ProjectExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(ProjectExplorerTopComponent.class, "HINT_ProjectExplorerTopComponent"));
-        
-        // Initialize with root node
-        explorerManager.setRootContext(createRootNode());
-    }
-
-    private void initComponents() {
         setLayout(new BorderLayout());
-        
-        // Create tree view for project navigation
-        treeView = new BeanTreeView();
-        treeView.setRootVisible(true);
-        add(new JScrollPane(treeView), BorderLayout.CENTER);
-    }
+        setBackground(BG);
 
-    private Node createRootNode() {
-        return new AbstractNode(Children.create(new ProjectChildFactory(), true)) {
-            @Override
-            public String getDisplayName() {
-                return "Projects";
-            }
-            
-            @Override
-            public String getShortDescription() {
-                return "Project workspace root";
-            }
-        };
-    }
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setBackground(BG);
+        header.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
+        add(header, BorderLayout.NORTH);
 
-    @Override
-    public ExplorerManager getExplorerManager() {
-        return explorerManager;
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setBackground(BG);
+        JScrollPane scroll = new JScrollPane(content);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(BG);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        add(scroll, BorderLayout.CENTER);
+
+        try {
+            RackService.getDefault().getRack().addListener(
+                    new org.nmox.studio.rack.model.Rack.Listener() {
+                @Override
+                public void projectChanged() {
+                    SwingUtilities.invokeLater(ProjectExplorerTopComponent.this::refresh);
+                }
+            });
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable (tests, stripped platform): static workbench
+        }
+
+        refresh();
     }
 
     @Override
     public void componentOpened() {
-        // Refresh project list when component opens
+        TopComponent.getRegistry().addPropertyChangeListener(registryListener);
+        refresh();
     }
 
     @Override
     public void componentClosed() {
-        // Cleanup when component closes
+        TopComponent.getRegistry().removePropertyChangeListener(registryListener);
     }
 
+    // ---- assembly ----
+
+    private void refresh() {
+        rebuildHeader();
+        content.removeAll();
+        addOpenFiles();
+        addRecentFiles();
+        addProjects();
+        addTooling();
+        content.add(Box.createVerticalGlue());
+        content.revalidate();
+        content.repaint();
+    }
+
+    private File projectDir() {
+        try {
+            return RackService.getDefault().getRack().getProjectDir();
+        } catch (RuntimeException | LinkageError ex) {
+            return new File(System.getProperty("user.home"));
+        }
+    }
+
+    /** Current project: name, toolchain chips, path, New/Open actions. */
+    private void rebuildHeader() {
+        header.removeAll();
+        File dir = projectDir();
+
+        JLabel name = new JLabel(dir.getName());
+        name.setFont(NAME_FONT);
+        name.setForeground(TEXT);
+        name.setAlignmentX(LEFT_ALIGNMENT);
+        header.add(name);
+
+        JPanel chips = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        chips.setBackground(BG);
+        chips.setAlignmentX(LEFT_ALIGNMENT);
+        List<String> kinds = detectKindNames(dir);
+        if (kinds.isEmpty()) {
+            chips.add(chip("no toolchain yet", TEXT_DIM));
+        } else {
+            for (String kind : kinds) {
+                chips.add(chip(kind, ACCENT));
+            }
+        }
+        header.add(chips);
+
+        JLabel path = new JLabel(dir.getAbsolutePath());
+        path.setFont(TINY);
+        path.setForeground(TEXT_DIM);
+        path.setAlignmentX(LEFT_ALIGNMENT);
+        header.add(path);
+        header.add(Box.createVerticalStrut(8));
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        actions.setBackground(BG);
+        actions.setAlignmentX(LEFT_ALIGNMENT);
+        JButton fresh = new JButton("New Project…");
+        fresh.addActionListener(e -> newProject());
+        JButton open = new JButton("Open…");
+        open.setToolTipText("Aim the whole IDE — rack, studio, workbench — at a project directory");
+        open.addActionListener(e -> openProjectDialog());
+        actions.add(fresh);
+        actions.add(open);
+        header.add(actions);
+        header.revalidate();
+        header.repaint();
+    }
+
+    private List<String> detectKindNames(File dir) {
+        List<String> names = new ArrayList<>();
+        try {
+            var kinds = ProjectInspector.detectKinds(dir).keySet();
+            int shown = 0;
+            for (var kind : kinds) {
+                if (++shown > 4) {
+                    names.add("+" + (kinds.size() - 4));
+                    break;
+                }
+                names.add(kind.name().toLowerCase());
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // detection is decoration; the workbench works without it
+        }
+        return names;
+    }
+
+    // ---- sections ----
+
+    /** Editor tabs open right now; the active one leads in bold. */
+    private void addOpenFiles() {
+        section("OPEN FILES");
+        TopComponent active = TopComponent.getRegistry().getActivated();
+        int count = 0;
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
+                continue;
+            }
+            DataObject dob = tc.getLookup().lookup(DataObject.class);
+            if (dob == null) {
+                continue;
+            }
+            File file = FileUtil.toFile(dob.getPrimaryFile());
+            String title = dob.getPrimaryFile().getNameExt();
+            boolean isActive = tc == active;
+            boolean modified = dob.isModified();
+            row(title, file != null ? file.getParent() : null,
+                    isActive, modified ? MODIFIED : null,
+                    file != null ? file.getAbsolutePath() : title,
+                    tc::requestActive);
+            count++;
+        }
+        if (count == 0) {
+            emptyRow("nothing open — pick up where you left off below");
+        }
+    }
+
+    /** The trail: recently touched files not currently open. */
+    private void addRecentFiles() {
+        section("RECENT FILES");
+        java.util.Set<String> openPaths = new java.util.HashSet<>();
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            DataObject dob = tc.getLookup().lookup(DataObject.class);
+            if (dob != null) {
+                File f = FileUtil.toFile(dob.getPrimaryFile());
+                if (f != null) {
+                    openPaths.add(f.getAbsolutePath());
+                }
+            }
+        }
+        int count = 0;
+        for (File file : RecentFiles.list()) {
+            if (openPaths.contains(file.getAbsolutePath()) || ++count > 10) {
+                continue;
+            }
+            row(file.getName(), file.getParent(), false, null,
+                    file.getAbsolutePath(), () -> openFile(file));
+        }
+        if (count == 0) {
+            emptyRow("files you open will gather here");
+        }
+    }
+
+    /** Recent projects; the aimed one carries the green dot. */
+    private void addProjects() {
+        section("PROJECTS");
+        File current = projectDir();
+        List<File> recents;
+        try {
+            recents = RackService.getDefault().getRecentProjects();
+        } catch (RuntimeException | LinkageError ex) {
+            recents = List.of();
+        }
+        if (!recents.contains(current)) {
+            recents = new ArrayList<>(recents);
+            recents.add(0, current);
+        }
+        for (File dir : recents) {
+            boolean aimed = dir.equals(current);
+            String kinds = String.join(" · ", detectKindNames(dir));
+            row(dir.getName(), kinds.isEmpty() ? dir.getParent() : kinds,
+                    aimed, aimed ? ACCENT : null,
+                    dir.getAbsolutePath() + (aimed ? "  (aimed)" : "  — click to aim the IDE here"),
+                    () -> aimAt(dir));
+        }
+    }
+
+    /** The shelf: every workshop in the building, one click each. */
+    private void addTooling() {
+        section("TOOLING");
+        row("Task Rack", "devices, cables, pipelines — Tab flips it",
+                false, null, "The Reason-style rack of task devices",
+                () -> openWindow("RackTopComponent"));
+        row("Project Studio", "templates, file CRUD, package.json",
+                false, null, "Create and configure projects",
+                () -> openWindow("ProjectStudioTopComponent"));
+        row("Infra Designer", "DigitalOcean · Hetzner · Cloudflare flows",
+                false, null, "Design and deploy infrastructure Node-RED style",
+                () -> openWindow("InfraDesignerTopComponent"));
+        row("Terminal", "phosphor shell in the project directory",
+                false, null, "Black glass, lime text", this::openTerminal);
+    }
+
+    // ---- actions ----
+
+    private void newProject() {
+        try {
+            org.nmox.studio.rack.projectstudio.NewProjectDialog dialog =
+                    new org.nmox.studio.rack.projectstudio.NewProjectDialog(this);
+            dialog.setVisible(true);
+            if (dialog.getCreatedProject() != null) {
+                // the dialog aimed the rack; surface the studio for step two
+                openWindow("ProjectStudioTopComponent");
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // dialog unavailable; the studio's own New button still works
+            openWindow("ProjectStudioTopComponent");
+        }
+    }
+
+    private void openProjectDialog() {
+        JFileChooser chooser = new JFileChooser(projectDir());
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setDialogTitle("Open Project Directory");
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            aimAt(chooser.getSelectedFile());
+        }
+    }
+
+    private void aimAt(File dir) {
+        try {
+            RackService.getDefault().openProject(dir);
+        } catch (RuntimeException | LinkageError ex) {
+            // nothing to aim without the rack
+        }
+        refresh();
+    }
+
+    private void openFile(File file) {
+        try {
+            org.nmox.studio.rack.engine.FileLink.open(
+                    new org.nmox.studio.rack.engine.FileLink.Location(file, 1));
+        } catch (RuntimeException | LinkageError ex) {
+            // file may have vanished; next refresh prunes it
+        }
+    }
+
+    private void openWindow(String preferredId) {
+        TopComponent tc = WindowManager.getDefault().findTopComponent(preferredId);
+        if (tc != null) {
+            tc.open();
+            tc.requestActive();
+        }
+    }
+
+    /** Finds the platform's terminal action wherever the module registered it. */
+    private void openTerminal() {
+        for (String id : new String[]{
+                "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
+                "LocalTerminalAction"}) {
+            javax.swing.Action action = org.openide.awt.Actions.forID("Window", id);
+            if (action != null) {
+                action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
+                return;
+            }
+        }
+    }
+
+    // ---- widgets ----
+
+    private void section(String title) {
+        JLabel label = new JLabel(title);
+        label.setFont(TINY);
+        label.setForeground(SECTION);
+        label.setBorder(BorderFactory.createEmptyBorder(10, 12, 3, 12));
+        label.setAlignmentX(LEFT_ALIGNMENT);
+        content.add(label);
+    }
+
+    private JLabel chip(String text, Color color) {
+        JLabel label = new JLabel(text);
+        label.setFont(CHIP_FONT);
+        label.setForeground(color);
+        label.setBackground(CHIP_BG);
+        label.setOpaque(true);
+        label.setBorder(BorderFactory.createEmptyBorder(1, 6, 1, 6));
+        return label;
+    }
+
+    private void emptyRow(String hint) {
+        JLabel label = new JLabel(hint);
+        label.setFont(ROW_FONT);
+        label.setForeground(TEXT_DIM);
+        label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
+        label.setAlignmentX(LEFT_ALIGNMENT);
+        content.add(label);
+    }
+
+    /** One clickable row: title, dim subtitle, optional status dot. */
+    private void row(String title, String subtitle, boolean bold, Color dot,
+            String tooltip, Runnable onClick) {
+        JPanel rowPanel = new JPanel();
+        rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
+        rowPanel.setBackground(BG);
+        rowPanel.setBorder(BorderFactory.createEmptyBorder(3, 14, 3, 12));
+        rowPanel.setAlignmentX(LEFT_ALIGNMENT);
+        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+        rowPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        rowPanel.setToolTipText(tooltip);
+
+        if (dot != null) {
+            JLabel dotLabel = new JLabel("●");
+            dotLabel.setFont(TINY);
+            dotLabel.setForeground(dot);
+            dotLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+            rowPanel.add(dotLabel);
+        }
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(bold ? ROW_BOLD : ROW_FONT);
+        titleLabel.setForeground(TEXT);
+        rowPanel.add(titleLabel);
+        if (subtitle != null && !subtitle.isBlank()) {
+            JLabel sub = new JLabel(shorten(subtitle, 38));
+            sub.setFont(TINY);
+            sub.setForeground(TEXT_DIM);
+            sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
+            rowPanel.add(sub);
+        }
+        rowPanel.add(Box.createHorizontalGlue());
+
+        rowPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                rowPanel.setBackground(HOVER);
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                rowPanel.setBackground(BG);
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    onClick.run();
+                }
+            }
+        });
+        content.add(rowPanel);
+    }
+
+    /** Middle-ellipsis so deep paths keep their telling ends. */
+    static String shorten(String s, int max) {
+        if (s.length() <= max) {
+            return s;
+        }
+        int keep = (max - 1) / 2;
+        return s.substring(0, keep) + "…" + s.substring(s.length() - keep);
+    }
+
+    // ---- persistence ----
+
     void writeProperties(java.util.Properties p) {
-        p.setProperty("version", "1.0");
+        p.setProperty("version", "2.0");
     }
 
     void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
+        // nothing to restore: the workbench reflects live state
     }
 }
