@@ -14,9 +14,11 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
 /**
- * Runs external tool processes for rack devices: streams merged
- * stdout/stderr line by line to the device (for meters and LCDs) and
- * mirrors everything into a NetBeans Output window tab per device.
+ * Runs external tool processes for rack devices: streams stdout and
+ * stderr line by line to the device (for meters and LCDs), publishes
+ * every line on the {@link RackBus} tagged with its stream, and mirrors
+ * everything into a NetBeans Output window tab per device - stderr in
+ * the error color, exactly as a terminal would.
  */
 public final class CommandExecutor {
 
@@ -55,7 +57,6 @@ public final class CommandExecutor {
             // IDE has a bare PATH with no node/npm/git on it
             ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(command))
                     .directory(dir)
-                    .redirectErrorStream(true)
                     // no terminal is attached: an interactive prompt would
                     // hang forever, so give prompts an empty stdin instead
                     .redirectInput(devNull());
@@ -72,6 +73,7 @@ public final class CommandExecutor {
                 out.println(msg);
             }
             safeAccept(onLine, msg);
+            RackBus.publish(tabName, msg, true);
             onExit.accept(-1);
             return new Handle() {
                 @Override
@@ -85,31 +87,18 @@ public final class CommandExecutor {
             };
         }
 
+        OutputWriter err = io == null ? null : io.getErr();
+        Thread errPump = new Thread(
+                () -> pumpStream(process.getErrorStream(), err, true, tabName, dir, onLine),
+                "nmox-rack-errpump-" + tabName);
+        errPump.setDaemon(true);
+        errPump.start();
+
         Thread pump = new Thread(() -> {
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String clean = stripAnsi(line);
-                    if (out != null) {
-                        FileLink.Location loc = FileLink.find(clean, dir);
-                        if (loc != null) {
-                            try {
-                                out.println(clean, FileLink.opener(loc));
-                            } catch (IOException ex) {
-                                out.println(clean);
-                            }
-                        } else {
-                            out.println(clean);
-                        }
-                    }
-                    safeAccept(onLine, clean);
-                }
-            } catch (IOException ignored) {
-                // stream closes when the process dies or is killed
-            }
+            pumpStream(process.getInputStream(), out, false, tabName, dir, onLine);
             int code;
             try {
+                errPump.join(5_000);
                 code = process.waitFor();
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -146,6 +135,40 @@ public final class CommandExecutor {
                 return process.isAlive();
             }
         };
+    }
+
+    /**
+     * Drains one of the process's streams: ANSI-stripped lines go to the
+     * device callback (devices parse markers from either stream - vite
+     * logs to stderr), onto the rack bus tagged with their origin, and
+     * into the Output window, where stderr prints in the error color and
+     * file:line references become clickable links.
+     */
+    private static void pumpStream(java.io.InputStream stream, OutputWriter writer,
+            boolean isErr, String tabName, File dir, Consumer<String> onLine) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String clean = stripAnsi(line);
+                if (writer != null) {
+                    FileLink.Location loc = FileLink.find(clean, dir);
+                    if (loc != null) {
+                        try {
+                            writer.println(clean, FileLink.opener(loc));
+                        } catch (IOException ex) {
+                            writer.println(clean);
+                        }
+                    } else {
+                        writer.println(clean);
+                    }
+                }
+                safeAccept(onLine, clean);
+                RackBus.publish(tabName, clean, isErr);
+            }
+        } catch (IOException ignored) {
+            // stream closes when the process dies or is killed
+        }
     }
 
     /** ANSI CSI/OSC escape sequences, e.g. color codes from vite/vitest. */

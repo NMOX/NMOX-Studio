@@ -16,6 +16,26 @@ import org.nmox.studio.rack.model.RackIO;
  */
 public enum RackPresets {
 
+    WEB_PIPELINE("Web Pipeline",
+            "MAESTRO fires install → build → test; SURGE pops the browser when serving") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice master = add(rack, DeviceType.MASTER, null);
+            RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
+            RackDevice build = add(rack, DeviceType.BUILD, null);
+            RackDevice test = add(rack, DeviceType.TEST, null);
+            RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
+            RackDevice browser = add(rack, DeviceType.BROWSER, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            rack.connect(master.getPort("trig1"), deps.getPort("run"));
+            rack.connect(deps.getPort("ok"), build.getPort("run"));
+            rack.connect(build.getPort("ok"), test.getPort("run"));
+            rack.connect(test.getPort("out"), console.getPort("in"));
+            rack.connect(server.getPort("url"), browser.getPort("url"));
+            rack.connect(server.getPort("ready"), browser.getPort("open"));
+        }
+    },
+
     DEV_LOOP("Dev Loop",
             "Dev server auto-opens the browser; saves run the tests") {
         @Override

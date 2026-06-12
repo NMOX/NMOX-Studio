@@ -389,6 +389,7 @@ public abstract class RackDevice extends JPanel {
             g.setFont(RackStyle.LABEL_FONT);
             g.setColor(RackStyle.SILKSCREEN_DIM);
             g.drawString(title + "  —  REAR", RackStyle.EAR_WIDTH + 14, 18);
+            paintRearHardware(g, w, h);
             paintJackGroups(g, h);
             for (Port p : ports) {
                 paintJack(g, p);
@@ -409,6 +410,56 @@ public abstract class RackDevice extends JPanel {
         RackStyle.paintScrew(g, RackStyle.EAR_WIDTH / 2, h - 12);
         RackStyle.paintScrew(g, getWidth() - RackStyle.EAR_WIDTH / 2, 12);
         RackStyle.paintScrew(g, getWidth() - RackStyle.EAR_WIDTH / 2, h - 12);
+    }
+
+    /**
+     * The hardware every real unit carries on its back: an IEC power
+     * inlet with its fuse drawer, voltage silkscreen, and a serial
+     * sticker. Pure decoration - but it is what makes the rear of the
+     * rack read as GEAR rather than a diagram. 2U and up only; a 1U
+     * back is all jacks.
+     */
+    private void paintRearHardware(Graphics2D g, int w, int h) {
+        if (h < 2 * RackStyle.UNIT) {
+            return;
+        }
+        int x = w - RackStyle.EAR_WIDTH - 96;
+        int y = 10;
+        // IEC C14 inlet: recessed black trapezoid with three pin slots
+        g.setColor(new Color(16, 16, 18));
+        g.fillRoundRect(x, y, 44, 30, 4, 4);
+        g.setColor(new Color(70, 71, 75));
+        g.drawRoundRect(x, y, 44, 30, 4, 4);
+        g.setColor(new Color(8, 8, 9));
+        g.fillRoundRect(x + 5, y + 5, 34, 20, 6, 6);
+        g.setColor(new Color(170, 172, 176));
+        g.fillRect(x + 11, y + 12, 4, 8);   // L
+        g.fillRect(x + 20, y + 9, 4, 8);    // E
+        g.fillRect(x + 29, y + 12, 4, 8);   // N
+        // fuse drawer beneath the inlet
+        g.setColor(new Color(30, 30, 33));
+        g.fillRoundRect(x + 50, y + 6, 26, 12, 3, 3);
+        g.setColor(new Color(8, 8, 9));
+        g.drawRoundRect(x + 50, y + 6, 26, 12, 3, 3);
+        g.setFont(RackStyle.TINY_FONT);
+        g.setColor(RackStyle.SILKSCREEN_DIM);
+        g.drawString("FUSE T1A", x + 50, y + 30);
+        g.drawString("100-240V~ 50/60Hz", x - 110, y + 12);
+        // serial sticker: pale label, barcode, number from the type id
+        int sx = x - 110, sy = y + 18;
+        g.setColor(new Color(214, 211, 196));
+        g.fillRect(sx, sy, 96, 20);
+        g.setColor(new Color(20, 20, 22));
+        int bar = sx + 4;
+        int seed = typeId.hashCode();
+        while (bar < sx + 64) {
+            int bw = 1 + Math.floorMod(seed >> (bar % 13), 3);
+            g.fillRect(bar, sy + 3, bw, 10);
+            bar += bw + 2;
+        }
+        g.setFont(RackStyle.TINY_FONT);
+        g.drawString("S/N " + String.format("%07d", Math.floorMod(seed, 10_000_000)),
+                sx + 4, sy + 18);
     }
 
     private void paintJackGroups(Graphics2D g, int h) {

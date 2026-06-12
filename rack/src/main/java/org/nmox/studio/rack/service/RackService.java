@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.model.Rack;
-import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.RackIO;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -113,33 +112,13 @@ public class RackService {
     }
 
     /**
-     * Starter rack: a working web pipeline. MAESTRO fires install; a
-     * green install builds; a green build tests; test output scrolls on
-     * the console. Independently, starting SURGE hands its URL to SCOPE
-     * and pops the browser the moment the dev server answers.
+     * Starter rack: a single MONITOR with its TAP on stderr - the first
+     * thing a new user sees is one honest unit that shows every error
+     * anything in the rack prints, before a single cable is patched.
+     * The full pipeline lives one click away in Presets ("Web Pipeline").
      */
     private void loadDefaultRack() {
-        RackDevice master = DeviceType.MASTER.create();
-        RackDevice deps = DeviceType.PACKAGE_MANAGER.create();
-        RackDevice build = DeviceType.BUILD.create();
-        RackDevice test = DeviceType.TEST.create();
-        RackDevice server = DeviceType.DEV_SERVER.create();
-        RackDevice browser = DeviceType.BROWSER.create();
-        RackDevice console = DeviceType.CONSOLE.create();
-        rack.addDevice(master);
-        rack.addDevice(deps);
-        rack.addDevice(build);
-        rack.addDevice(test);
-        rack.addDevice(server);
-        rack.addDevice(browser);
-        rack.addDevice(console);
-
-        rack.connect(master.getPort("trig1"), deps.getPort("run"));
-        rack.connect(deps.getPort("ok"), build.getPort("run"));
-        rack.connect(build.getPort("ok"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(server.getPort("url"), browser.getPort("url"));
-        rack.connect(server.getPort("ready"), browser.getPort("open"));
+        rack.addDevice(DeviceType.CONSOLE.create());
     }
 
     /**

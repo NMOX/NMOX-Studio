@@ -40,6 +40,30 @@ class CommandExecutorTest {
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("stderr keeps its identity: bus lines are tagged by stream, devices see both")
+    void shouldSeparateStderrOnTheBus() throws Exception {
+        List<String> busLines = new java.util.concurrent.CopyOnWriteArrayList<>();
+        RackBus.Listener tap = (device, line, err) -> busLines.add(device + "|" + line + "|" + err);
+        RackBus.subscribe(tap);
+        try {
+            CountDownLatch done = new CountDownLatch(1);
+            List<String> deviceLines = new java.util.concurrent.CopyOnWriteArrayList<>();
+            CommandExecutor.run("streams", new File("."), Map.of(),
+                    List.of("sh", "-c", "echo plain; echo broken 1>&2"),
+                    deviceLines::add, code -> done.countDown());
+
+            assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThat(busLines).containsExactlyInAnyOrder(
+                    "streams|plain|false", "streams|broken|true");
+            // the device callback still hears both streams (parsers need both)
+            assertThat(deviceLines).containsExactlyInAnyOrder("plain", "broken");
+        } finally {
+            RackBus.unsubscribe(tap);
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("A command that reads stdin must finish instantly, not hang")
     void shouldNotHangOnStdinReads() throws Exception {
         CountDownLatch done = new CountDownLatch(1);
