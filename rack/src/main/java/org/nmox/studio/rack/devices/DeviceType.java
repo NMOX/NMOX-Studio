@@ -36,7 +36,8 @@ public enum DeviceType {
     TEMPO("tempo", "TEMPO", "Step Sequencer — fire pipelines on a clock", new Color(255, 211, 105), TempoDevice::new),
     TYPECHECK("typecheck", "TYPEGUARD", "Type Checker — tsc, watch-aware", new Color(49, 120, 198), TypecheckDevice::new),
     TUNNEL("tunnel", "WORMHOLE", "Public Tunnel — cloudflared/ngrok/localtunnel", new Color(156, 89, 209), TunnelDevice::new),
-    BENCH("bench", "GAUNTLET", "Load Bench — autocannon throughput", new Color(224, 122, 47), BenchDevice::new);
+    BENCH("bench", "GAUNTLET", "Load Bench — autocannon throughput", new Color(224, 122, 47), BenchDevice::new),
+    DOCKER("docker", "HARBOR", "Docker Engine — panel, prune, status", new Color(36, 150, 237), DockerDevice::new);
 
     private final String id;
     private final String title;
@@ -92,7 +93,7 @@ public enum DeviceType {
             case DEV_SERVER, TUNNEL, BROWSER, HTTP -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, BENCH, DEBUG -> PaletteCategory.OBSERVE;
-            case GIT, AUDIT, DEPLOY -> PaletteCategory.SHIP;
+            case GIT, AUDIT, DEPLOY, DOCKER -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
         };
     }
@@ -127,6 +128,7 @@ public enum DeviceType {
             case DEPLOY -> "Flip ARM, then LAUNCH deploys to the dialed target.\nUnarmed pads ignore even patched triggers - by design.";
             case ENV -> "Sets NODE_ENV/CI/custom vars for every command the rack runs.\nWhat the knob says is what every device gets.";
             case ROSETTA -> "Mixed repo? Pin every AUTO knob to one toolchain with the dial.\nAUTO follows detection; KIND out reports the choice.";
+            case DOCKER -> "The ENGINE LED tracks the daemon; LCDs show containers up, images held, disk reclaimable.\nPANEL opens the full control room — containers, images, volumes, networks, and one-click Dockerize.";
         };
     }
 
