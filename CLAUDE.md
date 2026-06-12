@@ -111,7 +111,7 @@ NMOX-Studio/
 | **core** | Platform services and infrastructure | `ServiceManager`, `FileCache`, `PerformanceMonitor` |
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
-| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 22 task devices (incl. IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 23 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
 | **branding** | Application identity | Splash screen, icons, custom branding |

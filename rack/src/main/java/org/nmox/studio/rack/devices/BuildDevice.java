@@ -97,7 +97,7 @@ public class BuildDevice extends CommandDevice {
             return tool;
         }
         // non-Node toolchains build with their own tool
-        ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(projectDir());
+        ProjectInspector.ProjectKind kind = effectiveKind();
         if (kind != ProjectInspector.ProjectKind.NODE
                 && kind != ProjectInspector.ProjectKind.NONE) {
             return "kind:" + kind.name();
@@ -124,6 +124,16 @@ public class BuildDevice extends CommandDevice {
             case PHP -> List.of("composer", "install", "--no-dev", "--optimize-autoloader");
             default -> List.of("npm", "run", "build");
         };
+    }
+
+    /** Builds run where the effective toolchain's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        String tool = effectiveTool();
+        ProjectInspector.ProjectKind kind = tool.startsWith("kind:")
+                ? ProjectInspector.ProjectKind.valueOf(tool.substring(5))
+                : ProjectInspector.ProjectKind.NODE;
+        return ProjectInspector.kindDir(projectDir(), kind);
     }
 
     @Override

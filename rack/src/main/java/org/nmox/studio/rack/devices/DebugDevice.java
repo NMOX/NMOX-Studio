@@ -58,7 +58,7 @@ public class DebugDevice extends CommandDevice {
         if (!"auto".equals(target)) {
             return target;
         }
-        return switch (ProjectInspector.detectKind(projectDir())) {
+        return switch (effectiveKind()) {
             case PYTHON -> "python";
             case GO -> "go";
             case MAVEN, GRADLE -> "maven";
@@ -68,10 +68,31 @@ public class DebugDevice extends CommandDevice {
         };
     }
 
+
+    private static ProjectInspector.ProjectKind kindForTarget(String target) {
+        return switch (target) {
+            case "rust" -> ProjectInspector.ProjectKind.RUST;
+            case "go" -> ProjectInspector.ProjectKind.GO;
+            case "maven" -> ProjectInspector.ProjectKind.MAVEN;
+            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
+            case "python" -> ProjectInspector.ProjectKind.PYTHON;
+            case "ruby" -> ProjectInspector.ProjectKind.RUBY;
+            case "php" -> ProjectInspector.ProjectKind.PHP;
+            case "make" -> ProjectInspector.ProjectKind.MAKE;
+            default -> ProjectInspector.ProjectKind.NODE;
+        };
+    }
+
+    /** Commands run where the selected target's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), kindForTarget(effectiveTarget()));
+    }
+
     /** First existing candidate file, else the first candidate. */
     private String entryPoint(String... candidates) {
         for (String candidate : candidates) {
-            if (new File(projectDir(), candidate).isFile()) {
+            if (new File(commandDir(), candidate).isFile()) {
                 return candidate;
             }
         }

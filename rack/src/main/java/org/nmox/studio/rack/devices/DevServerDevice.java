@@ -96,6 +96,12 @@ public class DevServerDevice extends CommandDevice {
         return "http-server";
     }
 
+    /** npm speaks from the package.json directory, monorepo or not. */
+    @Override
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
+    }
+
     @Override
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>();

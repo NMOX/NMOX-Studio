@@ -76,7 +76,7 @@ public class RunDevice extends CommandDevice {
         if (!"auto".equals(target)) {
             return target;
         }
-        return switch (ProjectInspector.detectKind(projectDir())) {
+        return switch (effectiveKind()) {
             case NODE -> "node";
             case RUST -> "rust";
             case GO -> "go";
@@ -90,10 +90,31 @@ public class RunDevice extends CommandDevice {
         };
     }
 
+
+    private static ProjectInspector.ProjectKind kindForTarget(String target) {
+        return switch (target) {
+            case "rust" -> ProjectInspector.ProjectKind.RUST;
+            case "go" -> ProjectInspector.ProjectKind.GO;
+            case "maven" -> ProjectInspector.ProjectKind.MAVEN;
+            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
+            case "python" -> ProjectInspector.ProjectKind.PYTHON;
+            case "ruby" -> ProjectInspector.ProjectKind.RUBY;
+            case "php" -> ProjectInspector.ProjectKind.PHP;
+            case "make" -> ProjectInspector.ProjectKind.MAKE;
+            default -> ProjectInspector.ProjectKind.NODE;
+        };
+    }
+
+    /** Commands run where the selected target's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), kindForTarget(effectiveTarget()));
+    }
+
     /** First existing candidate file, else the first candidate. */
     private String entryPoint(String... candidates) {
         for (String candidate : candidates) {
-            if (new File(projectDir(), candidate).isFile()) {
+            if (new File(commandDir(), candidate).isFile()) {
                 return candidate;
             }
         }
@@ -108,11 +129,11 @@ public class RunDevice extends CommandDevice {
             case "rust" -> List.of("cargo", "run");
             case "maven" -> List.of("mvn", "-q", "compile", "exec:java");
             case "gradle" -> List.of("gradle", "run", "--quiet");
-            case "ruby" -> new File(projectDir(), "config.ru").isFile()
+            case "ruby" -> new File(commandDir(), "config.ru").isFile()
                     ? List.of("rackup")
                     : List.of("ruby", entryPoint("main.rb", "app.rb"));
             case "php" -> List.of("php", "-S", "localhost:8000",
-                    "-t", new File(projectDir(), "public").isDirectory() ? "public" : ".");
+                    "-t", new File(commandDir(), "public").isDirectory() ? "public" : ".");
             case "make" -> List.of("make", "run");
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")

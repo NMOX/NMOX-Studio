@@ -33,7 +33,7 @@ public class PackageManagerDevice extends CommandDevice {
         depsLcd.setText("—");
         depsLcd.setToolTipText("dependencies + devDependencies declared in package.json");
 
-        install.addActionListener(e -> launch(cmd("install")));
+        install.addActionListener(e -> installAll());
         update.addActionListener(e -> launch(cmd("update")));
         outdated.addActionListener(e -> launch(cmd("outdated")));
         stop.addActionListener(e -> stopProcess());
@@ -56,8 +56,12 @@ public class PackageManagerDevice extends CommandDevice {
      */
     private List<String> cmd(String verb) {
         ProjectInspector.ProjectKind kind = isAuto()
-                ? ProjectInspector.detectKind(projectDir())
+                ? effectiveKind()
                 : ProjectInspector.ProjectKind.NODE;
+        return cmdFor(kind, verb);
+    }
+
+    private List<String> cmdFor(ProjectInspector.ProjectKind kind, String verb) {
         return switch (kind) {
             case RUST -> switch (verb) {
                 case "update" -> List.of("cargo", "update");
@@ -77,7 +81,8 @@ public class PackageManagerDevice extends CommandDevice {
             case PYTHON -> switch (verb) {
                 case "update" -> List.of("pip", "install", "--upgrade", "-r", "requirements.txt");
                 case "outdated" -> List.of("pip", "list", "--outdated");
-                default -> new java.io.File(projectDir(), "requirements.txt").isFile()
+                default -> new java.io.File(ProjectInspector.kindDir(projectDir(),
+                        ProjectInspector.ProjectKind.PYTHON), "requirements.txt").isFile()
                         ? List.of("pip", "install", "-r", "requirements.txt")
                         : List.of("pip", "install", "-e", ".");
             };
@@ -94,6 +99,42 @@ public class PackageManagerDevice extends CommandDevice {
             default -> List.of(manager(),
                     "update".equals(verb) && "yarn".equals(manager()) ? "upgrade" : verb);
         };
+    }
+
+    /** Single launches run where the effective toolchain's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        ProjectInspector.ProjectKind kind = isAuto()
+                ? effectiveKind() : ProjectInspector.ProjectKind.NODE;
+        return ProjectInspector.kindDir(projectDir(), kind);
+    }
+
+    /**
+     * INSTALL bootstraps the whole repo: in AUTO with no ROSETTA
+     * override, a mixed project sequences every toolchain's install,
+     * each in its own manifest directory - one button press readies
+     * frontend and backend alike.
+     */
+    private void installAll() {
+        if (!isAuto() || (getRack() != null && getRack().getToolchainOverride() != null)) {
+            launch(cmd("install"));
+            return;
+        }
+        var kinds = ProjectInspector.detectKinds(projectDir());
+        if (kinds.size() <= 1) {
+            launch(cmd("install"));
+            return;
+        }
+        List<Step> steps = new java.util.ArrayList<>();
+        for (var entry : kinds.entrySet()) {
+            steps.add(new Step(cmdFor(entry.getKey(), "install"), entry.getValue()));
+        }
+        launchSequence(steps);
+    }
+
+    @Override
+    protected void primaryAction() {
+        installAll();
     }
 
     @Override
@@ -119,10 +160,13 @@ public class PackageManagerDevice extends CommandDevice {
 
     private void refreshDepsLcd() {
         int[] counts = ProjectInspector.dependencyCounts(projectDir());
-        ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(projectDir());
+        var kinds = ProjectInspector.detectKinds(projectDir());
         onEdt(() -> {
-            depsLcd.setText(counts != null ? counts[0] + "+" + counts[1] + " DEPS"
-                    : kind != ProjectInspector.ProjectKind.NONE ? kind.manifest() : "NO PROJECT");
+            depsLcd.setText(counts != null && kinds.size() <= 1
+                    ? counts[0] + "+" + counts[1] + " DEPS"
+                    : kinds.size() > 1 ? kinds.size() + " TOOLCHAINS"
+                    : !kinds.isEmpty() ? kinds.keySet().iterator().next().manifest()
+                    : "NO PROJECT");
             depsLcd.setToolTipText(counts == null
                     ? "No package.json in the project"
                     : counts[0] + " dependencies, " + counts[1] + " devDependencies");

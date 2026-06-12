@@ -60,7 +60,7 @@ public class TestDevice extends CommandDevice {
         if (!"auto".equals(fw)) {
             return fw;
         }
-        ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(projectDir());
+        ProjectInspector.ProjectKind kind = effectiveKind();
         switch (kind) {
             case RUST: return "cargo";
             case GO: return "go";
@@ -82,6 +82,22 @@ public class TestDevice extends CommandDevice {
         return dep != null ? dep : "npm-script";
     }
 
+    /** Tests run where the selected runner's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        ProjectInspector.ProjectKind kind = switch (effectiveFramework()) {
+            case "cargo" -> ProjectInspector.ProjectKind.RUST;
+            case "go" -> ProjectInspector.ProjectKind.GO;
+            case "mvn" -> ProjectInspector.ProjectKind.MAVEN;
+            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
+            case "pytest" -> ProjectInspector.ProjectKind.PYTHON;
+            case "rspec" -> ProjectInspector.ProjectKind.RUBY;
+            case "phpunit" -> ProjectInspector.ProjectKind.PHP;
+            default -> ProjectInspector.ProjectKind.NODE;
+        };
+        return ProjectInspector.kindDir(projectDir(), kind);
+    }
+
     @Override
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>();
@@ -96,10 +112,10 @@ public class TestDevice extends CommandDevice {
             case "go" -> cmd.addAll(List.of("go", "test", "./..."));
             case "mvn" -> cmd.addAll(List.of("mvn", "-q", "test"));
             case "gradle" -> cmd.addAll(List.of("gradle", "test"));
-            case "rspec" -> cmd.addAll(new java.io.File(projectDir(), "spec").isDirectory()
+            case "rspec" -> cmd.addAll(new java.io.File(commandDir(), "spec").isDirectory()
                     ? List.of("bundle", "exec", "rspec")
                     : List.of("rake", "test"));
-            case "phpunit" -> cmd.addAll(new java.io.File(projectDir(), "vendor/bin/phpunit").isFile()
+            case "phpunit" -> cmd.addAll(new java.io.File(commandDir(), "vendor/bin/phpunit").isFile()
                     ? List.of("./vendor/bin/phpunit")
                     : List.of("phpunit"));
             default -> cmd.addAll(List.of("npm", "test"));

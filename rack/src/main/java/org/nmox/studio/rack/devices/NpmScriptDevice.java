@@ -49,7 +49,8 @@ public class NpmScriptDevice extends CommandDevice {
     }
 
     private void reloadScripts() {
-        File pkg = new File(projectDir(), "package.json");
+        File pkg = new File(ProjectInspector.kindDir(projectDir(),
+                ProjectInspector.ProjectKind.NODE), "package.json");
         List<String> names = new ArrayList<>();
         if (pkg.isFile()) {
             try {
@@ -71,6 +72,12 @@ public class NpmScriptDevice extends CommandDevice {
             scriptKnob.setOptions(names.toArray(new String[0]));
             statusLcd.setText(pkg.isFile() ? names.size() + " SCRIPTS LOADED" : "NO PACKAGE.JSON");
         });
+    }
+
+    /** npm speaks from the package.json directory, monorepo or not. */
+    @Override
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
     }
 
     @Override

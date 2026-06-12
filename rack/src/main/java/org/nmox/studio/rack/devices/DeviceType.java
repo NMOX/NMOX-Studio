@@ -12,6 +12,7 @@ public enum DeviceType {
 
     MASTER("master", "MAESTRO", "Master Control — fire whole pipelines", new Color(240, 196, 25), MasterControlDevice::new),
     REFLEX("reflex", "REFLEX", "File Watcher — fire pipelines on save", new Color(236, 106, 168), ReflexDevice::new),
+    ROSETTA("rosetta", "ROSETTA", "Language Selector — steer AUTO knobs in mixed repos", new Color(64, 224, 178), RosettaDevice::new),
     RUN("run", "IGNITION", "Polyglot Runtime — run anything: node/go/rust/py/rb/php", new Color(255, 94, 58), RunDevice::new),
     DEBUG("debug", "INSPECTOR", "Debug Launcher — debug servers with attach endpoints", new Color(186, 85, 255), DebugDevice::new),
     NPM_SCRIPT("npm-script", "NPM-9000", "Script Sequencer — run package.json scripts", new Color(203, 56, 55), NpmScriptDevice::new),

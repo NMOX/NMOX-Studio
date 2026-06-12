@@ -202,11 +202,17 @@ public abstract class RackDevice extends JPanel {
     /** Like {@link #exec} with additional environment for this launch only. */
     protected void exec(List<String> command, Map<String, String> extraEnv,
             Consumer<String> onLine, IntConsumer onExit) {
+        exec(command, extraEnv, projectDir(), onLine, onExit);
+    }
+
+    /** Full control: extra env and an explicit working directory. */
+    protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
+            Consumer<String> onLine, IntConsumer onExit) {
         stopProcess();
         Map<String, String> env = new LinkedHashMap<>(
                 rack != null ? rack.getEnvOverrides() : Map.of());
         env.putAll(extraEnv);
-        running = CommandExecutor.run(title, projectDir(), env,
+        running = CommandExecutor.run(title, workingDir, env,
                 command, onLine, code -> {
                     running = null;
                     onExit.accept(code);
