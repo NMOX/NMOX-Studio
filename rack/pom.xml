@@ -138,6 +138,7 @@
                         <publicPackage>org.nmox.studio.rack.service</publicPackage>
                         <publicPackage>org.nmox.studio.rack.engine</publicPackage>
                         <publicPackage>org.nmox.studio.rack.projectstudio</publicPackage>
+                        <publicPackage>org.nmox.studio.rack.docker</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
