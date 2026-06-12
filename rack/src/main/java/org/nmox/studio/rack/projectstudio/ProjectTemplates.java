@@ -1150,6 +1150,41 @@ public enum ProjectTemplates {
      * contain files): sources, package.json, .gitignore, README, and the
      * pre-wired rack patch.
      */
+    /**
+     * Every real project starts versioned: init a repo and lay down the
+     * first commit so TIMELINE and the platform's git colors work from
+     * minute one. Best-effort - a machine without git still gets its
+     * project, just unversioned.
+     */
+    public static void initGitRepo(File dir) {
+        if (run(dir, "git", "init") != 0) {
+            return;
+        }
+        run(dir, "git", "add", "-A");
+        if (run(dir, "git", "commit", "-m", "Initial commit — scaffolded by NMOX Studio") != 0) {
+            // no committer identity configured; commit with a local fallback
+            run(dir, "git", "-c", "user.name=NMOX Studio", "-c", "user.email=studio@nmox.local",
+                    "commit", "-m", "Initial commit — scaffolded by NMOX Studio");
+        }
+    }
+
+    private static int run(File dir, String... cmd) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    org.nmox.studio.rack.engine.ToolLocator.resolveCommand(java.util.List.of(cmd)))
+                    .directory(dir)
+                    .redirectErrorStream(true)
+                    .redirectInput(new File("/dev/null"));
+            pb.environment().put("PATH", org.nmox.studio.rack.engine.ToolLocator.augmentedPath());
+            pb.environment().put("GIT_TERMINAL_PROMPT", "0");
+            Process proc = pb.start();
+            proc.getInputStream().readAllBytes();
+            return proc.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) ? proc.exitValue() : -1;
+        } catch (Exception ex) {
+            return -1;
+        }
+    }
+
     public void generate(File dir, String name) throws IOException {
         Path root = dir.toPath();
         Files.createDirectories(root);
