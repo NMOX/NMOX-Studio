@@ -153,6 +153,29 @@ public final class ProjectInspector {
         };
     }
 
+    /** True when the project (or its Node subproject) is an Angular workspace. */
+    public static boolean hasAngular(File projectDir) {
+        return new File(projectDir, "angular.json").isFile()
+                || new File(kindDir(projectDir, ProjectKind.NODE), "angular.json").isFile();
+    }
+
+    /** The declared version constraint of a dependency, or null. */
+    public static String dependencyVersion(File projectDir, String name) {
+        JSONObject json = read(projectDir);
+        if (json == null) {
+            return null;
+        }
+        JSONObject deps = json.optJSONObject("dependencies");
+        if (deps != null && deps.has(name)) {
+            return deps.getString(name);
+        }
+        JSONObject devDeps = json.optJSONObject("devDependencies");
+        if (devDeps != null && devDeps.has(name)) {
+            return devDeps.getString(name);
+        }
+        return null;
+    }
+
     /**
      * The first of the candidate packages found in dependencies or
      * devDependencies, or null. Order expresses preference.

@@ -721,6 +721,253 @@ public enum ProjectTemplates {
                 - arm REFLEX's WATCH switch for a save-driven test loop
                 """;
         }
+    },
+
+    ANGULAR("Angular (standalone)", "Angular 22, zoneless, signals + control flow, HALO-wired") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "package.json", """
+                {
+                  "name": "%s",
+                  "version": "0.1.0",
+                  "private": true,
+                  "scripts": {
+                    "ng": "ng",
+                    "start": "ng serve",
+                    "build": "ng build",
+                    "test": "ng test"
+                  },
+                  "dependencies": {
+                    "@angular/common": "^22.0.0",
+                    "@angular/compiler": "^22.0.0",
+                    "@angular/core": "^22.0.0",
+                    "@angular/platform-browser": "^22.0.0",
+                    "@angular/router": "^22.0.0",
+                    "rxjs": "~7.8.0",
+                    "tslib": "^2.8.0"
+                  },
+                  "devDependencies": {
+                    "@angular/build": "^22.0.0",
+                    "@angular/cli": "^22.0.0",
+                    "@angular/compiler-cli": "^22.0.0",
+                    "typescript": "~5.9.0"
+                  }
+                }
+                """.formatted(name));
+            write(dir, "angular.json", """
+                {
+                  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+                  "version": 1,
+                  "projects": {
+                    "%s": {
+                      "projectType": "application",
+                      "root": "",
+                      "sourceRoot": "src",
+                      "prefix": "app",
+                      "architect": {
+                        "build": {
+                          "builder": "@angular/build:application",
+                          "options": {
+                            "outputPath": "dist/%s",
+                            "index": "src/index.html",
+                            "browser": "src/main.ts",
+                            "tsConfig": "tsconfig.app.json",
+                            "styles": ["src/styles.css"]
+                          },
+                          "configurations": {
+                            "production": {"outputHashing": "all"},
+                            "development": {"optimization": false, "sourceMap": true}
+                          },
+                          "defaultConfiguration": "production"
+                        },
+                        "serve": {
+                          "builder": "@angular/build:dev-server",
+                          "configurations": {
+                            "production": {"buildTarget": "%s:build:production"},
+                            "development": {"buildTarget": "%s:build:development"}
+                          },
+                          "defaultConfiguration": "development"
+                        },
+                        "test": {
+                          "builder": "@angular/build:unit-test"
+                        }
+                      }
+                    }
+                  }
+                }
+                """.formatted(name, name, name, name));
+            write(dir, "tsconfig.json", """
+                {
+                  "compileOnSave": false,
+                  "compilerOptions": {
+                    "strict": true,
+                    "noImplicitOverride": true,
+                    "noPropertyAccessFromIndexSignature": true,
+                    "noImplicitReturns": true,
+                    "noFallthroughCasesInSwitch": true,
+                    "skipLibCheck": true,
+                    "isolatedModules": true,
+                    "experimentalDecorators": false,
+                    "moduleResolution": "bundler",
+                    "importHelpers": true,
+                    "target": "ES2022",
+                    "module": "preserve"
+                  },
+                  "angularCompilerOptions": {
+                    "enableI18nLegacyMessageIdFormat": false,
+                    "strictInjectionParameters": true,
+                    "strictInputAccessModifiers": true,
+                    "typeCheckHostBindings": true,
+                    "strictTemplates": true
+                  }
+                }
+                """);
+            write(dir, "tsconfig.app.json", """
+                {
+                  "extends": "./tsconfig.json",
+                  "compilerOptions": {"outDir": "./out-tsc/app", "types": []},
+                  "files": ["src/main.ts"],
+                  "include": ["src/**/*.d.ts"]
+                }
+                """);
+            write(dir, "src/index.html", """
+                <!doctype html>
+                <html lang="en">
+                <head>
+                  <meta charset="utf-8">
+                  <title>%s</title>
+                  <meta name="viewport" content="width=device-width, initial-scale=1">
+                </head>
+                <body>
+                  <app-root></app-root>
+                </body>
+                </html>
+                """.formatted(name));
+            write(dir, "src/styles.css", """
+                :root { color-scheme: dark; }
+                body {
+                  margin: 0;
+                  font-family: system-ui, sans-serif;
+                  background: #1b1b1f;
+                  color: #e6e7eb;
+                  display: grid;
+                  place-items: center;
+                  min-height: 100vh;
+                }
+                """);
+            write(dir, "src/main.ts", """
+                import { bootstrapApplication } from '@angular/platform-browser';
+                import { appConfig } from './app/app.config';
+                import { App } from './app/app';
+
+                bootstrapApplication(App, appConfig).catch(err => console.error(err));
+                """);
+            write(dir, "src/app/app.config.ts", """
+                import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+                import { provideRouter } from '@angular/router';
+                import { routes } from './app.routes';
+
+                export const appConfig: ApplicationConfig = {
+                  providers: [provideZonelessChangeDetection(), provideRouter(routes)],
+                };
+                """);
+            write(dir, "src/app/app.routes.ts", """
+                import { Routes } from '@angular/router';
+
+                export const routes: Routes = [];
+                """);
+            write(dir, "src/app/app.ts", """
+                import { Component, computed, signal } from '@angular/core';
+
+                @Component({
+                  selector: 'app-root',
+                  templateUrl: './app.html',
+                  styleUrl: './app.css',
+                })
+                export class App {
+                  readonly count = signal(0);
+                  readonly doubled = computed(() => this.count() * 2);
+                  readonly features = signal(['signals', 'zoneless', 'control flow']);
+
+                  increment(): void {
+                    this.count.update(v => v + 1);
+                  }
+                }
+                """);
+            write(dir, "src/app/app.html", """
+                <main>
+                  <h1>%s</h1>
+                  <button (click)="increment()">count: {{ count() }}</button>
+                  <p>doubled: {{ doubled() }}</p>
+                  @if (count() > 4) {
+                    <p>that's plenty.</p>
+                  }
+                  <ul>
+                    @for (feature of features(); track feature) {
+                      <li>{{ feature }}</li>
+                    }
+                  </ul>
+                </main>
+                """.formatted(name));
+            write(dir, "src/app/app.css", """
+                main { text-align: center; }
+                button { font-size: 1.25rem; padding: 0.5rem 1.5rem; cursor: pointer; }
+                """);
+            write(dir, "src/app/app.spec.ts", """
+                import { TestBed } from '@angular/core/testing';
+                import { provideZonelessChangeDetection } from '@angular/core';
+                import { App } from './app';
+
+                describe('App', () => {
+                  beforeEach(async () => {
+                    await TestBed.configureTestingModule({
+                      imports: [App],
+                      providers: [provideZonelessChangeDetection()],
+                    }).compileComponents();
+                  });
+
+                  it('creates and counts', () => {
+                    const fixture = TestBed.createComponent(App);
+                    const app = fixture.componentInstance;
+                    expect(app).toBeTruthy();
+                    app.increment();
+                    expect(app.count()).toBe(1);
+                  });
+                });
+                """);
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            return buildPatchFrom(rack -> {
+                RackDevice halo = add(rack, DeviceType.ANGULAR, Map.of("prod", "true"));
+                RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
+                RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
+                RackDevice test = add(rack, DeviceType.TEST, null);
+                RackDevice browser = add(rack, DeviceType.BROWSER, null);
+                RackDevice console = add(rack, DeviceType.CONSOLE, null);
+                rack.connect(halo.getPort("url"), browser.getPort("url"));
+                rack.connect(halo.getPort("ready"), browser.getPort("open"));
+                rack.connect(reflex.getPort("changed"), test.getPort("run"));
+                rack.connect(test.getPort("out"), console.getPort("in"));
+                rack.connect(halo.getPort("out"), console.getPort("in"));
+            });
+        }
+
+        @Override
+        boolean lintable() {
+            return false; // angular-eslint arrives via `ng add angular-eslint`
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - press INSTALL on CRATE (or run `npm install`) once
+                - SERVE on HALO runs ng serve and opens the browser via SCOPE
+                - HALO's version cluster tracks the latest Angular; UPDATE runs `ng update`
+                - GEN scaffolds components/services with the SCHEMATIC knob
+                """;
+        }
     };
 
     private final String displayName;
