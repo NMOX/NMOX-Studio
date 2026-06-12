@@ -24,7 +24,7 @@ public class ConsoleDevice extends RackDevice {
 
         int screenW = RackStyle.RACK_WIDTH - 2 * RackStyle.EAR_WIDTH - 160;
         screen = place(new LcdDisplay(screenW, 8), RackStyle.EAR_WIDTH + 14, 42);
-        RackButton clear = place(new RackButton("CLEAR", new Color(255, 190, 60)),
+        RackButton clear = place(new RackButton("CLEAR", RackStyle.MUTATE),
                 RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 130, 42);
         meter = place(new VuMeter("FEED", false), RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 130, 92);
 

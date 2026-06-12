@@ -230,6 +230,18 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     menu.addSeparator();
                 }
             }
+            org.nmox.studio.rack.devices.DeviceType type =
+                    org.nmox.studio.rack.devices.DeviceType.byId(device.getTypeId());
+            if (type != null) {
+                JMenuItem howTo = new JMenuItem("How to use " + device.getTitle() + "…");
+                howTo.addActionListener(a -> javax.swing.JOptionPane.showMessageDialog(
+                        RackPanel.this,
+                        type.getUsage().replace("\n", "\n\n"),
+                        type.getTitle() + " — " + type.getDescription(),
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE));
+                menu.add(howTo);
+                menu.addSeparator();
+            }
             JMenuItem remove = new JMenuItem("Remove " + device.getTitle());
             remove.addActionListener(a -> rack.removeDevice(device));
             menu.add(remove);

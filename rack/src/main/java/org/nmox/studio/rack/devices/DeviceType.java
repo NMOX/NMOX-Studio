@@ -68,6 +68,68 @@ public enum DeviceType {
         return accent;
     }
 
+    /** The shelf groups devices by the job you're trying to do. */
+    public enum PaletteCategory {
+        AUTOMATE("Run & Automate"),
+        VERIFY("Build & Verify"),
+        SERVE("Serve & Expose"),
+        FRAMEWORKS("Frameworks"),
+        OBSERVE("Observe"),
+        SHIP("Ship"),
+        UTILITY("Utility");
+
+        public final String label;
+
+        PaletteCategory(String label) {
+            this.label = label;
+        }
+    }
+
+    public PaletteCategory getPaletteCategory() {
+        return switch (this) {
+            case MASTER, REFLEX, TEMPO, RUN, NPM_SCRIPT -> PaletteCategory.AUTOMATE;
+            case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK -> PaletteCategory.VERIFY;
+            case DEV_SERVER, TUNNEL, BROWSER, HTTP -> PaletteCategory.SERVE;
+            case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
+            case CONSOLE, TERMINAL, BENCH, DEBUG -> PaletteCategory.OBSERVE;
+            case GIT, AUDIT, DEPLOY -> PaletteCategory.SHIP;
+            case ENV, ROSETTA -> PaletteCategory.UTILITY;
+        };
+    }
+
+    /** Concrete patch recipes, shown in the How-to-use card. */
+    public String getUsage() {
+        return switch (this) {
+            case MASTER -> "Press RUN SEQUENCE to fire all four TRIG outs at once.\nPatch TRIG 1 → CRATE RUN, then chain OK jacks: install → build → test.";
+            case REFLEX -> "Flip WATCH on and every file save fires CHANGED.\nPatch CHANGED → VERITAS RUN for test-on-save; FILTER narrows to code/styles/docs.";
+            case TEMPO -> "A clock: TICK fires at the dialed rate, BAR every 4th tick.\nGate it with ENABLE (patch SURGE RUNNING in) for health checks only while serving.";
+            case RUN -> "Runs your project's main: cargo run, go run, mix run, python…\nTARGET=auto follows the detected toolchain; ARGS feed the command line.";
+            case NPM_SCRIPT -> "One package.json script per press. SCRIPT knob lists your scripts.\nPatch OK into the next device to chain scripts into pipelines.";
+            case PACKAGE_MANAGER -> "INSTALL readies dependencies - in mixed repos it sequences every toolchain.\nUPDATE upgrades, CHECK reports outdated. OK fires when done.";
+            case BUILD -> "BUILD compiles with the detected tool (vite/cargo/mix/swift…).\nWATCH mode fires OK on every rebuild - patch OK → VERITAS for build-then-test.";
+            case TEST -> "Runs the suite; the tally LCD shows live pass/fail.\nRUNNER=auto picks jest/pytest/cargo/mix… Patch OUT → MONITOR to read output.";
+            case LINT -> "Static analysis; E/W counts land on the LCD, CLEAN lights when spotless.\nFIX rewrites violations in place (amber = it mutates your files).";
+            case FORMAT -> "Prettier over the project. WRITE rewrites; CHECK only verifies.\nPatch REFLEX CHANGED → RUN for format-on-save.";
+            case TYPECHECK -> "tsc --noEmit. WATCH keeps the compiler resident and fires OK/FAIL per check.\nSTRICT adds --strict. E: count on the LCD.";
+            case DEV_SERVER -> "START serves your project; URL and READY outs feed SCOPE so the\nbrowser opens itself at the real address. RUNNING gates TEMPO nicely.";
+            case TUNNEL -> "OPEN exposes a local port to the internet via cloudflared/ngrok.\nThe public URL lands on the LCD and the URL jack - patch into SCOPE to pop it.";
+            case BROWSER -> "Opens the system browser at the dialed URL on OPEN or any trigger in.\nPatch a URL data jack in and SCOPE follows wherever the server actually is.";
+            case HTTP -> "Fires one HTTP request; status + latency on the LCDs, OK/FAIL triggers out.\nPatch TEMPO TICK → SEND for a heartbeat monitor.";
+            case ANGULAR -> "SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.\nThe version cluster nags when Angular moves - UPDATE runs ng update.";
+            case PHOENIX -> "SERVER runs mix phx.server; GEN row drives phx.gen.*; MIGRATE runs ecto.\nVersion cluster tracks :phoenix against Hex.";
+            case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";
+            case CONSOLE -> "A glanceable 8-line screen. Patch any OUT (data) jack into IN\nand watch your pipeline talk.";
+            case TERMINAL -> "5,000 lines of selectable scrollback. FOLLOW tails the output.\nPatch the OUT of anything chatty in here.";
+            case BENCH -> "FIRE hammers the URL with autocannon; req/s on the meter.\nPatch SURGE URL → URL and READY → RUN to bench the second it serves.";
+            case DEBUG -> "LAUNCH starts your runtime in debug-server mode; the attach\nendpoint (chrome://inspect, debugpy, dlv…) lands on the LCD.";
+            case GIT -> "STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.\nAmber buttons mutate - the law of the rack.";
+            case AUDIT -> "SCAN runs the security audit; severity ladders fill per class.\nSECURE lights green when the tree is clean.";
+            case DEPLOY -> "Flip ARM, then LAUNCH deploys to the dialed target.\nUnarmed pads ignore even patched triggers - by design.";
+            case ENV -> "Sets NODE_ENV/CI/custom vars for every command the rack runs.\nWhat the knob says is what every device gets.";
+            case ROSETTA -> "Mixed repo? Pin every AUTO knob to one toolchain with the dial.\nAUTO follows detection; KIND out reports the choice.";
+        };
+    }
+
     public RackDevice create() {
         return factory.get();
     }

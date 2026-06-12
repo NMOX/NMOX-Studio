@@ -42,6 +42,20 @@ public final class RackStyle {
     public static final Color LCD_TEXT = new Color(96, 235, 120);
     public static final Color LCD_AMBER = new Color(255, 184, 76);
 
+    // ---- the color law: every button means what its color says ----
+    /** Green: the primary GO action (start/run/serve/fire). */
+    public static final Color GO = new Color(80, 235, 100);
+    /** Red: stop, kill, destroy. */
+    public static final Color STOP = new Color(255, 70, 60);
+    /** Amber: actions that mutate the project (update/migrate/generate/format). */
+    public static final Color MUTATE = new Color(255, 190, 60);
+    /** Blue: read-only queries (check/status/info). */
+    public static final Color QUERY = new Color(70, 170, 235);
+
+    /** The transport column: primary GO and STOP live here on EVERY device. */
+    public static final int TRANSPORT_X = 44;
+    public static final int TRANSPORT_STOP_X = 108;
+
     public static final Font LABEL_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 10);
     public static final Font TINY_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 9);
     public static final Font TITLE_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 15);

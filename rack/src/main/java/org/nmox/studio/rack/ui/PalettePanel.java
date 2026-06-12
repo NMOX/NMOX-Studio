@@ -56,15 +56,24 @@ public class PalettePanel extends JPanel {
         north.setBorder(BorderFactory.createEmptyBorder(0, 6, 6, 6));
         add(north, BorderLayout.NORTH);
 
-        DefaultListModel<DeviceType> model = new DefaultListModel<>();
+        DefaultListModel<Object> model = new DefaultListModel<>();
         Runnable refilter = () -> {
             String query = search.getText().trim().toLowerCase();
             model.clear();
-            for (DeviceType t : DeviceType.values()) {
-                if (query.isEmpty()
-                        || t.getTitle().toLowerCase().contains(query)
-                        || t.getDescription().toLowerCase().contains(query)) {
-                    model.addElement(t);
+            for (DeviceType.PaletteCategory category : DeviceType.PaletteCategory.values()) {
+                java.util.List<DeviceType> matches = new java.util.ArrayList<>();
+                for (DeviceType t : DeviceType.values()) {
+                    if (t.getPaletteCategory() == category
+                            && (query.isEmpty()
+                            || t.getTitle().toLowerCase().contains(query)
+                            || t.getDescription().toLowerCase().contains(query)
+                            || category.label.toLowerCase().contains(query))) {
+                        matches.add(t);
+                    }
+                }
+                if (!matches.isEmpty()) {
+                    model.addElement(category.label);
+                    matches.forEach(model::addElement);
                 }
             }
         };
@@ -85,7 +94,7 @@ public class PalettePanel extends JPanel {
                 refilter.run();
             }
         });
-        JList<DeviceType> list = new JList<>(model);
+        JList<Object> list = new JList<>(model);
         list.setBackground(RackStyle.RACK_BG);
         list.setCellRenderer(new DeviceRenderer());
         list.setDragEnabled(true);
@@ -97,16 +106,15 @@ public class PalettePanel extends JPanel {
 
             @Override
             protected Transferable createTransferable(JComponent c) {
-                DeviceType t = list.getSelectedValue();
-                return t == null ? null : new StringSelection(t.getId());
+                return list.getSelectedValue() instanceof DeviceType t
+                        ? new StringSelection(t.getId()) : null;
             }
         });
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    DeviceType t = list.getSelectedValue();
-                    if (t != null) {
+                    if (list.getSelectedValue() instanceof DeviceType t) {
                         rack.addDevice(t.create());
                     }
                 }
@@ -127,21 +135,31 @@ public class PalettePanel extends JPanel {
         setPreferredSize(new Dimension(228, 400));
     }
 
-    private static final class DeviceRenderer extends JPanel implements ListCellRenderer<DeviceType> {
+    private static final class DeviceRenderer extends JPanel implements ListCellRenderer<Object> {
 
         private DeviceType type;
+        private String headerText;
         private boolean selected;
 
-        DeviceRenderer() {
-            setPreferredSize(new Dimension(210, 52));
-        }
-
         @Override
-        public Component getListCellRendererComponent(JList<? extends DeviceType> list, DeviceType value,
+        public Component getListCellRendererComponent(JList<? extends Object> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
-            this.type = value;
-            this.selected = isSelected;
-            setToolTipText(value.getDescription() + "  (drag onto the rack)");
+            if (value instanceof DeviceType t) {
+                this.type = t;
+                this.headerText = null;
+                this.selected = isSelected;
+                setPreferredSize(new Dimension(210, 52));
+                String firstRecipeLine = t.getUsage().split("\\n")[0];
+                setToolTipText("<html><b>" + t.getTitle() + "</b> — "
+                        + t.getDescription() + "<br><i>" + firstRecipeLine
+                        + "</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>");
+            } else {
+                this.type = null;
+                this.headerText = String.valueOf(value);
+                this.selected = false;
+                setPreferredSize(new Dimension(210, 24));
+                setToolTipText(null);
+            }
             return this;
         }
 
@@ -152,6 +170,18 @@ public class PalettePanel extends JPanel {
             int w = getWidth(), h = getHeight();
             g.setColor(selected ? new Color(48, 50, 56) : RackStyle.RACK_BG);
             g.fillRect(0, 0, w, h);
+            if (headerText != null) {
+                // section header: etched divider + caps label
+                g.setColor(RackStyle.SILKSCREEN_DIM);
+                g.setFont(RackStyle.TINY_FONT);
+                String text = headerText.toUpperCase();
+                g.drawString(text, 10, h - 8);
+                int tw = g.getFontMetrics().stringWidth(text);
+                g.setColor(new Color(255, 255, 255, 26));
+                g.drawLine(16 + tw, h - 11, w - 12, h - 11);
+                g.dispose();
+                return;
+            }
             // mini faceplate card
             g.setColor(RackStyle.FACE_BOTTOM);
             g.fillRoundRect(6, 4, w - 12, h - 8, 8, 8);

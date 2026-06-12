@@ -8,6 +8,7 @@ import java.util.List;
 import org.json.JSONObject;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * NPM-9000 Script Sequencer: runs package.json scripts. The script
@@ -25,10 +26,10 @@ public class NpmScriptDevice extends CommandDevice {
     public NpmScriptDevice() {
         super("npm-script", "NPM-9000", "SCRIPT SEQUENCER", new Color(203, 56, 55), 2);
 
-        scriptKnob = place(new Knob("SCRIPT", new String[]{"—"}, 0), 44, 40);
-        managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 118, 40);
-        runButton = place(new RackButton("RUN", new Color(80, 235, 100)), 200, 52);
-        stopButton = place(new RackButton("STOP", new Color(255, 70, 60)), 264, 52);
+        runButton = place(new RackButton("RUN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        stopButton = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        scriptKnob = place(new Knob("SCRIPT", new String[]{"—"}, 0), 180, 40);
+        managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 254, 40);
 
         runButton.addActionListener(e -> primaryAction());
         stopButton.addActionListener(e -> stopProcess());

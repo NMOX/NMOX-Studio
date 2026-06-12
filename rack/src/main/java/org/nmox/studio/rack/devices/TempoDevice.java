@@ -44,8 +44,8 @@ public class TempoDevice extends RackDevice {
         runSwitch.addChangeListener(this::syncTimer);
         rateKnob.addChangeListener(this::syncTimer);
 
-        addInPort("run", "RUN", SignalType.TRIGGER);
-        addInPort("halt", "HALT", SignalType.TRIGGER);
+        addInPort("run", "START", SignalType.TRIGGER);
+        addInPort("halt", "STOP", SignalType.TRIGGER);
         // gate-driven clock: patch SURGE's RUNNING gate in and the clock
         // ticks exactly while the dev server lives - health checks,
         // recurring scans, whatever is cabled to TICK, only when it matters

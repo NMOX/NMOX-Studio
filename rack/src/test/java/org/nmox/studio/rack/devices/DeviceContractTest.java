@@ -80,6 +80,44 @@ class DeviceContractTest {
         }
     }
 
+    @ParameterizedTest
+    @EnumSource(DeviceType.class)
+    @DisplayName("The port lexicon: long-runners pair START with STOP; gates read RUNNING/SERVING")
+    void portLexicon(DeviceType type) {
+        RackDevice device = type.create();
+        java.util.Set<String> inIds = new HashSet<>();
+        java.util.Set<String> gateLabels = new HashSet<>();
+        for (Port p : device.getPorts()) {
+            if (p.getDirection() == Port.Direction.IN) {
+                inIds.add(p.getId());
+            }
+            if (p.getDirection() == Port.Direction.OUT
+                    && p.getType() == org.nmox.studio.rack.model.SignalType.GATE) {
+                gateLabels.add(p.getLabel());
+            }
+        }
+        // a device you can start long-running, you must be able to stop by cable
+        if (inIds.contains("serve") || inIds.contains("start")) {
+            assertThat(inIds).as(type + " serve/start needs stop").contains("stop");
+        }
+        // gate outputs speak one vocabulary
+        for (String label : gateLabels) {
+            assertThat(label).as(type + " gate label")
+                    .isIn("RUNNING", "SERVING", "ENABLE");
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(DeviceType.class)
+    @DisplayName("Every device has a palette category and a usage recipe")
+    void shelfGuidance(DeviceType type) {
+        assertThat(type.getPaletteCategory()).isNotNull();
+        assertThat(type.getUsage()).as(type + " usage").isNotBlank();
+        // two lines minimum: what it does, and a concrete recipe
+        assertThat(type.getUsage()).as(type + " usage has a recipe line").contains("\n");
+        assertThat(type.getUsage().length()).as(type + " usage substance").isGreaterThan(60);
+    }
+
     @org.junit.jupiter.api.Test
     @DisplayName("Knob.selectOption matches by name, falls back to legacy index, ignores junk")
     void knobSelectOption() {

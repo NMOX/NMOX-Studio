@@ -28,9 +28,9 @@ public abstract class CommandDevice extends RackDevice {
     private static final Set<Integer> KILL_EXIT_CODES = Set.of(130, 137, 143);
 
     protected final VuMeter activity = new VuMeter("ACTIVITY", false);
-    protected final Led runLed = new Led("RUN", new Color(255, 190, 60));
-    protected final Led okLed = new Led("OK", new Color(80, 235, 100));
-    protected final Led failLed = new Led("FAIL", new Color(255, 70, 60));
+    protected final Led runLed = new Led("RUN", RackStyle.MUTATE);
+    protected final Led okLed = new Led("OK", RackStyle.GO);
+    protected final Led failLed = new Led("FAIL", RackStyle.STOP);
     protected final LcdDisplay statusLcd;
 
     private volatile long startedAt;

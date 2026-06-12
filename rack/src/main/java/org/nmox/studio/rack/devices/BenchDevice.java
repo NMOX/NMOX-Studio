@@ -33,15 +33,17 @@ public class BenchDevice extends CommandDevice {
     public BenchDevice() {
         super("bench", "GAUNTLET", "LOAD BENCH", new Color(224, 122, 47), 2);
 
-        durationKnob = place(new Knob("RUN FOR", DURATIONS, 0), 44, 40);
-        connectionsKnob = place(new Knob("CONNS", CONNECTIONS, 0), 118, 40);
-        urlLcd = place(new LcdDisplay(190, 1), 196, 40);
+        durationKnob = place(new Knob("RUN FOR", DURATIONS, 0), 180, 40);
+        connectionsKnob = place(new Knob("CONNS", CONNECTIONS, 0), 254, 40);
+        urlLcd = place(new LcdDisplay(150, 1), 328, 46);
         urlLcd.setText("http://localhost:5173");
         urlLcd.setEditable("URL to bench");
-        RackButton fire = place(new RackButton("FIRE", new Color(255, 70, 60)), 196, 76);
-        resultLcd = place(new LcdDisplay(120, 1), 262, 76);
+        RackButton fire = place(new RackButton("FIRE", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
+        RackButton stopBench = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 46);
+        stopBench.addActionListener(e -> stopProcess());
+        resultLcd = place(new LcdDisplay(120, 1), 328, 82);
         resultLcd.setText("—");
-        reqMeter = place(new VuMeter("REQ/S", false), 396, 76);
+        reqMeter = place(new VuMeter("REQ/S", false), 460, 82);
 
         fire.addActionListener(e -> primaryAction());
 

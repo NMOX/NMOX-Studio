@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 
 /**
  * TIMELINE Git Sequencer: source-control transport. The branch LCD and
@@ -23,12 +24,12 @@ public class GitDevice extends CommandDevice {
 
         branchLcd = place(new LcdDisplay(150, 1), 44, 46);
         branchLcd.setText("…");
-        dirtyLed = place(new Led("DIRTY", new Color(255, 190, 60)), 200, 52);
+        dirtyLed = place(new Led("DIRTY", RackStyle.MUTATE), 200, 52);
 
-        RackButton status = place(new RackButton("STATUS", new Color(70, 170, 235)), 240, 52);
-        RackButton pull = place(new RackButton("PULL", new Color(80, 235, 100)), 304, 52);
-        RackButton commit = place(new RackButton("COMMIT", new Color(255, 190, 60)), 368, 52);
-        RackButton push = place(new RackButton("PUSH", new Color(200, 80, 235)), 432, 52);
+        RackButton status = place(new RackButton("STATUS", RackStyle.QUERY), 240, 52);
+        RackButton pull = place(new RackButton("PULL", RackStyle.MUTATE), 304, 52);
+        RackButton commit = place(new RackButton("COMMIT", RackStyle.MUTATE), 368, 52);
+        RackButton push = place(new RackButton("PUSH", RackStyle.MUTATE), 432, 52);
 
         status.addActionListener(e -> launch(List.of("git", "status", "--short")));
         pull.addActionListener(e -> launch(List.of("git", "pull")));

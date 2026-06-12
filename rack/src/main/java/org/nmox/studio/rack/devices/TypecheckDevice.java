@@ -32,13 +32,13 @@ public class TypecheckDevice extends CommandDevice {
     public TypecheckDevice() {
         super("typecheck", "TYPEGUARD", "TYPE CHECKER", new Color(49, 120, 198), 2);
 
-        watchSwitch = place(new ToggleSwitch("WATCH", false), 44, 42);
-        strictSwitch = place(new ToggleSwitch("STRICT", false), 114, 42);
-        RackButton check = place(new RackButton("CHECK", new Color(80, 235, 100)), 188, 52);
-        RackButton stop = place(new RackButton("STOP", new Color(255, 70, 60)), 252, 52);
-        errorLcd = place(new LcdDisplay(110, 1), 320, 52);
+        RackButton check = place(new RackButton("CHECK", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        watchSwitch = place(new ToggleSwitch("WATCH", false), 180, 42);
+        strictSwitch = place(new ToggleSwitch("STRICT", false), 250, 42);
+        errorLcd = place(new LcdDisplay(110, 1), 324, 52);
         errorLcd.setText("E:-");
-        cleanLed = place(new Led("SOUND", new Color(80, 235, 100)), 442, 58);
+        cleanLed = place(new Led("SOUND", RackStyle.GO), 442, 58);
 
         check.addActionListener(e -> primaryAction());
         stop.addActionListener(e -> stopProcess());

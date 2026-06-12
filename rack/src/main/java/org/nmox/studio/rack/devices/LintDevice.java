@@ -9,6 +9,7 @@ import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
+import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 
 /**
@@ -29,11 +30,11 @@ public class LintDevice extends CommandDevice {
     public LintDevice() {
         super("lint", "PURITY", "LINT FILTER", new Color(168, 110, 221), 2);
 
-        linterKnob = place(new Knob("LINTER", LINTERS, 0), 44, 40);
-        fixSwitch = place(new ToggleSwitch("FIX", false), 120, 42);
-        RackButton run = place(new RackButton("LINT", new Color(80, 235, 100)), 184, 52);
+        RackButton run = place(new RackButton("LINT", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        linterKnob = place(new Knob("LINTER", LINTERS, 0), 112, 40);
+        fixSwitch = place(new ToggleSwitch("FIX", false), 182, 42);
         countLcd = place(new LcdDisplay(120, 1), 252, 52);
-        cleanLed = place(new Led("CLEAN", new Color(80, 235, 100)), 386, 58);
+        cleanLed = place(new Led("CLEAN", RackStyle.GO), 386, 58);
         countLcd.setText("E:- W:-");
 
         run.addActionListener(e -> primaryAction());
