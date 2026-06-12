@@ -37,7 +37,18 @@ import org.netbeans.editor.Utilities;
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-lisp"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-lua"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-swift"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-kotlin")
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-kotlin"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-csharp"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-fsharp"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-groovy"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-perl"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-r"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-julia"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-dart"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-scala"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-haskell"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-zig"),
+    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-crystal")
 })
 public class ToggleLineCommentAction extends BaseAction {
 

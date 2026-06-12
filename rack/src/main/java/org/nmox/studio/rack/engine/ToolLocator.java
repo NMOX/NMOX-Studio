@@ -100,6 +100,13 @@ public final class ToolLocator {
         addNewestVersionDir(dirs, new File(home, ".asdf/installs/nodejs"), "bin");
         dirs.add(home + "/.asdf/shims");
         dirs.add(home + "/.local/bin");
+        // web-capable toolchains beyond the usual suspects
+        dirs.add(home + "/.dotnet");
+        dirs.add("/usr/local/share/dotnet");
+        dirs.add(home + "/.pub-cache/bin");
+        dirs.add("/opt/homebrew/opt/dart/libexec/bin");
+        dirs.add(home + "/.ghcup/bin");
+        dirs.add(home + "/.opam/default/bin");
         // polyglot toolchains
         dirs.add(home + "/.cargo/bin");                              // rust
         dirs.add("/usr/local/go/bin");                               // go

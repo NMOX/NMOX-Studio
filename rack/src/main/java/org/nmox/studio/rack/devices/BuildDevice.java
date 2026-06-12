@@ -121,6 +121,13 @@ public class BuildDevice extends CommandDevice {
             case ERLANG -> List.of("rebar3", "compile");
             case CLOJURE -> List.of("clojure", "-P"); // prepare deps; build aliases vary
             case SWIFT -> prod ? List.of("swift", "build", "-c", "release") : List.of("swift", "build");
+            case DOTNET -> prod ? List.of("dotnet", "build", "-c", "Release") : List.of("dotnet", "build");
+            case DART -> List.of("dart", "compile", "exe", "bin/main.dart");
+            case SCALA -> List.of("sbt", "compile");
+            case HASKELL -> List.of("stack", "build");
+            case ZIG -> prod ? List.of("zig", "build", "-Doptimize=ReleaseFast") : List.of("zig", "build");
+            case OCAML -> List.of("dune", "build");
+            case CRYSTAL -> List.of("shards", "build");
             case MAVEN -> List.of("mvn", "-q", "package", "-DskipTests");
             case GRADLE -> List.of("gradle", "build", "-x", "test");
             case CMAKE -> List.of("cmake", "--build", "build");

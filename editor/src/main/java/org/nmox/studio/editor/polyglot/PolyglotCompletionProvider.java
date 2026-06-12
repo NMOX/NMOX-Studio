@@ -43,7 +43,19 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-lisp", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-lua", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-swift", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-kotlin", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/x-kotlin", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-csharp", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-fsharp", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-groovy", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-perl", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-r", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-julia", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-dart", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-scala", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-haskell", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-zig", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class)
 })
 public class PolyglotCompletionProvider implements CompletionProvider {
 
@@ -137,7 +149,65 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "protected public reified return sealed set super suspend tailrec this throw true try "
                     + "typealias val var vararg when where while "
                     + "String Int Long Double Boolean List MutableList Map MutableMap Set println listOf "
-                    + "mapOf setOf mutableListOf let also apply run with takeIf takeUnless lazy")));
+                    + "mapOf setOf mutableListOf let also apply run with takeIf takeUnless lazy")),
+            Map.entry("text/x-csharp", set("abstract as async await base bool break byte case catch char "
+                    + "checked class const continue decimal default delegate do double else enum event explicit "
+                    + "extern false finally fixed float for foreach goto if implicit in int interface internal "
+                    + "is lock long namespace new null object operator out override params private protected "
+                    + "public readonly record ref return sbyte sealed short sizeof stackalloc static string "
+                    + "struct switch this throw true try typeof uint ulong unchecked unsafe ushort using var "
+                    + "virtual void volatile while yield Task List Dictionary IEnumerable Console WriteLine")),
+            Map.entry("text/x-fsharp", set("abstract and as assert base begin class default delegate do done "
+                    + "downcast downto elif else end exception extern false finally for fun function if in "
+                    + "inherit inline interface internal lazy let match member module mutable namespace new "
+                    + "not null of open or override private public rec return select static struct then to "
+                    + "true try type upcast use val void when while with yield async seq printfn")),
+            Map.entry("text/x-groovy", set("abstract as assert boolean break byte case catch char class const "
+                    + "continue def default do double else enum extends false final finally float for goto if "
+                    + "implements import in instanceof int interface long native new null package private "
+                    + "protected public return short static super switch this throw throws trait true try void "
+                    + "volatile while it println each collect findAll closure")),
+            Map.entry("text/x-perl", set("my our local sub if elsif else unless while until for foreach do "
+                    + "last next redo return use no require package bless ref defined undef exists delete "
+                    + "scalar wantarray print printf say die warn eval qw shift unshift push pop splice "
+                    + "split join map grep sort reverse keys values each chomp chop lc uc strict warnings")),
+            Map.entry("text/x-r", set("function if else repeat while for in next break TRUE FALSE NULL Inf NaN "
+                    + "NA library require return invisible stop warning message print cat paste paste0 c list "
+                    + "vector matrix data frame factor length names dim nrow ncol apply sapply lapply vapply "
+                    + "mapply ggplot shiny renderPlot reactive observe")),
+            Map.entry("text/x-julia", set("function macro module baremodule begin end if elseif else for while "
+                    + "break continue return try catch finally let local global const struct mutable abstract "
+                    + "primitive type quote do true false nothing missing using import export println push "
+                    + "pop length map filter reduce broadcast")),
+            Map.entry("text/x-dart", set("abstract as assert async await base break case catch class const "
+                    + "continue covariant default deferred do dynamic else enum export extends extension "
+                    + "external factory false final finally for get hide if implements import in interface is "
+                    + "late library mixin new null on operator part required rethrow return sealed set show "
+                    + "static super switch sync this throw true try typedef var void when while with yield "
+                    + "String int double bool List Map Set Future Stream Widget BuildContext print")),
+            Map.entry("text/x-scala", set("abstract case catch class def do else enum extends extension false "
+                    + "final finally for given if implicit import lazy match new null object override package "
+                    + "private protected return sealed super then throw trait true try type using val var "
+                    + "while with yield Option Some None Either List Map Seq Future println")),
+            Map.entry("text/x-haskell", set("case class data default deriving do else foreign if import in "
+                    + "infix infixl infixr instance let module newtype of then type where qualified hiding as "
+                    + "Maybe Just Nothing Either Left Right IO String Int Integer Bool True False return pure "
+                    + "fmap mapM forM putStrLn print show read")),
+            Map.entry("text/x-zig", set("addrspace align allowzero and anyframe anytype asm async await break "
+                    + "callconv catch comptime const continue defer else enum errdefer error export extern fn "
+                    + "for if inline noalias noinline nosuspend opaque or orelse packed pub resume return "
+                    + "struct suspend switch test threadlocal try union unreachable usingnamespace var "
+                    + "volatile while u8 u16 u32 u64 i32 i64 f32 f64 bool void type null undefined true false")),
+            Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
+                    + "exception external false for fun function functor if in include inherit initializer "
+                    + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "
+                    + "open or private rec sig struct then to true try type val virtual when while with "
+                    + "Some None Ok Error List Array String printf print_endline")),
+            Map.entry("text/x-crystal", set("abstract alias annotation as asm begin break case class def do "
+                    + "else elsif end ensure enum extend false for fun if in include instance_sizeof is_a "
+                    + "lib macro module next nil of out pointerof private protected require rescue return "
+                    + "select self sizeof struct super then true type typeof uninitialized union unless until "
+                    + "verbatim when while with yield puts print pp getter setter property")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));

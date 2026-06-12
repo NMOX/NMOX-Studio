@@ -30,7 +30,18 @@ public final class LanguageComments {
             Map.entry("text/x-lisp", ";;"),
             Map.entry("text/x-lua", "--"),
             Map.entry("text/x-swift", "//"),
-            Map.entry("text/x-kotlin", "//"));
+            Map.entry("text/x-kotlin", "//"),
+            Map.entry("text/x-csharp", "//"),
+            Map.entry("text/x-fsharp", "//"),
+            Map.entry("text/x-groovy", "//"),
+            Map.entry("text/x-perl", "#"),
+            Map.entry("text/x-r", "#"),
+            Map.entry("text/x-julia", "#"),
+            Map.entry("text/x-dart", "//"),
+            Map.entry("text/x-scala", "//"),
+            Map.entry("text/x-haskell", "--"),
+            Map.entry("text/x-zig", "//"),
+            Map.entry("text/x-crystal", "#"));
 
     private LanguageComments() {
     }

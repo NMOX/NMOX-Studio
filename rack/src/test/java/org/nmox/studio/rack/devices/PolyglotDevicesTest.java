@@ -103,4 +103,38 @@ class PolyglotDevicesTest {
         assertThat(cmd).contains("--listen", "5678");
         rack.shutdown();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("Web-capable toolchains detect from their manifests")
+    void webLanguageKindsDetect(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        record Case(String file, ProjectInspector.ProjectKind kind) { }
+        var cases = java.util.List.of(
+                new Case("pubspec.yaml", ProjectInspector.ProjectKind.DART),
+                new Case("build.sbt", ProjectInspector.ProjectKind.SCALA),
+                new Case("stack.yaml", ProjectInspector.ProjectKind.HASKELL),
+                new Case("build.zig", ProjectInspector.ProjectKind.ZIG),
+                new Case("dune-project", ProjectInspector.ProjectKind.OCAML),
+                new Case("shard.yml", ProjectInspector.ProjectKind.CRYSTAL));
+        for (Case c : cases) {
+            java.nio.file.Path projectDir = java.nio.file.Files.createDirectories(dir.resolve(c.kind().name()));
+            java.nio.file.Files.writeString(projectDir.resolve(c.file()), "# manifest");
+            org.assertj.core.api.Assertions.assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                    .as(c.file()).isEqualTo(c.kind());
+        }
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName(".NET detects via *.csproj glob, root or one level down")
+    void dotnetGlobDetects(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        java.nio.file.Files.writeString(dir.resolve("App.csproj"), "<Project/>");
+        org.assertj.core.api.Assertions.assertThat(ProjectInspector.detectKind(dir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.DOTNET);
+
+        java.nio.file.Path mono = java.nio.file.Files.createDirectories(dir.resolveSibling("mono-dotnet"));
+        java.nio.file.Path api = java.nio.file.Files.createDirectories(mono.resolve("api"));
+        java.nio.file.Files.writeString(api.resolve("Api.fsproj"), "<Project/>");
+        org.assertj.core.api.Assertions.assertThat(
+                ProjectInspector.kindDir(mono.toFile(), ProjectInspector.ProjectKind.DOTNET))
+                .isEqualTo(api.toFile());
+    }
 }

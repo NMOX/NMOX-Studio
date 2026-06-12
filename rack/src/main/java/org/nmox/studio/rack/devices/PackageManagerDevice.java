@@ -84,6 +84,24 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> List.of("swift", "package", "show-dependencies");
                 default -> List.of("swift", "package", "resolve");
             };
+            case DOTNET -> switch (verb) {
+                case "outdated" -> List.of("dotnet", "list", "package", "--outdated");
+                default -> List.of("dotnet", "restore");
+            };
+            case DART -> switch (verb) {
+                case "update" -> List.of("dart", "pub", "upgrade");
+                case "outdated" -> List.of("dart", "pub", "outdated");
+                default -> List.of("dart", "pub", "get");
+            };
+            case SCALA -> List.of("sbt", "update");
+            case HASKELL -> List.of("stack", "build", "--only-dependencies");
+            case ZIG -> List.of("zig", "build", "--fetch");
+            case OCAML -> List.of("dune", "build");
+            case CRYSTAL -> switch (verb) {
+                case "update" -> List.of("shards", "update");
+                case "outdated" -> List.of("shards", "outdated");
+                default -> List.of("shards", "install");
+            };
             case GO -> switch (verb) {
                 case "update" -> List.of("go", "get", "-u", "./...");
                 case "outdated" -> List.of("go", "list", "-u", "-m", "all");
