@@ -125,6 +125,11 @@ public abstract class CommandDevice extends RackDevice {
         launch(buildCommand());
     }
 
+    @Override
+    public void resume() {
+        primaryAction();
+    }
+
     /**
      * Whether this device only makes sense inside an npm project. When
      * true (the default), launches are refused unless the project dir

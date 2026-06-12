@@ -94,4 +94,35 @@ class FlightRecorderTest {
         assertThat(log).contains("FORGE").contains("LAUNCH").contains("npm run build")
                 .contains("EXIT_OK").contains("(1.5s)");
     }
+
+    @Test
+    @DisplayName("The tape survives the JVM: journal writes and reloads")
+    void journalRoundTrips(@org.junit.jupiter.api.io.TempDir java.io.File dir) {
+        java.io.File journal = new java.io.File(dir, "flight.jsonl");
+
+        FlightRecorder first = new FlightRecorder(now::get);
+        first.attachJournal(journal);
+        first.line("FORGE", "$ npm run build", false);
+        tick(1_200);
+        first.line("FORGE", "[exit 0]", false);
+        assertThat(journal).exists();
+
+        FlightRecorder reborn = new FlightRecorder(now::get);
+        reborn.attachJournal(journal);
+        assertThat(reborn.timeline()).hasSize(2);
+        assertThat(reborn.timeline().get(1).kind()).isEqualTo(Kind.EXIT_OK);
+        assertThat(reborn.timeline().get(1).durationMs()).isEqualTo(1_200);
+    }
+
+    @Test
+    @DisplayName("A corrupt journal line is skipped, not fatal")
+    void corruptJournalLineSkipped(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
+        java.io.File journal = new java.io.File(dir, "flight.jsonl");
+        java.nio.file.Files.writeString(journal.toPath(),
+                FlightRecorder.eventToJson(new FlightRecorder.Event(1, "A", Kind.LAUNCH, "x", -1))
+                + "\n{garbage\n");
+        FlightRecorder rec2 = new FlightRecorder(now::get);
+        rec2.attachJournal(journal);
+        assertThat(rec2.timeline()).hasSize(1);
+    }
 }

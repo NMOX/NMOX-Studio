@@ -92,21 +92,21 @@ public final class FlightRecorder implements RackBus.Listener {
             if (line.startsWith("$ ")) {
                 launchAt.put(device, now);
                 errorsThisRun.put(device, 0);
-                add(new Event(now, device, Kind.LAUNCH, line.substring(2), -1));
+                record(new Event(now, device, Kind.LAUNCH, line.substring(2), -1));
             } else if (line.startsWith("[exit ")) {
                 int code = parseExit(line);
                 Long started = launchAt.remove(device);
                 long ms = started == null ? -1 : now - started;
                 if (code == 0) {
                     stats.computeIfAbsent(device, d -> new Stats()).addOk(ms);
-                    add(new Event(now, device, Kind.EXIT_OK, "OK", ms));
+                    record(new Event(now, device, Kind.EXIT_OK, "OK", ms));
                 } else {
-                    add(new Event(now, device, Kind.EXIT_FAIL, "exit " + code, ms));
+                    record(new Event(now, device, Kind.EXIT_FAIL, "exit " + code, ms));
                 }
             } else if (err && !line.isBlank()) {
                 int seen = errorsThisRun.merge(device, 1, Integer::sum);
                 if (seen <= ERRORS_PER_RUN) {
-                    add(new Event(now, device, Kind.ERROR, line, -1));
+                    record(new Event(now, device, Kind.ERROR, line, -1));
                 }
             }
         }
@@ -131,6 +131,12 @@ public final class FlightRecorder implements RackBus.Listener {
         while (events.size() > CAPACITY) {
             events.removeFirst();
         }
+    }
+
+    /** add() + journal append - the path live events take. */
+    private void record(Event e) {
+        add(e);
+        appendToJournal(e);
     }
 
     // ---- reading the record ----
@@ -171,6 +177,75 @@ public final class FlightRecorder implements RackBus.Listener {
             }
         }
         return null;
+    }
+
+    // ---- the journal: the tape survives the JVM ----
+
+    private java.io.File journal;
+    private static final long JOURNAL_MAX_BYTES = 1_500_000;
+
+    /**
+     * Attaches a JSONL journal: existing events load onto the tape (so
+     * BLACKBOX remembers past sessions), and every new event appends.
+     * Mosh for the flight record - the session outlives the process.
+     */
+    public synchronized void attachJournal(java.io.File file) {
+        this.journal = file;
+        try {
+            if (file.isFile()) {
+                for (String line : java.nio.file.Files.readAllLines(file.toPath())) {
+                    Event e = eventFromJson(line);
+                    if (e != null) {
+                        add(e);
+                    }
+                }
+            } else {
+                file.getParentFile().mkdirs();
+            }
+        } catch (Exception ignored) {
+            // an unreadable journal must never break recording
+        }
+    }
+
+    private void appendToJournal(Event e) {
+        if (journal == null) {
+            return;
+        }
+        try {
+            if (journal.length() > JOURNAL_MAX_BYTES) {
+                rotateJournal();
+            }
+            java.nio.file.Files.writeString(journal.toPath(), eventToJson(e) + "\n",
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) {
+            // disk trouble must never break recording
+        }
+    }
+
+    /** Keeps the newer half when the journal outgrows its cap. */
+    private void rotateJournal() throws java.io.IOException {
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(journal.toPath());
+        java.util.List<String> keep = lines.subList(lines.size() / 2, lines.size());
+        java.nio.file.Files.write(journal.toPath(), keep);
+    }
+
+    static String eventToJson(Event e) {
+        return new org.json.JSONObject()
+                .put("at", e.at()).put("device", e.device())
+                .put("kind", e.kind().name()).put("text", e.text())
+                .put("ms", e.durationMs()).toString();
+    }
+
+    static Event eventFromJson(String line) {
+        try {
+            org.json.JSONObject o = new org.json.JSONObject(line);
+            return new Event(o.getLong("at"), o.getString("device"),
+                    Kind.valueOf(o.getString("kind")), o.getString("text"),
+                    o.optLong("ms", -1));
+        } catch (RuntimeException ex) {
+            return null; // a corrupt line is not a corrupt tape
+        }
     }
 
     public void addChangeListener(Runnable r) {

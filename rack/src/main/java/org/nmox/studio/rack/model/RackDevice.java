@@ -272,6 +272,20 @@ public abstract class RackDevice extends JPanel {
         }
     }
 
+    /** True while this device has a tool process running. */
+    public boolean isLive() {
+        CommandExecutor.Handle h = running;
+        return h != null && h.isAlive();
+    }
+
+    /**
+     * Re-fires this device's primary action - session resurrection
+     * calls this to bring back what was running before the IDE died.
+     * Devices without a primary action ignore it.
+     */
+    public void resume() {
+    }
+
     /**
      * Emergency stop, callable from outside (STOP ALL, and the JVM
      * shutdown reaper). Kills synchronously with forced escalation:

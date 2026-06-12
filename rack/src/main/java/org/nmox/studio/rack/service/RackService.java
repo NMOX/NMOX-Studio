@@ -46,11 +46,105 @@ public class RackService {
                 @Override
                 public void projectChanged() {
                     autoLoadPatch();
+                    offerResume();
                 }
             });
             followOpenProjects();
+            startSessionSnapshots();
         }
         return rack;
+    }
+
+    // ---- session resurrection: the mosh principle ----
+
+    private java.io.File sessionFile(java.io.File project) {
+        String userdir = System.getProperty("netbeans.user");
+        if (userdir == null) {
+            return null; // plain unit tests: no session persistence
+        }
+        String key = Integer.toHexString(project.getAbsolutePath().hashCode());
+        return new java.io.File(userdir, "var/nmox/sessions/" + key + ".json");
+    }
+
+    /**
+     * Snapshots what is live every few seconds - continuously, not on
+     * clean quit, so the session survives kill -9 and power loss. An
+     * empty snapshot deletes the file: stopping your tools IS the
+     * statement that there is nothing to resume.
+     */
+    private volatile boolean anyLiveThisSession;
+
+    private void startSessionSnapshots() {
+        javax.swing.Timer snap = new javax.swing.Timer(5_000, e -> {
+            java.io.File file = sessionFile(rack.getProjectDir());
+            if (file == null) {
+                return;
+            }
+            try {
+                SessionState state = SessionState.capture(rack);
+                if (!state.running().isEmpty()) {
+                    anyLiveThisSession = true;
+                    file.getParentFile().mkdirs();
+                    java.nio.file.Files.writeString(file.toPath(), state.toJson());
+                } else if (anyLiveThisSession) {
+                    // tools ran and were stopped: nothing to resume anymore.
+                    // A session file from a PREVIOUS process stays untouched
+                    // until then, so an ignored resume offer survives another
+                    // restart instead of being silently consumed.
+                    java.nio.file.Files.deleteIfExists(file.toPath());
+                }
+            } catch (Exception ignored) {
+                // a failed snapshot must never disturb the rack
+            }
+        });
+        snap.setRepeats(true);
+        snap.start();
+    }
+
+    /** After aiming: if the last session here died with tools running, offer them back. */
+    private void offerResume() {
+        java.io.File file = sessionFile(rack.getProjectDir());
+        if (file == null || !file.isFile()) {
+            return;
+        }
+        SessionState state;
+        try {
+            state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath()));
+        } catch (Exception ex) {
+            return;
+        }
+        if (state == null || !state.fresh()
+                || !state.project().equals(rack.getProjectDir().getAbsolutePath())) {
+            return;
+        }
+        java.util.List<org.nmox.studio.rack.model.RackDevice> matches = state.matchAgainst(rack);
+        if (matches.isEmpty()) {
+            return;
+        }
+        StringBuilder names = new StringBuilder();
+        for (var d : matches) {
+            if (names.length() > 0) {
+                names.append(", ");
+            }
+            names.append(d.getTitle());
+        }
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                org.openide.awt.NotificationDisplayer.getDefault().notify(
+                        "Resume last session?",
+                        javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                        names + (matches.size() == 1 ? " was" : " were")
+                        + " running when the IDE closed — click to bring "
+                        + (matches.size() == 1 ? "it" : "them") + " back",
+                        e -> {
+                            for (var d : matches) {
+                                d.resume();
+                            }
+                        });
+            } catch (RuntimeException | LinkageError ignored) {
+                // notifications unavailable (tests, stripped platform)
+            }
+        });
     }
 
     /**
@@ -67,12 +161,25 @@ public class RackService {
     }
 
     /**
-     * True once anything has aimed the rack this session. Passive
-     * followers (persisted window state, the open-projects listener)
-     * must never clobber an aim the user already made.
+     * True once anything has explicitly aimed the rack this session.
+     * Passive followers (persisted window state, the open-projects
+     * listener) must never clobber an aim the user already made.
      */
     public boolean isAimed() {
         return aimed;
+    }
+
+    /**
+     * A passive aim: points the rack without claiming user intent, so
+     * later passive sources (e.g. the rack window's persisted project
+     * restoring after the open-projects follower) may still re-aim.
+     * Any explicit aim still outranks all of these.
+     */
+    public void openProjectPassively(File dir) {
+        if (aimed || dir == null || !dir.isDirectory()) {
+            return;
+        }
+        getRack().setProjectDir(dir);
     }
 
     // ---- recent projects ----
@@ -165,7 +272,7 @@ public class RackService {
                 continue;
             }
             if (new File(dir, "package.json").isFile()) {
-                openProject(dir);
+                openProjectPassively(dir);
                 return;
             }
             if (fallback == null) {
@@ -173,7 +280,7 @@ public class RackService {
             }
         }
         if (fallback != null) {
-            openProject(fallback);
+            openProjectPassively(fallback);
         }
     }
 }

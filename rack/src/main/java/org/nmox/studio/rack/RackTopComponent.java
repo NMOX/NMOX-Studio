@@ -267,15 +267,10 @@ public final class RackTopComponent extends TopComponent {
         // restore last session's aim - but never clobber a choice the
         // user already made this session (e.g. the New Project wizard
         // aimed the rack before this window deserialized)
-        if (org.nmox.studio.rack.service.RackService.getDefault().isAimed()) {
-            return;
-        }
         String dir = p.getProperty("projectDir");
         if (dir != null) {
-            File f = new File(dir);
-            if (f.isDirectory()) {
-                org.nmox.studio.rack.service.RackService.getDefault().openProject(f);
-            }
+            org.nmox.studio.rack.service.RackService.getDefault()
+                    .openProjectPassively(new File(dir));
         }
     }
 }

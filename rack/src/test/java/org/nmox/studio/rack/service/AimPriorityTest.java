@@ -28,4 +28,26 @@ class AimPriorityTest {
         assertThat(service.getRack().getProjectDir()).isEqualTo(projectA);
         service.getRack().shutdown();
     }
+
+    @TempDir
+    java.io.File projectB;
+
+    @Test
+    @DisplayName("Passive aims may follow each other but never override an explicit aim")
+    void passiveNeverOverridesExplicit() {
+        RackService service = new RackService();
+
+        // passive then passive: later passive wins (cold-start restore order)
+        service.openProjectPassively(projectA);
+        assertThat(service.isAimed()).as("passive aim claims no intent").isFalse();
+        service.openProjectPassively(projectB);
+        assertThat(service.getRack().getProjectDir()).isEqualTo(projectB);
+
+        // explicit beats everything after it
+        service.openProject(projectA);
+        service.openProjectPassively(projectB);
+        assertThat(service.getRack().getProjectDir())
+                .as("passive must not clobber explicit").isEqualTo(projectA);
+        service.getRack().shutdown();
+    }
 }
