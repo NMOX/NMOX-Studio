@@ -105,4 +105,61 @@ ${cursor}</code>
  */</code>
         <description>JSDoc block</description>
     </codetemplate>
+    <codetemplate abbreviation="ngc">
+        <code>import { Component, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-${name}',
+  template: `&lt;div&gt;${name} works&lt;/div&gt;`,
+})
+export class ${Name} {
+}</code>
+        <description>Angular standalone component</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngs">
+        <code>import { Injectable } from '@angular/core';
+
+@Injectable({ providedIn: 'root' })
+export class ${Name}Service {
+}</code>
+        <description>Angular service</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngsig">
+        <code>readonly ${name} = signal(${initial});</code>
+        <description>Angular signal</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngcomp">
+        <code>readonly ${name} = computed(() =&gt; ${cursor});</code>
+        <description>Angular computed</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngeff">
+        <code>effect(() =&gt; {
+  ${cursor}
+});</code>
+        <description>Angular effect</description>
+    </codetemplate>
+    <codetemplate abbreviation="nginj">
+        <code>private readonly ${name} = inject(${Type});</code>
+        <description>Angular inject()</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngin">
+        <code>readonly ${name} = input&lt;${Type}&gt;();</code>
+        <description>Angular signal input</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngout">
+        <code>readonly ${name} = output&lt;${Type}&gt;();</code>
+        <description>Angular signal output</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngif">
+        <code>@if (${condition}) {
+  ${cursor}
+}</code>
+        <description>Angular @if block</description>
+    </codetemplate>
+    <codetemplate abbreviation="ngfor">
+        <code>@for (${item} of ${items}(); track ${item}) {
+  ${cursor}
+}</code>
+        <description>Angular @for block</description>
+    </codetemplate>
 </codetemplates>

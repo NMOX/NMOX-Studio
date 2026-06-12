@@ -161,6 +161,10 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         SNIPPETS.add(new JavaScriptSnippet("try", "try {\n    ${1}\n} catch (${2:error}) {\n    ${3}\n}", "Try-catch block"));
         SNIPPETS.add(new JavaScriptSnippet("promise", "new Promise((resolve, reject) => {\n    ${1}\n})", "Promise"));
         SNIPPETS.add(new JavaScriptSnippet("async", "async function ${1:name}(${2:params}) {\n    ${3}\n}", "Async function"));
+        SNIPPETS.add(new JavaScriptSnippet("signal", "const ${1:value} = signal(${2:initial});", "Angular signal"));
+        SNIPPETS.add(new JavaScriptSnippet("computed", "const ${1:value} = computed(() => ${2});", "Angular computed"));
+        SNIPPETS.add(new JavaScriptSnippet("inject", "private readonly ${1:dep} = inject(${2:Type});", "Angular inject"));
+        SNIPPETS.add(new JavaScriptSnippet("bootstrap", "bootstrapApplication(${1:App}, ${2:appConfig});", "Angular bootstrap"));
         SNIPPETS.add(new JavaScriptSnippet("fetch", "fetch('${1:url}')\n    .then(response => response.json())\n    .then(data => {\n        ${2}\n    })\n    .catch(error => console.error(error));", "Fetch API"));
     }
     
