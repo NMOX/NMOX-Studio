@@ -11,3 +11,8 @@
 
 # JDK installations should not be committed
 jdk17/
+
+# NetBeans branding lives in directories NAMED after the jars they brand
+# (core.jar/, org-netbeans-core.jar/). A global "*.jar" ignore would eat
+# them silently - this re-includes everything under nbm-branding.
+!branding/src/main/nbm-branding/**

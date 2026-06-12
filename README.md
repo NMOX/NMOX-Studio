@@ -13,7 +13,7 @@ NMOX Studio is an IDE for web development with a twist: your tooling lives in a 
 
 ## Download
 
-Grab **[v1.0.0 from Releases](https://github.com/NMOX/NMOX-Studio/releases/tag/v1.0.0)** — DMG (macOS), installer (Windows), tar.gz/deb (Linux), or portable zip. Requires Java 17+.
+Grab **[the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)** — DMG (macOS), installer (Windows), tar.gz/deb (Linux), or portable zip. Requires Java 17+.
 
 > **macOS note:** the app is not yet notarized. If Gatekeeper objects, right-click the app and choose *Open*, or run `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
