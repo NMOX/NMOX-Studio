@@ -27,7 +27,7 @@ import org.openide.windows.TopComponent;
 )
 @TopComponent.Registration(mode = "output", openAtStartup = false)
 @ActionID(category = "Window", id = "org.nmox.studio.tools.build.ui.BuildOutputTopComponent")
-@ActionReference(path = "Menu/Window", position = 400)
+@ActionReference(path = "Menu/Window", position = 405)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_BuildOutputAction",
         preferredID = "BuildOutputTopComponent"
@@ -54,7 +54,20 @@ public final class BuildOutputTopComponent extends TopComponent {
     private Style successStyle;
     private Style infoStyle;
     private Style timestampStyle;
-    
+
+    /** A styled run of text within one output line. */
+    private record Fragment(String text, Style style) { }
+
+    /** One output line and its dominant severity, for the filter. */
+    private static final class Line {
+        final java.util.List<Fragment> fragments = new java.util.ArrayList<>();
+        int severity; // 0 plain, 1 info, 2 success, 3 warning, 4 error
+    }
+
+    /** Everything ever appended, so the filter can re-render the pane. */
+    private final java.util.List<Line> lines = new java.util.ArrayList<>();
+    private Line openLine = new Line();
+
     private static BuildOutputTopComponent instance;
     
     public BuildOutputTopComponent() {
@@ -266,11 +279,85 @@ public final class BuildOutputTopComponent extends TopComponent {
     }
     
     private void append(String text, Style style) {
+        // record into the line model so the filter can re-render later;
+        // a line's severity is the loudest fragment it contains
+        int from = 0;
+        while (from <= text.length()) {
+            int nl = text.indexOf('\n', from);
+            String piece = nl < 0 ? text.substring(from) : text.substring(from, nl + 1);
+            if (!piece.isEmpty()) {
+                openLine.fragments.add(new Fragment(piece, style));
+                openLine.severity = Math.max(openLine.severity, severityOf(style));
+            }
+            if (nl < 0) {
+                break;
+            }
+            lines.add(openLine);
+            openLine = new Line();
+            from = nl + 1;
+        }
+
+        if (isFilterAll()) {
+            try {
+                doc.insertString(doc.getLength(), text, style);
+                outputPane.setCaretPosition(doc.getLength());
+            } catch (BadLocationException e) {
+                // Ignore
+            }
+        } else {
+            rebuildDoc();
+        }
+    }
+
+    private int severityOf(Style style) {
+        if (style == errorStyle) {
+            return 4;
+        }
+        if (style == warningStyle) {
+            return 3;
+        }
+        if (style == successStyle) {
+            return 2;
+        }
+        if (style == infoStyle) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private boolean isFilterAll() {
+        return filterCombo == null || "All".equals(filterCombo.getSelectedItem());
+    }
+
+    private boolean passes(Line line) {
+        return switch (String.valueOf(filterCombo.getSelectedItem())) {
+            case "Errors" -> line.severity >= 4;
+            case "Warnings" -> line.severity >= 3;
+            case "Info" -> line.severity >= 1;
+            default -> true;
+        };
+    }
+
+    /** Re-renders the pane from the line model through the filter. */
+    private void rebuildDoc() {
         try {
-            doc.insertString(doc.getLength(), text, style);
+            doc.remove(0, doc.getLength());
+            for (Line line : lines) {
+                renderIfPassing(line);
+            }
+            renderIfPassing(openLine);
             outputPane.setCaretPosition(doc.getLength());
         } catch (BadLocationException e) {
             // Ignore
+        }
+    }
+
+    private void renderIfPassing(Line line) throws BadLocationException {
+        if (line.fragments.isEmpty() || !passes(line)) {
+            return;
+        }
+        for (Fragment f : line.fragments) {
+            doc.insertString(doc.getLength(), f.text(), f.style());
         }
     }
     
@@ -281,22 +368,24 @@ public final class BuildOutputTopComponent extends TopComponent {
     
     private void clear() {
         try {
+            lines.clear();
+            openLine = new Line();
             doc.remove(0, doc.getLength());
             statusLabel.setText("Ready");
         } catch (BadLocationException e) {
             // Ignore
         }
     }
-    
+
     private void stopBuild() {
-        // TODO: Implement build cancellation
+        org.nmox.studio.tools.build.BuildTaskManager.getInstance().cancelAllTasks();
         stopButton.setEnabled(false);
         progressBar.setVisible(false);
         statusLabel.setText("Build stopped");
     }
-    
+
     private void applyFilter() {
-        // TODO: Implement output filtering
+        rebuildDoc();
     }
     
     private String formatDuration(long millis) {

@@ -228,7 +228,12 @@ public final class DigitalOceanClient {
                 default -> null;
             };
         } catch (RuntimeException ex) {
-            return null; // unexpected response shape; node stays design-only
+            // unexpected response shape: without an id the node cannot be
+            // synced or destroyed later, so make the parse failure visible
+            java.util.logging.Logger.getLogger(DigitalOceanClient.class.getName())
+                    .log(java.util.logging.Level.WARNING,
+                            "Could not extract cloud id from response", ex);
+            return null;
         }
     }
 

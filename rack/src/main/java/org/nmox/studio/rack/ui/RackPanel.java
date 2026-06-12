@@ -120,6 +120,14 @@ public class RackPanel extends JPanel implements Rack.Listener {
         return rack;
     }
 
+    /** Stop animation timers when the panel leaves the hierarchy. */
+    @Override
+    public void removeNotify() {
+        flashTimer.stop();
+        dropClearTimer.stop();
+        super.removeNotify();
+    }
+
     // ---- view flipping ----
 
     public boolean isFront() {

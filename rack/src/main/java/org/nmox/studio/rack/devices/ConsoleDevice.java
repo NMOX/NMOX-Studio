@@ -86,6 +86,7 @@ public class ConsoleDevice extends RackDevice {
     @Override
     public void dispose() {
         RackBus.unsubscribe(tap);
+        errFade.stop();
         super.dispose();
     }
 

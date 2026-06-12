@@ -27,13 +27,13 @@ import org.openide.windows.TopComponent;
     displayName = "#LBL_TypeScript_LOADER",
     mimeType = "text/typescript",
     extension = {"ts", "tsx"},
-    position = 110
+    position = 977
 )
 @DataObject.Registration(
     mimeType = "text/typescript",
     iconBase = "org/nmox/studio/editor/typescript/typescript.png",
     displayName = "#LBL_TypeScript_LOADER",
-    position = 110
+    position = 977
 )
 @ActionReferences({
     @ActionReference(
