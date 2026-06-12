@@ -119,6 +119,14 @@ public class DevServerDevice extends CommandDevice {
 
     @Override
     protected void onLine(String line) {
+        // the most common real-world serve failure deserves a real answer
+        if (line.contains("EADDRINUSE") || line.toLowerCase().contains("address already in use")) {
+            onEdt(() -> {
+                statusLcd.setTextColor(new Color(255, 90, 80));
+                statusLcd.setText("PORT " + port() + " IN USE — DIAL ANOTHER OR STOP THE OTHER SERVER");
+            });
+            return;
+        }
         if (readyFired.compareAndSet(false, true)) {
             onEdt(() -> {
                 liveLed.setBlinking(false);

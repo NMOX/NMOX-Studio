@@ -195,13 +195,21 @@ public class PackageManagerDevice extends CommandDevice {
     private void refreshDepsLcd() {
         int[] counts = ProjectInspector.dependencyCounts(projectDir());
         var kinds = ProjectInspector.detectKinds(projectDir());
+        // a present-but-unparseable package.json is a fact worth stating,
+        // not a silent shrug - it breaks every AUTO knob downstream
+        boolean broken = counts == null && new File(
+                ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE),
+                "package.json").isFile();
         onEdt(() -> {
-            depsLcd.setText(counts != null && kinds.size() <= 1
+            depsLcd.setText(broken ? "PACKAGE.JSON UNREADABLE"
+                    : counts != null && kinds.size() <= 1
                     ? counts[0] + "+" + counts[1] + " DEPS"
                     : kinds.size() > 1 ? kinds.size() + " TOOLCHAINS"
                     : !kinds.isEmpty() ? kinds.keySet().iterator().next().manifest()
                     : "NO PROJECT");
-            depsLcd.setToolTipText(counts == null
+            depsLcd.setToolTipText(broken
+                    ? "package.json exists but does not parse — fix the JSON"
+                    : counts == null
                     ? "No package.json in the project"
                     : counts[0] + " dependencies, " + counts[1] + " devDependencies");
         });

@@ -272,9 +272,17 @@ public abstract class RackDevice extends JPanel {
         }
     }
 
-    /** Emergency stop, callable from outside (the master section's STOP ALL). */
+    /**
+     * Emergency stop, callable from outside (STOP ALL, and the JVM
+     * shutdown reaper). Kills synchronously with forced escalation:
+     * shutdown hooks get no second chance, so neither do dev servers.
+     */
     public void panic() {
-        stopProcess();
+        CommandExecutor.Handle h = running;
+        if (h != null) {
+            running = null;
+            h.killAndWait(1_500);
+        }
     }
 
     // ---- control placement & persistence ----
