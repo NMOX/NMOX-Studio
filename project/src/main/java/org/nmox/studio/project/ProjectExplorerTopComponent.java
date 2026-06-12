@@ -310,6 +310,15 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         row("Infra Designer", "DigitalOcean · Hetzner · Cloudflare flows",
                 false, null, "Design and deploy infrastructure Node-RED style",
                 () -> openWindow("InfraDesignerTopComponent"));
+        row("Docker Manager", "containers, images, disk reclaim, dockerize",
+                false, null, "The Docker Panel — HARBOR's control room",
+                () -> {
+                    try {
+                        org.nmox.studio.rack.docker.DockerPanelTopComponent.openPanel();
+                    } catch (RuntimeException | LinkageError ex) {
+                        // rack module unavailable; nothing to open
+                    }
+                });
         row("Terminal", "phosphor shell in the project directory",
                 false, null, "Black glass, lime text", this::openTerminal);
     }
