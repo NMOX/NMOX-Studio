@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NMOX Studio is a NetBeans Platform-based IDE for modern web development, with support for JavaScript/TypeScript, NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
+NMOX Studio is a NetBeans Platform-based IDE for modern web development, with first-class polyglot support (JS/TS, Java, C/C++, Python, Ruby, Rust, Go, PHP, shell + configs), NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
 
 **Status**: v0.1 shipped with working JavaScript file support, NPM project recognition, command execution, and project templates.
 
@@ -108,10 +108,10 @@ NMOX-Studio/
 
 | Module | Purpose | Key Components |
 |--------|---------|----------------|
-| **core** | Platform services and infrastructure | `ServiceManager`, `ThemeInstaller`, `FileCache`, `PerformanceMonitor` |
+| **core** | Platform services and infrastructure | `ServiceManager`, `FileCache`, `PerformanceMonitor` |
 | **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService`, `TestRunnerService` |
-| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 20 task devices (incl. TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 23 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
 | **branding** | Application identity | Splash screen, icons, custom branding |
@@ -276,7 +276,7 @@ Centralized service lifecycle management via `ServiceManager`:
 
 See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
-1. **No JavaScript syntax highlighting** - Lexer exists but not fully integrated
+1. ~~No JavaScript syntax highlighting~~ - Fixed: lexer Language layer-registered for text/javascript and text/typescript with the NMOX Phosphor color scheme
 2. **Hardcoded project templates** - Should be extensible
 3. **Limited error handling** - NPM errors need better user messages
 4. **No settings UI** - Configuration is hardcoded

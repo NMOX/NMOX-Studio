@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
+
+<!-- Tab-expanded snippets for JS/TS. Type the abbreviation, hit Tab. -->
+<codetemplates>
+    <codetemplate abbreviation="cl">
+        <code>console.log(${cursor});</code>
+        <description>console.log</description>
+    </codetemplate>
+    <codetemplate abbreviation="ce">
+        <code>console.error(${cursor});</code>
+        <description>console.error</description>
+    </codetemplate>
+    <codetemplate abbreviation="fn">
+        <code>function ${name}(${params}) {
+    ${cursor}
+}</code>
+        <description>function declaration</description>
+    </codetemplate>
+    <codetemplate abbreviation="afn">
+        <code>const ${name} = (${params}) =&gt; {
+    ${cursor}
+};</code>
+        <description>arrow function</description>
+    </codetemplate>
+    <codetemplate abbreviation="iife">
+        <code>((${params}) =&gt; {
+    ${cursor}
+})();</code>
+        <description>immediately-invoked arrow function</description>
+    </codetemplate>
+    <codetemplate abbreviation="imp">
+        <code>import { ${what} } from '${module}';</code>
+        <description>named import</description>
+    </codetemplate>
+    <codetemplate abbreviation="impd">
+        <code>import ${what} from '${module}';</code>
+        <description>default import</description>
+    </codetemplate>
+    <codetemplate abbreviation="exp">
+        <code>export const ${name} = ${cursor};</code>
+        <description>named export</description>
+    </codetemplate>
+    <codetemplate abbreviation="forof">
+        <code>for (const ${item} of ${iterable}) {
+    ${cursor}
+}</code>
+        <description>for...of loop</description>
+    </codetemplate>
+    <codetemplate abbreviation="map">
+        <code>${array}.map((${item}) =&gt; ${cursor})</code>
+        <description>array map</description>
+    </codetemplate>
+    <codetemplate abbreviation="filter">
+        <code>${array}.filter((${item}) =&gt; ${cursor})</code>
+        <description>array filter</description>
+    </codetemplate>
+    <codetemplate abbreviation="tc">
+        <code>try {
+    ${cursor}
+} catch (error) {
+    console.error(error);
+}</code>
+        <description>try/catch</description>
+    </codetemplate>
+    <codetemplate abbreviation="afetch">
+        <code>const response = await fetch('${url}');
+const data = await response.json();
+${cursor}</code>
+        <description>await fetch + json</description>
+    </codetemplate>
+    <codetemplate abbreviation="qs">
+        <code>document.querySelector('${selector}')</code>
+        <description>querySelector</description>
+    </codetemplate>
+    <codetemplate abbreviation="qsa">
+        <code>document.querySelectorAll('${selector}')</code>
+        <description>querySelectorAll</description>
+    </codetemplate>
+    <codetemplate abbreviation="ael">
+        <code>${target}.addEventListener('${event}', (e) =&gt; {
+    ${cursor}
+});</code>
+        <description>addEventListener</description>
+    </codetemplate>
+    <codetemplate abbreviation="sto">
+        <code>setTimeout(() =&gt; {
+    ${cursor}
+}, ${delay});</code>
+        <description>setTimeout</description>
+    </codetemplate>
+    <codetemplate abbreviation="prom">
+        <code>new Promise((resolve, reject) =&gt; {
+    ${cursor}
+})</code>
+        <description>new Promise</description>
+    </codetemplate>
+    <codetemplate abbreviation="desl">
+        <code>const { ${what} } = ${source};</code>
+        <description>object destructure</description>
+    </codetemplate>
+    <codetemplate abbreviation="jdoc">
+        <code>/**
+ * ${cursor}
+ */</code>
+        <description>JSDoc block</description>
+    </codetemplate>
+</codetemplates>

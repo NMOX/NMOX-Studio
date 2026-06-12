@@ -55,7 +55,7 @@ public class DevServerDevice extends CommandDevice {
 
     /** Static servers (http-server, serve) happily serve plain folders. */
     @Override
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         String server = serverKnob.getSelectedOption();
         return !"http-server".equals(server) && !"serve".equals(server);
     }
@@ -94,6 +94,12 @@ public class DevServerDevice extends CommandDevice {
             return "vite";
         }
         return "http-server";
+    }
+
+    /** npm speaks from the package.json directory, monorepo or not. */
+    @Override
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
     }
 
     @Override

@@ -34,6 +34,12 @@ echo "==> Writing launcher"
 cat > "$BUNDLE/Contents/MacOS/nmox-studio" <<'LAUNCHER'
 #!/bin/sh
 DIR=$(cd "$(dirname "$0")" && pwd)
+# macOS GUI launches carry no shell env: locate a JDK 17+ the native
+# way so users with a JDK installed never see the "Java required" dialog
+JDK=$(/usr/libexec/java_home -v 17+ 2>/dev/null || true)
+if [ -n "$JDK" ]; then
+    exec "$DIR/../Resources/nmoxstudio/bin/nmoxstudio" --jdkhome "$JDK" "$@"
+fi
 exec "$DIR/../Resources/nmoxstudio/bin/nmoxstudio" "$@"
 LAUNCHER
 chmod +x "$BUNDLE/Contents/MacOS/nmox-studio"

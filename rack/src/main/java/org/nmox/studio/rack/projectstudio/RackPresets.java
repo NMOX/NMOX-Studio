@@ -82,6 +82,28 @@ public enum RackPresets {
         }
     },
 
+    MONOREPO_LANES("Monorepo Lanes",
+            "Mixed repo: ROSETTA shows the mix, saves fan out to node + cargo test lanes") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice rosetta = add(rack, DeviceType.ROSETTA, null);
+            RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "true", "filter", "1"));
+            RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
+            RackDevice nodeTests = add(rack, DeviceType.TEST, Map.of("framework", "1"));
+            RackDevice cargoTests = add(rack, DeviceType.TEST, Map.of("framework", "7"));
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // one save, two toolchains tested in their own directories
+            rack.connect(reflex.getPort("changed"), nodeTests.getPort("run"));
+            rack.connect(reflex.getPort("changed"), cargoTests.getPort("run"));
+            rack.connect(nodeTests.getPort("out"), console.getPort("in"));
+            rack.connect(cargoTests.getPort("out"), console.getPort("in"));
+            // INSTALL on CRATE bootstraps every toolchain in sequence
+            rack.connect(deps.getPort("out"), console.getPort("in"));
+            // keep checkstyle quiet about the unused selector: it works by existing
+            rosetta.getPort("kind");
+        }
+    },
+
     SHIP_LANE("Ship Lane",
             "Prod build → security scan → armed deploy, with console trail") {
         @Override

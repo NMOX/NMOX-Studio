@@ -100,6 +100,17 @@ public final class ToolLocator {
         addNewestVersionDir(dirs, new File(home, ".asdf/installs/nodejs"), "bin");
         dirs.add(home + "/.asdf/shims");
         dirs.add(home + "/.local/bin");
+        // polyglot toolchains
+        dirs.add(home + "/.cargo/bin");                              // rust
+        dirs.add("/usr/local/go/bin");                               // go
+        dirs.add(home + "/go/bin");                                  // go installs
+        dirs.add(home + "/.rbenv/shims");                            // ruby
+        dirs.add(home + "/.pyenv/shims");                            // python
+        dirs.add(home + "/.composer/vendor/bin");                    // php
+        dirs.add(home + "/.config/composer/vendor/bin");
+        dirs.add(home + "/.sdkman/candidates/java/current/bin");     // java
+        dirs.add(home + "/.sdkman/candidates/maven/current/bin");
+        dirs.add(home + "/.sdkman/candidates/gradle/current/bin");
 
         List<String> existing = new ArrayList<>();
         for (String d : dirs) {

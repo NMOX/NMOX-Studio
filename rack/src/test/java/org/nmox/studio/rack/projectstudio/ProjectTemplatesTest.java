@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nmox.studio.rack.model.Rack;
+import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.model.RackIO;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,21 +31,26 @@ class ProjectTemplatesTest {
 
             template.generate(dir, "demo-app");
 
-            // package.json parses and carries the chosen name
+            // a recognized project manifest exists; Node templates carry
+            // the chosen name in package.json
+            assertThat(ProjectInspector.hasProjectManifest(dir))
+                    .as(template + " has a project manifest").isTrue();
             Path pkg = dir.toPath().resolve("package.json");
-            assertThat(pkg).as(template + " package.json").exists();
-            JSONObject json = new JSONObject(Files.readString(pkg));
-            assertThat(json.getString("name")).isEqualTo("demo-app");
-            assertThat(json.getJSONObject("scripts").keySet()).isNotEmpty();
+            JSONObject json = Files.exists(pkg)
+                    ? new JSONObject(Files.readString(pkg)) : null;
+            if (json != null) {
+                assertThat(json.getString("name")).isEqualTo("demo-app");
+                assertThat(json.getJSONObject("scripts").keySet()).isNotEmpty();
+            }
 
-            // housekeeping + editor/formatter/linter configs
+            // housekeeping + editor config land in every template
             assertThat(dir.toPath().resolve(".gitignore")).exists();
             assertThat(dir.toPath().resolve("README.md")).exists();
             assertThat(dir.toPath().resolve(".editorconfig")).exists();
-            assertThat(dir.toPath().resolve(".prettierrc")).exists();
             if (template.lintable()) {
                 assertThat(dir.toPath().resolve("eslint.config.mjs"))
                         .as(template + " eslint config").exists();
+                assertThat(json).as(template + " lintable implies package.json").isNotNull();
                 assertThat(json.getJSONObject("devDependencies").has("eslint"))
                         .as(template + " eslint dependency").isTrue();
             }

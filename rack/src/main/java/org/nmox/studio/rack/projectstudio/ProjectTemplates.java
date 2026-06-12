@@ -520,6 +520,207 @@ public enum ProjectTemplates {
         boolean lintable() {
             return false; // eslint flat config can't parse TS without typescript-eslint
         }
+    },
+
+    PYTHON_CLI("Python CLI", "pyproject + pytest, IGNITION-ready") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "pyproject.toml", """
+                [project]
+                name = "%s"
+                version = "0.1.0"
+                requires-python = ">=3.10"
+
+                [tool.pytest.ini_options]
+                testpaths = ["tests"]
+                """.formatted(name));
+            write(dir, "main.py", """
+                def greet(name: str) -> str:
+                    return f"Hello, {name}!"
+
+
+                if __name__ == "__main__":
+                    print(greet("NMOX"))
+                """);
+            write(dir, "tests/test_main.py", """
+                from main import greet
+
+
+                def test_greet():
+                    assert greet("rack") == "Hello, rack!"
+                """);
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            return polyglotPatch();
+        }
+
+        @Override
+        boolean lintable() {
+            return false;
+        }
+
+        @Override
+        boolean prettier() {
+            return false;
+        }
+
+        @Override
+        String gitignore() {
+            return """
+                __pycache__/
+                *.pyc
+                .venv/
+                .pytest_cache/
+                dist/
+                """;
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - IGNITE on IGNITION runs main.py; VERITAS runs pytest
+                - arm REFLEX's WATCH switch for a save-driven test loop
+                - INSPECTOR launches debugpy on :5678 for your debugger
+                """;
+        }
+    },
+
+    GO_SERVICE("Go Service", "go.mod + net/http hello service, go test") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "go.mod", """
+                module %s
+
+                go 1.22
+                """.formatted(name.toLowerCase().replaceAll("[^a-z0-9]", "")));
+            write(dir, "main.go", """
+                package main
+
+                import (
+                	"fmt"
+                	"net/http"
+                )
+
+                func Greeting(name string) string {
+                	return "Hello, " + name + "!"
+                }
+
+                func main() {
+                	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+                		fmt.Fprintln(w, Greeting("NMOX"))
+                	})
+                	fmt.Println("listening on http://localhost:8080")
+                	http.ListenAndServe(":8080", nil)
+                }
+                """);
+            write(dir, "main_test.go", """
+                package main
+
+                import "testing"
+
+                func TestGreeting(t *testing.T) {
+                	if Greeting("rack") != "Hello, rack!" {
+                		t.Fatal("unexpected greeting")
+                	}
+                }
+                """);
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            return polyglotPatch();
+        }
+
+        @Override
+        boolean lintable() {
+            return false;
+        }
+
+        @Override
+        boolean prettier() {
+            return false;
+        }
+
+        @Override
+        String gitignore() {
+            return """
+                bin/
+                *.test
+                """;
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - IGNITE on IGNITION runs `go run .` (listens on :8080)
+                - VERITAS runs `go test ./...`; FORGE runs `go build ./...`
+                - INSPECTOR launches delve headless on :2345
+                """;
+        }
+    },
+
+    RUST_CLI("Rust CLI", "Cargo binary crate with a unit test") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "Cargo.toml", """
+                [package]
+                name = "%s"
+                version = "0.1.0"
+                edition = "2021"
+                """.formatted(name.toLowerCase().replaceAll("[^a-z0-9_-]", "-")));
+            write(dir, "src/main.rs", """
+                fn greet(name: &str) -> String {
+                    format!("Hello, {name}!")
+                }
+
+                fn main() {
+                    println!("{}", greet("NMOX"));
+                }
+
+                #[cfg(test)]
+                mod tests {
+                    use super::*;
+
+                    #[test]
+                    fn greets() {
+                        assert_eq!(greet("rack"), "Hello, rack!");
+                    }
+                }
+                """);
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            return polyglotPatch();
+        }
+
+        @Override
+        boolean lintable() {
+            return false;
+        }
+
+        @Override
+        boolean prettier() {
+            return false;
+        }
+
+        @Override
+        String gitignore() {
+            return """
+                target/
+                """;
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - IGNITE on IGNITION runs `cargo run`; VERITAS runs `cargo test`
+                - FORGE builds (PROD flips on --release)
+                - arm REFLEX's WATCH switch for a save-driven test loop
+                """;
+        }
     };
 
     private final String displayName;
@@ -542,6 +743,30 @@ public enum ProjectTemplates {
 
     abstract JSONObject buildPatch();
 
+    /** Per-template .gitignore; default fits Node toolchains. */
+    String gitignore() {
+        return """
+            node_modules/
+            dist/
+            coverage/
+            .env
+            """;
+    }
+
+    /** Whether the template ships a .prettierrc (Node toolchains do). */
+    boolean prettier() {
+        return true;
+    }
+
+    /** README quick-start bullet lines (each ends with a newline). */
+    String readmeHints() {
+        return """
+            - press INSTALL on CRATE (or run `npm install`) once
+            - START on SURGE serves the project and opens the browser
+            - arm REFLEX's WATCH switch for a save-driven test loop
+            """;
+    }
+
     /** Whether the generated project gets an eslint flat config. */
     boolean lintable() {
         return true;
@@ -561,12 +786,7 @@ public enum ProjectTemplates {
             }
         }
         writeFiles(root, name);
-        write(root, ".gitignore", """
-            node_modules/
-            dist/
-            coverage/
-            .env
-            """);
+        write(root, ".gitignore", gitignore());
         write(root, ".editorconfig", """
             root = true
 
@@ -578,13 +798,15 @@ public enum ProjectTemplates {
             indent_size = 2
             trim_trailing_whitespace = true
             """);
-        write(root, ".prettierrc", """
-            {
-              "singleQuote": true,
-              "semi": true,
-              "printWidth": 100
-            }
-            """);
+        if (prettier()) {
+            write(root, ".prettierrc", """
+                {
+                  "singleQuote": true,
+                  "semi": true,
+                  "printWidth": 100
+                }
+                """);
+        }
         if (lintable()) {
             write(root, "eslint.config.mjs", """
                 import js from '@eslint/js';
@@ -609,10 +831,7 @@ public enum ProjectTemplates {
             The Task Rack infra for this project lives in `.nmoxrack.json`
             and mounts automatically when the rack aims here:
 
-            - press INSTALL on CRATE (or run `npm install`) once
-            - START on SURGE serves the project and opens the browser
-            - arm REFLEX's WATCH switch for a save-driven test loop
-            """.formatted(name, displayName));
+%s""".formatted(name, displayName, readmeHints()));
         Files.writeString(root.resolve(RackIO.DEFAULT_FILENAME),
                 buildPatch().toString(2), StandardCharsets.UTF_8);
     }
@@ -621,6 +840,21 @@ public enum ProjectTemplates {
         Path target = root.resolve(relative);
         Files.createDirectories(target.getParent());
         Files.writeString(target, content, StandardCharsets.UTF_8);
+    }
+
+    /** Shared patch for the polyglot templates: run/test/debug, save-driven. */
+    private static JSONObject polyglotPatch() {
+        return buildPatchFrom(rack -> {
+            RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
+            RackDevice run = add(rack, DeviceType.RUN, null);
+            RackDevice debug = add(rack, DeviceType.DEBUG, null);
+            RackDevice test = add(rack, DeviceType.TEST, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            rack.connect(reflex.getPort("changed"), test.getPort("run"));
+            rack.connect(test.getPort("out"), console.getPort("in"));
+            rack.connect(run.getPort("out"), console.getPort("in"));
+            rack.connect(debug.getPort("out"), console.getPort("in"));
+        });
     }
 
     /** Shared patch for the Vite-based templates (React/Vue). */

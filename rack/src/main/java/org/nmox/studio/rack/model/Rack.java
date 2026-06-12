@@ -225,6 +225,28 @@ public final class Rack {
         }
     }
 
+    /**
+     * The toolchain every AUTO knob should assume, set by the ROSETTA
+     * selector for mixed-language projects. Null = follow detection.
+     */
+    private volatile String toolchainOverride;
+
+    public String getToolchainOverride() {
+        return toolchainOverride;
+    }
+
+    public void setToolchainOverride(String kindName) {
+        String normalized = kindName == null || kindName.isBlank()
+                || "auto".equalsIgnoreCase(kindName) ? null : kindName;
+        if (!java.util.Objects.equals(toolchainOverride, normalized)) {
+            toolchainOverride = normalized;
+            // devices re-resolve their AUTO labels exactly like a project switch
+            for (RackDevice d : getDevices()) {
+                d.projectChanged(projectDir);
+            }
+        }
+    }
+
     /** Environment applied to every command the rack runs. */
     public Map<String, String> getEnvOverrides() {
         return new LinkedHashMap<>(envOverrides);

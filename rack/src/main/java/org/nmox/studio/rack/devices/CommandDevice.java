@@ -60,6 +60,31 @@ public abstract class CommandDevice extends RackDevice {
     /** The command the main RUN action executes (null = nothing to do). */
     protected abstract List<String> buildCommand();
 
+    /**
+     * The toolchain AUTO knobs should assume: the rack-wide ROSETTA
+     * override when set, else the highest-precedence detected kind.
+     */
+    protected ProjectInspector.ProjectKind effectiveKind() {
+        String override = getRack() != null ? getRack().getToolchainOverride() : null;
+        if (override != null) {
+            try {
+                return ProjectInspector.ProjectKind.valueOf(override);
+            } catch (IllegalArgumentException ignored) {
+                // unknown override name; fall through to detection
+            }
+        }
+        return ProjectInspector.detectKind(projectDir());
+    }
+
+    /**
+     * Where this device's commands run: the effective toolchain's
+     * manifest directory - in a monorepo, cargo commands run in the
+     * Cargo.toml directory, npm commands beside package.json.
+     */
+    protected java.io.File commandDir() {
+        return ProjectInspector.kindDir(projectDir(), effectiveKind());
+    }
+
     /** The action triggered by the RUN input jack; defaults to launching. */
     protected void primaryAction() {
         launch(buildCommand());
@@ -68,10 +93,12 @@ public abstract class CommandDevice extends RackDevice {
     /**
      * Whether this device only makes sense inside an npm project. When
      * true (the default), launches are refused unless the project dir
-     * has a package.json - running eslint or npm install against the
-     * user's home directory is never what anyone wanted.
+     * has a recognized project manifest (package.json, Cargo.toml,
+     * go.mod, pom.xml, pyproject.toml, Gemfile, composer.json,
+     * Makefile...) - running tools against the user's home directory
+     * is never what anyone wanted.
      */
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         return true;
     }
 
@@ -80,13 +107,18 @@ public abstract class CommandDevice extends RackDevice {
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
     protected void launch(List<String> command) {
+        launchWithEnv(command, Map.of());
+    }
+
+    /** {@link #launch} with extra environment for this run only (e.g. MAVEN_OPTS). */
+    protected void launchWithEnv(List<String> command, Map<String, String> extraEnv) {
         if (command == null || command.isEmpty()) {
             return;
         }
-        if (requiresPackageJson() && !new java.io.File(projectDir(), "package.json").isFile()) {
+        if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PACKAGE.JSON — USE PROJECT… TO AIM THE RACK");
+                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             });
             return;
         }
@@ -98,7 +130,7 @@ public abstract class CommandDevice extends RackDevice {
             statusLcd.setTextColor(RackStyle.LCD_AMBER);
             statusLcd.setText("RUNNING " + String.join(" ", command));
         });
-        exec(command, line -> {
+        exec(command, extraEnv, commandDir(), line -> {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));
@@ -123,6 +155,80 @@ public abstract class CommandDevice extends RackDevice {
             if (stopped) {
                 // a deliberate stop is not a failure: no toast, and no
                 // ok/fail triggers rippling down a pipeline someone just halted
+                return;
+            }
+            if (!ok) {
+                toastFailure(code);
+            }
+            emit(ok ? "ok" : "fail", Signal.trigger(ok));
+            emit("done", Signal.trigger(ok));
+        });
+    }
+
+    /** One step of a multi-toolchain sequence: a command and where to run it. */
+    protected record Step(List<String> command, java.io.File dir) {
+    }
+
+    /**
+     * Runs steps back to back: LEDs and the meter span the whole
+     * sequence, the LCD counts progress, the first failure stops the
+     * train, and ok/fail/done fire once at the end.
+     */
+    protected void launchSequence(List<Step> steps) {
+        if (steps == null || steps.isEmpty()) {
+            return;
+        }
+        if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
+            });
+            return;
+        }
+        startedAt = System.currentTimeMillis();
+        onEdt(() -> {
+            runLed.setBlinking(true);
+            okLed.setOn(false);
+            failLed.setOn(false);
+        });
+        runStep(steps, 0);
+    }
+
+    private void runStep(List<Step> steps, int index) {
+        Step step = steps.get(index);
+        onEdt(() -> {
+            statusLcd.setTextColor(RackStyle.LCD_AMBER);
+            statusLcd.setText((index + 1) + "/" + steps.size() + "  "
+                    + String.join(" ", step.command()));
+        });
+        exec(step.command(), Map.of(), step.dir(), line -> {
+            activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
+            onLine(line);
+            emit("out", Signal.data(line));
+        }, code -> {
+            boolean stopped = KILL_EXIT_CODES.contains(code);
+            if (code == 0 && index + 1 < steps.size() && !stopped) {
+                runStep(steps, index + 1);
+                return;
+            }
+            long elapsed = System.currentTimeMillis() - startedAt;
+            boolean ok = code == 0;
+            onEdt(() -> {
+                runLed.setBlinking(false);
+                okLed.setOn(ok);
+                failLed.setOn(!ok && !stopped);
+                if (stopped) {
+                    statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                    statusLcd.setText("STOPPED  " + (elapsed / 1000.0) + "s");
+                } else {
+                    statusLcd.setTextColor(ok ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                    statusLcd.setText((ok ? "OK " + steps.size() + "/" + steps.size()
+                            : "FAIL [" + code + "] AT " + (index + 1) + "/" + steps.size())
+                            + "  " + (elapsed / 1000.0) + "s");
+                }
+            });
+            onFinished(code);
+            if (stopped) {
                 return;
             }
             if (!ok) {

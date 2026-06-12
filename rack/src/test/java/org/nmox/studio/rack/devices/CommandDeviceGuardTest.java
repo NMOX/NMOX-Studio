@@ -63,7 +63,7 @@ class CommandDeviceGuardTest {
 
         assertThat(device.finished.await(500, TimeUnit.MILLISECONDS))
                 .as("command must not run").isFalse();
-        assertThat(device.statusLcd.getText()).contains("NO PACKAGE.JSON");
+        assertThat(device.statusLcd.getText()).contains("NO PROJECT MANIFEST");
     }
 
     @Test

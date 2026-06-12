@@ -55,9 +55,9 @@ public class TunnelDevice extends CommandDevice {
         param("port", portKnob);
     }
 
-    /** Tunnels work for any local server, package.json or not. */
+    /** Tunnels work for any local server, project manifest or not. */
     @Override
-    protected boolean requiresPackageJson() {
+    protected boolean requiresProjectManifest() {
         return false;
     }
 

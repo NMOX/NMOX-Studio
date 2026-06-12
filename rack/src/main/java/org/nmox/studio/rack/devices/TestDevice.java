@@ -16,7 +16,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
 
@@ -60,6 +60,17 @@ public class TestDevice extends CommandDevice {
         if (!"auto".equals(fw)) {
             return fw;
         }
+        ProjectInspector.ProjectKind kind = effectiveKind();
+        switch (kind) {
+            case RUST: return "cargo";
+            case GO: return "go";
+            case MAVEN: return "mvn";
+            case GRADLE: return "gradle";
+            case PYTHON: return "pytest";
+            case RUBY: return "rspec";
+            case PHP: return "phpunit";
+            default: break;
+        }
         if (ProjectInspector.hasScript(projectDir(), "test")) {
             return "npm-script";
         }
@@ -71,6 +82,22 @@ public class TestDevice extends CommandDevice {
         return dep != null ? dep : "npm-script";
     }
 
+    /** Tests run where the selected runner's manifest lives. */
+    @Override
+    protected java.io.File commandDir() {
+        ProjectInspector.ProjectKind kind = switch (effectiveFramework()) {
+            case "cargo" -> ProjectInspector.ProjectKind.RUST;
+            case "go" -> ProjectInspector.ProjectKind.GO;
+            case "mvn" -> ProjectInspector.ProjectKind.MAVEN;
+            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
+            case "pytest" -> ProjectInspector.ProjectKind.PYTHON;
+            case "rspec" -> ProjectInspector.ProjectKind.RUBY;
+            case "phpunit" -> ProjectInspector.ProjectKind.PHP;
+            default -> ProjectInspector.ProjectKind.NODE;
+        };
+        return ProjectInspector.kindDir(projectDir(), kind);
+    }
+
     @Override
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>();
@@ -80,6 +107,17 @@ public class TestDevice extends CommandDevice {
             case "mocha" -> cmd.addAll(List.of("npx", "mocha"));
             case "playwright" -> cmd.addAll(List.of("npx", "playwright", "test"));
             case "cypress" -> cmd.addAll(List.of("npx", "cypress", "run"));
+            case "pytest" -> cmd.addAll(List.of("python3", "-m", "pytest"));
+            case "cargo" -> cmd.addAll(List.of("cargo", "test"));
+            case "go" -> cmd.addAll(List.of("go", "test", "./..."));
+            case "mvn" -> cmd.addAll(List.of("mvn", "-q", "test"));
+            case "gradle" -> cmd.addAll(List.of("gradle", "test"));
+            case "rspec" -> cmd.addAll(new java.io.File(commandDir(), "spec").isDirectory()
+                    ? List.of("bundle", "exec", "rspec")
+                    : List.of("rake", "test"));
+            case "phpunit" -> cmd.addAll(new java.io.File(commandDir(), "vendor/bin/phpunit").isFile()
+                    ? List.of("./vendor/bin/phpunit")
+                    : List.of("phpunit"));
             default -> cmd.addAll(List.of("npm", "test"));
         }
         if (coverageSwitch.isOn()) {

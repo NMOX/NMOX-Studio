@@ -26,7 +26,8 @@ public class ReflexDevice extends RackDevice {
     private static final String[] FILTERS = {"all", "code", "styles", "docs"};
     private static final List<Set<String>> FILTER_EXTENSIONS = List.of(
             Set.of(),  // unused for "all"
-            Set.of("js", "jsx", "ts", "tsx", "mjs", "cjs", "vue", "svelte", "json"),
+            Set.of("js", "jsx", "ts", "tsx", "mjs", "cjs", "vue", "svelte", "json",
+                    "py", "rb", "rs", "go", "java", "c", "h", "cpp", "hpp", "hh", "php", "sh"),
             Set.of("css", "scss", "sass", "less", "styl"),
             Set.of("html", "htm", "md", "mdx", "xml", "svg"));
 
