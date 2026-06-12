@@ -105,13 +105,6 @@
             <artifactId>json</artifactId>
             <version>20231013</version>
         </dependency>
-        
-        <!-- WebSocket support for debugging -->
-        <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId>
-            <version>1.1</version>
-        </dependency>
 
         <!-- Testing dependencies -->
         <dependency>
@@ -142,10 +135,7 @@
                 <configuration>
                     <publicPackages>
                         <publicPackage>org.nmox.studio.tools.build</publicPackage>
-                        <publicPackage>org.nmox.studio.tools.build.ui</publicPackage>
                         <publicPackage>org.nmox.studio.tools.npm</publicPackage>
-                        <publicPackage>org.nmox.studio.tools.debug</publicPackage>
-                        <publicPackage>org.nmox.studio.tools.test</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
