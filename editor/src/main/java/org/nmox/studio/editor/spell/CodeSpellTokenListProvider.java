@@ -51,7 +51,25 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/x-crystal", service = TokenListProvider.class),
         @MimeRegistration(mimeType = "text/css", service = TokenListProvider.class),
         @MimeRegistration(mimeType = "text/x-scss", service = TokenListProvider.class),
-        @MimeRegistration(mimeType = "text/x-less", service = TokenListProvider.class)
+        @MimeRegistration(mimeType = "text/x-less", service = TokenListProvider.class),
+    // the config layer: values are not prose, only comments get spellcheck
+    @MimeRegistration(mimeType = "text/x-ini", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-ignore", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-graphql", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-vue", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-svelte", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-astro", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-pug", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-handlebars", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-liquid", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-nginx-conf", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-makefile", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-protobuf", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-prisma", service = TokenListProvider.class),
+    // platform-owned config mimes that ship without a comments-only binding
+    @MimeRegistration(mimeType = "text/x-yaml", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-toml", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-dockerfile", service = TokenListProvider.class)
 })
 public class CodeSpellTokenListProvider implements TokenListProvider {
 
@@ -130,13 +148,12 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
         }
 
         private static boolean isComment(Token<?> token) {
-            String category = token.id().primaryCategory();
-            if (category != null && category.contains("comment")) {
-                return true;
-            }
-            // TextMate tokens: the real category lives in the scope list property
-            Object scopes = token.getProperty("scopes");
-            return scopes != null && scopes.toString().contains("comment");
+            // TextMate tokens carry a single id (TEXTMATE); the real scope
+            // stack lives in the "categories" property (a List of scope
+            // names like "comment.line.number-sign.ini"). The custom JS/TS
+            // lexer instead names the category "comment" on the id itself.
+            return isCommentScope(token.id().primaryCategory(),
+                    token.getProperty("categories"));
         }
 
         @Override
@@ -156,5 +173,21 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
         @Override
         public void removeChangeListener(ChangeListener l) {
         }
+    }
+
+    /**
+     * Whether a token sits inside a comment, across both token shapes we
+     * lex: the custom lexers name the id category "comment"; TextMate
+     * exposes the scope stack as a "categories" property (a List whose
+     * entries look like "comment.line.number-sign.ini"). Reading the
+     * wrong property key here is what let prose spellcheck leak onto
+     * config-file keys and values.
+     */
+    static boolean isCommentScope(String primaryCategory, Object categoriesProperty) {
+        if (primaryCategory != null && primaryCategory.contains("comment")) {
+            return true;
+        }
+        return categoriesProperty != null
+                && categoriesProperty.toString().contains("comment");
     }
 }

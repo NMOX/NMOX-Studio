@@ -408,4 +408,78 @@ public final class LanguageServers {
         }
     }
 
+    // ---- the config layer -------------------------------------------------
+
+    /** YAML via yaml-language-server: CI files, compose, k8s manifests. */
+    @MimeRegistration(mimeType = "text/x-yaml", service = LanguageServerProvider.class)
+    public static final class YamlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "yaml-language-server", "--stdio");
+        }
+    }
+
+    /** TOML via taplo (cargo/brew install taplo-cli). */
+    @MimeRegistration(mimeType = "text/x-toml", service = LanguageServerProvider.class)
+    public static final class TomlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launch(lookup, List.of("taplo", "lsp", "stdio"));
+        }
+    }
+
+    /** Dockerfile via dockerfile-language-server-nodejs. */
+    @MimeRegistration(mimeType = "text/x-dockerfile", service = LanguageServerProvider.class)
+    public static final class DockerfileServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "docker-langserver", "--stdio");
+        }
+    }
+
+    /** GraphQL via graphql-language-service-cli. */
+    @MimeRegistration(mimeType = "text/x-graphql", service = LanguageServerProvider.class)
+    public static final class GraphqlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "graphql-lsp", "server", "-m", "stream");
+        }
+    }
+
+    /** Vue single-file components via the official language server. */
+    @MimeRegistration(mimeType = "text/x-vue", service = LanguageServerProvider.class)
+    public static final class VueServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vue-language-server", "--stdio");
+        }
+    }
+
+    /** Svelte components via svelte-language-server. */
+    @MimeRegistration(mimeType = "text/x-svelte", service = LanguageServerProvider.class)
+    public static final class SvelteServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "svelteserver", "--stdio");
+        }
+    }
+
+    /** Astro components via @astrojs/language-server. */
+    @MimeRegistration(mimeType = "text/x-astro", service = LanguageServerProvider.class)
+    public static final class AstroServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "astro-ls", "--stdio");
+        }
+    }
+
+    /** Prisma schemas via @prisma/language-server. */
+    @MimeRegistration(mimeType = "text/x-prisma", service = LanguageServerProvider.class)
+    public static final class PrismaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "prisma-language-server", "--stdio");
+        }
+    }
+
 }
