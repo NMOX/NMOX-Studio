@@ -124,6 +124,6 @@ jobs:
           files: |
             artifacts/**/NMOX-Studio-*-portable.zip
             artifacts/**/NMOX-Studio-*-linux.tar.gz
-            artifacts/**/nmox-studio_*_all.deb
+            artifacts/**/nmox-studio_*.deb
             artifacts/**/NMOX-Studio-*-macos.dmg
             artifacts/**/NMOX-Studio-*-windows-setup.exe
