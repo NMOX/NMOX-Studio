@@ -89,11 +89,6 @@
         <module>tools</module>
         <module>rack</module>
         <module>infra</module>
-        <!-- Temporarily disabled for initial build
-        <module>cloud</module>
-        <module>deployment</module>
-        <module>containers</module>
-        -->
         <module>application</module>
         <module>NMOX-Studio-sample</module>
     </modules>

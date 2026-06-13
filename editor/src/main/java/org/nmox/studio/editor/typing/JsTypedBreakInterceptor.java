@@ -109,7 +109,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         @MimeRegistration(mimeType = "text/x-haskell", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-zig", service = TypedBreakInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ocaml", service = TypedBreakInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-crystal", service = TypedBreakInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-crystal", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/css", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-less", service = TypedBreakInterceptor.Factory.class)
     })
     public static class Factory implements TypedBreakInterceptor.Factory {
         @Override

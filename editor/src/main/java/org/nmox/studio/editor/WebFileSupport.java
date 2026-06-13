@@ -9,12 +9,14 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.util.NbBundle.Messages;
 
 @Messages({
-    "LBL_Web_LOADER=Web Files"
+    "LBL_Web_LOADER=HTML Files"
 })
+// only true HTML here: stylesheets, scripts and JSON each have their own
+// MIME identity (resolvers in editor.grammars / javascript / typescript)
 @MIMEResolver.ExtensionRegistration(
         displayName = "#LBL_Web_LOADER",
         mimeType = "text/html",
-        extension = {"html", "htm", "xhtml", "css", "scss", "sass", "less", "js", "jsx", "ts", "tsx", "json"},
+        extension = {"html", "htm", "xhtml"},
         position = 979
 )
 @DataObject.Registration(

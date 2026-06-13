@@ -154,7 +154,12 @@ public final class RackTopComponent extends TopComponent {
             File target = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
             try {
                 RackIO.save(rack, target);
-                projectLabel.setText(projectLabel.getText() + "  [saved]");
+                // momentary confirmation, then back to the plain name -
+                // never appended onto itself across repeated saves
+                projectLabel.setText(rack.getProjectDir().getName() + "  [saved]");
+                javax.swing.Timer revert = new javax.swing.Timer(2000, ev -> updateProjectLabel());
+                revert.setRepeats(false);
+                revert.start();
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Save failed: " + ex.getMessage(),
                         "Task Rack", JOptionPane.ERROR_MESSAGE);

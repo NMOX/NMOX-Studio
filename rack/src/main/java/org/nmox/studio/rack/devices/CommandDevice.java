@@ -90,6 +90,9 @@ public abstract class CommandDevice extends RackDevice {
         try {
             return buildCommand();
         } catch (RuntimeException ex) {
+            java.util.logging.Logger.getLogger(CommandDevice.class.getName())
+                    .log(java.util.logging.Level.WARNING,
+                            "CI export skips " + getTitle() + ": command could not be built", ex);
             return null;
         }
     }

@@ -90,7 +90,11 @@ public final class DigitalOceanClient {
                     node.doId = doId;
                     ids.put(node.id, doId);
                 }
-                onStep.accept(node, "created");
+                // honesty over green lights: a created resource whose id we
+                // could not parse cannot be synced or destroyed later
+                onStep.accept(node, node != null && node.doId == null
+                        ? "created (id not parsed — destroy/sync unavailable)"
+                        : "created");
             } catch (Exception ex) {
                 onStep.accept(node, "FAILED: " + compact(ex.getMessage()));
                 return false;
@@ -249,7 +253,14 @@ public final class DigitalOceanClient {
                 new Source("/v2/load_balancers", "load_balancers", NodeKind.LOAD_BALANCER, "id", "name"),
                 new Source("/v2/volumes", "volumes", NodeKind.VOLUME, "id", "name"),
                 new Source("/v2/domains", "domains", NodeKind.DOMAIN, "name", "name"),
-                new Source("/v2/databases", "databases", NodeKind.DB_POSTGRES, "id", "name"));
+                new Source("/v2/databases", "databases", NodeKind.DB_POSTGRES, "id", "name"),
+                new Source("/v2/kubernetes/clusters", "kubernetes_clusters", NodeKind.KUBERNETES, "id", "name"),
+                new Source("/v2/apps", "apps", NodeKind.APP_PLATFORM, "id", "spec"),
+                new Source("/v2/firewalls", "firewalls", NodeKind.FIREWALL, "id", "name"),
+                new Source("/v2/reserved_ips", "reserved_ips", NodeKind.RESERVED_IP, "ip", "ip"),
+                new Source("/v2/certificates", "certificates", NodeKind.CERTIFICATE, "id", "name"),
+                new Source("/v2/account/keys", "ssh_keys", NodeKind.SSH_KEY, "id", "name"),
+                new Source("/v2/functions/namespaces", "namespaces", NodeKind.FUNCTIONS, "namespace", "label"));
         int imported = 0;
         int x = 80, y = 60;
         for (Source source : sources) {
@@ -266,7 +277,13 @@ public final class DigitalOceanClient {
                     continue;
                 }
                 InfraNode node = graph.addNode(source.kind(), x, y);
-                node.label = item.optString(source.nameKey(), node.label);
+                if (source.kind() == NodeKind.APP_PLATFORM) {
+                    // app names live one level down, in the spec
+                    JSONObject spec = item.optJSONObject("spec");
+                    node.label = spec != null ? spec.optString("name", node.label) : node.label;
+                } else {
+                    node.label = item.optString(source.nameKey(), node.label);
+                }
                 node.doId = doId;
                 graph.setStatus(node, "live");
                 imported++;

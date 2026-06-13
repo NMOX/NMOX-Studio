@@ -11,8 +11,16 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
 
+@org.netbeans.api.editor.mimelookup.MimeRegistrations({
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
+            mimeType = "text/css", service = CompletionProvider.class),
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
+            mimeType = "text/x-scss", service = CompletionProvider.class),
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
+            mimeType = "text/x-less", service = CompletionProvider.class)
+})
 public class CssCompletionProvider implements CompletionProvider {
-    
+
     private static final Map<String, List<String>> CSS_PROPERTIES = new HashMap<>();
     private static final Map<String, List<String>> PROPERTY_VALUES = new HashMap<>();
     
@@ -126,6 +134,132 @@ public class CssCompletionProvider implements CompletionProvider {
             "alias", "copy", "move", "no-drop", "not-allowed", "grab", "grabbing",
             "all-scroll", "col-resize", "row-resize", "n-resize", "e-resize",
             "s-resize", "w-resize", "ne-resize", "nw-resize", "se-resize", "sw-resize"
+        ));
+
+        PROPERTY_VALUES.put("border-style", Arrays.asList(
+            "none", "solid", "dashed", "dotted", "double", "groove",
+            "ridge", "inset", "outset", "hidden"
+        ));
+
+        PROPERTY_VALUES.put("flex-wrap", Arrays.asList(
+            "nowrap", "wrap", "wrap-reverse"
+        ));
+
+        PROPERTY_VALUES.put("align-content", Arrays.asList(
+            "stretch", "flex-start", "flex-end", "center",
+            "space-between", "space-around", "space-evenly"
+        ));
+
+        PROPERTY_VALUES.put("align-self", Arrays.asList(
+            "auto", "stretch", "flex-start", "flex-end", "center", "baseline"
+        ));
+
+        PROPERTY_VALUES.put("text-decoration", Arrays.asList(
+            "none", "underline", "overline", "line-through"
+        ));
+
+        PROPERTY_VALUES.put("text-transform", Arrays.asList(
+            "none", "capitalize", "uppercase", "lowercase"
+        ));
+
+        PROPERTY_VALUES.put("font-style", Arrays.asList(
+            "normal", "italic", "oblique"
+        ));
+
+        PROPERTY_VALUES.put("white-space", Arrays.asList(
+            "normal", "nowrap", "pre", "pre-wrap", "pre-line", "break-spaces"
+        ));
+
+        PROPERTY_VALUES.put("word-break", Arrays.asList(
+            "normal", "break-all", "keep-all", "break-word"
+        ));
+
+        PROPERTY_VALUES.put("text-overflow", Arrays.asList(
+            "clip", "ellipsis"
+        ));
+
+        PROPERTY_VALUES.put("vertical-align", Arrays.asList(
+            "baseline", "top", "middle", "bottom", "text-top", "text-bottom",
+            "sub", "super"
+        ));
+
+        PROPERTY_VALUES.put("visibility", Arrays.asList(
+            "visible", "hidden", "collapse"
+        ));
+
+        PROPERTY_VALUES.put("box-sizing", Arrays.asList(
+            "content-box", "border-box"
+        ));
+
+        PROPERTY_VALUES.put("float", Arrays.asList(
+            "none", "left", "right", "inline-start", "inline-end"
+        ));
+
+        PROPERTY_VALUES.put("clear", Arrays.asList(
+            "none", "left", "right", "both", "inline-start", "inline-end"
+        ));
+
+        PROPERTY_VALUES.put("background-repeat", Arrays.asList(
+            "repeat", "repeat-x", "repeat-y", "no-repeat", "space", "round"
+        ));
+
+        PROPERTY_VALUES.put("background-size", Arrays.asList(
+            "auto", "cover", "contain"
+        ));
+
+        PROPERTY_VALUES.put("background-attachment", Arrays.asList(
+            "scroll", "fixed", "local"
+        ));
+
+        PROPERTY_VALUES.put("background-position", Arrays.asList(
+            "top", "bottom", "left", "right", "center"
+        ));
+
+        PROPERTY_VALUES.put("object-fit", Arrays.asList(
+            "fill", "contain", "cover", "none", "scale-down"
+        ));
+
+        PROPERTY_VALUES.put("pointer-events", Arrays.asList(
+            "auto", "none"
+        ));
+
+        PROPERTY_VALUES.put("user-select", Arrays.asList(
+            "auto", "none", "text", "all"
+        ));
+
+        PROPERTY_VALUES.put("animation-direction", Arrays.asList(
+            "normal", "reverse", "alternate", "alternate-reverse"
+        ));
+
+        PROPERTY_VALUES.put("animation-fill-mode", Arrays.asList(
+            "none", "forwards", "backwards", "both"
+        ));
+
+        PROPERTY_VALUES.put("animation-timing-function", Arrays.asList(
+            "ease", "ease-in", "ease-out", "ease-in-out", "linear",
+            "step-start", "step-end"
+        ));
+
+        PROPERTY_VALUES.put("transition-timing-function", Arrays.asList(
+            "ease", "ease-in", "ease-out", "ease-in-out", "linear",
+            "step-start", "step-end"
+        ));
+
+        PROPERTY_VALUES.put("overflow-x", Arrays.asList(
+            "visible", "hidden", "scroll", "auto", "clip"
+        ));
+
+        PROPERTY_VALUES.put("overflow-y", Arrays.asList(
+            "visible", "hidden", "scroll", "auto", "clip"
+        ));
+
+        PROPERTY_VALUES.put("font-variant", Arrays.asList(
+            "normal", "small-caps"
+        ));
+
+        PROPERTY_VALUES.put("list-style-type", Arrays.asList(
+            "none", "disc", "circle", "square", "decimal",
+            "lower-alpha", "upper-alpha", "lower-roman", "upper-roman"
         ));
     }
     

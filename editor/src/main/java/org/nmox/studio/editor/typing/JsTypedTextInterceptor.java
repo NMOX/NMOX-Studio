@@ -80,7 +80,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-haskell", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-zig", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ocaml", service = TypedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-crystal", service = TypedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-crystal", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/css", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-less", service = TypedTextInterceptor.Factory.class)
     })
     public static class Factory implements TypedTextInterceptor.Factory {
         @Override

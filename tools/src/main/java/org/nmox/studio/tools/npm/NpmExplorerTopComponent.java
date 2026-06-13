@@ -56,6 +56,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode rootNode;
     private NpmService npmService;
+    private org.nmox.studio.rack.model.Rack rackRef;
+    private org.nmox.studio.rack.model.Rack.Listener rackListener;
     private File currentProjectDir;
 
     public NpmExplorerTopComponent() {
@@ -69,16 +71,18 @@ public final class NpmExplorerTopComponent extends TopComponent {
         }
 
         // follow the aimed project: when the rack re-aims, this explorer
-        // re-reads the new project's package.json automatically
+        // re-reads the new project's package.json automatically (the
+        // listener is subscribed in componentOpened, unsubscribed in
+        // componentClosed, so close/reopen cycles never stack copies)
         try {
-            org.nmox.studio.rack.service.RackService.getDefault().getRack()
-                    .addListener(new org.nmox.studio.rack.model.Rack.Listener() {
+            rackRef = org.nmox.studio.rack.service.RackService.getDefault().getRack();
+            rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
                 @Override
                 public void projectChanged() {
                     javax.swing.SwingUtilities.invokeLater(
                             NpmExplorerTopComponent.this::refreshProjectView);
                 }
-            });
+            };
         } catch (RuntimeException | LinkageError ex) {
             // rack unavailable; manual Refresh still works
         }
@@ -276,12 +280,17 @@ public final class NpmExplorerTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
+        if (rackRef != null && rackListener != null) {
+            rackRef.addListener(rackListener);
+        }
         refreshProjectView();
     }
 
     @Override
     public void componentClosed() {
-        // Clean up if needed
+        if (rackRef != null && rackListener != null) {
+            rackRef.removeListener(rackListener);
+        }
     }
 
     void writeProperties(java.util.Properties p) {

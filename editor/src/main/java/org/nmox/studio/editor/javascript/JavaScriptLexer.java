@@ -30,16 +30,28 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     private final TokenFactory<JavaScriptTokenId> tokenFactory;
     private final StringBuilder buffer = new StringBuilder(128);
     private LexerState state = LexerState.NORMAL;
-    
+    /**
+     * Whether a '/' at this point starts a regex literal (true after
+     * operators, '(', '=', 'return' …) or is division (false after a
+     * value: identifier, number, string, ')', ']'). The classic JS
+     * lexing ambiguity, resolved the way every practical lexer does -
+     * by what the previous meaningful token was.
+     */
+    private boolean regexAllowed = true;
+
     private enum LexerState {
         NORMAL,
         IN_TEMPLATE_LITERAL,
         IN_TEMPLATE_EXPRESSION
     }
-    
+
     public JavaScriptLexer(LexerRestartInfo<JavaScriptTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
+        if (info.state() instanceof Integer packed) {
+            this.state = LexerState.values()[packed >> 1];
+            this.regexAllowed = (packed & 1) != 0;
+        }
     }
     
     @Override
@@ -68,40 +80,49 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
                         return finishLineComment();
                     } else if (next == '*') {
                         return finishBlockComment();
-                    } else if (next == '=') {
+                    } else if (next == '=' && !regexAllowed) {
+                        regexAllowed = true;
                         return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
                     } else {
                         input.backup(1);
                         return finishRegexOrOperator();
                     }
-                    
+
                 case '"':
                 case '\'':
+                    regexAllowed = false;
                     return finishStringLiteral(ch);
-                    
+
                 case '`':
                     state = LexerState.IN_TEMPLATE_LITERAL;
+                    regexAllowed = false;
                     return finishTemplateLiteral();
-                    
+
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
+                    regexAllowed = false;
                     return finishNumberLiteral();
-                    
+
                 case '+': case '-': case '*': case '%':
                 case '=': case '!': case '<': case '>':
                 case '&': case '|': case '^': case '~':
                 case '?': case ':':
+                    regexAllowed = true;
                     return finishOperator();
-                    
+
                 case '(': case ')': case '[': case ']':
                 case '{': case '}': case ';': case ',':
                 case '.':
+                    // after a closing paren/bracket a '/' divides; after
+                    // the openers and separators it starts a regex
+                    regexAllowed = ch != ')' && ch != ']';
                     return tokenFactory.createToken(JavaScriptTokenId.DELIMITER);
-                    
+
                 default:
                     if (Character.isJavaIdentifierStart(ch)) {
                         return finishIdentifier();
                     } else {
+                        regexAllowed = true;
                         return tokenFactory.createToken(JavaScriptTokenId.ERROR);
                     }
             }
@@ -245,9 +266,48 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     }
     
     private Token<JavaScriptTokenId> finishRegexOrOperator() {
-        // This is simplified - in a full implementation, we'd need context
-        // to determine if '/' starts a regex or is a division operator
-        return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
+        if (!regexAllowed) {
+            // division: value on the left
+            regexAllowed = true;
+            return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
+        }
+        // try to scan a regex literal; on any malformation back out and
+        // call it an operator so highlighting degrades gracefully
+        int consumed = 0;
+        boolean inClass = false;
+        boolean escaped = false;
+        while (true) {
+            int ch = input.read();
+            if (ch == EOF || ch == '\n' || ch == '\r') {
+                if (ch != EOF) {
+                    consumed++;
+                }
+                input.backup(consumed);
+                regexAllowed = true;
+                return tokenFactory.createToken(JavaScriptTokenId.OPERATOR);
+            }
+            consumed++;
+            if (escaped) {
+                escaped = false;
+            } else if (ch == '\\') {
+                escaped = true;
+            } else if (ch == '[') {
+                inClass = true;
+            } else if (ch == ']') {
+                inClass = false;
+            } else if (ch == '/' && !inClass) {
+                break; // closed
+            }
+        }
+        // trailing flags: /pattern/gimsuy
+        int ch;
+        while ((ch = input.read()) != EOF && Character.isLetter(ch)) {
+        }
+        if (ch != EOF) {
+            input.backup(1);
+        }
+        regexAllowed = false;
+        return tokenFactory.createToken(JavaScriptTokenId.REGEX);
     }
     
     private Token<JavaScriptTokenId> finishIdentifier() {
@@ -275,20 +335,25 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
         }
         
         if (keywordId != null) {
+            // after most keywords (return, typeof, case …) a '/' starts a
+            // regex; 'this' and 'super' are values, so it divides
+            regexAllowed = !"this".equals(str) && !"super".equals(str);
             return tokenFactory.createToken(keywordId);
         }
-        
+
+        regexAllowed = false;
         return tokenFactory.createToken(JavaScriptTokenId.IDENTIFIER);
     }
-    
+
     @Override
     public Object state() {
-        return state;
+        return (state.ordinal() << 1) | (regexAllowed ? 1 : 0);
     }
-    
+
     @Override
     public void release() {
         buffer.setLength(0);
         state = LexerState.NORMAL;
+        regexAllowed = true;
     }
 }

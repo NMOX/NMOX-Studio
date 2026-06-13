@@ -184,7 +184,7 @@ public final class MainWindow extends TopComponent {
     }
 
     void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
+        // version "1.0" carries no settings beyond window geometry, which
+        // the window system restores itself; nothing further to read
     }
 }

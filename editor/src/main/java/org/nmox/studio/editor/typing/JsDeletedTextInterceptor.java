@@ -73,7 +73,10 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-haskell", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-zig", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ocaml", service = DeletedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-crystal", service = DeletedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-crystal", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/css", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-less", service = DeletedTextInterceptor.Factory.class)
     })
     public static class Factory implements DeletedTextInterceptor.Factory {
         @Override
