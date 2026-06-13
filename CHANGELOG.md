@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.4.1] — 2026-06-12
 
 ### Fixed
 - **The installers no longer depend on the user's Java.** The DMG,
@@ -160,6 +160,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.4.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.2.0...v1.2.1
