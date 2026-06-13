@@ -7,8 +7,8 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 @ActionID(
         category = "File",
@@ -21,17 +21,26 @@ import org.openide.NotifyDescriptor;
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 110),
     @ActionReference(path = "Toolbars/File", position = 95),
-    @ActionReference(path = "Shortcuts", name = "D-N")
+    // no keyboard shortcut: D-N belongs to New File
+    @ActionReference(path = "Shortcuts", name = "DS-N")
 })
 @Messages("CTL_NewProjectAction=New Project...")
 public final class NewProjectAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-            "New Project wizard will be implemented here.",
-            NotifyDescriptor.INFORMATION_MESSAGE
-        );
-        DialogDisplayer.getDefault().notify(msg);
+        org.nmox.studio.rack.projectstudio.NewProjectDialog dialog =
+                new org.nmox.studio.rack.projectstudio.NewProjectDialog(
+                        WindowManager.getDefault().getMainWindow());
+        dialog.setVisible(true);
+        if (dialog.getCreatedProject() != null) {
+            // the dialog aimed the rack; surface the studio for step two
+            TopComponent studio = WindowManager.getDefault()
+                    .findTopComponent("ProjectStudioTopComponent");
+            if (studio != null) {
+                studio.open();
+                studio.requestActive();
+            }
+        }
     }
 }

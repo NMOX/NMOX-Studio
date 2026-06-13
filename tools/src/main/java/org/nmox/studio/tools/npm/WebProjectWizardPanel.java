@@ -11,6 +11,8 @@ import org.openide.util.NbBundle;
 public class WebProjectWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.ValidatingPanel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
+    private final org.openide.util.ChangeSupport changeSupport =
+            new org.openide.util.ChangeSupport(this);
     private WizardDescriptor wizardDescriptor;
     private WebProjectWizardPanelVisual component;
 
@@ -36,10 +38,12 @@ public class WebProjectWizardPanel implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     @Override
@@ -66,6 +70,6 @@ public class WebProjectWizardPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     void fireChangeEvent() {
-        // Notify listeners of changes
+        changeSupport.fireChange();
     }
 }

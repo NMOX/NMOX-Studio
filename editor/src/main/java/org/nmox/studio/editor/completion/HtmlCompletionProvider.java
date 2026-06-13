@@ -11,12 +11,15 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.util.Exceptions;
 
+@org.netbeans.api.editor.mimelookup.MimeRegistration(
+        mimeType = "text/html", service = CompletionProvider.class)
 public class HtmlCompletionProvider implements CompletionProvider {
-    
+
     private static final Map<String, List<String>> TAG_ATTRIBUTES = new HashMap<>();
+    private static final Map<String, List<String>> ATTRIBUTE_VALUES = new HashMap<>();
     private static final Set<String> VOID_ELEMENTS = new HashSet<>();
     private static final Set<String> HTML_TAGS = new HashSet<>();
-    
+
     static {
         // Initialize HTML5 tags
         HTML_TAGS.addAll(Arrays.asList(
@@ -45,13 +48,13 @@ public class HtmlCompletionProvider implements CompletionProvider {
             // Interactive
             "dialog", "menu", "menuitem", "template", "slot"
         ));
-        
+
         // Void elements (self-closing)
         VOID_ELEMENTS.addAll(Arrays.asList(
             "area", "base", "br", "col", "embed", "hr", "img", "input",
             "link", "meta", "param", "source", "track", "wbr"
         ));
-        
+
         // Global attributes (applicable to all elements)
         List<String> globalAttrs = Arrays.asList(
             "id", "class", "style", "title", "lang", "dir", "tabindex",
@@ -59,7 +62,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             "dropzone", "hidden", "spellcheck", "translate",
             "data-*", "aria-*", "role"
         );
-        
+
         // Element-specific attributes
         TAG_ATTRIBUTES.put("*", globalAttrs);
         TAG_ATTRIBUTES.put("a", Arrays.asList("href", "target", "rel", "download", "hreflang", "type", "ping"));
@@ -79,8 +82,40 @@ public class HtmlCompletionProvider implements CompletionProvider {
         TAG_ATTRIBUTES.put("video", Arrays.asList("src", "controls", "autoplay", "loop", "muted", "poster",
             "width", "height", "preload"));
         TAG_ATTRIBUTES.put("audio", Arrays.asList("src", "controls", "autoplay", "loop", "muted", "preload"));
+
+        // Enumerated attribute values (the ones with a fixed vocabulary)
+        ATTRIBUTE_VALUES.put("type", Arrays.asList(
+            "text", "password", "email", "number", "tel", "url", "search",
+            "checkbox", "radio", "file", "hidden", "submit", "reset", "button",
+            "date", "datetime-local", "month", "week", "time", "color", "range",
+            "module", "text/javascript"));
+        ATTRIBUTE_VALUES.put("target", Arrays.asList("_blank", "_self", "_parent", "_top"));
+        ATTRIBUTE_VALUES.put("rel", Arrays.asList(
+            "stylesheet", "icon", "canonical", "preload", "prefetch", "preconnect",
+            "dns-prefetch", "noopener", "noreferrer", "nofollow", "alternate",
+            "author", "license", "manifest", "modulepreload"));
+        ATTRIBUTE_VALUES.put("method", Arrays.asList("get", "post", "dialog"));
+        ATTRIBUTE_VALUES.put("enctype", Arrays.asList(
+            "application/x-www-form-urlencoded", "multipart/form-data", "text/plain"));
+        ATTRIBUTE_VALUES.put("loading", Arrays.asList("lazy", "eager"));
+        ATTRIBUTE_VALUES.put("decoding", Arrays.asList("async", "sync", "auto"));
+        ATTRIBUTE_VALUES.put("autocomplete", Arrays.asList(
+            "on", "off", "name", "email", "username", "new-password",
+            "current-password", "one-time-code", "tel", "url"));
+        ATTRIBUTE_VALUES.put("preload", Arrays.asList("none", "metadata", "auto"));
+        ATTRIBUTE_VALUES.put("crossorigin", Arrays.asList("anonymous", "use-credentials"));
+        ATTRIBUTE_VALUES.put("wrap", Arrays.asList("soft", "hard"));
+        ATTRIBUTE_VALUES.put("dir", Arrays.asList("ltr", "rtl", "auto"));
+        ATTRIBUTE_VALUES.put("contenteditable", Arrays.asList("true", "false", "plaintext-only"));
+        ATTRIBUTE_VALUES.put("draggable", Arrays.asList("true", "false"));
+        ATTRIBUTE_VALUES.put("spellcheck", Arrays.asList("true", "false"));
+        ATTRIBUTE_VALUES.put("translate", Arrays.asList("yes", "no"));
+        ATTRIBUTE_VALUES.put("role", Arrays.asList(
+            "button", "navigation", "main", "banner", "contentinfo", "complementary",
+            "dialog", "alert", "status", "tab", "tablist", "tabpanel", "menu",
+            "menuitem", "listbox", "option", "search", "form", "region", "presentation"));
     }
-    
+
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType != CompletionProvider.COMPLETION_QUERY_TYPE) {
@@ -88,7 +123,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
         return new AsyncCompletionTask(new HtmlCompletionQuery(), component);
     }
-    
+
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         if (typedText.length() == 1) {
@@ -99,14 +134,68 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
         return 0;
     }
-    
+
+    /**
+     * Where the caret sits in the markup, derived from the text before
+     * it. Package-visible (and pure) so the context rules are testable.
+     */
+    static CompletionContext analyzeContext(String text) {
+        CompletionContext context = new CompletionContext();
+
+        // Find last unclosed tag
+        int lastTagStart = text.lastIndexOf('<');
+        int lastTagEnd = text.lastIndexOf('>');
+
+        if (lastTagStart > lastTagEnd) {
+            // We're inside a tag
+            String tagContent = text.substring(lastTagStart + 1);
+
+            if (tagContent.startsWith("/")) {
+                context.type = ContextType.CLOSING_TAG;
+                context.prefix = tagContent.substring(1);
+            } else if (tagContent.contains(" ")) {
+                // We're in attributes area
+                int spacePos = tagContent.indexOf(' ');
+                context.tagName = tagContent.substring(0, spacePos).trim();
+                String afterTag = tagContent.substring(spacePos + 1);
+
+                if (afterTag.contains("=\"") && !afterTag.endsWith("\"")) {
+                    context.type = ContextType.ATTRIBUTE_VALUE;
+                    int lastQuote = afterTag.lastIndexOf("=\"");
+                    context.prefix = afterTag.substring(lastQuote + 2);
+                    // walk back from '=' to recover which attribute this value belongs to
+                    int nameEnd = lastQuote;
+                    int nameStart = nameEnd;
+                    while (nameStart > 0 && !Character.isWhitespace(afterTag.charAt(nameStart - 1))) {
+                        nameStart--;
+                    }
+                    context.attributeName = afterTag.substring(nameStart, nameEnd).toLowerCase();
+                } else {
+                    context.type = ContextType.ATTRIBUTE_NAME;
+                    int lastSpace = afterTag.lastIndexOf(' ');
+                    context.prefix = afterTag.substring(lastSpace + 1);
+                }
+            } else {
+                context.type = ContextType.TAG_NAME;
+                context.prefix = tagContent;
+            }
+        }
+
+        return context;
+    }
+
+    /** The enumerated values for an attribute; null when free-form. */
+    static List<String> valuesFor(String attributeName) {
+        return ATTRIBUTE_VALUES.get(attributeName);
+    }
+
     private static class HtmlCompletionQuery extends AsyncCompletionQuery {
-        
+
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                CompletionContext context = analyzeContext(doc, caretOffset);
-                
+                CompletionContext context = analyzeContext(doc.getText(0, caretOffset));
+
                 switch (context.type) {
                     case TAG_NAME:
                         addTagCompletions(resultSet, context, caretOffset);
@@ -127,49 +216,10 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 resultSet.finish();
             }
         }
-        
-        private CompletionContext analyzeContext(Document doc, int offset) throws BadLocationException {
-            String text = doc.getText(0, offset);
-            CompletionContext context = new CompletionContext();
-            
-            // Find last unclosed tag
-            int lastTagStart = text.lastIndexOf('<');
-            int lastTagEnd = text.lastIndexOf('>');
-            
-            if (lastTagStart > lastTagEnd) {
-                // We're inside a tag
-                String tagContent = text.substring(lastTagStart + 1);
-                
-                if (tagContent.startsWith("/")) {
-                    context.type = ContextType.CLOSING_TAG;
-                    context.prefix = tagContent.substring(1);
-                } else if (tagContent.contains(" ")) {
-                    // We're in attributes area
-                    int spacePos = tagContent.indexOf(' ');
-                    context.tagName = tagContent.substring(0, spacePos).trim();
-                    String afterTag = tagContent.substring(spacePos + 1);
-                    
-                    if (afterTag.contains("=\"") && !afterTag.endsWith("\"")) {
-                        context.type = ContextType.ATTRIBUTE_VALUE;
-                        int lastQuote = afterTag.lastIndexOf("=\"");
-                        context.prefix = afterTag.substring(lastQuote + 2);
-                    } else {
-                        context.type = ContextType.ATTRIBUTE_NAME;
-                        int lastSpace = afterTag.lastIndexOf(' ');
-                        context.prefix = afterTag.substring(lastSpace + 1);
-                    }
-                } else {
-                    context.type = ContextType.TAG_NAME;
-                    context.prefix = tagContent;
-                }
-            }
-            
-            return context;
-        }
-        
+
         private void addTagCompletions(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
             String prefix = context.prefix.toLowerCase();
-            
+
             for (String tag : HTML_TAGS) {
                 if (tag.startsWith(prefix)) {
                     boolean isVoid = VOID_ELEMENTS.contains(tag);
@@ -177,35 +227,44 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 }
             }
         }
-        
+
         private void addAttributeCompletions(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
             String prefix = context.prefix.toLowerCase();
             Set<String> attributes = new HashSet<>();
-            
+
             // Add global attributes
             attributes.addAll(TAG_ATTRIBUTES.get("*"));
-            
+
             // Add tag-specific attributes
             if (context.tagName != null && TAG_ATTRIBUTES.containsKey(context.tagName)) {
                 attributes.addAll(TAG_ATTRIBUTES.get(context.tagName));
             }
-            
+
             for (String attr : attributes) {
                 if (attr.startsWith(prefix)) {
                     resultSet.addItem(new HtmlAttributeCompletionItem(attr, caretOffset - prefix.length(), prefix.length()));
                 }
             }
         }
-        
+
         private void addAttributeValueCompletions(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
-            // This could be expanded with specific value completions for certain attributes
-            // For now, we'll just provide common values for specific attributes
+            List<String> values = valuesFor(context.attributeName);
+            if (values == null) {
+                return; // free-form attribute (href, src, id, …): nothing to enumerate
+            }
+            String prefix = context.prefix.toLowerCase();
+            for (String value : values) {
+                if (value.startsWith(prefix)) {
+                    resultSet.addItem(new HtmlAttributeValueCompletionItem(
+                            value, caretOffset - prefix.length(), prefix.length()));
+                }
+            }
         }
-        
+
         private void addClosingTagCompletion(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
             // Find matching opening tag and suggest closing tag
             String prefix = context.prefix.toLowerCase();
-            
+
             for (String tag : HTML_TAGS) {
                 if (tag.startsWith(prefix) && !VOID_ELEMENTS.contains(tag)) {
                     resultSet.addItem(new HtmlClosingTagCompletionItem(tag, caretOffset - prefix.length(), prefix.length()));
@@ -213,14 +272,15 @@ public class HtmlCompletionProvider implements CompletionProvider {
             }
         }
     }
-    
-    private static class CompletionContext {
+
+    static class CompletionContext {
         ContextType type = ContextType.NONE;
         String tagName = null;
+        String attributeName = null;
         String prefix = "";
     }
-    
-    private enum ContextType {
+
+    enum ContextType {
         NONE, TAG_NAME, ATTRIBUTE_NAME, ATTRIBUTE_VALUE, CLOSING_TAG
     }
 }

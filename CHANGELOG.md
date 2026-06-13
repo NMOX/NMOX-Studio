@@ -16,6 +16,40 @@ All notable changes to NMOX Studio are documented here. The format follows
   run fails, the health line counts files modified since that device
   last went green, and the timeline lists them (newest first,
   dependency directories skipped).
+- **HTML, CSS, SCSS and Less are first-class languages** — TextMate
+  grammars (pinned from VS Code 1.95.0), their own MIME identities,
+  CSL editor services, typing intelligence, spellcheck, and LSP via
+  vscode-langservers-extracted. The HTML completion now finishes
+  attribute values (`type=`, `rel=`, `role=`, …) and the CSS value
+  dictionary grew from 8 properties to 36.
+- **Regex-aware JavaScript lexer** — `/ab+c/gi` is one regex token,
+  `total / count` stays division; escapes, character classes and
+  unterminated slashes all degrade gracefully. Template-literal state
+  now survives incremental relexing too.
+- **File > New Project opens the real wizard** (it used to show a
+  placeholder dialog) and File > Open File reports failures instead of
+  swallowing them.
+- **Infra deploys check every provider token up front** — a plan
+  touching Hetzner or Cloudflare without a token is a dry run with a
+  banner, not a half-deployment that dies on node 7. Sync now imports
+  13 resource types (was 6), and a created resource whose id could not
+  be parsed says so instead of showing a clean green "created".
+
+### Changed
+- Deleted the dead `cloud/`, `deployment/` and `containers/` skeleton
+  modules (superseded by the Infra Designer and HARBOR) and the unused
+  core `ServiceManager`/`FileCache`/`PerformanceMonitor` machinery.
+  The remaining core module does exactly one thing: the phosphor
+  Terminal theme. Also removed `NMOXStudioApplication` — an @OnStart
+  hook in the nbm-application packaging module, which never produces a
+  module jar, so the class had never once executed.
+- `.css`, `.scss`, `.sass`, `.less` and `.json` files no longer
+  masquerade as `text/html` — each resolves to its real MIME type.
+- The rack's "Save Patch" confirmation no longer appends `[saved]`
+  onto itself; the NPM Explorer no longer stacks a duplicate rack
+  listener per open/close cycle; wizard panels honor the
+  change-listener contract so Next/Finish revalidate as you type.
+- Language servers that fail to launch now say why in the log.
 
 ## [1.3.0] — 2026-06-12
 

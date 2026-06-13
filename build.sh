@@ -34,13 +34,10 @@ mvn clean
 echo "Running tests..."
 mvn test
 
-# Build the application
+# Build the application (the application module assembles the
+# distributable cluster as part of the normal package phase)
 echo "Building application..."
 mvn package
-
-# Create distribution
-echo "Creating distribution packages..."
-mvn package -Pdeployment
 
 echo ""
 echo "========================================"

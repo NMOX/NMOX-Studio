@@ -41,7 +41,10 @@ public final class LanguageComments {
             Map.entry("text/x-scala", "//"),
             Map.entry("text/x-haskell", "--"),
             Map.entry("text/x-zig", "//"),
-            Map.entry("text/x-crystal", "#"));
+            Map.entry("text/x-crystal", "#"),
+            // CSS proper has only block comments; its preprocessors add //
+            Map.entry("text/x-scss", "//"),
+            Map.entry("text/x-less", "//"));
 
     private LanguageComments() {
     }

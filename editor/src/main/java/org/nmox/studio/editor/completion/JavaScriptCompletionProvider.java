@@ -277,8 +277,10 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
             while (ts != null && ts.moveNext()) {
                 if (ts.token().id() == org.nmox.studio.editor.javascript.JavaScriptTokenId.IDENTIFIER) {
                     String name = ts.token().text().toString();
-                    // skip the fragment being typed right now
-                    if (ts.offset() + name.length() == caretOffset) {
+                    // skip the fragment being typed right now: any token
+                    // the caret touches, not just one it sits at the end of
+                    if (ts.offset() <= caretOffset
+                            && caretOffset <= ts.offset() + name.length()) {
                         continue;
                     }
                     if (name.length() > 1 && !KEYWORDS.contains(name)

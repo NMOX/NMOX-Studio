@@ -17,7 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GrammarBundleTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"java", "c", "cpp", "python", "ruby", "rust", "php", "shell", "json"})
+    @ValueSource(strings = {"java", "c", "cpp", "python", "ruby", "rust", "php", "shell", "json",
+        "html", "css", "scss", "less"})
     @DisplayName("Grammar resource exists and parses with a scopeName")
     void grammarShipsAndParses(String language) throws IOException {
         String resource = language + ".tmLanguage.json";

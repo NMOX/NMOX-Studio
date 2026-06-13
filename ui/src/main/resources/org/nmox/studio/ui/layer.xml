@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Menu">
+        <folder name="File">
+            <!-- The platform ships its own Open File and New Project menu
+                 items; ours (OpenFileAction, NewProjectAction - wired to the
+                 rack-aware project dialog) replace them. One entry each. -->
+            <file name="org-netbeans-modules-openfile-OpenFileAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-project-ui-NewProject.shadow_hidden"/>
+        </folder>
+    </folder>
+    <folder name="Shortcuts">
+        <!-- free Cmd+Shift+N from the hidden platform wizard so it
+             reaches our New Project action instead -->
+        <file name="DS-N.shadow_hidden"/>
+    </folder>
+</filesystem>

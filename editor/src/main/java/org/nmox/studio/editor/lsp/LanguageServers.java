@@ -48,6 +48,12 @@ public final class LanguageServers {
             return LanguageServerProvider.LanguageServerDescription.create(
                     process.getInputStream(), process.getOutputStream(), process);
         } catch (IOException ex) {
+            // no popup: a missing language server is a normal condition, but
+            // the log should say why intelligence is absent for this mime
+            java.util.logging.Logger.getLogger(LanguageServers.class.getName())
+                    .log(java.util.logging.Level.INFO,
+                            "Language server failed to launch: {0} ({1})",
+                            new Object[]{command, ex.getMessage()});
             return null;
         }
     }
@@ -377,6 +383,28 @@ public final class LanguageServers {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             return launchNpm(lookup, "vscode-json-language-server", "--stdio");
+        }
+    }
+
+    /** HTML via vscode-html-language-server (vscode-langservers-extracted). */
+    @MimeRegistration(mimeType = "text/html", service = LanguageServerProvider.class)
+    public static final class HtmlServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vscode-html-language-server", "--stdio");
+        }
+    }
+
+    /** CSS/SCSS/Less via vscode-css-language-server (vscode-langservers-extracted). */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-less", service = LanguageServerProvider.class)
+    })
+    public static final class CssServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vscode-css-language-server", "--stdio");
         }
     }
 

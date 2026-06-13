@@ -3,7 +3,11 @@ package org.nmox.studio.ui.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -40,31 +44,34 @@ public final class OpenFileAction implements ActionListener {
         int result = chooser.showOpenDialog(null);
 
         if (result == JFileChooser.APPROVE_OPTION) {
-            File[] selectedFiles = chooser.getSelectedFiles();
-            if (selectedFiles.length == 0) {
-                selectedFiles = new File[]{chooser.getSelectedFile()};
-            }
-
-            for (File file : selectedFiles) {
-                if (file != null && file.exists() && file.isFile()) {
-                    openFile(file);
+            for (File file : chooser.getSelectedFiles()) {
+                if (file != null && file.exists() && file.isFile() && !openFile(file)) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                            "Could not open " + file.getName()
+                            + " — no editor is registered for this file.",
+                            NotifyDescriptor.WARNING_MESSAGE));
                 }
             }
         }
     }
 
-    private void openFile(File file) {
+    private boolean openFile(File file) {
         try {
             org.openide.filesystems.FileObject fileObject = FileUtil.toFileObject(file);
-            if (fileObject != null) {
-                DataObject dataObject = DataObject.find(fileObject);
-                OpenCookie openCookie = dataObject.getLookup().lookup(OpenCookie.class);
-                if (openCookie != null) {
-                    openCookie.open();
-                }
+            if (fileObject == null) {
+                return false;
             }
+            DataObject dataObject = DataObject.find(fileObject);
+            OpenCookie openCookie = dataObject.getLookup().lookup(OpenCookie.class);
+            if (openCookie == null) {
+                return false;
+            }
+            openCookie.open();
+            return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(OpenFileAction.class.getName())
+                    .log(Level.WARNING, "Failed to open " + file, ex);
+            return false;
         }
     }
 }

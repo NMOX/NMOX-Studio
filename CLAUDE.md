@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NMOX Studio is a NetBeans Platform-based IDE for modern web development, with first-class polyglot support (JS/TS, Java, C/C++, Python, Ruby, Rust, Go, PHP, shell + configs), NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
 
-**Status**: pre-1.0. Shipped: polyglot editing (28 TextMate grammars activated through CSL, LSP providers for 31 MIMEs), the Reason-style task rack (28 devices, stderr monitor bus, presets, CI export), the Workbench home base (open/recent files, projects, tooling shelf), the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare), settings UI, installers for all three OSes, and a tag-triggered release workflow.
+**Status**: shipping (v1.3.0 released, v1.4.0 in flight). Polyglot editing (32 TextMate grammars incl. HTML/CSS/SCSS/Less activated through CSL, LSP providers for 35 MIMEs), the Reason-style task rack (31 devices, stderr monitor bus, presets, CI export, session resurrection, PREFLIGHT ship gate), the Workbench home base (open/recent files, projects, tooling shelf), the Docker control panel, the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare), settings UI, installers for all three OSes, and a tag-triggered release workflow.
 
 ## Build and Run Commands
 
@@ -90,7 +90,7 @@ The project is organized as a multi-module Maven build using NetBeans Platform:
 
 ```
 NMOX-Studio/
-├── core/                    # Core services, ServiceManager, caching, performance monitoring
+├── core/                    # Cross-cutting platform touches (Terminal phosphor theme)
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
 ├── tools/                   # NPM integration, build tools
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
@@ -99,34 +99,22 @@ NMOX-Studio/
 ├── ui/                      # Main windows, actions, welcome screen, startup logic
 ├── branding/               # Application theming, splash screen, icons
 ├── application/            # Final packaging and distribution assembly
-├── NMOX-Studio-sample/    # Sample module template
-├── cloud/                  # Cloud provider integrations (disabled in build)
-├── deployment/            # Deployment management (disabled in build)
-└── containers/            # Docker/Kubernetes support (disabled in build)
+└── NMOX-Studio-sample/    # Sample module template
 ```
 
 ### Active Modules (in build)
 
 | Module | Purpose | Key Components |
 |--------|---------|----------------|
-| **core** | Platform services and infrastructure | `ServiceManager`, `FileCache`, `PerformanceMonitor` |
-| **editor** | File editing and language support | `JavaScriptLexer`, `JavaScriptDataObject`, `TypeScriptDataObject`, completion providers |
+| **core** | Cross-cutting platform touches | `TerminalPhosphor` (phosphor Terminal theme on first run) |
+| **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 32 TextMate grammars incl. HTML/CSS/SCSS/Less, JS/HTML/CSS completion providers, LSP providers (35 MIMEs) |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService` |
-| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 23 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, TEMPO clock, TYPEGUARD tsc, WORMHOLE tunnel, GAUNTLET bench, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 31 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
 | **branding** | Application identity | Splash screen, icons, custom branding |
 | **application** | Final assembly | Distribution package creation |
-
-### Disabled Modules (commented out in pom.xml)
-
-These modules exist but are not included in the current build:
-- **cloud** - AWS, Azure, GCP integrations
-- **deployment** - Deployment orchestration
-- **containers** - Docker and Kubernetes support
-
-To enable them, uncomment in root `pom.xml` lines 74-77.
 
 ## Architecture
 
@@ -265,29 +253,21 @@ Location: `tools/src/main/resources/org/nmox/studio/tools/npm/`
 
 Templates for React, Vue, and Vanilla JS projects. Uses wizard pattern with `WebProjectWizardIterator`.
 
-### Service Management
-
-Location: `core/src/main/java/org/nmox/studio/core/services/`
-
-Centralized service lifecycle management via `ServiceManager`:
-- Automatic service discovery
-- Initialization and cleanup
-- Event notification for service registration/unregistration
-
 ## Known Issues and Technical Debt
 
 See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
 1. **Hardcoded project templates** - templates live in code (ProjectTemplates.java); should be extensible/data-driven
-2. **core utility classes unused** - ServiceManager/FileCache/PerformanceMonitor are tested but nothing in the product uses them yet; integrate or remove
-3. **Performance** - startup time ~5 seconds, memory ~400MB
-4. **JS/TS use a custom lexer pipeline** while the other 28 languages ride TextMate+CSL; two code paths to maintain
+2. **Performance** - startup time ~5 seconds, memory ~400MB
+3. **JS/TS use a custom lexer pipeline** while the other languages ride TextMate+CSL; two code paths to maintain
+4. **.sass (indented) shares the SCSS grammar** - approximate highlighting for the indented dialect
 
 ## Version History
 
-- **v0.1** (shipped): Basic JavaScript/TypeScript support, NPM integration, project templates
-- **current** (unreleased, post-v0.1): task rack, polyglot editor (TextMate+CSL), LSP everywhere, infra designer, Workbench, packaging + CI/release pipelines
-- **v1.0.0**: not yet; tagging it triggers the release workflow (5 artifacts)
+- **v0.1**: Basic JavaScript/TypeScript support, NPM integration, project templates
+- **v1.0.x**: task rack, polyglot editor (TextMate+CSL), LSP everywhere, infra designer, Workbench, packaging + release pipeline (and the real branded splash)
+- **v1.1.0-v1.3.0**: Docker control panel + HARBOR, BLACKBOX/SONAR awareness devices, session resurrection, PREFLIGHT ship gate
+- See CHANGELOG.md for the full record; tagging vX.Y.Z triggers the release workflow (5 artifacts)
 
 ## Documentation
 

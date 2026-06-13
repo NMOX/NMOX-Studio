@@ -55,8 +55,10 @@ networks — and **Dockerize**, which generates production multi-stage
 Dockerfiles from your project's detected toolchain.
 
 ### ⌨️ Polyglot editing
-30+ languages with syntax highlighting (TextMate grammars through NetBeans
-CSL), LSP for 31 MIMEs with ordered server fallbacks, typing intelligence,
+32 languages with syntax highlighting (TextMate grammars through NetBeans
+CSL) — including first-class HTML, CSS, SCSS and Less with tag, attribute,
+value and property completion — LSP for 35 MIMEs with ordered server
+fallbacks, a regex-aware JavaScript lexer, typing intelligence,
 comment-aware spellcheck, and the NMOX Phosphor dark theme.
 
 ### 🏗️ Projects and infrastructure

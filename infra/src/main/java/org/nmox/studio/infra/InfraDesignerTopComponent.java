@@ -201,12 +201,35 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
         text.append(String.format("%nEstimated monthly cost: $%.2f", graph.totalMonthlyUsd()));
 
+        // every provider this plan touches must have a token BEFORE the
+        // worker starts - failing on node 7 of 12 leaves half a deployment
+        java.util.Set<org.nmox.studio.infra.api.CloudProvider> missing =
+                new java.util.LinkedHashSet<>();
+        for (DoRequest request : plan) {
+            if (!request.skipped()) {
+                var node = graph.node(request.nodeId());
+                if (node != null && node.kind.provider().token() == null) {
+                    missing.add(node.kind.provider());
+                }
+            }
+        }
+        if (!missing.isEmpty()) {
+            StringBuilder names = new StringBuilder();
+            for (var provider : missing) {
+                names.append(names.length() > 0 ? ", " : "").append(provider.displayName());
+            }
+            text.insert(0, "MISSING API TOKENS: " + names
+                    + " — set them via the Tokens button to go live.\n\n");
+        }
+
         JTextArea area = new JTextArea(text.toString(), 18, 64);
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
-        boolean live = DigitalOceanClient.hasToken();
-        String title = live ? "Deploy to DigitalOcean?" : "Dry run (no API token set)";
+        boolean live = missing.isEmpty() && DigitalOceanClient.hasToken();
+        String title = live ? "Deploy?"
+                : missing.isEmpty() ? "Dry run (no API token set)"
+                        : "Dry run (missing API tokens)";
         Object[] options = live ? new Object[]{"Deploy", "Cancel"} : new Object[]{"Close"};
         int choice = JOptionPane.showOptionDialog(this, new JScrollPane(area), title,
                 JOptionPane.DEFAULT_OPTION, live ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
