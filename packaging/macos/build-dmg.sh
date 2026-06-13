@@ -26,6 +26,9 @@ cp -R "$APP_INPUT" "$BUNDLE/Contents/Resources/nmoxstudio"
 chmod +x "$BUNDLE/Contents/Resources/nmoxstudio/bin/nmoxstudio" \
          "$BUNDLE/Contents/Resources/nmoxstudio/platform/lib/nbexec" 2>/dev/null || true
 
+echo "==> Bundling Java runtime"
+./packaging/tools/bundle-jre.sh "$BUNDLE/Contents/Resources/nmoxstudio"
+
 echo "==> Building icns"
 iconutil -c icns packaging/icons/nmox-studio.iconset \
     -o "$BUNDLE/Contents/Resources/nmox-studio.icns"
@@ -34,13 +37,19 @@ echo "==> Writing launcher"
 cat > "$BUNDLE/Contents/MacOS/nmox-studio" <<'LAUNCHER'
 #!/bin/sh
 DIR=$(cd "$(dirname "$0")" && pwd)
-# macOS GUI launches carry no shell env: locate a JDK 17+ the native
-# way so users with a JDK installed never see the "Java required" dialog
+RES="$DIR/../Resources/nmoxstudio"
+# The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
+# it actually runs on this machine (an arch mismatch must not strand the
+# user), else fall back to an installed JDK 17+, else say so plainly.
+if "$RES/jre/bin/java" -version >/dev/null 2>&1; then
+    exec "$RES/bin/nmoxstudio" "$@"
+fi
 JDK=$(/usr/libexec/java_home -v 17+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
-    exec "$DIR/../Resources/nmoxstudio/bin/nmoxstudio" --jdkhome "$JDK" "$@"
+    exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" "$@"
 fi
-exec "$DIR/../Resources/nmoxstudio/bin/nmoxstudio" "$@"
+osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 17+ installation was found.\n\nInstall a JDK 17 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
+exit 1
 LAUNCHER
 chmod +x "$BUNDLE/Contents/MacOS/nmox-studio"
 

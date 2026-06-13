@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **The installers no longer depend on the user's Java.** The DMG,
+  Windows setup, tar.gz and deb now embed a jlinked Java runtime
+  (`jre/` inside the app, `jdkhome="jre"` in its conf), so machines
+  with no Java — or only a legacy Java 8, which previously booted the
+  IDE far enough to die on a "Java 17 or newer required" dialog — just
+  work. The macOS launcher probes the bundled runtime, falls back to
+  an installed JDK 17+, and otherwise explains itself in a real dialog
+  instead of failing cryptically. The deb is now honest about being
+  `amd64` (it carries a native runtime) and no longer recommends a
+  system JRE. Only the portable zip still expects a host Java 17+.
+
 ## [1.4.0] — 2026-06-12
 
 ### Added

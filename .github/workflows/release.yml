@@ -44,7 +44,7 @@ jobs:
           path: |
             NMOX-Studio-*-portable.zip
             application/target/dist/NMOX-Studio-*-linux.tar.gz
-            application/target/dist/nmox-studio_*_all.deb
+            application/target/dist/nmox-studio_*.deb
 
   macos:
     needs: version
@@ -86,6 +86,15 @@ jobs:
           (Get-Content $f) -replace 'currentVersion=NMOX Studio .*', 'currentVersion=NMOX Studio ${{ needs.version.outputs.version }}' | Set-Content $f
       - name: Build application
         run: mvn -B clean package -DskipTests
+      - name: Bundle Java runtime
+        shell: pwsh
+        run: |
+          & "$env:JAVA_HOME\bin\jlink.exe" `
+            --module-path "$env:JAVA_HOME\jmods" `
+            --add-modules ALL-MODULE-PATH `
+            --strip-debug --no-header-files --no-man-pages `
+            --output application\target\nmoxstudio\jre
+          Add-Content application\target\nmoxstudio\etc\nmoxstudio.conf "`n# bundled runtime: the app runs on its own Java, whatever the host has`njdkhome=`"jre`""
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build installer
