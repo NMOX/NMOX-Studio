@@ -44,7 +44,18 @@ public final class LanguageComments {
             Map.entry("text/x-crystal", "#"),
             // CSS proper has only block comments; its preprocessors add //
             Map.entry("text/x-scss", "//"),
-            Map.entry("text/x-less", "//"));
+            Map.entry("text/x-less", "//"),
+            // the config layer: .editorconfig, ignore files, infra configs
+            Map.entry("text/x-ini", "#"),
+            Map.entry("text/x-ignore", "#"),
+            Map.entry("text/x-graphql", "#"),
+            Map.entry("text/x-pug", "//"),
+            Map.entry("text/x-nginx-conf", "#"),
+            Map.entry("text/x-makefile", "#"),
+            Map.entry("text/x-protobuf", "//"),
+            Map.entry("text/x-prisma", "//"),
+            Map.entry("text/x-dockerfile", "#"),
+            Map.entry("text/x-sql", "--"));
 
     private LanguageComments() {
     }

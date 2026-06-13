@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **The config layer a web project is actually full of now opens as
+  itself.** Thirteen new TextMate grammars cover `.editorconfig` and
+  INI, ignore files (`.gitignore`/`.dockerignore`/…), GraphQL, Vue,
+  Svelte, Astro, Pug, Handlebars, Liquid, nginx, Makefile, Protocol
+  Buffers and Prisma; YAML/TOML/Dockerfile/SQL ride the platform's
+  native support. Comment-toggling works in all of them, and LSP
+  intelligence attaches where a standard server exists (yaml, taplo,
+  dockerfile, graphql, vue, svelte, astro, prisma).
+- **Dotfiles and bare names resolve by filename**, the way the
+  platform's own Dockerfile support does: `.editorconfig`, `.env`
+  (and `.env.*`), `.gitignore`, `Makefile`, `nginx.conf` and friends
+  now get their real MIME instead of opening as plain text.
+
+### Fixed
+- **Spellcheck no longer treats config files as prose.** A wrong token
+  property key meant comment detection silently failed for every
+  TextMate language, so the checker fell back to flagging keys and
+  values — `charset`, `indent_style` — as misspellings. Now it reads
+  the scope stack correctly and checks words only inside comments,
+  across all 40+ lexed languages.
+- **Config files with no toolchain no longer crash the editor on
+  open.** A CSL language binding routed them through a code path whose
+  lexer class was unreachable at document-load time; the TextMate
+  grammar alone carries the highlighting.
+
 ## [1.4.1] — 2026-06-12
 
 ### Fixed

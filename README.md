@@ -9,7 +9,7 @@
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (30+ languages via TextMate grammars, NetBeans CSL, and LSP), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (45+ languages via TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
 
 ## Download
 
@@ -55,11 +55,14 @@ networks — and **Dockerize**, which generates production multi-stage
 Dockerfiles from your project's detected toolchain.
 
 ### ⌨️ Polyglot editing
-32 languages with syntax highlighting (TextMate grammars through NetBeans
-CSL) — including first-class HTML, CSS, SCSS and Less with tag, attribute,
-value and property completion — LSP for 35 MIMEs with ordered server
-fallbacks, a regex-aware JavaScript lexer, typing intelligence,
-comment-aware spellcheck, and the NMOX Phosphor dark theme.
+45+ languages with syntax highlighting (TextMate grammars through NetBeans
+CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
+files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
+Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
+HTML, CSS, SCSS and Less with tag, attribute, value and property
+completion; LSP with ordered server fallbacks; a regex-aware JavaScript
+lexer; typing intelligence; comment-only spellcheck (your keys and values
+are never flagged as typos); and the NMOX Phosphor dark theme.
 
 ### 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling

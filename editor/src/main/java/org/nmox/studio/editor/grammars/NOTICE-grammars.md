@@ -35,3 +35,25 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 To refresh: bump the tag in this table and re-download; the holder
 classes in this package register each grammar with the platform's
 textmate-lexer module.
+
+## Config-layer tranche (added 2026-06-12)
+
+| Grammar | Source | License |
+|---|---|---|
+| ini.tmLanguage.json | microsoft/vscode 1.95.0 extensions/ini | MIT |
+| ignore.tmLanguage.json | microsoft/vscode 1.95.0 extensions/git-base | MIT |
+| pug.tmLanguage.json | microsoft/vscode 1.95.0 extensions/pug | MIT |
+| handlebars.tmLanguage.json | microsoft/vscode 1.95.0 extensions/handlebars | MIT |
+| makefile.tmLanguage.json | microsoft/vscode 1.95.0 extensions/make | MIT |
+| graphql.tmLanguage.json | graphql/graphiql vscode-graphql-syntax | MIT |
+| vue.tmLanguage.json | vuejs/language-tools | MIT |
+| svelte.tmLanguage.json | sveltejs/language-tools, converted YAML→JSON | MIT |
+| astro.tmLanguage.json | withastro/language-tools | MIT |
+| liquid.tmLanguage.json | Shopify/liquid-tm-grammar | MIT |
+| nginx.tmLanguage.json | ahmadalli/vscode-nginx-conf, converted plist→JSON | MIT |
+| proto.tmLanguage.json | zxh0/vscode-proto3 (proto3.tmLanguage.json) | MIT |
+| prisma.tmLanguage.json | prisma/language-tools | Apache-2.0 |
+
+YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
+bundled here: the NetBeans ide cluster ships native editor support for
+those mimes, and a second registration would duplicate editors.
