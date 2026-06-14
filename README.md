@@ -62,7 +62,9 @@ Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
 HTML, CSS, SCSS and Less with tag, attribute, value and property
 completion; LSP with ordered server fallbacks; a regex-aware JavaScript
 lexer; typing intelligence; comment-only spellcheck (your keys and values
-are never flagged as typos); and the NMOX Phosphor dark theme.
+are never flagged as typos); a **Structure navigator** (⌘7) that outlines
+any file — classes, functions, tests, selectors, headings, config keys —
+and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 
 ### 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling

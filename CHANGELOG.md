@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **The Navigator window now outlines every language NMOX lexes.**
+  TextMate gives colour but no parse tree, so a file's shape used to be
+  invisible in the platform's structure view. A new outline engine reads
+  it from the source directly — classes and their methods, functions and
+  arrow functions, `describe`/`it` test blocks, CSS selectors and
+  at-rules, Markdown headings, JSON/YAML/TOML/INI keys and sections, Rust
+  and Go and Java-family declarations, GraphQL types, Makefile targets,
+  and TODO/FIXME markers as a fallback. Each symbol wears a colour-coded
+  phosphor badge; nesting follows what the language affords (brace depth,
+  indentation, or heading level). Click a symbol to jump the editor to
+  it; the tree refreshes as you type, parsed off the UI thread. Open it
+  with **Window ▸ Navigator** (⌘7).
+
 ## [1.4.2] — 2026-06-12
 
 ### Added
