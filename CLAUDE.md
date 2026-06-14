@@ -107,7 +107,7 @@ NMOX-Studio/
 | Module | Purpose | Key Components |
 |--------|---------|----------------|
 | **core** | Cross-cutting platform touches | `TerminalPhosphor` (phosphor Terminal theme on first run) |
-| **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 32 TextMate grammars incl. HTML/CSS/SCSS/Less, JS/HTML/CSS completion providers, LSP providers (35 MIMEs) |
+| **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 45+ TextMate grammars incl. HTML/CSS/SCSS/Less + the config layer, JS/HTML/CSS completion providers, LSP providers, `OutlineModel`/`StructureNavigatorPanel` (Navigator outline for 32 mimes), `ConfigFileResolver` (dotfile MIME) |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService` |
 | **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 31 task devices (incl. ROSETTA mixed-repo selector, IGNITION polyglot runtime, INSPECTOR debug launcher, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
