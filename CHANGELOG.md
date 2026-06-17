@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.4] — 2026-06-17
+
+### Added
+- **NEPTUNE database console** — a rack device for the part of web work
+  that lives behind the app. PING checks a database is reachable
+  (Postgres, MySQL, SQLite) or that a framework's schema is in order
+  (Prisma, Ecto, Django); MIGRATE runs the migration the framework
+  expects (`prisma db push`, `mix ecto.migrate`, `manage.py migrate`).
+  CONNECTED/ERROR LEDs and a RUNNING gate let it drive the rest of a
+  patch, the same as every other device.
+- **Workspace Trust.** Running build, database, docker or make commands
+  against a repository you just opened is a real risk; NMOX now asks
+  before executing tools in an untrusted directory and remembers your
+  answer, the way a modern editor should.
+
+### Changed
+- **Project templates are data, not code.** The React, Vue and vanilla
+  scaffolds moved out of a giant Java string-builder into real resource
+  files, so a template is now an editable folder of source — the
+  long-standing tech-debt item finally paid down.
+
+### Fixed
+- **The rack can't be wired into a feedback loop.** Connecting an output
+  back to a cable path that returns to its own input is now rejected, so
+  a patch can't drive itself into an infinite signal cycle.
+- Hardened `package.json` caching, command parsing and New Project
+  wizard validation against malformed input.
+
 ## [1.4.3] — 2026-06-13
 
 ### Added

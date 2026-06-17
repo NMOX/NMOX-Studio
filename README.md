@@ -33,9 +33,9 @@ Grab **[the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 31 devices:
-package managers, bundlers, test runners, dev servers, linters, formatters,
-git, deploy, HTTP, tunnels, load bench, file watcher, clock, and more.
+build → test, with output scrolling on a phosphor monitor. 32 devices:
+package managers, bundlers, test runners, dev servers, databases, linters,
+formatters, git, deploy, HTTP, tunnels, load bench, file watcher, and more.
 Patches persist per project, ship as presets, and export to GitHub Actions.
 
 ### 🧠 The rack remembers, sees, and survives
