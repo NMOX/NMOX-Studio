@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+- **The Vue project template now scaffolds on Vite 6.** Its pinned
+  `vite ^4.4.5` carried six advisories (two high — a `server.fs.deny`
+  bypass and a `launch-editor` command injection, both Windows), so a
+  freshly generated Vue project started life vulnerable. Bumped to
+  `vite ^6.4.3` with `@vitejs/plugin-vue ^5.2.4` and `vue ^3.5.13`;
+  verified a clean `npm install` (0 advisories) and production build.
+
 ## [1.4.4] — 2026-06-17
 
 ### Added
