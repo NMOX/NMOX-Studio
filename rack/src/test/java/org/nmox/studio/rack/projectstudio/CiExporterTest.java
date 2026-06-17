@@ -51,4 +51,16 @@ class CiExporterTest {
         assertThat(yaml).doesNotContain("SCOPE").doesNotContain("MONITOR").doesNotContain("TEMPO");
         rack.shutdown();
     }
+
+    @Test
+    @DisplayName("Database devices become CI steps")
+    void databaseDeviceExported() {
+        Rack rack = new Rack();
+        rack.addDevice(DeviceType.DATABASE.create());
+
+        String yaml = CiExporter.toWorkflowYaml(rack);
+
+        assertThat(yaml).contains("NEPTUNE");
+        rack.shutdown();
+    }
 }

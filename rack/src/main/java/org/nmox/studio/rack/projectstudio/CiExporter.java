@@ -26,7 +26,7 @@ public final class CiExporter {
     /** Device kinds that translate into CI steps. */
     private static final Set<String> STEP_KINDS = Set.of(
             "package-manager", "build", "test", "typecheck", "lint", "format",
-            "npm-script", "run", "angular", "nextjs", "phoenix", "audit");
+            "npm-script", "run", "angular", "nextjs", "phoenix", "audit", "database");
 
     private CiExporter() {
     }

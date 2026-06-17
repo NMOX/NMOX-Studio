@@ -140,4 +140,33 @@ class RackTest {
                 .containsEntry("NODE_ENV", "production")
                 .doesNotContainKey("CI");
     }
+
+    @Test
+    @DisplayName("Should reject feedback loop connections")
+    void shouldRejectFeedbackLoops() {
+        Rack rack = new Rack();
+        SourceDevice src = new SourceDevice();
+        SinkDevice sink = new SinkDevice();
+        rack.addDevice(src);
+        rack.addDevice(sink);
+
+        // Connect src -> sink
+        assertThat(rack.connect(src.getPort("trig"), sink.getPort("trig"))).isNotNull();
+
+        // Adding a connection from sink back to src is a cycle, should be rejected
+        // Note: For trigger loop testing, we add output ports to Sink and input ports to Source
+        SourceDevice src2 = new SourceDevice();
+        src2.addInPort("trig_in", "TRIG_IN", SignalType.TRIGGER);
+        
+        SinkDevice sink2 = new SinkDevice();
+        sink2.addOutPort("trig_out", "TRIG_OUT", SignalType.TRIGGER);
+        
+        rack.addDevice(src2);
+        rack.addDevice(sink2);
+        
+        // Connect src2 -> sink2
+        assertThat(rack.connect(src2.getPort("trig"), sink2.getPort("trig"))).isNotNull();
+        // Connect sink2 -> src2 (feedback loop)
+        assertThat(rack.connect(sink2.getPort("trig_out"), src2.getPort("trig_in"))).isNull();
+    }
 }

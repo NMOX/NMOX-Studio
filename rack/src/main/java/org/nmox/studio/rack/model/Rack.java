@@ -119,9 +119,35 @@ public final class Rack {
         return Collections.unmodifiableList(new ArrayList<>(cables));
     }
 
+    private boolean pathExists(RackDevice start, RackDevice target) {
+        if (start == target) {
+            return true;
+        }
+        java.util.Set<RackDevice> visited = new java.util.HashSet<>();
+        java.util.Queue<RackDevice> queue = new java.util.LinkedList<>();
+        queue.add(start);
+        visited.add(start);
+        
+        while (!queue.isEmpty()) {
+            RackDevice curr = queue.poll();
+            for (Cable c : cables) {
+                if (c.getFrom().getDevice() == curr) {
+                    RackDevice next = c.getTo().getDevice();
+                    if (next == target) {
+                        return true;
+                    }
+                    if (visited.add(next)) {
+                        queue.add(next);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Patches a cable between two ports (either order). Returns the new
-     * cable, or null if the connection is invalid or already exists.
+     * cable, or null if the connection is invalid, already exists, or creates a feedback loop.
      */
     public synchronized Cable connect(Port a, Port b) {
         if (a == null || !a.canConnectTo(b)) {
@@ -133,6 +159,10 @@ public final class Rack {
             if (c.getFrom() == out && c.getTo() == in) {
                 return null;
             }
+        }
+        // Prevent infinite feedback loop cycles
+        if (pathExists(in.getDevice(), out.getDevice())) {
+            return null;
         }
         Cable cable = new Cable(out, in, out.getType().cableColor(cableColorCursor++));
         cables.add(cable);

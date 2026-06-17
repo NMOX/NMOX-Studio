@@ -165,6 +165,13 @@ public abstract class CommandDevice extends RackDevice {
             });
             return;
         }
+        if (requiresProjectManifest() && !org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir())) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
+            });
+            return;
+        }
         startedAt = System.currentTimeMillis();
         onEdt(() -> {
             runLed.setBlinking(true);
@@ -225,6 +232,13 @@ public abstract class CommandDevice extends RackDevice {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
+            });
+            return;
+        }
+        if (requiresProjectManifest() && !org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir())) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             });
             return;
         }
