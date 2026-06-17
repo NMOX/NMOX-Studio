@@ -47,6 +47,26 @@ class HtmlCompletionContextTest {
     }
 
     @Test
+    @DisplayName("A second attribute name still completes after the first is quoted")
+    void attributeNameAfterAQuotedAttribute() {
+        // regression: a fully-written earlier attribute used to force value-mode,
+        // killing attribute-name completion for every following attribute
+        CompletionContext c = HtmlCompletionProvider.analyzeContext("<a href=\"x\" tar");
+        assertThat(c.type).isEqualTo(ContextType.ATTRIBUTE_NAME);
+        assertThat(c.tagName).isEqualTo("a");
+        assertThat(c.prefix).isEqualTo("tar");
+    }
+
+    @Test
+    @DisplayName("A later attribute's value is still a value, owner recovered")
+    void valueOfSecondAttribute() {
+        CompletionContext c = HtmlCompletionProvider.analyzeContext("<a href=\"x\" target=\"_bl");
+        assertThat(c.type).isEqualTo(ContextType.ATTRIBUTE_VALUE);
+        assertThat(c.attributeName).isEqualTo("target");
+        assertThat(c.prefix).isEqualTo("_bl");
+    }
+
+    @Test
     @DisplayName("'</d' offers closing tags; outside any tag, nothing")
     void closingAndNone() {
         CompletionContext closing = HtmlCompletionProvider.analyzeContext("<div>text</d");

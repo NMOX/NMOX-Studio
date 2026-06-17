@@ -89,7 +89,12 @@ public class NpmService {
             Process process = new ProcessBuilder(getCommand(manager), "--version")
                     .redirectErrorStream(true)
                     .start();
-            return process.waitFor() == 0;
+            // bound the wait: a wedged tool must not hang the calling thread
+            if (!process.waitFor(10, java.util.concurrent.TimeUnit.SECONDS)) {
+                process.destroyForcibly();
+                return false;
+            }
+            return process.exitValue() == 0;
         } catch (IOException | InterruptedException e) {
             return false;
         }

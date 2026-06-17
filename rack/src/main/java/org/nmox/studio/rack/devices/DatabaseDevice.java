@@ -113,7 +113,20 @@ public class DatabaseDevice extends CommandDevice {
         } else { // migrate
             switch (type) {
                 case "Postgres":
+                    // run migrate.sql against the connection, not sqlite3
+                    cmd.add("psql");
+                    if (!target.isEmpty()) {
+                        cmd.addAll(List.of("-d", target));
+                    }
+                    cmd.addAll(List.of("-f", "migrate.sql"));
+                    break;
                 case "MySQL":
+                    cmd.add("mysql");
+                    if (!target.isEmpty()) {
+                        cmd.addAll(List.of("-D", target));
+                    }
+                    cmd.addAll(List.of("-e", "source migrate.sql"));
+                    break;
                 case "SQLite":
                     cmd.addAll(List.of("sqlite3", target.isEmpty() ? "dev.db" : target, ".read migrate.sql"));
                     break;

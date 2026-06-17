@@ -56,6 +56,19 @@ class RegexLexingTest {
     }
 
     @Test
+    @DisplayName("After postfix ++/-- the '/' divides — the value, not a regex")
+    void divisionAfterIncrement() {
+        // regression: '++'/'--' set regexAllowed, so 'i++ / 2 / 3' was mis-lexed
+        // as a single regex literal swallowing the rest of the expression
+        assertThat(lex("i++ / 2 / 3"))
+                .contains("OPERATOR:/")
+                .noneMatch(t -> t.startsWith("REGEX"));
+        assertThat(lex("a-- / b"))
+                .contains("OPERATOR:/")
+                .noneMatch(t -> t.startsWith("REGEX"));
+    }
+
+    @Test
     @DisplayName("Escapes and character classes don't end the regex early")
     void escapesAndClasses() {
         assertThat(lex("const p = /a\\/b/;")).contains("REGEX:/a\\/b/");

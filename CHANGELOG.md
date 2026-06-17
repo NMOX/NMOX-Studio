@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.8] — 2026-06-17
+
+### Fixed
+A software-quality pass — a fan-out audit surfaced these, each fixed with
+a test where the logic allows:
+- **Docker calls can't deadlock or outlive their timeout.** The client
+  read stdout to completion before touching stderr, so a command with a
+  large stderr burst would fill that pipe and hang forever (the timeout
+  was unreachable). stderr is now drained on its own thread.
+- **Saved settings survive an abrupt quit.** Four more places wrote
+  preferences with `put` but never `flush` — the cloud API token, recent
+  files, recent projects, and the terminal-theme marker — so a crash
+  between the write and the lazy flush lost them (the same bug class as
+  the workspace-trust fix). All flush now.
+- **NEPTUNE's MIGRATE runs the right tool.** It shelled out to `sqlite3`
+  for Postgres and MySQL targets; now `psql -f` and `mysql -e "source"`.
+- **`i++ / 2` is division, not a regex.** The JS lexer treated `/` after
+  a `++`/`--` as the start of a regex literal, mis-painting the rest of
+  the line.
+- **HTML attribute-name completion works past the first attribute.** Once
+  one attribute was quoted (`href="x" `), the next attribute name stopped
+  completing; the value/name decision now uses quote parity.
+- **A wedged `npm --version` can't hang the IDE** — that probe now has a
+  bounded wait.
+
 ## [1.4.7] — 2026-06-17
 
 ### Fixed

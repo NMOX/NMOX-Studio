@@ -52,7 +52,11 @@ public class TerminalPhosphor implements Runnable {
                     .invoke(options, PHOSPHOR_SELECTION);
             termOptions.getMethod("storeTo", Preferences.class).invoke(options, termPrefs);
             marker.putBoolean(MARKER, true);
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+            // flush the "applied once" marker now; if a crash loses it the
+            // theme re-applies on next launch and clobbers user changes
+            marker.flush();
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError
+                | java.util.prefs.BackingStoreException ex) {
             // API moved or module absent; leave the terminal stock rather than break startup
         }
     }

@@ -208,7 +208,13 @@ public class RackService {
             }
             sb.append(recent.get(i).getAbsolutePath());
         }
-        prefs().put(PREF_RECENT, sb.toString());
+        java.util.prefs.Preferences p = prefs();
+        p.put(PREF_RECENT, sb.toString());
+        try {
+            p.flush(); // survive an abrupt quit, not just a clean one
+        } catch (java.util.prefs.BackingStoreException ignore) {
+            // best effort
+        }
     }
 
     private Preferences prefs() {

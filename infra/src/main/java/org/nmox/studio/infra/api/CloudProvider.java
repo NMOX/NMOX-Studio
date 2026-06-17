@@ -52,7 +52,15 @@ public enum CloudProvider {
     }
 
     public void storeToken(String token) {
-        prefs().put(prefKey, token == null ? "" : token.trim());
+        java.util.prefs.Preferences p = prefs();
+        p.put(prefKey, token == null ? "" : token.trim());
+        try {
+            // flush now: an abrupt exit between put() and the lazy backing-store
+            // timer would otherwise silently lose the API token
+            p.flush();
+        } catch (java.util.prefs.BackingStoreException ignore) {
+            // best effort; the value still holds for this session
+        }
     }
 
     public boolean hasToken() {
