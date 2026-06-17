@@ -179,7 +179,7 @@ public class RunDevice extends CommandDevice {
             if ("rust".equals(effectiveTarget())) {
                 cmd.add("--");
             }
-            cmd.addAll(List.of(args.split("\\s+")));
+            cmd.addAll(parseArguments(args));
         }
         return cmd;
     }

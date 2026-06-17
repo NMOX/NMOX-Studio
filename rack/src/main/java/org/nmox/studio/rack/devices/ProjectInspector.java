@@ -160,13 +160,32 @@ public final class ProjectInspector {
         return detectKind(projectDir) != ProjectKind.NONE;
     }
 
+    private static final java.util.Map<File, CacheEntry> packageJsonCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class CacheEntry {
+        final long lastModified;
+        final JSONObject json;
+
+        CacheEntry(long lastModified, JSONObject json) {
+            this.lastModified = lastModified;
+            this.json = json;
+        }
+    }
+
     private static JSONObject read(File projectDir) {
         File pkg = new File(kindDir(projectDir, ProjectKind.NODE), "package.json");
         if (!pkg.isFile()) {
             return null;
         }
+        long currentMod = pkg.lastModified();
+        CacheEntry entry = packageJsonCache.get(pkg);
+        if (entry != null && entry.lastModified == currentMod) {
+            return entry.json;
+        }
         try {
-            return new JSONObject(Files.readString(pkg.toPath()));
+            JSONObject json = new JSONObject(Files.readString(pkg.toPath()));
+            packageJsonCache.put(pkg, new CacheEntry(currentMod, json));
+            return json;
         } catch (Exception ex) {
             return null;
         }

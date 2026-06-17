@@ -76,7 +76,7 @@ public class PhoenixDevice extends CommandDevice {
             if (!args.isEmpty()) {
                 List<String> cmd = new ArrayList<>(List.of("mix",
                         "phx.gen." + GENERATORS[genKnob.getSelectedIndex()]));
-                cmd.addAll(List.of(args.split("\\s+")));
+                cmd.addAll(parseArguments(args));
                 launch(cmd);
             }
         });

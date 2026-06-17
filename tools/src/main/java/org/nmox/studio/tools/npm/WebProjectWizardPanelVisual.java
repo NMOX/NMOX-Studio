@@ -203,9 +203,17 @@ public class WebProjectWizardPanelVisual extends JPanel implements DocumentListe
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (projectNameTextField.getText().length() == 0) {
+        String name = projectNameTextField.getText().trim();
+        if (name.length() == 0) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     "Project Name is not a valid folder name.");
+            return false;
+        }
+        if (name.indexOf('/') != -1 || name.indexOf('\\') != -1 || name.indexOf(':') != -1 
+                || name.indexOf('*') != -1 || name.indexOf('?') != -1 || name.indexOf('<') != -1 
+                || name.indexOf('>') != -1 || name.indexOf('|') != -1) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    "Project Name contains invalid characters (/, \\, :, *, ?, <, >, |).");
             return false;
         }
         File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());

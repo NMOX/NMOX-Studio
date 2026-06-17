@@ -345,4 +345,37 @@ public abstract class CommandDevice extends RackDevice {
     protected static Map<String, String> noEnv() {
         return Map.of();
     }
+
+    protected static List<String> parseArguments(String commandLine) {
+        List<String> list = new java.util.ArrayList<>();
+        if (commandLine == null || commandLine.trim().isEmpty()) {
+            return list;
+        }
+        
+        StringBuilder current = new StringBuilder();
+        boolean inDoubleQuotes = false;
+        boolean inSingleQuotes = false;
+        
+        for (int i = 0; i < commandLine.length(); i++) {
+            char c = commandLine.charAt(i);
+            if (c == '\"' && !inSingleQuotes) {
+                inDoubleQuotes = !inDoubleQuotes;
+            } else if (c == '\'' && !inDoubleQuotes) {
+                inSingleQuotes = !inSingleQuotes;
+            } else if (Character.isWhitespace(c) && !inDoubleQuotes && !inSingleQuotes) {
+                if (current.length() > 0) {
+                    list.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        
+        if (current.length() > 0) {
+            list.add(current.toString());
+        }
+        
+        return list;
+    }
 }
