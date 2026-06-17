@@ -63,6 +63,12 @@
                 <version>3.1.2</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <!-- Run the unit suite headless so it matches CI and never
+                         pops a real Swing dialog (e.g. a workspace-trust prompt)
+                         onto the developer's screen mid-build. -->
+                    <systemPropertyVariables>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             </plugins>
