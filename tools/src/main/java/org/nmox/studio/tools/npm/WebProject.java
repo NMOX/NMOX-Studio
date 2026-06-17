@@ -10,9 +10,12 @@ import org.json.JSONObject;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -41,8 +44,13 @@ public class WebProject implements Project {
         this.projectDir = projectDir;
         this.state = state;
         this.lookup = Lookups.fixed(new Object[]{
+            this,
             new Info(),
-            new WebProjectLogicalView(this)
+            new WebProjectLogicalView(this),
+            GenericSources.genericOnly(this),
+            new WebProjectActionProvider(this),
+            new WebProjectOpenedHook(this),
+            new WebProjectRecommendedTemplates()
         });
     }
 
@@ -145,6 +153,15 @@ public class WebProject implements Project {
             @Override
             public Action[] getActions(boolean arg0) {
                 return new Action[]{
+                    ProjectSensitiveActions.projectCommandAction(
+                            ActionProvider.COMMAND_BUILD, "Build", null),
+                    ProjectSensitiveActions.projectCommandAction(
+                            ActionProvider.COMMAND_RUN, "Run", null),
+                    ProjectSensitiveActions.projectCommandAction(
+                            ActionProvider.COMMAND_TEST, "Test", null),
+                    ProjectSensitiveActions.projectCommandAction(
+                            ActionProvider.COMMAND_CLEAN, "Clean", null),
+                    null,
                     CommonProjectActions.newFileAction(),
                     CommonProjectActions.copyProjectAction(),
                     CommonProjectActions.deleteProjectAction(),
