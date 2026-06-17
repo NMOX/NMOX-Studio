@@ -169,13 +169,44 @@ public class NpmService {
      * Run a simple command string (for compatibility with NpmExplorerTopComponent)
      */
     public void runCommand(File projectDir, String command) {
-        String[] parts = command.split("\\s+");
+        List<String> parts = parseArguments(command);
         List<String> cmdList = new ArrayList<>();
         cmdList.add(getCommand(detectPackageManager(projectDir)));
-        for (String part : parts) {
-            cmdList.add(part);
-        }
+        cmdList.addAll(parts);
         runCommand(projectDir, cmdList.toArray(new String[0]));
+    }
+
+    static List<String> parseArguments(String commandLine) {
+        List<String> list = new ArrayList<>();
+        if (commandLine == null || commandLine.trim().isEmpty()) {
+            return list;
+        }
+        
+        StringBuilder current = new StringBuilder();
+        boolean inDoubleQuotes = false;
+        boolean inSingleQuotes = false;
+        
+        for (int i = 0; i < commandLine.length(); i++) {
+            char c = commandLine.charAt(i);
+            if (c == '\"' && !inSingleQuotes) {
+                inDoubleQuotes = !inDoubleQuotes;
+            } else if (c == '\'' && !inDoubleQuotes) {
+                inSingleQuotes = !inSingleQuotes;
+            } else if (Character.isWhitespace(c) && !inDoubleQuotes && !inSingleQuotes) {
+                if (current.length() > 0) {
+                    list.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        
+        if (current.length() > 0) {
+            list.add(current.toString());
+        }
+        
+        return list;
     }
 
     public static NpmService getInstance() {

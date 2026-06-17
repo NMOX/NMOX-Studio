@@ -125,4 +125,32 @@ class NpmServiceTest {
         CompletableFuture<String> future = npmService.init(projectDir, NpmService.PackageManager.NPM);
         assertThat(future).isNotNull();
     }
+    
+    @Test
+    @DisplayName("Should parse simple arguments separated by spaces")
+    void testParseSimpleArguments() {
+        var result = NpmService.parseArguments("run build --env=prod");
+        assertThat(result).containsExactly("run", "build", "--env=prod");
+    }
+    
+    @Test
+    @DisplayName("Should parse arguments with double quotes preserving spaces")
+    void testParseDoubleQuotedArguments() {
+        var result = NpmService.parseArguments("run test --grep \"user service\"");
+        assertThat(result).containsExactly("run", "test", "--grep", "user service");
+    }
+    
+    @Test
+    @DisplayName("Should parse arguments with single quotes preserving spaces")
+    void testParseSingleQuotedArguments() {
+        var result = NpmService.parseArguments("run test --grep 'user service'");
+        assertThat(result).containsExactly("run", "test", "--grep", "user service");
+    }
+    
+    @Test
+    @DisplayName("Should return empty list for null or empty input")
+    void testParseEmptyArguments() {
+        assertThat(NpmService.parseArguments(null)).isEmpty();
+        assertThat(NpmService.parseArguments("   ")).isEmpty();
+    }
 }

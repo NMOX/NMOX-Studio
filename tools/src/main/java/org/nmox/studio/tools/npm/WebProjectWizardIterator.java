@@ -119,250 +119,51 @@ public class WebProjectWizardIterator implements WizardDescriptor.InstantiatingI
         return resultSet;
     }
 
+    private void createFileFromTemplate(FileObject targetDir, String fileName, String templatePath, String projectName) throws IOException {
+        try (java.io.InputStream is = WebProjectWizardIterator.class.getResourceAsStream(templatePath)) {
+            if (is == null) {
+                throw new IOException("Template resource not found: " + templatePath);
+            }
+            byte[] bytes = is.readAllBytes();
+            String content = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
+            String interpolated = content.replace("${projectName}", projectName);
+            
+            FileObject targetFile = targetDir.createData(fileName);
+            Files.write(FileUtil.toFile(targetFile).toPath(), interpolated.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
+    }
+
     private void createReactProject(FileObject projectDir) throws IOException {
-        String packageJson = "{\n" +
-                "  \"name\": \"" + projectDir.getName() + "\",\n" +
-                "  \"version\": \"1.0.0\",\n" +
-                "  \"private\": true,\n" +
-                "  \"dependencies\": {\n" +
-                "    \"react\": \"^18.2.0\",\n" +
-                "    \"react-dom\": \"^18.2.0\"\n" +
-                "  },\n" +
-                "  \"scripts\": {\n" +
-                "    \"start\": \"react-scripts start\",\n" +
-                "    \"build\": \"react-scripts build\",\n" +
-                "    \"test\": \"react-scripts test\",\n" +
-                "    \"eject\": \"react-scripts eject\"\n" +
-                "  },\n" +
-                "  \"devDependencies\": {\n" +
-                "    \"react-scripts\": \"5.0.1\"\n" +
-                "  }\n" +
-                "}";
-        
-        FileObject packageJsonFile = projectDir.createData("package.json");
-        Files.write(FileUtil.toFile(packageJsonFile).toPath(), packageJson.getBytes());
+        String projectName = projectDir.getName();
+        createFileFromTemplate(projectDir, "package.json", "templates/react/package.json", projectName);
         
         FileObject src = projectDir.createFolder("src");
-        FileObject indexJs = src.createData("index.js");
-        String indexContent = "import React from 'react';\n" +
-                "import ReactDOM from 'react-dom/client';\n" +
-                "import './index.css';\n" +
-                "import App from './App';\n\n" +
-                "const root = ReactDOM.createRoot(document.getElementById('root'));\n" +
-                "root.render(\n" +
-                "  <React.StrictMode>\n" +
-                "    <App />\n" +
-                "  </React.StrictMode>\n" +
-                ");";
-        Files.write(FileUtil.toFile(indexJs).toPath(), indexContent.getBytes());
-        
-        FileObject appJs = src.createData("App.js");
-        String appContent = "import React from 'react';\n\n" +
-                "function App() {\n" +
-                "  return (\n" +
-                "    <div className=\"App\">\n" +
-                "      <h1>Welcome to React</h1>\n" +
-                "      <p>Edit src/App.js and save to reload.</p>\n" +
-                "    </div>\n" +
-                "  );\n" +
-                "}\n\n" +
-                "export default App;";
-        Files.write(FileUtil.toFile(appJs).toPath(), appContent.getBytes());
-        
-        FileObject indexCss = src.createData("index.css");
-        String cssContent = "body {\n" +
-                "  margin: 0;\n" +
-                "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',\n" +
-                "    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',\n" +
-                "    sans-serif;\n" +
-                "  -webkit-font-smoothing: antialiased;\n" +
-                "  -moz-osx-font-smoothing: grayscale;\n" +
-                "}";
-        Files.write(FileUtil.toFile(indexCss).toPath(), cssContent.getBytes());
+        createFileFromTemplate(src, "index.js", "templates/react/src/index.js", projectName);
+        createFileFromTemplate(src, "App.js", "templates/react/src/App.js", projectName);
+        createFileFromTemplate(src, "index.css", "templates/react/src/index.css", projectName);
         
         FileObject publicFolder = projectDir.createFolder("public");
-        FileObject indexHtml = publicFolder.createData("index.html");
-        String htmlContent = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "  <meta charset=\"utf-8\" />\n" +
-                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n" +
-                "  <title>React App</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "  <noscript>You need to enable JavaScript to run this app.</noscript>\n" +
-                "  <div id=\"root\"></div>\n" +
-                "</body>\n" +
-                "</html>";
-        Files.write(FileUtil.toFile(indexHtml).toPath(), htmlContent.getBytes());
+        createFileFromTemplate(publicFolder, "index.html", "templates/react/public/index.html", projectName);
     }
 
     private void createVueProject(FileObject projectDir) throws IOException {
-        String packageJson = "{\n" +
-                "  \"name\": \"" + projectDir.getName() + "\",\n" +
-                "  \"version\": \"1.0.0\",\n" +
-                "  \"private\": true,\n" +
-                "  \"scripts\": {\n" +
-                "    \"dev\": \"vite\",\n" +
-                "    \"build\": \"vite build\",\n" +
-                "    \"preview\": \"vite preview\"\n" +
-                "  },\n" +
-                "  \"dependencies\": {\n" +
-                "    \"vue\": \"^3.3.4\"\n" +
-                "  },\n" +
-                "  \"devDependencies\": {\n" +
-                "    \"@vitejs/plugin-vue\": \"^4.2.3\",\n" +
-                "    \"vite\": \"^4.4.5\"\n" +
-                "  }\n" +
-                "}";
-        
-        FileObject packageJsonFile = projectDir.createData("package.json");
-        Files.write(FileUtil.toFile(packageJsonFile).toPath(), packageJson.getBytes());
+        String projectName = projectDir.getName();
+        createFileFromTemplate(projectDir, "package.json", "templates/vue/package.json", projectName);
         
         FileObject src = projectDir.createFolder("src");
-        FileObject mainJs = src.createData("main.js");
-        String mainContent = "import { createApp } from 'vue'\n" +
-                "import App from './App.vue'\n\n" +
-                "createApp(App).mount('#app')";
-        Files.write(FileUtil.toFile(mainJs).toPath(), mainContent.getBytes());
+        createFileFromTemplate(src, "main.js", "templates/vue/src/main.js", projectName);
+        createFileFromTemplate(src, "App.vue", "templates/vue/src/App.vue", projectName);
         
-        FileObject appVue = src.createData("App.vue");
-        String appContent = "<template>\n" +
-                "  <div id=\"app\">\n" +
-                "    <h1>{{ msg }}</h1>\n" +
-                "    <p>Edit src/App.vue and save to reload.</p>\n" +
-                "  </div>\n" +
-                "</template>\n\n" +
-                "<script>\n" +
-                "export default {\n" +
-                "  name: 'App',\n" +
-                "  data() {\n" +
-                "    return {\n" +
-                "      msg: 'Welcome to Vue'\n" +
-                "    }\n" +
-                "  }\n" +
-                "}\n" +
-                "</script>\n\n" +
-                "<style>\n" +
-                "#app {\n" +
-                "  font-family: Avenir, Helvetica, Arial, sans-serif;\n" +
-                "  -webkit-font-smoothing: antialiased;\n" +
-                "  -moz-osx-font-smoothing: grayscale;\n" +
-                "  text-align: center;\n" +
-                "  color: #2c3e50;\n" +
-                "  margin-top: 60px;\n" +
-                "}\n" +
-                "</style>";
-        Files.write(FileUtil.toFile(appVue).toPath(), appContent.getBytes());
-        
-        FileObject indexHtml = projectDir.createData("index.html");
-        String htmlContent = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "  <meta charset=\"UTF-8\">\n" +
-                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "  <title>Vue App</title>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "  <div id=\"app\"></div>\n" +
-                "  <script type=\"module\" src=\"/src/main.js\"></script>\n" +
-                "</body>\n" +
-                "</html>";
-        Files.write(FileUtil.toFile(indexHtml).toPath(), htmlContent.getBytes());
-        
-        FileObject viteConfig = projectDir.createData("vite.config.js");
-        String viteContent = "import { defineConfig } from 'vite'\n" +
-                "import vue from '@vitejs/plugin-vue'\n\n" +
-                "export default defineConfig({\n" +
-                "  plugins: [vue()]\n" +
-                "})";
-        Files.write(FileUtil.toFile(viteConfig).toPath(), viteContent.getBytes());
+        createFileFromTemplate(projectDir, "index.html", "templates/vue/index.html", projectName);
+        createFileFromTemplate(projectDir, "vite.config.js", "templates/vue/vite.config.js", projectName);
     }
 
     private void createVanillaProject(FileObject projectDir) throws IOException {
-        String packageJson = "{\n" +
-                "  \"name\": \"" + projectDir.getName() + "\",\n" +
-                "  \"version\": \"1.0.0\",\n" +
-                "  \"description\": \"Vanilla JavaScript application\",\n" +
-                "  \"main\": \"index.js\",\n" +
-                "  \"scripts\": {\n" +
-                "    \"start\": \"npx http-server -o\",\n" +
-                "    \"dev\": \"npx http-server\"\n" +
-                "  },\n" +
-                "  \"devDependencies\": {\n" +
-                "    \"http-server\": \"^14.1.1\"\n" +
-                "  }\n" +
-                "}";
-        
-        FileObject packageJsonFile = projectDir.createData("package.json");
-        Files.write(FileUtil.toFile(packageJsonFile).toPath(), packageJson.getBytes());
-        
-        FileObject indexHtml = projectDir.createData("index.html");
-        String htmlContent = "<!DOCTYPE html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "  <meta charset=\"UTF-8\">\n" +
-                "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "  <title>Vanilla JS App</title>\n" +
-                "  <link rel=\"stylesheet\" href=\"style.css\">\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "  <div id=\"app\">\n" +
-                "    <h1>Welcome to Vanilla JavaScript</h1>\n" +
-                "    <p>Edit index.html, style.css, and script.js to get started.</p>\n" +
-                "  </div>\n" +
-                "  <script src=\"script.js\"></script>\n" +
-                "</body>\n" +
-                "</html>";
-        Files.write(FileUtil.toFile(indexHtml).toPath(), htmlContent.getBytes());
-        
-        FileObject scriptJs = projectDir.createData("script.js");
-        String jsContent = "// Vanilla JavaScript Application\n" +
-                "document.addEventListener('DOMContentLoaded', function() {\n" +
-                "  console.log('App loaded!');\n" +
-                "  \n" +
-                "  // Add your JavaScript code here\n" +
-                "  const app = document.getElementById('app');\n" +
-                "  \n" +
-                "  // Example: Add a button\n" +
-                "  const button = document.createElement('button');\n" +
-                "  button.textContent = 'Click me!';\n" +
-                "  button.addEventListener('click', function() {\n" +
-                "    alert('Hello from Vanilla JS!');\n" +
-                "  });\n" +
-                "  \n" +
-                "  app.appendChild(button);\n" +
-                "});";
-        Files.write(FileUtil.toFile(scriptJs).toPath(), jsContent.getBytes());
-        
-        FileObject styleCss = projectDir.createData("style.css");
-        String cssContent = "body {\n" +
-                "  margin: 0;\n" +
-                "  padding: 0;\n" +
-                "  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',\n" +
-                "    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',\n" +
-                "    sans-serif;\n" +
-                "  -webkit-font-smoothing: antialiased;\n" +
-                "  -moz-osx-font-smoothing: grayscale;\n" +
-                "}\n\n" +
-                "#app {\n" +
-                "  text-align: center;\n" +
-                "  padding: 2rem;\n" +
-                "}\n\n" +
-                "button {\n" +
-                "  background-color: #4CAF50;\n" +
-                "  border: none;\n" +
-                "  color: white;\n" +
-                "  padding: 15px 32px;\n" +
-                "  text-align: center;\n" +
-                "  text-decoration: none;\n" +
-                "  display: inline-block;\n" +
-                "  font-size: 16px;\n" +
-                "  margin: 4px 2px;\n" +
-                "  cursor: pointer;\n" +
-                "  border-radius: 4px;\n" +
-                "}";
-        Files.write(FileUtil.toFile(styleCss).toPath(), cssContent.getBytes());
+        String projectName = projectDir.getName();
+        createFileFromTemplate(projectDir, "package.json", "templates/vanilla/package.json", projectName);
+        createFileFromTemplate(projectDir, "index.html", "templates/vanilla/index.html", projectName);
+        createFileFromTemplate(projectDir, "script.js", "templates/vanilla/script.js", projectName);
+        createFileFromTemplate(projectDir, "style.css", "templates/vanilla/style.css", projectName);
     }
 
     @Override
