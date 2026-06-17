@@ -241,11 +241,11 @@ The JavaScript lexer (`JavaScriptLexer.java`) provides token-based syntax highli
 Location: `tools/src/main/java/org/nmox/studio/tools/npm/`
 
 - **NpmService**: Executes NPM commands, parses package.json
-- **WebProject**: Represents NPM projects
-- **WebProjectFactory**: Creates projects from templates
+- **WebProject**: A full platform `Project` — its Lookup carries `Sources`, an `ActionProvider` (Run/Build/Test/Clean → `WebProjectCommands` per toolchain, executed via the rack's `CommandExecutor` with a `ProgressHandle`), `RecommendedTemplates`, and a `ProjectOpenedHook` that aims the rack
+- **WebProjectFactory**: `@ServiceProvider(ProjectFactory.class)` — recognizes 16 manifests (package.json, Cargo.toml, go.mod, pom.xml, …) as projects
 - **NpmExplorerTopComponent**: UI for browsing and running NPM scripts
 
-Projects are recognized by presence of `package.json`.
+Projects are recognized by any supported manifest (package.json and 15 others); the IDE-native Run/Build/Test/Clean and the rack are one mechanism.
 
 ### Project Templates
 

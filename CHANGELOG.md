@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.6] — 2026-06-17
+
+### Added
+- **A web project is now a first-class platform project, and the
+  IDE-native Run / Build / Test / Clean drive the rack.** `WebProject`
+  used to expose only a name and a tree; it now carries the full
+  project SPI — `Sources` (so Find-in-Projects and Go-to-File know the
+  source roots), an `ActionProvider` that maps each command to what the
+  toolchain expects (`npm run dev`/`build`/`test` for Node, `cargo`,
+  `go`, `mvn`, `mix`, … for the rest), `RecommendedTemplates` to scope
+  the New File wizard to the web stack, and a `ProjectOpenedHook` so the
+  rack aims itself the moment a project opens instead of every entry
+  point remembering to. The actions appear on the project's right-click
+  menu (Test on ⌃F6), grey out honestly when the toolchain can't express
+  them (a project with no `clean` script has Clean disabled), run
+  through the rack's own command bus with PATH augmentation, and show in
+  the status-bar progress widget with a Cancel that actually kills the
+  process. The platform's gestures and the rack are one mechanism now,
+  not two parallel worlds.
+
 ## [1.4.5] — 2026-06-17
 
 ### Security
