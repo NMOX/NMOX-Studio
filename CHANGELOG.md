@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.7] — 2026-06-17
+
+### Fixed
+- **Workspace Trust stops asking once you've answered.** The grant was
+  written with `Preferences.put` but never flushed, so a less-than-clean
+  quit dropped it and the next launch asked you to trust the same folder
+  all over again — it now persists immediately. The prompt is also a
+  proper platform dialog now instead of a bare Swing window, and trusting
+  `/a/foo` no longer accidentally trusts the unrelated sibling `/a/foobar`
+  (the check now respects path boundaries).
+
 ## [1.4.6] — 2026-06-17
 
 ### Added
