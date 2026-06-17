@@ -40,7 +40,8 @@ public enum DeviceType {
     DOCKER("docker", "HARBOR", "Docker Engine — panel, prune, status", new Color(36, 150, 237), DockerDevice::new),
     BLACKBOX("blackbox", "BLACKBOX", "Flight Recorder — session timeline, slow-creep alarm", new Color(255, 122, 36), BlackboxDevice::new),
     SONAR("sonar", "SONAR", "Port Radar — who owns every port, one-click kill", new Color(80, 220, 190), SonarDevice::new),
-    PREFLIGHT("preflight", "PREFLIGHT", "Ship Check — git/tests/build/lint/audit, one verdict", new Color(126, 217, 87), PreflightDevice::new);
+    PREFLIGHT("preflight", "PREFLIGHT", "Ship Check — git/tests/build/lint/audit, one verdict", new Color(126, 217, 87), PreflightDevice::new),
+    DATABASE("database", "NEPTUNE", "Database Console — ping databases & trigger schemas", new Color(51, 153, 255), DatabaseDevice::new);
 
     private final String id;
     private final String title;
@@ -93,7 +94,7 @@ public enum DeviceType {
         return switch (this) {
             case MASTER, REFLEX, TEMPO, RUN, NPM_SCRIPT -> PaletteCategory.AUTOMATE;
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK -> PaletteCategory.VERIFY;
-            case DEV_SERVER, TUNNEL, BROWSER, HTTP -> PaletteCategory.SERVE;
+            case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, BENCH, DEBUG, BLACKBOX, SONAR -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
@@ -135,6 +136,7 @@ public enum DeviceType {
             case BLACKBOX -> "The rack's session memory: every launch, exit, duration, and error, timestamped.\nVIEW scrolls the timeline; the health line warns when a build quietly slows past its average.";
             case SONAR -> "SWEEP maps every listening port to its owning process — docker containers labeled.\nVIEW opens the field: BROWSE any port, KILL any squatter. EADDRINUSE, solved.";
             case PREFLIGHT -> "CHECK runs the readiness list — git clean, tests, build, lint, audit — one LED per item.\nPatch OK → LAUNCHPAD RUN and unverified code physically cannot deploy.";
+            case DATABASE -> "Pings SQL databases (PostgreSQL/MySQL/SQLite/MariaDB).\nDial DB TYPE to select database URL or profile; ping fires OK on success.";
         };
     }
 
