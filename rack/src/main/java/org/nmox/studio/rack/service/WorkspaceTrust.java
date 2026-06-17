@@ -1,11 +1,13 @@
 package org.nmox.studio.rack.service;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Manages trusted workspace directories. Running terminal/process tools (like npm,
@@ -38,6 +40,14 @@ public final class WorkspaceTrust {
     private static synchronized void save() {
         String joined = String.join(File.pathSeparator, trustedPaths);
         prefs.put(PREF_TRUSTED_KEYS, joined);
+        try {
+            // Persist now. java.util.prefs flushes lazily / on clean exit, so
+            // without this an abrupt quit loses the grant and the user is asked
+            // to trust the same folder again on the next launch.
+            prefs.flush();
+        } catch (BackingStoreException ignore) {
+            // best effort; the in-memory set still holds for this session
+        }
     }
 
     /** True if the directory (or a parent) has been trusted by the user. */
@@ -47,7 +57,9 @@ public final class WorkspaceTrust {
         }
         String absolute = dir.getAbsolutePath();
         for (String path : trustedPaths) {
-            if (absolute.startsWith(path)) {
+            // match on a path boundary, so trusting /a/foo doesn't also
+            // trust the unrelated sibling /a/foobar
+            if (absolute.equals(path) || absolute.startsWith(path + File.separator)) {
                 return true;
             }
         }
@@ -79,41 +91,25 @@ public final class WorkspaceTrust {
             return true;
         }
 
-        final boolean[] result = new boolean[1];
-        try {
-            Runnable r = () -> {
-                String message = "<html><b>Do you trust the files in this folder?</b><br><br>"
-                        + "Opening untrusted folders can expose your machine to security risks if automated<br>"
-                        + "tasks (like npm installations, watchers, database scripts, or compilers) run automatically.<br><br>"
-                        + "Project: <code>" + dir.getAbsolutePath() + "</code></html>";
-                
-                int choice = JOptionPane.showOptionDialog(
-                        null,
-                        message,
-                        "Workspace Trust Confirmation",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE,
-                        null,
-                        new Object[]{"Yes, Trust Workspace", "No, Keep Safe"},
-                        "No, Keep Safe"
-                );
-                
-                if (choice == JOptionPane.YES_OPTION) {
-                    trust(dir);
-                    result[0] = true;
-                } else {
-                    result[0] = false;
-                }
-            };
-
-            if (SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            } else {
-                SwingUtilities.invokeAndWait(r);
-            }
-        } catch (Exception ex) {
-            return false;
+        // Platform dialog (themed with the rest of the IDE), not a bare
+        // Swing window; DialogDisplayer is safe to call from any thread and
+        // blocks until the user answers.
+        String message = "<html><b>Do you trust the files in this folder?</b><br><br>"
+                + "Running this project's tasks — npm installs, watchers, database<br>"
+                + "scripts, compilers — executes its code on your machine.<br><br>"
+                + "Project: <code>" + dir.getAbsolutePath() + "</code></html>";
+        Object trustOption = "Trust Workspace";
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message,
+                "Workspace Trust",
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{trustOption, "Keep Safe"},
+                "Keep Safe");
+        if (DialogDisplayer.getDefault().notify(nd) == trustOption) {
+            trust(dir);
+            return true;
         }
-        return result[0];
+        return false;
     }
 }

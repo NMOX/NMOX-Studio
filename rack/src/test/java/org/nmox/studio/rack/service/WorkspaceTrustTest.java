@@ -33,6 +33,19 @@ class WorkspaceTrustTest {
     }
 
     @Test
+    @DisplayName("Trust honours path boundaries — a sibling with a shared prefix is not trusted")
+    void trustHonoursPathBoundary() {
+        File foo = tempDir.resolve("foo").toFile();
+        File foobar = tempDir.resolve("foobar").toFile();
+        WorkspaceTrust.trust(foo);
+
+        assertThat(WorkspaceTrust.isTrusted(foo)).isTrue();
+        assertThat(WorkspaceTrust.isTrusted(new File(foo, "sub"))).isTrue();
+        // /…/foobar must NOT inherit trust from /…/foo
+        assertThat(WorkspaceTrust.isTrusted(foobar)).isFalse();
+    }
+
+    @Test
     @DisplayName("Headless runs cannot prompt, so trust is granted rather than silently refused")
     void headlessGrantsTrust() {
         // The regression this guards: a modal trust prompt with no user to
