@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.9] — 2026-06-17
+
+### Fixed
+- **The Workspace Trust dialog renders its text instead of showing raw
+  HTML.** The 1.4.7 move to the platform dialog passed an HTML string,
+  which NetBeans shows verbatim (`<html><b>…`) rather than formatted; the
+  message is now a `JLabel`, which renders it.
+- **The test suite runs headless, so it never pops a real dialog onto
+  your screen mid-build.** On macOS local test runs weren't headless, so a
+  command-launching test could surface the trust prompt (for a `junit…`
+  temp folder, no less). Surefire now sets `java.awt.headless=true`,
+  matching CI — and the previously-skipped headless trust test now
+  actually runs.
+
 ## [1.4.8] — 2026-06-17
 
 ### Fixed

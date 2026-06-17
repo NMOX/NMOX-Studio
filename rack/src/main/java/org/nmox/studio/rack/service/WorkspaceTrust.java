@@ -100,7 +100,8 @@ public final class WorkspaceTrust {
                 + "Project: <code>" + dir.getAbsolutePath() + "</code></html>";
         Object trustOption = "Trust Workspace";
         NotifyDescriptor nd = new NotifyDescriptor(
-                message,
+                // a JLabel renders the HTML; a bare String is shown as raw text
+                new javax.swing.JLabel(message),
                 "Workspace Trust",
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE,
