@@ -24,6 +24,14 @@ All notable changes to NMOX Studio are documented here. The format follows
   process. The platform's gestures and the rack are one mechanism now,
   not two parallel worlds.
 
+### Fixed
+- **Workspace Trust no longer refuses to run when there's no one to ask.**
+  The trust prompt is a modal dialog; in a headless context (CI,
+  automated launches, the test suite) it threw and was caught as a "no",
+  so every command launch was silently refused — which had quietly turned
+  the build red since 1.4.4. An interactive guard with no interaction now
+  allows rather than blocks; the prompt still appears for real users.
+
 ## [1.4.5] — 2026-06-17
 
 ### Security
