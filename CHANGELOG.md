@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.4.5] — 2026-06-17
 
 ### Security
 - **The Vue project template now scaffolds on Vite 6.** Its pinned
