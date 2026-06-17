@@ -159,17 +159,23 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 context.tagName = tagContent.substring(0, spacePos).trim();
                 String afterTag = tagContent.substring(spacePos + 1);
 
-                if (afterTag.contains("=\"") && !afterTag.endsWith("\"")) {
+                // Inside an unclosed quoted value iff an odd number of quotes
+                // precede the caret. The old check looked for any `="` in the
+                // whole region, so a single earlier completed attribute
+                // (href="x" ) wrongly forced value-mode and killed attribute-
+                // name completion for every following attribute. Parity also
+                // handles spaces inside a value (class="a b|).
+                long quotes = afterTag.chars().filter(c -> c == '"').count();
+                int lastQuote = afterTag.lastIndexOf("=\"");
+                if (quotes % 2 == 1 && lastQuote >= 0) {
                     context.type = ContextType.ATTRIBUTE_VALUE;
-                    int lastQuote = afterTag.lastIndexOf("=\"");
                     context.prefix = afterTag.substring(lastQuote + 2);
                     // walk back from '=' to recover which attribute this value belongs to
-                    int nameEnd = lastQuote;
-                    int nameStart = nameEnd;
+                    int nameStart = lastQuote;
                     while (nameStart > 0 && !Character.isWhitespace(afterTag.charAt(nameStart - 1))) {
                         nameStart--;
                     }
-                    context.attributeName = afterTag.substring(nameStart, nameEnd).toLowerCase();
+                    context.attributeName = afterTag.substring(nameStart, lastQuote).toLowerCase();
                 } else {
                     context.type = ContextType.ATTRIBUTE_NAME;
                     int lastSpace = afterTag.lastIndexOf(' ');

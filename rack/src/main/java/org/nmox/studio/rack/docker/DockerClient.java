@@ -67,13 +67,27 @@ public final class DockerClient {
             pb.environment().put("PATH", ToolLocator.augmentedPath());
             pb.environment().put("NO_COLOR", "1");
             Process p = pb.start();
+            // Drain stderr on its own thread so a large stderr burst can't fill
+            // its pipe and deadlock the stdout read (and vice versa). On a
+            // timeout, destroyForcibly() closes both pipes and unblocks both
+            // reads, so the timeout guarantee is real.
+            StringBuilder errBuf = new StringBuilder();
+            Thread errDrain = new Thread(() -> {
+                try {
+                    errBuf.append(readAll(p.getErrorStream()));
+                } catch (IOException ignore) {
+                    // stderr unreadable; stdout + exit code are still useful
+                }
+            }, "docker-stderr");
+            errDrain.setDaemon(true);
+            errDrain.start();
             String out = readAll(p.getInputStream());
-            String err = readAll(p.getErrorStream());
             if (!p.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
                 p.destroyForcibly();
                 return new Result(-1, out, "docker timed out after " + timeoutSeconds + "s");
             }
-            return new Result(p.exitValue(), out, err);
+            errDrain.join(2000);
+            return new Result(p.exitValue(), out, errBuf.toString());
         } catch (IOException ex) {
             return new Result(-1, "", "docker not found - install Docker Desktop or add docker to PATH");
         } catch (InterruptedException ex) {

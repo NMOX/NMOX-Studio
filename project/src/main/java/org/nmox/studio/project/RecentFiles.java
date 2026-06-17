@@ -27,6 +27,13 @@ public final class RecentFiles {
         }
         Preferences prefs = prefs();
         prefs.put(PREF_KEY, push(prefs.get(PREF_KEY, ""), file.getAbsolutePath(), CAP));
+        try {
+            // persist now so a crash doesn't lose the trail before the
+            // backing store's lazy flush timer fires
+            prefs.flush();
+        } catch (java.util.prefs.BackingStoreException ignore) {
+            // best effort
+        }
     }
 
     /** Most recent first; entries whose files vanished are dropped. */

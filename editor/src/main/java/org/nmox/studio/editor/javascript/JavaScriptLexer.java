@@ -108,7 +108,7 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
                 case '&': case '|': case '^': case '~':
                 case '?': case ':':
                     regexAllowed = true;
-                    return finishOperator();
+                    return finishOperator(ch);
 
                 case '(': case ')': case '[': case ']':
                 case '{': case '}': case ';': case ',':
@@ -254,11 +254,16 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
         return tokenFactory.createToken(JavaScriptTokenId.NUMBER);
     }
     
-    private Token<JavaScriptTokenId> finishOperator() {
+    private Token<JavaScriptTokenId> finishOperator(int first) {
         // Handle multi-character operators
         int ch = input.read();
         if (ch == '=' || ch == '+' || ch == '-' || ch == '&' || ch == '|') {
             // Common two-character operators: ==, !=, <=, >=, ++, --, &&, ||, etc.
+            if ((first == '+' || first == '-') && ch == first) {
+                // ++ / -- yields a value, so a following '/' is division,
+                // not the start of a regex literal (e.g. `i++ / 2`)
+                regexAllowed = false;
+            }
         } else {
             input.backup(1);
         }
