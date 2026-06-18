@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.7.0] — 2026-06-18
 
 ### Changed
 - **One place to launch a tool, done right.** The process-launch
