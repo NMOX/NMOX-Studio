@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.docker;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -61,11 +60,7 @@ public final class DockerClient {
         cmd.add("docker");
         Collections.addAll(cmd, args);
         try {
-            ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(cmd))
-                    .redirectInput(new File(System.getProperty("os.name", "")
-                            .toLowerCase().contains("win") ? "NUL" : "/dev/null"));
-            pb.environment().put("PATH", ToolLocator.augmentedPath());
-            pb.environment().put("NO_COLOR", "1");
+            ProcessBuilder pb = org.nmox.studio.rack.engine.ProcessSupport.builder(cmd);
             Process p = pb.start();
             // Drain stderr on its own thread so a large stderr burst can't fill
             // its pipe and deadlock the stdout read (and vice versa). On a
