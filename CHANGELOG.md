@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] — 2026-06-17
+
+### Added
+- **One-click language-server install.** Tools ▸ Language Servers… is now
+  an install interface, not just a status list: every language NMOX can
+  light up, with an **Install** button that runs the ecosystem's own
+  command — npm, brew, `go install`, `cargo`/`rustup`, `gem`, `dotnet
+  tool`, `coursier`, `opam` — each in its idiomatic way, with the bar
+  running across while it downloads and the output streaming to the
+  Output window. **Install all missing** walks the batch with a Cancel
+  that kills the run; servers that ship with their toolchain (Swift,
+  Dart) or need a manual setup are marked, never given a fake button; and
+  a server whose package manager isn't present says "install `go` first"
+  rather than failing cryptically. Commands run as argv through the
+  rack's executor — nothing is shell-interpolated and sudo is never
+  added.
+
 ## [1.5.0] — 2026-06-17
 
 ### Added
