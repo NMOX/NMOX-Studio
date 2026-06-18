@@ -54,23 +54,6 @@ public final class LanguageServerHealth {
         REPORTED.clear();
     }
 
-    /** An at-a-glance HTML report of which servers are installed vs missing. */
-    public static String statusReportHtml() {
-        StringBuilder sb = new StringBuilder("<html><body style='width:460px'>"
-                + "<b>Language servers</b> — the intelligence backends behind hover, "
-                + "go-to-definition, rename and live errors.<br><br>"
-                + "<table cellspacing='3'>");
-        for (Server s : LanguageServerCatalog.all()) {
-            boolean ok = LanguageServerCatalog.isInstalled(s.binary());
-            sb.append("<tr><td>").append(ok ? "&#10003;" : "&#10007;").append("</td>")
-                    .append("<td><b>").append(s.language()).append("</b></td>")
-                    .append("<td><code>").append(s.binary()).append("</code></td>")
-                    .append("<td>").append(ok ? "installed"
-                            : "<i>" + s.install() + "</i>").append("</td></tr>");
-        }
-        return sb.append("</table></body></html>").toString();
-    }
-
     /** A small amber attention dot, so the notification needs no icon resource. */
     private static Icon dot() {
         BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);

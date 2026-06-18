@@ -61,8 +61,12 @@ public class LintDevice extends CommandDevice {
     private final java.util.List<org.nmox.studio.rack.engine.DiagnosticsBus.Problem> collected =
             java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     private volatile java.io.File currentFile;
+    // Greedy capture of the rest of the line (linear-time): the old lazy
+    // ".*?" with an optional trailing rule-name group could backtrack
+    // catastrophically (ReDoS) on a long message. The message is trimmed at
+    // the call site and may carry the rule name, which is fine to show.
     private static final java.util.regex.Pattern ESLINT_LOC =
-            java.util.regex.Pattern.compile("^\\s+(\\d+):(\\d+)\\s+(error|warning)\\s+(.*?)(?:\\s\\s+[\\w@/-]+)?$");
+            java.util.regex.Pattern.compile("^\\s+(\\d+):(\\d+)\\s+(error|warning)\\s+(.*)$");
 
     @Override
     protected void onLine(String line) {

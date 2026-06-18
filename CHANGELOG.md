@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Security
+- **A security static-analysis gate, and a clean review behind it.**
+  find-sec-bugs now runs alongside SpotBugs on every build. It caught two
+  genuine **ReDoS** (catastrophic-backtracking) regexes — in the eslint
+  and `docker ps` output parsers, which chew on external tool output —
+  now rewritten to linear time; the source-outline regexes also got a
+  line-length bound. Everything else it flags is by-design for a local
+  IDE (process launches via argv not a shell, file ops on the user's own
+  paths, a localhost debug socket, UI-jitter randomness) and is excluded
+  with a written rationale, so the dangerous classes — XXE, SSRF, weak
+  crypto, hardcoded secrets, unsafe deserialization — stay watched.
+
+### Fixed
+- **A running tool process can't be orphaned by a stale exit.** A
+  device's `exec` swapped its process handle without an identity check,
+  so a previous run's exit callback arriving late could null out the
+  handle of the run that replaced it — leaving a live process that
+  `isLive()`/panic could no longer see or kill. The swap is now
+  identity-guarded.
+- Removed a dead, unescaped HTML-building method left over from the
+  language-server panel rework.
+
 ## [1.8.0] — 2026-06-18
 
 ### Added

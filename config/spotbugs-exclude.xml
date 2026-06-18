@@ -60,6 +60,52 @@
          vector this warns about does not apply to our non-final UI classes. -->
     <Match><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
 
+    <!-- ===== find-sec-bugs: reviewed, by-design for a local desktop IDE ===== -->
+    <!-- Command injection: every tool launch is ProcessBuilder(List<String>) —
+         literal argv entries, never a shell string, so there is no shell to
+         inject into. WorkspaceTrust additionally gates running a project's
+         tools at all. (The other find-sec-bugs detectors — XXE, SSRF, weak
+         crypto/random, hardcoded secrets, unsafe deserialization — stay on.) -->
+    <Match><Bug pattern="COMMAND_INJECTION"/></Match>
+    <!-- Path traversal is a server-sandbox-escape concern. NMOX is a local IDE
+         operating on the user's own filesystem with the user's own privileges;
+         the paths are the user's own choice, there is no sandbox to escape and
+         no remote attacker supplying them. -->
+    <Match><Bug pattern="PATH_TRAVERSAL_IN"/></Match>
+
+    <!-- The source-parser grammar regexes (OutlineModel, CodeIndexService)
+         are flagged ReDoS-prone, but they only ever run on the user's own
+         source, off the EDT; OutlineModel additionally caps each line's length
+         before matching. Rewriting these many language-grammar regexes would
+         risk the parsers' correctness for no real gain. REDOS stays active
+         everywhere else — it already caught two genuine ones in the eslint and
+         docker output parsers (external tool output), which we fixed. -->
+    <Match>
+        <Class name="org.nmox.studio.editor.outline.OutlineModel"/>
+        <Bug pattern="REDOS"/>
+    </Match>
+    <Match>
+        <Class name="org.nmox.studio.editor.index.CodeIndexService"/>
+        <Bug pattern="REDOS"/>
+    </Match>
+
+    <!-- The debug adapter (DAP) connects to a debug server on 127.0.0.1 — local
+         IPC, like LSP over stdio; an unencrypted localhost socket is expected.
+         The server-socket flag is also a false positive: `new ServerSocket(0)`
+         there is opened and immediately closed only to grab a free port. -->
+    <Match>
+        <Class name="org.nmox.studio.editor.debug.DapDebugAction"/>
+        <Bug pattern="UNENCRYPTED_SOCKET,UNENCRYPTED_SERVER_SOCKET"/>
+    </Match>
+
+    <!-- Math.random() here only jitters a newly-dropped node's canvas position;
+         it is not used for anything security-sensitive. Scoped to this class so
+         a genuine crypto-context Math.random() elsewhere would still be caught. -->
+    <Match>
+        <Class name="~org\.nmox\.studio\.infra\.ui\.InfraPalette.*"/>
+        <Bug pattern="PREDICTABLE_RANDOM"/>
+    </Match>
+
     <!-- Tests may trip benign patterns; analyse main code only for the gate. -->
     <Match><Class name="~.*Test"/></Match>
 </FindBugsFilter>
