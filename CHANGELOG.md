@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **Coverage can't silently regress now.** JaCoCo gained a fail-closed
+  floor on the three substantial-logic modules — rack (≥40% line),
+  infra (≥30%), editor (≥28%) — verified to actually fail the build when
+  coverage drops below the line. The UI/glue/packaging modules stay
+  measured but ungated, since forcing coverage there would only breed
+  hollow tests. That completes the self-policing build: a correctness
+  gate (SpotBugs), a security gate (find-sec-bugs), and now a coverage
+  gate, all on every push.
+
 ## [1.8.1] — 2026-06-18
 
 ### Security
