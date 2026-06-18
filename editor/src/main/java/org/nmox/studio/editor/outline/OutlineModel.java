@@ -116,34 +116,84 @@ public final class OutlineModel {
     private static List<Item> js(String[] lines) {
         List<Item> out = new ArrayList<>();
         int brace = 0;
+        // carries across lines: are we inside a /* */ block comment or a
+        // `backtick` template literal? Without this, a declaration that only
+        // looks like one inside a comment or a multi-line template string
+        // (e.g. an embedded SQL/HTML heredoc) is mis-reported as a symbol.
+        boolean[] state = {false, false};
         for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
-            String line = lines[i];
+            String code = stripNonCode(lines[i], state);
             int depthHere = brace;
             Matcher m;
-            if ((m = JS_TEST.matcher(line)).find()) {
+            if ((m = JS_TEST.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.TEST, m.group(1), null, i, depthHere));
-            } else if ((m = JS_CLASS.matcher(line)).find()) {
+            } else if ((m = JS_CLASS.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.CLASS, m.group(1), null, i, depthHere));
-            } else if ((m = JS_IFACE.matcher(line)).find()) {
+            } else if ((m = JS_IFACE.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.INTERFACE, m.group(1), null, i, depthHere));
-            } else if ((m = JS_ENUM.matcher(line)).find()) {
+            } else if ((m = JS_ENUM.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.ENUM, m.group(1), null, i, depthHere));
-            } else if ((m = JS_TYPE.matcher(line)).find()) {
+            } else if ((m = JS_TYPE.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.TYPE, m.group(1), null, i, depthHere));
-            } else if ((m = JS_FUNC.matcher(line)).find()) {
+            } else if ((m = JS_FUNC.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.FUNCTION, m.group(1), null, i, depthHere));
-            } else if ((m = JS_ARROW.matcher(line)).find()) {
+            } else if ((m = JS_ARROW.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.FUNCTION, m.group(1), null, i, depthHere));
-            } else if (depthHere > 0 && (m = JS_METHOD.matcher(line)).find()
+            } else if (depthHere > 0 && (m = JS_METHOD.matcher(code)).find()
                     && !JS_KEYWORDS.contains(m.group(1))) {
                 out.add(new Item(OutlineKind.METHOD, m.group(1), null, i, depthHere));
             }
-            brace += netBraces(line);
+            brace += netBraces(code);
             if (brace < 0) {
                 brace = 0;
             }
         }
         return out;
+    }
+
+    /**
+     * Returns the line with block comments, line comments and backtick
+     * template literals blanked out, carrying block-comment / template state
+     * across lines via {@code state} ([0]=inBlockComment, [1]=inTemplate).
+     * Regular "…"/'…' strings are left alone — a declaration keyword inside a
+     * single-line string is rare and self-correcting on the next line.
+     */
+    static String stripNonCode(String line, boolean[] state) {
+        StringBuilder code = new StringBuilder(line.length());
+        int j = 0;
+        while (j < line.length()) {
+            if (state[0]) { // inside /* */
+                int end = line.indexOf("*/", j);
+                if (end < 0) {
+                    return code.toString();
+                }
+                state[0] = false;
+                j = end + 2;
+            } else if (state[1]) { // inside `template`
+                int end = line.indexOf('`', j);
+                if (end < 0) {
+                    return code.toString();
+                }
+                state[1] = false;
+                j = end + 1;
+            } else {
+                char c = line.charAt(j);
+                char next = j + 1 < line.length() ? line.charAt(j + 1) : '\0';
+                if (c == '/' && next == '/') {
+                    break; // rest of the line is a comment
+                } else if (c == '/' && next == '*') {
+                    state[0] = true;
+                    j += 2;
+                } else if (c == '`') {
+                    state[1] = true;
+                    j++;
+                } else {
+                    code.append(c);
+                    j++;
+                }
+            }
+        }
+        return code.toString();
     }
 
     // ---- CSS / SCSS / LESS ----------------------------------------------

@@ -47,6 +47,21 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("JS outline ignores declarations inside comments and template literals")
+    void jsSkipsCommentsAndTemplates() {
+        String src = String.join("\n",
+                "function real() {}",
+                "/* function commented() {} */",
+                "const sql = `",
+                "  export function inTemplate() {",
+                "`;",
+                "function alsoReal() {}");
+        List<Item> items = outline("text/javascript", src);
+        assertThat(items).extracting(Item::name).contains("real", "alsoReal");
+        assertThat(items).extracting(Item::name).doesNotContain("commented", "inTemplate");
+    }
+
+    @Test
     @DisplayName("JS test files: describe/it blocks become navigable")
     void jsTests() {
         String src = """

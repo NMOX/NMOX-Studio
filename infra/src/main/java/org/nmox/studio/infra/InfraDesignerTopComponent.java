@@ -63,6 +63,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final JLabel tokenLabel = new JLabel();
     private final JLabel costLabel = new JLabel();
     private final Timer saveDebounce;
+    private final InfraGraph.Listener graphListener;
+    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean loading;
 
     public InfraDesignerTopComponent() {
@@ -95,7 +97,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
         saveDebounce = new Timer(1000, e -> save());
         saveDebounce.setRepeats(false);
-        graph.addListener(new InfraGraph.Listener() {
+        graphListener = new InfraGraph.Listener() {
             @Override
             public void graphChanged() {
                 SwingUtilities.invokeLater(() -> {
@@ -105,14 +107,16 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     }
                 });
             }
-        });
+        };
+        graph.addListener(graphListener);
 
-        RackService.getDefault().getRack().addListener(new org.nmox.studio.rack.model.Rack.Listener() {
+        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(InfraDesignerTopComponent.this::load);
             }
-        });
+        };
+        RackService.getDefault().getRack().addListener(rackListener);
         load();
         refreshToken();
         refreshCost();
@@ -367,5 +371,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     void readProperties(java.util.Properties p) {
+    }
+
+    @Override
+    protected void componentClosed() {
+        // stop the debounce timer and drop our listeners, so a close/reopen
+        // cycle doesn't accumulate zombie listeners on the graph and the rack
+        saveDebounce.stop();
+        graph.removeListener(graphListener);
+        try {
+            RackService.getDefault().getRack().removeListener(rackListener);
+        } catch (RuntimeException | LinkageError ignore) {
+            // rack already gone; nothing left to detach
+        }
     }
 }
