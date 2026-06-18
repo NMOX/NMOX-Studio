@@ -8,14 +8,20 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Prove the cross-platform claim: the full verify (tests + SpotBugs gate)
+    # runs on Linux and macOS, on the Java 21 LTS the app now targets.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
           cache: maven
       - name: Build with Maven
         run: mvn -B verify

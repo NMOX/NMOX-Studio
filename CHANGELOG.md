@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **NMOX Studio is now a Java 21 LTS application.** The source target
+  moved 17 → 21 and the installers bundle a Temurin 21 runtime, so the
+  app ships on a current, supported JVM (newer GC, security fixes, the
+  language features 21 brings). CI proves the cross-platform claim it
+  always made: the full `verify` — tests plus the SpotBugs gate — now
+  runs on a **Linux + macOS matrix** on JDK 21, not just one Linux/JDK 17
+  box. (The NetBeans Platform itself stays on RELEASE270; a platform bump
+  is its own careful step.)
+
 ## [1.7.0] — 2026-06-18
 
 ### Changed
