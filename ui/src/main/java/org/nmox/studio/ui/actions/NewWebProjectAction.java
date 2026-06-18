@@ -5,7 +5,8 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -31,13 +32,13 @@ public final class NewWebProjectAction implements ActionListener {
         
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             File selectedDir = chooser.getSelectedFile();
-            String projectName = JOptionPane.showInputDialog(null, 
-                    "Enter project name:", 
-                    "New Web Project", 
-                    JOptionPane.QUESTION_MESSAGE);
-            
-            if (projectName != null && !projectName.trim().isEmpty()) {
-                createWebProject(new File(selectedDir, projectName));
+            NotifyDescriptor.InputLine input =
+                    new NotifyDescriptor.InputLine("Enter project name:", "New Web Project");
+            if (DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION) {
+                String projectName = input.getInputText();
+                if (projectName != null && !projectName.trim().isEmpty()) {
+                    createWebProject(new File(selectedDir, projectName));
+                }
             }
         }
     }
@@ -107,17 +108,15 @@ public final class NewWebProjectAction implements ActionListener {
                     "  \"created\": \"" + System.currentTimeMillis() + "\"\n" +
                     "}");
 
-            JOptionPane.showMessageDialog(null, 
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "Web project created successfully at:\n" + projectDir.getAbsolutePath(),
-                    "Project Created", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                    NotifyDescriptor.INFORMATION_MESSAGE));
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            JOptionPane.showMessageDialog(null, 
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "Failed to create project: " + ex.getMessage(),
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                    NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 

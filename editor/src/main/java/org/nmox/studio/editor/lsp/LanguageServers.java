@@ -58,6 +58,20 @@ public final class LanguageServers {
         }
     }
 
+    /** A single-server provider call: launch, and on failure tell the user how to install it. */
+    static LanguageServerProvider.LanguageServerDescription provide(Lookup lookup, List<String> command) {
+        return reported(launch(lookup, command), command.get(0));
+    }
+
+    /** Notifies (once per session) how to install {@code primaryBinary} when the server didn't start. */
+    static LanguageServerProvider.LanguageServerDescription reported(
+            LanguageServerProvider.LanguageServerDescription result, String primaryBinary) {
+        if (result == null) {
+            LanguageServerHealth.reportMissing(primaryBinary);
+        }
+        return result;
+    }
+
     /** The first candidate that launches wins; null when none can. */
     @SafeVarargs
     static LanguageServerProvider.LanguageServerDescription launchFirst(
@@ -79,19 +93,12 @@ public final class LanguageServers {
     static LanguageServerProvider.LanguageServerDescription launchNpm(
             Lookup lookup, String bin, String... args) {
         File dir = projectDir(lookup);
-        if (dir != null) {
-            File local = new File(dir, "node_modules/.bin/" + bin);
-            if (local.canExecute()) {
-                List<String> cmd = new ArrayList<>();
-                cmd.add(local.getAbsolutePath());
-                cmd.addAll(List.of(args));
-                return launch(lookup, cmd);
-            }
-        }
+        File local = dir == null ? null : new File(dir, "node_modules/.bin/" + bin);
         List<String> cmd = new ArrayList<>();
-        cmd.add(bin);
+        cmd.add(local != null && local.canExecute() ? local.getAbsolutePath() : bin);
         cmd.addAll(List.of(args));
-        return launch(lookup, cmd);
+        // report the package name, not the resolved node_modules path
+        return reported(launch(lookup, cmd), bin);
     }
 
     private static boolean onPath(String name) {
@@ -125,7 +132,7 @@ public final class LanguageServers {
     public static final class PythonServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("pyright-langserver", "--stdio"));
+            return provide(lookup, List.of("pyright-langserver", "--stdio"));
         }
     }
 
@@ -134,7 +141,7 @@ public final class LanguageServers {
     public static final class GoServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("gopls"));
+            return provide(lookup, List.of("gopls"));
         }
     }
 
@@ -143,7 +150,7 @@ public final class LanguageServers {
     public static final class RustServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("rust-analyzer"));
+            return provide(lookup, List.of("rust-analyzer"));
         }
     }
 
@@ -152,9 +159,9 @@ public final class LanguageServers {
     public static final class ElixirServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchFirst(lookup,
+            return reported(launchFirst(lookup,
                     List.of("elixir-ls"),
-                    List.of("language_server.sh"));
+                    List.of("language_server.sh")), "elixir-ls");
         }
     }
 
@@ -166,7 +173,7 @@ public final class LanguageServers {
     public static final class ClangdServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("clangd", "--background-index"));
+            return provide(lookup, List.of("clangd", "--background-index"));
         }
     }
 
@@ -175,7 +182,7 @@ public final class LanguageServers {
     public static final class JavaServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("jdtls"));
+            return provide(lookup, List.of("jdtls"));
         }
     }
 
@@ -184,9 +191,9 @@ public final class LanguageServers {
     public static final class CSharpServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchFirst(lookup,
+            return reported(launchFirst(lookup,
                     List.of("csharp-ls"),
-                    List.of("OmniSharp", "-lsp"));
+                    List.of("OmniSharp", "-lsp")), "csharp-ls");
         }
     }
 
@@ -195,7 +202,7 @@ public final class LanguageServers {
     public static final class FSharpServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("fsautocomplete"));
+            return provide(lookup, List.of("fsautocomplete"));
         }
     }
 
@@ -215,9 +222,9 @@ public final class LanguageServers {
     public static final class RubyServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchFirst(lookup,
+            return reported(launchFirst(lookup,
                     List.of("ruby-lsp"),
-                    List.of("solargraph", "stdio"));
+                    List.of("solargraph", "stdio")), "ruby-lsp");
         }
     }
 
@@ -226,7 +233,7 @@ public final class LanguageServers {
     public static final class DartServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("dart", "language-server", "--protocol=lsp"));
+            return provide(lookup, List.of("dart", "language-server", "--protocol=lsp"));
         }
     }
 
@@ -235,7 +242,7 @@ public final class LanguageServers {
     public static final class ScalaServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("metals"));
+            return provide(lookup, List.of("metals"));
         }
     }
 
@@ -244,7 +251,7 @@ public final class LanguageServers {
     public static final class KotlinServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("kotlin-language-server"));
+            return provide(lookup, List.of("kotlin-language-server"));
         }
     }
 
@@ -253,7 +260,7 @@ public final class LanguageServers {
     public static final class SwiftServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("sourcekit-lsp"));
+            return provide(lookup, List.of("sourcekit-lsp"));
         }
     }
 
@@ -262,7 +269,7 @@ public final class LanguageServers {
     public static final class HaskellServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("haskell-language-server-wrapper", "--lsp"));
+            return provide(lookup, List.of("haskell-language-server-wrapper", "--lsp"));
         }
     }
 
@@ -271,7 +278,7 @@ public final class LanguageServers {
     public static final class ZigServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("zls"));
+            return provide(lookup, List.of("zls"));
         }
     }
 
@@ -280,7 +287,7 @@ public final class LanguageServers {
     public static final class ErlangServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("erlang_ls", "--transport", "stdio"));
+            return provide(lookup, List.of("erlang_ls", "--transport", "stdio"));
         }
     }
 
@@ -289,7 +296,7 @@ public final class LanguageServers {
     public static final class ClojureServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("clojure-lsp"));
+            return provide(lookup, List.of("clojure-lsp"));
         }
     }
 
@@ -298,7 +305,7 @@ public final class LanguageServers {
     public static final class LispServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("cl-lsp"));
+            return provide(lookup, List.of("cl-lsp"));
         }
     }
 
@@ -307,7 +314,7 @@ public final class LanguageServers {
     public static final class LuaServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("lua-language-server"));
+            return provide(lookup, List.of("lua-language-server"));
         }
     }
 
@@ -316,7 +323,7 @@ public final class LanguageServers {
     public static final class OCamlServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("ocamllsp"));
+            return provide(lookup, List.of("ocamllsp"));
         }
     }
 
@@ -325,7 +332,7 @@ public final class LanguageServers {
     public static final class CrystalServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("crystalline"));
+            return provide(lookup, List.of("crystalline"));
         }
     }
 
@@ -334,7 +341,7 @@ public final class LanguageServers {
     public static final class JuliaServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("julia", "--startup-file=no", "--history-file=no",
+            return provide(lookup, List.of("julia", "--startup-file=no", "--history-file=no",
                     "-e", "using LanguageServer; runserver()"));
         }
     }
@@ -344,7 +351,7 @@ public final class LanguageServers {
     public static final class RServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("R", "--no-echo", "-e", "languageserver::run()"));
+            return provide(lookup, List.of("R", "--no-echo", "-e", "languageserver::run()"));
         }
     }
 
@@ -353,9 +360,9 @@ public final class LanguageServers {
     public static final class PerlServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchFirst(lookup,
+            return reported(launchFirst(lookup,
                     List.of("pls"),
-                    List.of("perl", "-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run"));
+                    List.of("perl", "-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run")), "pls");
         }
     }
 
@@ -364,7 +371,7 @@ public final class LanguageServers {
     public static final class GroovyServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("groovy-language-server"));
+            return provide(lookup, List.of("groovy-language-server"));
         }
     }
 
@@ -424,7 +431,7 @@ public final class LanguageServers {
     public static final class TomlServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launch(lookup, List.of("taplo", "lsp", "stdio"));
+            return provide(lookup, List.of("taplo", "lsp", "stdio"));
         }
     }
 

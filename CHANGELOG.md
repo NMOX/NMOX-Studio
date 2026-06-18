@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] — 2026-06-17
+
+### Added
+- **Language-server health — "why is there no hover here?" finally has an
+  answer.** The platform delivers go-to-definition, hover, rename and
+  live errors for free once a language's server launches, but every
+  server is an external binary the developer installs. Now, when a
+  file's server isn't found, you get one notification — once per language
+  per session — naming the binary and the exact command to install it,
+  click-to-copy. No nagging, no modal. And **Tools ▸ Language Servers…**
+  shows the whole polyglot picture at a glance: every language NMOX can
+  light up, which servers are installed, and the install command for the
+  ones that aren't.
+
+### Changed
+- **The New Web Project dialogs are now platform dialogs** (the first
+  slice of moving off raw `JOptionPane` to `DialogDisplayer`/
+  `NotifyDescriptor`): the name prompt and the success/error messages are
+  themed with the rest of the IDE and behave under the test harness.
+
 ## [1.4.9] — 2026-06-17
 
 ### Fixed
