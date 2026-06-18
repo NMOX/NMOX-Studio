@@ -46,7 +46,7 @@ public final class NewWebProjectAction implements ActionListener {
     private void createWebProject(File projectDir) {
         try {
             if (!projectDir.exists()) {
-                projectDir.mkdirs();
+                java.nio.file.Files.createDirectories(projectDir.toPath());
             }
 
             createFile(projectDir, "index.html", 

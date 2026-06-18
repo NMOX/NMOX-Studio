@@ -84,7 +84,7 @@ public class RackService {
                 SessionState state = SessionState.capture(rack);
                 if (!state.running().isEmpty()) {
                     anyLiveThisSession = true;
-                    file.getParentFile().mkdirs();
+                    java.nio.file.Files.createDirectories(file.getParentFile().toPath());
                     java.nio.file.Files.writeString(file.toPath(), state.toJson());
                 } else if (anyLiveThisSession) {
                     // tools ran and were stopped: nothing to resume anymore.

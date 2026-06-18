@@ -212,7 +212,7 @@ public final class FlightRecorder implements RackBus.Listener {
                     }
                 }
             } else {
-                file.getParentFile().mkdirs();
+                java.nio.file.Files.createDirectories(file.getParentFile().toPath());
             }
         } catch (Exception ignored) {
             // an unreadable journal must never break recording

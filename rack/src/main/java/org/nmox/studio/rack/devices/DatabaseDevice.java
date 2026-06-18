@@ -109,6 +109,8 @@ public class DatabaseDevice extends CommandDevice {
                 case "Django":
                     cmd.addAll(List.of("python", "manage.py", "check"));
                     break;
+                default:
+                    break;
             }
         } else { // migrate
             switch (type) {
@@ -138,6 +140,8 @@ public class DatabaseDevice extends CommandDevice {
                     break;
                 case "Django":
                     cmd.addAll(List.of("python", "manage.py", "migrate"));
+                    break;
+                default:
                     break;
             }
         }

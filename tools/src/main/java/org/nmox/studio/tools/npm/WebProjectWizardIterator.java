@@ -88,7 +88,7 @@ public class WebProjectWizardIterator implements WizardDescriptor.InstantiatingI
     public Set<?> instantiate() throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<>();
         File dirF = FileUtil.normalizeFile((File) wizard.getProperty("projdir"));
-        dirF.mkdirs();
+        java.nio.file.Files.createDirectories(dirF.toPath());
 
         FileObject dir = FileUtil.toFileObject(dirF);
         String projectType = (String) wizard.getProperty("projectType");

@@ -119,8 +119,7 @@ public enum RackPresets {
             rack.connect(cargoTests.getPort("out"), console.getPort("in"));
             // INSTALL on CRATE bootstraps every toolchain in sequence
             rack.connect(deps.getPort("out"), console.getPort("in"));
-            // keep checkstyle quiet about the unused selector: it works by existing
-            rosetta.getPort("kind");
+            // ROSETTA needs no wiring in this preset — it works by being present
         }
     },
 
