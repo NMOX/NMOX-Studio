@@ -32,6 +32,11 @@ jobs:
             branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
       - name: Build application
         run: mvn -B clean package -DskipTests
+      - name: Software Bill of Materials (CycloneDX)
+        run: |
+          mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom \
+            -DoutputFormat=json -DoutputName=bom
+          cp target/bom.json "NMOX-Studio-${{ needs.version.outputs.version }}-sbom.json"
       - name: Portable zip
         run: |
           cp application/target/NMOX-Studio-app-*.zip \
@@ -43,6 +48,7 @@ jobs:
           name: linux-artifacts
           path: |
             NMOX-Studio-*-portable.zip
+            NMOX-Studio-*-sbom.json
             application/target/dist/NMOX-Studio-*-linux.tar.gz
             application/target/dist/nmox-studio_*.deb
 
@@ -123,6 +129,7 @@ jobs:
           generate_release_notes: true
           files: |
             artifacts/**/NMOX-Studio-*-portable.zip
+            artifacts/**/NMOX-Studio-*-sbom.json
             artifacts/**/NMOX-Studio-*-linux.tar.gz
             artifacts/**/nmox-studio_*.deb
             artifacts/**/NMOX-Studio-*-macos.dmg

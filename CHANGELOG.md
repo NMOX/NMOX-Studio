@@ -6,6 +6,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- **Supply-chain hygiene.** Dependabot now watches three ecosystems —
+  the Maven reactor, the GitHub Actions in the workflows, and the npm
+  dependencies inside the project-scaffold templates — so a generated
+  project never starts out vulnerable (the Vite advisory that bit us was
+  exactly that case) and the build's own dependencies stay patched. Every
+  release now also ships a **CycloneDX SBOM** (`*-sbom.json`) listing every
+  component that goes into the app.
+
 ### Changed
 - **NMOX Studio is now a Java 21 LTS application.** The source target
   moved 17 → 21 and the installers bundle a Temurin 21 runtime, so the

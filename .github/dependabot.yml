@@ -1,0 +1,35 @@
+# Keeps NMOX Studio's dependencies, CI actions, and the project-scaffold
+# templates current and patched. Security updates land regardless; this
+# adds scheduled version updates, grouped to keep the PR volume sane.
+version: 2
+updates:
+  # The Maven reactor (NetBeans Platform, JUnit/AssertJ/Mockito, plugins).
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      maven:
+        patterns: ["*"]
+
+  # The GitHub Actions used by the build/release workflows.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # The npm dependencies inside the project templates NMOX scaffolds, so a
+  # freshly generated project never starts out vulnerable (the Vite advisory
+  # that prompted this was exactly such a case).
+  - package-ecosystem: npm
+    directories:
+      - "/tools/src/main/resources/org/nmox/studio/tools/npm/templates/vue"
+      - "/tools/src/main/resources/org/nmox/studio/tools/npm/templates/react"
+      - "/tools/src/main/resources/org/nmox/studio/tools/npm/templates/vanilla"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
