@@ -64,18 +64,9 @@ public final class CommandExecutor {
 
         Process process;
         try {
-            // resolve the tool against the augmented path: a Finder-launched
-            // IDE has a bare PATH with no node/npm/git on it
-            ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(command))
-                    .directory(dir)
-                    // no terminal is attached: an interactive prompt would
-                    // hang forever, so give prompts an empty stdin instead
-                    .redirectInput(devNull());
-            pb.environment().put("PATH", ToolLocator.augmentedPath());
-            // belt and braces against prompts and ANSI art:
-            pb.environment().put("npm_config_yes", "true");   // npx auto-confirms downloads
-            pb.environment().put("GIT_TERMINAL_PROMPT", "0"); // git fails fast, never prompts
-            pb.environment().put("NO_COLOR", "1");            // tools that honor it skip ANSI
+            // shared hardening (PATH augment, empty stdin, no-color/non-interactive
+            // env); see ProcessSupport. Per-launch env overrides go on top.
+            ProcessBuilder pb = ProcessSupport.builder(command).directory(dir);
             pb.environment().putAll(env);
             process = pb.start();
         } catch (IOException ex) {
@@ -235,12 +226,6 @@ public final class CommandExecutor {
     /** Removes ANSI escapes so LCDs and the output window show clean text. */
     static String stripAnsi(String line) {
         return line.indexOf('\u001B') < 0 ? line : ANSI.matcher(line).replaceAll("");
-    }
-
-    /** The platform's empty input stream (no terminal is attached). */
-    private static File devNull() {
-        return new File(System.getProperty("os.name", "").toLowerCase().contains("win")
-                ? "NUL" : "/dev/null");
     }
 
     private static void safeAccept(Consumer<String> onLine, String line) {

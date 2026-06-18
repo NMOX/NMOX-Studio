@@ -7,6 +7,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 ## [Unreleased]
 
 ### Changed
+- **One place to launch a tool, done right.** The process-launch
+  preamble — PATH augmentation, empty stdin, the no-color/non-interactive
+  environment — was copy-pasted at three sites (`CommandExecutor`,
+  `DockerClient`, `PortScanner`), and one copy hardcoded `/dev/null`,
+  which breaks on Windows. It now lives once in `ProcessSupport`; the
+  Windows null-device bug is fixed and a wedged `lsof` is reaped on
+  timeout instead of leaking.
 - **The build now policies itself.** SpotBugs runs on every `mvn verify`
   (so on every CI push and PR) with a correctness-focused filter, and
   JaCoCo reports coverage per module (≈40% instruction today, carried by

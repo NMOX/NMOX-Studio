@@ -1,6 +1,5 @@
 package org.nmox.studio.rack.engine;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,13 +27,13 @@ public final class PortScanner {
     public static CompletableFuture<List<PortInfo>> scan() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                ProcessBuilder pb = new ProcessBuilder(
-                        "lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pcn")
-                        .redirectInput(new File("/dev/null"));
-                pb.environment().put("PATH", ToolLocator.augmentedPath());
+                ProcessBuilder pb = ProcessSupport.builder(
+                        List.of("lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pcn"));
                 Process p = pb.start();
                 String out = new String(p.getInputStream().readAllBytes());
-                p.waitFor(10, TimeUnit.SECONDS);
+                if (!p.waitFor(10, TimeUnit.SECONDS)) {
+                    p.destroyForcibly(); // a wedged lsof must not leak as a child
+                }
                 return parse(out);
             } catch (Exception ex) {
                 return List.of();
