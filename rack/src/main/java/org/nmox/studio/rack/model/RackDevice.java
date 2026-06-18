@@ -252,11 +252,19 @@ public abstract class RackDevice extends JPanel {
         Map<String, String> env = new LinkedHashMap<>(
                 rack != null ? rack.getEnvOverrides() : Map.of());
         env.putAll(extraEnv);
-        running = CommandExecutor.run(title, workingDir, env,
+        // identity-guarded swap: a previous run's onExit, arriving late on a
+        // worker thread, must not null out the handle of the run that replaced
+        // it — that would orphan a live process (isLive()/panic() would see
+        // nothing to kill).
+        CommandExecutor.Handle[] self = new CommandExecutor.Handle[1];
+        self[0] = CommandExecutor.run(title, workingDir, env,
                 command, onLine, code -> {
-                    running = null;
+                    if (running == self[0]) {
+                        running = null;
+                    }
                     onExit.accept(code);
                 });
+        running = self[0];
     }
 
     protected boolean isProcessRunning() {

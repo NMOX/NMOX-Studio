@@ -261,8 +261,12 @@ public final class DockerClient {
         return rows;
     }
 
-    /** "0.0.0.0:8080->80/tcp, :::8080->80/tcp" -> [8080]. */
-    private static final Pattern HOST_PORT = Pattern.compile("(?:^|[\\s,])(?:[\\d.]+|\\[?::]?\\]?):(\\d+)->");
+    /**
+     * "0.0.0.0:8080->80/tcp, :::8080->80/tcp" -> [8080]. The published host
+     * port is the run of digits immediately before "->"; matching just that
+     * is linear-time (the old host-matching alternation could backtrack — ReDoS).
+     */
+    private static final Pattern HOST_PORT = Pattern.compile(":(\\d+)->");
 
     static List<Integer> hostPorts(String ports) {
         List<Integer> result = new ArrayList<>();

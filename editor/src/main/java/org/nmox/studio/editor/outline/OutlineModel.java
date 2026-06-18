@@ -85,10 +85,23 @@ public final class OutlineModel {
         };
     }
 
+    /** No real declaration's name lives past this column. */
+    private static final int MAX_LINE_LEN = 2_000;
+
     static String[] splitLines(CharSequence text) {
         String s = text.toString();
         // keep it bounded; split is fine for normal source sizes
-        return s.split("\n", -1);
+        String[] lines = s.split("\n", -1);
+        // Bound each line's length before the symbol regexes see it: a
+        // pathologically long line could make a grammar regex backtrack
+        // badly (ReDoS), and truncating well past any real declaration is
+        // behaviour-preserving, so matching stays linear-time in practice.
+        for (int i = 0; i < lines.length; i++) {
+            if (lines[i].length() > MAX_LINE_LEN) {
+                lines[i] = lines[i].substring(0, MAX_LINE_LEN);
+            }
+        }
+        return lines;
     }
 
     // ---- JS / TS family --------------------------------------------------

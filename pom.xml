@@ -96,6 +96,17 @@
                     <threshold>Medium</threshold>
                     <failOnError>true</failOnError>
                     <excludeFilterFile>${maven.multiModuleProjectDirectory}/config/spotbugs-exclude.xml</excludeFilterFile>
+                    <!-- security detectors: command injection, path traversal,
+                         SSRF, weak crypto/random, XXE — the threat surface of an
+                         IDE that spawns processes, calls cloud APIs and parses
+                         untrusted files -->
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>1.13.0</version>
+                        </plugin>
+                    </plugins>
                 </configuration>
                 <executions>
                     <execution>
