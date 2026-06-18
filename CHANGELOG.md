@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.8.2] — 2026-06-18
 
 ### Changed
 - **Coverage can't silently regress now.** JaCoCo gained a fail-closed
