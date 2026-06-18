@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.8.1] — 2026-06-18
 
 ### Security
 - **A security static-analysis gate, and a clean review behind it.**
