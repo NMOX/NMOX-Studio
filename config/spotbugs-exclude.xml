@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs exclusions for NMOX Studio. We keep high-confidence correctness,
+  threading and resource bugs (the classes that have actually bitten us:
+  ignored return values, unclosed streams, null derefs, races) and silence
+  the patterns that are pure noise in a Swing/NetBeans Platform codebase.
+-->
+<FindBugsFilter>
+    <!-- Mutable exposure: pervasive and benign in Swing model/UI plumbing. -->
+    <Match><Bug pattern="EI_EXPOSE_REP"/></Match>
+    <Match><Bug pattern="EI_EXPOSE_REP2"/></Match>
+    <Match><Bug pattern="MS_EXPOSE_REP"/></Match>
+    <Match><Bug pattern="MS_PKGPROTECT"/></Match>
+    <Match><Bug pattern="MS_MUTABLE_ARRAY"/></Match>
+
+    <!-- Serialization warnings on Swing/TopComponents we never serialize. -->
+    <Match><Bug pattern="SE_BAD_FIELD"/></Match>
+    <Match><Bug pattern="SE_BAD_FIELD_STORE"/></Match>
+    <Match><Bug pattern="SE_NO_SERIALVERSIONID"/></Match>
+    <Match><Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED"/></Match>
+
+    <!-- Default-encoding: the app runs on a bundled UTF-8 runtime; not worth the churn. -->
+    <Match><Bug pattern="DM_DEFAULT_ENCODING"/></Match>
+
+    <!-- Style-level, not correctness. -->
+    <Match><Bug pattern="DLS_DEAD_LOCAL_STORE"/></Match>
+    <Match><Bug pattern="URF_UNREAD_FIELD"/></Match>
+    <Match><Bug pattern="UUF_UNUSED_FIELD"/></Match>
+    <Match><Bug pattern="SF_SWITCH_NO_DEFAULT"/></Match>
+
+    <!-- NetBeans FilterNode subclasses delegate identity to the wrapped node;
+         overriding equals is neither expected nor wanted. -->
+    <Match><Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/></Match>
+
+    <!-- '\n' is deliberate in the project-template generators: they emit LF
+         source files into generated projects, not platform-newline text; %n
+         would corrupt them. -->
+    <Match><Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/></Match>
+
+    <!-- Defensive catch(Exception) is an intentional belt-and-braces pattern
+         around process / reflection / I/O boundaries throughout the rack. -->
+    <Match><Bug pattern="REC_CATCH_EXCEPTION"/></Match>
+    <Match><Bug pattern="DE_MIGHT_IGNORE"/></Match>
+
+    <!-- NetBeans @ServiceProvider / ModuleInstall require a public no-arg
+         constructor; SpotBugs reads that as a singleton smell. -->
+    <Match><Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/></Match>
+
+    <!-- TopComponents are Serializable by contract (the window system persists
+         them) and are also singletons; that combination is expected here. -->
+    <Match><Bug pattern="SING_SINGLETON_IMPLEMENTS_SERIALIZABLE"/></Match>
+
+    <!-- Rendering loops (grid lines, canvas math) legitimately step by a
+         floating-point increment; and nextDouble→int is a non-issue for a UI
+         jitter offset. Neither is a correctness concern. -->
+    <Match><Bug pattern="FL_FLOATS_AS_LOOP_COUNTERS"/></Match>
+    <Match><Bug pattern="DM_NEXTINT_VIA_NEXTDOUBLE"/></Match>
+
+    <!-- Swing dialogs finish setup in their constructor; the finalizer-attack
+         vector this warns about does not apply to our non-final UI classes. -->
+    <Match><Bug pattern="CT_CONSTRUCTOR_THROW"/></Match>
+
+    <!-- Tests may trip benign patterns; analyse main code only for the gate. -->
+    <Match><Class name="~.*Test"/></Match>
+</FindBugsFilter>

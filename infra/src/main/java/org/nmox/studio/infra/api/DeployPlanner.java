@@ -195,8 +195,8 @@ public final class DeployPlanner {
             case DOMAIN -> {
                 String target = "192.0.2.1";
                 for (InfraNode prov : providers) {
-                    target = prov.kind == NodeKind.LOAD_BALANCER ? "${ip-of:" + prov.id + "}"
-                            : "${ip-of:" + prov.id + "}";
+                    // the A record points at whichever provider fronts the domain
+                    target = "${ip-of:" + prov.id + "}";
                 }
                 body.put("name", p.get("name")).put("ip_address", target);
                 yield DoRequest.post("/v2/domains", body, node.id,
@@ -481,7 +481,7 @@ public final class DeployPlanner {
             }
             String ports = bits[0].trim();
             JSONObject rule = new JSONObject()
-                    .put("protocol", "all".equals(ports) ? "tcp" : "tcp")
+                    .put("protocol", "tcp")
                     .put("ports", "all".equals(ports) ? "all" : ports)
                     .put(peerField, new JSONObject()
                             .put("addresses", new JSONArray().put(bits[1].trim())));

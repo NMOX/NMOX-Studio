@@ -34,7 +34,7 @@ public class BuildTaskManager {
         this.buildService = BuildToolService.getInstance();
     }
     
-    public static BuildTaskManager getInstance() {
+    public static synchronized BuildTaskManager getInstance() {
         if (instance == null) {
             instance = new BuildTaskManager();
         }

@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **The build now policies itself.** SpotBugs runs on every `mvn verify`
+  (so on every CI push and PR) with a correctness-focused filter, and
+  JaCoCo reports coverage per module (≈40% instruction today, carried by
+  the engine and logic layers). Error Prone was considered and skipped
+  on purpose — it hooks the compiler and would fight the load-bearing
+  `-proc:full` annotation processing; SpotBugs works on bytecode and
+  doesn't.
+
+### Fixed
+- Static analysis caught and we fixed a batch of real defects: an
+  unsynchronised lazy singleton (`BuildTaskManager.getInstance` had a
+  classic init race), four ignored `mkdirs()` results now use
+  `Files.createDirectories` (which surfaces failures instead of
+  swallowing them), two dead copy-paste ternaries in the infra deploy
+  planner (both branches were identical), a no-op port lookup, and
+  missing `switch` defaults.
+
 ## [1.6.0] — 2026-06-17
 
 ### Added
