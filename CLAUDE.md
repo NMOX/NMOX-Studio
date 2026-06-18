@@ -11,7 +11,7 @@ NMOX Studio is a NetBeans Platform-based IDE for modern web development, with fi
 ## Build and Run Commands
 
 ### Prerequisites
-- **Java 17+** (required; project uses Java 17, tested with Java 23)
+- **Java 21+** (required; project targets Java 21 LTS, tested with Java 23)
 - **Maven 3.6+**
 
 **IMPORTANT**: Ensure JAVA_HOME points to JDK 17+ or use `--jdkhome` when running:
