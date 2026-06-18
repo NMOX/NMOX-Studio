@@ -47,4 +47,19 @@ class LanguageServerCatalogTest {
         assertThat(LanguageServerCatalog.isInstalled("sh")).isTrue();
         assertThat(LanguageServerCatalog.isInstalled("nmox-no-such-binary-zzz")).isFalse();
     }
+
+    @Test
+    @DisplayName("Auto-installable servers carry a runnable argv; manual ones are flagged, never faked")
+    void installCommands() {
+        Server go = LanguageServerCatalog.forBinary("gopls");
+        assertThat(go.autoInstallable()).isTrue();
+        assertThat(go.command()).containsExactly("go", "install", "golang.org/x/tools/gopls@latest");
+        assertThat(go.installer()).isEqualTo("go");
+
+        // Swift ships with the toolchain — there is no one-command install, so no fake button
+        Server swift = LanguageServerCatalog.forBinary("sourcekit-lsp");
+        assertThat(swift.autoInstallable()).isFalse();
+        assertThat(swift.command()).isEmpty();
+        assertThat(swift.installer()).isEmpty();
+    }
 }
