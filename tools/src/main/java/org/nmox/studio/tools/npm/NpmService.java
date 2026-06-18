@@ -150,7 +150,16 @@ public class NpmService {
                     }
                 }
                 
-                int exitCode = process.waitFor();
+                // the read loop above already drained all output (it blocks
+                // until stdout closes), so the process should exit promptly;
+                // a generous grace then reap guards against a child that
+                // closes its pipe but never exits, without ever truncating a
+                // legitimately slow build (whose output had to finish first)
+                if (!process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                    throw new RuntimeException("Command did not exit after its output ended");
+                }
+                int exitCode = process.exitValue();
                 if (exitCode != 0) {
                     err.println("Command failed with exit code: " + exitCode);
                     throw new RuntimeException("Command failed with exit code: " + exitCode + "\nOutput: " + output);

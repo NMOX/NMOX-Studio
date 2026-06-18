@@ -30,6 +30,17 @@ All notable changes to NMOX Studio are documented here. The format follows
   swallowing them), two dead copy-paste ternaries in the infra deploy
   planner (both branches were identical), a no-op port lookup, and
   missing `switch` defaults.
+- **The structure outline no longer invents symbols.** A `function` or
+  `class` that only *looks* like a declaration because it sits inside a
+  block comment or a multi-line `` `template literal` `` (an embedded SQL
+  or HTML heredoc) is no longer listed in the Navigator.
+- The Infrastructure Designer detaches its graph and rack listeners and
+  stops its autosave timer when closed, so opening and closing it no
+  longer leaks a listener each time.
+- `NpmService` bounds the wait for a finished command: once its output
+  has drained, a process that never exits is reaped after a grace period
+  instead of hanging the action thread (a slow build is unaffected — its
+  output has to finish first).
 
 ## [1.6.0] — 2026-06-17
 
