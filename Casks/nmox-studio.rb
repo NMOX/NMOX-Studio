@@ -8,7 +8,7 @@ cask "nmox-studio" do
   desc "NetBeans RCP-based IDE for web development"
   homepage "https://github.com/NMOX/NMOX-Studio"
 
-  depends_on macos: ">= :big_sur"
+  depends_on macos: :big_sur
 
   app "NMOX Studio.app"
 
