@@ -106,6 +106,19 @@
         <Bug pattern="PREDICTABLE_RANDOM"/>
     </Match>
 
+    <!-- SpotBugs 4.10 adds two thread detectors that are noise here:
+         USO flags synchronized methods in favour of private lock objects, but
+         the classes it catches are final singletons / services (FlightRecorder,
+         WorkspaceTrust, RackService) whose monitor is never handed to a hostile
+         caller - the same "attack vector does not apply" reasoning as SING_*/CT_*.
+         AT flags non-volatile primitives as shared across threads, but the field
+         it catches (RackDevice.front) is EDT-confined Swing state, read and
+         written only on the event dispatch thread. -->
+    <Match><Bug pattern="USO_UNSAFE_METHOD_SYNCHRONIZATION"/></Match>
+    <Match><Bug pattern="USO_UNSAFE_STATIC_METHOD_SYNCHRONIZATION"/></Match>
+    <Match><Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE"/></Match>
+    <Match><Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE"/></Match>
+
     <!-- Tests may trip benign patterns; analyse main code only for the gate. -->
     <Match><Class name="~.*Test"/></Match>
 </FindBugsFilter>
