@@ -129,41 +129,47 @@ mvn nbm:run-platform
 
 ```
 NMOX-Studio/
-├── core/                    # Core services and infrastructure
-├── cloud/                   # Cloud provider abstraction layer
-│   ├── api/                # Provider interfaces
-│   ├── providers/          # AWS, Azure, GCP implementations
-│   └── services/           # Cloud service management
-├── deployment/             # Deployment management
-│   ├── ui/                # Deployment UI components
-│   ├── services/          # Deployment orchestration
-│   └── model/             # Deployment models
-├── containers/             # Container and orchestration
-│   ├── docker/            # Docker integration
-│   ├── kubernetes/        # Kubernetes client
-│   └── ui/               # Container management UI
-├── ui/                     # Core UI components
-├── project/               # Project management
-├── tools/                 # Development tools
-├── branding/              # Application branding
-├── application/           # Main application assembly
-├── build.sh              # Build script
-├── run.sh               # Development run script
-└── README.md           # This file
+├── core/                   # Core services and Lookup-based service registry
+├── ui/                     # Main windows, Workbench home base, actions
+├── editor/                 # Polyglot editor: TextMate grammars, LSP,
+│   │                       #   completion, outline, spellcheck
+│   ├── polyglot/          # 45+ language registration
+│   ├── grammars/          # TextMate grammar loading via NetBeans CSL
+│   ├── lsp/               # Language Server Protocol client
+│   ├── javascript/        # Regex-aware JavaScript lexer
+│   └── outline/           # Structure navigator (⌘7)
+├── rack/                   # The Task Rack: hardware-styled task devices
+│   ├── devices/           # The 32 rack devices
+│   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
+│   ├── docker/            # HARBOR device + Docker panel
+│   └── projectstudio/     # Project Studio templates
+├── infra/                  # Node-RED-style multi-cloud Infra Designer
+│   ├── api/               # Provider abstraction
+│   └── model/             # DigitalOcean, Hetzner, Cloudflare resources
+├── project/               # Project and resource management
+├── tools/                 # Development tools and utilities
+├── branding/              # Splash, icons, NMOX Phosphor theme
+├── application/           # Main application assembly (the cluster)
+├── NMOX-Studio-sample/    # Sample project module
+├── packaging/             # macOS DMG, Linux tar.gz/deb, Windows installer
+├── build.sh               # Build script
+├── run.sh                 # Development run script
+└── README.md              # This file
 ```
 
 ### Module Overview
 
 | Module | Description | Key Components |
 |--------|-------------|----------------|
-| **core** | Core services and infrastructure | `ServiceManager`, `NMOXStudioCore` |
-| **cloud** | Cloud provider abstraction and management | `CloudProvider`, `CloudInstance`, `CloudMetrics` |
-| **deployment** | Application deployment management | `DeploymentManager`, `DeploymentService` |
-| **containers** | Docker and Kubernetes integration | `DockerService`, `KubernetesService` |
-| **ui** | Main windows and UI components | `MainWindow`, Actions |
+| **core** | Core services and Lookup-based service registry | `ServiceManager`, `NMOXStudioCore` |
+| **ui** | Main windows, Workbench home base, actions | `MainWindow`, Workbench, actions |
+| **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
+| **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
+| **infra** | Node-RED-style multi-cloud Infra Designer | `InfraDesignerTopComponent`, provider api/model |
 | **project** | Project and resource management | `ProjectExplorerTopComponent` |
 | **tools** | Development and debugging tools | Tool windows, utilities |
-| **branding** | Application theming | Splash screen, icons |
+| **branding** | Splash, icons, NMOX Phosphor theme | Branding resources |
+| **application** | Main application assembly (the cluster) | App descriptor, packaging hooks |
 
 ## Architecture
 
