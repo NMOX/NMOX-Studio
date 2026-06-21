@@ -40,15 +40,15 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 RES="$DIR/../Resources/nmoxstudio"
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
-# user), else fall back to an installed JDK 17+, else say so plainly.
+# user), else fall back to an installed JDK 21+, else say so plainly.
 if "$RES/jre/bin/java" -version >/dev/null 2>&1; then
     exec "$RES/bin/nmoxstudio" "$@"
 fi
-JDK=$(/usr/libexec/java_home -v 17+ 2>/dev/null || true)
+JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
     exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" "$@"
 fi
-osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 17+ installation was found.\n\nInstall a JDK 17 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
+osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 21+ installation was found.\n\nInstall a JDK 21 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
 exit 1
 LAUNCHER
 chmod +x "$BUNDLE/Contents/MacOS/nmox-studio"
