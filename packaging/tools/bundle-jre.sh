@@ -6,15 +6,16 @@
 #
 # Produces <cluster-dir>/jre and appends jdkhome="jre" to
 # etc/nmoxstudio.conf (the launcher resolves a relative jdkhome
-# against the cluster root). Requires a JDK with jmods (any 17+).
+# against the cluster root). Requires a JDK with jmods (21+: the
+# NetBeans Platform 30 baseline won't run on anything older).
 set -euo pipefail
 
 CLUSTER="${1:?usage: bundle-jre.sh <cluster-dir>}"
 [ -d "$CLUSTER" ] || { echo "ERROR: $CLUSTER missing"; exit 1; }
 
-JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 17+ 2>/dev/null || true)}"
+JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)}"
 [ -n "$JDK" ] && [ -d "$JDK/jmods" ] || {
-    echo "ERROR: need a JDK with jmods (JAVA_HOME=$JDK)"; exit 1; }
+    echo "ERROR: need a JDK 21+ with jmods (JAVA_HOME=$JDK)"; exit 1; }
 
 if [ -x "$CLUSTER/jre/bin/java" ]; then
     echo "==> bundled jre already present"
