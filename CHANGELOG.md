@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.8.4] — 2026-06-21
+
+### Fixed
+- **A duplicate commons-codec bundle no longer fails to start on launch.**
+  v1.8.3 installs surfaced a startup warning — an OSGi bundle whose "state
+  remains INSTALLED after start()". The cause: the NetBeans `ide` cluster's
+  `commons_compress` dragged in the plain `commons-codec` Maven jar
+  transitively, alongside the canonical platform wrapper. `nbm-maven-plugin`
+  auto-wrapped that plain jar into a second module in `extra/` with the same
+  `Bundle-SymbolicName` as the platform copy, and Netigso couldn't start the
+  redundant bundle (its packages were already exported), leaving it stuck in
+  INSTALLED. The transitive plain jar is now excluded so only the platform
+  wrapper ships. Nothing required the duplicate — the real consumers
+  (`commons_compress`, `commons_io`) bind to the retained platform module —
+  so this clears the warning dialog with no functional loss.
+
 ## [1.8.3] — 2026-06-21
 
 ### Fixed
