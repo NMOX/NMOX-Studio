@@ -134,3 +134,67 @@ jobs:
             artifacts/**/nmox-studio_*.deb
             artifacts/**/NMOX-Studio-*-macos.dmg
             artifacts/**/NMOX-Studio-*-windows-setup.exe
+
+  homebrew:
+    needs: [version, release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Download macOS DMG
+        uses: actions/download-artifact@v5
+        with:
+          name: macos-artifacts
+          path: dmg
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          DMG=$(ls dmg/NMOX-Studio-*-macos.dmg)
+          echo "sha256=$(shasum -a 256 "$DMG" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Write cask
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+        run: |
+          mkdir -p Casks
+          cat > Casks/nmox-studio.rb <<EOF
+          cask "nmox-studio" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/NMOX/NMOX-Studio/releases/download/v#{version}/NMOX-Studio-#{version}-macos.dmg",
+                verified: "github.com/NMOX/NMOX-Studio/"
+            name "NMOX Studio"
+            desc "NetBeans RCP-based IDE for web development"
+            homepage "https://github.com/NMOX/NMOX-Studio"
+
+            depends_on macos: ">= :big_sur"
+
+            app "NMOX Studio.app"
+
+            zap trash: [
+              "~/Library/Application Support/NMOXStudio",
+              "~/Library/Caches/org.nmox.studio",
+              "~/Library/Preferences/org.nmox.studio.plist",
+            ]
+          end
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/nmox-studio.rb
+          if git diff --cached --quiet; then
+            echo "Cask already current; nothing to commit."
+          else
+            git commit -m "nmox-studio ${{ needs.version.outputs.version }}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
