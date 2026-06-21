@@ -129,7 +129,7 @@ mvn nbm:run-platform
 
 ```
 NMOX-Studio/
-├── core/                   # Core services and Lookup-based service registry
+├── core/                   # Startup hooks (e.g. NMOX phosphor terminal styling)
 ├── ui/                     # Main windows, Workbench home base, actions
 ├── editor/                 # Polyglot editor: TextMate grammars, LSP,
 │   │                       #   completion, outline, spellcheck
@@ -161,7 +161,7 @@ NMOX-Studio/
 
 | Module | Description | Key Components |
 |--------|-------------|----------------|
-| **core** | Core services and Lookup-based service registry | `ServiceManager`, `NMOXStudioCore` |
+| **core** | Startup hooks and platform-wide styling | `TerminalPhosphor` (@OnStart terminal theming) |
 | **ui** | Main windows, Workbench home base, actions | `MainWindow`, Workbench, actions |
 | **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
 | **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
@@ -173,21 +173,20 @@ NMOX-Studio/
 
 ## Architecture
 
-NMOX Studio follows a clean, modular architecture based on the NetBeans Platform:
-
-### Service Management
-The application uses a centralized service management system that provides:
-- **Automatic Discovery**: Services are automatically discovered through the Lookup system
-- **Lifecycle Management**: Proper initialization and cleanup of services
-- **Event Notification**: Service registration/unregistration events
-- **Type Safety**: Strongly-typed service retrieval
+NMOX Studio is built on the NetBeans Rich Client Platform, so it inherits the
+platform's module system, windowing, and `Lookup`-based service wiring rather
+than reinventing them. The application is assembled from the modules listed
+above, each a self-contained NetBeans module (NBM).
 
 ### Module System
 Each module is a self-contained NetBeans module (NBM) with:
-- **Clear Dependencies**: Explicit module dependencies
+- **Clear Dependencies**: Explicit module dependencies declared in the POM
 - **API Separation**: Clean separation between API and implementation
+- **Lookup Wiring**: Services and `TopComponent`s registered via NetBeans
+  annotations (`@ServiceProvider`, `@TopComponent.Registration`) and resolved
+  through the platform `Lookup`
 - **Resource Management**: Proper resource bundling and internationalization
-- **Testing Support**: Comprehensive unit and integration tests
+- **Testing Support**: Unit and integration tests run headless in CI
 
 ## Development
 
