@@ -2,6 +2,12 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Menu">
+        <!-- BuildProjectAction creates this top-level menu via @ActionReference;
+             give the folder itself a position so Menu/ ordering is fully
+             specified (sits just after the platform's BuildProject@700). -->
+        <folder name="Build">
+            <attr name="position" intvalue="750"/>
+        </folder>
         <folder name="File">
             <!-- The platform ships its own Open File and New Project menu
                  items; ours (OpenFileAction, NewProjectAction - wired to the

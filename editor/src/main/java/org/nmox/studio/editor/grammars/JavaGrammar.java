@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "java.tmLanguage.json", mimeType = "text/x-java")
-@MIMEResolver.ExtensionRegistration(displayName = "Java", mimeType = "text/x-java", extension = {"java"})
+@MIMEResolver.ExtensionRegistration(displayName = "Java", mimeType = "text/x-java", extension = {"java"}, position = 2170)
 public final class JavaGrammar {
 
     private JavaGrammar() {

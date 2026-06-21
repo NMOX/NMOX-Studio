@@ -47,7 +47,7 @@ import org.openide.windows.WindowManager;
         preferredID = "ProjectExplorerTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 60)
 @ActionID(category = "Window", id = "org.nmox.studio.project.ProjectExplorerTopComponent")
 @ActionReference(path = "Menu/Window", position = 205)
 @TopComponent.OpenActionRegistration(

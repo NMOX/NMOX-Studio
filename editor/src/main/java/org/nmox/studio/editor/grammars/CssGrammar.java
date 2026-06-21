@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "css.tmLanguage.json", mimeType = "text/css")
-@MIMEResolver.ExtensionRegistration(displayName = "CSS", mimeType = "text/css", extension = {"css"})
+@MIMEResolver.ExtensionRegistration(displayName = "CSS", mimeType = "text/css", extension = {"css"}, position = 2060)
 public final class CssGrammar {
 
     private CssGrammar() {

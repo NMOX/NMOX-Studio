@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "crystal.tmLanguage.json", mimeType = "text/x-crystal")
-@MIMEResolver.ExtensionRegistration(displayName = "Crystal", mimeType = "text/x-crystal", extension = {"cr"})
+@MIMEResolver.ExtensionRegistration(displayName = "Crystal", mimeType = "text/x-crystal", extension = {"cr"}, position = 2050)
 public final class CrystalGrammar {
 
     private CrystalGrammar() {

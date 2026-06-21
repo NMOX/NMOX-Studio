@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "graphql.tmLanguage.json", mimeType = "text/x-graphql")
-@MIMEResolver.ExtensionRegistration(displayName = "GraphQL", mimeType = "text/x-graphql", extension = {"graphql", "gql"})
+@MIMEResolver.ExtensionRegistration(displayName = "GraphQL", mimeType = "text/x-graphql", extension = {"graphql", "gql"}, position = 2110)
 public final class GraphqlGrammar {
 
     private GraphqlGrammar() {

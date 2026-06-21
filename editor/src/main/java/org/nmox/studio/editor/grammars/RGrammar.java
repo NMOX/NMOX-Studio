@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "r.tmLanguage.json", mimeType = "text/x-r")
-@MIMEResolver.ExtensionRegistration(displayName = "R", mimeType = "text/x-r", extension = {"r"})
+@MIMEResolver.ExtensionRegistration(displayName = "R", mimeType = "text/x-r", extension = {"r"}, position = 2340)
 public final class RGrammar {
 
     private RGrammar() {

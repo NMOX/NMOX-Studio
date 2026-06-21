@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <!-- JavaScript MIME type registration -->
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="JavaScriptResolver.xml" url="javascript/mime-resolver.xml">
-                <attr name="displayName" bundlevalue="org.nmox.studio.editor.Bundle#Services/MIMEResolver/JavaScriptResolver.xml"/>
-            </file>
-        </folder>
-    </folder>
-    
+    <!-- JavaScript MIME type registration lives on JavaScriptDataObject's
+         @MIMEResolver.ExtensionRegistration (js/mjs/jsx -> text/javascript,
+         position 100). A second layer-based resolver here was redundant and
+         triggered the "ineffective registration, use @MIMEResolver" warning
+         (NB bug #191777), so it was removed. -->
+
     <!-- File type actions and editors -->
     <folder name="Loaders">
         <folder name="text">

@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "ruby.tmLanguage.json", mimeType = "text/x-ruby")
-@MIMEResolver.ExtensionRegistration(displayName = "Ruby", mimeType = "text/x-ruby", extension = {"rb", "rake"})
+@MIMEResolver.ExtensionRegistration(displayName = "Ruby", mimeType = "text/x-ruby", extension = {"rb", "rake"}, position = 2350)
 public final class RubyGrammar {
 
     private RubyGrammar() {

@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * for the indented syntax, far better than plain text.
  */
 @GrammarRegistration(grammar = "scss.tmLanguage.json", mimeType = "text/x-scss")
-@MIMEResolver.ExtensionRegistration(displayName = "SCSS", mimeType = "text/x-scss", extension = {"scss", "sass"})
+@MIMEResolver.ExtensionRegistration(displayName = "SCSS", mimeType = "text/x-scss", extension = {"scss", "sass"}, position = 2380)
 public final class ScssGrammar {
 
     private ScssGrammar() {

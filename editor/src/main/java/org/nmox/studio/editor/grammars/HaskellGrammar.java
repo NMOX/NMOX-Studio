@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "haskell.tmLanguage.json", mimeType = "text/x-haskell")
-@MIMEResolver.ExtensionRegistration(displayName = "Haskell", mimeType = "text/x-haskell", extension = {"hs"})
+@MIMEResolver.ExtensionRegistration(displayName = "Haskell", mimeType = "text/x-haskell", extension = {"hs"}, position = 2140)
 public final class HaskellGrammar {
 
     private HaskellGrammar() {

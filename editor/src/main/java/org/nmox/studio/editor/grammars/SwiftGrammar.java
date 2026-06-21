@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "swift.tmLanguage.json", mimeType = "text/x-swift")
-@MIMEResolver.ExtensionRegistration(displayName = "Swift", mimeType = "text/x-swift", extension = {"swift"})
+@MIMEResolver.ExtensionRegistration(displayName = "Swift", mimeType = "text/x-swift", extension = {"swift"}, position = 2410)
 public final class SwiftGrammar {
 
     private SwiftGrammar() {

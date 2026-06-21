@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "csharp.tmLanguage.json", mimeType = "text/x-csharp")
-@MIMEResolver.ExtensionRegistration(displayName = "CSharp", mimeType = "text/x-csharp", extension = {"cs"})
+@MIMEResolver.ExtensionRegistration(displayName = "CSharp", mimeType = "text/x-csharp", extension = {"cs"}, position = 2020)
 public final class CSharpGrammar {
 
     private CSharpGrammar() {

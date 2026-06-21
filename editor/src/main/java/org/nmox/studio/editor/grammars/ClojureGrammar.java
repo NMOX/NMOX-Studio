@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "clojure.tmLanguage.json", mimeType = "text/x-clojure")
-@MIMEResolver.ExtensionRegistration(displayName = "Clojure", mimeType = "text/x-clojure", extension = {"clj", "cljs", "cljc", "edn"})
+@MIMEResolver.ExtensionRegistration(displayName = "Clojure", mimeType = "text/x-clojure", extension = {"clj", "cljs", "cljc", "edn"}, position = 2030)
 public final class ClojureGrammar {
 
     private ClojureGrammar() {

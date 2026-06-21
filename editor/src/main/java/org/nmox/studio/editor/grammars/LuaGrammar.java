@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "lua.tmLanguage.json", mimeType = "text/x-lua")
-@MIMEResolver.ExtensionRegistration(displayName = "Lua", mimeType = "text/x-lua", extension = {"lua"})
+@MIMEResolver.ExtensionRegistration(displayName = "Lua", mimeType = "text/x-lua", extension = {"lua"}, position = 2240)
 public final class LuaGrammar {
 
     private LuaGrammar() {

@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "scala.tmLanguage.json", mimeType = "text/x-scala")
-@MIMEResolver.ExtensionRegistration(displayName = "Scala", mimeType = "text/x-scala", extension = {"scala", "sc", "sbt"})
+@MIMEResolver.ExtensionRegistration(displayName = "Scala", mimeType = "text/x-scala", extension = {"scala", "sc", "sbt"}, position = 2370)
 public final class ScalaGrammar {
 
     private ScalaGrammar() {

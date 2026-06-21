@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "handlebars.tmLanguage.json", mimeType = "text/x-handlebars")
-@MIMEResolver.ExtensionRegistration(displayName = "Handlebars", mimeType = "text/x-handlebars", extension = {"hbs", "handlebars"})
+@MIMEResolver.ExtensionRegistration(displayName = "Handlebars", mimeType = "text/x-handlebars", extension = {"hbs", "handlebars"}, position = 2130)
 public final class HandlebarsGrammar {
 
     private HandlebarsGrammar() {

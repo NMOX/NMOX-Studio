@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "c.tmLanguage.json", mimeType = "text/x-c")
-@MIMEResolver.ExtensionRegistration(displayName = "C", mimeType = "text/x-c", extension = {"c", "h"})
+@MIMEResolver.ExtensionRegistration(displayName = "C", mimeType = "text/x-c", extension = {"c", "h"}, position = 2010)
 public final class CGrammar {
 
     private CGrammar() {

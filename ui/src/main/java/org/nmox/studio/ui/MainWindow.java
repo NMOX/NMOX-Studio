@@ -21,9 +21,9 @@ import org.openide.util.lookup.ServiceProvider;
         preferredID = "MainWindowTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = true)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 100)
 @ActionID(category = "Window", id = "org.nmox.studio.ui.MainWindow")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
+@ActionReference(path = "Menu/Window", position = 270)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_MainWindowAction",
         preferredID = "MainWindowTopComponent"

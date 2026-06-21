@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "perl.tmLanguage.json", mimeType = "text/x-perl")
-@MIMEResolver.ExtensionRegistration(displayName = "Perl", mimeType = "text/x-perl", extension = {"pl", "pm", "t"})
+@MIMEResolver.ExtensionRegistration(displayName = "Perl", mimeType = "text/x-perl", extension = {"pl", "pm", "t"}, position = 2280)
 public final class PerlGrammar {
 
     private PerlGrammar() {

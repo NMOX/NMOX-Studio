@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "cpp.tmLanguage.json", mimeType = "text/x-cpp")
-@MIMEResolver.ExtensionRegistration(displayName = "Cpp", mimeType = "text/x-cpp", extension = {"cpp", "cc", "cxx", "hpp", "hh"})
+@MIMEResolver.ExtensionRegistration(displayName = "Cpp", mimeType = "text/x-cpp", extension = {"cpp", "cc", "cxx", "hpp", "hh"}, position = 2040)
 public final class CppGrammar {
 
     private CppGrammar() {

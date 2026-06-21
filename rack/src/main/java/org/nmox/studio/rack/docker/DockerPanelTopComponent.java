@@ -54,7 +54,7 @@ import org.openide.windows.TopComponent;
         preferredID = "DockerPanelTopComponent",
         persistenceType = TopComponent.PERSISTENCE_NEVER
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = false)
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 400)
 public final class DockerPanelTopComponent extends TopComponent {
 
     private static final Color BG = new Color(25, 26, 29);

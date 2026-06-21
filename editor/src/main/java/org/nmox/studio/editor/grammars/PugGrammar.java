@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "pug.tmLanguage.json", mimeType = "text/x-pug")
-@MIMEResolver.ExtensionRegistration(displayName = "Pug", mimeType = "text/x-pug", extension = {"pug", "jade"})
+@MIMEResolver.ExtensionRegistration(displayName = "Pug", mimeType = "text/x-pug", extension = {"pug", "jade"}, position = 2320)
 public final class PugGrammar {
 
     private PugGrammar() {

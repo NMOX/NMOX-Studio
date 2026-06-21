@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "shell.tmLanguage.json", mimeType = "text/sh")
-@MIMEResolver.ExtensionRegistration(displayName = "Shell", mimeType = "text/sh", extension = {"sh", "bash", "zsh"})
+@MIMEResolver.ExtensionRegistration(displayName = "Shell", mimeType = "text/sh", extension = {"sh", "bash", "zsh"}, position = 2390)
 public final class ShellGrammar {
 
     private ShellGrammar() {

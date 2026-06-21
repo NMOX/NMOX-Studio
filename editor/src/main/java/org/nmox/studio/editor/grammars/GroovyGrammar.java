@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "groovy.tmLanguage.json", mimeType = "text/x-groovy")
-@MIMEResolver.ExtensionRegistration(displayName = "Groovy", mimeType = "text/x-groovy", extension = {"groovy", "gvy"})
+@MIMEResolver.ExtensionRegistration(displayName = "Groovy", mimeType = "text/x-groovy", extension = {"groovy", "gvy"}, position = 2120)
 public final class GroovyGrammar {
 
     private GroovyGrammar() {

@@ -38,7 +38,7 @@ import org.openide.filesystems.FileUtil;
         iconBase = "org/nmox/studio/tools/npm/npm.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 70)
 @ActionID(category = "Window", id = "org.nmox.studio.tools.npm.NpmExplorerTopComponent")
 @ActionReference(path = "Menu/Window", position = 333)
 @TopComponent.OpenActionRegistration(

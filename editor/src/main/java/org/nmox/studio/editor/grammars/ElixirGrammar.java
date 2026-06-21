@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "elixir.tmLanguage.json", mimeType = "text/x-elixir")
-@MIMEResolver.ExtensionRegistration(displayName = "Elixir", mimeType = "text/x-elixir", extension = {"ex", "exs"})
+@MIMEResolver.ExtensionRegistration(displayName = "Elixir", mimeType = "text/x-elixir", extension = {"ex", "exs"}, position = 2080)
 public final class ElixirGrammar {
 
     private ElixirGrammar() {

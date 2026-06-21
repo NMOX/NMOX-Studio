@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "makefile.tmLanguage.json", mimeType = "text/x-makefile")
-@MIMEResolver.ExtensionRegistration(displayName = "Makefile", mimeType = "text/x-makefile", extension = {"mk"})
+@MIMEResolver.ExtensionRegistration(displayName = "Makefile", mimeType = "text/x-makefile", extension = {"mk"}, position = 2250)
 public final class MakefileGrammar {
 
     private MakefileGrammar() {

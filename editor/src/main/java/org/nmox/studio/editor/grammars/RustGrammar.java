@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "rust.tmLanguage.json", mimeType = "text/x-rust")
-@MIMEResolver.ExtensionRegistration(displayName = "Rust", mimeType = "text/x-rust", extension = {"rs"})
+@MIMEResolver.ExtensionRegistration(displayName = "Rust", mimeType = "text/x-rust", extension = {"rs"}, position = 2360)
 public final class RustGrammar {
 
     private RustGrammar() {

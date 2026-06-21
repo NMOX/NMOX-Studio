@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "php.tmLanguage.json", mimeType = "text/x-php5")
-@MIMEResolver.ExtensionRegistration(displayName = "Php", mimeType = "text/x-php5", extension = {"php"})
+@MIMEResolver.ExtensionRegistration(displayName = "Php", mimeType = "text/x-php5", extension = {"php"}, position = 2290)
 public final class PhpGrammar {
 
     private PhpGrammar() {

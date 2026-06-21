@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "ignore.tmLanguage.json", mimeType = "text/x-ignore")
-@MIMEResolver.ExtensionRegistration(displayName = "Ignore Files", mimeType = "text/x-ignore", extension = {"gitignore", "dockerignore", "npmignore", "eslintignore", "prettierignore", "gcloudignore", "gitattributes"})
+@MIMEResolver.ExtensionRegistration(displayName = "Ignore Files", mimeType = "text/x-ignore", extension = {"gitignore", "dockerignore", "npmignore", "eslintignore", "prettierignore", "gcloudignore", "gitattributes"}, position = 2150)
 public final class IgnoreGrammar {
 
     private IgnoreGrammar() {

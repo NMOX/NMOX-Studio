@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "nginx.tmLanguage.json", mimeType = "text/x-nginx-conf")
-@MIMEResolver.ExtensionRegistration(displayName = "nginx", mimeType = "text/x-nginx-conf", extension = {"nginx"})
+@MIMEResolver.ExtensionRegistration(displayName = "nginx", mimeType = "text/x-nginx-conf", extension = {"nginx"}, position = 2260)
 public final class NginxGrammar {
 
     private NginxGrammar() {

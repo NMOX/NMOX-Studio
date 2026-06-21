@@ -8,7 +8,7 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "fsharp.tmLanguage.json", mimeType = "text/x-fsharp")
-@MIMEResolver.ExtensionRegistration(displayName = "FSharp", mimeType = "text/x-fsharp", extension = {"fs", "fsx"})
+@MIMEResolver.ExtensionRegistration(displayName = "FSharp", mimeType = "text/x-fsharp", extension = {"fs", "fsx"}, position = 2100)
 public final class FSharpGrammar {
 
     private FSharpGrammar() {

@@ -9,7 +9,7 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "ini.tmLanguage.json", mimeType = "text/x-ini")
-@MIMEResolver.ExtensionRegistration(displayName = "INI / EditorConfig", mimeType = "text/x-ini", extension = {"ini", "cfg", "editorconfig", "npmrc", "gitconfig"})
+@MIMEResolver.ExtensionRegistration(displayName = "INI / EditorConfig", mimeType = "text/x-ini", extension = {"ini", "cfg", "editorconfig", "npmrc", "gitconfig"}, position = 2160)
 public final class IniGrammar {
 
     private IniGrammar() {

@@ -41,7 +41,7 @@ import org.openide.windows.TopComponent;
         preferredID = "RackTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = true)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 200)
 @ActionID(category = "Window", id = "org.nmox.studio.rack.RackTopComponent")
 @ActionReference(path = "Menu/Window", position = 250)
 @TopComponent.OpenActionRegistration(
