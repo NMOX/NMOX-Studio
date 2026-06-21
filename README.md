@@ -4,8 +4,8 @@
 
 [![Build and Test](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Java Version](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
-[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-22.0-green.svg)](https://netbeans.apache.org/)
+[![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
+[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
@@ -38,7 +38,7 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 | ![Welcome screen](docs/images/welcome.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
 | *Welcome screen* | *Flip the rack (Tab) and patch task pipelines by cable* |
 | ![Editor](docs/images/editor.png) | ![Workbench and Infra Designer](docs/images/workbench-infra.png) |
-| *Phosphor-on-dark editing, 30+ languages* | *Workbench home base beside the multi-cloud Infra Designer* |
+| *Phosphor-on-dark editing, 45+ languages* | *Workbench home base beside the multi-cloud Infra Designer* |
 
 ## Features
 
@@ -239,4 +239,4 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ---
 
-**NMOX Studio** - Empowering media professionals with professional-grade development tools.
+**NMOX Studio** - wire your web tooling like a synth.
