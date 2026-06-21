@@ -37,6 +37,15 @@
                     <groupId>org.netbeans.api</groupId>
                     <artifactId>org-netbeans-modules-jellytools-ide</artifactId>
                 </exclusion>
+                <!-- commons_compress drags in the plain commons-codec jar transitively;
+                     nbm-maven-plugin auto-wraps it into a second module in extra/ that
+                     collides with the canonical platform wrapper (org.apache.commons.codec)
+                     and gets stuck INSTALLED under Netigso. Drop the plain jar so only the
+                     platform wrapper ships. -->
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
