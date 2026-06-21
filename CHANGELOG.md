@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.8.3] — 2026-06-21
+
+### Fixed
+- **The bundled-runtime floor is JDK 21, matching the Platform 30 baseline.**
+  NetBeans Platform 30 requires JDK 21, but the installers' jlinked runtime
+  and the macOS launcher's fallback still named JDK 17. Both now floor at 21,
+  so the embedded runtime can't drop below what the platform itself needs.
+- **The Homebrew cask CI regenerates an idempotent file.** The release
+  workflow's `homebrew` job emitted `depends_on macos: ">= :big_sur"` — the
+  deprecated string form — which didn't match the bare-symbol `:big_sur` in
+  the committed cask, so every run produced a spurious diff. The heredoc now
+  emits the bare symbol, matching the repo.
+
+### Documentation
+- README badges and copy caught up with the build: Java 21+ (was 17+),
+  NetBeans Platform 30.0 (was 22.0), the editor screenshot caption now reads
+  45+ languages (matching the intro and feature list), and the footer tagline
+  speaks the rack/synth voice instead of the old generic one.
+
 ## [1.8.2] — 2026-06-18
 
 ### Changed
