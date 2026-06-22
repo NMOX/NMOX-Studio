@@ -12,6 +12,7 @@ public enum DeviceType {
 
     MASTER("master", "MAESTRO", "Master Control — fire whole pipelines", new Color(240, 196, 25), MasterControlDevice::new),
     REFLEX("reflex", "REFLEX", "File Watcher — fire pipelines on save", new Color(236, 106, 168), ReflexDevice::new),
+    JOIN("join", "QUORUM", "Lane Join — barrier: fire OK when all lanes pass", new Color(90, 190, 210), JoinDevice::new),
     ROSETTA("rosetta", "ROSETTA", "Language Selector — steer AUTO knobs in mixed repos", new Color(64, 224, 178), RosettaDevice::new),
     RUN("run", "IGNITION", "Polyglot Runtime — run anything: node/go/rust/py/rb/php", new Color(255, 94, 58), RunDevice::new),
     DEBUG("debug", "INSPECTOR", "Debug Launcher — debug servers with attach endpoints", new Color(186, 85, 255), DebugDevice::new),
@@ -92,7 +93,7 @@ public enum DeviceType {
 
     public PaletteCategory getPaletteCategory() {
         return switch (this) {
-            case MASTER, REFLEX, TEMPO, RUN, NPM_SCRIPT -> PaletteCategory.AUTOMATE;
+            case MASTER, REFLEX, JOIN, TEMPO, RUN, NPM_SCRIPT -> PaletteCategory.AUTOMATE;
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
@@ -106,7 +107,8 @@ public enum DeviceType {
     public String getUsage() {
         return switch (this) {
             case MASTER -> "Press RUN SEQUENCE to fire all four TRIG outs at once.\nPatch TRIG 1 → CRATE RUN, then chain OK jacks: install → build → test.";
-            case REFLEX -> "Flip WATCH on and every file save fires CHANGED.\nPatch CHANGED → VERITAS RUN for test-on-save; FILTER narrows to code/styles/docs.";
+            case REFLEX -> "Flip WATCH on and every file save fires CHANGED.\nPatch CHANGED → VERITAS RUN for test-on-save; FILTER narrows to code/styles/docs, or GLOB to one lane (*.rs).";
+            case JOIN -> "The barrier where lanes converge: ALL fires OK once every wired IN has arrived and all passed.\nPatch each lane's DONE → IN, OK → LAUNCHPAD. MODE=ANY relays the first instead.";
             case TEMPO -> "A clock: TICK fires at the dialed rate, BAR every 4th tick.\nGate it with ENABLE (patch SURGE RUNNING in) for health checks only while serving.";
             case RUN -> "Runs your project's main: cargo run, go run, mix run, python…\nTARGET=auto follows the detected toolchain; ARGS feed the command line.";
             case NPM_SCRIPT -> "One package.json script per press. SCRIPT knob lists your scripts.\nPatch OK into the next device to chain scripts into pipelines.";

@@ -57,6 +57,7 @@ public class NextDevice extends CommandDevice {
 
         addInPort("serve", "DEV", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("ready", "READY", SignalType.TRIGGER);
         addOutPort("serving", "SERVING", SignalType.GATE);
@@ -153,6 +154,7 @@ public class NextDevice extends CommandDevice {
         switch (in.getId()) {
             case "serve" -> dev();
             case "stop" -> stopProcess();
+            case "enable" -> enableGate(signal.high(), this::dev, this::stopProcess);
             default -> super.receive(in, signal);
         }
     }

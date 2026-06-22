@@ -49,6 +49,7 @@ public class TunnelDevice extends CommandDevice {
         close.addActionListener(e -> stopProcess());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("live", "RUNNING", SignalType.GATE);
 
@@ -121,6 +122,8 @@ public class TunnelDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
             stopProcess();
+        } else if ("enable".equals(in.getId())) {
+            enableGate(signal.high(), this::primaryAction, this::stopProcess);
         } else {
             super.receive(in, signal);
         }

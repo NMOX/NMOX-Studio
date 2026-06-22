@@ -280,6 +280,24 @@ public abstract class RackDevice extends JPanel {
         }
     }
 
+    /**
+     * Readiness-gated long-running: serve while the gate is high, stop
+     * when it drops. Patch an upstream RUNNING/SERVING gate (HARBOR's
+     * engine, a dev server) into a long-runner's ENABLE input and it
+     * starts only once its dependency is up - DB → API → web ordering
+     * by cable. A high edge while already running is ignored so the
+     * gate never double-launches. Mirrors TEMPO's enable semantics.
+     */
+    protected void enableGate(boolean high, Runnable start, Runnable stop) {
+        if (high) {
+            if (!isProcessRunning()) {
+                start.run();
+            }
+        } else {
+            stop.run();
+        }
+    }
+
     /** True while this device has a tool process running. */
     public boolean isLive() {
         CommandExecutor.Handle h = running;

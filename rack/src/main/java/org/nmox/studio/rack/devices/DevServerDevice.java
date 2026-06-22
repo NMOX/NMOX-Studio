@@ -47,6 +47,7 @@ public class DevServerDevice extends CommandDevice {
         stop.addActionListener(e -> shutdown());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("running", "RUNNING", SignalType.GATE);
         addOutPort("ready", "READY", SignalType.TRIGGER);
         addOutPort("url", "URL", SignalType.DATA);
@@ -164,6 +165,8 @@ public class DevServerDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
             shutdown();
+        } else if ("enable".equals(in.getId())) {
+            enableGate(signal.high(), this::primaryAction, this::shutdown);
         } else {
             super.receive(in, signal);
         }

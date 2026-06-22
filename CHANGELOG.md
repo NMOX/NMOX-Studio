@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.9.0] — 2026-06-22
+
+Polyglot pipelines already compose as parallel *lanes* — one device chain per
+toolchain, each pinned to its own manifest directory. This release adds the
+three primitives that let those lanes coordinate: a join barrier, readiness
+gates on every long-runner, and per-lane file-change routing.
+
+### Added
+- **QUORUM (Lane Join) — a new device.** The barrier where parallel lanes
+  converge. In ALL mode it fires OK once every wired IN has arrived and all of
+  them passed (FAIL if any failed) — "web tests AND api tests pass, then deploy."
+  In ANY mode it relays the first arrival, a race. Patch each lane's DONE jack
+  into an IN, OK into the shared downstream step (LAUNCHPAD, PREFLIGHT).
+- **Readiness ENABLE gate on every long-runner** (IGNITION, SURGE, HALO, NEXUS,
+  PHOENIX, WORMHOLE, INSPECTOR). Patch an upstream RUNNING/SERVING gate into a
+  server's ENABLE input and it serves only while its dependency is up — Postgres
+  → API → web ordering by cable. A high edge while already running never
+  double-launches. Generalizes TEMPO's enable semantics across the fleet.
+- **Per-lane GLOB route on REFLEX.** A new GLOB field pins one watcher to a
+  single language: type `rs` to fire only on Rust saves, `ts,tsx` for the web
+  lane. Empty falls back to the coarse FILTER knob. A `.rs` save now drives the
+  cargo lane and a `.ts` save the vitest lane, instead of every save running both.
+- **Polyglot Gauntlet preset.** Per-language REFLEX watchers → their own VERITAS
+  lanes → QUORUM → PREFLIGHT: the rack ships only when every lane is green.
+
+### Tests
+- `CrossLaneTest`: the QUORUM ALL barrier (waits for all lanes, ANDs their
+  results), the FAIL path, the ANY race, the ENABLE gate's start/stop and
+  no-double-launch guard, and REFLEX glob parsing. `DeviceContractTest` now
+  covers QUORUM for free.
+
 ## [1.8.6] — 2026-06-22
 
 A control-surface audit swept all 33 rack devices for knobs, toggles, buttons,
