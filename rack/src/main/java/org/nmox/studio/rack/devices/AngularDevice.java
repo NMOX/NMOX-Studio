@@ -82,6 +82,7 @@ public class AngularDevice extends CommandDevice {
 
         addInPort("serve", "SERVE", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("ready", "READY", SignalType.TRIGGER);
         addOutPort("serving", "SERVING", SignalType.GATE);
@@ -191,6 +192,7 @@ public class AngularDevice extends CommandDevice {
         switch (in.getId()) {
             case "serve" -> serve();
             case "stop" -> stopProcess();
+            case "enable" -> enableGate(signal.high(), this::serve, this::stopProcess);
             default -> super.receive(in, signal);
         }
     }

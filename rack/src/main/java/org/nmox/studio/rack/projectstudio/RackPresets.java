@@ -137,6 +137,30 @@ public enum RackPresets {
             rack.connect(audit.getPort("ok"), deploy.getPort("run"));
             rack.connect(deploy.getPort("out"), console.getPort("in"));
         }
+    },
+
+    POLYGLOT_GAUNTLET("Polyglot Gauntlet",
+            "Per-language saves drive their own lane; QUORUM clears PREFLIGHT only when every lane is green") {
+        @Override
+        void wire(Rack rack) {
+            add(rack, DeviceType.ROSETTA, null);
+            RackDevice webWatch = add(rack, DeviceType.REFLEX,
+                    Map.of("armed", "true", "glob", "ts,tsx,js,jsx,vue,svelte"));
+            RackDevice apiWatch = add(rack, DeviceType.REFLEX,
+                    Map.of("armed", "true", "glob", "rs"));
+            RackDevice webTests = add(rack, DeviceType.TEST, Map.of("framework", "1"));
+            RackDevice apiTests = add(rack, DeviceType.TEST, Map.of("framework", "7"));
+            RackDevice quorum = add(rack, DeviceType.JOIN, null);
+            RackDevice preflight = add(rack, DeviceType.PREFLIGHT, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            rack.connect(webWatch.getPort("changed"), webTests.getPort("run"));
+            rack.connect(apiWatch.getPort("changed"), apiTests.getPort("run"));
+            rack.connect(webTests.getPort("done"), quorum.getPort("in1"));
+            rack.connect(apiTests.getPort("done"), quorum.getPort("in2"));
+            rack.connect(quorum.getPort("ok"), preflight.getPort("run"));
+            rack.connect(webTests.getPort("out"), console.getPort("in"));
+            rack.connect(apiTests.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;

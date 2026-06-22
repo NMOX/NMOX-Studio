@@ -45,6 +45,7 @@ public class RunDevice extends CommandDevice {
         stop.addActionListener(e -> stopProcess());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
+        addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("running", "RUNNING", SignalType.GATE);
 
         param("target", targetKnob);
@@ -68,6 +69,8 @@ public class RunDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
             stopProcess();
+        } else if ("enable".equals(in.getId())) {
+            enableGate(signal.high(), this::primaryAction, this::stopProcess);
         } else {
             super.receive(in, signal);
         }
