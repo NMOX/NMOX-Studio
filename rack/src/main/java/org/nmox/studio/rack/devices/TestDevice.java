@@ -156,10 +156,15 @@ public class TestDevice extends CommandDevice {
             default -> cmd.addAll(List.of("npm", "test"));
         }
         if (coverageSwitch.isOn()) {
-            switch (frameworkKnob.getSelectedOption()) {
+            // resolve AUTO first: keyed on the raw "auto" knob the flag never
+            // fired, so COVER did nothing in the default case even for jest/vitest
+            switch (effectiveFramework()) {
                 case "jest", "vitest" -> cmd.add("--coverage");
+                case "pytest" -> cmd.add("--cov");
                 default -> {
-                    // tool decides; coverage flag not portable
+                    // no portable coverage flag for this runner (mocha needs
+                    // nyc, cargo needs llvm-cov, go needs -coverprofile);
+                    // leave the command for the tool to decide
                 }
             }
         }

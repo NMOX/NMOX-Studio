@@ -12,8 +12,9 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 /**
  * MAESTRO Master Control: the transport section. One big RUN button
  * fans a trigger out of four jacks at once - patch them into any
- * combination of devices to fire a whole pipeline; STOP ALL kills
- * every running process in the rack.
+ * combination of devices to fire a whole pipeline; STOP ALL halts
+ * every command-backed device in the rack - the ones that launched a
+ * process (servers, builds, tunnels) - by killing it.
  */
 public class MasterControlDevice extends RackDevice {
 

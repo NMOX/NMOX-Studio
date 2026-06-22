@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.8.6] — 2026-06-22
+
+A control-surface audit swept all 33 rack devices for knobs, toggles, buttons,
+and patch jacks that looked wired but weren't — and made them carry real
+signals and real results. Most of the fleet was already honest; the cases below
+were not.
+
+### Fixed
+- **VERITAS COVER actually collects coverage now.** The toggle keyed on the raw
+  RUNNER knob, so in the default AUTO position (and anywhere AUTO resolved a
+  framework) it added nothing — the switch was visibly on and did nothing. It
+  now resolves AUTO first, so a jest/vitest project gets `--coverage` and a
+  Python project gets `pytest --cov`.
+- **BLACKBOX's OUT jack was inert.** The flight recorder declared an output port
+  but never emitted on it — a cable you could draw that could never carry a
+  signal. It now broadcasts the newest tape entry (launch, exit, or error) as it
+  happens, so you can wire BLACKBOX → MONITOR for a live event log or into a
+  notifier.
+- **SONAR's OUT jack spoke prose, not data.** It emitted the sentence
+  `"sonar: N ports listening"`, which nothing downstream could act on. It now
+  emits the listening port numbers as a sorted, de-duplicated, comma-separated
+  list a wired device can parse.
+- **FORGE's WATCH toggle was a no-op in the esbuild position.** esbuild now gets
+  `--watch` when WATCH is on, like the other bundlers.
+
+### Added
+- **PING can send a request body.** POST and PUT previously sent an empty body,
+  so you couldn't smoke-test an API that expects a payload. A new body field is
+  sent on POST/PUT (with a JSON `Content-Type` when the body looks like JSON);
+  reads and blank bodies stay body-less.
+- **`DeviceWiringTest`** locks these behaviors in: COVER resolves AUTO before
+  adding a coverage flag, PING's request builder carries the body only on
+  write methods, SONAR's payload is machine-usable, and BLACKBOX's OUT jack
+  delivers a recorder event down a real cable.
+
+### Changed
+- **NPM-9000** dropped two dead button fields (inlined as locals), and
+  **MAESTRO's** STOP ALL now describes honestly what it does — halt every
+  command-backed device — rather than implying it can stop timer- or
+  listener-driven ones.
+
 ## [1.8.5] — 2026-06-21
 
 ### Fixed
