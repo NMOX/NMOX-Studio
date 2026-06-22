@@ -27,6 +27,7 @@ public class HttpDevice extends RackDevice {
 
     private final Knob methodKnob;
     private final LcdDisplay urlLcd;
+    private final LcdDisplay bodyLcd;
     private final LcdDisplay statusLcd;
     private final VuMeter latencyMeter;
     private final Led okLed;
@@ -42,6 +43,9 @@ public class HttpDevice extends RackDevice {
         urlLcd = place(new LcdDisplay(260, 1), 184, 46);
         urlLcd.setText("http://localhost:3000");
         urlLcd.setEditable("Request URL");
+        bodyLcd = place(new LcdDisplay(260, 1), 184, 78);
+        bodyLcd.setText("");
+        bodyLcd.setEditable("Request body (sent on POST/PUT)");
         RackButton send = place(new RackButton("SEND", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         statusLcd = place(new LcdDisplay(120, 1), 460, 46);
         statusLcd.setText("—");
@@ -59,6 +63,7 @@ public class HttpDevice extends RackDevice {
 
         param("method", methodKnob);
         param("url", urlLcd);
+        param("body", bodyLcd);
     }
 
     private void fire() {
@@ -75,10 +80,7 @@ public class HttpDevice extends RackDevice {
         long start = System.nanoTime();
         HttpRequest request;
         try {
-            request = HttpRequest.newBuilder(URI.create(url))
-                    .method(METHODS[methodKnob.getSelectedIndex()], HttpRequest.BodyPublishers.noBody())
-                    .timeout(Duration.ofSeconds(15))
-                    .build();
+            request = buildRequest(METHODS[methodKnob.getSelectedIndex()], url, bodyLcd.getText());
         } catch (RuntimeException ex) {
             onEdt(() -> {
                 failLed.setOn(true);
@@ -113,6 +115,32 @@ public class HttpDevice extends RackDevice {
                         emit("body", Signal.data(body.length() > 400 ? body.substring(0, 400) + "…" : body));
                     }
                 });
+    }
+
+    /**
+     * Builds the request: POST/PUT carry the body field (JSON gets a
+     * Content-Type so APIs accept it); everything else is body-less.
+     * Static and side-effect-free so the wiring is unit-testable.
+     */
+    static HttpRequest buildRequest(String method, String url, String body) {
+        HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
+                .timeout(Duration.ofSeconds(15));
+        boolean sendsBody = ("POST".equals(method) || "PUT".equals(method))
+                && body != null && !body.isBlank();
+        if (sendsBody) {
+            b.method(method, HttpRequest.BodyPublishers.ofString(body));
+            if (looksJson(body)) {
+                b.header("Content-Type", "application/json");
+            }
+        } else {
+            b.method(method, HttpRequest.BodyPublishers.noBody());
+        }
+        return b.build();
+    }
+
+    static boolean looksJson(String body) {
+        String t = body.strip();
+        return t.startsWith("{") || t.startsWith("[");
     }
 
     @Override

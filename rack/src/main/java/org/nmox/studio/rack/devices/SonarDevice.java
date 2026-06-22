@@ -100,8 +100,7 @@ public class SonarDevice extends RackDevice {
                 }
                 fieldLcd.setText(low.length() == 0 ? "DEV BAND QUIET" : "DEV: " + low);
             });
-            emit("out", org.nmox.studio.rack.model.Signal.data(
-                    "sonar: " + ports.size() + " ports listening"));
+            emit("out", org.nmox.studio.rack.model.Signal.data(listeningPorts(ports)));
         });
         // docker's published ports belong to containers, not the daemon pid
         DockerClient.getDefault().containers().thenAccept(cs -> {
@@ -113,6 +112,20 @@ public class SonarDevice extends RackDevice {
             }
             dockerOwners = owners;
         });
+    }
+
+    /**
+     * The sweep result as a machine-usable payload: the listening port
+     * numbers, ascending and de-duplicated, comma-separated - so a wired
+     * downstream device can act on the field instead of parsing prose.
+     */
+    static String listeningPorts(List<PortInfo> ports) {
+        return ports.stream()
+                .map(PortInfo::port)
+                .distinct()
+                .sorted()
+                .map(String::valueOf)
+                .collect(java.util.stream.Collectors.joining(","));
     }
 
     private void restartPoller() {

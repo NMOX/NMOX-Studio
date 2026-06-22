@@ -80,6 +80,17 @@ public class BlackboxDevice extends RackDevice {
     }
 
     private void onRecorderChange() {
+        // broadcast the newest tape entry of any kind (launch, exit, error)
+        // so the OUT jack is a live event source: wire it into MONITOR for a
+        // running log, or into a notifier. last() only sees completed runs.
+        List<Event> tape = FlightRecorder.getDefault().timeline();
+        if (!tape.isEmpty()) {
+            Event newest = tape.get(tape.size() - 1);
+            String dur = newest.durationMs() >= 0
+                    ? " " + (newest.durationMs() / 1000.0) + "s" : "";
+            emit("out", org.nmox.studio.rack.model.Signal.data(
+                    newest.device() + " " + newest.kind().name() + dur));
+        }
         onEdt(() -> {
             recLed.setOn(true);
             recFade.restart();

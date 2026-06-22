@@ -180,7 +180,12 @@ public class BuildDevice extends CommandDevice {
                     cmd.add("--watch");
                 }
             }
-            case "esbuild" -> cmd.addAll(List.of("npx", "esbuild", "--bundle", "src/index.js", "--outdir=dist"));
+            case "esbuild" -> {
+                cmd.addAll(List.of("npx", "esbuild", "--bundle", "src/index.js", "--outdir=dist"));
+                if (watch) {
+                    cmd.add("--watch");
+                }
+            }
             case "parcel" -> cmd.addAll(List.of("npx", "parcel", watch ? "watch" : "build"));
             default -> cmd.addAll(List.of("npm", "run", "build"));
         }

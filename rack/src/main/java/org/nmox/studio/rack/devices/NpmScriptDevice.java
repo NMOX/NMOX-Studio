@@ -20,15 +20,13 @@ public class NpmScriptDevice extends CommandDevice {
 
     private final Knob scriptKnob;
     private final Knob managerKnob;
-    private final RackButton runButton;
-    private final RackButton stopButton;
 
     public NpmScriptDevice() {
         super("npm-script", "NPM-9000", "SCRIPT SEQUENCER", new Color(203, 56, 55), 2);
 
-        runButton = place(new RackButton("RUN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
+        RackButton runButton = place(new RackButton("RUN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
         runButton.setCommandPreview(this::commandPreview);
-        stopButton = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
+        RackButton stopButton = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         scriptKnob = place(new Knob("SCRIPT", new String[]{"—"}, 0), 180, 40);
         managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 254, 40);
 
