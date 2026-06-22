@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.8.5] — 2026-06-21
+
+### Fixed
+- **A clean startup log.** Every NMOX-owned warning the platform logged on
+  launch is gone. The 45+ TextMate grammar MIME resolvers and the editor/
+  explorer tool-window tabs now declare explicit `position` attributes, so the
+  filesystem ordering is fully specified instead of "Not all children marked
+  with the position attribute"; the top-level Build menu and the Window-menu
+  entry are positioned too. The redundant layer-based JavaScript MIME resolver
+  was removed — `JavaScriptDataObject`'s annotation already registers
+  js/mjs/jsx, and the duplicate triggered the "ineffective registration"
+  warning (NB #191777). (The only startup warnings left come from upstream
+  NetBeans modules and a benign platform notice — not our code.)
+
+### Changed
+- **The Infra Designer opens at startup**, joining the Welcome and Task Rack
+  tabs in the main editor area, so the multi-cloud canvas is one glance away
+  instead of a menu trip.
+
 ## [1.8.4] — 2026-06-21
 
 ### Fixed
