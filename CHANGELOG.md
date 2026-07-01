@@ -4,30 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.10.0] — 2026-07-01
 
 ### Added
 - **Format on save with Prettier.** Saving a JS/TS, CSS/SCSS/Less, HTML,
   JSON, YAML, Markdown, Vue, GraphQL, Svelte, or Astro file now runs the
-  project's own Prettier over the buffer first — strictly opt-in twice
-  over: the IDE-wide toggle (Options → Editor → Format on Save, default
-  on) and the project's own Prettier config (any `.prettierrc*` /
-  `prettier.config.*` up the tree, or a package.json that mentions
-  prettier — monorepo roots count). The project-pinned
-  `node_modules/.bin/prettier` is preferred over a global install so
-  output matches CI. Failures never interrupt the save: a syntax error
+  project's own Prettier over the buffer first. **Upgrading users get
+  format-on-save automatically in any project containing a Prettier
+  config; disable via Options → Editor → Format on Save.** The effective
+  gate is the project's own opt-in: any `.prettierrc*` /
+  `prettier.config.*` or a package.json that mentions prettier, searched
+  from the saved file up to the repository root (`.git`) and no further —
+  monorepo roots count, a personal `~/.prettierrc` above the checkout
+  does not. The project-pinned `node_modules/.bin/prettier` is preferred
+  over a global install so output matches CI, resolved within the same
+  repository boundary. Failures never interrupt the save: a syntax error
   mid-edit, a missing binary, or a hung process (5 s kill) all save the
   buffer unchanged with a log line. The applied edit is the minimal
   changed span, so the caret and scroll position survive the save.
+  Measured cost per save (prettier 3.9.4, M-series Mac): ~145 ms on a
+  300-line file, ~410 ms on a 3,600-line/392 KB one; files over 512 KB
+  skip formatting entirely.
 
 ### Tests
 - `PrettierFormatterTest`: the opt-in walk (config names, package.json
-  mention, monorepo walk-past), local-binary preference, every failure
-  mode collapsing to "no change", and a real-process round trip through
-  the stdin/stdout runner. `FormatOnSaveTest`: minimal-edit correctness
-  on every shape of change (Positions survive a middle-of-file edit),
-  and mime coverage read from the generated layer — the artifact that
-  actually registers the hook.
+  mention, monorepo walk-past, the repository boundary — configs and
+  node_modules above `.git` don't count, a config at the repo root
+  does, a `.git` *file* bounds like a directory), local-binary
+  preference, every failure mode collapsing to "no change", and a
+  real-process round trip through the stdin/stdout runner.
+  `FormatOnSaveTest`: minimal-edit correctness on every shape of change
+  (Positions survive a middle-of-file edit), and mime coverage read
+  from the generated layer — the artifact that actually registers the
+  hook.
 
 ## [1.9.0] — 2026-06-22
 

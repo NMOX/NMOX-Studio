@@ -99,10 +99,13 @@ public final class PrettierFormatter {
     }
 
     /**
-     * True when some directory from {@code startDir} upward carries a
-     * Prettier config file or a package.json that mentions prettier (a
-     * "prettier" options key or dependency). Walks past non-mentioning
-     * package.json files so a monorepo's root config still counts.
+     * True when some directory from {@code startDir} up to the repository
+     * root carries a Prettier config file or a package.json that mentions
+     * prettier (a "prettier" options key or dependency). Walks past
+     * non-mentioning package.json files so a monorepo's root config still
+     * counts, but never past the first {@code .git} — a personal
+     * ~/.prettierrc or a stray package.json above the checkout is not the
+     * project opting in.
      */
     static boolean projectOptedIn(File startDir) {
         for (File dir = startDir; dir != null; dir = dir.getParentFile()) {
@@ -115,8 +118,16 @@ public final class PrettierFormatter {
             if (packageJson.isFile() && mentionsPrettier(packageJson)) {
                 return true;
             }
+            if (isRepositoryRoot(dir)) {
+                return false;
+            }
         }
         return false;
+    }
+
+    /** {@code .git} is a directory in a checkout, a file in worktrees and submodules. */
+    private static boolean isRepositoryRoot(File dir) {
+        return new File(dir, ".git").exists();
     }
 
     /**
@@ -148,7 +159,11 @@ public final class PrettierFormatter {
         return global.contains(File.separator) ? global : null;
     }
 
-    /** The project-pinned prettier, or null when no ancestor has one. */
+    /**
+     * The project-pinned prettier, or null when no ancestor inside the
+     * repository has one — the same boundary as the opt-in walk, so the
+     * binary that runs always belongs to the checkout that opted in.
+     */
     static String findLocalBinary(File startDir) {
         for (File dir = startDir; dir != null; dir = dir.getParentFile()) {
             File bin = new File(dir, "node_modules/.bin/prettier");
@@ -158,6 +173,9 @@ public final class PrettierFormatter {
             File cmd = new File(dir, "node_modules/.bin/prettier.cmd");
             if (cmd.isFile()) {
                 return cmd.getAbsolutePath();
+            }
+            if (isRepositoryRoot(dir)) {
+                return null;
             }
         }
         return null;
