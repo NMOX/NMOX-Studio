@@ -76,7 +76,51 @@ class PrettierFormatterTest {
         assertThat(PrettierFormatter.projectOptedIn(dir.toFile())).isFalse();
     }
 
+    @Test
+    @DisplayName("A config above the repository boundary (.git) does not opt the project in")
+    void configAboveRepoBoundaryDoesNotCount() throws IOException {
+        Files.createFile(root.resolve(".prettierrc")); // e.g. a personal ~/.prettierrc
+        Path repo = Files.createDirectories(root.resolve("repo"));
+        Files.createDirectories(repo.resolve(".git"));
+        Path src = Files.createDirectories(repo.resolve("src"));
+
+        assertThat(PrettierFormatter.projectOptedIn(src.toFile())).isFalse();
+    }
+
+    @Test
+    @DisplayName("A config at the repository root itself opts in — the boundary is inclusive")
+    void configAtRepoRootCounts() throws IOException {
+        Path repo = Files.createDirectories(root.resolve("repo"));
+        Files.createDirectories(repo.resolve(".git"));
+        Files.createFile(repo.resolve(".prettierrc"));
+        Path src = Files.createDirectories(repo.resolve("src"));
+
+        assertThat(PrettierFormatter.projectOptedIn(src.toFile())).isTrue();
+    }
+
+    @Test
+    @DisplayName("A .git file (worktree/submodule) bounds the walk just like a .git directory")
+    void gitFileBoundsWalkToo() throws IOException {
+        Files.createFile(root.resolve(".prettierrc"));
+        Path worktree = Files.createDirectories(root.resolve("wt"));
+        Files.writeString(worktree.resolve(".git"), "gitdir: ../repo/.git/worktrees/wt\n");
+
+        assertThat(PrettierFormatter.projectOptedIn(worktree.toFile())).isFalse();
+    }
+
     // ---- binary resolution -------------------------------------------------
+
+    @Test
+    @DisplayName("A node_modules above the repository boundary is not the project's binary")
+    void localBinaryStopsAtRepoBoundary() throws IOException {
+        Path bin = Files.createDirectories(root.resolve("node_modules/.bin"));
+        Path stray = Files.createFile(bin.resolve("prettier"));
+        assertThat(stray.toFile().setExecutable(true)).isTrue();
+        Path repo = Files.createDirectories(root.resolve("repo"));
+        Files.createDirectories(repo.resolve(".git"));
+
+        assertThat(PrettierFormatter.findLocalBinary(repo.toFile())).isNull();
+    }
 
     @Test
     @DisplayName("The nearest node_modules/.bin/prettier wins, found from a nested dir")
