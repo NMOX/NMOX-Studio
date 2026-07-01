@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.nmox.studio.rack.engine.ProcessSupport;
 import org.nmox.studio.rack.engine.ToolLocator;
 
 /**
@@ -165,9 +166,11 @@ public final class PrettierFormatter {
     /** The real runner: stdout drained on its own thread, stdin fed, hard timeout. */
     private static Result exec(List<String> command, File workDir, String stdin)
             throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(command);
+        ProcessBuilder pb = ProcessSupport.builder(command);
         pb.directory(workDir);
-        pb.environment().put("PATH", ToolLocator.augmentedPath());
+        // the one departure from the hardened default: the document text
+        // goes down stdin instead of the null device
+        pb.redirectInput(ProcessBuilder.Redirect.PIPE);
         pb.redirectError(ProcessBuilder.Redirect.DISCARD);
         Process process = pb.start();
         AtomicReference<byte[]> output = new AtomicReference<>(new byte[0]);

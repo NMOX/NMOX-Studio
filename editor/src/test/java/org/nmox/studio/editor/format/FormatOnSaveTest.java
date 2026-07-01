@@ -140,7 +140,8 @@ class FormatOnSaveTest {
                 "text/javascript", "text/typescript",
                 "text/css", "text/x-scss", "text/x-less",
                 "text/html", "text/x-json", "text/x-yaml",
-                "text/x-markdown", "text/x-vue", "text/x-graphql");
+                "text/x-markdown", "text/markdown", "text/x-vue", "text/x-graphql",
+                "text/x-svelte", "text/x-astro");
     }
 
     /** Collects Editors/&lt;mime&gt;/OnSave paths that register our factory. */
