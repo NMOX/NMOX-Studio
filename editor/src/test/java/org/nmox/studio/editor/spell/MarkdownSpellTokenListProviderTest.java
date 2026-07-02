@@ -71,6 +71,12 @@ class MarkdownSpellTokenListProviderTest {
         // the grammar scopes front matter as markup.raw.yaml.front-matter
         assertThat(MarkdownSpellTokenListProvider.isProseScope(
                 stack("text.html.markdown", "markup.raw.yaml.front-matter"))).isFalse();
+        // ...and its CONTENT as meta.embedded.block.frontmatter + yaml
+        // scopes, none of which mention markup.raw or source. — the exact
+        // stack observed once the source.yaml grammar resolves
+        assertThat(MarkdownSpellTokenListProvider.isProseScope(
+                stack("text.html.markdown", "meta.embedded.block.frontmatter",
+                        "meta.flow-sequence.yaml", "string.unquoted.plain.in.yaml"))).isFalse();
     }
 
     @Test

@@ -54,6 +54,10 @@ public class MarkdownSpellTokenListProvider implements TokenListProvider {
                 || stack.contains("markup.raw")
                 || stack.contains("markup.inline.raw")
                 || stack.contains("markup.underline.link")
+                // embedded-content marker: meta.embedded.block.frontmatter
+                // (YAML front matter), meta.embedded.block.javascript, ...
+                // — only reachable once the embedded grammars resolve
+                || stack.contains("meta.embedded")
                 || stack.contains("source."));
     }
 }
