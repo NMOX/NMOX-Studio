@@ -24,11 +24,16 @@ public class BenchDevice extends CommandDevice {
     private static final Pattern SUMMARY =
             Pattern.compile("([\\d.]+)([km]?) requests in ([\\d.]+)s, ([\\d.]+ \\w+) read");
 
+    private static final String[] MINIMUMS = {"off", "100", "500", "1k", "5k"};
+    private static final int[] MINIMUM_RPS = {0, 100, 500, 1_000, 5_000};
+
     private final Knob durationKnob;
     private final Knob connectionsKnob;
+    private final Knob minKnob;
     private final LcdDisplay urlLcd;
     private final LcdDisplay resultLcd;
     private final VuMeter reqMeter;
+    private volatile long lastReqPerSec = -1;
 
     public BenchDevice() {
         super("bench", "GAUNTLET", "LOAD BENCH", new Color(224, 122, 47), 2);
@@ -45,6 +50,8 @@ public class BenchDevice extends CommandDevice {
         resultLcd = place(new LcdDisplay(120, 1), 328, 82);
         resultLcd.setText("—");
         reqMeter = place(new VuMeter("REQ/S", false), 460, 82);
+        minKnob = place(new Knob("MIN R/S", MINIMUMS, 0), 560, 40);
+        minKnob.setToolTipText("Throughput floor: below it, FAIL fires instead of OK");
 
         fire.addActionListener(e -> primaryAction());
 
@@ -55,6 +62,29 @@ public class BenchDevice extends CommandDevice {
         param("duration", durationKnob);
         param("connections", connectionsKnob);
         param("url", urlLcd);
+        param("min", minKnob);
+    }
+
+    /**
+     * A bench that always "passes" can't gate a pipeline. With MIN R/S
+     * dialed, throughput under the floor is a failure - LEDs and jacks
+     * both. Off (the default) keeps the old exit-code behavior.
+     */
+    @Override
+    protected boolean overallSuccess(int exitCode) {
+        if (exitCode != 0) {
+            return false;
+        }
+        int floor = MINIMUM_RPS[minKnob.getSelectedIndex()];
+        if (floor > 0 && lastReqPerSec >= 0 && lastReqPerSec < floor) {
+            long measured = lastReqPerSec;
+            onEdt(() -> {
+                resultLcd.setTextColor(new Color(255, 90, 80));
+                resultLcd.setText(measured + " r/s < MIN " + floor);
+            });
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -76,6 +106,7 @@ public class BenchDevice extends CommandDevice {
 
     @Override
     protected void primaryAction() {
+        lastReqPerSec = -1;
         onEdt(() -> {
             resultLcd.setTextColor(RackStyle.LCD_AMBER);
             resultLcd.setText("FIRING…");
@@ -106,6 +137,7 @@ public class BenchDevice extends CommandDevice {
         }
         double seconds = Double.parseDouble(m.group(3));
         long reqPerSec = seconds > 0 ? Math.round(count / seconds) : 0;
+        lastReqPerSec = reqPerSec;
         String read = m.group(4);
         reqMeter.setLevel(Math.min(1.0, reqPerSec / 10_000.0));
         onEdt(() -> {
