@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.13.0] — 2026-07-02
+
+Testing rigor: failures get names and one-click re-runs, and coverage
+and throughput join quality as gates that can close the OK jack.
+
+### Added
+- **VERITAS names its failures.** Failing tests are captured by name
+  across runner families (jest/vitest ✕ lines, pytest FAILED node ids,
+  cargo, go); the FAILURES button lists them and **Re-run failed**
+  runs exactly those — `jest -t`, `vitest -t`, pytest node ids,
+  `cargo test <names>`, `go -run` — no full-suite penance for one red
+  test.
+- **Coverage is a number and a floor.** With COVER on, the measured
+  percentage (istanbul, pytest-cov, go -cover) lands on the tally LCD
+  (`P:41 F:0 C:85%`); dial MIN COV and a green-but-thin suite fires
+  FAIL instead of OK. Unmeasured coverage never gates — the device
+  refuses to punish runners it can't read.
+- **GAUNTLET can fail a pipeline.** MIN R/S puts a throughput floor
+  under the bench: below it, FAIL fires — a load test that always
+  "passes" can't gate anything. Both floors ride the
+  `overallSuccess` hook, so LEDs and jacks tell the same truth.
+
 ## [1.12.0] — 2026-07-02
 
 Three devices that close the last gaps between "runs your toolchain"
