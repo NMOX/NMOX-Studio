@@ -52,12 +52,32 @@ for pom in */pom.xml; do
         continue
     fi
 
+    # Freshness guard against a stale report faking a green: if this build
+    # recompiled the tests but did not run them, the compiled test classes
+    # are newer than every report. When target/test-classes exists, at
+    # least one TEST-*.xml must be newer than it. In CI this never triggers
+    # (the runner checks out fresh, so reports are always written after the
+    # compile in the same run); it closes the local "audit without a
+    # rebuild after breaking test execution" hole.
+    testclasses="$module/target/test-classes"
+    if [ -d "$testclasses" ] \
+        && [ -z "$(find "$reports" -name 'TEST-*.xml' -newer "$testclasses" 2>/dev/null)" ]; then
+        echo "AUDIT FAIL: $module — surefire reports are older than its compiled" >&2
+        echo "            test classes: the reports are stale, tests did not run" >&2
+        echo "            in this build. Re-run after 'mvn verify' (or 'mvn clean')." >&2
+        FAILED=1
+        continue
+    fi
+
     # Sum tests="N" across every TEST-*.xml the run produced. Reading the
     # XML (not the .txt summary) is robust to locale and to the summary
     # line format changing between surefire versions.
     ran="$(grep -ho 'tests="[0-9]*"' "$reports"/TEST-*.xml 2>/dev/null \
         | grep -o '[0-9]*' \
         | awk '{ s += $1 } END { print s + 0 }')"
+    # awk always prints a number, but guard the arithmetic test anyway so a
+    # surprise non-numeric can never abort the loop under set -e.
+    case "$ran" in ''|*[!0-9]*) ran=0 ;; esac
 
     if [ "$ran" -eq 0 ]; then
         echo "AUDIT FAIL: $module has $testcount test source(s) but its" >&2
