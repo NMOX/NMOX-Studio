@@ -31,16 +31,24 @@ APP_DIR="${1:-application/target/nmoxstudio}"
 LAUNCHER="$APP_DIR/bin/nmoxstudio"
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-180}"
 
-# Authoritative failure signals from the NetBeans module system — the
-# phrases org.netbeans.core.startup / NbInstaller / Netigso emit when a
-# module cannot be installed or is force-disabled at boot. The canonical
-# one, seen in the commons_codec escape, is:
-#   Warning - could not install some modules:
-#       org.apache.commons.commons_codec - ... state remains INSTALLED ...
+# Authoritative failure signals from the NetBeans module system. These are
+# the exact message templates org.netbeans.core.startup emits (verified
+# against its Bundle.properties), not guesses:
+#   MSG_failed_install_new            "could not install some modules:"
+#   MSG_failed_install_new_unexpected "could not install module {0}"
+#   TEXT_missing_jar_file             "the module {0} could not be found, ignoring"
+#   MSG_problem_*_not_found           "was needed and not found" / "could be found"
+#   MSG_start_disable_modules         "Turning off modules"  <-- the key one:
+#       a HEALTHY boot only ever turns modules ON. The platform turns them
+#       OFF only when it is disabling something that failed, so this single
+#       phrase catches the whole "a module broke" class regardless of the
+#       specific InvalidException wording (ClassNotFound, version mismatch,
+#       the commons_codec Netigso "state remains INSTALLED", ...).
+# Plus the Netigso/OSGi wording for a module stuck at start.
 # Matched case-insensitively and anchored to whole phrases so module
 # *names* that merely contain "error" (editor.errorstripe, errorprone) or
 # "install" do not trip it.
-FAILURE_RE='could not install some modules|failed to install|the following modules could not be|cannot be installed|state remains INSTALLED|will disable modules|modules will be disabled'
+FAILURE_RE='could not install|could not be found, ignoring|Turning off modules|state remains INSTALLED|the following modules could not be|cannot be installed|was needed and not found|could not be installed due to'
 
 if [ ! -x "$LAUNCHER" ]; then
     echo "boot-smoke: launcher not found at $LAUNCHER — build the app first" >&2
