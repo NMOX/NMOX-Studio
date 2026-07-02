@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Daily-driver foundations: the fixes that make living in the studio all
+day safe — switching projects can no longer kill work behind your back,
+and the environment your commands run in is finally file-based, honest,
+and leak-free.
+
+### Added
+- **`.env` support, zero-config.** Every command the rack launches now
+  reads the project's `.env` and `.env.local` (`.env.local` wins; in a
+  monorepo the lane's own directory overlays the root). Rack settings
+  (ATMOS) win over the files, per-launch extras over both. No dialect:
+  comments, `export` prefixes and quoted values — nothing else.
+- **Switch Project… (Cmd+Shift+P).** A filterable popup over recent
+  projects that re-aims the whole IDE — and goes through the new
+  switch guard like every other path.
+
+### Fixed
+- **Switching projects no longer silently kills running work.** Aiming
+  the rack at another project used to dispose the patch — dev server,
+  tunnel, watch build all died without a word (or lingered half-aimed
+  when the new project had no patch). The switch now names what is
+  live ("SURGE, WORMHOLE are still running in api-server. Stop and
+  switch?") and stops it cleanly only with consent.
+- **ATMOS retracts what it applied.** Removing the env mixer (or
+  swapping patches on a project switch) no longer leaks
+  `NODE_ENV=production` and friends into the next project's commands.
+- **Secrets can no longer ride the patch file into git.** The ATMOS
+  EXTRA line is session-only now: durable values belong in `.env`,
+  which is read automatically and already gitignored by every
+  template. Legacy patches with stored extras load fine — the value is
+  just not applied or re-saved.
+- **PING responses are readable.** The BODY jack used to clip at 400
+  characters — no real JSON payload survived. Full bodies now travel
+  the cable (up to 64 KB) into PHOSPHOR's scrollback.
+- **Deleted a leftover boot scaffold** that tried to replace the main
+  window with a "v3.0.0 test panel" at every start (it only failed by
+  losing a race), plus a stale services file registering a class that
+  does not exist.
+
 ## [1.10.1] — 2026-07-02
 
 A user-experience pass walked four developer journeys through the built

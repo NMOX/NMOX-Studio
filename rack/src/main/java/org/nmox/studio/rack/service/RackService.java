@@ -150,14 +150,77 @@ public class RackService {
     /**
      * Aims the rack at a project directory: records it in the recent
      * list and lets the project's saved patch (if any) mount itself.
+     * If the current project still has processes running (a dev server,
+     * a tunnel, a watch build), the switch asks first - the patch swap
+     * would kill them silently otherwise.
      */
     public void openProject(File dir) {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
+        if (!stopLiveForSwitch(dir)) {
+            return; // user chose to stay
+        }
         aimed = true;
         addRecentProject(dir);
         getRack().setProjectDir(dir);
+    }
+
+    /**
+     * Test seam: production asks via a platform dialog; tests inject an
+     * answer. Returns true when the switch may proceed.
+     */
+    java.util.function.Predicate<String> switchConfirmer = this::askStopLive;
+
+    /**
+     * A project switch must never silently kill work in flight: the old
+     * patch's dev server, watcher, or tunnel dies when the new patch
+     * mounts (and lingers half-aimed when there is no patch). Name what
+     * is running and ask; on consent, stop it cleanly BEFORE the swap so
+     * both the patch and the no-patch paths end in the same state.
+     */
+    private boolean stopLiveForSwitch(File newDir) {
+        Rack r = getRack();
+        if (newDir.equals(r.getProjectDir())) {
+            return true; // re-aiming the same project threatens nothing
+        }
+        List<org.nmox.studio.rack.model.RackDevice> live = new ArrayList<>();
+        for (org.nmox.studio.rack.model.RackDevice d : r.getDevices()) {
+            if (d.isLive()) {
+                live.add(d);
+            }
+        }
+        if (live.isEmpty()) {
+            return true;
+        }
+        StringBuilder names = new StringBuilder();
+        for (org.nmox.studio.rack.model.RackDevice d : live) {
+            if (names.length() > 0) {
+                names.append(", ");
+            }
+            names.append(d.getTitle());
+        }
+        String oldName = r.getProjectDir() != null ? r.getProjectDir().getName() : "the current project";
+        String message = names + (live.size() == 1 ? " is" : " are") + " still running in "
+                + oldName + ".\nStop and switch to " + newDir.getName() + "?";
+        if (!switchConfirmer.test(message)) {
+            return false;
+        }
+        for (org.nmox.studio.rack.model.RackDevice d : live) {
+            d.panic();
+        }
+        return true;
+    }
+
+    private boolean askStopLive(String message) {
+        if (java.awt.GraphicsEnvironment.isHeadless()) {
+            return true; // no dialog possible; behave as before, but deterministically
+        }
+        Object answer = org.openide.DialogDisplayer.getDefault().notify(
+                new org.openide.NotifyDescriptor.Confirmation(message, "Switch Project",
+                        org.openide.NotifyDescriptor.OK_CANCEL_OPTION,
+                        org.openide.NotifyDescriptor.WARNING_MESSAGE));
+        return answer == org.openide.NotifyDescriptor.OK_OPTION;
     }
 
     /**
