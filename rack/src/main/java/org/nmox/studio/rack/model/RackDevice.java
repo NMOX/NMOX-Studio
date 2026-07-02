@@ -249,8 +249,16 @@ public abstract class RackDevice extends JPanel {
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
         stopProcess();
+        // dotenv first (project root, then the lane's own dir in a
+        // monorepo), rack-wide overrides above it, per-launch extras on
+        // top - the same file the dev's own tooling reads, no re-typing
+        File root = rack != null ? rack.getProjectDir() : null;
         Map<String, String> env = new LinkedHashMap<>(
-                rack != null ? rack.getEnvOverrides() : Map.of());
+                org.nmox.studio.rack.engine.EnvFiles.load(root));
+        if (workingDir != null && !workingDir.equals(root)) {
+            env.putAll(org.nmox.studio.rack.engine.EnvFiles.load(workingDir));
+        }
+        env.putAll(rack != null ? rack.getEnvOverrides() : Map.of());
         env.putAll(extraEnv);
         // identity-guarded swap: a previous run's onExit, arriving late on a
         // worker thread, must not null out the handle of the run that replaced

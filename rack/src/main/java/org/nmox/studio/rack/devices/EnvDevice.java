@@ -12,6 +12,12 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  * ATMOS Env Mixer: shapes the environment every other device's
  * commands run in. The NODE_ENV knob and CI switch publish to the
  * rack's shared env; EXTRA takes free-form KEY=VAL,KEY2=VAL2 pairs.
+ *
+ * The EXTRA line is deliberately session-only: the patch file is meant
+ * to be committed and shared, so durable values - and especially
+ * secrets - belong in the project's .env/.env.local, which every
+ * launched command reads automatically (rack settings win over the
+ * files). Removing ATMOS retracts everything it applied.
  */
 public class EnvDevice extends RackDevice {
 
@@ -30,6 +36,8 @@ public class EnvDevice extends RackDevice {
         extraLcd = place(new LcdDisplay(280, 1), 190, 46);
         extraLcd.setText("");
         extraLcd.setEditable("Extra vars (KEY=VAL,KEY2=VAL2)");
+        extraLcd.setToolTipText("Session-only — durable values (and secrets) belong in .env, "
+                + "which every command reads automatically");
 
         nodeEnvKnob.addChangeListener(this::apply);
         ciSwitch.addChangeListener(this::apply);
@@ -39,7 +47,9 @@ public class EnvDevice extends RackDevice {
 
         param("nodeEnv", nodeEnvKnob);
         param("ci", ciSwitch);
-        param("extra", extraLcd);
+        // "extra" is NOT a param on purpose: persisting it wrote whatever
+        // was typed here - API keys included - into .nmoxrack.json, which
+        // templates deliberately keep committable. Secrets live in .env.
     }
 
     @Override
@@ -77,5 +87,32 @@ public class EnvDevice extends RackDevice {
     public void applyState(java.util.Map<String, String> state) {
         super.applyState(state);
         apply();
+    }
+
+    /** A project switch keeps the faceplate authoritative: re-assert it. */
+    @Override
+    public void projectChanged(java.io.File dir) {
+        apply();
+    }
+
+    /**
+     * Unracking ATMOS retracts everything it applied - the atmosphere
+     * must not outlive the device that shaped it. (A patch swap on
+     * project switch disposes devices; NODE_ENV=production silently
+     * leaking into the next project's commands was the bug.)
+     */
+    @Override
+    public void dispose() {
+        if (getRack() != null) {
+            getRack().putEnv("NODE_ENV", null);
+            getRack().putEnv("CI", null);
+            for (String pair : appliedExtras.split(",")) {
+                int eq = pair.indexOf('=');
+                if (eq > 0) {
+                    getRack().putEnv(pair.substring(0, eq).trim(), null);
+                }
+            }
+        }
+        super.dispose();
     }
 }

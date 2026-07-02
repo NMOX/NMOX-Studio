@@ -112,7 +112,10 @@ public class HttpDevice extends RackDevice {
                     emit(ok ? "ok" : "fail", Signal.trigger(ok));
                     String body = response.body();
                     if (body != null && !body.isEmpty()) {
-                        emit("body", Signal.data(body.length() > 400 ? body.substring(0, 400) + "…" : body));
+                        // full payload down the cable (PHOSPHOR holds 5k lines);
+                        // only truly pathological bodies get clipped
+                        emit("body", Signal.data(body.length() > 65_536
+                                ? body.substring(0, 65_536) + "…" : body));
                     }
                 });
     }
