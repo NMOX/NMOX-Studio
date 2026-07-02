@@ -26,6 +26,13 @@ jobs:
       - name: Build with Maven
         run: mvn -B verify
 
+      # Every module that ships test sources must have actually run them.
+      # Guards the unbound-surefire class: the application module's tests
+      # compiled but never executed until PR #70, and nothing flagged it.
+      # Runs right after verify, while the surefire reports are fresh.
+      - name: Test-execution audit
+        run: ./scripts/test-execution-audit.sh
+
       # --- Release-gating checks against the ASSEMBLED app -----------------
       # These run after verify (which packages application/target/nmoxstudio)
       # and exercise the real cluster, not a test harness — the gap that let
