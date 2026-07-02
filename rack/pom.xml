@@ -111,6 +111,13 @@
             <version>20260522</version>
         </dependency>
 
+        <!-- Quick Search providers (toolbar Cmd+I) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-quicksearch</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -153,6 +160,9 @@
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <OpenIDE-Module-Layer>org/nmox/studio/rack/layer.xml</OpenIDE-Module-Layer>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

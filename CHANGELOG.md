@@ -12,6 +12,25 @@ kill work behind your back, the environment your commands run in is
 finally file-based, honest, and leak-free — and the app itself stops
 carrying another IDE's furniture.
 
+### Added — the platform, used properly
+- **Experiments: throwaway work is first-class.** File → New
+  Experiment… (Cmd+Shift+E) generates any template into
+  `~/.nmox/experiments` — no git repo, no recents pollution, the
+  directory pre-trusted so devices run without prompts — and aims the
+  rack at it. Keepers graduate (promote = move + git init + marker
+  removed); the rest are discarded, which stops anything running there
+  first and refuses to delete unmarked directories by contract.
+- **Quick Search knows the product.** The toolbar search (Cmd+I) now
+  matches recent projects (Enter re-aims the IDE through the switch
+  guard) and the device catalog (Enter racks the device) alongside the
+  platform's actions and files.
+- **The status line answers "is anything running?"** A green lane
+  count with device names on hover appears while servers, tunnels, or
+  watch builds are live — visible from any window, gone when quiet.
+- **One Options category.** Tools → Options → NMOX Studio, with Rack &
+  Cloud and Format on Save as subpanels — no more settings scattered
+  across top-level categories.
+
 ### Changed — crisp
 - **Evicted the VCS museum.** Mercurial, Subversion, the CVS installer
   shim, the Jenkins (hudson) client, and the Selenium server bridge no

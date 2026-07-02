@@ -21,12 +21,17 @@ import org.openide.util.NbPreferences;
  * scattered dialogs - cloud API tokens for the infra designer and the
  * REFLEX watcher's poll interval - in one honest panel.
  */
-@OptionsPanelController.TopLevelRegistration(
-        categoryName = "NMOX Rack",
-        iconBase = "org/nmox/studio/rack/options/rack32.png",
-        keywords = "nmox rack reflex token digitalocean hetzner cloudflare",
-        keywordsCategory = "NmoxRack"
+@OptionsPanelController.SubRegistration(
+        location = "NmoxStudio",
+        displayName = "#RackOptions_DisplayName",
+        keywords = "#RackOptions_Keywords",
+        keywordsCategory = "NmoxStudio/Rack",
+        position = 100
 )
+@org.openide.util.NbBundle.Messages({
+    "RackOptions_DisplayName=Rack & Cloud",
+    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare"
+})
 public class RackOptionsPanelController extends OptionsPanelController {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
