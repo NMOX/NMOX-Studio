@@ -30,17 +30,22 @@ for pom in */pom.xml; do
     testdir="$module/src/test"
 
     # Only modules that actually declare tests are in scope. "Declares
-    # tests" = at least one *Test.java (the project's naming convention;
-    # surefire's default include is the same **/*Test.java pattern).
+    # tests" is matched against surefire's OWN default include patterns
+    # (*Test, Test*, *Tests, *TestCase) — not just the repo's current
+    # *Test.java convention — so a future FooTests.java that surefire
+    # would run but a narrower glob would miss can't create a blind spot
+    # where an unbound surefire goes unnoticed.
     [ -d "$testdir" ] || continue
-    testcount="$(find "$testdir" -name '*Test.java' 2>/dev/null | wc -l | tr -d ' ')"
+    testcount="$(find "$testdir" \( -name '*Test.java' -o -name 'Test*.java' \
+        -o -name '*Tests.java' -o -name '*TestCase.java' \) 2>/dev/null \
+        | wc -l | tr -d ' ')"
     [ "$testcount" -gt 0 ] || continue
 
     CHECKED=$((CHECKED + 1))
     reports="$module/target/surefire-reports"
 
     if [ ! -d "$reports" ]; then
-        echo "AUDIT FAIL: $module has $testcount *Test.java source(s) but produced" >&2
+        echo "AUDIT FAIL: $module has $testcount test source(s) but produced" >&2
         echo "            no surefire-reports directory — its tests never ran." >&2
         echo "            (unbound surefire? wrong packaging? check the module pom.)" >&2
         FAILED=1
@@ -55,7 +60,7 @@ for pom in */pom.xml; do
         | awk '{ s += $1 } END { print s + 0 }')"
 
     if [ "$ran" -eq 0 ]; then
-        echo "AUDIT FAIL: $module has $testcount *Test.java source(s) but its" >&2
+        echo "AUDIT FAIL: $module has $testcount test source(s) but its" >&2
         echo "            surefire reports show 0 tests executed." >&2
         FAILED=1
         continue
