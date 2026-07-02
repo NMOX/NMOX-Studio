@@ -301,32 +301,101 @@ public final class DigitalOceanClient {
         return imported;
     }
 
+    /**
+     * The REST path addressing a node's live resource - shared by
+     * destroy and drift checks; null when the provider offers no
+     * per-resource endpoint (Cloudflare records, Hetzner kinds).
+     */
+    static String resourcePath(org.nmox.studio.infra.model.NodeKind kind, String id) {
+        return switch (kind) {
+            case DROPLET, GPU_DROPLET -> "/v2/droplets/" + id;
+            case VPC -> "/v2/vpcs/" + id;
+            case LOAD_BALANCER -> "/v2/load_balancers/" + id;
+            case FIREWALL -> "/v2/firewalls/" + id;
+            case VOLUME -> "/v2/volumes/" + id;
+            case RESERVED_IP -> "/v2/reserved_ips/" + id;
+            case DOMAIN -> "/v2/domains/" + id;
+            case CDN -> "/v2/cdn/endpoints/" + id;
+            case KUBERNETES -> "/v2/kubernetes/clusters/" + id;
+            case APP_PLATFORM -> "/v2/apps/" + id;
+            case FUNCTIONS -> "/v2/functions/namespaces/" + id;
+            case CONTAINER_REGISTRY -> "/v2/registry";
+            case SSH_KEY -> "/v2/account/keys/" + id;
+            case CERTIFICATE -> "/v2/certificates/" + id;
+            case MONITOR_ALERT -> "/v2/monitoring/alerts/" + id;
+            case GRADIENT_AI -> "/v2/gen-ai/agents/" + id;
+            case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
+                "/v2/databases/" + id;
+            default -> null;
+        };
+    }
+
+    /**
+     * Drift check: asks the cloud whether each deployed node still
+     * exists. A resource deleted behind the designer's back stops
+     * claiming "live" - it reports drifted instead. Kinds without a
+     * read endpoint are labeled honestly, never guessed.
+     */
+    public void refreshDrift(InfraGraph graph,
+            java.util.function.BiConsumer<InfraNode, String> onStatus)
+            throws IOException, InterruptedException {
+        for (InfraNode node : graph.getNodes()) {
+            if (node.doId == null) {
+                continue;
+            }
+            String path = resourcePath(node.kind, node.doId);
+            if (path == null) {
+                onStatus.accept(node, "unverifiable (no read API)");
+                continue;
+            }
+            try {
+                send("GET", path, "");
+                onStatus.accept(node, "live");
+            } catch (IOException ex) {
+                String msg = ex.getMessage() == null ? "" : ex.getMessage();
+                if (msg.contains("404")) {
+                    node.doId = null; // the cloud is the truth: it is gone
+                    onStatus.accept(node, "drifted: deleted in cloud");
+                } else {
+                    onStatus.accept(node, "check failed: " + (msg.length() > 60 ? msg.substring(0, 60) : msg));
+                }
+            }
+        }
+    }
+
+    /**
+     * Tears down the given nodes in the order handed in (callers pass
+     * DeployPlanner.teardownOrder - reverse dependency order). Keeps
+     * going past individual failures so one stuck resource does not
+     * strand the rest of the bill; returns the failure count.
+     */
+    public int destroyAll(java.util.List<InfraNode> nodes,
+            java.util.function.BiConsumer<InfraNode, String> onStep) {
+        int failures = 0;
+        for (InfraNode node : nodes) {
+            try {
+                onStep.accept(node, "destroying…");
+                destroy(node);
+                if (node.doId == null) {
+                    onStep.accept(node, "destroyed");
+                } else {
+                    failures++;
+                    onStep.accept(node, "no delete API — remove manually");
+                }
+            } catch (Exception ex) {
+                failures++;
+                onStep.accept(node, "destroy failed: " + ex.getMessage());
+            }
+        }
+        return failures;
+    }
+
     /** Destroys the cloud resource behind a node (the node stays designed). */
     public void destroy(InfraNode node) throws IOException, InterruptedException {
         if (node.doId == null) {
             return;
         }
-        String path = switch (node.kind) {
-            case DROPLET, GPU_DROPLET -> "/v2/droplets/" + node.doId;
-            case VPC -> "/v2/vpcs/" + node.doId;
-            case LOAD_BALANCER -> "/v2/load_balancers/" + node.doId;
-            case FIREWALL -> "/v2/firewalls/" + node.doId;
-            case VOLUME -> "/v2/volumes/" + node.doId;
-            case RESERVED_IP -> "/v2/reserved_ips/" + node.doId;
-            case DOMAIN -> "/v2/domains/" + node.doId;
-            case CDN -> "/v2/cdn/endpoints/" + node.doId;
-            case KUBERNETES -> "/v2/kubernetes/clusters/" + node.doId;
-            case APP_PLATFORM -> "/v2/apps/" + node.doId;
-            case FUNCTIONS -> "/v2/functions/namespaces/" + node.doId;
-            case CONTAINER_REGISTRY -> "/v2/registry";
-            case SSH_KEY -> "/v2/account/keys/" + node.doId;
-            case CERTIFICATE -> "/v2/certificates/" + node.doId;
-            case MONITOR_ALERT -> "/v2/monitoring/alerts/" + node.doId;
-            case GRADIENT_AI -> "/v2/gen-ai/agents/" + node.doId;
-            case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
-                "/v2/databases/" + node.doId;
-            default -> null;
-        };
+        String path = resourcePath(node.kind, node.doId);
         if (path != null) {
             send("DELETE", path, "");
             node.doId = null;

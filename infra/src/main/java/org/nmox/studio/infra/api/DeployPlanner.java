@@ -47,6 +47,18 @@ public final class DeployPlanner {
     }
 
     /** Kahn's algorithm over creation-dependency edges (stable order). */
+    /**
+     * The teardown order for everything deployed: creation order
+     * reversed, so dependents (attachments, LBs, records) fall before
+     * the resources they lean on. Design-only nodes are not included.
+     */
+    public static List<InfraNode> teardownOrder(InfraGraph graph) {
+        List<InfraNode> order = new java.util.ArrayList<>(topologicalOrder(graph));
+        java.util.Collections.reverse(order);
+        order.removeIf(node -> node.doId == null);
+        return order;
+    }
+
     private static List<InfraNode> topologicalOrder(InfraGraph graph) {
         List<InfraNode> nodes = graph.getNodes();
         Map<String, Integer> indegree = new LinkedHashMap<>();
