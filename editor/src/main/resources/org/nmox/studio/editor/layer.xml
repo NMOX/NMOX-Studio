@@ -38,6 +38,21 @@
         </folder>
     </folder>
     
+    <!-- The platform's markdown module wires the spellchecker's
+         whole-file PlainTokenListProvider to text/markdown, which flags
+         every identifier in fenced/inline code as a typo. Our
+         MarkdownSpellTokenListProvider (prose-only) replaces it; hide
+         the plain one so the two are never combined. -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="markdown">
+                <folder name="TokenListProvider">
+                    <file name="org-netbeans-modules-spellchecker-plain-PlainTokenListProvider.instance_hidden"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <!-- Lexer language bindings + token coloring. The language.instance
          entries are what make syntax highlighting actually happen: they
          hand the editor infrastructure our Language for each MIME type.

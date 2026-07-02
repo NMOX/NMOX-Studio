@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.spell;
 
+import java.util.function.Predicate;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -75,24 +76,26 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
 
     @Override
     public TokenList findTokenList(Document doc) {
-        return new CommentWordsTokenList(doc);
+        return new FilteredWordsTokenList(doc, CodeSpellTokenListProvider::isComment);
     }
 
     /**
      * Walks the document's token stream and yields only words that live
-     * inside comment tokens. Detection is lexer-agnostic: a token counts
-     * as comment when its id's primary category mentions "comment" (our
-     * JS/TS lexer) or any of its TextMate scopes do.
+     * inside tokens the filter accepts — comments for code files, prose
+     * for markdown. The word scan itself is shared; only the notion of
+     * "spellcheckable token" differs per provider.
      */
-    static final class CommentWordsTokenList implements TokenList {
+    static final class FilteredWordsTokenList implements TokenList {
 
         private final Document doc;
+        private final Predicate<Token<?>> spellcheckable;
         private int offset;
         private int wordStart;
         private CharSequence wordText;
 
-        CommentWordsTokenList(Document doc) {
+        FilteredWordsTokenList(Document doc, Predicate<Token<?>> spellcheckable) {
             this.doc = doc;
+            this.spellcheckable = spellcheckable;
         }
 
         @Override
@@ -122,7 +125,7 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
             ts.move(offset);
             while (ts.moveNext()) {
                 Token<?> token = ts.token();
-                if (!isComment(token)) {
+                if (!spellcheckable.test(token)) {
                     continue;
                 }
                 CharSequence text = token.text();
@@ -147,15 +150,6 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
             return false;
         }
 
-        private static boolean isComment(Token<?> token) {
-            // TextMate tokens carry a single id (TEXTMATE); the real scope
-            // stack lives in the "categories" property (a List of scope
-            // names like "comment.line.number-sign.ini"). The custom JS/TS
-            // lexer instead names the category "comment" on the id itself.
-            return isCommentScope(token.id().primaryCategory(),
-                    token.getProperty("categories"));
-        }
-
         @Override
         public int getCurrentWordStartOffset() {
             return wordStart;
@@ -173,6 +167,16 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
         @Override
         public void removeChangeListener(ChangeListener l) {
         }
+    }
+
+    /**
+     * TextMate tokens carry a single id (TEXTMATE); the real scope stack
+     * lives in the "categories" property. The custom JS/TS lexer instead
+     * names the category "comment" on the id itself.
+     */
+    private static boolean isComment(Token<?> token) {
+        return isCommentScope(token.id().primaryCategory(),
+                token.getProperty("categories"));
     }
 
     /**
