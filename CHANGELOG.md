@@ -12,6 +12,16 @@ CI-configs-and-docs repo, a messy legacy project) and fixed what they
 hit, smallest risk first.
 
 ### Fixed
+- **The editor actually looks dark now.** The IDE always runs the
+  FlatLaf Dark look and feel, but the editor's color profile is a
+  separate switch that only the Options→Appearance panel ever flipped —
+  so every editor rendered light-profile colors on a dark IDE: JS/TS in
+  pale Phosphor on white, CSS/YAML/JSON/Markdown in plain black on
+  white. The dark profile ("FlatLaf Dark") is now the shipped default
+  (a user's explicit profile choice still wins), and the Phosphor
+  JS/TS palette no longer leaks into the light profile. Verified
+  per-mime from a wiped userdir: TS/TSX, JS, JSON and Markdown render
+  full Phosphor on dark, CSS the platform's dark colorings.
 - **The launcher picks a Java the platform can run on.** Launching
   without a bundled runtime (portable zip, source builds) could select
   sdkman's `current` link even when it pointed at Java 8 — then spawn a
