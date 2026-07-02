@@ -128,6 +128,16 @@ public abstract class CommandDevice extends RackDevice {
         launch(buildCommand());
     }
 
+    /**
+     * Whether a finished run counts as success - the verdict behind the
+     * OK/FAIL LEDs and jacks. Exit 0 by default; quality gates override
+     * to demand more than "the tool didn't crash" (VITALS closes the
+     * gate when scores land under its floor).
+     */
+    protected boolean overallSuccess(int exitCode) {
+        return exitCode == 0;
+    }
+
     @Override
     public void resume() {
         primaryAction();
@@ -186,7 +196,7 @@ public abstract class CommandDevice extends RackDevice {
             emit("out", Signal.data(line));
         }, code -> {
             long elapsed = System.currentTimeMillis() - startedAt;
-            boolean ok = code == 0;
+            boolean ok = overallSuccess(code);
             boolean stopped = KILL_EXIT_CODES.contains(code);
             onEdt(() -> {
                 runLed.setBlinking(false);
@@ -269,7 +279,7 @@ public abstract class CommandDevice extends RackDevice {
                 return;
             }
             long elapsed = System.currentTimeMillis() - startedAt;
-            boolean ok = code == 0;
+            boolean ok = overallSuccess(code);
             onEdt(() -> {
                 runLed.setBlinking(false);
                 okLed.setOn(ok);
