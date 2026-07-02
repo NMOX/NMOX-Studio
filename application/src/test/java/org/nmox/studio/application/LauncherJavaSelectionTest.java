@@ -157,6 +157,19 @@ class LauncherJavaSelectionTest {
     }
 
     @Test
+    @DisplayName("No line starts with jdkhome= — the Windows .exe greps the conf literally")
+    void windowsExeParserSeesNoShellJdkhome() throws IOException {
+        // nmoxstudio64.exe scans this same file for lines beginning
+        // `jdkhome=` and would take a shell expression as the literal
+        // path; the selection block must assign through eval instead
+        for (String line : Files.readAllLines(conf, StandardCharsets.UTF_8)) {
+            assertThat(line.stripLeading())
+                    .as("line would be misread by the Windows launcher: %s", line)
+                    .doesNotStartWith("jdkhome=");
+        }
+    }
+
+    @Test
     @DisplayName("PATH java at 21+ is accepted as the silent last resort (jdkhome stays empty)")
     void pathJavaLastResort() throws Exception {
         Path jdk = fakeJdk("path-jdk", "21.0.2");
