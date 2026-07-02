@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.12.0] — 2026-07-02
+
+Three devices that close the last gaps between "runs your toolchain"
+and "runs your whole web workflow" — custom steps, log files, and web
+quality as a shipping gate.
+
+### Added
+- **SOLDER — any command as a rack unit.** `make seed-db`,
+  `./scripts/fixtures.sh --reset` — whatever you type runs with the
+  full treatment: OK/FAIL/DONE jacks, output on the bus, CI export.
+  Parsed to argv with quotes respected, never handed to a shell.
+- **TAIL — tail -f on the patch bay.** Servers that write
+  `logs/app.log` were invisible next to their stdout. Dial the path,
+  flip FOLLOW, and appended lines ride the OUT jack into PHOSPHOR.
+  Log rotation resets cleanly to the new head.
+- **VITALS — the web quality gate.** Lighthouse headless against the
+  dialed URL; performance, accessibility, best-practices and SEO land
+  on four meters. Dial MIN and a slow page fires FAIL instead of OK —
+  patch SURGE URL → URL, READY → RUN, OK → LAUNCHPAD and nothing
+  slow, inaccessible, or sloppy ships. Built on a new
+  `CommandDevice.overallSuccess` hook: a device's verdict can demand
+  more than "the tool didn't crash", and the LEDs tell the same truth
+  as the jacks.
+
 ## [1.11.0] — 2026-07-02
 
 Daily-driver foundations and a crispness pass: the fixes that make
