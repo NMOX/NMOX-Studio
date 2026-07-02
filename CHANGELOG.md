@@ -4,7 +4,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.11.0] — 2026-07-02
 
 Daily-driver foundations and a crispness pass: the fixes that make
 living in the studio all day safe — switching projects can no longer
@@ -51,6 +51,10 @@ carrying another IDE's furniture.
   editor area from minute one (Window menu / one click away), and the
   Welcome tab steals focus only on the very first launch instead of
   every launch.
+- **The macOS menu bar says "NMOX Studio", not "nmoxstudio"** — the
+  DMG launcher and run.sh now pass the dock name to the JVM (a
+  macOS-only flag, kept out of the shared conf where it would break
+  Linux).
 - **The About dialog stops describing a different product.** It called
   us a "Professional Media Development Environment, Version 1.0.0";
   the copy now matches reality, and the never-rendered about.html and

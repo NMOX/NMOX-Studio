@@ -41,12 +41,15 @@ RES="$DIR/../Resources/nmoxstudio"
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
 # user), else fall back to an installed JDK 21+, else say so plainly.
+# -Xdock:name: the menu bar shows the JVM process's own idea of its
+# name ("nmoxstudio") unless told otherwise - Info.plist can't reach
+# the java child process. macOS-only flag; never in the shared conf.
 if "$RES/jre/bin/java" -version >/dev/null 2>&1; then
-    exec "$RES/bin/nmoxstudio" "$@"
+    exec "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
-    exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" "$@"
+    exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
 fi
 osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 21+ installation was found.\n\nInstall a JDK 21 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
 exit 1

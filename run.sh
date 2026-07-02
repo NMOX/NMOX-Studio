@@ -15,7 +15,10 @@ if [ ! -d "application/target/nmoxstudio" ]; then
     ./build.sh
 fi
 
-# Run the application
+# Run the application. On macOS, name the process for the menu bar -
+# a macOS-only JVM flag (fatal on Linux), hence the uname guard.
 echo "Starting NMOX Studio..."
+DOCK=()
+[ "$(uname)" = "Darwin" ] && DOCK=(-J-Xdock:name="NMOX Studio")
 cd application/target/nmoxstudio/bin
-./nmoxstudio --userdir "../../../../userdir" --jdkhome "$JAVA_HOME"
+./nmoxstudio --userdir "../../../../userdir" --jdkhome "$JAVA_HOME" "${DOCK[@]}"

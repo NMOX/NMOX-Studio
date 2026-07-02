@@ -45,10 +45,23 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 32 devices:
+build → test, with output scrolling on a phosphor monitor. 33 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
-formatters, git, deploy, HTTP, tunnels, load bench, file watcher, and more.
-Patches persist per project, ship as presets, and export to GitHub Actions.
+formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
+QUORUM lane-join barrier, and more. Patches persist per project, ship as
+presets, and export to GitHub Actions.
+
+### ⚡ Built to live in all day
+- **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
+  names running work before stopping it — no more silently killed dev
+  servers. **Quick Search (⌘I)** finds actions, files, recent projects
+  (Enter switches), and rack devices (Enter racks them). ⌘9 rack,
+  ⌘8 Docker, ⌘0 workbench; the status line shows what's running.
+- **Experiments (⌘⇧E)**: throwaway workspaces in `~/.nmox/experiments` —
+  no git, no recents pollution, pre-trusted. Promote the keepers
+  (move + git init), discard the rest.
+- **`.env` respected everywhere**: every command the rack launches reads
+  the project's `.env`/`.env.local` automatically; rack settings win.
 
 ### 🧠 The rack remembers, sees, and survives
 - **BLACKBOX** records every launch, exit, duration, and error on a session
