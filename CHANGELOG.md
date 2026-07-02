@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.16.0] — 2026-07-02
+
+Three second-cut devices: the rack reaches your servers, watches your
+certificates, and weighs your bundles.
+
+### Added
+- **HELM — the rack reaches your servers.** Dial user@host and a
+  command; it runs over ssh (BatchMode: key auth only, no hanging
+  prompts) with output on the bus and OK/FAIL/DONE jacks. Patch
+  LAUNCHPAD OK → RUN and a deploy finishes with a remote migration or
+  service restart; the HOST jack takes a cable.
+- **BEACON — cert & uptime sentinel.** One CHECK answers what pages
+  people at 3am: is it up, and how many days on the TLS cert? Dial
+  MIN DAYS and a cert inside the window fires FAIL. Patch TEMPO BAR →
+  CHECK to watch production on a clock.
+- **PRISM — bundle-size gate.** Weighs the build output; MAX sets the
+  budget. Patch FORGE OK → MEASURE and bundles over budget fire FAIL
+  before they ship. Bundles grow one innocent import at a time —
+  PRISM holds the line.
+
 ## [1.15.0] — 2026-07-02
 
 Bun and Deno, first-class. The 2026 runtimes stop being "Node with
