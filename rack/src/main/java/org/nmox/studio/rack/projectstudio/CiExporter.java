@@ -126,6 +126,11 @@ public final class CiExporter {
                           - uses: actions/setup-node@v4
                             with: { node-version: 22 }
                     """.stripTrailing() + "\n");
+                case BUN -> steps.add("      - uses: oven-sh/setup-bun@v2\n");
+                case DENO -> steps.add("""
+                          - uses: denoland/setup-deno@v2
+                            with: { deno-version: v2.x }
+                    """.stripTrailing() + "\n");
                 case RUST -> steps.add("      - uses: dtolnay/rust-toolchain@stable\n");
                 case GO -> steps.add("""
                           - uses: actions/setup-go@v5

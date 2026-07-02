@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.15.0] — 2026-07-02
+
+Bun and Deno, first-class. The 2026 runtimes stop being "Node with
+extra steps": their manifests are detected with precedence, every AUTO
+device speaks the right binary, and CI export sets them up properly.
+
+### Added
+- **Bun toolchain.** `bun.lock`/`bunfig.toml` beside a package.json
+  means Bun, not Node: CRATE runs `bun install/update/outdated`,
+  VERITAS `bun test` (re-run failed via `-t`), FORGE `bun run build`,
+  IGNITION `bun run start`, and the CI exporter emits
+  `oven-sh/setup-bun`.
+- **Deno toolchain.** `deno.json`/`deno.jsonc` detection: CRATE
+  `deno install/outdated`, VERITAS `deno test` (re-run failed via
+  `--filter`), FORGE `deno task build`, IGNITION `deno task start`,
+  CI export via `denoland/setup-deno`. Both register as real platform
+  projects (Open Project works on a bare Deno repo).
+
 ## [1.14.0] — 2026-07-02
 
 Infra truth and teardown: the designer stops being create-only — the

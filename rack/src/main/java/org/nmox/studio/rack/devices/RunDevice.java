@@ -22,7 +22,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class RunDevice extends CommandDevice {
 
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno"};
 
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
@@ -83,6 +83,8 @@ public class RunDevice extends CommandDevice {
         }
         return switch (effectiveKind()) {
             case NODE -> "node";
+            case BUN -> "bun";
+            case DENO -> "deno";
             case RUST -> "rust";
             case ELIXIR -> "elixir";
             case ERLANG -> "erlang";
@@ -121,6 +123,8 @@ public class RunDevice extends CommandDevice {
             case "zig" -> ProjectInspector.ProjectKind.ZIG;
             case "ocaml" -> ProjectInspector.ProjectKind.OCAML;
             case "crystal" -> ProjectInspector.ProjectKind.CRYSTAL;
+            case "bun" -> ProjectInspector.ProjectKind.BUN;
+            case "deno" -> ProjectInspector.ProjectKind.DENO;
             case "go" -> ProjectInspector.ProjectKind.GO;
             case "maven" -> ProjectInspector.ProjectKind.MAVEN;
             case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
@@ -152,6 +156,8 @@ public class RunDevice extends CommandDevice {
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>(switch (effectiveTarget()) {
             case "python" -> List.of("python3", entryPoint("main.py", "app.py", "src/main.py"));
+            case "bun" -> List.of("bun", "run", "start");
+            case "deno" -> List.of("deno", "task", "start");
             case "go" -> List.of("go", "run", ".");
             case "rust" -> List.of("cargo", "run");
             case "elixir" -> List.of("mix", "run", "--no-halt");

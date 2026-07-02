@@ -64,6 +64,15 @@ public class PackageManagerDevice extends CommandDevice {
 
     private List<String> cmdFor(ProjectInspector.ProjectKind kind, String verb) {
         return switch (kind) {
+            case BUN -> switch (verb) {
+                case "update" -> List.of("bun", "update");
+                case "outdated" -> List.of("bun", "outdated");
+                default -> List.of("bun", "install");
+            };
+            case DENO -> switch (verb) {
+                case "outdated" -> List.of("deno", "outdated");
+                default -> List.of("deno", "install");
+            };
             case RUST -> switch (verb) {
                 case "update" -> List.of("cargo", "update");
                 case "outdated" -> List.of("cargo", "update", "--dry-run");
