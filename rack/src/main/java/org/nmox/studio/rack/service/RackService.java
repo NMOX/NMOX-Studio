@@ -167,6 +167,22 @@ public class RackService {
     }
 
     /**
+     * Aims the rack without touching the recent-projects list - for
+     * experiments, which must not evict real work from the ten slots.
+     * The live-process guard still applies.
+     */
+    public void openProjectQuietly(File dir) {
+        if (dir == null || !dir.isDirectory()) {
+            return;
+        }
+        if (!stopLiveForSwitch(dir)) {
+            return;
+        }
+        aimed = true;
+        getRack().setProjectDir(dir);
+    }
+
+    /**
      * Test seam: production asks via a platform dialog; tests inject an
      * answer. Returns true when the switch may proceed.
      */

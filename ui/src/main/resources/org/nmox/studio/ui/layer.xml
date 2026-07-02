@@ -19,6 +19,16 @@
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
     </folder>
+    <!-- The Quick Search widget in the toolbar: the platform ships the
+         action (Cmd+I) and the Actions/Files providers; this puts the
+         search field where every modern tool has one. -->
+    <folder name="Toolbars">
+        <folder name="QuickSearch">
+            <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Keymaps">
         <folder name="NetBeans">
             <!-- jumpto's keymap profile grabs Cmd+O for "Go to Type" (a

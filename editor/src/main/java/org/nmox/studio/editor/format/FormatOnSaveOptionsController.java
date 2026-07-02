@@ -26,10 +26,11 @@ import org.openide.util.NbBundle;
     "FormatOnSave_Keywords=format save prettier formatter"
 })
 @OptionsPanelController.SubRegistration(
-        location = "Editor",
+        location = "NmoxStudio",
         displayName = "#FormatOnSave_DisplayName",
         keywords = "#FormatOnSave_Keywords",
-        keywordsCategory = "Editor/FormatOnSave"
+        keywordsCategory = "NmoxStudio/FormatOnSave",
+        position = 200
 )
 public class FormatOnSaveOptionsController extends OptionsPanelController {
 
