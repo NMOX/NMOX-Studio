@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+A user-experience pass walked four developer journeys through the built
+app (a Vite/React monorepo first-open, a zero-config static site, a
+CI-configs-and-docs repo, a messy legacy project) and fixed what they
+hit, smallest risk first.
+
+### Fixed
+- **The launcher picks a Java the platform can run on.** Launching
+  without a bundled runtime (portable zip, source builds) could select
+  sdkman's `current` link even when it pointed at Java 8 — then spawn a
+  JVM that printed "Cannot run on older versions of Java" and never
+  exited. The launcher conf now chooses, in order: an explicit
+  `jdkhome` / the installer's bundled JRE (still wins — it is applied
+  later), `--jdkhome` on the command line (steps past the whole block),
+  `JAVA_HOME` when it is 21+, the macOS `java_home` 21+ query, the
+  newest 21+ JDK in the standard install dirs, a 21+ `java` on PATH —
+  and if none qualifies, exits cleanly (code 3) with an actionable
+  message instead of handing a doomed choice to the platform.
+  `LauncherJavaSelectionTest` sources the real conf against fixture
+  JDKs to pin every branch.
+- **Markdown spellcheck reads prose, not code.** `const`, `npm`,
+  `querySelectorAll` — anything in a fenced block, inline code span,
+  URL, or YAML front matter — no longer gets the red typo squiggle;
+  paragraphs, headings, emphasis, and link text stay checked.
+- **Markdown fences highlight their language again.** TM4E prunes any
+  grammar rule whose cross-grammar include can't resolve, which was
+  silently stripping every language-tagged fence (191 rules per
+  session) and the front-matter rule, and degrading HTML/Vue/Svelte/
+  Astro `<script>` embeddings. Five embed-only grammars (source.js,
+  source.ts, source.tsx, source.yaml, text.html.derivative — vscode
+  1.95.0, like the rest of the pack) now register purely for scope
+  resolution under synthetic mimes no file opens with; a ```js fence
+  renders real JavaScript tokens.
+
 ## [1.10.0] — 2026-07-01
 
 ### Added
