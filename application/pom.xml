@@ -46,6 +46,61 @@
                     <groupId>commons-codec</groupId>
                     <artifactId>commons-codec</artifactId>
                 </exclusion>
+                <!-- A web studio ships Git, not a museum of version control:
+                     Mercurial, Subversion, the CVS installer shim, and the
+                     Jenkins (hudson) client are all leaf modules nothing here
+                     depends on. Same for the Derby/MySQL admin add-ons and
+                     the Selenium server bridge. The NetBeans user's guide
+                     links help content for an IDE this isn't. -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson-ui</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson-git</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson-mercurial</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson-subversion</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-hudson-tasklist</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-mercurial</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-subversion</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-versioning-system-cvss-installer</artifactId>
+                </exclusion>
+                <!-- (derby/db-mysql stay: the platform's db.kit hard-references
+                     them, so excluding them fails the integrity check) -->
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-selenium2</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>org-netbeans-modules-selenium2-server</artifactId>
+                </exclusion>
+                <!-- (usersguide stays: ide.kit hard-references it, same as
+                     derby/db-mysql via db.kit - the integrity check fails
+                     without them) -->
             </exclusions>
         </dependency>
         <dependency>

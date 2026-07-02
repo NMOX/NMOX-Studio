@@ -44,7 +44,7 @@ import org.openide.windows.TopComponent;
 @ConvertAsProperties(dtd = "-//org.nmox.studio.infra//InfraDesigner//EN", autostore = false)
 @TopComponent.Description(preferredID = "InfraDesignerTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 300)
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 300)
 @ActionID(category = "Window", id = "org.nmox.studio.infra.InfraDesignerTopComponent")
 @ActionReference(path = "Menu/Window", position = 260)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_InfraAction",

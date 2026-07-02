@@ -35,7 +35,7 @@ public class GitDevice extends CommandDevice {
         pull.addActionListener(e -> launch(List.of("git", "pull")));
         push.addActionListener(e -> launch(List.of("git", "push")));
         commit.addActionListener(e -> {
-            String msg = JOptionPane.showInputDialog(this, "Commit message:", "TIMELINE Commit",
+            String msg = JOptionPane.showInputDialog(this, "Commit message:", "Commit",
                     JOptionPane.PLAIN_MESSAGE);
             if (msg != null && !msg.isBlank()) {
                 exec(List.of("git", "add", "-A"), line -> {

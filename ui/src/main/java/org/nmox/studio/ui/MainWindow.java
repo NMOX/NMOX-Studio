@@ -164,6 +164,14 @@ public final class MainWindow extends TopComponent {
 
     @Override
     public void componentOpened() {
+        // welcome steals focus exactly once: on the first launch ever.
+        // Every later start restores the user's own window arrangement.
+        java.util.prefs.Preferences prefs =
+                org.openide.util.NbPreferences.forModule(MainWindow.class);
+        if (prefs.getBoolean("welcomeShown", false)) {
+            return;
+        }
+        prefs.putBoolean("welcomeShown", true);
         requestActive();
     }
 

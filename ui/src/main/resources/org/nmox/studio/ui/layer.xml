@@ -2,12 +2,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Menu">
-        <!-- BuildProjectAction creates this top-level menu via @ActionReference;
-             give the folder itself a position so Menu/ ordering is fully
-             specified (sits just after the platform's BuildProject@700). -->
-        <folder name="Build">
-            <attr name="position" intvalue="750"/>
-        </folder>
         <folder name="File">
             <!-- The platform ships its own Open File and New Project menu
                  items; ours (OpenFileAction, NewProjectAction - wired to the
@@ -15,10 +9,23 @@
             <file name="org-netbeans-modules-openfile-OpenFileAction.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-NewProject.shadow_hidden"/>
         </folder>
+        <!-- The Refactor menu is a Java-IDE organ: our languages ride
+             TextMate + LSP, where rename lives on the editor context menu.
+             An always-empty top-level menu reads as broken. -->
+        <file name="Refactoring_hidden"/>
     </folder>
     <folder name="Shortcuts">
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
+    </folder>
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <!-- jumpto's keymap profile grabs Cmd+O for "Go to Type" (a
+                 Java-type dialog), overriding our Shortcuts/D-O Open File
+                 binding - profile entries outrank Shortcuts. Mask it so
+                 Cmd+O opens files, like every other editor on earth. -->
+            <file name="D-O.shadow_hidden"/>
+        </folder>
     </folder>
 </filesystem>

@@ -55,6 +55,17 @@ import org.openide.windows.TopComponent;
         persistenceType = TopComponent.PERSISTENCE_NEVER
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 400)
+@org.openide.awt.ActionID(category = "Window",
+        id = "org.nmox.studio.rack.docker.DockerPanelTopComponent")
+@org.openide.awt.ActionReferences({
+    @org.openide.awt.ActionReference(path = "Menu/Window", position = 255),
+    @org.openide.awt.ActionReference(path = "Shortcuts", name = "D-8")
+})
+@TopComponent.OpenActionRegistration(
+        displayName = "#CTL_DockerPanelAction",
+        preferredID = "DockerPanelTopComponent"
+)
+@org.openide.util.NbBundle.Messages("CTL_DockerPanelAction=Docker Panel")
 public final class DockerPanelTopComponent extends TopComponent {
 
     private static final Color BG = new Color(25, 26, 29);
