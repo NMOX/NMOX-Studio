@@ -45,7 +45,10 @@ public enum DeviceType {
     DATABASE("database", "NEPTUNE", "Database Console — ping databases & trigger schemas", new Color(51, 153, 255), DatabaseDevice::new),
     CMD("cmd", "SOLDER", "Custom Command — run anything as a pipeline step", new Color(176, 141, 87), CommandLineDevice::new),
     TAIL("tail", "TAIL", "Log Follower — tail -f any file onto the patch bay", new Color(140, 190, 120), TailDevice::new),
-    VITALS("vitals", "VITALS", "Web Quality Gate — Lighthouse scores with a shipping floor", new Color(255, 105, 97), VitalsDevice::new);
+    VITALS("vitals", "VITALS", "Web Quality Gate — Lighthouse scores with a shipping floor", new Color(255, 105, 97), VitalsDevice::new),
+    SSH("ssh", "HELM", "Remote Runner — run commands on your servers over ssh", new Color(95, 158, 199), SshDevice::new),
+    BEACON("beacon", "BEACON", "Cert & Uptime Sentinel — TLS runway and reachability, gated", new Color(240, 180, 60), BeaconDevice::new),
+    BUNDLE_SIZE("bundle-size", "PRISM", "Bundle-Size Gate — weigh the build, hold the line", new Color(150, 120, 220), BundleSizeDevice::new);
 
     private final String id;
     private final String title;
@@ -97,10 +100,11 @@ public enum DeviceType {
     public PaletteCategory getPaletteCategory() {
         return switch (this) {
             case MASTER, REFLEX, JOIN, TEMPO, RUN, NPM_SCRIPT, CMD -> PaletteCategory.AUTOMATE;
-            case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS -> PaletteCategory.VERIFY;
+            case SSH -> PaletteCategory.SHIP;
+            case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
-            case CONSOLE, TERMINAL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL -> PaletteCategory.OBSERVE;
+            case CONSOLE, TERMINAL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
         };
@@ -144,6 +148,9 @@ public enum DeviceType {
             case DATABASE -> "Pings SQL databases (PostgreSQL/MySQL/SQLite/MariaDB).\nDial DB TYPE to select database URL or profile; ping fires OK on success.";
             case CMD -> "Runs exactly what you type - make seed-db, ./scripts/fixtures.sh - argv only, no shell.\nPatch VERITAS OK → RUN to chain custom steps; SOLDER exports to CI like any device.";
             case TAIL -> "tail -f as a device: dial a file (relative to the project), flip FOLLOW.\nPatch OUT → PHOSPHOR and your server's logs/app.log scrolls beside its stdout.";
+            case SSH -> "Runs the dialed command on user@host over ssh (BatchMode: key auth only).\nPatch LAUNCHPAD OK → RUN to finish deploys with a remote migrate or restart; HOST accepts a cable.";
+            case BEACON -> "CHECK answers: is it up, and how many days on the TLS cert?\nPatch TEMPO BAR → CHECK to watch production on a clock; MIN DAYS fires FAIL inside the window.";
+            case BUNDLE_SIZE -> "Weighs the build output dir; MAX sets the budget.\nPatch FORGE OK → MEASURE and OK → LAUNCHPAD: bundles over budget don't ship.";
             case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nPatch SURGE URL → URL and READY → RUN; dial MIN and slow pages close the gate (FAIL, not OK).";
         };
     }
