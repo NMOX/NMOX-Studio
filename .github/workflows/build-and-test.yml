@@ -52,3 +52,14 @@ jobs:
       - name: Boot smoke test (macOS)
         if: runner.os == 'macOS'
         run: ./scripts/boot-smoke-test.sh
+
+      # Boot once more with the color probe on and assert the editor's
+      # RESOLVED colors are the dark scheme — the v1.10.1 white-editor
+      # class, which packaged green for months. Same display requirement
+      # as the boot smoke test.
+      - name: Rendering probe (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ./scripts/rendering-probe.sh
+      - name: Rendering probe (macOS)
+        if: runner.os == 'macOS'
+        run: ./scripts/rendering-probe.sh
