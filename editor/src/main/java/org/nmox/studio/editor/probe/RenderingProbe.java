@@ -72,19 +72,43 @@ public final class RenderingProbe implements Runnable {
         emit(result);
     }
 
+    /** Attempts to let settings finish resolving before concluding they
+     *  are unavailable — @OnStart can fire just ahead of the settings
+     *  storage on a slow runner. Bounded and only retried while the values
+     *  are NULL (not-ready); a resolved-but-light value is a real failure
+     *  and returns immediately, so the retry can never mask the bug. */
+    static final int RESOLVE_ATTEMPTS = 20;
+    static final long RESOLVE_WAIT_MS = 250;
+
     /** The assertions, as a PASS line or the first FAIL reason. */
     static String evaluate() {
-        FontColorSettings fcs = MimeLookup.getLookup(MimePath.parse(PROBED_MIME))
-                .lookup(FontColorSettings.class);
-        if (fcs == null) {
-            return "FAIL: no FontColorSettings for " + PROBED_MIME
-                    + " (editor settings not resolved at probe time)";
-        }
+        for (int attempt = 1; ; attempt++) {
+            FontColorSettings fcs = MimeLookup.getLookup(MimePath.parse(PROBED_MIME))
+                    .lookup(FontColorSettings.class);
+            Color background = fcs == null ? null
+                    : attr(fcs.getFontColors(FontColorNames.DEFAULT_COLORING),
+                            StyleConstants.Background);
+            Color keyword = fcs == null ? null
+                    : attr(fcs.getTokenFontColors("keyword"), StyleConstants.Foreground);
 
-        Color background = attr(fcs.getFontColors(FontColorNames.DEFAULT_COLORING),
-                StyleConstants.Background);
-        Color keyword = attr(fcs.getTokenFontColors("keyword"), StyleConstants.Foreground);
-        return classify(background, keyword);
+            if ((background == null || keyword == null) && attempt < RESOLVE_ATTEMPTS) {
+                sleep(RESOLVE_WAIT_MS);
+                continue; // settings not resolved yet — keep waiting, don't judge
+            }
+            if (fcs == null) {
+                return "FAIL: no FontColorSettings for " + PROBED_MIME
+                        + " (editor settings never resolved)";
+            }
+            return classify(background, keyword);
+        }
+    }
+
+    private static void sleep(long ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

@@ -71,8 +71,16 @@ while kill -0 "$APP_PID" 2>/dev/null; do
     waited=$((waited + 2))
 done
 
-# Let the app finish its clean shutdown (it quits via netbeans.close).
-kill -0 "$APP_PID" 2>/dev/null && { wait "$APP_PID" 2>/dev/null || true; }
+# The rendering verdict is complete the moment the result file lands —
+# whether the app then shuts down cleanly is the boot smoke test's job,
+# not this check's. So terminate the app rather than waiting on its exit,
+# which would hang CI forever if a PASS were followed by a stalled
+# shutdown.
+if kill -0 "$APP_PID" 2>/dev/null; then
+    kill -TERM "$APP_PID" 2>/dev/null || true
+    sleep 3
+    kill -KILL "$APP_PID" 2>/dev/null || true
+fi
 
 if [ ! -f "$RESULT" ]; then
     echo "rendering-probe: FAIL — the probe never wrote a result" >&2
