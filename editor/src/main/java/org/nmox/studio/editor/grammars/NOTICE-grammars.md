@@ -54,6 +54,23 @@ textmate-lexer module.
 | proto.tmLanguage.json | zxh0/vscode-proto3 (proto3.tmLanguage.json) | MIT |
 | prisma.tmLanguage.json | prisma/language-tools | Apache-2.0 |
 
+## Embed-only grammars (scope registry, no editor binding)
+
+These are registered under synthetic `text/x-nmox-embed-*` mimes purely
+so TM4E can resolve cross-grammar includes (markdown fences, YAML front
+matter, inline HTML); no file resolves to those mimes and the real
+editors for those languages stay with their existing owners (custom
+JS/TS lexer, platform YAML module). See `EmbeddedScopeGrammars`.
+
+| Grammar | Source | License |
+|---|---|---|
+| yaml.tmLanguage.json | microsoft/vscode 1.95.0 extensions/yaml (textmate/yaml.tmbundle) | MIT-compatible |
+| javascript.tmLanguage.json | microsoft/vscode 1.95.0 extensions/javascript (microsoft/TypeScript-TmLanguage) | MIT |
+| typescript.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
+| typescriptreact.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
+| html-derivative.tmLanguage.json | microsoft/vscode 1.95.0 extensions/html (textmate/html.tmbundle) | MIT-compatible |
+
 YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
-bundled here: the NetBeans ide cluster ships native editor support for
-those mimes, and a second registration would duplicate editors.
+bundled as *editors*: the NetBeans ide cluster ships native editor
+support for those mimes, and a second registration would duplicate
+editors. (The embed-only YAML grammar above does not bind an editor.)
