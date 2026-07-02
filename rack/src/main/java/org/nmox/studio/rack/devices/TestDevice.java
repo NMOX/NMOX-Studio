@@ -17,7 +17,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     private static final String[] COVERAGE_MINIMUMS = {"off", "50", "60", "70", "80", "90"};
@@ -142,6 +142,8 @@ public class TestDevice extends CommandDevice {
         String alternation = String.join("|", names);
         return switch (framework) {
             case "jest" -> List.of("npx", "jest", "-t", alternation);
+            case "bun" -> List.of("bun", "test", "-t", alternation);
+            case "deno" -> List.of("deno", "test", "--filter", alternation);
             case "vitest" -> List.of("npx", "vitest", "run", "-t", alternation);
             case "pytest" -> {
                 List<String> cmd = new ArrayList<>(List.of("python3", "-m", "pytest"));
@@ -200,6 +202,8 @@ public class TestDevice extends CommandDevice {
         }
         ProjectInspector.ProjectKind kind = effectiveKind();
         switch (kind) {
+            case BUN: return "bun";
+            case DENO: return "deno";
             case RUST: return "cargo";
             case ELIXIR: return "mix";
             case ERLANG: return "rebar3";
@@ -235,6 +239,8 @@ public class TestDevice extends CommandDevice {
     @Override
     protected java.io.File commandDir() {
         ProjectInspector.ProjectKind kind = switch (effectiveFramework()) {
+            case "bun" -> ProjectInspector.ProjectKind.BUN;
+            case "deno" -> ProjectInspector.ProjectKind.DENO;
             case "cargo" -> ProjectInspector.ProjectKind.RUST;
             case "mix" -> ProjectInspector.ProjectKind.ELIXIR;
             case "rebar3" -> ProjectInspector.ProjectKind.ERLANG;
@@ -268,6 +274,8 @@ public class TestDevice extends CommandDevice {
             case "playwright" -> cmd.addAll(List.of("npx", "playwright", "test"));
             case "cypress" -> cmd.addAll(List.of("npx", "cypress", "run"));
             case "pytest" -> cmd.addAll(List.of("python3", "-m", "pytest"));
+            case "bun" -> cmd.addAll(List.of("bun", "test"));
+            case "deno" -> cmd.addAll(List.of("deno", "test"));
             case "cargo" -> cmd.addAll(List.of("cargo", "test"));
             case "mix" -> cmd.addAll(List.of("mix", "test"));
             case "rebar3" -> cmd.addAll(List.of("rebar3", "eunit"));

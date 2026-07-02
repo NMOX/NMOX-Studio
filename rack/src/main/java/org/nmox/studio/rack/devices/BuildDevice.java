@@ -115,6 +115,8 @@ public class BuildDevice extends CommandDevice {
     /** The build command for non-Node toolchains. */
     private List<String> kindCommand(ProjectInspector.ProjectKind kind, boolean prod) {
         return switch (kind) {
+            case BUN -> List.of("bun", "run", "build");
+            case DENO -> List.of("deno", "task", "build");
             case RUST -> prod ? List.of("cargo", "build", "--release") : List.of("cargo", "build");
             case GO -> List.of("go", "build", "./...");
             case ELIXIR -> List.of("mix", "compile");

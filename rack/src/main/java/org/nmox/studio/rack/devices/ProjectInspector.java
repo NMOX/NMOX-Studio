@@ -17,6 +17,8 @@ public final class ProjectInspector {
 
     /** The toolchain a project belongs to, detected from its manifest. */
     public enum ProjectKind {
+        BUN("bun.lock", "bun.lockb", "bunfig.toml"),
+        DENO("deno.json", "deno.jsonc"),
         NODE("package.json"),
         RUST("Cargo.toml"),
         GO("go.mod"),
