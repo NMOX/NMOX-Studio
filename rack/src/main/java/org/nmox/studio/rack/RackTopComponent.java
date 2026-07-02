@@ -43,7 +43,10 @@ import org.openide.windows.TopComponent;
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = true, position = 200)
 @ActionID(category = "Window", id = "org.nmox.studio.rack.RackTopComponent")
-@ActionReference(path = "Menu/Window", position = 250)
+@org.openide.awt.ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 250),
+    @ActionReference(path = "Shortcuts", name = "D-9")
+})
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_RackAction",
         preferredID = "RackTopComponent"

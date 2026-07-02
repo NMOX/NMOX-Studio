@@ -6,10 +6,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [Unreleased]
 
-Daily-driver foundations: the fixes that make living in the studio all
-day safe — switching projects can no longer kill work behind your back,
-and the environment your commands run in is finally file-based, honest,
-and leak-free.
+Daily-driver foundations and a crispness pass: the fixes that make
+living in the studio all day safe — switching projects can no longer
+kill work behind your back, the environment your commands run in is
+finally file-based, honest, and leak-free — and the app itself stops
+carrying another IDE's furniture.
+
+### Changed — crisp
+- **Evicted the VCS museum.** Mercurial, Subversion, the CVS installer
+  shim, the Jenkins (hudson) client, and the Selenium server bridge no
+  longer ship — 12 modules a web dev in 2026 never asked for. The Team
+  menu is Git now. (Verified by the boot smoke test: the module system
+  comes up clean without them.)
+- **One build story, not three menus.** The custom top-level "Build"
+  menu — whose single item bypassed the real per-toolchain commands for
+  a legacy manager with a raw popup — is gone, along with the duplicate
+  "New Web Project…" item. Run/Build/Test/Clean live in the Run menu
+  (F6/F11), wired to the rack like everything else.
+- **Cmd+O opens files again.** The platform's "Go to Type" (a Java
+  dialog) was silently stealing the binding.
+- **Keys for the product's own surfaces**: Cmd+9 Task Rack, Cmd+8
+  Docker Panel (now also in the Window menu at last), Cmd+0 Workbench,
+  alongside Cmd+Shift+P Switch Project.
+- **Startup is calmer.** The Infra Designer no longer squats in the
+  editor area from minute one (Window menu / one click away), and the
+  Welcome tab steals focus only on the very first launch instead of
+  every launch.
+- **The About dialog stops describing a different product.** It called
+  us a "Professional Media Development Environment, Version 1.0.0";
+  the copy now matches reality, and the never-rendered about.html and
+  fake version keys are deleted. The Refactor menu (always empty for
+  TextMate/LSP languages) is hidden; GIT's commit prompt says "Commit",
+  not "TIMELINE Commit"; dead window-system scaffolding removed.
 
 ### Added
 - **`.env` support, zero-config.** Every command the rack launches now

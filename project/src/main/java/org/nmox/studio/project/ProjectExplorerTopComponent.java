@@ -49,7 +49,10 @@ import org.openide.windows.WindowManager;
 )
 @TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 60)
 @ActionID(category = "Window", id = "org.nmox.studio.project.ProjectExplorerTopComponent")
-@ActionReference(path = "Menu/Window", position = 205)
+@org.openide.awt.ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 205),
+    @ActionReference(path = "Shortcuts", name = "D-0")
+})
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_ProjectExplorerAction",
         preferredID = "ProjectExplorerTopComponent"
