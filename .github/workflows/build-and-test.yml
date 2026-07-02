@@ -25,3 +25,23 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: mvn -B verify
+
+      # --- Release-gating checks against the ASSEMBLED app -----------------
+      # These run after verify (which packages application/target/nmoxstudio)
+      # and exercise the real cluster, not a test harness — the gap that let
+      # the commons_codec module collision and the white-editor bug ship.
+
+      - name: Install Xvfb (Linux headless display)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      # Boot the assembled app from a fresh userdir and fail on any module
+      # that could not be installed/enabled. The platform's window system
+      # needs a display to reach the clean-quit path, so Linux runs under a
+      # virtual framebuffer; macOS runners have a usable window server.
+      - name: Boot smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a ./scripts/boot-smoke-test.sh
+      - name: Boot smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: ./scripts/boot-smoke-test.sh
