@@ -162,6 +162,17 @@ public final class InfraDesignerTopComponent extends TopComponent {
         sync.addActionListener(e -> syncFromCloud());
         bar.add(sync);
 
+        JButton refresh = new JButton("Refresh");
+        refresh.setToolTipText("Ask the cloud whether every deployed node still exists — deletions show as drifted");
+        refresh.addActionListener(e -> refreshDrift());
+        bar.add(refresh);
+
+        JButton destroyStack = new JButton("Destroy stack…");
+        destroyStack.setForeground(new Color(0xC6, 0x2B, 0x2B));
+        destroyStack.setToolTipText("Tear down every deployed resource in reverse dependency order");
+        destroyStack.addActionListener(e -> destroyStack());
+        bar.add(destroyStack);
+
         JButton fit = new JButton("Fit");
         fit.addActionListener(e -> canvas.fit());
         bar.add(fit);
@@ -278,6 +289,64 @@ public final class InfraDesignerTopComponent extends TopComponent {
                         "Sync failed: " + ex.getMessage(), "Infra Designer", JOptionPane.ERROR_MESSAGE));
             }
         }, "nmox-infra-sync");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    /** The drift check: designed vs actual, node by node. */
+    private void refreshDrift() {
+        Thread worker = new Thread(() -> {
+            try {
+                client.refreshDrift(graph, (node, status) ->
+                        SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
+                SwingUtilities.invokeLater(this::save);
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
+                        "Refresh failed: " + ex.getMessage(), "Refresh", JOptionPane.ERROR_MESSAGE));
+            }
+        }, "nmox-infra-refresh");
+        worker.setDaemon(true);
+        worker.start();
+    }
+
+    /**
+     * One decision, whole stack: name every deployed resource and the
+     * monthly bill it carries, then tear down in reverse dependency
+     * order. The design stays on the canvas, ready to deploy again.
+     */
+    private void destroyStack() {
+        java.util.List<InfraNode> order = DeployPlanner.teardownOrder(graph);
+        if (order.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nothing deployed to destroy.");
+            return;
+        }
+        double monthly = 0;
+        StringBuilder names = new StringBuilder();
+        for (InfraNode node : order) {
+            monthly += node.monthlyUsd();
+            names.append("  • ").append(node.kind.getDisplayName())
+                    .append("  ").append(node.label).append('\n');
+        }
+        int answer = JOptionPane.showConfirmDialog(this,
+                "Destroy " + order.size() + " cloud resource" + (order.size() == 1 ? "" : "s")
+                + ", saving ~$" + String.format("%.2f", monthly) + "/month?\n\n" + names
+                + "\nReverse dependency order. The design stays on the canvas.",
+                "Destroy stack", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;
+        }
+        Thread worker = new Thread(() -> {
+            int failures = client.destroyAll(order, (node, status) ->
+                    SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
+            SwingUtilities.invokeLater(() -> {
+                save();
+                if (failures > 0) {
+                    JOptionPane.showMessageDialog(this,
+                            failures + " resource(s) could not be destroyed — check their status lines.",
+                            "Destroy stack", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+        }, "nmox-infra-destroy-stack");
         worker.setDaemon(true);
         worker.start();
     }

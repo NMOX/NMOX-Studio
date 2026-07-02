@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.14.0] — 2026-07-02
+
+Infra truth and teardown: the designer stops being create-only — the
+canvas can now ask the cloud what is really there, and take a whole
+stack down in one decision with the bill in view.
+
+### Added
+- **Refresh — drift detection.** Every deployed node is re-checked
+  against the provider API: a droplet deleted in the cloud console
+  stops claiming "live" and reports **drifted: deleted in cloud**
+  (its stale id is released so re-deploy works). Kinds without a
+  per-resource read endpoint say "unverifiable" honestly instead of
+  guessing.
+- **Destroy stack — one-click teardown with the bill in view.** The
+  confirmation names every deployed resource and what destroying them
+  saves ("Destroy 6 cloud resources, saving ~$48.00/month?"), then
+  tears down in reverse dependency order — attachments and dependents
+  before the resources they lean on. Individual failures don't strand
+  the rest; the design stays on the canvas, ready to deploy again.
+
 ## [1.13.0] — 2026-07-02
 
 Testing rigor: failures get names and one-click re-runs, and coverage
