@@ -124,6 +124,18 @@ command. The whole catalog is data (`learn-catalog.json`) — and every
 space is honest: if a tool isn't installed, it says so and hands you
 the install line.
 
+### 🩺 Honest about your machine
+**Tools → Environment Doctor** probes every external tool the studio
+can drive — the core four, each language toolchain, and every
+learning-space interpreter — live with its version command, in one
+table: ✓ with the version line, or ✗ with the install command that
+fixes it. The **Welcome screen** is a real launchpad: start actions
+with their shortcuts, your recent projects (click to aim the studio),
+every tool window with its keystroke, and the stamped version with a
+What's-new link. And once a day the studio quietly checks GitHub for
+a newer release and mentions it exactly once — dev builds never
+check, offline never nags, one preference turns it off.
+
 ### 🧪 API Studio
 A Postman-style tab (Window → API Studio) for building, saving, sending,
 and **testing** HTTP requests: collections of requests, a builder with

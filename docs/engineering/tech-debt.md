@@ -86,6 +86,12 @@ it's inside platform window restore — optimize only with profiler
 evidence, not vibes. `scripts/boot-smoke-test.sh` now prints wall-clock
 boot time so CI can watch the trend.
 
+### 0f. The update check's opt-out has no Options UI
+`updateCheck` is honored from preferences (v1.25.0) but there is no
+checkbox in Tools > Options to flip it — a user must know the pref
+exists. Add it next time the Options category is touched; a settings
+panel change for one boolean isn't worth its own release.
+
 ## Closed
 
 - ~~UTF-8 charsets implicit at 12 I/O sites (session state, CI export,

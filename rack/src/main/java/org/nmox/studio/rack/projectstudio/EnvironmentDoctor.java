@@ -75,7 +75,10 @@ public final class EnvironmentDoctor {
      */
     public static Finding probe(String tool, String purpose, String installHint) {
         try {
-            Process p = ProcessSupport.builder(List.of(tool, "--version"))
+            // go is the one holdout that rejects --version (it wants `go version`)
+            List<String> versionCmd = "go".equals(tool)
+                    ? List.of("go", "version") : List.of(tool, "--version");
+            Process p = ProcessSupport.builder(versionCmd)
                     .redirectErrorStream(true)
                     .start();
             String firstLine = "";
