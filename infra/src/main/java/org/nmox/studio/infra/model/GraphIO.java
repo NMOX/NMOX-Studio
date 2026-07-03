@@ -33,6 +33,9 @@ public final class GraphIO {
             if (node.doId != null) {
                 nj.put("doId", node.doId);
             }
+            if (node.ip != null) {
+                nj.put("ip", node.ip);
+            }
             nodeArr.put(nj);
         }
         root.put("nodes", nodeArr);
@@ -62,6 +65,7 @@ public final class GraphIO {
                     nj.getString("id"), kind, nj.getInt("x"), nj.getInt("y"));
             node.label = nj.optString("label", node.label);
             node.doId = nj.has("doId") ? nj.getString("doId") : null;
+            node.ip = nj.has("ip") ? nj.getString("ip") : null;
             JSONObject props = nj.optJSONObject("props");
             if (props != null) {
                 for (String key : props.keySet()) {

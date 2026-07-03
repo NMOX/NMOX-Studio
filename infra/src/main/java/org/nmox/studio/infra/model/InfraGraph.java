@@ -26,6 +26,8 @@ public final class InfraGraph {
         public final Map<String, String> props = new LinkedHashMap<>();
         /** DigitalOcean resource id once deployed; null while design-only. */
         public String doId;
+        /** Public IPv4 once known (droplets); null otherwise. */
+        public String ip;
         public String status = "";
 
         InfraNode(String id, NodeKind kind, int x, int y) {

@@ -135,6 +135,13 @@ public class FlowCanvas extends JPanel {
 
     /** Centers the view on the design. */
     public void fit() {
+        // called on load before the window system has sized this canvas:
+        // dividing by width 0 slammed zoom to the floor ("way out").
+        // Defer one layout pass and fit against the real viewport.
+        if (getWidth() <= 0 || getHeight() <= 0) {
+            javax.swing.SwingUtilities.invokeLater(this::fit);
+            return;
+        }
         var nodes = graph.getNodes();
         if (nodes.isEmpty()) {
             zoom = 1.0;
@@ -148,12 +155,39 @@ public class FlowCanvas extends JPanel {
                 maxX = Math.max(maxX, n.x + NODE_W);
                 maxY = Math.max(maxY, n.y + NODE_H + 18);
             }
-            double zx = getWidth() / (double) Math.max(200, maxX - minX + 120);
-            double zy = getHeight() / (double) Math.max(160, maxY - minY + 120);
-            zoom = Math.max(0.4, Math.min(1.5, Math.min(zx, zy)));
-            panX = -minX * zoom + 60;
-            panY = -minY * zoom + 60;
+            double contentW = maxX - minX + 120;
+            double contentH = maxY - minY + 120;
+            double zx = getWidth() / Math.max(200.0, contentW);
+            double zy = getHeight() / Math.max(160.0, contentH);
+            // contain, never magnify: small designs stay at natural size
+            zoom = Math.max(0.3, Math.min(1.0, Math.min(zx, zy)));
+            // center the content in the viewport, both axes
+            panX = (getWidth() - (maxX - minX) * zoom) / 2 - minX * zoom;
+            panY = (getHeight() - (maxY - minY) * zoom) / 2 - minY * zoom;
         }
+        repaint();
+    }
+
+    /** Current zoom factor (1.0 = natural size). */
+    public double getZoom() {
+        return zoom;
+    }
+
+    /** Step zoom around the viewport center - the toolbar +/- buttons. */
+    public void zoomIn() {
+        zoomAroundCenter(1.25);
+    }
+
+    public void zoomOut() {
+        zoomAroundCenter(1 / 1.25);
+    }
+
+    private void zoomAroundCenter(double factor) {
+        double newZoom = Math.max(0.3, Math.min(2.5, zoom * factor));
+        double cx = getWidth() / 2.0, cy = getHeight() / 2.0;
+        panX = cx - (cx - panX) * (newZoom / zoom);
+        panY = cy - (cy - panY) * (newZoom / zoom);
+        zoom = newZoom;
         repaint();
     }
 

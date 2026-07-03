@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.17.0] — 2026-07-02
+
+The infrastructure designer, deepened: it opens fitted, provisions
+servers that configure themselves, and hands you the way in.
+
+### Added
+- **Cloud-init on droplets.** A droplet's new user_data field flows
+  into the create body, so a server configures itself on first boot
+  (install nginx, pull your app, whatever) — infrastructure as one
+  design, not a design plus a runbook.
+- **Copy SSH command from a node.** Once a droplet is deployed (or
+  imported by Sync), its public IP is remembered and persisted; the
+  node's right-click menu offers "Copy SSH command (root@…)". The
+  designer stops being a place you look at servers and becomes the way
+  in to them.
+- **Deploy log.** Every deploy appends a timestamped, per-resource
+  record to .nmox/deploy-log beside the project — a half-deployed
+  stack is legible after the fact, not a hunt.
+
+### Fixed
+- **The Infra Designer opens at a sane zoom.** Fit ran before the
+  window had a size, so dividing by a zero-width viewport slammed the
+  zoom to its floor on every open — the canvas always started "way
+  out". Fit now waits for a real layout pass, contains the design
+  without ever magnifying it (small designs stay at natural size), and
+  centers the content. The toolbar gains − / Fit / + zoom buttons.
+
 ## [1.16.0] — 2026-07-02
 
 Three second-cut devices: the rack reaches your servers, watches your
