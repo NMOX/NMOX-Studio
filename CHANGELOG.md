@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.25.1] — 2026-07-03
+
+The cleanup: loose ends tied off, including two real bugs the deferred
+live click-throughs caught the moment the screen unlocked.
+
+### Fixed
+- **REPLs that buffer piped stdin now force interactive mode.** The
+  live smoke proved the engine perfect and the data wrong: python3
+  (and node, lua, julia, ts-node) treat piped stdin as a script and
+  execute only at EOF — you typed, nothing answered until STOP. Their
+  catalog commands gained the force-interactive flags (`python3 -i
+  -q`, `node -i`, …): type an expression, read the answer immediately.
+- **The Environment Doctor probes go with `go version`** — the one
+  toolchain that rejects `--version` no longer shows a garbled status
+  line for a perfectly healthy install.
+
+### Verified live (no code change)
+- The v1.25.0 Welcome launchpad, the Environment Doctor (24 of 32
+  tools found on this machine, with `clisp ✗ brew install clisp`
+  rendered exactly as designed), and the full Learning Space flow —
+  picker via ⇧⌘L, Common Lisp leading the catalog, Python space
+  generated with tutorial + seeded REPL, live type-in round trip.
+
+### Tidied
+- README gained the v1.25 features section; CLAUDE.md caught up;
+  the debt ledger records the one new deferral (an Options checkbox
+  for the update-check preference); the ui module got its first test
+  (UpdateCheck's tag parsing); one unused import; five stale local
+  branches pruned.
+
 ## [1.25.0] — 2026-07-03
 
 The daily-driver polish: after twenty-four releases of capability, the

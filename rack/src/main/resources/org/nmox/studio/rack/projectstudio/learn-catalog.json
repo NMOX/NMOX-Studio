@@ -43,7 +43,9 @@
       "driver": {
         "kind": "repl",
         "command": [
-          "python3"
+          "python3",
+          "-i",
+          "-q"
         ],
         "prompt": ">>>",
         "snippets": [
@@ -77,7 +79,8 @@
       "driver": {
         "kind": "repl",
         "command": [
-          "node"
+          "node",
+          "-i"
         ],
         "prompt": ">",
         "snippets": [
@@ -113,7 +116,8 @@
         "command": [
           "npx",
           "-y",
-          "ts-node"
+          "ts-node",
+          "-i"
         ],
         "prompt": ">",
         "snippets": [
@@ -466,7 +470,8 @@
       "driver": {
         "kind": "repl",
         "command": [
-          "lua"
+          "lua",
+          "-i"
         ],
         "prompt": ">",
         "snippets": [
@@ -664,7 +669,9 @@
       "driver": {
         "kind": "repl",
         "command": [
-          "julia"
+          "julia",
+          "-i",
+          "-q"
         ],
         "prompt": "julia>",
         "snippets": [
