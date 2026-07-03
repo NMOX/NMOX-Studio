@@ -45,11 +45,22 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 33 devices:
+build → test, with output scrolling on a phosphor monitor. 39 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
-QUORUM lane-join barrier, and more. Patches persist per project, ship as
-presets, and export to GitHub Actions.
+QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
+files), HELM (run commands on your servers over ssh), and more. Patches
+persist per project, ship as presets, and export to GitHub Actions.
+**[The full device reference](docs/devices.md)** is generated from the
+catalog itself — CI fails if it drifts.
+
+### 🚦 Quality is a shipping gate
+Four floors, each a knob on a faceplate, each able to close the OK jack:
+**VITALS** (Lighthouse performance/a11y/best-practices/SEO), **VERITAS
+MIN COV** (test coverage), **GAUNTLET MIN R/S** (load-bench throughput),
+and **PRISM** (bundle-size budget). **BEACON** watches production —
+uptime plus TLS days-remaining on a clock. Wire any subset through
+QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
 
 ### ⚡ Built to live in all day
 - **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
@@ -80,7 +91,10 @@ networks — and **Dockerize**, which generates production multi-stage
 Dockerfiles from your project's detected toolchain.
 
 ### ⌨️ Polyglot editing
-45+ languages with syntax highlighting (TextMate grammars through NetBeans
+Bun and Deno are first-class toolchains (detected with precedence over
+plain Node — every AUTO device speaks the right binary, CI export
+included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
+more. 45+ languages with syntax highlighting (TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
@@ -97,7 +111,12 @@ and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 The Workbench home base (toolchain chips, open/recent files, tooling
 shelf), Project Studio templates that scaffold versioned, rack-wired
 projects, and a Node-RED-style Infra Designer for DigitalOcean, Hetzner,
-and Cloudflare with cost estimates and dry-run planning.
+and Cloudflare with cost estimates and dry-run planning — plus the
+truth-and-teardown loop: **Refresh** flags cloud-deleted resources as
+drifted, **Destroy stack** tears everything down in reverse dependency
+order with the monthly bill in view, droplets take **cloud-init**
+user_data, and a deployed node hands you its **ssh command** from the
+context menu.
 
 ### ✅ Proven, not promised
 CI runs real `npm install`/build/test/serve through the actual rack devices

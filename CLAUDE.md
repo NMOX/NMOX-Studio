@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NMOX Studio is a NetBeans Platform-based IDE for modern web development, with first-class polyglot support (JS/TS, Java, C/C++, Python, Ruby, Rust, Go, PHP, shell + configs), NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
 
-**Status**: shipping (v1.3.0 released, v1.4.0 in flight). Polyglot editing (32 TextMate grammars incl. HTML/CSS/SCSS/Less activated through CSL, LSP providers for 35 MIMEs), the Reason-style task rack (34 devices, stderr monitor bus, cross-lane coordination — QUORUM join + readiness ENABLE gates + per-lane REFLEX routing, presets, CI export, session resurrection, PREFLIGHT ship gate), the Workbench home base (open/recent files, projects, tooling shelf), the Docker control panel, the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare), settings UI, installers for all three OSes, and a tag-triggered release workflow.
+**Status**: shipping (v1.17.0). Polyglot editing (45+ TextMate grammars incl. the config layer, LSP providers, Bun/Deno/Rust/Go/BEAM+ toolchains with per-lane monorepo dirs), the Reason-style task rack (39 devices — see docs/devices.md, generated + CI-gated; cross-lane QUORUM join, readiness ENABLE gates, per-lane REFLEX GLOB routing; quality gates: VITALS Lighthouse floor, VERITAS coverage floor + named-failure re-runs, GAUNTLET throughput floor, PRISM bundle budget, BEACON cert/uptime sentinel; SOLDER any-command, TAIL log follow, HELM ssh runner; presets, CI export, session resurrection, PREFLIGHT ship gate), safe project switching + .env everywhere + Experiments (~/.nmox/experiments lifecycle), Quick Search/status line/keymap surfaces, the Workbench home base, the Docker control panel, the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare — drift Refresh, Destroy-stack with cost framing, cloud-init user_data, copy-ssh-from-node, deploy log), one Options category, installers for all three OSes with bundled runtimes, Homebrew cask, and a tag-triggered release workflow with SBOM.
 
 ## Build and Run Commands
 
@@ -267,6 +267,11 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 - **v0.1**: Basic JavaScript/TypeScript support, NPM integration, project templates
 - **v1.0.x**: task rack, polyglot editor (TextMate+CSL), LSP everywhere, infra designer, Workbench, packaging + release pipeline (and the real branded splash)
 - **v1.1.0-v1.3.0**: Docker control panel + HARBOR, BLACKBOX/SONAR awareness devices, session resurrection, PREFLIGHT ship gate
+- **v1.4.x-v1.10.x**: bundled JRE installers, config-layer grammars, Navigator outline, WebProject SPI, LSP health + installer, self-policing build (SpotBugs/find-sec-bugs/JaCoCo floors), Java 21 + CI matrix + SBOM + Dependabot, CI release gates (boot smoke, test audit, rendering probe)
+- **v1.11.0**: daily driver — safe switching guard, .env everywhere, Experiments, Quick Search/status line/keymap, crisp chrome (VCS-museum eviction, honest About, menu-bar name)
+- **v1.12.0-v1.13.0**: SOLDER/TAIL/VITALS + overallSuccess verdict hook; testing rigor (named failures, re-run failed, coverage + throughput floors)
+- **v1.14.0**: infra truth — drift Refresh + Destroy stack with cost framing
+- **v1.15.0-v1.17.0**: Bun + Deno first-class; HELM/BEACON/PRISM; DO deep (cloud-init, ssh-from-node, deploy log) + designer fit/zoom
 - See CHANGELOG.md for the full record; tagging vX.Y.Z triggers the release workflow (5 artifacts)
 
 ## Documentation

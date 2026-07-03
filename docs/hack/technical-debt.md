@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Technical Debt & Known Issues
 
 *Honest assessment of shortcuts taken and problems to solve*

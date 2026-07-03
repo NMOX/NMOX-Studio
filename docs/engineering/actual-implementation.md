@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Actual Implementation Architecture
 
 *Reality vs Vision: What we actually built*

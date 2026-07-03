@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Next Iteration Plan: v0.2 "Polish & Performance"
 
 *From working prototype to polished developer tool*
