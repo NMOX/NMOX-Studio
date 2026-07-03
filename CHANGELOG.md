@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.16.1] — 2026-07-02
+
+### Fixed
+- **The Infra Designer opens at a sane zoom.** Fit ran before the
+  window had a size, so dividing by a zero-width viewport slammed the
+  zoom to its floor on every open — the canvas always started "way
+  out". Fit now waits for a real layout pass, contains the design
+  without ever magnifying it (small designs stay at natural size), and
+  centers the content. The toolbar gains − / Fit / + zoom buttons.
+
 ## [1.16.0] — 2026-07-02
 
 Three second-cut devices: the rack reaches your servers, watches your

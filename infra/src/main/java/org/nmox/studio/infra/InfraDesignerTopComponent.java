@@ -173,9 +173,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
         destroyStack.addActionListener(e -> destroyStack());
         bar.add(destroyStack);
 
+        JButton zoomOut = new JButton("−");
+        zoomOut.setToolTipText("Zoom out");
+        zoomOut.addActionListener(e -> canvas.zoomOut());
+        bar.add(zoomOut);
+
         JButton fit = new JButton("Fit");
+        fit.setToolTipText("Fit the whole design in view");
         fit.addActionListener(e -> canvas.fit());
         bar.add(fit);
+
+        JButton zoomIn = new JButton("+");
+        zoomIn.setToolTipText("Zoom in");
+        zoomIn.addActionListener(e -> canvas.zoomIn());
+        bar.add(zoomIn);
 
         bar.add(javax.swing.Box.createHorizontalGlue());
 
