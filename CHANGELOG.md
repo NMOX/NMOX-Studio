@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.25.0] — 2026-07-03
+
+The daily-driver polish: after twenty-four releases of capability, the
+weakest surfaces were the first ones a user meets. This release makes
+the front door, the environment, and the upgrade story honest.
+
+### Added
+- **The Welcome screen is a launchpad again.** It was frozen at v1.0 —
+  three buttons, unaware of everything since. Now: a Start column
+  (New Project / New Experiment / New Learning Space / Open Folder,
+  shortcuts shown), a live Recent column (your actual projects, click
+  to aim the studio — refreshed every time the tab shows), a Tooling
+  column with every window and its keystroke, and an honest footer:
+  the stamped version plus "What's new ↗" to the release notes.
+- **Environment Doctor (Tools menu).** The studio leans on ~40
+  external tools — the core four, a toolchain per language lane, and
+  an interpreter per learning space — and each device already speaks
+  up alone. The Doctor sweeps them all at once: one table, every tool
+  probed live with `--version` through the same hardened launcher the
+  devices use — ✓ with its version line, or ✗ with the install
+  command that fixes it. The checklist extends itself from the
+  learning catalog, so new spaces are covered automatically.
+- **Update awareness.** Once a day, fifteen seconds after startup and
+  entirely off the EDT, the studio asks GitHub for the latest release
+  tag and — only when it outranks the version this build was stamped
+  with — shows one quiet notification linking to the releases page.
+  Dev builds never check, offline never nags, and the `updateCheck`
+  preference turns it off. Version arithmetic is numeric (1.9 < 1.24),
+  tested in core.
+
 ## [1.24.0] — 2026-07-03
 
 Learning Spaces: projects that exist to be learned from. Pick a
