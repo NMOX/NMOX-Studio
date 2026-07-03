@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -24,6 +23,8 @@ import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
 import org.nmox.studio.rack.ui.controls.RackStyle;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * SONAR Port Radar: who is listening on localhost, with one-click
@@ -223,20 +224,20 @@ public class SonarDevice extends RackDevice {
             }
             Object via = model.getValueAt(row, 3);
             if (via != null && via.toString().startsWith("docker:")) {
-                JOptionPane.showMessageDialog(dialog,
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         "Port " + model.getValueAt(row, 0) + " belongs to container "
                         + via.toString().substring(8).trim()
                         + " — stop it from HARBOR's Docker Panel instead of killing the daemon.",
-                        "SONAR", JOptionPane.INFORMATION_MESSAGE);
+                        NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
             long pid = Long.parseLong(String.valueOf(model.getValueAt(row, 2)));
             String owner = String.valueOf(model.getValueAt(row, 1));
-            if (JOptionPane.showConfirmDialog(dialog,
+            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                     "Kill " + owner + " (pid " + pid + ") holding port "
                     + model.getValueAt(row, 0) + "?", "SONAR",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE)
-                    == JOptionPane.YES_OPTION) {
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE))
+                    == NotifyDescriptor.YES_OPTION) {
                 PortScanner.kill(pid);
                 rescan.doClick();
             }

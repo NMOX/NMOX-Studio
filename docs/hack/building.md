@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # How to Actually Build This Thing
 
 *Real instructions from someone who's been up all night fighting NetBeans*

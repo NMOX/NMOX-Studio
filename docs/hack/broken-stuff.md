@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Things That Don't Work (And Never Will)
 
 *The honest list of what's broken and why we're not fixing it*

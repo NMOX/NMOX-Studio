@@ -21,10 +21,7 @@ import org.nmox.studio.apiclient.model.ApiModel.Request;
  */
 public final class ApiClient {
 
-    private final HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private final HttpClient client = org.nmox.studio.core.http.HttpClientFactory.shared();
 
     /** Builds the wire request from a saved request + resolved variables. */
     public static HttpRequest build(Request request, Map<String, String> vars) {
@@ -88,11 +85,7 @@ public final class ApiClient {
     }
 
     static boolean looksJson(String body) {
-        if (body == null) {
-            return false;
-        }
-        String t = body.strip();
-        return t.startsWith("{") || t.startsWith("[");
+        return org.nmox.studio.core.util.JsonUtil.looksJson(body);
     }
 
     /** Sends the request and captures timing, size, headers, and body. */

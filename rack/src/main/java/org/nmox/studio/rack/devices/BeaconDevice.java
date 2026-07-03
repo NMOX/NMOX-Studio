@@ -37,8 +37,7 @@ public class BeaconDevice extends RackDevice {
     private final Knob minKnob;
     private final Led upLed;
     private final Led warnLed;
-    private final HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8)).build();
+    private final HttpClient client = org.nmox.studio.core.http.HttpClientFactory.shared();
 
     public BeaconDevice() {
         super("beacon", "BEACON", "CERT & UPTIME SENTINEL", new Color(240, 180, 60), 2);

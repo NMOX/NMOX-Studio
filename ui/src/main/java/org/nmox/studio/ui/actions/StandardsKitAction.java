@@ -71,25 +71,28 @@ public final class StandardsKitAction implements ActionListener {
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
-        try {
-            List<StandardsKit.Outcome> outcomes = StandardsKit.write(project,
-                    new StandardsKit.Options(url.getText().trim(), name.getText().trim(),
-                            contact.getText().trim(), robots.isSelected(), sitemap.isSelected(),
-                            manifest.isSelected(), security.isSelected(), humans.isSelected()));
-            StringBuilder report = new StringBuilder();
-            for (StandardsKit.Outcome o : outcomes) {
-                report.append(o.written() ? "  ✓ " : "  – ").append(o.path())
-                        .append(o.written() ? "" : "  (already exists, untouched)").append('\n');
+        StandardsKit.Options opts = new StandardsKit.Options(
+                url.getText().trim(), name.getText().trim(), contact.getText().trim(),
+                robots.isSelected(), sitemap.isSelected(), manifest.isSelected(),
+                security.isSelected(), humans.isSelected());
+        // disk I/O has no place in an event dispatch; the report then hops
+        // back to a fresh EDT dispatch so it can't stack behind the main window
+        org.openide.util.RequestProcessor.getDefault().post(() -> {
+            try {
+                List<StandardsKit.Outcome> outcomes = StandardsKit.write(project, opts);
+                StringBuilder report = new StringBuilder();
+                for (StandardsKit.Outcome o : outcomes) {
+                    report.append(o.written() ? "  ✓ " : "  – ").append(o.path())
+                            .append(o.written() ? "" : "  (already exists, untouched)").append('\n');
+                }
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message("Standards Kit:\n\n" + report,
+                                NotifyDescriptor.INFORMATION_MESSAGE)));
+            } catch (Exception ex) {
+                String message = "Could not write: " + ex.getMessage();
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
             }
-            // deferred a dispatch: a dialog opened while the wizard is still
-            // disposing can stack behind the main window and soft-lock the app
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message("Standards Kit:\n\n" + report,
-                            NotifyDescriptor.INFORMATION_MESSAGE)));
-        } catch (Exception ex) {
-            String message = "Could not write: " + ex.getMessage();
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
-        }
+        });
     }
 }

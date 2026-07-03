@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.nmox.studio.rack.engine.ProcessSupport;
-import org.nmox.studio.rack.engine.ToolLocator;
+import org.nmox.studio.core.process.ProcessSupport;
+import org.nmox.studio.core.process.ToolLocator;
 
 /**
  * Pipes a document through Prettier the way the project itself would run

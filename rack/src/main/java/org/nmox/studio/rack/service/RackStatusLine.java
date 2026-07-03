@@ -18,9 +18,31 @@ public class RackStatusLine implements StatusLineElementProvider {
 
     @Override
     public Component getStatusLineElement() {
-        JLabel label = new JLabel("");
-        label.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-        Timer poll = new Timer(2_000, e -> {
+        return new LiveCountLabel();
+    }
+
+    /** Polls only while it is actually in the status bar. */
+    private static final class LiveCountLabel extends JLabel {
+
+        private final Timer poll = new Timer(2_000, e -> refresh());
+
+        LiveCountLabel() {
+            setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+        }
+
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            poll.start();
+        }
+
+        @Override
+        public void removeNotify() {
+            poll.stop();
+            super.removeNotify();
+        }
+
+        private void refresh() {
             int live = 0;
             StringBuilder names = new StringBuilder();
             try {
@@ -37,15 +59,13 @@ public class RackStatusLine implements StatusLineElementProvider {
                 return; // rack unavailable mid-shutdown; keep the last text
             }
             if (live == 0) {
-                label.setText("");
-                label.setToolTipText(null);
+                setText("");
+                setToolTipText(null);
             } else {
-                label.setText("● " + live + " running");
-                label.setForeground(new java.awt.Color(80, 200, 110));
-                label.setToolTipText(names.toString());
+                setText("● " + live + " running");
+                setForeground(new java.awt.Color(80, 200, 110));
+                setToolTipText(names.toString());
             }
-        });
-        poll.start();
-        return label;
+        }
     }
 }

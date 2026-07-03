@@ -8,13 +8,14 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.service.RackService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
@@ -122,8 +123,9 @@ public final class ProjectStudioTopComponent extends TopComponent {
             try {
                 new ProjectConfigDialog(this, rack.getProjectDir()).setVisible(true);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(),
-                        "Project Configuration", JOptionPane.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        "Could not open the configuration: " + ex.getMessage(),
+                        NotifyDescriptor.WARNING_MESSAGE));
             }
         });
         bar.add(configure);

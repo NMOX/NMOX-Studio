@@ -101,7 +101,7 @@ class ProjectTemplatesTest {
     }
 
     private static boolean gitAvailable() {
-        for (String d : org.nmox.studio.rack.engine.ToolLocator.augmentedPath()
+        for (String d : org.nmox.studio.core.process.ToolLocator.augmentedPath()
                 .split(java.io.File.pathSeparator)) {
             if (new java.io.File(d, "git").canExecute()) {
                 return true;

@@ -16,7 +16,6 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -25,6 +24,9 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import org.nmox.studio.rack.engine.CommandExecutor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Project configuration: structured package.json editing. Identity
@@ -162,8 +164,8 @@ public class ProjectConfigDialog extends JDialog {
             form.add(new JLabel("Scope:"), c);
             c.gridx = 1;
             form.add(scope, c);
-            if (JOptionPane.showConfirmDialog(this, form, "Add Dependency",
-                    JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) {
+            DialogDescriptor dd = new DialogDescriptor(form, "Add Dependency");
+            if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                 return;
             }
             String name = pkgField.getText().trim();
@@ -183,8 +185,9 @@ public class ProjectConfigDialog extends JDialog {
                 return;
             }
             String name = (String) depsModel.getValueAt(row, 0);
-            if (JOptionPane.showConfirmDialog(this, "npm uninstall " + name + "?",
-                    "Remove Dependency", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    "npm uninstall " + name + "?", "Remove Dependency",
+                    NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
                 runNpm(List.of("npm", "uninstall", name));
             }
         });
@@ -206,13 +209,10 @@ public class ProjectConfigDialog extends JDialog {
                         pkg = PackageJsonFile.load(projectDir);
                         loadFields();
                     } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(this, ex.getMessage(),
-                                "Project Configuration", JOptionPane.ERROR_MESSAGE);
+                        error("Could not run npm: " + ex.getMessage());
                     }
                     if (code != 0) {
-                        JOptionPane.showMessageDialog(this,
-                                "npm exited with " + code + " — see the \"Rack: Project Config\" output tab.",
-                                "Project Configuration", JOptionPane.WARNING_MESSAGE);
+                        warn("npm exited with " + code + " — see the \"Rack: Project Config\" output tab.");
                     }
                 }));
     }
@@ -253,9 +253,20 @@ public class ProjectConfigDialog extends JDialog {
             pkg.save();
             return true;
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Save failed: " + ex.getMessage(),
-                    "Project Configuration", JOptionPane.ERROR_MESSAGE);
+            error("Could not save package.json: " + ex.getMessage());
             return false;
         }
+    }
+
+    // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
+
+    private void error(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    private void warn(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.WARNING_MESSAGE));
     }
 }

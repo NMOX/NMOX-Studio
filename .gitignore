@@ -16,3 +16,8 @@ jdk17/
 # (core.jar/, org-netbeans-core.jar/). A global "*.jar" ignore would eat
 # them silently - this re-includes everything under nbm-branding.
 !branding/src/main/nbm-branding/**
+
+# The tools module has a real Java package named "build". A global
+# "build/" ignore would eat new files in it silently - keep it visible.
+!tools/src/main/java/org/nmox/studio/tools/build/
+!tools/src/test/java/org/nmox/studio/tools/build/

@@ -86,7 +86,8 @@ public class NpmService {
 
     public boolean isAvailable(PackageManager manager) {
         try {
-            Process process = new ProcessBuilder(getCommand(manager), "--version")
+            Process process = org.nmox.studio.core.process.ProcessSupport
+                    .builder(java.util.List.of(getCommand(manager), "--version"))
                     .redirectErrorStream(true)
                     .start();
             // bound the wait: a wedged tool must not hang the calling thread
@@ -134,7 +135,7 @@ public class NpmService {
                 out.println("Directory: " + workingDir.getAbsolutePath());
                 out.println("----------------------------------------");
                 
-                ProcessBuilder pb = new ProcessBuilder(command);
+                ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(java.util.List.of(command));
                 pb.directory(workingDir);
                 pb.redirectErrorStream(true);
                 

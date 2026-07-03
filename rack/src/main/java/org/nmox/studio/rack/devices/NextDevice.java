@@ -88,7 +88,7 @@ public class NextDevice extends CommandDevice {
         }
         StringBuilder out = new StringBuilder();
         CommandProbe.run(projectDir(),
-                List.of(org.nmox.studio.rack.engine.ToolLocator.resolve("npm"),
+                List.of(org.nmox.studio.core.process.ToolLocator.resolve("npm"),
                         "view", "next", "version"),
                 out::append, code -> {
                     if (code == 0 && !out.isEmpty()) {

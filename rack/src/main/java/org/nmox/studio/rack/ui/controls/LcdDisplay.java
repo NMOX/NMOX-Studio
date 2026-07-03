@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * A green-on-black LCD panel, one or more lines. Multi-line displays
@@ -40,9 +42,10 @@ public class LcdDisplay extends JComponent {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (editable && e.getClickCount() == 2) {
-                    String input = javax.swing.JOptionPane.showInputDialog(LcdDisplay.this, editPrompt, text);
-                    if (input != null) {
-                        setText(input.trim());
+                    NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine(editPrompt, editPrompt);
+                    line.setInputText(text);
+                    if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION) {
+                        setText(line.getInputText().trim());
                         for (Runnable r : new ArrayList<>(editListeners)) {
                             r.run();
                         }

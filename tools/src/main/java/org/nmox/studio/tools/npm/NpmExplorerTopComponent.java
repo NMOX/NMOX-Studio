@@ -166,7 +166,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
         }
         
         try {
-            String content = Files.readString(packageJson.toPath());
+            String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
             JSONObject json = new JSONObject(content);
             
             rootNode.removeAllChildren();

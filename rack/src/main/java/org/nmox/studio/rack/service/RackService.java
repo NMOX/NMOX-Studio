@@ -73,6 +73,14 @@ public class RackService {
      * statement that there is nothing to resume.
      */
     private volatile boolean anyLiveThisSession;
+    private javax.swing.Timer sessionSnapshotTimer;
+
+    /** Stops the continuous snapshot; the service is then quiescent. */
+    void stopSessionSnapshots() {
+        if (sessionSnapshotTimer != null) {
+            sessionSnapshotTimer.stop();
+        }
+    }
 
     private void startSessionSnapshots() {
         javax.swing.Timer snap = new javax.swing.Timer(5_000, e -> {
@@ -85,7 +93,7 @@ public class RackService {
                 if (!state.running().isEmpty()) {
                     anyLiveThisSession = true;
                     java.nio.file.Files.createDirectories(file.getParentFile().toPath());
-                    java.nio.file.Files.writeString(file.toPath(), state.toJson());
+                    java.nio.file.Files.writeString(file.toPath(), state.toJson(), java.nio.charset.StandardCharsets.UTF_8);
                 } else if (anyLiveThisSession) {
                     // tools ran and were stopped: nothing to resume anymore.
                     // A session file from a PREVIOUS process stays untouched
@@ -99,6 +107,7 @@ public class RackService {
         });
         snap.setRepeats(true);
         snap.start();
+        sessionSnapshotTimer = snap;
     }
 
     /** After aiming: if the last session here died with tools running, offer them back. */
@@ -109,7 +118,7 @@ public class RackService {
         }
         SessionState state;
         try {
-            state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath()));
+            state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8));
         } catch (Exception ex) {
             return;
         }

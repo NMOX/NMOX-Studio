@@ -8,7 +8,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.lsp.client.spi.LanguageServerProvider;
-import org.nmox.studio.rack.engine.ToolLocator;
+import org.nmox.studio.core.process.ToolLocator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 

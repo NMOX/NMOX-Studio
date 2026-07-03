@@ -54,7 +54,7 @@ public class NpmScriptDevice extends CommandDevice {
         List<String> names = new ArrayList<>();
         if (pkg.isFile()) {
             try {
-                JSONObject json = new JSONObject(Files.readString(pkg.toPath()));
+                JSONObject json = new JSONObject(Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
                 if (json.has("scripts")) {
                     for (String key : json.getJSONObject("scripts").keySet()) {
                         names.add(key);

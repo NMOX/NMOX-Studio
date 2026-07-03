@@ -3,11 +3,12 @@ package org.nmox.studio.rack.devices;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
-import javax.swing.JOptionPane;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
 import org.nmox.studio.rack.ui.controls.Led;
 import org.nmox.studio.rack.ui.controls.RackButton;
 import org.nmox.studio.rack.ui.controls.RackStyle;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * TIMELINE Git Sequencer: source-control transport. The branch LCD and
@@ -35,8 +36,9 @@ public class GitDevice extends CommandDevice {
         pull.addActionListener(e -> launch(List.of("git", "pull")));
         push.addActionListener(e -> launch(List.of("git", "push")));
         commit.addActionListener(e -> {
-            String msg = JOptionPane.showInputDialog(this, "Commit message:", "Commit",
-                    JOptionPane.PLAIN_MESSAGE);
+            NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine("Commit message:", "Commit");
+            String msg = DialogDisplayer.getDefault().notify(input) == NotifyDescriptor.OK_OPTION
+                    ? input.getInputText() : null;
             if (msg != null && !msg.isBlank()) {
                 exec(List.of("git", "add", "-A"), line -> {
                 }, code -> {

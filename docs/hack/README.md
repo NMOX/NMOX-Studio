@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Real Talk: Building NMOX Studio with AI
 
 *Late night hacker notes - the actual truth about what we're building*

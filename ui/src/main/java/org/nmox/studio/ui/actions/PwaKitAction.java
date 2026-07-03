@@ -111,35 +111,37 @@ public final class PwaKitAction implements ActionListener {
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
-        try {
-            String artPath = artwork.getText().trim();
-            PwaKit.Options opts = new PwaKit.Options(
-                    name.getText().trim(), shortName.getText().trim(),
-                    theme.getText().trim(), background.getText().trim(),
-                    monogram.getText().trim(),
-                    artPath.isEmpty() ? null : new File(artPath),
-                    strategy.getSelectedIndex() == 0
-                            ? PwaKit.Strategy.APP_SHELL : PwaKit.Strategy.NETWORK_FIRST,
-                    icons.isSelected(), manifest.isSelected(),
-                    serviceWorker.isSelected(), wire.isSelected());
-            List<PwaKit.Outcome> outcomes = PwaKit.write(project, opts);
-            StringBuilder report = new StringBuilder();
-            for (PwaKit.Outcome o : outcomes) {
-                report.append(o.written() ? "  ✓ " : "  – ").append(o.path());
-                if (!"written".equals(o.status())) {
-                    report.append("  (").append(o.status()).append(')');
+        String artPath = artwork.getText().trim();
+        PwaKit.Options opts = new PwaKit.Options(
+                name.getText().trim(), shortName.getText().trim(),
+                theme.getText().trim(), background.getText().trim(),
+                monogram.getText().trim(),
+                artPath.isEmpty() ? null : new File(artPath),
+                strategy.getSelectedIndex() == 0
+                        ? PwaKit.Strategy.APP_SHELL : PwaKit.Strategy.NETWORK_FIRST,
+                icons.isSelected(), manifest.isSelected(),
+                serviceWorker.isSelected(), wire.isSelected());
+        // PNG encoding and disk writes run off the EDT; the report then hops
+        // back to a fresh EDT dispatch so it can't stack behind the main window
+        org.openide.util.RequestProcessor.getDefault().post(() -> {
+            try {
+                List<PwaKit.Outcome> outcomes = PwaKit.write(project, opts);
+                StringBuilder report = new StringBuilder();
+                for (PwaKit.Outcome o : outcomes) {
+                    report.append(o.written() ? "  ✓ " : "  – ").append(o.path());
+                    if (!"written".equals(o.status())) {
+                        report.append("  (").append(o.status()).append(')');
+                    }
+                    report.append('\n');
                 }
-                report.append('\n');
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message("PWA Kit:\n\n" + report,
+                                NotifyDescriptor.INFORMATION_MESSAGE)));
+            } catch (Exception ex) {
+                String message = "Could not write: " + ex.getMessage();
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
             }
-            // deferred a dispatch: a dialog opened while the wizard is still
-            // disposing can stack behind the main window and soft-lock the app
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message("PWA Kit:\n\n" + report,
-                            NotifyDescriptor.INFORMATION_MESSAGE)));
-        } catch (Exception ex) {
-            String message = "Could not write: " + ex.getMessage();
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
-        }
+        });
     }
 }
