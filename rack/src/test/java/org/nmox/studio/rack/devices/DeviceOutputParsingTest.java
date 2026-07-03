@@ -30,12 +30,16 @@ class DeviceOutputParsingTest {
         return rack;
     }
 
-    private static void flushEdt() {
+    // Drain both async paths before asserting: the EDT and the rack's
+    // single-threaded signal router (which delivers to receivers off-thread).
+    // A bare EDT flush leaves the router race that a loaded CI runner loses.
+    private static void settle(Rack rack) {
         try {
             javax.swing.SwingUtilities.invokeAndWait(() -> { });
         } catch (Exception ignored) {
             // not relevant to the assertion
         }
+        rack.awaitRouterIdle();
     }
 
     // ---------------- SENTRY / AuditDevice ----------------
@@ -51,7 +55,7 @@ class DeviceOutputParsingTest {
                     + "{\"critical\":2,\"high\":1,\"moderate\":3,\"low\":0}}}";
             sentry.onLine(json);
             sentry.onFinished(1);
-            flushEdt();
+            settle(rack);
             // statusLcd is the CommandDevice status line (protected, same package)
             assertThat(sentry.statusLcd.getText()).isEqualTo("C:2 H:1 M:3 L:0");
 
@@ -60,7 +64,7 @@ class DeviceOutputParsingTest {
             clean.onLine("{\"metadata\":{\"vulnerabilities\":"
                     + "{\"critical\":0,\"high\":0,\"moderate\":0,\"low\":0}}}");
             clean.onFinished(0);
-            flushEdt();
+            settle(rack);
             assertThat(clean.statusLcd.getText()).isEqualTo("C:0 H:0 M:0 L:0");
         } finally {
             rack.shutdown();
@@ -77,7 +81,7 @@ class DeviceOutputParsingTest {
             String before = sentry.statusLcd.getText();
             sentry.onLine("npm ERR! code ENOLOCK");
             sentry.onFinished(1);
-            flushEdt();
+            settle(rack);
             assertThat(sentry.statusLcd.getText()).isEqualTo(before);
         } finally {
             rack.shutdown();
@@ -101,7 +105,7 @@ class DeviceOutputParsingTest {
             purity.onLine("  20:1  warning  Unexpected console  no-console");
             purity.onLine("2 problems (1 error, 1 warning)");
             purity.onFinished(1);
-            flushEdt();
+            settle(rack);
 
             var problems = DiagnosticsBus.problemsFor(projectDir.resolve("app.js").toFile());
             assertThat(problems).hasSize(2);
@@ -129,7 +133,7 @@ class DeviceOutputParsingTest {
             guard.onLine(path + "(1,7): error TS2322: Type 'string' is not assignable to type 'number'.");
             guard.onLine("Found 1 error.");
             guard.onFinished(2);
-            flushEdt();
+            settle(rack);
 
             var problems = DiagnosticsBus.problemsFor(projectDir.resolve("index.ts").toFile());
             assertThat(problems).anyMatch(p -> p.line() == 1 && p.error());

@@ -52,12 +52,17 @@ class DeviceBehaviorTest {
         return rack;
     }
 
-    private static void flushEdt() {
+    // Drain both async paths before asserting: the EDT (knob updates and the
+    // emit()s their change-listeners fire) and the rack's single-threaded
+    // signal router (which delivers to a probe's receive() off-thread). A bare
+    // EDT flush leaves the router race that a loaded CI runner loses.
+    private static void settle(Rack rack) {
         try {
             javax.swing.SwingUtilities.invokeAndWait(() -> { });
         } catch (Exception ignored) {
             // interrupted / already on EDT — not relevant to the assertion
         }
+        rack.awaitRouterIdle();
     }
 
     // ---------------- ATMOS / EnvDevice: env shaping ----------------
@@ -98,7 +103,7 @@ class DeviceBehaviorTest {
             probe.received.clear();
 
             atmos.applyState(Map.of("nodeEnv", "1", "ci", "true")); // test + CI
-            flushEdt();
+            settle(rack);
             assertThat(probe.received).isNotEmpty();
             String last = probe.received.stream().reduce((a, b) -> b).orElseThrow().payload();
             assertThat(last).contains("NODE_ENV=test").contains("CI=true");
@@ -140,7 +145,7 @@ class DeviceBehaviorTest {
             probe.received.clear();
 
             rosetta.applyState(Map.of("toolchain", "go"));
-            flushEdt();
+            settle(rack);
             assertThat(probe.received).extracting(Signal::payload).contains("go");
         } finally {
             rack.shutdown();
@@ -200,12 +205,12 @@ class DeviceBehaviorTest {
             probe.received.clear();
 
             db.onFinished(0);
-            flushEdt();
+            settle(rack);
             assertThat(probe.received).anyMatch(s -> s.type() == SignalType.GATE && s.high());
 
             probe.received.clear();
             db.onFinished(1);
-            flushEdt();
+            settle(rack);
             assertThat(probe.received).anyMatch(s -> s.type() == SignalType.GATE && !s.high());
         } finally {
             rack.shutdown();
@@ -227,7 +232,7 @@ class DeviceBehaviorTest {
             probe.received.clear();
 
             run.onFinished(0);
-            flushEdt();
+            settle(rack);
             assertThat(probe.received).anyMatch(s -> s.type() == SignalType.GATE && !s.high());
         } finally {
             rack.shutdown();
@@ -404,12 +409,12 @@ class DeviceBehaviorTest {
             HttpDevice http = new HttpDevice();
             rack.addDevice(http);
             http.receive(http.getPort("url"), Signal.data("http://example.test:9999"));
-            flushEdt();
+            settle(rack);
             assertThat(http.getState()).containsEntry("url", "http://example.test:9999");
 
             // a non-http payload is ignored (stays whatever it was)
             http.receive(http.getPort("url"), Signal.data("ftp://nope"));
-            flushEdt();
+            settle(rack);
             assertThat(http.getState().get("url")).isEqualTo("http://example.test:9999");
         } finally {
             rack.shutdown();

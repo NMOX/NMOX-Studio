@@ -412,6 +412,25 @@ public final class Rack {
         }
     }
 
+    /**
+     * Block until the router thread has delivered every signal emitted before
+     * this call. Delivery is asynchronous on a single background thread, so a
+     * caller that needs to observe a receiver's state after an {@link #emit}
+     * must synchronize on the router rather than race it. Test/diagnostic
+     * support; not part of the normal signal flow.
+     */
+    public void awaitRouterIdle() {
+        try {
+            // the router is single-threaded and FIFO, so a barrier submitted
+            // now runs only after every already-queued delivery has finished
+            router.submit(() -> { }).get(10, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException ex) {
+            throw new IllegalStateException("rack router did not drain", ex);
+        }
+    }
+
     // ---- shared context ----
 
     public File getProjectDir() {

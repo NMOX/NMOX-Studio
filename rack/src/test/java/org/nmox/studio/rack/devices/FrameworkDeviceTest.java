@@ -59,12 +59,16 @@ class FrameworkDeviceTest {
         return rack;
     }
 
-    private static void flushEdt() {
+    // Drain both async paths before asserting: the EDT and the rack's
+    // single-threaded signal router (which delivers to receivers off-thread).
+    // A bare EDT flush leaves the router race that a loaded CI runner loses.
+    private static void settle(Rack rack) {
         try {
             javax.swing.SwingUtilities.invokeAndWait(() -> { });
         } catch (Exception ignored) {
             // not relevant to the assertion
         }
+        rack.awaitRouterIdle();
     }
 
     // ---------------- NEXUS / NextDevice ----------------
@@ -96,7 +100,7 @@ class FrameworkDeviceTest {
 
             next.onLine("  ▲ Next.js  - Local: http://localhost:3000");
             next.onLine("event compiled http://localhost:3000 again"); // same URL: no re-emit
-            flushEdt();
+            settle(rack);
 
             assertThat(probe.data).extracting(Signal::payload)
                     .containsExactly("http://localhost:3000");
@@ -118,7 +122,7 @@ class FrameworkDeviceTest {
             rack.connect(next.getPort("serving"), probe.getPort("gate"));
 
             next.onFinished(0);
-            flushEdt();
+            settle(rack);
             assertThat(probe.gate).anyMatch(s -> !s.high());
         } finally {
             rack.shutdown();
@@ -141,7 +145,7 @@ class FrameworkDeviceTest {
             assertThat(phx.buildCommand()).containsExactly("mix", "phx.server");
 
             phx.onLine("[info] Access MyAppWeb.Endpoint at http://localhost:4000");
-            flushEdt();
+            settle(rack);
             assertThat(probe.data).extracting(Signal::payload)
                     .containsExactly("http://localhost:4000");
         } finally {
@@ -202,7 +206,7 @@ class FrameworkDeviceTest {
             rack.connect(tunnel.getPort("url"), probe.getPort("data"));
 
             tunnel.onLine("2024-01-01 INF |  https://random-words.trycloudflare.com");
-            flushEdt();
+            settle(rack);
             assertThat(probe.data).extracting(Signal::payload)
                     .anyMatch(u -> u.contains("trycloudflare.com"));
         } finally {
@@ -224,7 +228,7 @@ class FrameworkDeviceTest {
             rack.connect(surge.getPort("ready"), probe.getPort("trig"));
 
             surge.onLine("VITE v5  ready in 300 ms");
-            flushEdt();
+            settle(rack);
             assertThat(probe.trig).as("READY fires on the first line").isNotEmpty();
         } finally {
             rack.shutdown();
