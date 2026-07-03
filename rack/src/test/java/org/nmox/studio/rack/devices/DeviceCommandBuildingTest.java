@@ -397,6 +397,12 @@ class DeviceCommandBuildingTest {
     @Test
     @DisplayName("NPM-9000 returns null with no script and manager/run when one is picked")
     void npmScriptNullThenManager() throws IOException {
+        // placeholder "—" script → nothing to run. Deterministic: a fresh,
+        // unattached device holds only the placeholder in its SCRIPT knob.
+        NpmScriptDevice fresh = new NpmScriptDevice();
+        assertThat(fresh.buildCommand()).isNull();
+        fresh.dispose();
+
         Rack rack = new Rack();
         try {
             Files.writeString(projectDir.resolve("package.json"),
@@ -404,14 +410,28 @@ class DeviceCommandBuildingTest {
             rack.setProjectDir(projectDir.toFile());
             NpmScriptDevice dev = new NpmScriptDevice();
             rack.addDevice(dev);
-            // default selection is the placeholder "—": nothing to run
-            assertThat(dev.buildCommand()).isNull();
+            // reloadScripts() posts setOptions to the EDT; drain it before
+            // selecting so "build" is a real option. Without the flush the test
+            // races the EDT — a dev box wins it, a loaded CI runner loses and
+            // reads back null.
+            flushEdt();
 
-            // once a real script is selected, it runs via the chosen manager
-            dev.applyState(Map.of("script", "build", "manager", "1")); // yarn
+            // once a real script is selected it runs via the chosen manager
+            // (MANAGERS is a fixed {npm,yarn,pnpm}, so index 1 is always yarn —
+            // no dependence on which managers are installed on the box)
+            dev.applyState(Map.of("script", "build", "manager", "1"));
+            flushEdt();
             assertThat(dev.buildCommand()).containsExactly("yarn", "run", "build");
         } finally {
             rack.shutdown();
+        }
+    }
+
+    private static void flushEdt() {
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+        } catch (Exception ex) {
+            throw new AssertionError("EDT flush interrupted", ex);
         }
     }
 
