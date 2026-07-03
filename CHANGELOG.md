@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.27.0] — 2026-07-03
+
+The coverage sprint: raise test coverage across the whole codebase to the
+point where every module's *testable* logic is exercised, then lock it in
+with per-module JaCoCo floors so it can't quietly regress. "Full coverage"
+here means honest coverage — pure-Swing windows, dialogs, and canvases that
+can't be unit-tested without a live windowing system are excluded by name
+with a written reason (mirroring the SpotBugs-exclude discipline), not
+chased with brittle tests; everything with a branchable path is tested.
+
+### Added
+- **~320 new unit tests** across editor, rack, tools, apiclient, infra,
+  ui, and project — completion providers and their item classes, editor
+  actions (comment-toggle, smart-break, focused-test command building),
+  the LSP catalog, every rack device's command-building and `receive()`
+  logic, the control-widget models (Knob/Led/VuMeter/LcdDisplay/Toggle),
+  API Studio's table models and header grader, the infra DeployPlanner /
+  NodeKind cost math / graph / GraphIO, and the ui-resident action logic.
+- **Per-module coverage floors on all eight code modules.** Six existing
+  floors were raised to just under the achieved level; **project and ui
+  gained their first floors.** Now enforced (LINE coverage of the testable
+  surface): core 0.78, apiclient 0.78, infra 0.73, rack 0.63, editor 0.55,
+  tools 0.54, project 0.50, ui 0.12.
+- **An honest coverage-exclusion policy** in the root `pom.xml`: pure-UI
+  glue is excluded at the JaCoCo instrumentation level (so the report and
+  the floor both reflect the testable surface), each entry a named class
+  with a one-line rationale. Control widgets are *not* excluded — their
+  model logic is tested; only `paint()` stays uncovered.
+
+### Fixed
+- **`WorkspaceTrust` could overflow the preferences store and break trust
+  on a long-lived install** — a real latent bug the extra tests surfaced.
+  Trusted project paths were persisted as one `File.pathSeparator`-joined
+  string under a single preference key; `java.util.prefs` caps a value at
+  8 KB, so a user who trusted enough projects over time would eventually
+  hit "Value too long" on the next trust and every subsequent one. It's
+  now **one entry per path** (hash key, path value — neither the value nor
+  the key can overflow), with automatic migration off the legacy key. A
+  regression test trusts 200 long paths (≈24 KB joined, three times the old
+  ceiling) without throwing. On CI this stayed invisible because the prefs
+  node starts empty each run; it only bit once the local suite had
+  accumulated enough trusted paths across the day.
+
+### Coverage before → after (module LINE %, testable surface)
+`core 68→83 · editor 43→59 · tools 21→58 · rack 51→67 · apiclient 38→83 ·
+infra 46→77 · project 8→55 · ui 0.4→15`. ui stays low by design — it is a
+thin presentation shell whose logic (the PWA/Standards/Doctor kits, the
+learning catalog, update-tag parsing) lives in rack/core and is tested
+there; the floor guards the small slice of genuine ui-resident logic.
+
 ## [1.26.0] — 2026-07-03
 
 The complete-system sprint: everything the debt ledger recorded as

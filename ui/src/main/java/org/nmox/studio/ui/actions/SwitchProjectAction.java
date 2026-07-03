@@ -76,8 +76,7 @@ public final class SwitchProjectAction implements ActionListener {
                 String needle = filter.getText().toLowerCase();
                 model.clear();
                 for (File dir : recents) {
-                    if (dir.getName().toLowerCase().contains(needle)
-                            || dir.getAbsolutePath().toLowerCase().contains(needle)) {
+                    if (matches(dir, needle)) {
                         model.addElement(dir);
                     }
                 }
@@ -152,6 +151,16 @@ public final class SwitchProjectAction implements ActionListener {
             }
         }
         dialog[0].dispose();
+    }
+
+    /**
+     * The pure filter discipline: a recent project matches the typed
+     * needle if the needle appears in its directory name or its full
+     * path (both lower-cased; an empty needle matches everything).
+     */
+    static boolean matches(File dir, String needle) {
+        return dir.getName().toLowerCase().contains(needle)
+                || dir.getAbsolutePath().toLowerCase().contains(needle);
     }
 
     private void switchTo(File dir) {

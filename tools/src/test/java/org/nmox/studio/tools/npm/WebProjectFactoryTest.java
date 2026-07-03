@@ -91,4 +91,29 @@ class WebProjectFactoryTest {
     void loadProjectRefusesNonProjects(@TempDir Path dir) throws IOException {
         assertThat(factory.loadProject(mount(dir), NO_OP_STATE)).isNull();
     }
+
+    @Test
+    @DisplayName("loadProject on a real manifest builds a WebProject rooted at that directory")
+    void loadProjectBuildsWebProject(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"loadable\"}");
+        // mount the parent and resolve the named child: a filesystem root's
+        // FileObject has an empty name, unlike a real project directory.
+        FileObject projectDir = mount(dir.getParent()).getFileObject(dir.toFile().getName());
+        assertThat(projectDir).isNotNull();
+
+        var project = factory.loadProject(projectDir, NO_OP_STATE);
+        assertThat(project).isInstanceOf(WebProject.class);
+        assertThat(project.getProjectDirectory()).isSameAs(projectDir);
+        assertThat(((WebProject) project).getName()).isEqualTo(dir.toFile().getName());
+    }
+
+    @Test
+    @DisplayName("Bun and Deno manifests are recognized as projects")
+    void bunAndDenoManifestsMakeProjects(@TempDir Path bun, @TempDir Path deno) throws IOException {
+        Files.writeString(bun.resolve("bunfig.toml"), "[install]\n");
+        assertThat(factory.isProject(mount(bun))).as("bunfig.toml").isTrue();
+
+        Files.writeString(deno.resolve("deno.json"), "{}");
+        assertThat(factory.isProject(mount(deno))).as("deno.json").isTrue();
+    }
 }

@@ -212,49 +212,15 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         }
         
         private JavaScriptContext analyzeContext(Document doc, int offset) throws BadLocationException {
-            JavaScriptContext context = new JavaScriptContext();
-            
             // Get text before cursor
             int lineStart = Math.max(0, offset - 100);
-            String text = doc.getText(lineStart, offset - lineStart);
-            
-            // Check for dot access
-            int lastDot = text.lastIndexOf('.');
-            if (lastDot >= 0) {
-                context.isDotAccess = true;
-                
-                // Find object name before dot
-                int start = lastDot - 1;
-                while (start >= 0 && (Character.isJavaIdentifierPart(text.charAt(start)))) {
-                    start--;
-                }
-                
-                if (start < lastDot - 1) {
-                    context.objectName = text.substring(start + 1, lastDot);
-                    context.prefix = text.substring(lastDot + 1);
-                }
-            } else {
-                // Find current word being typed
-                int start = text.length() - 1;
-                while (start >= 0 && Character.isJavaIdentifierPart(text.charAt(start))) {
-                    start--;
-                }
-                context.prefix = text.substring(start + 1);
-            }
-            
-            return context;
+            return JavaScriptCompletionProvider.analyzeContext(doc.getText(lineStart, offset - lineStart));
         }
-        
+
         private void addObjectMemberCompletions(CompletionResultSet resultSet, JavaScriptContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            
-            if (GLOBAL_OBJECTS.containsKey(context.objectName)) {
-                for (JavaScriptMethod method : GLOBAL_OBJECTS.get(context.objectName)) {
-                    if (method.name.toLowerCase().startsWith(prefix)) {
-                        resultSet.addItem(new JavaScriptMethodCompletionItem(
-                            method, caretOffset - prefix.length(), prefix.length()));
-                    }
-                }
+            for (JavaScriptMethod method : matchingMethods(context.objectName, context.prefix)) {
+                resultSet.addItem(new JavaScriptMethodCompletionItem(
+                        method, caretOffset - context.prefix.length(), context.prefix.length()));
             }
         }
         
@@ -297,40 +263,115 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         }
 
         private void addKeywordCompletions(CompletionResultSet resultSet, JavaScriptContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            
-            for (String keyword : KEYWORDS) {
-                if (keyword.startsWith(prefix)) {
-                    resultSet.addItem(new JavaScriptKeywordCompletionItem(
-                        keyword, caretOffset - prefix.length(), prefix.length()));
-                }
+            for (String keyword : matchingKeywords(context.prefix)) {
+                resultSet.addItem(new JavaScriptKeywordCompletionItem(
+                    keyword, caretOffset - context.prefix.length(), context.prefix.length()));
             }
         }
-        
+
         private void addGlobalObjectCompletions(CompletionResultSet resultSet, JavaScriptContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            
-            for (String obj : GLOBAL_OBJECTS.keySet()) {
-                if (obj.toLowerCase().startsWith(prefix)) {
-                    resultSet.addItem(new JavaScriptObjectCompletionItem(
-                        obj, caretOffset - prefix.length(), prefix.length()));
-                }
+            for (String obj : matchingGlobalObjects(context.prefix)) {
+                resultSet.addItem(new JavaScriptObjectCompletionItem(
+                    obj, caretOffset - context.prefix.length(), context.prefix.length()));
             }
         }
-        
+
         private void addSnippetCompletions(CompletionResultSet resultSet, JavaScriptContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            
-            for (JavaScriptSnippet snippet : SNIPPETS) {
-                if (snippet.trigger.startsWith(prefix)) {
-                    resultSet.addItem(new JavaScriptSnippetCompletionItem(
-                        snippet, caretOffset - prefix.length(), prefix.length()));
-                }
+            for (JavaScriptSnippet snippet : matchingSnippets(context.prefix)) {
+                resultSet.addItem(new JavaScriptSnippetCompletionItem(
+                    snippet, caretOffset - context.prefix.length(), context.prefix.length()));
             }
         }
     }
+
+    /**
+     * Where the caret sits, derived from the (up-to-100-char) text before
+     * it: a member access after a dot, or a bare word being typed.
+     * Package-visible and pure so the context rules are testable.
+     */
+    static JavaScriptContext analyzeContext(String text) {
+        JavaScriptContext context = new JavaScriptContext();
+
+        // Check for dot access
+        int lastDot = text.lastIndexOf('.');
+        if (lastDot >= 0) {
+            context.isDotAccess = true;
+
+            // Find object name before dot
+            int start = lastDot - 1;
+            while (start >= 0 && (Character.isJavaIdentifierPart(text.charAt(start)))) {
+                start--;
+            }
+
+            if (start < lastDot - 1) {
+                context.objectName = text.substring(start + 1, lastDot);
+                context.prefix = text.substring(lastDot + 1);
+            }
+        } else {
+            // Find current word being typed
+            int start = text.length() - 1;
+            while (start >= 0 && Character.isJavaIdentifierPart(text.charAt(start))) {
+                start--;
+            }
+            context.prefix = text.substring(start + 1);
+        }
+
+        return context;
+    }
+
+    /** Keywords whose text starts with the prefix (case-insensitive), sorted. */
+    static List<String> matchingKeywords(String prefix) {
+        String p = prefix.toLowerCase();
+        List<String> out = new ArrayList<>();
+        for (String keyword : KEYWORDS) {
+            if (keyword.startsWith(p)) {
+                out.add(keyword);
+            }
+        }
+        java.util.Collections.sort(out);
+        return out;
+    }
+
+    /** Global object names whose text starts with the prefix (case-insensitive), sorted. */
+    static List<String> matchingGlobalObjects(String prefix) {
+        String p = prefix.toLowerCase();
+        List<String> out = new ArrayList<>();
+        for (String obj : GLOBAL_OBJECTS.keySet()) {
+            if (obj.toLowerCase().startsWith(p)) {
+                out.add(obj);
+            }
+        }
+        java.util.Collections.sort(out);
+        return out;
+    }
+
+    /** Snippets whose trigger starts with the prefix (case-insensitive), in declared order. */
+    static List<JavaScriptSnippet> matchingSnippets(String prefix) {
+        String p = prefix.toLowerCase();
+        List<JavaScriptSnippet> out = new ArrayList<>();
+        for (JavaScriptSnippet snippet : SNIPPETS) {
+            if (snippet.trigger.startsWith(p)) {
+                out.add(snippet);
+            }
+        }
+        return out;
+    }
+
+    /** Methods of a global object whose name starts with the prefix (case-insensitive), in declared order. */
+    static List<JavaScriptMethod> matchingMethods(String objectName, String prefix) {
+        String p = prefix.toLowerCase();
+        List<JavaScriptMethod> out = new ArrayList<>();
+        if (objectName != null && GLOBAL_OBJECTS.containsKey(objectName)) {
+            for (JavaScriptMethod method : GLOBAL_OBJECTS.get(objectName)) {
+                if (method.name.toLowerCase().startsWith(p)) {
+                    out.add(method);
+                }
+            }
+        }
+        return out;
+    }
     
-    private static class JavaScriptContext {
+    static class JavaScriptContext {
         boolean isDotAccess = false;
         String objectName = null;
         String prefix = "";

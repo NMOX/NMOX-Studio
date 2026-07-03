@@ -155,13 +155,22 @@ public final class NewLearningSpaceAction implements ActionListener {
     }
 
     private static boolean matches(LearningCatalog.Space s, String q) {
-        return s.name().toLowerCase(Locale.ROOT).contains(q)
-                || s.family().toLowerCase(Locale.ROOT).contains(q)
-                || s.slug().contains(q)
-                || s.blurb().toLowerCase(Locale.ROOT).contains(q);
+        return matches(s.name(), s.family(), s.slug(), s.blurb(), q);
     }
 
-    private static String escape(String s) {
+    /**
+     * The pure filter discipline, testable without building a whole
+     * catalog Space: a lower-cased query hits any of name, family, slug,
+     * or blurb (slug is already lower-cased, so it matches literally).
+     */
+    static boolean matches(String name, String family, String slug, String blurb, String q) {
+        return name.toLowerCase(Locale.ROOT).contains(q)
+                || family.toLowerCase(Locale.ROOT).contains(q)
+                || slug.contains(q)
+                || blurb.toLowerCase(Locale.ROOT).contains(q);
+    }
+
+    static String escape(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 }
