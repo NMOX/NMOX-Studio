@@ -89,7 +89,7 @@ public final class FormatOnSave implements OnSaveTask {
      * prefix and suffix stay untouched, so document Positions outside
      * the span (carets, folds, annotations) keep their places.
      */
-    static void applyMinimalEdit(Document doc, String before, String after)
+    public static void applyMinimalEdit(Document doc, String before, String after)
             throws BadLocationException {
         if (before.equals(after)) {
             return;

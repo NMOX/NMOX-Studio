@@ -73,4 +73,27 @@ class GoldStandardDevicesTest {
         vitals.applyState(java.util.Map.of("min", "4")); // "90"
         assertThat(vitals.minimum()).isEqualTo(90);
     }
+
+    @Test
+    @DisplayName("VITALS GATE knob: the floor can hold perf, a11y (WCAG), or both")
+    void vitalsGateChoosesStandard() {
+        VitalsDevice vitals = new VitalsDevice();
+        vitals.applyState(java.util.Map.of("min", "4")); // floor 90
+        vitals.scoresForTest(new VitalsDevice.Scores(0.95, 0.60, 1.0, 1.0)); // fast, inaccessible
+
+        // default gate = perf: only performance holds the floor
+        org.assertj.core.api.Assertions.assertThat(vitals.gate()).isEqualTo("perf");
+        org.assertj.core.api.Assertions.assertThat(vitals.overallSuccess(0)).isTrue();
+
+        vitals.applyState(java.util.Map.of("gate", "1")); // a11y
+        org.assertj.core.api.Assertions.assertThat(vitals.overallSuccess(0))
+                .as("a11y 60 < 90: WCAG closes the gate").isFalse();
+
+        vitals.applyState(java.util.Map.of("gate", "2")); // both
+        org.assertj.core.api.Assertions.assertThat(vitals.overallSuccess(0)).isFalse();
+
+        vitals.scoresForTest(new VitalsDevice.Scores(0.95, 0.97, 1.0, 1.0));
+        org.assertj.core.api.Assertions.assertThat(vitals.overallSuccess(0))
+                .as("both standards above the floor").isTrue();
+    }
 }

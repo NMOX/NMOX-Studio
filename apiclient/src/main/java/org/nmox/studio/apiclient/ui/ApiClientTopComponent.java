@@ -95,6 +95,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTextArea responseBody = new JTextArea();
     private final JTextArea responseHeaders = new JTextArea();
     private final JPanel testResults = new JPanel();
+    private final JPanel standardsPanel = new JPanel();
 
     public ApiClientTopComponent() {
         setName(Bundle.CTL_ApiClientTopComponent());
@@ -257,6 +258,8 @@ public final class ApiClientTopComponent extends TopComponent {
         tabs.addTab("Headers", new JScrollPane(responseHeaders));
         testResults.setLayout(new BoxLayout(testResults, BoxLayout.Y_AXIS));
         tabs.addTab("Tests", new JScrollPane(testResults));
+        standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.Y_AXIS));
+        tabs.addTab("Standards", new JScrollPane(standardsPanel));
         panel.add(tabs, BorderLayout.CENTER);
         return panel;
     }
@@ -311,6 +314,36 @@ public final class ApiClientTopComponent extends TopComponent {
         }
         testResults.revalidate();
         testResults.repaint();
+
+        // the security-header standards, graded on every send
+        standardsPanel.removeAll();
+        if (r.reached()) {
+            org.nmox.studio.apiclient.api.HeaderGrader.Report report =
+                    org.nmox.studio.apiclient.api.HeaderGrader.grade(r.headers());
+            JLabel gradeLine = new JLabel("  Security headers grade: " + report.grade());
+            gradeLine.setFont(gradeLine.getFont().deriveFont(Font.BOLD));
+            gradeLine.setForeground("A".equals(report.grade()) || "B".equals(report.grade())
+                    ? OK_GREEN : FAIL_RED);
+            standardsPanel.add(gradeLine);
+            for (var check : report.checks()) {
+                String mark = switch (check.verdict()) {
+                    case PASS -> "  ✓  ";
+                    case WARN -> "  !  ";
+                    case MISS -> "  ✗  ";
+                };
+                JLabel line = new JLabel(mark + check.standard() + "   — " + check.detail());
+                line.setForeground(switch (check.verdict()) {
+                    case PASS -> OK_GREEN;
+                    case WARN -> new Color(0xE8, 0xC4, 0x4A);
+                    case MISS -> FAIL_RED;
+                });
+                standardsPanel.add(line);
+            }
+        } else {
+            standardsPanel.add(new JLabel("  No response — nothing to grade."));
+        }
+        standardsPanel.revalidate();
+        standardsPanel.repaint();
     }
 
     // ---- tree model + selection ----
