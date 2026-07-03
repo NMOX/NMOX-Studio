@@ -33,6 +33,7 @@ public enum DeviceType {
     BROWSER("browser", "SCOPE", "Browser Link — open URLs on trigger", new Color(54, 174, 222), BrowserDevice::new),
     CONSOLE("console", "MONITOR", "Output Console — watch any OUT jack", new Color(80, 200, 120), ConsoleDevice::new),
     TERMINAL("terminal", "PHOSPHOR", "Scrollback Terminal — 5k lines, selectable", new Color(57, 255, 20), TerminalDevice::new),
+    REPL("repl", "REPL", "Read-Eval-Print Loop — type into clisp/python/node/ghci live", new Color(120, 230, 160), ReplDevice::new),
     ENV("env", "ATMOS", "Env Mixer — NODE_ENV/CI/custom vars", new Color(120, 144, 220), EnvDevice::new),
     TEMPO("tempo", "TEMPO", "Step Sequencer — fire pipelines on a clock", new Color(255, 211, 105), TempoDevice::new),
     TYPECHECK("typecheck", "TYPEGUARD", "Type Checker — tsc, watch-aware", new Color(49, 120, 198), TypecheckDevice::new),
@@ -104,7 +105,7 @@ public enum DeviceType {
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
-            case CONSOLE, TERMINAL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON -> PaletteCategory.OBSERVE;
+            case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
         };
@@ -134,6 +135,7 @@ public enum DeviceType {
             case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";
             case CONSOLE -> "A glanceable 8-line screen. Patch any OUT (data) jack into IN,\nor dial TAP to stderr/all to hear every device unpatched — errors glow red.";
             case TERMINAL -> "5,000 lines of selectable scrollback. FOLLOW tails the output.\nPatch the OUT of anything chatty in here.";
+            case REPL -> "Set COMMAND to an interpreter (clisp, python3, node, ghci), press START.\nType an expression and Enter to evaluate; HINTS lists starter snippets. A Learning Space seeds both for you.";
             case BENCH -> "FIRE hammers the URL with autocannon; req/s on the meter.\nPatch SURGE URL → URL and READY → RUN to bench the second it serves.";
             case DEBUG -> "LAUNCH starts your runtime in debug-server mode; the attach\nendpoint (chrome://inspect, debugpy, dlv…) lands on the LCD.";
             case GIT -> "STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.\nAmber buttons mutate - the law of the rack.";

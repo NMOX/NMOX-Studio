@@ -107,6 +107,23 @@ are never flagged as typos); a **Structure navigator** (⌘7) that outlines
 any file — classes, functions, tests, selectors, headings, config keys —
 and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 
+### 🎓 Learning Spaces
+Projects that exist to be learned from. **File → New Learning Space…**
+(⇧⌘L) opens a searchable picker of **51 built-in tutorials** across
+languages, frameworks, and libraries; choose one — say Common Lisp —
+and the studio generates a real project: sample code, a TUTORIAL.md
+that walks it (with the install command for your OS), and a rack
+already wired with a **live REPL** pointed at the right interpreter.
+Press START, click HINTS for starter expressions, type `(+ 1 2 3)`,
+read the answer. The REPL is a genuine interactive process you type
+into (clisp, python3, node, ghci, iex, irb, sqlite3, redis-cli…) — a
+new capability, since the rack's command devices deliberately run with
+a closed stdin. Framework spaces with a real console (Rails, Django,
+Phoenix, Laravel Tinker) wire that console; the rest wire a run
+command. The whole catalog is data (`learn-catalog.json`) — and every
+space is honest: if a tool isn't installed, it says so and hands you
+the install line.
+
 ### 🧪 API Studio
 A Postman-style tab (Window → API Studio) for building, saving, sending,
 and **testing** HTTP requests: collections of requests, a builder with
