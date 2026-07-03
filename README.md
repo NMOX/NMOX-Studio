@@ -66,8 +66,14 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
 - **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
   names running work before stopping it — no more silently killed dev
   servers. **Quick Search (⌘I)** finds actions, files, recent projects
-  (Enter switches), and rack devices (Enter racks them). ⌘9 rack,
-  ⌘8 Docker, ⌘0 workbench; the status line shows what's running.
+  (Enter switches), rack devices (Enter racks them), **API Studio
+  requests** (jumps to the request), and **infra nodes** (selects them
+  on the canvas). ⌘9 rack, ⌘8 Docker, ⌘0 workbench; the status line
+  shows what's running.
+- **The rack has undo (⌘Z / ⇧⌘Z)**: add, remove, move a device or
+  patch a cable and take it back — including a removed device, which
+  comes back with its cables re-wired. A 100-deep history that starts
+  clean on whatever patch you loaded.
 - **Experiments (⌘⇧E)**: throwaway workspaces in `~/.nmox/experiments` —
   no git, no recents pollution, pre-trusted. Promote the keepers
   (move + git init), discard the rest.
@@ -172,11 +178,14 @@ The Workbench home base (toolchain chips, open/recent files, tooling
 shelf), Project Studio templates that scaffold versioned, rack-wired
 projects, and a Node-RED-style Infra Designer for DigitalOcean, Hetzner,
 and Cloudflare with cost estimates and dry-run planning — plus the
-truth-and-teardown loop: **Refresh** flags cloud-deleted resources as
-drifted, **Destroy stack** tears everything down in reverse dependency
-order with the monthly bill in view, droplets take **cloud-init**
-user_data, and a deployed node hands you its **ssh command** from the
-context menu.
+truth-and-teardown loop: **Sync from cloud** pulls your live resources
+from all three providers into the designer in one sweep (each provider
+isolated, so one bad token never aborts the others; re-syncing
+refreshes nodes in place instead of duplicating them), **Refresh**
+flags cloud-deleted resources as drifted, **Destroy stack** tears
+everything down in reverse dependency order with the monthly bill in
+view, droplets take **cloud-init** user_data, and a deployed node hands
+you its **ssh command** from the context menu.
 
 ### ✅ Proven, not promised
 CI runs real `npm install`/build/test/serve through the actual rack devices

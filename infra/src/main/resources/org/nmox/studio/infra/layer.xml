@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <!-- Quick Search (Cmd+I): make the current infra design searchable by
+         node name or kind. Enter jumps the designer to the node. -->
+    <folder name="QuickSearch">
+        <folder name="Infra">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.infra.search.Bundle"/>
+            <attr name="position" intvalue="320"/>
+            <file name="org-nmox-studio-infra-search-InfraNodeSearchProvider.instance"/>
+        </folder>
+    </folder>
+</filesystem>

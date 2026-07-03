@@ -42,6 +42,8 @@ public class RackService {
         if (!initialized) {
             initialized = true;
             loadDefaultRack();
+            // the starter patch is not undoable; interactive edits from here are
+            rack.enableUndoCapture();
             rack.addListener(new Rack.Listener() {
                 @Override
                 public void projectChanged() {
@@ -321,6 +323,9 @@ public class RackService {
                         .warning("Could not load rack patch " + patch + ": " + ex);
             }
         }
+        // switching projects loads a different rack; undo starts fresh, and
+        // must never peel a just-loaded patch apart device by device
+        rack.clearUndoHistory();
     }
 
     /**

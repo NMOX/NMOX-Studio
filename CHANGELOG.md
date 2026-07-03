@@ -4,6 +4,74 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.26.0] — 2026-07-03
+
+The complete-system sprint: everything the debt ledger recorded as
+half-done "with a reason" was taken back up and finished — or its
+deferral was re-examined against the code and firmed into a decision.
+Six feature-shaped debts (0a–0f) shipped; the seven refactor-shaped
+ones were each re-inspected, and two of them (the toolchain switches
+and the faceplate boilerplate) turned out to have no duplication worth
+removing once read again rather than remembered. A deferral you can
+defend after re-reading the code is a decision, not a guess.
+
+### Added
+- **Rack undo/redo (⌘Z / ⇧⌘Z).** Every structural rack edit — add,
+  remove, move a device; connect or disconnect a cable — is now
+  reversible, with a 100-deep bounded history. Removing a device and
+  undoing it brings the device back *with its cables re-patched*. Bulk
+  operations (default-rack load, patch autoload) are deliberately
+  non-undoable so the history starts clean on the patch you loaded.
+- **Quick Search reaches into API Studio and the infra designer.** ⌘I
+  now finds API requests by method and name (jumps to the request in
+  API Studio) and infra nodes by name and kind (selects them on the
+  canvas) — cross-tab navigation that previously stopped at projects
+  and rack devices. (Closes ledger 0a.)
+- **"Sync from cloud" is genuinely multi-provider.** The infra
+  designer pulls live resources from DigitalOcean, Hetzner Cloud
+  (servers, networks, load balancers, volumes, firewalls, floating
+  IPs), and Cloudflare (zones → DNS records) in one sweep. Each
+  provider is isolated — one cloud's outage or bad token reports as a
+  per-provider failure without aborting the rest — and re-syncing
+  refreshes existing nodes in place instead of stacking duplicates.
+  (Closes ledger 0b.)
+- **TAIL and TEMPO survive a crash.** The two timer devices now report
+  as resumable from their arm switch (FOLLOW / CLOCK) and re-arm on
+  resume, so a kill -9 mid-follow or mid-clock comes back running —
+  without inflating the status line's process "running" count, which
+  stays process-only. (Closes ledger 0d.)
+- **Eight more Navigator outlines.** Structure view (⌘7) now populates
+  for Haskell, OCaml, R, Perl, Julia, F#, Crystal, and Zig — 43 mimes
+  with an outline, up from 35. (Closes ledger 0e.)
+- **An Options checkbox for the startup update check.** Tools >
+  Options > NMOX Studio > "Check for updates on startup" flips the
+  `updateCheck` preference that previously had no UI. (Closes ledger
+  0f.)
+- **SOLDER exports to CI.** The any-command device now emits a GitHub
+  Actions `run:` step alongside the other build steps; PREFLIGHT
+  stays out on purpose (in CI the workflow *is* the ship gate).
+  (Closes the SOLDER half of ledger 0c.)
+
+### Changed
+- The debt ledger (`docs/engineering/tech-debt.md`) was rewritten:
+  0a–0f moved to "Closed by v1.26.0," and the refactor items 1–7 were
+  re-audited with fresh evidence. #7 (rack-palette startup cost) was
+  measured — a 7-second cold boot is dominated by JVM warm-up and
+  first-run module install, not the ~0.3s palette build — and firmed
+  to "won't fix until a profiler names it." #1 and #2 firmed to
+  won't-fix once re-reading the code showed the "duplication" was a
+  shared *idiom*, not shared *values* (each device places its
+  transport cluster at its own coordinates; each toolchain switch maps
+  the same enum to a *different* verb).
+
+### Tests
+- `RackUndoTest` (add/undo/redo, cable restoration, redo invalidation,
+  bulk-load-not-undoable), `TimerResumeTest` (idle-not-resumable,
+  armed-resumable-not-live, resume-rearms), `CloudSyncTest` (all
+  provider endpoint shapes, failure isolation, dedupe-refresh), plus
+  the new search-provider and Options-panel tests. Full suite green;
+  DeviceContractTest's 241 assertions unchanged.
+
 ## [1.25.1] — 2026-07-03
 
 The cleanup: loose ends tied off, including two real bugs the deferred

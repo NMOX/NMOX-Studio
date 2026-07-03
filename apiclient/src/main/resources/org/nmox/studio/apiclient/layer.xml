@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <!-- Quick Search (Cmd+I) over the saved API requests: name, method,
+         or URL, Enter jumps to it in API Studio. -->
+    <folder name="QuickSearch">
+        <folder name="ApiStudio">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.apiclient.search.Bundle"/>
+            <attr name="position" intvalue="320"/>
+            <file name="org-nmox-studio-apiclient-search-ApiRequestSearchProvider.instance"/>
+        </folder>
+    </folder>
+</filesystem>

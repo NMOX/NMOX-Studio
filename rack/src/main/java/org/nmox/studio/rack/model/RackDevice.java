@@ -313,6 +313,17 @@ public abstract class RackDevice extends JPanel {
     }
 
     /**
+     * Whether session resurrection should bring this device back after a
+     * crash. Process devices tie it to {@link #isLive()}; timer devices
+     * (TAIL following a log, TEMPO clocking) that carry no process
+     * override this to report their armed switch, so a kill -9 mid-follow
+     * comes back following.
+     */
+    public boolean isResumable() {
+        return isLive();
+    }
+
+    /**
      * Re-fires this device's primary action - session resurrection
      * calls this to bring back what was running before the IDE died.
      * Devices without a primary action ignore it.

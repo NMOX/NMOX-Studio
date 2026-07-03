@@ -58,6 +58,16 @@ public class TempoDevice extends RackDevice {
         param("running", runSwitch);
     }
 
+    @Override
+    public boolean isResumable() {
+        return runSwitch.isOn();
+    }
+
+    @Override
+    public void resume() {
+        onEdt(() -> runSwitch.setOn(true)); // re-arm the transport clock after a crash
+    }
+
     private void syncTimer() {
         onEdt(() -> {
             if (timer != null) {

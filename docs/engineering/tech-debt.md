@@ -1,125 +1,167 @@
 # Technical Debt Ledger
 
-The **current** debt record, rewritten during the v1.22.0 Snow Leopard
-sprint and extended by the v1.23.0 completeness sprint (2026-07-03).
-Every entry is either open with a reason it was deferred, or closed
-with the version that closed it. The v0.x-era debt documents in
-`docs/hack/` are archaeology; this file is the truth.
+The **current** debt record. Rewritten during the v1.22.0 Snow Leopard
+sprint, extended by the v1.23.0 completeness sprint, and worked through
+end-to-end by the v1.26.0 complete-system sprint (2026-07-03). Every
+entry is either open with a reason it was deferred, or closed with the
+version that closed it. The v0.x-era debt documents in `docs/hack/` are
+archaeology; this file is the truth.
+
+The v1.26.0 sprint took a rule to the whole ledger: **build every
+feature-shaped item; re-examine every refactor-shaped item with fresh
+evidence rather than a remembered reason.** The feature items (0a–0f)
+all shipped. The refactor items (1–7) were each re-inspected — most
+verdicts held and two sharpened into outright won't-fix once the code
+was read again rather than recalled. A deferral you can defend after
+re-reading the code is a decision; one you only remember making is a
+guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons
 
-### 0a. Quick Search doesn't index API Studio requests or infra nodes
-⌘I finds projects and rack devices; API Studio collections and infra
-graphs have their own in-tab navigation. Add SearchProviders when a
-real workflow demands cross-tab search, not before. (Audited v1.23.0.)
-
-### 0b. "Sync from DigitalOcean" is DO-only
-Pulling existing cloud resources into the designer requires per-provider
-list APIs and an account-context model (Cloudflare needs zone/account
-ids). Hetzner/Cloudflare stacks deploy, drift-check, and destroy
-(v1.23.0), but sync stays DO-only until the provider abstraction is
-worth its weight. The button says exactly what it does.
-
-### 0c. CI export covers step devices, not gates/observers
-13 of 39 device types export as GitHub Actions steps; quality gates
-(VITALS/BEACON/PRISM) run against live URLs and observers watch local
-state — neither translates to a YAML step honestly. Deliberate scope,
-now written down. SOLDER (CMD) and PREFLIGHT are the two arguable
-omissions; export them when a user asks for it.
-
-### 0d. TAIL and TEMPO don't resurrect
-Session resurrection restores processes (dev servers, tunnels, watch
-builds). TAIL and TEMPO are timers, not processes — restarting them by
-hand is one click and losing them costs nothing. Deliberate.
-
-### 0e. Outline coverage stops at 35 mimes
-v1.23.0 added Elixir/Clojure/Erlang. Haskell, OCaml, R, Perl, Julia,
-F#, Crystal, Zig have highlighting but no outline — heuristic
-extraction for those is real work with a small audience. Add per
-demand. Templates and config formats are excluded on purpose.
-
 ### 1. Rack faceplate boilerplate (~250–300 LOC across 25+ devices)
-Every CommandDevice subclass hand-places the same transport cluster
-(GO/STOP buttons, tool knobs, status LCD). A base-class helper would
-kill the duplication, but migrating 25+ device constructors risks
-subtle geometry regressions for purely cosmetic payoff, and a partial
-migration would leave two idioms — worse than one verbose one.
-**Do it as its own focused sprint with before/after screenshots per
-device.** (Audited v1.22.0.)
+Every CommandDevice subclass hand-places its transport cluster (GO/STOP
+buttons, tool knobs, status LCD). Re-examined in v1.26.0: the devices
+do **not** place that cluster at shared coordinates — TAIL puts FOLLOW
+at x366, TEMPO puts CLOCK at x124, others differ by faceplate width and
+label. A single base helper can only serve them by taking (label, x, y)
+per call, which is barely shorter than the explicit `place(new
+RackButton(...), x, y)` it would replace. So the "duplication" is a
+repeated *idiom*, not repeated *values* — and the 241-assertion
+DeviceContractTest exists precisely because that geometry is load-bearing
+and per-device. Consolidating would touch 25+ constructors to save ~2
+LOC each while risking the exact regressions the contract test guards.
+**Verdict: won't fix as boilerplate.** If it's ever done, it's a
+visual-QA sprint with before/after screenshots per device, not a
+mechanical extraction. (Re-audited v1.26.0.)
 
-### 2. Build/Test/Run toolchain switches (~60–80 LOC triplicated)
-BuildDevice, TestDevice, and RunDevice each carry a ProjectKind→command
-switch. One `ToolchainBuilder` table would make a new language a
-single edit. Deferred from v1.22.0 because the three switches differ
-in shape (prod/watch branches, per-kind dirs) and the devices are the
-IDE's hot path — consolidate when the next language lands and the
-change can prove itself against the string-exact device tests.
+### 2. Build/Test/Run toolchain switches (~60–80 LOC across three devices)
+BuildDevice, TestDevice, and RunDevice each carry a ProjectKind switch.
+Re-examined in v1.26.0 by reading all three: they map the **same enum
+to three different verbs** — build commands, test commands, run targets
+— with no command string shared between them. There is no cross-device
+duplication to remove; each device owns its own verb's commands and
+nothing else. The repeated `case RUST/GO/BUN/...` skeleton is the
+compiler enforcing exhaustiveness, which is the feature that guarantees
+a new language can't be added to one verb and silently forgotten in the
+others. A `ToolchainCommands` class would relocate three unrelated
+methods into one file and dedupe nothing. **Verdict: won't fix — the
+premise (shared command logic) does not survive reading the code.**
+(Re-audited v1.26.0; superseded the v1.22.0 "consolidate when the next
+language lands" note, which assumed a duplication that isn't there.)
 
 ### 3. JSON persistence boilerplate (RackIO / GraphIO / WorkspaceIO)
-Same save/load shape three times. NOT consolidated into core on
-purpose: each NBM module wraps its own org.json copy, so a shared
-helper returning JSONObject would pass org.json types across module
+Same save/load *shape* three times. NOT consolidated into core on
+purpose: each NBM module wraps its own org.json copy, so a shared helper
+returning JSONObject would pass org.json types across module
 classloaders — ClassCastException territory. The String-only helpers
-that were safe to share did move (see JsonUtil, closed below).
+that were safe to share already moved (JsonUtil, closed below). What's
+left is per-module glue that must stay per-module. Re-confirmed against
+the module classloader boundary in v1.26.0. **Verdict: won't fix —
+architectural constraint, not laziness.**
 
 ### 4. Hardcoded project templates (ProjectTemplates.java)
-Templates live as Java string literals; data-driven templates
-(resources + substitution) would open the door to user templates.
-Big refactor, zero user-visible payoff until user templates are a
-feature. Wait for the feature.
+Templates live as Java string literals; data-driven templates (resources
++ substitution) would open the door to *user* templates. Big refactor,
+zero user-visible payoff until user templates are a roadmapped feature.
+Wait for the feature — the refactor is that feature's first task, not a
+standalone debt item.
 
 ### 5. JS/TS ride a custom lexer; everything else rides TextMate+CSL
 Two editor pipelines to maintain. Unifying JS/TS onto TextMate would
-delete the custom lexer but lose its regex-awareness unless carefully
-matched. Architectural change; needs its own sprint with fixture-based
-before/after highlighting comparisons.
+delete the custom lexer but lose its regex-awareness (the reason it
+exists) unless carefully matched. Architectural change; needs its own
+sprint with fixture-based before/after highlighting comparisons across a
+JS/TS corpus. Not mechanical, not blind.
 
 ### 6. .sass (indented dialect) shares the SCSS grammar
-Approximate highlighting for the indented dialect. Correct fix is a
-dedicated grammar; demand has not justified it.
+Approximate highlighting for the indented dialect. The correct fix is a
+dedicated indented-sass TextMate grammar (a curated upstream fetch +
+scope-mapping pass), not a code change here. Demand has not justified
+the grammar-sourcing work.
 
 ### 7. Startup: rack UI construction (~200–400ms EDT during restore)
 The palette builds all 39 device entries during window-system restore.
-Could defer shelf population to first paint. Measured as the largest
-remaining self-inflicted startup cost after v1.22.0's journal fix, but
-it's inside platform window restore — optimize only with profiler
-evidence, not vibes. `scripts/boot-smoke-test.sh` now prints wall-clock
-boot time so CI can watch the trend.
+**Measured in v1.26.0**: `scripts/boot-smoke-test.sh` reports a 7-second
+cold boot-to-exit on a fresh userdir — dominated by JVM warm-up and
+first-run module install/enable, not by the palette. The rack shelf's
+~0.3s is under 5% of cold boot and sits inside platform window restore.
+Deferring shelf population to first paint would shave a fraction of a
+second off a 7s boot in exchange for lazy-init complexity and real
+regression risk. **Verdict: won't fix until a profiler names the palette
+specifically** — the boot-smoke number says it isn't the bottleneck.
 
-### 0f. The update check's opt-out has no Options UI
-`updateCheck` is honored from preferences (v1.25.0) but there is no
-checkbox in Tools > Options to flip it — a user must know the pref
-exists. Add it next time the Options category is touched; a settings
-panel change for one boolean isn't worth its own release.
+## Closed by v1.26.0 (the complete-system sprint)
 
-## Closed
+- ~~**0a.** Quick Search didn't index API Studio requests or infra
+  nodes~~ — ⌘I now finds both: `ApiRequestSearchProvider` walks every
+  collection's requests (method + name) and opens the request in API
+  Studio; `InfraNodeSearchProvider` finds infra nodes by name/kind and
+  selects them on the canvas. Registered via each module's layer.xml
+  QuickSearch category. Cross-tab search is real now, not deferred.
+- ~~**0b.** "Sync from DigitalOcean" was DO-only~~ — now **"Sync from
+  cloud"**, multi-provider: DigitalOcean (13 endpoints), Hetzner Cloud
+  (servers/networks/load-balancers/volumes/firewalls/floating-ips), and
+  Cloudflare (zones → DNS records). Per-provider failure isolation —
+  one cloud's outage or bad token never aborts the others; outcomes
+  surface honestly per provider. Dedupe-by-id refreshes existing nodes
+  in place rather than stacking duplicates. R2 buckets stay out (no
+  addressable id), consistent with v1.23.
+- ~~**0c (SOLDER half).** CI export covered step devices but not
+  SOLDER~~ — SOLDER (CMD) now exports as a GitHub Actions `run:` step.
+  PREFLIGHT deliberately stays out: it's the local ship-gate, and in CI
+  the workflow *is* the gate — exporting it would be a check auditing
+  itself. That half is a decision, written here, not an omission.
+- ~~**0d.** TAIL and TEMPO didn't resurrect~~ — both now report
+  `isResumable()` from their arm switch (FOLLOW / CLOCK) and re-arm on
+  `resume()`. They resurrect after a crash without reporting `isLive()`
+  (which stays process-only, so the status line's "running" count never
+  swells with timers). SessionState.capture() now snapshots
+  `isResumable()` devices, not just live processes.
+- ~~**0e.** Outline coverage stopped at 35 mimes~~ — added heuristic
+  outline extraction for Haskell, OCaml, R, Perl, Julia, F#, Crystal,
+  and Zig. Navigator (⌘7) now populates for 43 mimes.
+- ~~**0f.** The update check's opt-out had no Options UI~~ — Tools >
+  Options > NMOX Studio now has a "Check for updates on startup"
+  checkbox bound to the `updateCheck` preference. No more hidden pref.
+
+Plus one capability that wasn't on the ledger but belonged in a
+complete system:
+
+- **Rack undo/redo** — every structural rack edit (add/remove/move
+  device, connect/disconnect cable) is now reversible. ⌘Z / ⇧⌘Z, a
+  100-deep bounded history, inverse ops that restore a removed device
+  *with its cables re-patched*. Bulk operations (default-rack load,
+  patch autoload) are explicitly non-undoable so the history starts
+  clean. Guarded by RackUndoTest.
+
+## Closed by v1.22.0 (Snow Leopard)
 
 - ~~UTF-8 charsets implicit at 12 I/O sites (session state, CI export,
-  package.json parsing)~~ — **v1.22.0**, explicit everywhere.
-- ~~Wizard disk I/O + PNG encoding on the EDT~~ — **v1.22.0**,
-  RequestProcessor + EDT hop for the report.
+  package.json parsing)~~ — explicit everywhere.
+- ~~Wizard disk I/O + PNG encoding on the EDT~~ — RequestProcessor +
+  EDT hop for the report.
 - ~~API Studio autosave failed silently (chronic failure = silent data
-  loss)~~ — **v1.22.0**, warns once per failure streak + logs.
+  loss)~~ — warns once per failure streak + logs.
 - ~~Status-line and session-snapshot timers never stopped~~ —
-  **v1.22.0**, lifecycle-bound.
+  lifecycle-bound.
 - ~~Command relaunch skewed a running command's elapsed readout~~ —
-  **v1.22.0**, per-launch capture.
+  per-launch capture.
 - ~~PING held 50 uncapped response bodies (~3.5MB worst case)~~ —
-  **v1.22.0**, capped at record time.
+  capped at record time.
 - ~~FlightRecorder journal read+parsed synchronously at boot~~ —
-  **v1.22.0**, deferred off the startup path.
-- ~~JOptionPane in 12 rack files (26 sites) bypassing platform
-  theming; raw ex.getMessage() shown to users~~ — **v1.22.0**,
-  DialogDisplayer everywhere with task-oriented messages.
+  deferred off the startup path.
+- ~~JOptionPane in 12 rack files (26 sites) bypassing platform theming;
+  raw ex.getMessage() shown to users~~ — DialogDisplayer everywhere
+  with task-oriented messages.
 - ~~ProcessSupport/ToolLocator lived in rack; editor depended on rack
   for process launching; tools used raw ProcessBuilder (no PATH
-  augmentation — npm "missing" when launched from Finder)~~ —
-  **v1.22.0**, promoted to core.process, adopted in tools; the
-  Windows-breaking hardcoded /dev/null in ProjectTemplates died with it.
+  augmentation — npm "missing" when launched from Finder)~~ — promoted
+  to core.process, adopted in tools; the Windows-breaking hardcoded
+  /dev/null in ProjectTemplates died with it.
 - ~~Four HttpClient pools; looksJson/pretty duplicated three times~~ —
-  **v1.22.0**, core.http.HttpClientFactory + core.util.JsonUtil.
+  core.http.HttpClientFactory + core.util.JsonUtil.
 - ~~core/ui/tools/project effectively untested; apiclient engine
-  half-tested~~ — **v1.22.0** backfill + floors (see module poms).
+  half-tested~~ — backfill + floors (see module poms).
 - ~~CLAUDE.md four releases stale; ~30 v0.x aspirational docs posing as
   current; three test scripts checking classes that never existed~~ —
-  **v1.22.0**, truth pass: banners, updates, deletions.
+  truth pass: banners, updates, deletions.

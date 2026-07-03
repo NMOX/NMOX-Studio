@@ -25,7 +25,7 @@ public record SessionState(String project, long at, List<Entry> running) {
         List<RackDevice> devices = rack.getDevices();
         for (int i = 0; i < devices.size(); i++) {
             RackDevice d = devices.get(i);
-            if (d.isLive()) {
+            if (d.isResumable()) {
                 live.add(new Entry(i, d.getTypeId(), d.getTitle()));
             }
         }

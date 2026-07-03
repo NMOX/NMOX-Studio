@@ -28,7 +28,7 @@ public class UpdateCheck implements Runnable {
 
     @Override
     public void run() {
-        Preferences prefs = NbPreferences.forModule(UpdateCheck.class);
+        Preferences prefs = NbPreferences.root().node("nmox/ui");
         if (!prefs.getBoolean("updateCheck", true)) {
             return;
         }

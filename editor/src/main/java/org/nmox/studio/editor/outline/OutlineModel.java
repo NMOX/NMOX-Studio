@@ -53,6 +53,14 @@ public final class OutlineModel {
             case "elixir" -> elixir(lines);
             case "clojure" -> clojure(lines);
             case "erlang" -> erlang(lines);
+            case "haskell" -> haskell(lines);
+            case "ocaml" -> ocaml(lines);
+            case "r" -> r(lines);
+            case "perl" -> perl(lines);
+            case "julia" -> julia(lines);
+            case "fsharp" -> fsharp(lines);
+            case "crystal" -> crystal(lines);
+            case "zig" -> zig(lines);
             case "brace" -> braceLang(lines);
             case "shell" -> shell(lines);
             case "graphql" -> graphql(lines);
@@ -80,6 +88,14 @@ public final class OutlineModel {
             case "text/x-elixir" -> "elixir";
             case "text/x-clojure" -> "clojure";
             case "text/x-erlang" -> "erlang";
+            case "text/x-haskell" -> "haskell";
+            case "text/x-ocaml" -> "ocaml";
+            case "text/x-r" -> "r";
+            case "text/x-perl" -> "perl";
+            case "text/x-julia" -> "julia";
+            case "text/x-fsharp" -> "fsharp";
+            case "text/x-crystal" -> "crystal";
+            case "text/x-zig" -> "zig";
             case "text/x-java", "text/x-kotlin", "text/x-scala", "text/x-csharp",
                  "text/x-swift", "text/x-c", "text/x-cpp", "text/x-dart",
                  "text/x-groovy", "text/x-php5" -> "brace";
@@ -540,6 +556,296 @@ public final class OutlineModel {
                 continue;
             }
             Matcher f = ERLANG_FUN.matcher(line);
+            if (f.find()) {
+                out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Haskell -----------------------------------------------------------
+
+    // The file's own module header: `module Rack.Wire (exports) where`.
+    private static final Pattern HASKELL_MODULE = Pattern.compile(
+            "^module\\s+([A-Z][A-Za-z0-9_.']*)");
+    // A top-level type signature: `name :: Type`. Only at column 0.
+    private static final Pattern HASKELL_SIG = Pattern.compile(
+            "^([a-z_][A-Za-z0-9_']*)\\s*::");
+    // A top-level value/function binding: `name args = ...` at column 0. The
+    // guard against `::`/`=` in the name keeps signatures out of this branch.
+    private static final Pattern HASKELL_BIND = Pattern.compile(
+            "^([a-z_][A-Za-z0-9_']*)\\b[^=:]*=(?!=)");
+    // data / newtype / type / class / instance declarations at column 0.
+    private static final Pattern HASKELL_DECL = Pattern.compile(
+            "^(data|newtype|type|class|instance)\\s+(?:[^=>]*?=>\\s*)?([A-Z][A-Za-z0-9_']*)");
+
+    /** Column-0 module header, signatures, bindings and data/class/instance
+     * declarations. A binding is only surfaced once - the first clause wins -
+     * so multi-clause pattern-match functions don't spam the outline. */
+    private static List<Item> haskell(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        java.util.Set<String> seenBind = new java.util.HashSet<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            if (line.isEmpty() || line.charAt(0) == ' ' || line.charAt(0) == '\t'
+                    || line.startsWith("--")) {
+                continue;
+            }
+            Matcher mod = HASKELL_MODULE.matcher(line);
+            if (mod.find()) {
+                out.add(new Item(OutlineKind.MODULE, mod.group(1), null, i, 0));
+                continue;
+            }
+            Matcher d = HASKELL_DECL.matcher(line);
+            if (d.find()) {
+                OutlineKind kind = d.group(1).equals("class") ? OutlineKind.INTERFACE
+                        : OutlineKind.TYPE;
+                out.add(new Item(kind, d.group(2), d.group(1), i, 0));
+                continue;
+            }
+            Matcher s = HASKELL_SIG.matcher(line);
+            if (s.find()) {
+                out.add(new Item(OutlineKind.FIELD, s.group(1), "::", i, 0));
+                continue;
+            }
+            Matcher b = HASKELL_BIND.matcher(line);
+            if (b.find() && seenBind.add(b.group(1))) {
+                out.add(new Item(OutlineKind.FUNCTION, b.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- OCaml -------------------------------------------------------------
+
+    // `module type` must precede `module` in the alternation or the sig name
+    // would be swallowed; the optional group skips type params ('a, ('a, 'b))
+    // so `type 'a slot` names slot, not its variable.
+    private static final Pattern OCAML = Pattern.compile(
+            "^(let\\s+rec|let|and|type|module\\s+type|module|exception|val|class)\\s+"
+            + "(?:(?:'[A-Za-z0-9_]+|\\([^)]*\\))\\s+)*([A-Za-z_][A-Za-z0-9_']*)");
+
+    /** let / let rec bindings, type/module/exception/val/class declarations
+     * at column 0. `and` continuations reuse the preceding kind's family. */
+    private static List<Item> ocaml(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            if (line.isEmpty() || line.charAt(0) == ' ' || line.charAt(0) == '\t') {
+                continue;
+            }
+            Matcher m = OCAML.matcher(line);
+            if (m.find()) {
+                String name = m.group(2);
+                if ("_".equals(name)) {
+                    continue; // `let _ = ...` is a discard, not a symbol
+                }
+                String kw = m.group(1).replaceAll("\\s+", " ");
+                OutlineKind kind = switch (kw) {
+                    case "type" -> OutlineKind.TYPE;
+                    case "module", "module type" -> OutlineKind.MODULE;
+                    case "class" -> OutlineKind.CLASS;
+                    case "exception" -> OutlineKind.ENUM;
+                    case "val" -> OutlineKind.FIELD;
+                    default -> OutlineKind.FUNCTION; // let / let rec / and
+                };
+                out.add(new Item(kind, name, null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- R -----------------------------------------------------------------
+
+    // `name <- function(...)` or `name = function(...)`. Flat list of defs.
+    private static final Pattern R_FUNC = Pattern.compile(
+            "^\\s*([A-Za-z.][A-Za-z0-9._]*)\\s*(?:<-|=)\\s*function\\b");
+    // S4 registrations: setClass("Name", ...) and setGeneric("name", ...).
+    private static final Pattern R_S4 = Pattern.compile(
+            "^\\s*(setClass|setGeneric)\\s*\\(\\s*[\"']([^\"']+)[\"']");
+
+    private static List<Item> r(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher s4 = R_S4.matcher(lines[i]);
+            if (s4.find()) {
+                OutlineKind kind = s4.group(1).equals("setClass")
+                        ? OutlineKind.CLASS : OutlineKind.FUNCTION;
+                out.add(new Item(kind, s4.group(2), s4.group(1), i, 0));
+                continue;
+            }
+            Matcher m = R_FUNC.matcher(lines[i]);
+            if (m.find()) {
+                out.add(new Item(OutlineKind.FUNCTION, m.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Perl --------------------------------------------------------------
+
+    private static final Pattern PERL_SUB = Pattern.compile(
+            "^\\s*sub\\s+([A-Za-z_][A-Za-z0-9_]*)");
+    private static final Pattern PERL_PKG = Pattern.compile(
+            "^\\s*package\\s+([A-Za-z_][A-Za-z0-9_:]*)");
+
+    /** sub declarations and package statements - flat. */
+    private static List<Item> perl(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            Matcher p = PERL_PKG.matcher(line);
+            if (p.find()) {
+                out.add(new Item(OutlineKind.MODULE, p.group(1), null, i, 0));
+                continue;
+            }
+            Matcher s = PERL_SUB.matcher(line);
+            if (s.find()) {
+                out.add(new Item(OutlineKind.FUNCTION, s.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Julia -------------------------------------------------------------
+
+    private static final Pattern JULIA = Pattern.compile(
+            "^(\\s*)(function|struct|mutable\\s+struct|module|macro|abstract\\s+type|primitive\\s+type)\\s+([A-Za-z_][A-Za-z0-9_!]*)");
+    // Short-form definition at column 0: `gain(x) = 2 * x`. The (?!=) keeps
+    // comparisons (`==`) from reading as definitions.
+    private static final Pattern JULIA_SHORT = Pattern.compile(
+            "^([a-z_][A-Za-z0-9_!]*)\\(.*\\)\\s*=(?!=)");
+
+    /** function/struct/module/macro at their indentation; nesting by
+     * indentation like Python, so a struct's inner functions sit under it.
+     * Column-0 short-form definitions (`f(x) = ...`) surface flat. */
+    private static List<Item> julia(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        Deque<Integer> cols = new ArrayDeque<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher m = JULIA.matcher(lines[i]);
+            if (m.find()) {
+                int col = m.group(1).length();
+                while (!cols.isEmpty() && cols.peek() >= col) {
+                    cols.pop();
+                }
+                int depth = cols.size();
+                cols.push(col);
+                String kw = m.group(2);
+                OutlineKind kind = switch (kw) {
+                    case "module" -> OutlineKind.MODULE;
+                    case "function", "macro" -> depth > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION;
+                    default -> OutlineKind.TYPE; // struct / mutable struct / abstract|primitive type
+                };
+                out.add(new Item(kind, m.group(3), null, i, depth));
+            } else {
+                Matcher s = JULIA_SHORT.matcher(lines[i]);
+                if (s.find()) {
+                    out.add(new Item(OutlineKind.FUNCTION, s.group(1), null, i, 0));
+                }
+            }
+        }
+        return out;
+    }
+
+    // ---- F# ----------------------------------------------------------------
+
+    // module/type carry a dotted name (Rack.Wire); a member is `member this.Foo`
+    // where the `this.` self-qualifier is dropped and Foo is the name.
+    private static final Pattern FSHARP = Pattern.compile(
+            "^\\s*(let\\s+rec|let|type|module|member)\\s+([A-Za-z_][A-Za-z0-9_'.]*)");
+    private static final Pattern FSHARP_MEMBER = Pattern.compile(
+            "^\\s*member\\s+(?:[A-Za-z_][A-Za-z0-9_']*\\.)?([A-Za-z_][A-Za-z0-9_']*)");
+
+    /** let / let rec / type / module / member at column 0 (or indented member).
+     * A `member this.Foo` binding surfaces as Foo; module/type keep dotted names. */
+    private static List<Item> fsharp(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            Matcher m = FSHARP.matcher(line);
+            if (m.find()) {
+                String kw = m.group(1);
+                if (kw.equals("member")) {
+                    Matcher mem = FSHARP_MEMBER.matcher(line);
+                    if (mem.find()) {
+                        out.add(new Item(OutlineKind.METHOD, mem.group(1), null, i, 0));
+                    }
+                    continue;
+                }
+                OutlineKind kind = switch (kw) {
+                    case "type" -> OutlineKind.TYPE;
+                    case "module" -> OutlineKind.MODULE;
+                    default -> OutlineKind.FUNCTION; // let / let rec
+                };
+                out.add(new Item(kind, m.group(2), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Crystal (Ruby-like) -----------------------------------------------
+
+    // The name class carries `.` for `def self.version` and `:` for
+    // namespaced types like Rack::Device.
+    private static final Pattern CRYSTAL = Pattern.compile(
+            "^(\\s*)(def|class|module|struct|enum|macro)\\s+([A-Za-z_][A-Za-z0-9_.:]*[?!]?)");
+
+    /** def/class/module/struct/enum/macro, nested by indentation (Ruby-like).
+     * A class's methods sit under it. */
+    private static List<Item> crystal(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        Deque<Integer> cols = new ArrayDeque<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher m = CRYSTAL.matcher(lines[i]);
+            if (m.find()) {
+                int col = m.group(1).length();
+                while (!cols.isEmpty() && cols.peek() >= col) {
+                    cols.pop();
+                }
+                int depth = cols.size();
+                cols.push(col);
+                String kw = m.group(2);
+                OutlineKind kind = switch (kw) {
+                    case "class" -> OutlineKind.CLASS;
+                    case "module" -> OutlineKind.MODULE;
+                    case "struct" -> OutlineKind.TYPE;
+                    case "enum" -> OutlineKind.ENUM;
+                    default -> depth > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION; // def / macro
+                };
+                out.add(new Item(kind, m.group(3), null, i, depth));
+            }
+        }
+        return out;
+    }
+
+    // ---- Zig ---------------------------------------------------------------
+
+    private static final Pattern ZIG_FN = Pattern.compile(
+            "^\\s*(?:pub\\s+)?(?:export\\s+)?(?:extern\\s+(?:\"[^\"]*\"\\s+)?)?(?:inline\\s+)?fn\\s+([A-Za-z_][A-Za-z0-9_]*)");
+    private static final Pattern ZIG_CONST = Pattern.compile(
+            "^\\s*(?:pub\\s+)?const\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(?:extern\\s+|packed\\s+)?(struct|enum|union|opaque)\\b");
+    private static final Pattern ZIG_TEST = Pattern.compile(
+            "^\\s*test\\s+\"([^\"]+)\"");
+
+    /** pub fn / fn, const Name = struct|enum|union, and test "name" blocks.
+     * Column-0 oriented; a nested type keeps depth 0 (flat) to stay honest. */
+    private static List<Item> zig(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            Matcher t = ZIG_TEST.matcher(line);
+            if (t.find()) {
+                out.add(new Item(OutlineKind.TEST, t.group(1), null, i, 0));
+                continue;
+            }
+            Matcher c = ZIG_CONST.matcher(line);
+            if (c.find()) {
+                OutlineKind kind = c.group(2).equals("enum") ? OutlineKind.ENUM : OutlineKind.TYPE;
+                out.add(new Item(kind, c.group(1), c.group(2), i, 0));
+                continue;
+            }
+            Matcher f = ZIG_FN.matcher(line);
             if (f.find()) {
                 out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
             }

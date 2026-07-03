@@ -67,6 +67,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final PropertyPanel properties;
     private final JLabel tokenLabel = new JLabel();
     private final JLabel costLabel = new JLabel();
+    private final JButton syncButton = new JButton("Sync from cloud");
     private final Timer saveDebounce;
     private final InfraGraph.Listener graphListener;
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
@@ -161,11 +162,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
         tokenLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
         bar.add(tokenLabel);
 
-        JButton sync = new JButton("Sync from DigitalOcean");
-        sync.setToolTipText("Import existing DigitalOcean resources as live nodes "
-                + "(Hetzner/Cloudflare sync not yet supported)");
-        sync.addActionListener(e -> syncFromCloud());
-        bar.add(sync);
+        // tooltip is kept current by refreshToken(): it names the providers with tokens
+        syncButton.addActionListener(e -> syncFromCloud());
+        bar.add(syncButton);
 
         JButton refresh = new JButton("Refresh");
         refresh.setToolTipText("Ask the cloud whether every deployed node still exists — deletions show as drifted");
@@ -211,6 +210,23 @@ public final class InfraDesignerTopComponent extends TopComponent {
         deploy.addActionListener(e -> deploy());
         bar.add(deploy);
         return bar;
+    }
+
+    /** The live design shown in this window - read by Quick Search. */
+    public InfraGraph getGraph() {
+        return graph;
+    }
+
+    /**
+     * Brings this window forward and jumps the canvas to the given node,
+     * selecting it. The entry point Quick Search invokes after the user
+     * picks a node from the search results.
+     */
+    public void focusNode(InfraNode node) {
+        open();
+        requestActive();
+        canvas.selectNode(node);
+        properties.show(node);
     }
 
     // ---- deploy ----
@@ -291,22 +307,53 @@ public final class InfraDesignerTopComponent extends TopComponent {
         worker.start();
     }
 
+    /**
+     * Provider-aware sync: every cloud with a token, sequentially, off
+     * the EDT. One provider's failure never aborts the others; the
+     * completion dialog reports per-provider counts honestly.
+     */
     private void syncFromCloud() {
-        if (!org.nmox.studio.infra.api.CloudProvider.DIGITALOCEAN.hasToken()) {
-            info("Set a DigitalOcean API token first.");
+        java.util.Set<org.nmox.studio.infra.api.CloudProvider> syncing =
+                org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
+                        org.nmox.studio.infra.api.CloudProvider::hasToken);
+        if (syncing.isEmpty()) {
+            info("Set a cloud API token first (DigitalOcean, Hetzner, or Cloudflare).");
             return;
         }
         Thread worker = new Thread(() -> {
-            try {
-                int imported = client.sync(graph);
-                SwingUtilities.invokeLater(() -> {
-                    canvas.fit();
-                    save();
-                    info("Imported " + imported + " live resources.");
-                });
-            } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> error("Sync failed: " + ex.getMessage()));
-            }
+            var outcomes = client.syncAll(syncing, graph, provider ->
+                    SwingUtilities.invokeLater(() -> org.openide.awt.StatusDisplayer.getDefault()
+                            .setStatusText("Syncing from " + provider.displayName() + "…")));
+            SwingUtilities.invokeLater(() -> {
+                canvas.fit();
+                save();
+                StringBuilder summary = new StringBuilder();
+                boolean anyFailed = false;
+                boolean firstCount = true;
+                for (var entry : outcomes.entrySet()) {
+                    if (summary.length() > 0) {
+                        summary.append("  ·  ");
+                    }
+                    summary.append(entry.getKey().displayName()).append(": ");
+                    var outcome = entry.getValue();
+                    if (outcome.failed()) {
+                        anyFailed = true;
+                        summary.append("failed (").append(outcome.error()).append(')');
+                    } else {
+                        summary.append(outcome.imported());
+                        if (firstCount) {
+                            summary.append(outcome.imported() == 1 ? " node" : " nodes");
+                            firstCount = false;
+                        }
+                    }
+                }
+                org.openide.awt.StatusDisplayer.getDefault().setStatusText("Cloud sync finished");
+                if (anyFailed) {
+                    error("Sync finished with failures — " + summary);
+                } else {
+                    info("Imported live resources — " + summary);
+                }
+            });
         }, "nmox-infra-sync");
         worker.setDaemon(true);
         worker.start();
@@ -493,6 +540,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
         tokenLabel.setText(sb + (any ? " " + connected + "/3 clouds" : " no tokens (dry-run)"));
         tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
         tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
+        String tokened = org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
+                        org.nmox.studio.infra.api.CloudProvider::hasToken).stream()
+                .map(org.nmox.studio.infra.api.CloudProvider::displayName)
+                .collect(java.util.stream.Collectors.joining(", "));
+        syncButton.setToolTipText("Import existing cloud resources as live nodes — "
+                + (tokened.isEmpty() ? "no tokens set (use Tokens…)" : "syncs: " + tokened));
     }
 
     private void refreshCost() {
