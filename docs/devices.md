@@ -222,6 +222,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 - **In:** `IN` (data)
 
+### REPL — Read-Eval-Print Loop — type into clisp/python/node/ghci live
+
+> Set COMMAND to an interpreter (clisp, python3, node, ghci), press START.
+> Type an expression and Enter to evaluate; HINTS lists starter snippets. A Learning Space seeds both for you.
+
+- **In:** `EVAL` (data)
+- **Out:** `OUT` (data)
+
 ### GAUNTLET — Load Bench — autocannon throughput
 
 > FIRE hammers the URL with autocannon; req/s on the meter.

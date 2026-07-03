@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.24.0] — 2026-07-03
+
+Learning Spaces: projects that exist to be learned from. Pick a
+language, framework, or library and the studio generates a real
+project — sample code, a tutorial that walks it, and a rack already
+wired with a REPL pointed at the right tool. Practice Lisp and you get
+a CLISP prompt, starter expressions, and something to type in seconds.
+
+### Added
+- **A real REPL in the rack.** The new REPL device launches an
+  interactive interpreter (clisp, python3, node, ghci, iex, irb,
+  sqlite3, redis-cli — anything with a prompt), keeps its stdin open,
+  and lets you type an expression and read the answer in the
+  scrollback. HINTS lists the starter snippets a learning space seeds.
+  This is a genuinely new capability: the command devices run with a
+  closed stdin so a prompt can never hang them — a REPL is nothing but
+  a prompt, so it needed its own interactive-process engine
+  (`InteractiveProcess`), proven end to end in tests against `cat`.
+- **New Learning Space… (File menu, ⇧⌘L).** A searchable picker of
+  **51 spaces** across languages, frameworks, and libraries. Choose
+  one and the studio writes the sample files, a TUTORIAL.md that walks
+  them (with the install command for your OS), and a pre-wired rack —
+  then opens all three. REPL spaces get a seeded REPL; run-based spaces
+  (dev servers, builds) get SOLDER wired into a MONITOR.
+- **The catalog is data, not code** (`learn-catalog.json`) — 25
+  languages (Common Lisp, Python, JS/TS, Ruby, Go, Rust, Java via
+  jshell, C/C++/C#, Swift, Kotlin, PHP, Lua, Haskell, Elixir, Erlang,
+  Clojure, Scala, Julia, R, Perl, Bash, SQLite), 13 frameworks (React,
+  Vue, Svelte, Angular, Next.js, Express, Django, Flask, Rails,
+  Phoenix, Spring Boot, Laravel, ASP.NET — the console-bearing ones
+  wire their real REPL: rails console, manage.py shell, iex -S mix,
+  artisan tinker), and 13 libraries (NumPy, Pandas, PyTorch, jQuery,
+  D3, Three.js, Redux, RxJS, Tailwind, GraphQL, Prisma, Redis, Docker
+  Compose). Each entry is honest about what it needs: if a tool isn't
+  installed, the REPL says so and the tutorial carries the install
+  command. New spaces are a JSON edit, never a recompile.
+
+### Notes
+- Spaces persist under `~/.nmox/learn/<slug>`, pre-trusted, reusing the
+  directory for the same slug rather than piling up copies.
+
 ## [1.23.0] — 2026-07-03
 
 The completeness release: four audits asked "did every idea ship
