@@ -469,11 +469,19 @@ public final class ApiClientTopComponent extends TopComponent {
             if (DialogDisplayer.getDefault().notify(name) != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            env = new Environment();
-            env.name = name.getInputText().isBlank() ? "env" : name.getInputText().trim();
-            workspace.environments.add(env);
-            workspace.activeEnvironment = env.name;
+            Environment fresh = new Environment();
+            fresh.name = name.getInputText().isBlank() ? "env" : name.getInputText().trim();
+            workspace.environments.add(fresh);
+            workspace.activeEnvironment = fresh.name;
+            // deferred a dispatch: a dialog opened while the previous one is
+            // still disposing can stack behind the main window
+            SwingUtilities.invokeLater(() -> editVariables(fresh));
+            return;
         }
+        editVariables(env);
+    }
+
+    private void editVariables(Environment env) {
         JTextArea area = new JTextArea(12, 40);
         area.setFont(MONO);
         StringBuilder sb = new StringBuilder();
