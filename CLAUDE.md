@@ -95,6 +95,7 @@ NMOX-Studio/
 ├── tools/                   # NPM integration, build tools
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
 ├── infra/                   # Node-RED-style DigitalOcean infrastructure designer
+├── apiclient/               # API Studio — Postman-style request/collection/test suite
 ├── project/                 # Project templates, scaffolding, project explorer UI
 ├── ui/                      # Main windows, actions, welcome screen, startup logic
 ├── branding/               # Application theming, splash screen, icons
@@ -110,6 +111,7 @@ NMOX-Studio/
 | **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 45+ TextMate grammars incl. HTML/CSS/SCSS/Less + the config layer, JS/HTML/CSS completion providers, LSP providers, `OutlineModel`/`StructureNavigatorPanel` (Navigator outline for 32 mimes), `ConfigFileResolver` (dotfile MIME) |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService` |
 | **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 34 task devices (incl. ROSETTA mixed-repo selector, QUORUM lane-join barrier, IGNITION polyglot runtime, INSPECTOR debug launcher, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), cross-lane coordination (QUORUM join, `RackDevice.enableGate` readiness gates on long-runners, REFLEX per-lane GLOB routing), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **apiclient** | API Studio (Postman-style) | `ApiClientTopComponent` tab, collections/requests tree, request builder (params/headers/body/auth/tests), response viewer, `{{var}}` environments, `.nmoxapi.json` per-project persistence; `ApiClient`/`TestRunner`/`WorkspaceIO` engine |
 | **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
 | **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |

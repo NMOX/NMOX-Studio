@@ -107,6 +107,15 @@ are never flagged as typos); a **Structure navigator** (⌘7) that outlines
 any file — classes, functions, tests, selectors, headings, config keys —
 and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 
+### 🧪 API Studio
+A Postman-style tab (Window → API Studio) for building, saving, sending,
+and **testing** HTTP requests: collections of requests, a builder with
+params/headers/body/auth, `{{variable}}` environments so one request
+travels from localhost to prod, and per-request assertions (status,
+response time, body contains, JSON path, header present) that turn a
+probe into a check. The workspace persists as `.nmoxapi.json` beside the
+project.
+
 ### 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling
 shelf), Project Studio templates that scaffold versioned, rack-wired

@@ -149,6 +149,7 @@
         <module>tools</module>
         <module>rack</module>
         <module>infra</module>
+        <module>apiclient</module>
         <module>application</module>
         <module>NMOX-Studio-sample</module>
     </modules>
