@@ -1,11 +1,42 @@
 # Technical Debt Ledger
 
 The **current** debt record, rewritten during the v1.22.0 Snow Leopard
-sprint (2026-07-03). Every entry is either open with a reason it was
-deferred, or closed with the version that closed it. The v0.x-era debt
-documents in `docs/hack/` are archaeology; this file is the truth.
+sprint and extended by the v1.23.0 completeness sprint (2026-07-03).
+Every entry is either open with a reason it was deferred, or closed
+with the version that closed it. The v0.x-era debt documents in
+`docs/hack/` are archaeology; this file is the truth.
 
 ## Open — deferred deliberately, with reasons
+
+### 0a. Quick Search doesn't index API Studio requests or infra nodes
+⌘I finds projects and rack devices; API Studio collections and infra
+graphs have their own in-tab navigation. Add SearchProviders when a
+real workflow demands cross-tab search, not before. (Audited v1.23.0.)
+
+### 0b. "Sync from DigitalOcean" is DO-only
+Pulling existing cloud resources into the designer requires per-provider
+list APIs and an account-context model (Cloudflare needs zone/account
+ids). Hetzner/Cloudflare stacks deploy, drift-check, and destroy
+(v1.23.0), but sync stays DO-only until the provider abstraction is
+worth its weight. The button says exactly what it does.
+
+### 0c. CI export covers step devices, not gates/observers
+13 of 39 device types export as GitHub Actions steps; quality gates
+(VITALS/BEACON/PRISM) run against live URLs and observers watch local
+state — neither translates to a YAML step honestly. Deliberate scope,
+now written down. SOLDER (CMD) and PREFLIGHT are the two arguable
+omissions; export them when a user asks for it.
+
+### 0d. TAIL and TEMPO don't resurrect
+Session resurrection restores processes (dev servers, tunnels, watch
+builds). TAIL and TEMPO are timers, not processes — restarting them by
+hand is one click and losing them costs nothing. Deliberate.
+
+### 0e. Outline coverage stops at 35 mimes
+v1.23.0 added Elixir/Clojure/Erlang. Haskell, OCaml, R, Perl, Julia,
+F#, Crystal, Zig have highlighting but no outline — heuristic
+extraction for those is real work with a small audience. Add per
+demand. Templates and config formats are excluded on purpose.
 
 ### 1. Rack faceplate boilerplate (~250–300 LOC across 25+ devices)
 Every CommandDevice subclass hand-places the same transport cluster

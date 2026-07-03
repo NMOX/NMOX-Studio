@@ -1,6 +1,7 @@
 package org.nmox.studio.rack.devices;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONObject;
 import org.nmox.studio.rack.model.Port;
@@ -24,7 +25,8 @@ import org.nmox.studio.rack.ui.controls.VuMeter;
 public class VitalsDevice extends CommandDevice {
 
     private static final String[] MINIMUMS = {"off", "50", "70", "80", "90", "95"};
-    private static final String[] GATES = {"perf", "a11y", "both"};
+    // append-only: persisted patches store the knob index, not the label
+    private static final String[] GATES = {"perf", "a11y", "both", "best", "seo", "all"};
 
     private final LcdDisplay urlLcd;
     private final Knob minKnob;
@@ -47,7 +49,7 @@ public class VitalsDevice extends CommandDevice {
         minKnob = place(new Knob("MIN", MINIMUMS, 0), 360, 40);
         minKnob.setToolTipText("Score floor: below it, FAIL fires instead of OK");
         gateKnob = place(new Knob("GATE", GATES, 0), 424, 40);
-        gateKnob.setToolTipText("Which standard the floor holds: performance, accessibility (WCAG), or both");
+        gateKnob.setToolTipText("Which standard the floor holds: performance, accessibility (WCAG), both, best practices, SEO, or all four");
         place(perfMeter, 480, 34);
         place(a11yMeter, 480, 74);
         place(bestMeter, 560, 34);
@@ -107,9 +109,10 @@ public class VitalsDevice extends CommandDevice {
     }
 
     /**
-     * The gate itself: a clean exit is not enough - the performance
-     * score must clear the dialed floor. FAIL LED and jack fire on a
-     * slow page exactly as they would on a crashed tool.
+     * The gate itself: a clean exit is not enough - every score the GATE
+     * knob holds must clear the dialed floor. FAIL LED and jack fire on a
+     * slow, inaccessible, sloppy, or unfindable page exactly as they
+     * would on a crashed tool.
      */
     @Override
     protected boolean overallSuccess(int exitCode) {
@@ -122,11 +125,26 @@ public class VitalsDevice extends CommandDevice {
             return true;
         }
         String gate = gateKnob.getSelectedOption();
-        boolean perfGated = !"a11y".equals(gate) && pct(s.performance()) < floor;
-        boolean a11yGated = !"perf".equals(gate) && pct(s.accessibility()) < floor;
-        if (perfGated || a11yGated) {
-            String which = perfGated && a11yGated ? "PERF+A11Y"
-                    : perfGated ? "PERF " + pct(s.performance()) : "A11Y " + pct(s.accessibility());
+        String[] labels = {"PERF", "A11Y", "BEST", "SEO"};
+        int[] pcts = {pct(s.performance()), pct(s.accessibility()),
+                pct(s.bestPractices()), pct(s.seo())};
+        boolean[] held = {
+            "perf".equals(gate) || "both".equals(gate) || "all".equals(gate),
+            "a11y".equals(gate) || "both".equals(gate) || "all".equals(gate),
+            "best".equals(gate) || "all".equals(gate),
+            "seo".equals(gate) || "all".equals(gate)};
+        List<String> closed = new ArrayList<>();
+        int closedScore = 0;
+        for (int i = 0; i < labels.length; i++) {
+            if (held[i] && pcts[i] < floor) {
+                closed.add(labels[i]);
+                closedScore = pcts[i];
+            }
+        }
+        if (!closed.isEmpty()) {
+            String which = closed.size() == 1
+                    ? closed.get(0) + " " + closedScore
+                    : String.join("+", closed);
             onEdt(() -> {
                 statusLcd.setTextColor(new Color(255, 90, 80));
                 statusLcd.setText(which + " < MIN " + floor + " — GATE CLOSED");

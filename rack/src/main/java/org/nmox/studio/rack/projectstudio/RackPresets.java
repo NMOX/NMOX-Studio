@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.projectstudio;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.json.JSONObject;
@@ -161,6 +163,53 @@ public enum RackPresets {
             rack.connect(webTests.getPort("out"), console.getPort("in"));
             rack.connect(apiTests.getPort("out"), console.getPort("in"));
         }
+    },
+
+    SHIP_GATE("Ship Gate",
+            "Prod build → Lighthouse floor → bundle budget → PREFLIGHT verdict → armed deploy") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice master = add(rack, DeviceType.MASTER, null);
+            RackDevice build = add(rack, DeviceType.BUILD, Map.of("prod", "true"));
+            // floor 90 held across all four Lighthouse categories
+            RackDevice vitals = add(rack, DeviceType.VITALS, Map.of("min", "4", "gate", "5"));
+            RackDevice bundle = add(rack, DeviceType.BUNDLE_SIZE, null);
+            RackDevice preflight = add(rack, DeviceType.PREFLIGHT, null);
+            RackDevice deploy = add(rack, DeviceType.DEPLOY, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // every gate's OK feeds the next; a single FAIL anywhere ships nothing
+            rack.connect(master.getPort("trig1"), build.getPort("run"));
+            rack.connect(build.getPort("ok"), vitals.getPort("run"));
+            rack.connect(vitals.getPort("ok"), bundle.getPort("run"));
+            rack.connect(bundle.getPort("ok"), preflight.getPort("run"));
+            rack.connect(preflight.getPort("ok"), deploy.getPort("run"));
+            rack.connect(preflight.getPort("out"), console.getPort("in"));
+            rack.connect(deploy.getPort("out"), console.getPort("in"));
+        }
+    },
+
+    DEV_INTELLIGENCE("Dev Intelligence",
+            "Serve with full awareness: clocked health probes, port radar, flight recorder, log tail") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
+            // 30s health-check clock, gated by the server's RUNNING state
+            RackDevice tempo = add(rack, DeviceType.TEMPO, Map.of("rate", "2", "running", "false"));
+            RackDevice ping = add(rack, DeviceType.HTTP, null);
+            RackDevice sonar = add(rack, DeviceType.SONAR, null);
+            RackDevice blackbox = add(rack, DeviceType.BLACKBOX, null);
+            RackDevice tail = add(rack, DeviceType.TAIL, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            rack.connect(server.getPort("running"), tempo.getPort("enable"));
+            rack.connect(server.getPort("url"), ping.getPort("url"));
+            rack.connect(tempo.getPort("tick"), ping.getPort("send"));
+            rack.connect(ping.getPort("body"), console.getPort("in"));
+            // awareness lane: the clock sweeps the ports, the recorders feed the console
+            rack.connect(tempo.getPort("bar"), sonar.getPort("run"));
+            rack.connect(sonar.getPort("out"), console.getPort("in"));
+            rack.connect(blackbox.getPort("out"), console.getPort("in"));
+            rack.connect(tail.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;
@@ -192,11 +241,32 @@ public enum RackPresets {
     public static JSONObject buildPatchFrom(Consumer<Rack> wiring) {
         Rack rack = new Rack();
         try {
+            // Point the throwaway rack at an empty scratch dir: a fresh Rack
+            // defaults to user.home, and devices that read the project on
+            // attach (BLACKBOX's changed-since scan, REFLEX's watcher
+            // baseline) must not walk the user's whole home directory just
+            // to serialize a preset.
+            rack.setProjectDir(scratchDir());
             wiring.accept(rack);
             return RackIO.toJson(rack);
         } finally {
             rack.shutdown();
         }
+    }
+
+    private static volatile File scratchDir;
+
+    private static File scratchDir() {
+        if (scratchDir == null) {
+            try {
+                File dir = java.nio.file.Files.createTempDirectory("nmox-preset").toFile();
+                dir.deleteOnExit();
+                scratchDir = dir;
+            } catch (IOException ex) {
+                scratchDir = new File(System.getProperty("java.io.tmpdir"));
+            }
+        }
+        return scratchDir;
     }
 
     /**

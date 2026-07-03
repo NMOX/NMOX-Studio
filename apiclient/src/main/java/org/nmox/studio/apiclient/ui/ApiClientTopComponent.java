@@ -56,7 +56,10 @@ import org.openide.windows.TopComponent;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 350)
 @ActionID(category = "Window", id = "org.nmox.studio.apiclient.ui.ApiClientTopComponent")
-@ActionReference(path = "Menu/Window", position = 265)
+@org.openide.awt.ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 265),
+    @ActionReference(path = "Shortcuts", name = "DS-8")
+})
 @TopComponent.OpenActionRegistration(displayName = "#CTL_ApiClientAction",
         preferredID = "ApiClientTopComponent")
 @Messages({

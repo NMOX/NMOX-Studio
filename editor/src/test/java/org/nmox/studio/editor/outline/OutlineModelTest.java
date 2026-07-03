@@ -218,6 +218,107 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("Elixir: defmodule contains its defs, nested by indentation")
+    void elixir() {
+        String src = """
+                defmodule MyApp.Repo do
+                  def all(query) do
+                    query
+                  end
+
+                  defp sanitize(q), do: q
+
+                  defmacro __using__(opts) do
+                    quote do: unquote(opts)
+                  end
+                end
+
+                defmodule MyApp.Other do
+                end
+                """;
+        List<Item> items = outline("text/x-elixir", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.MODULE, "MyApp.Repo"),
+                tuple(OutlineKind.METHOD, "all"),
+                tuple(OutlineKind.METHOD, "sanitize"),
+                tuple(OutlineKind.METHOD, "__using__"),
+                tuple(OutlineKind.MODULE, "MyApp.Other"));
+        assertThat(items).extracting(Item::line).containsExactly(0, 1, 5, 7, 12);
+        Item module = items.get(0);
+        Item all = items.get(1);
+        assertThat(all.depth()).as("def nests under its defmodule").isGreaterThan(module.depth());
+        assertThat(items.get(4).depth()).as("second module back at top level").isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Clojure: ns, defn variants, and type forms surface as a flat outline")
+    void clojure() {
+        String src = """
+                (ns myapp.core
+                  (:require [clojure.string :as str]))
+
+                (def default-port 8080)
+
+                (defn- helper [x]
+                  (inc x))
+
+                (defn start!
+                  [opts]
+                  (run opts))
+
+                (defmacro with-conn [& body]
+                  `(do ~@body))
+
+                (defrecord Server [port])
+                (defprotocol Lifecycle
+                  (start [this]))
+                """;
+        List<Item> items = outline("text/x-clojure", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.MODULE, "myapp.core"),
+                tuple(OutlineKind.FIELD, "default-port"),
+                tuple(OutlineKind.FUNCTION, "helper"),
+                tuple(OutlineKind.FUNCTION, "start!"),
+                tuple(OutlineKind.FUNCTION, "with-conn"),
+                tuple(OutlineKind.TYPE, "Server"),
+                tuple(OutlineKind.INTERFACE, "Lifecycle"));
+        assertThat(items).extracting(Item::line).containsExactly(0, 3, 5, 8, 12, 15, 16);
+        // indented forms like (start [this]) are not top-level; flat list, no nesting
+        assertThat(items).extracting(Item::name).doesNotContain("start");
+        assertThat(items).allMatch(i -> i.depth() == 0);
+    }
+
+    @Test
+    @DisplayName("Erlang: module attributes and column-0 function clause heads")
+    void erlang() {
+        String src = """
+                -module(myapp_server).
+                -behaviour(gen_server).
+                -export([start_link/0, init/1]).
+
+                start_link() ->
+                    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+
+                init(Args) when is_list(Args) ->
+                    {ok, #{}}.
+
+                handle_call(_Req, _From, State) ->
+                    {reply, ok, State}.
+                """;
+        List<Item> items = outline("text/x-erlang", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.MODULE, "myapp_server"),
+                tuple(OutlineKind.INTERFACE, "gen_server"),
+                tuple(OutlineKind.SECTION, "export"),
+                tuple(OutlineKind.FUNCTION, "start_link"),
+                tuple(OutlineKind.FUNCTION, "init"),
+                tuple(OutlineKind.FUNCTION, "handle_call"));
+        assertThat(items).extracting(Item::line).containsExactly(0, 1, 2, 4, 7, 10);
+        // indented calls like gen_server:start_link(...) are bodies, not heads
+        assertThat(items).extracting(Item::name).doesNotContain("gen_server:start_link");
+    }
+
+    @Test
     @DisplayName("Config sections: INI and TOML headers")
     void configSections() {
         assertThat(outline("text/x-ini", "[*]\nindent_style = space\n[*.md]\n"))

@@ -51,7 +51,7 @@ class InfraTruthTest {
     }
 
     @Test
-    @DisplayName("Every DigitalOcean kind resolves a per-resource path; CF/HZ honestly do not")
+    @DisplayName("Every DigitalOcean kind resolves a per-resource path; a zoneless CF record honestly does not")
     void resourcePathsAreReal() {
         assertThat(DigitalOceanClient.resourcePath(NodeKind.DROPLET, "7"))
                 .isEqualTo("/v2/droplets/7");
@@ -59,7 +59,7 @@ class InfraTruthTest {
                 .isEqualTo("/v2/databases/abc");
         assertThat(DigitalOceanClient.resourcePath(NodeKind.SSH_KEY, "9"))
                 .isEqualTo("/v2/account/keys/9");
-        // no per-record read endpoint: drift check must say so, not guess
+        // a record path needs its zone: without one, say so, don't guess
         assertThat(DigitalOceanClient.resourcePath(NodeKind.CF_DNS_RECORD, "x")).isNull();
     }
 

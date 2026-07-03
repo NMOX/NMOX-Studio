@@ -19,6 +19,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ExperimentsTest {
 
     @Test
+    @DisplayName("info reads what the marker recorded; broken markers degrade to ?")
+    void infoReadsTheMarker(@TempDir Path work) throws IOException {
+        File exp = new File(work.toFile(), "exp");
+        Files.createDirectories(exp.toPath());
+        Files.writeString(new File(exp, Experiments.MARKER).toPath(),
+                "created=2026-07-03\ntemplate=VANILLA\n");
+        assertThat(Experiments.info(exp))
+                .isEqualTo(new Experiments.Info("2026-07-03", "VANILLA"));
+
+        File bare = new File(work.toFile(), "bare");
+        Files.createDirectories(bare.toPath());
+        assertThat(Experiments.info(bare))
+                .as("no marker at all: placeholders, never an exception")
+                .isEqualTo(new Experiments.Info("?", "?"));
+    }
+
+    @Test
     @DisplayName("Promote moves the tree, drops the marker, keeps the files")
     void promoteGraduatesTheExperiment(@TempDir Path work) throws IOException {
         File exp = new File(work.toFile(), "exp");

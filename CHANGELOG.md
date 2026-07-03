@@ -4,6 +4,70 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.23.0] — 2026-07-03
+
+The completeness release: four audits asked "did every idea ship
+whole?" — every dead-end, asymmetry, and dangling promise they found
+is now finished or honestly ledgered.
+
+### Added
+- **Experiments, managed (File → Experiments…, ⇧⌘X).** The New
+  Experiment dialog has promised "Promote it later" since v1.11 — now
+  you can. Lists every experiment with template and age; Open aims the
+  studio, Promote graduates a keeper (move out of ~/.nmox/experiments,
+  drop the marker, git init, opened for real — recents and all),
+  Discard stops anything running there and deletes the tree, still
+  refusing anything unmarked.
+- **Hetzner is a first-class cloud.** Drift Refresh, Destroy stack,
+  cloud-init user_data, and server-IP capture (ssh command) now work
+  for all six Hetzner kinds exactly as for DigitalOcean; Cloudflare
+  DNS records drift-check and destroy through their zone. R2 buckets
+  stay honestly unverifiable (the API returns no addressable id).
+- **Any-provider live deploys.** The deploy gate demanded a
+  DigitalOcean token even for pure-Hetzner stacks — now a stack goes
+  live when every provider it actually uses has its token, and dry-run
+  names the missing ones. En route this killed a real bug: the old
+  gate read tokens from a different preferences node than the Tokens
+  dialog wrote, so stored DO tokens were invisible to it.
+- **VITALS gates all four Lighthouse categories.** The GATE knob grew
+  `best`, `seo`, and `all` (append-only — patched knob indexes stay
+  stable); the failure LCD names exactly which category closed the gate.
+- **Two presets for the invisible 60%.** Ship Gate chains prod build →
+  Lighthouse floor → bundle budget → PREFLIGHT verdict → armed deploy;
+  Dev Intelligence surrounds the dev server with clocked health probes,
+  SONAR port sweeps, BLACKBOX, and TAIL on the console.
+- **Navigator outline for the BEAM + Lisp languages** (32 → 35 mimes):
+  Elixir defmodule/def/defp/defmacro nested by indentation, Clojure
+  top-level forms as a flat list, Erlang module attributes plus
+  column-0 function clause heads.
+
+- **Window shortcuts for the all-day tools**: API Studio ⇧⌘8, Infra
+  Designer ⇧⌘9 — parity with the rack (⌘9) and Docker (⌘8).
+
+### Fixed
+- **Wizards validate their inputs.** Standards Kit refuses a blank
+  name, an unparseable site URL, or a non-address security contact
+  before writing anything; PWA Kit checks the artwork file exists and
+  is readable (full path in the message) and refuses a blank app name.
+- **Racking a preset with BLACKBOX no longer scans your home
+  directory** — the preset builder's throwaway rack aimed at
+  ~/. by default, and BLACKBOX's changed-since-last-green walk plus
+  REFLEX's watcher baseline could hang for minutes. It aims at an
+  empty scratch directory now.
+- The toolbar button says **"Sync from DigitalOcean"** — which is what
+  it does; the deploy tooltip and destroy confirmations name each
+  node's actual provider.
+
+### Removed
+- **Six phantom NpmService methods** (addPackage, removePackage, update,
+  audit, listPackages, init) — zero non-test callers; the rack's CRATE
+  and AUDIT devices superseded them.
+
+### Deferred with reasons (docs/engineering/tech-debt.md)
+- Quick Search for API Studio/infra nodes; multi-provider sync;
+  CI-export scope for gates/observers; TAIL/TEMPO resurrection;
+  outlines for the remaining 8 grammar-only languages.
+
 ## [1.22.0] — 2026-07-03
 
 The Snow Leopard release: no new features. Six parallel audits swept
