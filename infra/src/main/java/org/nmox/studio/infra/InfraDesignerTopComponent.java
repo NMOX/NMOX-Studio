@@ -264,15 +264,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
             return;
         }
         Thread worker = new Thread(() -> {
+            StringBuilder log = new StringBuilder("NMOX deploy " + java.time.LocalDateTime.now() + "\n");
             boolean ok = client.execute(plan, graph, (node, message) -> {
                 if (node != null) {
                     graph.setStatus(node, message);
+                    log.append("  ").append(node.kind.getDisplayName())
+                            .append(" ").append(node.label).append(": ").append(message).append('\n');
                 }
             });
+            writeDeployLog(log.toString());
             SwingUtilities.invokeLater(() -> {
                 save();
                 JOptionPane.showMessageDialog(this,
-                        ok ? "Deploy complete - nodes are live." : "Deploy stopped on a failure; see node status.",
+                        ok ? "Deploy complete - nodes are live. Log: .nmox/deploy-log"
+                           : "Deploy stopped on a failure; see node status and .nmox/deploy-log.",
                         "Infra Designer", ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
             });
         }, "nmox-infra-deploy");
@@ -362,6 +367,25 @@ public final class InfraDesignerTopComponent extends TopComponent {
         worker.start();
     }
 
+    /** Appends a deploy run to .nmox/deploy-log beside the aimed project. */
+    private void writeDeployLog(String entry) {
+        try {
+            java.io.File root = org.nmox.studio.rack.service.RackService.getDefault()
+                    .getRack().getProjectDir();
+            if (root == null) {
+                return;
+            }
+            java.io.File dir = new java.io.File(root, ".nmox");
+            java.nio.file.Files.createDirectories(dir.toPath());
+            java.nio.file.Files.writeString(new java.io.File(dir, "deploy-log").toPath(),
+                    entry + "\n", java.nio.charset.StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ex) {
+            // a log is a courtesy, never a blocker
+        }
+    }
+
     private void showNodeMenu(InfraNode node, Point screenPoint) {
         JPopupMenu menu = new JPopupMenu();
         if (node.doId != null) {
@@ -385,6 +409,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 }
             });
             menu.add(destroy);
+            menu.addSeparator();
+        }
+        if (node.ip != null && !node.ip.isBlank()) {
+            JMenuItem ssh = new JMenuItem("Copy SSH command  (root@" + node.ip + ")");
+            ssh.addActionListener(e -> {
+                java.awt.datatransfer.StringSelection sel =
+                        new java.awt.datatransfer.StringSelection("ssh root@" + node.ip);
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Copied: ssh root@" + node.ip);
+            });
+            menu.add(ssh);
             menu.addSeparator();
         }
         JMenuItem remove = new JMenuItem("Remove from design");

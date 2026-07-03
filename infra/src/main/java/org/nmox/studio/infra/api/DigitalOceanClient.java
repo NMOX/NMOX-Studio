@@ -90,6 +90,9 @@ public final class DigitalOceanClient {
                     node.doId = doId;
                     ids.put(node.id, doId);
                 }
+                if (node != null && ips.containsKey(node.id) && ips.get(node.id) != null) {
+                    node.ip = ips.get(node.id); // remember it: the SSH command needs it later
+                }
                 // honesty over green lights: a created resource whose id we
                 // could not parse cannot be synced or destroyed later
                 onStep.accept(node, node != null && node.doId == null
@@ -285,6 +288,18 @@ public final class DigitalOceanClient {
                     node.label = item.optString(source.nameKey(), node.label);
                 }
                 node.doId = doId;
+                if (source.kind() == NodeKind.DROPLET || source.kind() == NodeKind.GPU_DROPLET) {
+                    JSONObject nets = item.optJSONObject("networks");
+                    JSONArray v4 = nets != null ? nets.optJSONArray("v4") : null;
+                    if (v4 != null) {
+                        for (int k = 0; k < v4.length(); k++) {
+                            JSONObject net = v4.getJSONObject(k);
+                            if ("public".equals(net.optString("type"))) {
+                                node.ip = net.optString("ip_address", null);
+                            }
+                        }
+                    }
+                }
                 graph.setStatus(node, "live");
                 imported++;
                 x += 190;

@@ -23,7 +23,8 @@ public enum NodeKind {
                     "ubuntu-24-04-x64", "ubuntu-22-04-x64", "debian-12-x64", "fedora-40-x64",
                     "rockylinux-9-x64", "docker-20-04"),
                 Prop.bool("backups", "Backups", false),
-                Prop.bool("monitoring", "Monitoring agent", true)),
+                Prop.bool("monitoring", "Monitoring agent", true),
+                Prop.text("userData", "Cloud-init (user_data)", "")),
             6.0),
     GPU_DROPLET("GPU Droplet", Category.COMPUTE,
             List.of(

@@ -124,6 +124,10 @@ public final class DeployPlanner {
                     body.put("backups", Boolean.parseBoolean(p.getOrDefault("backups", "false")))
                             .put("monitoring", Boolean.parseBoolean(p.getOrDefault("monitoring", "true")));
                 }
+                String userData = p.getOrDefault("userData", "");
+                if (!userData.isBlank()) {
+                    body.put("user_data", userData); // cloud-init: the droplet configures itself
+                }
                 JSONArray keys = new JSONArray();
                 for (InfraNode prov : providers) {
                     if (prov.kind == NodeKind.VPC) {
