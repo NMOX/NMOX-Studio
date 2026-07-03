@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.19.0] — 2026-07-02
+
+API Studio — a Postman-style suite in its own tab, beside the rack and
+the infra designer.
+
+### Added
+- **API Studio (Window → API Studio).** A new module and tab for
+  managing and testing HTTP APIs:
+  - **Collections** of saved requests in a tree, with add/delete.
+  - A **request builder**: method, URL, query params and headers
+    (toggleable rows), request body, and auth (bearer or basic).
+  - **Environments** with `{{variable}}` substitution, so one saved
+    request travels from localhost to staging to prod by switching the
+    environment instead of editing URLs.
+  - **Tests**: per-request assertions — status is, time under N ms,
+    body contains, JSON has path (`data.user.id`, `items.0.sku`),
+    header present — evaluated on every send, green/red per line. A
+    probe becomes a check.
+  - A **response viewer**: status, time, size, pretty-printed JSON
+    body, and response headers.
+  - The workspace **persists as `.nmoxapi.json`** beside the project,
+    exactly like the rack patch and the infra design. Secrets belong
+    in environment variables kept out of source control (the file is
+    committable).
+
 ## [1.18.0] — 2026-07-02
 
 The second-cut sprint's final tranche: PING grows into a REST console,
