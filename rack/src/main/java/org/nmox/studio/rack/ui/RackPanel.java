@@ -27,6 +27,8 @@ import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.ui.controls.RackStyle;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * The rack itself: devices stacked between mounting rails. Front view
@@ -295,11 +297,11 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     org.nmox.studio.rack.devices.DeviceType.byId(device.getTypeId());
             if (type != null) {
                 JMenuItem howTo = new JMenuItem("How to use " + device.getTitle() + "…");
-                howTo.addActionListener(a -> javax.swing.JOptionPane.showMessageDialog(
-                        RackPanel.this,
-                        type.getUsage().replace("\n", "\n\n"),
-                        type.getTitle() + " — " + type.getDescription(),
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE));
+                howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                                type.getTitle() + " — " + type.getDescription() + "\n\n"
+                                        + type.getUsage().replace("\n", "\n\n"),
+                                NotifyDescriptor.INFORMATION_MESSAGE)));
                 menu.add(howTo);
                 menu.addSeparator();
             }

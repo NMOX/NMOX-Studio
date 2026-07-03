@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.JSONObject;
-import org.nmox.studio.rack.engine.ToolLocator;
+import org.nmox.studio.core.process.ToolLocator;
 
 /**
  * The engine room: an asynchronous wrapper over the real docker CLI.
@@ -60,7 +60,7 @@ public final class DockerClient {
         cmd.add("docker");
         Collections.addAll(cmd, args);
         try {
-            ProcessBuilder pb = org.nmox.studio.rack.engine.ProcessSupport.builder(cmd);
+            ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(cmd);
             Process p = pb.start();
             // Drain stderr on its own thread so a large stderr burst can't fill
             // its pipe and deadlock the stdout read (and vice versa). On a

@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # NMOX Studio Roadmap 2.0
 
 *From working foundation to modern web development powerhouse*

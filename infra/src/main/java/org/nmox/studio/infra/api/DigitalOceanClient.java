@@ -31,9 +31,7 @@ public final class DigitalOceanClient {
     private static final String PREF_TOKEN = "doToken";
     private static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{(id|ip)-of:([^}]+)}");
 
-    private final HttpClient http = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(15))
-            .build();
+    private final HttpClient http = org.nmox.studio.core.http.HttpClientFactory.shared();
 
     // ---- token ----
 

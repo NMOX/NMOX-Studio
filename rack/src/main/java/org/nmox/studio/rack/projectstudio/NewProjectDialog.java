@@ -18,13 +18,14 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import org.nmox.studio.rack.engine.CommandExecutor;
 import org.nmox.studio.rack.service.RackService;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  * Start a project: pick a template, name it, and the studio generates
@@ -186,22 +187,19 @@ public class NewProjectDialog extends JDialog {
     private void createProject() {
         String name = sanitizedName();
         if (name.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Give the project a name.", "New Project",
-                    JOptionPane.WARNING_MESSAGE);
+            warn("Give the project a name.");
             return;
         }
         ProjectTemplates template = templateList.getSelectedValue();
         File dir = targetDir();
         if (dir.exists()) {
-            JOptionPane.showMessageDialog(this, dir.getName() + " already exists in that location.",
-                    "New Project", JOptionPane.WARNING_MESSAGE);
+            warn(dir.getName() + " already exists in that location.");
             return;
         }
         try {
             template.generate(dir, name);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Could not create project: " + ex.getMessage(),
-                    "New Project", JOptionPane.ERROR_MESSAGE);
+            error("Could not create the project: " + ex.getMessage());
             return;
         }
 
@@ -217,5 +215,17 @@ public class NewProjectDialog extends JDialog {
                     });
         }
         dispose();
+    }
+
+    // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
+
+    private void warn(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.WARNING_MESSAGE));
+    }
+
+    private void error(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
     }
 }

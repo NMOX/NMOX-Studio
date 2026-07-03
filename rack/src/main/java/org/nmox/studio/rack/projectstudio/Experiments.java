@@ -43,7 +43,7 @@ public final class Experiments {
         File dir = unique(root, base);
         template.generate(dir, dir.getName()); // deliberately no git init
         Files.writeString(new File(dir, MARKER).toPath(),
-                "created=" + java.time.LocalDate.now() + "\ntemplate=" + template.name() + "\n");
+                "created=" + java.time.LocalDate.now() + "\ntemplate=" + template.name() + "\n", java.nio.charset.StandardCharsets.UTF_8);
         return dir;
     }
 

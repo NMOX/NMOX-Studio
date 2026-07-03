@@ -4,6 +4,58 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.22.0] — 2026-07-03
+
+The Snow Leopard release: no new features. Six parallel audits swept
+the whole codebase; what they found got fixed, consolidated, tested,
+or honestly written down as deferred. Everything is faster, cleaner,
+and truer — nothing is different.
+
+### Fixed
+- **Explicit UTF-8 at 12 file I/O sites** that used the platform
+  default charset — including session-state JSON (resume could corrupt
+  on non-UTF-8 systems), CI-workflow export, docker-compose writes,
+  and package.json parsing.
+- **Wizard writes left the EDT.** Standards Kit and PWA Kit did disk
+  I/O (and PNG encoding) inside the event dispatch; both now run on a
+  request processor and hop back for the report.
+- **API Studio autosave no longer fails silently.** A chronically
+  failing 800ms autosave meant silent data loss; it now warns once per
+  failure streak and logs the cause.
+- **Two timers that never stopped** (status-line 2s poll, session
+  snapshots at 5s) are lifecycle-bound.
+- **Relaunching a running command skewed its elapsed readout** — start
+  times are now captured per launch.
+- **PING's history capped at record time**: fifty retained multi-MB
+  response bodies was a leak, not a console log.
+
+### Changed
+- **JOptionPane is gone.** 26 call sites across 12 rack files now use
+  the platform's DialogDisplayer — themed, consistent — and raw
+  exception dumps became task-oriented messages ("Could not save the
+  patch: …").
+- **ProcessSupport and ToolLocator moved to core.** The editor no
+  longer depends on the rack just to launch processes, and the tools
+  module's npm probe finally gets the augmented PATH (npm was
+  "missing" when the IDE launched from Finder). The hand-rolled copy
+  in the template generator — with its Windows-breaking hardcoded
+  /dev/null — is gone.
+- **One HTTP connection pool** (core HttpClientFactory) replaces four
+  per-module clients; **one JsonUtil** replaces three copies of the
+  JSON sniff/pretty-printer (String-only API — org.json types never
+  cross NBM module boundaries).
+- **FlightRecorder's journal loads off the boot path**, and the boot
+  smoke test now prints a boot-to-exit time CI can trend.
+
+### Tests & docs
+- Coverage backfill for the untested pure logic in core, tools,
+  apiclient, and infra, with JaCoCo floors set from measured coverage.
+- Truth pass: CLAUDE.md caught up four releases (v1.17 → v1.21, 39
+  devices); ~30 v0.x aspirational docs gained historical banners; three
+  test scripts that checked classes that never existed were deleted;
+  docs/engineering/tech-debt.md rewritten as the honest current ledger
+  — every open item carries the reason it was deferred.
+
 ## [1.21.0] — 2026-07-03
 
 The PWA sprint: one wizard and the aimed project becomes installable —

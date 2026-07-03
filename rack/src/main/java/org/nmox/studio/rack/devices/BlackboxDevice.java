@@ -205,11 +205,13 @@ public class BlackboxDevice extends RackDevice {
                 java.io.File dir = new java.io.File(projectDir(), ".nmox");
                 java.nio.file.Files.createDirectories(dir.toPath());
                 java.io.File log = new java.io.File(dir, "flight-log.txt");
-                java.nio.file.Files.writeString(log.toPath(), FlightRecorder.getDefault().export());
+                java.nio.file.Files.writeString(log.toPath(), FlightRecorder.getDefault().export(), java.nio.charset.StandardCharsets.UTF_8);
                 south.add(new JLabel("wrote " + log.getName()));
                 south.revalidate();
             } catch (Exception ex) {
-                javax.swing.JOptionPane.showMessageDialog(dialog, ex.getMessage());
+                org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
+                        "Could not export the flight log: " + ex.getMessage(),
+                        org.openide.NotifyDescriptor.ERROR_MESSAGE));
             }
         });
         south.add(export);

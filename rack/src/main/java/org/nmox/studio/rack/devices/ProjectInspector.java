@@ -185,7 +185,7 @@ public final class ProjectInspector {
             return entry.json;
         }
         try {
-            JSONObject json = new JSONObject(Files.readString(pkg.toPath()));
+            JSONObject json = new JSONObject(Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
             packageJsonCache.put(pkg, new CacheEntry(currentMod, json));
             return json;
         } catch (Exception ex) {
@@ -230,7 +230,7 @@ public final class ProjectInspector {
             return null;
         }
         try {
-            java.util.regex.Matcher m = pattern.matcher(Files.readString(mixExs.toPath()));
+            java.util.regex.Matcher m = pattern.matcher(Files.readString(mixExs.toPath(), java.nio.charset.StandardCharsets.UTF_8));
             return m.find() ? m.group(1) : null;
         } catch (Exception ex) {
             return null;

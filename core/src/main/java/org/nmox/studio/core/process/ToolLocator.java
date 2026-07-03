@@ -1,4 +1,4 @@
-package org.nmox.studio.rack.engine;
+package org.nmox.studio.core.process;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -26,6 +25,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.nmox.studio.rack.engine.FileWatcher;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -250,10 +251,12 @@ public class FileTreePanel extends JPanel {
             menu.addSeparator();
             JMenuItem rename = new JMenuItem("Rename…");
             rename.addActionListener(a -> {
-                String name = JOptionPane.showInputDialog(this, "New name:", target.getName());
-                if (name != null && !name.isBlank()) {
+                NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine("New name:", "Rename");
+                line.setInputText(target.getName());
+                if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION
+                        && !line.getInputText().isBlank()) {
                     try {
-                        FileOps.rename(target, name.trim());
+                        FileOps.rename(target, line.getInputText().trim());
                         rebuild();
                     } catch (IOException ex) {
                         error(ex);
@@ -264,9 +267,9 @@ public class FileTreePanel extends JPanel {
 
             JMenuItem delete = new JMenuItem("Delete (to Trash)");
             delete.addActionListener(a -> {
-                if (JOptionPane.showConfirmDialog(this,
+                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                         "Delete \"" + target.getName() + "\"?", "Project Studio",
-                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
                     try {
                         FileOps.delete(target);
                         rebuild();
@@ -300,11 +303,14 @@ public class FileTreePanel extends JPanel {
     }
 
     private void promptCreate(File parent, boolean directory) {
-        String name = JOptionPane.showInputDialog(this,
-                directory ? "Folder name:" : "File name:", directory ? "" : "untitled.js");
-        if (name == null || name.isBlank()) {
+        NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine(
+                directory ? "Folder name:" : "File name:", directory ? "New Folder" : "New File");
+        line.setInputText(directory ? "" : "untitled.js");
+        if (DialogDisplayer.getDefault().notify(line) != NotifyDescriptor.OK_OPTION
+                || line.getInputText().isBlank()) {
             return;
         }
+        String name = line.getInputText();
         try {
             File created = directory
                     ? FileOps.createDirectory(parent, name.trim())
@@ -334,7 +340,8 @@ public class FileTreePanel extends JPanel {
     }
 
     private void error(Exception ex) {
-        JOptionPane.showMessageDialog(this, ex.getMessage(), "Project Studio", JOptionPane.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                "File operation failed: " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     /** Folders bold-ish, heavy dirs dimmed, root shows the full name. */

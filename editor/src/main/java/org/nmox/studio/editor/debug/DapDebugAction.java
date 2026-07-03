@@ -13,7 +13,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.lsp.client.debugger.api.DAPConfiguration;
-import org.nmox.studio.rack.engine.ToolLocator;
+import org.nmox.studio.core.process.ToolLocator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

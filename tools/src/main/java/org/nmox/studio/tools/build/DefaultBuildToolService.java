@@ -49,7 +49,7 @@ public class DefaultBuildToolService implements BuildToolService {
         File packageJson = new File(projectDir, "package.json");
         if (packageJson.exists()) {
             try {
-                String content = Files.readString(packageJson.toPath());
+                String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
                 if (content.contains("\"webpack\"")) return BuildToolType.WEBPACK;
                 if (content.contains("\"vite\"")) return BuildToolType.VITE;
                 if (content.contains("\"parcel\"")) return BuildToolType.PARCEL;
@@ -105,7 +105,7 @@ public class DefaultBuildToolService implements BuildToolService {
         
         if (packageJson.exists()) {
             try {
-                String content = Files.readString(packageJson.toPath());
+                String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
                 Pattern pattern = Pattern.compile("\"scripts\"\\s*:\\s*\\{([^}]+)\\}");
                 Matcher matcher = pattern.matcher(content);
                 
@@ -155,7 +155,7 @@ public class DefaultBuildToolService implements BuildToolService {
                 args.add(script);
                 
                 // Add environment variables
-                ProcessBuilder pb = new ProcessBuilder(args);
+                ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(args);
                 pb.directory(projectDir);
                 Map<String, String> env = pb.environment();
                 env.putAll(config.getEnvironment());

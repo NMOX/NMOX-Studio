@@ -117,7 +117,7 @@ public class PhoenixDevice extends CommandDevice {
         }
         StringBuilder out = new StringBuilder();
         CommandProbe.run(commandDir(),
-                List.of(org.nmox.studio.rack.engine.ToolLocator.resolve("mix"), "hex.info", "phoenix"),
+                List.of(org.nmox.studio.core.process.ToolLocator.resolve("mix"), "hex.info", "phoenix"),
                 line -> out.append(line).append('\n'), code -> {
                     Matcher m = HEX_RELEASE.matcher(out.toString());
                     if (code == 0 && m.find()) {

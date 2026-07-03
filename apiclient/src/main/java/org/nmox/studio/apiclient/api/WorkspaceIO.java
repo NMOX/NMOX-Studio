@@ -183,20 +183,6 @@ public final class WorkspaceIO {
 
     /** Indents a JSON body for the response viewer; non-JSON passes through. */
     public static String pretty(String body) {
-        if (body == null) {
-            return "";
-        }
-        String t = body.strip();
-        try {
-            if (t.startsWith("{")) {
-                return new JSONObject(t).toString(2);
-            }
-            if (t.startsWith("[")) {
-                return new JSONArray(t).toString(2);
-            }
-        } catch (RuntimeException notJson) {
-            // leave it raw
-        }
-        return body;
+        return org.nmox.studio.core.util.JsonUtil.pretty(body);
     }
 }

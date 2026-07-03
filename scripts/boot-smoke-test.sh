@@ -73,6 +73,8 @@ fi
 echo "boot-smoke: booting $LAUNCHER"
 echo "boot-smoke: userdir  $USERDIR (fresh, removed on exit)"
 
+BOOT_START=$(date +%s)
+
 # shellcheck disable=SC2086
 "$LAUNCHER" \
     --userdir "$USERDIR" \
@@ -123,6 +125,9 @@ grep -qiE "$FAILURE_RE" "$LOG" && fail_with_log "the module system reported inst
 grep -q "Turning on modules" "$LOG" || fail_with_log "module system never started (no 'Turning on modules')"
 [ "$APP_EXIT" -eq 0 ] || fail_with_log "launcher exited $APP_EXIT (expected a clean shutdown)"
 
+BOOT_SECONDS=$(( $(date +%s) - BOOT_START ))
 echo "boot-smoke: OK — module system came up and quit cleanly (exit 0)"
 echo "boot-smoke: no install/enable failures in the module log"
+# a trend line CI can watch: boot-to-clean-exit, whole seconds
+echo "boot-smoke: boot-to-exit ${BOOT_SECONDS}s"
 exit 0

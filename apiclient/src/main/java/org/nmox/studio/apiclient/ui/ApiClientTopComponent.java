@@ -546,11 +546,25 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    private boolean saveFailureNotified;
+
     private void save() {
         try {
             WorkspaceIO.save(projectDir(), workspace);
+            saveFailureNotified = false;
         } catch (Exception ex) {
-            // best effort; a failed autosave should never interrupt editing
+            // a failed autosave never interrupts editing — but a chronically
+            // failing one must not lose work silently: warn once per streak
+            java.util.logging.Logger.getLogger(ApiClientTopComponent.class.getName())
+                    .log(java.util.logging.Level.WARNING, "API workspace autosave failed", ex);
+            if (!saveFailureNotified) {
+                saveFailureNotified = true;
+                org.openide.awt.NotificationDisplayer.getDefault().notify(
+                        "API Studio can't save its workspace",
+                        javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
+                        "Changes are not being persisted: " + ex.getMessage(),
+                        null);
+            }
         }
     }
 

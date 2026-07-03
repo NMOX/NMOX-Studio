@@ -9,7 +9,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
@@ -22,6 +21,8 @@ import org.nmox.studio.rack.model.RackIO;
 import org.nmox.studio.rack.ui.PalettePanel;
 import org.nmox.studio.rack.ui.RackPanel;
 import org.nmox.studio.rack.ui.controls.RackStyle;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
@@ -164,8 +165,7 @@ public final class RackTopComponent extends TopComponent {
                 revert.setRepeats(false);
                 revert.start();
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Save failed: " + ex.getMessage(),
-                        "Task Rack", JOptionPane.ERROR_MESSAGE);
+                error("Could not save the patch: " + ex.getMessage());
             }
         });
         bar.add(save);
@@ -176,8 +176,7 @@ public final class RackTopComponent extends TopComponent {
             if (source.isFile()) {
                 loadPatch(source);
             } else {
-                JOptionPane.showMessageDialog(this, "No " + RackIO.DEFAULT_FILENAME + " in project.",
-                        "Task Rack", JOptionPane.INFORMATION_MESSAGE);
+                info("No " + RackIO.DEFAULT_FILENAME + " in project.");
             }
         });
         bar.add(load);
@@ -194,8 +193,7 @@ public final class RackTopComponent extends TopComponent {
                     try {
                         RackIO.fromJson(rack, preset.buildPatch());
                     } catch (RuntimeException ex) {
-                        JOptionPane.showMessageDialog(this, "Preset failed: " + ex.getMessage(),
-                                "Task Rack", JOptionPane.ERROR_MESSAGE);
+                        error("Could not wire the preset: " + ex.getMessage());
                     }
                 });
                 menu.add(item);
@@ -213,14 +211,13 @@ public final class RackTopComponent extends TopComponent {
                 File dir = new File(rack.getProjectDir(), ".github/workflows");
                 java.nio.file.Files.createDirectories(dir.toPath());
                 File out = new File(dir, "nmox-rack.yml");
-                java.nio.file.Files.writeString(out.toPath(), yaml);
+                java.nio.file.Files.writeString(out.toPath(), yaml, java.nio.charset.StandardCharsets.UTF_8);
                 org.openide.awt.StatusDisplayer.getDefault()
                         .setStatusText("Exported " + out.getAbsolutePath());
                 org.nmox.studio.rack.engine.FileLink.open(
                         new org.nmox.studio.rack.engine.FileLink.Location(out, 1));
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Export failed: " + ex.getMessage(),
-                        "Task Rack", JOptionPane.ERROR_MESSAGE);
+                error("Could not export the CI workflow: " + ex.getMessage());
             }
         });
         bar.add(exportCi);
@@ -242,9 +239,20 @@ public final class RackTopComponent extends TopComponent {
         try {
             RackIO.load(rack, file);
         } catch (IOException | RuntimeException ex) {
-            JOptionPane.showMessageDialog(this, "Load failed: " + ex.getMessage(),
-                    "Task Rack", JOptionPane.ERROR_MESSAGE);
+            error("Could not load the patch: " + ex.getMessage());
         }
+    }
+
+    // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
+
+    private void info(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.INFORMATION_MESSAGE));
+    }
+
+    private void error(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private void updateProjectLabel() {

@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # MVP Shortcuts & Hacks
 
 *How to ship something that works in 2 weeks instead of 2 years*

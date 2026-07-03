@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 NMOX Studio is a NetBeans Platform-based IDE for modern web development, with first-class polyglot support (JS/TS, Java, C/C++, Python, Ruby, Rust, Go, PHP, shell + configs), NPM integration, project templates, and build tools. It's built as a multi-module Maven project with the NetBeans Rich Client Platform (RCP).
 
-**Status**: shipping (v1.17.0). Polyglot editing (45+ TextMate grammars incl. the config layer, LSP providers, Bun/Deno/Rust/Go/BEAM+ toolchains with per-lane monorepo dirs), the Reason-style task rack (39 devices — see docs/devices.md, generated + CI-gated; cross-lane QUORUM join, readiness ENABLE gates, per-lane REFLEX GLOB routing; quality gates: VITALS Lighthouse floor, VERITAS coverage floor + named-failure re-runs, GAUNTLET throughput floor, PRISM bundle budget, BEACON cert/uptime sentinel; SOLDER any-command, TAIL log follow, HELM ssh runner; presets, CI export, session resurrection, PREFLIGHT ship gate), safe project switching + .env everywhere + Experiments (~/.nmox/experiments lifecycle), Quick Search/status line/keymap surfaces, the Workbench home base, the Docker control panel, the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare — drift Refresh, Destroy-stack with cost framing, cloud-init user_data, copy-ssh-from-node, deploy log), one Options category, installers for all three OSes with bundled runtimes, Homebrew cask, and a tag-triggered release workflow with SBOM.
+**Status**: shipping (v1.21.0). Polyglot editing (45+ TextMate grammars incl. the config layer, LSP providers, Bun/Deno/Rust/Go/BEAM+ toolchains with per-lane monorepo dirs), the Reason-style task rack (39 devices — see docs/devices.md, generated + CI-gated; cross-lane QUORUM join, readiness ENABLE gates, per-lane REFLEX GLOB routing; quality gates: VITALS Lighthouse floor with perf/a11y/both GATE, VERITAS coverage floor + named-failure re-runs, GAUNTLET throughput floor, PRISM bundle budget, BEACON cert/uptime sentinel; SOLDER any-command, TAIL log follow, HELM ssh runner; presets, CI export, session resurrection, PREFLIGHT ship gate), safe project switching + .env everywhere + Experiments (~/.nmox/experiments lifecycle), Quick Search/status line/keymap surfaces, the Workbench home base, the Docker control panel, the multi-cloud infra designer (DigitalOcean/Hetzner/Cloudflare — drift Refresh, Destroy-stack with cost framing, cloud-init user_data, copy-ssh-from-node, deploy log), **API Studio** (Postman-style tab with per-response security-header grades), **standards enforced for real** (.editorconfig on save; Standards Kit wizard for robots/sitemap/manifest/security.txt/humans), the **PWA Kit wizard** (Java2D icon forge incl. maskable set, readable service worker with app-shell/network-first strategies, offline page, idempotent index.html wiring), one Options category, installers for all three OSes with bundled runtimes, Homebrew cask, and a tag-triggered release workflow with SBOM.
 
 ## Build and Run Commands
 
@@ -80,9 +80,14 @@ mvn test jacoco:report
 The project includes several shell scripts:
 - `./build.sh` - Clean build
 - `./run.sh` - Build and run the IDE
-- `./test-everything.sh` - Comprehensive test suite
-- `./quick-test.sh` - Quick validation
-- `./gui-test.sh` - GUI-specific tests
+- `./gui-test.sh` - GUI-specific tests (macOS)
+- `./setup-and-run.sh` - Interactive setup menu
+- `scripts/boot-smoke-test.sh` - Headless boot of the assembled app (the CI gate)
+
+The comprehensive suite is `mvn verify` — tests plus the SpotBugs,
+find-sec-bugs, and JaCoCo gates. (The v0.x-era test-everything.sh /
+quick-test.sh scripts checked classes that never shipped and were
+removed in v1.22.0.)
 
 ## Module Structure
 
@@ -110,7 +115,7 @@ NMOX-Studio/
 | **core** | Cross-cutting platform touches | `TerminalPhosphor` (phosphor Terminal theme on first run) |
 | **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 45+ TextMate grammars incl. HTML/CSS/SCSS/Less + the config layer, JS/HTML/CSS completion providers, LSP providers, `OutlineModel`/`StructureNavigatorPanel` (Navigator outline for 32 mimes), `ConfigFileResolver` (dotfile MIME) |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `BuildToolService` |
-| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 34 task devices (incl. ROSETTA mixed-repo selector, QUORUM lane-join barrier, IGNITION polyglot runtime, INSPECTOR debug launcher, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), cross-lane coordination (QUORUM join, `RackDevice.enableGate` readiness gates on long-runners, REFLEX per-lane GLOB routing), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 39 task devices (incl. ROSETTA mixed-repo selector, QUORUM lane-join barrier, IGNITION polyglot runtime, INSPECTOR debug launcher, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), cross-lane coordination (QUORUM join, `RackDevice.enableGate` readiness gates on long-runners, REFLEX per-lane GLOB routing), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **apiclient** | API Studio (Postman-style) | `ApiClientTopComponent` tab, collections/requests tree, request builder (params/headers/body/auth/tests), response viewer, `{{var}}` environments, `.nmoxapi.json` per-project persistence; `ApiClient`/`TestRunner`/`WorkspaceIO` engine |
 | **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
@@ -274,7 +279,11 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 - **v1.12.0-v1.13.0**: SOLDER/TAIL/VITALS + overallSuccess verdict hook; testing rigor (named failures, re-run failed, coverage + throughput floors)
 - **v1.14.0**: infra truth — drift Refresh + Destroy stack with cost framing
 - **v1.15.0-v1.17.0**: Bun + Deno first-class; HELM/BEACON/PRISM; DO deep (cloud-init, ssh-from-node, deploy log) + designer fit/zoom
-- See CHANGELOG.md for the full record; tagging vX.Y.Z triggers the release workflow (5 artifacts)
+- **v1.18.0-v1.19.0**: PING REST console + dialog-idiom sweep; API Studio module (collections, {{var}} environments, assertions, .nmoxapi.json)
+- **v1.20.x**: standards with gusto — .editorconfig honored on save, Standards Kit wizard (robots/sitemap/manifest/RFC 9116 security.txt/humans), security-header grades on every API Studio response, WCAG as a VITALS gate; dialog-stacking fix
+- **v1.21.0**: PWA Kit wizard — Java2D icon forge (maskable set), readable service worker (app-shell/network-first), offline page, idempotent index.html wiring
+- **v1.22.0**: the Snow Leopard release — no new features; charset/EDT/leak/race fixes, ProcessSupport+ToolLocator promoted to core, shared HttpClient + JsonUtil, JOptionPane eviction, test backfill + floors, docs truth pass
+- See CHANGELOG.md for the full record; tagging vX.Y.Z triggers the release workflow (6 assets incl. SBOM)
 
 ## Documentation
 

@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # Development Setup & Infrastructure
 
 *Complete guide to set up NMOX Studio development environment*

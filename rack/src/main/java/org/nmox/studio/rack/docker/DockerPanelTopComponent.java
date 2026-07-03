@@ -20,7 +20,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -39,6 +38,9 @@ import org.nmox.studio.rack.docker.DockerClient.Result;
 import org.nmox.studio.rack.docker.DockerClient.StatRow;
 import org.nmox.studio.rack.docker.DockerClient.VolumeInfo;
 import org.nmox.studio.rack.service.RackService;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.windows.TopComponent;
 
 /**
@@ -239,9 +241,8 @@ public final class DockerPanelTopComponent extends TopComponent {
         status(what + "…");
         f.whenComplete((r, ex) -> SwingUtilities.invokeLater(() -> {
             if (r != null && !r.ok()) {
-                JOptionPane.showMessageDialog(this,
-                        r.stderr().isBlank() ? "docker exited " + r.exit() : r.stderr().strip(),
-                        what + " failed", JOptionPane.ERROR_MESSAGE);
+                error("Could not " + what + ": "
+                        + (r.stderr().isBlank() ? "docker exited " + r.exit() : r.stderr().strip()));
             }
             refreshAll();
         }));
@@ -341,8 +342,14 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private boolean confirm(String message) {
-        return JOptionPane.showConfirmDialog(this, message, "Docker Panel",
-                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(message, "Docker Panel",
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
+    }
+
+    private void error(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     // ---- containers ----
@@ -400,7 +407,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             area.setCaretPosition(0);
             JScrollPane sp = new JScrollPane(area);
             sp.setPreferredSize(new java.awt.Dimension(820, 520));
-            JOptionPane.showMessageDialog(this, sp, title, JOptionPane.PLAIN_MESSAGE);
+            DialogDisplayer.getDefault().notify(new DialogDescriptor(sp, title));
         });
     }
 
@@ -443,9 +450,12 @@ public final class DockerPanelTopComponent extends TopComponent {
         }));
         actions.add(btn("Run…", () -> eachSelectedImage(this::quickRun)));
         actions.add(btn("Tag…", () -> eachSelectedImage(img -> {
-            String target = JOptionPane.showInputDialog(this, "New tag for " + img.ref() + ":", img.ref());
-            if (target != null && !target.isBlank()) {
-                verbThenRefresh(client.tag(img.ref(), target.trim()), "tag");
+            NotifyDescriptor.InputLine line =
+                    new NotifyDescriptor.InputLine("New tag for " + img.ref() + ":", "Tag Image");
+            line.setInputText(img.ref());
+            if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION
+                    && !line.getInputText().isBlank()) {
+                verbThenRefresh(client.tag(img.ref(), line.getInputText().trim()), "tag");
             }
         })));
         actions.add(btn("Layers", () -> eachSelectedImage(img ->
@@ -493,8 +503,8 @@ public final class DockerPanelTopComponent extends TopComponent {
         form.add(new JLabel("Env KEY=VAL (space-separated):"), g);
         g.gridx = 1;
         form.add(env, g);
-        if (JOptionPane.showConfirmDialog(this, form, "Run " + img.ref(),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+        DialogDescriptor dd = new DialogDescriptor(form, "Run " + img.ref());
+        if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
             return;
         }
         List<String> args = new ArrayList<>(List.of("run", "-d"));
@@ -517,8 +527,8 @@ public final class DockerPanelTopComponent extends TopComponent {
                 .supplyAsync(() -> client.run(120, args.toArray(String[]::new)))
                 .thenAccept(r -> {
                     if (!r.ok()) {
-                        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
-                                r.stderr().strip(), "run failed", JOptionPane.ERROR_MESSAGE));
+                        SwingUtilities.invokeLater(() -> error(
+                                "Could not run " + img.ref() + ": " + r.stderr().strip()));
                     }
                     refreshAll();
                 });
@@ -672,11 +682,11 @@ public final class DockerPanelTopComponent extends TopComponent {
         }
         try {
             for (Map.Entry<String, String> e : dockerizeFiles.entrySet()) {
-                Files.writeString(new File(dir, e.getKey()).toPath(), e.getValue());
+                Files.writeString(new File(dir, e.getKey()).toPath(), e.getValue(), java.nio.charset.StandardCharsets.UTF_8);
             }
             status("wrote " + String.join(", ", dockerizeFiles.keySet()) + " into " + dir.getName());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "write failed", JOptionPane.ERROR_MESSAGE);
+            error("Could not write the Docker files: " + ex.getMessage());
         }
     }
 

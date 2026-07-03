@@ -45,9 +45,7 @@ public class HttpDevice extends RackDevice {
     private final Led okLed;
     private final Led failLed;
     private final Deque<Exchange> history = new ArrayDeque<>();
-    private final HttpClient client = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(5))
-            .build();
+    private final HttpClient client = org.nmox.studio.core.http.HttpClientFactory.shared();
 
     /** One request/response round trip, for the console history. */
     record Exchange(String method, String url, int status, long ms,
@@ -133,6 +131,11 @@ public class HttpDevice extends RackDevice {
                     }
                     boolean ok = response.statusCode() < 400;
                     String body = response.body() == null ? "" : response.body();
+                    // capped before it enters history: fifty retained multi-MB
+                    // payloads is a leak, not a console log
+                    if (body.length() > 65_536) {
+                        body = body.substring(0, 65_536) + "…";
+                    }
                     record(new Exchange(method, url, response.statusCode(), ms,
                             formatHeaders(response), body));
                     latencyMeter.setLevel(Math.min(1.0, ms / 2000.0));
@@ -144,9 +147,7 @@ public class HttpDevice extends RackDevice {
                     });
                     emit(ok ? "ok" : "fail", Signal.trigger(ok));
                     if (!body.isEmpty()) {
-                        // full payload down the cable (PHOSPHOR holds 5k lines)
-                        emit("body", Signal.data(body.length() > 65_536
-                                ? body.substring(0, 65_536) + "…" : body));
+                        emit("body", Signal.data(body));
                     }
                 });
     }
@@ -181,8 +182,7 @@ public class HttpDevice extends RackDevice {
     }
 
     static boolean looksJson(String body) {
-        String t = body.strip();
-        return t.startsWith("{") || t.startsWith("[");
+        return org.nmox.studio.core.util.JsonUtil.looksJson(body);
     }
 
     /** Parses "Name: value; Other: value" into an ordered header map. */
@@ -207,21 +207,7 @@ public class HttpDevice extends RackDevice {
 
     /** Indents a JSON body for the console; anything else passes through. */
     static String prettyJson(String body) {
-        if (body == null) {
-            return "";
-        }
-        String t = body.strip();
-        try {
-            if (t.startsWith("{")) {
-                return new JSONObject(t).toString(2);
-            }
-            if (t.startsWith("[")) {
-                return new JSONArray(t).toString(2);
-            }
-        } catch (RuntimeException notJson) {
-            // not valid JSON; show it raw
-        }
-        return body;
+        return org.nmox.studio.core.util.JsonUtil.pretty(body);
     }
 
     private static String formatHeaders(HttpResponse<?> response) {

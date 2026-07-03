@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.nmox.studio.rack.engine.ToolLocator;
+import org.nmox.studio.core.process.ToolLocator;
 
 /**
  * What each language's intelligence needs and how to get it. The

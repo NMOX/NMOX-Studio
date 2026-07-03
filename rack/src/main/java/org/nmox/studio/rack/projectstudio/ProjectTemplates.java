@@ -1170,13 +1170,10 @@ public enum ProjectTemplates {
 
     private static int run(File dir, String... cmd) {
         try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    org.nmox.studio.rack.engine.ToolLocator.resolveCommand(java.util.List.of(cmd)))
+            ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport
+                    .builder(java.util.List.of(cmd))
                     .directory(dir)
-                    .redirectErrorStream(true)
-                    .redirectInput(new File("/dev/null"));
-            pb.environment().put("PATH", org.nmox.studio.rack.engine.ToolLocator.augmentedPath());
-            pb.environment().put("GIT_TERMINAL_PROMPT", "0");
+                    .redirectErrorStream(true);
             Process proc = pb.start();
             proc.getInputStream().readAllBytes();
             return proc.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) ? proc.exitValue() : -1;

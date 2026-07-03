@@ -33,7 +33,6 @@ public abstract class CommandDevice extends RackDevice {
     protected final Led failLed = new Led("FAIL", RackStyle.STOP);
     protected final LcdDisplay statusLcd;
 
-    private volatile long startedAt;
     private volatile long lastToastAt;
 
     protected CommandDevice(String typeId, String title, String tagline, Color accent, int units) {
@@ -182,7 +181,9 @@ public abstract class CommandDevice extends RackDevice {
             });
             return;
         }
-        startedAt = System.currentTimeMillis();
+        // captured per launch: a relaunch must not skew a still-running
+        // command's elapsed-time readout
+        final long launchedAt = System.currentTimeMillis();
         onEdt(() -> {
             runLed.setBlinking(true);
             okLed.setOn(false);
@@ -195,7 +196,7 @@ public abstract class CommandDevice extends RackDevice {
             onLine(line);
             emit("out", Signal.data(line));
         }, code -> {
-            long elapsed = System.currentTimeMillis() - startedAt;
+            long elapsed = System.currentTimeMillis() - launchedAt;
             boolean ok = overallSuccess(code);
             boolean stopped = KILL_EXIT_CODES.contains(code);
             onEdt(() -> {
@@ -252,16 +253,16 @@ public abstract class CommandDevice extends RackDevice {
             });
             return;
         }
-        startedAt = System.currentTimeMillis();
+        final long launchedAt = System.currentTimeMillis();
         onEdt(() -> {
             runLed.setBlinking(true);
             okLed.setOn(false);
             failLed.setOn(false);
         });
-        runStep(steps, 0);
+        runStep(steps, 0, launchedAt);
     }
 
-    private void runStep(List<Step> steps, int index) {
+    private void runStep(List<Step> steps, int index, long launchedAt) {
         Step step = steps.get(index);
         onEdt(() -> {
             statusLcd.setTextColor(RackStyle.LCD_AMBER);
@@ -275,10 +276,10 @@ public abstract class CommandDevice extends RackDevice {
         }, code -> {
             boolean stopped = KILL_EXIT_CODES.contains(code);
             if (code == 0 && index + 1 < steps.size() && !stopped) {
-                runStep(steps, index + 1);
+                runStep(steps, index + 1, launchedAt);
                 return;
             }
-            long elapsed = System.currentTimeMillis() - startedAt;
+            long elapsed = System.currentTimeMillis() - launchedAt;
             boolean ok = overallSuccess(code);
             onEdt(() -> {
                 runLed.setBlinking(false);

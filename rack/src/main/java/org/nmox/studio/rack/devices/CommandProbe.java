@@ -24,10 +24,10 @@ final class CommandProbe {
             int code = -1;
             try {
                 ProcessBuilder pb = new ProcessBuilder(
-                        org.nmox.studio.rack.engine.ToolLocator.resolveCommand(command))
+                        org.nmox.studio.core.process.ToolLocator.resolveCommand(command))
                         .directory(dir)
                         .redirectErrorStream(true);
-                pb.environment().put("PATH", org.nmox.studio.rack.engine.ToolLocator.augmentedPath());
+                pb.environment().put("PATH", org.nmox.studio.core.process.ToolLocator.augmentedPath());
                 pb.environment().put("GIT_TERMINAL_PROMPT", "0");
                 Process p = pb.start();
                 try (BufferedReader r = new BufferedReader(

@@ -1,3 +1,6 @@
+> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
+> README.md and CHANGELOG.md for current reality.
+
 # AI Prompting Strategies for NetBeans Development
 
 *How to get AI to write NetBeans code that actually works*
