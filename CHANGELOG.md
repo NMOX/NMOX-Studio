@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.18.0] — 2026-07-02
+
+The second-cut sprint's final tranche: PING grows into a REST console,
+and the infra designer's dialogs join the platform.
+
+### Added
+- **PING is a REST console now.** HEADERS carries auth and content
+  types (session-only — tokens never persist into the committable
+  patch, the ATMOS rule); VIEW opens a console with the last 50
+  exchanges, pretty-printed JSON responses, and one-click **Replay**.
+  A dialed Content-Type wins over the JSON sniff.
+
+### Changed
+- **The infra designer speaks the platform.** All twelve raw
+  `JOptionPane` dialogs — deploy confirmation, destroy-stack, token
+  entry, sync/refresh results — are now `DialogDisplayer`
+  notifications and dialogs: correctly parented, keyboard-correct, and
+  consistent with the rest of the IDE. These are the highest-stakes
+  confirmations in the app (they spend money); they deserved it.
+
 ## [1.17.0] — 2026-07-02
 
 The infrastructure designer, deepened: it opens fitted, provisions

@@ -128,7 +128,7 @@ public enum DeviceType {
             case DEV_SERVER -> "START serves your project; URL and READY outs feed SCOPE so the\nbrowser opens itself at the real address. RUNNING gates TEMPO nicely.";
             case TUNNEL -> "OPEN exposes a local port to the internet via cloudflared/ngrok.\nThe public URL lands on the LCD and the URL jack - patch into SCOPE to pop it.";
             case BROWSER -> "Opens the system browser at the dialed URL on OPEN or any trigger in.\nPatch a URL data jack in and SCOPE follows wherever the server actually is.";
-            case HTTP -> "Fires one HTTP request; status + latency on the LCDs, OK/FAIL triggers out.\nPatch TEMPO TICK → SEND for a heartbeat monitor.";
+            case HTTP -> "Fires HTTP requests; status + latency on the LCDs, OK/FAIL triggers out.\nVIEW opens the console (pretty-printed responses, last 50 exchanges, replay); HEADERS is session-only.";
             case ANGULAR -> "SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.\nThe version cluster nags when Angular moves - UPDATE runs ng update.";
             case PHOENIX -> "SERVER runs mix phx.server; GEN row drives phx.gen.*; MIGRATE runs ecto.\nVersion cluster tracks :phoenix against Hex.";
             case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";

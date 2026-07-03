@@ -142,8 +142,8 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### PING — Request Probe — HTTP smoke tests
 
-> Fires one HTTP request; status + latency on the LCDs, OK/FAIL triggers out.
-> Patch TEMPO TICK → SEND for a heartbeat monitor.
+> Fires HTTP requests; status + latency on the LCDs, OK/FAIL triggers out.
+> VIEW opens the console (pretty-printed responses, last 50 exchanges, replay); HEADERS is session-only.
 
 - **In:** `SEND` (trigger), `URL` (data)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `BODY` (data)

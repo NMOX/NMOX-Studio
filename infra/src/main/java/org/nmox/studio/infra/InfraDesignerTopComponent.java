@@ -10,7 +10,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -140,10 +142,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 panel.add(new JLabel(providers[i].displayName() + current));
                 panel.add(fields[i]);
             }
-            int ok = JOptionPane.showConfirmDialog(this, panel,
-                    "Cloud API tokens (stored in IDE settings; blank = keep current)",
-                    JOptionPane.OK_CANCEL_OPTION);
-            if (ok == JOptionPane.OK_OPTION) {
+            DialogDescriptor dd = new DialogDescriptor(panel,
+                    "Cloud API tokens (stored in IDE settings; blank = keep current)");
+            if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
                 for (int i = 0; i < providers.length; i++) {
                     String value = new String(fields[i].getPassword()).trim();
                     if (!value.isEmpty()) {
@@ -213,8 +214,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void deploy() {
         List<DoRequest> plan = DeployPlanner.plan(graph);
         if (plan.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nothing to deploy - the design is empty or all live.",
-                    "Infra Designer", JOptionPane.INFORMATION_MESSAGE);
+            info("Nothing to deploy - the design is empty or all live.");
             return;
         }
         StringBuilder text = new StringBuilder();
@@ -256,11 +256,17 @@ public final class InfraDesignerTopComponent extends TopComponent {
         String title = live ? "Deploy?"
                 : missing.isEmpty() ? "Dry run (no API token set)"
                         : "Dry run (missing API tokens)";
-        Object[] options = live ? new Object[]{"Deploy", "Cancel"} : new Object[]{"Close"};
-        int choice = JOptionPane.showOptionDialog(this, new JScrollPane(area), title,
-                JOptionPane.DEFAULT_OPTION, live ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE,
-                null, options, options[0]);
-        if (!live || choice != 0) {
+        DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title);
+        if (live) {
+            Object deploy = "Deploy";
+            dd.setOptions(new Object[]{deploy, "Cancel"});
+            dd.setValue("Cancel");
+            if (DialogDisplayer.getDefault().notify(dd) != deploy) {
+                return;
+            }
+        } else {
+            dd.setOptions(new Object[]{"Close"});
+            DialogDisplayer.getDefault().notify(dd);
             return;
         }
         Thread worker = new Thread(() -> {
@@ -275,10 +281,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
             writeDeployLog(log.toString());
             SwingUtilities.invokeLater(() -> {
                 save();
-                JOptionPane.showMessageDialog(this,
-                        ok ? "Deploy complete - nodes are live. Log: .nmox/deploy-log"
-                           : "Deploy stopped on a failure; see node status and .nmox/deploy-log.",
-                        "Infra Designer", ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+                if (ok) {
+                    info("Deploy complete - nodes are live. Log: .nmox/deploy-log");
+                } else {
+                    error("Deploy stopped on a failure; see node status and .nmox/deploy-log.");
+                }
             });
         }, "nmox-infra-deploy");
         worker.setDaemon(true);
@@ -287,8 +294,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     private void syncFromCloud() {
         if (!DigitalOceanClient.hasToken()) {
-            JOptionPane.showMessageDialog(this, "Set an API token first.", "Infra Designer",
-                    JOptionPane.INFORMATION_MESSAGE);
+            info("Set an API token first.");
             return;
         }
         Thread worker = new Thread(() -> {
@@ -297,12 +303,10 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 SwingUtilities.invokeLater(() -> {
                     canvas.fit();
                     save();
-                    JOptionPane.showMessageDialog(this, "Imported " + imported + " live resources.",
-                            "Infra Designer", JOptionPane.INFORMATION_MESSAGE);
+                    info("Imported " + imported + " live resources.");
                 });
             } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
-                        "Sync failed: " + ex.getMessage(), "Infra Designer", JOptionPane.ERROR_MESSAGE));
+                SwingUtilities.invokeLater(() -> error("Sync failed: " + ex.getMessage()));
             }
         }, "nmox-infra-sync");
         worker.setDaemon(true);
@@ -317,8 +321,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                         SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
                 SwingUtilities.invokeLater(this::save);
             } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this,
-                        "Refresh failed: " + ex.getMessage(), "Refresh", JOptionPane.ERROR_MESSAGE));
+                SwingUtilities.invokeLater(() -> error("Refresh failed: " + ex.getMessage()));
             }
         }, "nmox-infra-refresh");
         worker.setDaemon(true);
@@ -333,7 +336,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void destroyStack() {
         java.util.List<InfraNode> order = DeployPlanner.teardownOrder(graph);
         if (order.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nothing deployed to destroy.");
+            info("Nothing deployed to destroy.");
             return;
         }
         double monthly = 0;
@@ -343,12 +346,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
             names.append("  • ").append(node.kind.getDisplayName())
                     .append("  ").append(node.label).append('\n');
         }
-        int answer = JOptionPane.showConfirmDialog(this,
-                "Destroy " + order.size() + " cloud resource" + (order.size() == 1 ? "" : "s")
+        boolean go = confirm("Destroy " + order.size() + " cloud resource"
+                + (order.size() == 1 ? "" : "s")
                 + ", saving ~$" + String.format("%.2f", monthly) + "/month?\n\n" + names
                 + "\nReverse dependency order. The design stays on the canvas.",
-                "Destroy stack", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        if (answer != JOptionPane.YES_OPTION) {
+                "Destroy stack");
+        if (!go) {
             return;
         }
         Thread worker = new Thread(() -> {
@@ -357,14 +360,30 @@ public final class InfraDesignerTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 save();
                 if (failures > 0) {
-                    JOptionPane.showMessageDialog(this,
-                            failures + " resource(s) could not be destroyed — check their status lines.",
-                            "Destroy stack", JOptionPane.WARNING_MESSAGE);
+                    error(failures + " resource(s) could not be destroyed — check their status lines.");
                 }
             });
         }, "nmox-infra-destroy-stack");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
+
+    private void info(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.INFORMATION_MESSAGE));
+    }
+
+    private void error(String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    private boolean confirm(String message, String title) {
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(message, title,
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 
     /** Appends a deploy run to .nmox/deploy-log beside the aimed project. */
@@ -391,10 +410,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
         if (node.doId != null) {
             JMenuItem destroy = new JMenuItem("Destroy in cloud (" + node.doId + ")");
             destroy.addActionListener(e -> {
-                if (JOptionPane.showConfirmDialog(this,
-                        "Really destroy " + node.kind.getDisplayName() + " " + node.label + " on DigitalOcean?",
-                        "Destroy resource", JOptionPane.YES_NO_OPTION,
-                        JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION) {
+                if (confirm("Really destroy " + node.kind.getDisplayName() + " "
+                        + node.label + " on DigitalOcean?", "Destroy resource")) {
                     Thread worker = new Thread(() -> {
                         try {
                             client.destroy(node);
