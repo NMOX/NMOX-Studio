@@ -116,6 +116,28 @@ response time, body contains, JSON path, header present) that turn a
 probe into a check. The workspace persists as `.nmoxapi.json` beside the
 project.
 
+### 🌐 Standards & PWA, supported with gusto
+`.editorconfig` is **honored, not just highlighted** — every save
+applies the spec for real (trim_trailing_whitespace,
+insert_final_newline, glob sections, root stopping, closer-file
+precedence) with a minimal edit so the caret stays put. The
+**Standards Kit wizard** (File → Standards Kit…) generates the web's
+well-known files, each correct to its spec: robots.txt (RFC 9309),
+sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
+RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → PWA Kit…)
+makes the project installable in one dialog: a generated icon set
+(monogram or your own artwork — icon-192/512, W3C-safe-zone maskable
+pair, apple-touch-icon, rendered in-process with zero external tools),
+an installability-complete manifest, a **readable vanilla service
+worker** (app-shell or network-first strategy, precache list built
+from the files the project actually has, offline.html fallback), and
+idempotent index.html wiring. Every API Studio response is graded on a
+**Standards tab** — HSTS, CSP, nosniff, clickjacking, Referrer-Policy,
+Permissions-Policy, COOP — value-aware, letter-graded, a named fix for
+every miss. And VITALS' GATE knob makes **WCAG a shipping gate**:
+an inaccessible page closes the deploy gate exactly like a slow one.
+Neither wizard ever overwrites an existing file.
+
 ### 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling
 shelf), Project Studio templates that scaffold versioned, rack-wired

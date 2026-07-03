@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.21.0] — 2026-07-03
+
+The PWA sprint: one wizard and the aimed project becomes installable —
+icons forged in-process, a service worker that precaches what the
+project actually has, and index.html wired without clobbering a thing.
+
+### Added
+- **PWA Kit wizard (File → PWA Kit…).** App name, short name, theme
+  and background colors, an icon source, a caching strategy — and the
+  project gains the full installability set. Existing files are never
+  overwritten; the report says exactly what was written, skipped, or
+  wired.
+- **Icon generation, zero tools required.** Plain Java2D renders the
+  whole set: icon-192/512 (rounded plate, transparent corners), the
+  maskable pair (full-bleed, glyph held in the W3C safe zone), and an
+  opaque apple-touch-icon. Two sources: a 1–2 letter monogram on your
+  theme color for projects without art yet, or your own image scaled
+  crisply (progressive halving) to every size. The manifest's icon
+  promises finally ship with the pixels to back them.
+- **A service worker written to be read.** Vanilla sw.js — versioned
+  cache, precache on install, stale-cache cleanup on activate — with a
+  strategy you choose: app shell (cache-first, instant loads,
+  offline-ready) or network-first (always fresh, cache fallback).
+  GET-only, same-origin caching, and an offline.html fallback for
+  navigations, generated in your theme. The precache list is built
+  from the files the project actually has, not a guess.
+- **Installability-complete manifest.** site.webmanifest with both
+  icon purposes (any + maskable), scope, display, and your colors —
+  beyond the Standards Kit's baseline.
+- **index.html wired idempotently.** Manifest link, theme-color meta,
+  apple-touch-icon link, and the service worker registration are
+  inserted before </head> — each piece only if missing. Running the
+  wizard twice changes nothing.
+
 ## [1.20.1] — 2026-07-03
 
 Patch: a defect found by driving the released IDE with computer

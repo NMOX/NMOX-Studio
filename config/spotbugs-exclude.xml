@@ -106,6 +106,17 @@
         <Bug pattern="PREDICTABLE_RANDOM"/>
     </Match>
 
+    <!-- PwaKit.wireHead inserts wizard values into the project's own
+         index.html. The taint detector can't see the sanitizers: colors pass
+         safeColor (regex-constrained to #hex or a constant fallback) and free
+         text passes escapeHtml before any append — both proven by the
+         hostile-input test in PwaKitTest. Scoped to this one class;
+         POTENTIAL_XML_INJECTION stays active everywhere else. -->
+    <Match>
+        <Class name="org.nmox.studio.rack.projectstudio.PwaKit"/>
+        <Bug pattern="POTENTIAL_XML_INJECTION"/>
+    </Match>
+
     <!-- SpotBugs 4.10 adds two thread detectors that are noise here:
          USO flags synchronized methods in favour of private lock objects, but
          the classes it catches are final singletons / services (FlightRecorder,
