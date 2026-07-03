@@ -83,7 +83,7 @@ class DeviceWiringTest {
     @Test
     @DisplayName("POST with a JSON body sends it with a JSON Content-Type")
     void postCarriesJsonBody() {
-        HttpRequest r = HttpDevice.buildRequest("POST", "http://localhost:3000/api", "{\"a\":1}");
+        HttpRequest r = HttpDevice.buildRequest("POST", "http://localhost:3000/api", "{\"a\":1}", java.util.Map.of());
         assertThat(r.method()).isEqualTo("POST");
         assertThat(r.bodyPublisher()).isPresent();
         assertThat(r.bodyPublisher().get().contentLength()).isGreaterThan(0);
@@ -93,7 +93,7 @@ class DeviceWiringTest {
     @Test
     @DisplayName("POST with a non-JSON body sends it without forcing a JSON Content-Type")
     void postPlainBodyHasNoJsonHeader() {
-        HttpRequest r = HttpDevice.buildRequest("PUT", "http://localhost:3000/api", "hello=world");
+        HttpRequest r = HttpDevice.buildRequest("PUT", "http://localhost:3000/api", "hello=world", java.util.Map.of());
         assertThat(r.bodyPublisher().get().contentLength()).isGreaterThan(0);
         assertThat(r.headers().firstValue("Content-Type")).isEmpty();
     }
@@ -101,10 +101,10 @@ class DeviceWiringTest {
     @Test
     @DisplayName("GET ignores any body; POST with a blank body sends none")
     void readMethodsAndBlankBodiesAreBodyLess() {
-        HttpRequest get = HttpDevice.buildRequest("GET", "http://localhost:3000", "{\"a\":1}");
+        HttpRequest get = HttpDevice.buildRequest("GET", "http://localhost:3000", "{\"a\":1}", java.util.Map.of());
         assertThat(get.bodyPublisher().get().contentLength()).isZero();
 
-        HttpRequest blank = HttpDevice.buildRequest("POST", "http://localhost:3000", "   ");
+        HttpRequest blank = HttpDevice.buildRequest("POST", "http://localhost:3000", "   ", java.util.Map.of());
         assertThat(blank.bodyPublisher().get().contentLength()).isZero();
     }
 
