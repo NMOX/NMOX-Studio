@@ -405,6 +405,41 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * Finds and selects the request named {@code requestName} inside the
+     * collection named {@code collectionName}, scrolling it into view. Used
+     * by Quick Search to jump straight to a hit. Best-effort: a no-op if the
+     * tree isn't built yet or nothing matches.
+     */
+    public void selectRequest(String collectionName, String requestName) {
+        if (collectionName == null || requestName == null) {
+            return;
+        }
+        javax.swing.tree.TreeModel model = tree.getModel();
+        if (model == null || !(model.getRoot() instanceof DefaultMutableTreeNode root)) {
+            return;
+        }
+        java.util.Enumeration<javax.swing.tree.TreeNode> en = root.depthFirstEnumeration();
+        while (en.hasMoreElements()) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) en.nextElement();
+            if (!(node.getUserObject() instanceof Request r)) {
+                continue;
+            }
+            if (!requestName.equals(r.name)) {
+                continue;
+            }
+            if (node.getParent() instanceof DefaultMutableTreeNode parent
+                    && parent.getUserObject() instanceof Collection c
+                    && !collectionName.equals(c.name)) {
+                continue;
+            }
+            TreePath path = new TreePath(node.getPath());
+            tree.setSelectionPath(path);
+            tree.scrollPathToVisible(path);
+            return;
+        }
+    }
+
     // ---- CRUD ----
 
     private Collection selectedCollection() {

@@ -70,9 +70,27 @@ public final class RackTopComponent extends TopComponent {
      * an input-map binding is not enough - we intercept at the keyboard
      * focus manager, exactly while the rack is the activated TopComponent.
      */
+    private static final int MENU_MASK =
+            java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+
     private final java.awt.KeyEventDispatcher tabFlipDispatcher = e -> {
-        if (e.getID() != KeyEvent.KEY_PRESSED || e.getModifiersEx() != 0
+        if (e.getID() != KeyEvent.KEY_PRESSED
                 || TopComponent.getRegistry().getActivated() != RackTopComponent.this) {
+            return false;
+        }
+        boolean inText = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .getFocusOwner() instanceof javax.swing.text.JTextComponent;
+        // ⌘Z undo / ⇧⌘Z redo — the biggest missing safety net on the rack
+        if (e.getKeyCode() == KeyEvent.VK_Z && (e.getModifiersEx() & MENU_MASK) != 0 && !inText) {
+            boolean shift = (e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0;
+            if (shift) {
+                rack.redo();
+            } else {
+                rack.undo();
+            }
+            return true;
+        }
+        if (e.getModifiersEx() != 0) {
             return false;
         }
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
@@ -82,8 +100,7 @@ public final class RackTopComponent extends TopComponent {
         if ((e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
                 && rackPanel.getSelected() != null
                 // never swallow Delete while something editable has focus
-                && !(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                        .getFocusOwner() instanceof javax.swing.text.JTextComponent)) {
+                && !inText) {
             rackPanel.removeSelected();
             return true;
         }

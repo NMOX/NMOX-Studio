@@ -123,6 +123,26 @@ public class FlowCanvas extends JPanel {
         repaint();
     }
 
+    /**
+     * Selects a node and pans it into the center of the viewport - the
+     * hook Quick Search uses to jump to a node by name. Zoom is left
+     * alone so repeated jumps stay at a steady scale.
+     */
+    public void selectNode(InfraNode node) {
+        if (node == null) {
+            return;
+        }
+        if (getWidth() <= 0 || getHeight() <= 0) {
+            javax.swing.SwingUtilities.invokeLater(() -> selectNode(node));
+            return;
+        }
+        double cx = node.x + NODE_W / 2.0;
+        double cy = node.y + NODE_H / 2.0;
+        panX = getWidth() / 2.0 - cx * zoom;
+        panY = getHeight() / 2.0 - cy * zoom;
+        select(node, null);
+    }
+
     private void deleteSelection() {
         if (selectedNode != null) {
             graph.removeNode(selectedNode);

@@ -47,6 +47,21 @@ public final class Rack {
     private volatile File projectDir = new File(System.getProperty("user.home"));
     private int cableColorCursor;
 
+    /** One reversible edit: dropping a device, deleting a cable, reordering. */
+    private interface Edit {
+        void undo();
+
+        void redo();
+
+        String label();
+    }
+
+    private static final int UNDO_LIMIT = 100;
+    private final java.util.Deque<Edit> undoStack = new java.util.ArrayDeque<>();
+    private final java.util.Deque<Edit> redoStack = new java.util.ArrayDeque<>();
+    /** Off during bulk load (RackIO, presets, resume); on for interactive edits. */
+    private boolean captureUndo;
+
     /** Dev servers and watchers must not outlive the IDE as orphans. */
     private final Thread processReaper = new Thread(() -> {
         for (RackDevice d : getDevices()) {
@@ -77,13 +92,27 @@ public final class Rack {
     }
 
     public synchronized void addDevice(RackDevice d, int index) {
-        devices.add(Math.max(0, Math.min(index, devices.size())), d);
+        int at = Math.max(0, Math.min(index, devices.size()));
+        devices.add(at, d);
         d.attach(this);
         fireStructure();
+        record(new Edit() {
+            @Override public void undo() {
+                removeDevice(d);
+            }
+            @Override public void redo() {
+                addDevice(d, at);
+            }
+            @Override public String label() {
+                return "Add " + d.getTitle();
+            }
+        });
     }
 
     public synchronized void removeDevice(RackDevice d) {
-        if (devices.remove(d)) {
+        int index = devices.indexOf(d);
+        if (index >= 0) {
+            devices.remove(index);
             List<Cable> dead = new ArrayList<>();
             for (Cable c : cables) {
                 if (c.touches(d)) {
@@ -96,6 +125,24 @@ public final class Rack {
             if (!dead.isEmpty()) {
                 fireCables();
             }
+            record(new Edit() {
+                @Override public void undo() {
+                    // re-mount the device and re-patch every cable it carried
+                    devices.add(Math.min(index, devices.size()), d);
+                    d.attach(Rack.this);
+                    cables.addAll(dead);
+                    fireStructure();
+                    if (!dead.isEmpty()) {
+                        fireCables();
+                    }
+                }
+                @Override public void redo() {
+                    removeDevice(d);
+                }
+                @Override public String label() {
+                    return "Remove " + d.getTitle();
+                }
+            });
         }
     }
 
@@ -104,9 +151,24 @@ public final class Rack {
         if (old < 0) {
             return;
         }
+        int at = Math.max(0, Math.min(newIndex, devices.size() - 1));
+        if (at == old) {
+            return;
+        }
         devices.remove(old);
-        devices.add(Math.max(0, Math.min(newIndex, devices.size())), d);
+        devices.add(at, d);
         fireStructure();
+        record(new Edit() {
+            @Override public void undo() {
+                moveDevice(d, old);
+            }
+            @Override public void redo() {
+                moveDevice(d, at);
+            }
+            @Override public String label() {
+                return "Move " + d.getTitle();
+            }
+        });
     }
 
     public synchronized int indexOf(RackDevice d) {
@@ -167,10 +229,47 @@ public final class Rack {
         Cable cable = new Cable(out, in, out.getType().cableColor(cableColorCursor++));
         cables.add(cable);
         fireCables();
+        record(new Edit() {
+            @Override public void undo() {
+                removeCable(cable);
+            }
+            @Override public void redo() {
+                readdCable(cable);
+            }
+            @Override public String label() {
+                return "Patch cable";
+            }
+        });
         return cable;
     }
 
     public synchronized void disconnect(Cable c) {
+        if (cables.remove(c)) {
+            lastTriggerAt.remove(c);
+            fireCables();
+            record(new Edit() {
+                @Override public void undo() {
+                    readdCable(c);
+                }
+                @Override public void redo() {
+                    removeCable(c);
+                }
+                @Override public String label() {
+                    return "Unpatch cable";
+                }
+            });
+        }
+    }
+
+    /** Puts an existing cable object back verbatim (undo keeps its color). */
+    private synchronized void readdCable(Cable c) {
+        if (!cables.contains(c)) {
+            cables.add(c);
+            fireCables();
+        }
+    }
+
+    private synchronized void removeCable(Cable c) {
         if (cables.remove(c)) {
             lastTriggerAt.remove(c);
             fireCables();
@@ -182,6 +281,82 @@ public final class Rack {
         if (changed) {
             fireCables();
         }
+    }
+
+    // ---- undo / redo ----
+
+    /**
+     * Turns interactive edit-recording on (once the initial patch has
+     * loaded). Bulk operations - RackIO, presets, session resume - run
+     * with it off so restoring a saved rack doesn't fill the undo stack.
+     */
+    public synchronized void enableUndoCapture() {
+        captureUndo = true;
+    }
+
+    /** Forgets all history - called after a fresh patch loads. */
+    public synchronized void clearUndoHistory() {
+        undoStack.clear();
+        redoStack.clear();
+    }
+
+    private void record(Edit edit) {
+        if (!captureUndo) {
+            return;
+        }
+        undoStack.push(edit);
+        redoStack.clear();
+        while (undoStack.size() > UNDO_LIMIT) {
+            undoStack.removeLast();
+        }
+    }
+
+    public synchronized boolean canUndo() {
+        return !undoStack.isEmpty();
+    }
+
+    public synchronized boolean canRedo() {
+        return !redoStack.isEmpty();
+    }
+
+    /** The next undo's description, or null when there's nothing to undo. */
+    public synchronized String undoLabel() {
+        return undoStack.isEmpty() ? null : undoStack.peek().label();
+    }
+
+    public synchronized String redoLabel() {
+        return redoStack.isEmpty() ? null : redoStack.peek().label();
+    }
+
+    /** Reverses the last edit; the inverse runs without recording itself. */
+    public synchronized void undo() {
+        if (undoStack.isEmpty()) {
+            return;
+        }
+        Edit edit = undoStack.pop();
+        boolean was = captureUndo;
+        captureUndo = false;
+        try {
+            edit.undo();
+        } finally {
+            captureUndo = was;
+        }
+        redoStack.push(edit);
+    }
+
+    public synchronized void redo() {
+        if (redoStack.isEmpty()) {
+            return;
+        }
+        Edit edit = redoStack.pop();
+        boolean was = captureUndo;
+        captureUndo = false;
+        try {
+            edit.redo();
+        } finally {
+            captureUndo = was;
+        }
+        undoStack.push(edit);
     }
 
     public synchronized List<Cable> cablesAt(Port p) {

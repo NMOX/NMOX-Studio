@@ -24,9 +24,14 @@ import org.nmox.studio.rack.model.RackDevice;
 public final class CiExporter {
 
     /** Device kinds that translate into CI steps. */
+    // SOLDER (cmd) exports its custom command as a run step — a user's
+    // bespoke pipeline step belongs in CI too. PREFLIGHT stays out on
+    // purpose: it's a local ship-gate that re-runs test/build/lint/audit,
+    // which the individual VERITAS/FORGE/PURITY/SENTRY steps already export;
+    // in CI, the pipeline itself IS the gate.
     private static final Set<String> STEP_KINDS = Set.of(
             "package-manager", "build", "test", "typecheck", "lint", "format",
-            "npm-script", "run", "angular", "nextjs", "phoenix", "audit", "database");
+            "npm-script", "run", "angular", "nextjs", "phoenix", "audit", "database", "cmd");
 
     private CiExporter() {
     }

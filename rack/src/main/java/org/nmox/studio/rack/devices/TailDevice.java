@@ -63,6 +63,16 @@ public class TailDevice extends RackDevice {
         eyeLed.setOn(followSwitch.isOn());
     }
 
+    @Override
+    public boolean isResumable() {
+        return followSwitch.isOn();
+    }
+
+    @Override
+    public void resume() {
+        onEdt(() -> followSwitch.setOn(true)); // re-arm the follow after a crash
+    }
+
     private File target() {
         File f = new File(pathLcd.getText().trim());
         return f.isAbsolute() ? f : new File(projectDir(), f.getPath());

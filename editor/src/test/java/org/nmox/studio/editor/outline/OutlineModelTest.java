@@ -319,6 +319,294 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("Haskell: module, signatures, bindings, and data/class/instance decls at column 0")
+    void haskell() {
+        String src = """
+                module Rack.Wire (connect) where
+
+                import Data.Map (Map)
+
+                data Device = Trigger | Sampler
+                newtype Cable = Cable Int
+                type Patch = (Device, Device)
+
+                class Wired a where
+                  wire :: a -> a
+
+                instance Wired Device where
+                  wire = id
+
+                connect :: Device -> Device -> Patch
+                connect a b = (a, b)
+                """;
+        List<Item> items = outline("text/x-haskell", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.MODULE, "Rack.Wire"),
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.TYPE, "Cable"),
+                tuple(OutlineKind.TYPE, "Patch"),
+                tuple(OutlineKind.INTERFACE, "Wired"),
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.FIELD, "connect"),
+                tuple(OutlineKind.FUNCTION, "connect"));
+        // the signature line and the binding line are different lines
+        Item sig = items.stream()
+                .filter(i -> i.name().equals("connect") && i.kind() == OutlineKind.FIELD)
+                .findFirst().orElseThrow();
+        Item bind = items.stream()
+                .filter(i -> i.name().equals("connect") && i.kind() == OutlineKind.FUNCTION)
+                .findFirst().orElseThrow();
+        assertThat(sig.line()).isEqualTo(14);
+        assertThat(bind.line()).isEqualTo(15);
+        assertThat(items).allMatch(i -> i.depth() == 0);
+        // indented `wire = id` is a class/instance body, not a top-level binding
+        assertThat(items).extracting(Item::name).doesNotContain("wire", "import");
+    }
+
+    @Test
+    @DisplayName("OCaml: let/let rec bindings, type, and module at column 0")
+    void ocaml() {
+        String src = """
+                module Rack = struct
+                  let hidden = 1
+                end
+
+                type signal = Trigger | Data
+
+                let rec length = function
+                  | [] -> 0
+                  | _ :: t -> 1 + length t
+
+                let start opts = run opts
+                """;
+        List<Item> items = outline("text/x-ocaml", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.MODULE, "Rack"),
+                tuple(OutlineKind.TYPE, "signal"),
+                tuple(OutlineKind.FUNCTION, "length"),
+                tuple(OutlineKind.FUNCTION, "start"));
+        assertThat(items).extracting(Item::line).containsExactly(0, 4, 6, 10);
+        // the indented `let hidden` is inside the module body, not surfaced
+        assertThat(items).extracting(Item::name).doesNotContain("hidden");
+        // module type keeps its own name, type params skip to the type's name,
+        // val surfaces (mli files), and `let _ =` discards stay out
+        assertThat(outline("text/x-ocaml",
+                "module type DEVICE = sig end\ntype 'a slot = 'a option\n"
+                + "val version : string\nlet _ = ignore\n"))
+                .extracting(Item::kind, Item::name).containsExactly(
+                        tuple(OutlineKind.MODULE, "DEVICE"),
+                        tuple(OutlineKind.TYPE, "slot"),
+                        tuple(OutlineKind.FIELD, "version"));
+    }
+
+    @Test
+    @DisplayName("R: function assignments via <- and =, plus S4 setClass/setGeneric")
+    void r() {
+        String src = """
+                library(dplyr)
+
+                greet <- function(name) {
+                  paste("hi", name)
+                }
+
+                add = function(a, b) a + b
+
+                setClass("Device", representation(id = "numeric"))
+
+                setGeneric("fire", function(obj) standardGeneric("fire"))
+
+                x <- 42
+                """;
+        List<Item> items = outline("text/x-r", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.FUNCTION, "greet"),
+                tuple(OutlineKind.FUNCTION, "add"),
+                tuple(OutlineKind.CLASS, "Device"),
+                tuple(OutlineKind.FUNCTION, "fire"));
+        assertThat(items).extracting(Item::line).containsExactly(2, 6, 8, 10);
+        // a plain assignment `x <- 42` is not a function def
+        assertThat(items).extracting(Item::name).doesNotContain("x");
+    }
+
+    @Test
+    @DisplayName("Perl: sub declarations and package statements, flat")
+    void perl() {
+        String src = """
+                package Rack::Wire;
+                use strict;
+
+                sub new {
+                    my $class = shift;
+                    return bless {}, $class;
+                }
+
+                sub connect {
+                    my ($self, $a, $b) = @_;
+                }
+
+                1;
+                """;
+        List<Item> items = outline("text/x-perl", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.MODULE, "Rack::Wire"),
+                tuple(OutlineKind.FUNCTION, "new"),
+                tuple(OutlineKind.FUNCTION, "connect"));
+        assertThat(items).extracting(Item::line).containsExactly(0, 3, 8);
+        assertThat(items).allMatch(i -> i.depth() == 0);
+    }
+
+    @Test
+    @DisplayName("Julia: function/struct/module/macro nest by indentation")
+    void julia() {
+        String src = """
+                module Rack
+                    struct Device
+                        id::Int
+                    end
+
+                    function wire(a, b)
+                        connect(a, b)
+                    end
+
+                    macro trace(ex)
+                        ex
+                    end
+                end
+
+                function top()
+                    nothing
+                end
+
+                gain(x) = 2 * x
+                """;
+        List<Item> items = outline("text/x-julia", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.MODULE, "Rack"),
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.METHOD, "wire"),
+                tuple(OutlineKind.METHOD, "trace"),
+                tuple(OutlineKind.FUNCTION, "top"),
+                tuple(OutlineKind.FUNCTION, "gain"));
+        Item module = items.stream().filter(i -> i.name().equals("Rack")).findFirst().orElseThrow();
+        Item device = items.stream().filter(i -> i.name().equals("Device")).findFirst().orElseThrow();
+        Item wire = items.stream().filter(i -> i.name().equals("wire")).findFirst().orElseThrow();
+        assertThat(device.depth()).as("struct nests under its module").isGreaterThan(module.depth());
+        assertThat(wire.depth()).as("indented function is a method").isEqualTo(1);
+        Item top = items.stream().filter(i -> i.name().equals("top")).findFirst().orElseThrow();
+        assertThat(top.depth()).as("top-level function at column 0").isEqualTo(0);
+        Item gain = items.stream().filter(i -> i.name().equals("gain")).findFirst().orElseThrow();
+        assertThat(gain.depth()).as("short-form def at column 0").isEqualTo(0);
+        assertThat(gain.line()).isEqualTo(18);
+    }
+
+    @Test
+    @DisplayName("F#: let/let rec, type, module, member at column 0")
+    void fsharp() {
+        String src = """
+                module Rack.Wire
+
+                type Device =
+                    { Id: int }
+
+                let connect a b = (a, b)
+
+                let rec length xs =
+                    match xs with
+                    | [] -> 0
+                    | _ :: t -> 1 + length t
+
+                type Cable() =
+                    member this.Length = 0
+                """;
+        List<Item> items = outline("text/x-fsharp", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.MODULE, "Rack.Wire"),
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.FUNCTION, "connect"),
+                tuple(OutlineKind.FUNCTION, "length"),
+                tuple(OutlineKind.TYPE, "Cable"),
+                tuple(OutlineKind.METHOD, "Length"));
+    }
+
+    @Test
+    @DisplayName("Crystal: def/class/module/struct/macro nest by indentation, Ruby-like")
+    void crystal() {
+        String src = """
+                module Rack
+                  class Device
+                    def initialize(@id : Int32)
+                    end
+
+                    def self.version
+                      "1.0"
+                    end
+
+                    def wire(other)
+                      other
+                    end
+                  end
+
+                  macro wired(name)
+                  end
+
+                  struct Cable
+                  end
+                end
+
+                def top
+                end
+                """;
+        List<Item> items = outline("text/x-crystal", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.MODULE, "Rack"),
+                tuple(OutlineKind.CLASS, "Device"),
+                tuple(OutlineKind.METHOD, "initialize"),
+                tuple(OutlineKind.METHOD, "self.version"),
+                tuple(OutlineKind.METHOD, "wire"),
+                tuple(OutlineKind.METHOD, "wired"),
+                tuple(OutlineKind.TYPE, "Cable"),
+                tuple(OutlineKind.FUNCTION, "top"));
+        Item device = items.stream().filter(i -> i.name().equals("Device")).findFirst().orElseThrow();
+        Item wire = items.stream().filter(i -> i.name().equals("wire")).findFirst().orElseThrow();
+        assertThat(wire.depth()).as("method nests under its class").isGreaterThan(device.depth());
+        Item top = items.stream().filter(i -> i.name().equals("top")).findFirst().orElseThrow();
+        assertThat(top.depth()).as("top-level def is a plain function").isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Zig: pub fn/fn, const Name = struct, and test blocks")
+    void zig() {
+        String src = """
+                const std = @import("std");
+
+                pub const Device = struct {
+                    id: u32,
+
+                    pub fn wire(self: *Device, other: *Device) void {
+                        _ = other;
+                    }
+                };
+
+                const Signal = enum { trigger, data };
+
+                fn helper() void {}
+
+                test "wiring connects devices" {
+                    try std.testing.expect(true);
+                }
+                """;
+        List<Item> items = outline("text/x-zig", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.FUNCTION, "wire"),
+                tuple(OutlineKind.ENUM, "Signal"),
+                tuple(OutlineKind.FUNCTION, "helper"),
+                tuple(OutlineKind.TEST, "wiring connects devices"));
+        Item test = items.stream().filter(i -> i.kind() == OutlineKind.TEST).findFirst().orElseThrow();
+        assertThat(test.line()).isEqualTo(14);
+    }
+
+    @Test
     @DisplayName("Config sections: INI and TOML headers")
     void configSections() {
         assertThat(outline("text/x-ini", "[*]\nindent_style = space\n[*.md]\n"))
