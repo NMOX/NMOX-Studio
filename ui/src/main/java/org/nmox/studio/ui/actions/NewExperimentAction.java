@@ -8,6 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.nmox.studio.rack.projectstudio.Experiments;
 import org.nmox.studio.rack.projectstudio.ProjectTemplates;
 import org.nmox.studio.rack.service.RackService;
@@ -75,9 +76,11 @@ public final class NewExperimentAction implements ActionListener {
                 workbench.requestActive();
             }
         } catch (Exception ex) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Could not create the experiment: " + ex.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE));
+            String message = "Could not create the experiment: " + ex.getMessage();
+            // deferred a dispatch: shown while the wizard is still disposing,
+            // the error can stack behind the main window and soft-lock the app
+            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
         }
     }
 }

@@ -9,6 +9,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.nmox.studio.rack.projectstudio.StandardsKit;
 import org.nmox.studio.rack.service.RackService;
 import org.openide.DialogDescriptor;
@@ -80,11 +81,15 @@ public final class StandardsKitAction implements ActionListener {
                 report.append(o.written() ? "  ✓ " : "  – ").append(o.path())
                         .append(o.written() ? "" : "  (already exists, untouched)").append('\n');
             }
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Standards Kit:\n\n" + report, NotifyDescriptor.INFORMATION_MESSAGE));
+            // deferred a dispatch: a dialog opened while the wizard is still
+            // disposing can stack behind the main window and soft-lock the app
+            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message("Standards Kit:\n\n" + report,
+                            NotifyDescriptor.INFORMATION_MESSAGE)));
         } catch (Exception ex) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Could not write: " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            String message = "Could not write: " + ex.getMessage();
+            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
         }
     }
 }

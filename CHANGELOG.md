@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.20.1] — 2026-07-03
+
+Patch: a defect found by driving the released IDE with computer
+automation — clicks, keystrokes, and on-disk assertions against the
+running app.
+
+### Fixed
+- **Follow-up dialogs no longer stack behind the main window.** A
+  dialog opened in the same event dispatch that was still disposing its
+  predecessor (the Standards Kit outcome report after the wizard, the
+  New Experiment error report, API Studio's variables editor after
+  naming a new environment) could open *behind* the main window —
+  modal, invisible, every menu action greyed: a soft-locked app with no
+  visible reason. Confirmed live via window enumeration; each follow-up
+  dialog is now deferred one dispatch so its predecessor is fully gone
+  before it shows.
+
+### Verified live (no code change)
+- The automation run also battle-tested the paths CI could only
+  logic-verify: a real HTTPS send through API Studio (200, timed,
+  sized, headers graded on the Standards tab), .editorconfig
+  save-enforcement in the running editor (trailing whitespace trimmed,
+  final newline added, on disk), experiment lifecycle (scaffold →
+  no-git marker → external-delete resilience), Standards Kit files
+  spec-checked on disk, and the Infra Designer's fit/zoom controls.
+
 ## [1.20.0] — 2026-07-03
 
 The standards sprint: the web's specs, supported with gusto — text
