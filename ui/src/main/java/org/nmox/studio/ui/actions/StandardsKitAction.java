@@ -32,6 +32,25 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_StandardsKitAction=Standards Kit...")
 public final class StandardsKitAction implements ActionListener {
 
+    /** The generated files are only as valid as their inputs. */
+    static String validate(String url, String name, String contact, boolean securityTxt) {
+        if (name.isBlank()) {
+            return "Give the site a name — it goes into the manifest and humans.txt.";
+        }
+        try {
+            java.net.URI parsed = java.net.URI.create(url);
+            if (parsed.getScheme() == null || parsed.getHost() == null) {
+                return "The site URL needs a scheme and host, like https://example.com — got \"" + url + "\".";
+            }
+        } catch (IllegalArgumentException bad) {
+            return "That site URL doesn't parse: \"" + url + "\".";
+        }
+        if (securityTxt && !contact.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+            return "security.txt needs a real contact address (RFC 9116) — \"" + contact + "\" doesn't look like one.";
+        }
+        return null;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         File project = RackService.getDefault().getRack().getProjectDir();
@@ -69,6 +88,13 @@ public final class StandardsKitAction implements ActionListener {
         DialogDescriptor descriptor = new DialogDescriptor(panel,
                 "Standards Kit — " + project.getName());
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        String problem = validate(url.getText().trim(), name.getText().trim(),
+                contact.getText().trim(), security.isSelected());
+        if (problem != null) {
+            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(problem, NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
         StandardsKit.Options opts = new StandardsKit.Options(

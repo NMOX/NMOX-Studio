@@ -60,6 +60,29 @@ public final class Experiments {
         return dir != null && new File(dir, MARKER).isFile();
     }
 
+    /** What the marker recorded at creation, for listings. */
+    public record Info(String created, String template) {
+    }
+
+    /** Reads the marker; unknown or unreadable fields come back as "?". */
+    public static Info info(File experiment) {
+        String created = "?";
+        String template = "?";
+        try {
+            for (String line : Files.readAllLines(
+                    new File(experiment, MARKER).toPath(), java.nio.charset.StandardCharsets.UTF_8)) {
+                if (line.startsWith("created=")) {
+                    created = line.substring("created=".length()).strip();
+                } else if (line.startsWith("template=")) {
+                    template = line.substring("template=".length()).strip();
+                }
+            }
+        } catch (IOException unreadable) {
+            // a listing must not fail because one marker is broken
+        }
+        return new Info(created, template);
+    }
+
     /** Existing experiments, most recently touched first. */
     public static List<File> list() {
         File[] kids = root().listFiles(File::isDirectory);

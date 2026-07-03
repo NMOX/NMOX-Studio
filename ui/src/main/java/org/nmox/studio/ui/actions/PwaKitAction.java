@@ -112,6 +112,21 @@ public final class PwaKitAction implements ActionListener {
             return;
         }
         String artPath = artwork.getText().trim();
+        if (!artPath.isEmpty()) {
+            File artFile = new File(artPath);
+            if (!artFile.isFile() || !artFile.canRead()) {
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message("Icon artwork not readable: "
+                                + artFile.getAbsolutePath(), NotifyDescriptor.WARNING_MESSAGE)));
+                return;
+            }
+        }
+        if (name.getText().isBlank()) {
+            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message("Give the app a name — it goes into the manifest and offline page.",
+                            NotifyDescriptor.WARNING_MESSAGE)));
+            return;
+        }
         PwaKit.Options opts = new PwaKit.Options(
                 name.getText().trim(), shortName.getText().trim(),
                 theme.getText().trim(), background.getText().trim(),

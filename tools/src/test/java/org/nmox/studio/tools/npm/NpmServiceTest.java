@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -113,17 +111,6 @@ class NpmServiceTest {
         } catch (Exception e) {
             // Expected in test environment without NetBeans platform
         }
-    }
-    
-    @Test
-    @DisplayName("Should create init command with -y flag")
-    void testInit() throws Exception {
-        File projectDir = tempDir.toFile();
-        Files.createFile(tempDir.resolve("package.json"));
-        
-        // We can't actually run npm commands in tests, but we can verify the method doesn't throw
-        CompletableFuture<String> future = npmService.init(projectDir, NpmService.PackageManager.NPM);
-        assertThat(future).isNotNull();
     }
     
     @Test

@@ -48,7 +48,10 @@ import org.openide.windows.TopComponent;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 300)
 @ActionID(category = "Window", id = "org.nmox.studio.infra.InfraDesignerTopComponent")
-@ActionReference(path = "Menu/Window", position = 260)
+@org.openide.awt.ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 260),
+    @ActionReference(path = "Shortcuts", name = "DS-9")
+})
 @TopComponent.OpenActionRegistration(displayName = "#CTL_InfraAction",
         preferredID = "InfraDesignerTopComponent")
 @Messages({
@@ -158,8 +161,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
         tokenLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
         bar.add(tokenLabel);
 
-        JButton sync = new JButton("Sync from cloud");
-        sync.setToolTipText("Import existing DigitalOcean resources as live nodes");
+        JButton sync = new JButton("Sync from DigitalOcean");
+        sync.setToolTipText("Import existing DigitalOcean resources as live nodes "
+                + "(Hetzner/Cloudflare sync not yet supported)");
         sync.addActionListener(e -> syncFromCloud());
         bar.add(sync);
 
@@ -203,7 +207,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         deploy.setOpaque(true);
         deploy.setBorderPainted(false);
         deploy.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        deploy.setToolTipText("Create everything in this design via the DigitalOcean API");
+        deploy.setToolTipText("Create everything in this design via each node's cloud API");
         deploy.addActionListener(e -> deploy());
         bar.add(deploy);
         return bar;
@@ -229,21 +233,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
         // every provider this plan touches must have a token BEFORE the
         // worker starts - failing on node 7 of 12 leaves half a deployment
-        java.util.Set<org.nmox.studio.infra.api.CloudProvider> missing =
-                new java.util.LinkedHashSet<>();
-        for (DoRequest request : plan) {
-            if (!request.skipped()) {
-                var node = graph.node(request.nodeId());
-                if (node != null && node.kind.provider().token() == null) {
-                    missing.add(node.kind.provider());
-                }
-            }
-        }
-        if (!missing.isEmpty()) {
-            StringBuilder names = new StringBuilder();
-            for (var provider : missing) {
+        java.util.Set<org.nmox.studio.infra.api.CloudProvider> used =
+                DeployPlanner.providersUsed(plan, graph);
+        StringBuilder names = new StringBuilder();
+        for (var provider : used) {
+            if (!provider.hasToken()) {
                 names.append(names.length() > 0 ? ", " : "").append(provider.displayName());
             }
+        }
+        if (names.length() > 0) {
             text.insert(0, "MISSING API TOKENS: " + names
                     + " — set them via the Tokens button to go live.\n\n");
         }
@@ -252,10 +250,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
-        boolean live = missing.isEmpty() && DigitalOceanClient.hasToken();
-        String title = live ? "Deploy?"
-                : missing.isEmpty() ? "Dry run (no API token set)"
-                        : "Dry run (missing API tokens)";
+        // live when every cloud the plan actually calls has its token - a
+        // pure-Hetzner or pure-Cloudflare stack needs no DigitalOcean key
+        boolean live = DeployPlanner.liveEligible(used,
+                org.nmox.studio.infra.api.CloudProvider::hasToken);
+        String title = live ? "Deploy?" : "Dry run (missing tokens: " + names + ")";
         DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title);
         if (live) {
             Object deploy = "Deploy";
@@ -293,8 +292,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     private void syncFromCloud() {
-        if (!DigitalOceanClient.hasToken()) {
-            info("Set an API token first.");
+        if (!org.nmox.studio.infra.api.CloudProvider.DIGITALOCEAN.hasToken()) {
+            info("Set a DigitalOcean API token first.");
             return;
         }
         Thread worker = new Thread(() -> {
@@ -411,7 +410,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
             JMenuItem destroy = new JMenuItem("Destroy in cloud (" + node.doId + ")");
             destroy.addActionListener(e -> {
                 if (confirm("Really destroy " + node.kind.getDisplayName() + " "
-                        + node.label + " on DigitalOcean?", "Destroy resource")) {
+                        + node.label + " on " + node.kind.provider().displayName() + "?",
+                        "Destroy resource")) {
                     Thread worker = new Thread(() -> {
                         try {
                             client.destroy(node);

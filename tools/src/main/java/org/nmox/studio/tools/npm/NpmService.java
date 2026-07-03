@@ -28,60 +28,8 @@ public class NpmService {
         return runCommand(projectDir, getCommand(manager), "install");
     }
 
-    public CompletableFuture<String> addPackage(File projectDir, String packageName, boolean isDev, PackageManager manager) {
-        List<String> args = new ArrayList<>();
-        args.add(getCommand(manager));
-        
-        switch (manager) {
-            case NPM:
-                args.add("install");
-                if (isDev) args.add("--save-dev");
-                break;
-            case YARN:
-                args.add("add");
-                if (isDev) args.add("--dev");
-                break;
-            case PNPM:
-                args.add("add");
-                if (isDev) args.add("--save-dev");
-                break;
-        }
-        args.add(packageName);
-        
-        return runCommand(projectDir, args.toArray(new String[0]));
-    }
-
-    public CompletableFuture<String> removePackage(File projectDir, String packageName, PackageManager manager) {
-        String command = getCommand(manager);
-        String removeCmd = manager == PackageManager.YARN ? "remove" : "uninstall";
-        return runCommand(projectDir, command, removeCmd, packageName);
-    }
-
     public CompletableFuture<String> runScript(File projectDir, String scriptName, PackageManager manager) {
         return runCommand(projectDir, getCommand(manager), "run", scriptName);
-    }
-
-    public CompletableFuture<String> listPackages(File projectDir, PackageManager manager) {
-        String command = getCommand(manager);
-        if (manager == PackageManager.NPM) {
-            return runCommand(projectDir, command, "list", "--depth=0");
-        } else {
-            return runCommand(projectDir, command, "list");
-        }
-    }
-
-    public CompletableFuture<String> init(File projectDir, PackageManager manager) {
-        return runCommand(projectDir, getCommand(manager), "init", "-y");
-    }
-
-    public CompletableFuture<String> update(File projectDir, PackageManager manager) {
-        String command = getCommand(manager);
-        String updateCmd = manager == PackageManager.YARN ? "upgrade" : "update";
-        return runCommand(projectDir, command, updateCmd);
-    }
-
-    public CompletableFuture<String> audit(File projectDir, PackageManager manager) {
-        return runCommand(projectDir, getCommand(manager), "audit");
     }
 
     public boolean isAvailable(PackageManager manager) {

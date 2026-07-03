@@ -117,7 +117,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### VITALS — Web Quality Gate — Lighthouse scores with a shipping floor
 
 > Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.
-> Dial MIN + GATE (perf/a11y/both): pages below the floor - slow OR inaccessible - fire FAIL, not OK.
+> Dial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.
 
 - **In:** `RUN` (trigger), `URL` (data)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)

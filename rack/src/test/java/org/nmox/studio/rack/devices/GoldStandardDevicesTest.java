@@ -96,4 +96,51 @@ class GoldStandardDevicesTest {
         org.assertj.core.api.Assertions.assertThat(vitals.overallSuccess(0))
                 .as("both standards above the floor").isTrue();
     }
+
+    @Test
+    @DisplayName("VITALS GATE knob: best and seo each hold only their own category")
+    void vitalsGateHoldsBestAndSeo() {
+        VitalsDevice vitals = new VitalsDevice();
+        vitals.applyState(java.util.Map.of("min", "4")); // floor 90
+        vitals.scoresForTest(new VitalsDevice.Scores(0.95, 0.95, 0.70, 0.60)); // sloppy, unfindable
+
+        vitals.applyState(java.util.Map.of("gate", "3")); // best
+        assertThat(vitals.gate()).isEqualTo("best");
+        assertThat(vitals.overallSuccess(0))
+                .as("best-practices 70 < 90 closes the gate").isFalse();
+
+        vitals.applyState(java.util.Map.of("gate", "4")); // seo
+        assertThat(vitals.gate()).isEqualTo("seo");
+        assertThat(vitals.overallSuccess(0))
+                .as("seo 60 < 90 closes the gate").isFalse();
+
+        vitals.scoresForTest(new VitalsDevice.Scores(0.10, 0.10, 0.95, 0.95)); // slow but tidy
+        vitals.applyState(java.util.Map.of("gate", "3")); // best
+        assertThat(vitals.overallSuccess(0))
+                .as("best holds only best-practices; perf is not its business").isTrue();
+        vitals.applyState(java.util.Map.of("gate", "4")); // seo
+        assertThat(vitals.overallSuccess(0))
+                .as("seo holds only seo; perf is not its business").isTrue();
+    }
+
+    @Test
+    @DisplayName("VITALS GATE knob: all holds every category; both still ignores best/seo")
+    void vitalsGateAllHoldsEverything() {
+        VitalsDevice vitals = new VitalsDevice();
+        vitals.applyState(java.util.Map.of("min", "4")); // floor 90
+        vitals.scoresForTest(new VitalsDevice.Scores(0.95, 0.95, 0.95, 0.60)); // only seo lags
+
+        vitals.applyState(java.util.Map.of("gate", "2")); // both — pre-existing meaning intact
+        assertThat(vitals.overallSuccess(0))
+                .as("both holds perf+a11y only; a lagging seo passes").isTrue();
+
+        vitals.applyState(java.util.Map.of("gate", "5")); // all
+        assertThat(vitals.gate()).isEqualTo("all");
+        assertThat(vitals.overallSuccess(0))
+                .as("all: any category below the floor closes the gate").isFalse();
+
+        vitals.scoresForTest(new VitalsDevice.Scores(0.95, 0.95, 0.95, 0.92));
+        assertThat(vitals.overallSuccess(0))
+                .as("all four above the floor opens the gate").isTrue();
+    }
 }

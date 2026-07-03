@@ -151,7 +151,7 @@ public enum DeviceType {
             case SSH -> "Runs the dialed command on user@host over ssh (BatchMode: key auth only).\nPatch LAUNCHPAD OK → RUN to finish deploys with a remote migrate or restart; HOST accepts a cable.";
             case BEACON -> "CHECK answers: is it up, and how many days on the TLS cert?\nPatch TEMPO BAR → CHECK to watch production on a clock; MIN DAYS fires FAIL inside the window.";
             case BUNDLE_SIZE -> "Weighs the build output dir; MAX sets the budget.\nPatch FORGE OK → MEASURE and OK → LAUNCHPAD: bundles over budget don't ship.";
-            case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both): pages below the floor - slow OR inaccessible - fire FAIL, not OK.";
+            case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.";
         };
     }
 

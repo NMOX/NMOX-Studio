@@ -14,10 +14,11 @@ import java.util.regex.Pattern;
  * unit-testable: a function of (mime, text), no editor required.
  *
  * Nesting is honest about what each family affords - brace depth for
- * C-like and CSS, indentation for Python and YAML, heading level for
- * Markdown, section headers for INI/TOML. The depths only need to be
- * consistent within a file; the navigator's tree builder turns them
- * into parent/child links with a stack.
+ * C-like and CSS, indentation for Python, Elixir and YAML, heading
+ * level for Markdown, section headers for INI/TOML, a flat list where
+ * nesting would be a lie (Lisp parens, Erlang clauses). The depths
+ * only need to be consistent within a file; the navigator's tree
+ * builder turns them into parent/child links with a stack.
  */
 public final class OutlineModel {
 
@@ -49,6 +50,9 @@ public final class OutlineModel {
             case "python" -> python(lines);
             case "rust" -> rust(lines);
             case "go" -> go(lines);
+            case "elixir" -> elixir(lines);
+            case "clojure" -> clojure(lines);
+            case "erlang" -> erlang(lines);
             case "brace" -> braceLang(lines);
             case "shell" -> shell(lines);
             case "graphql" -> graphql(lines);
@@ -73,6 +77,9 @@ public final class OutlineModel {
             case "text/x-python" -> "python";
             case "text/x-rust" -> "rust";
             case "text/x-go" -> "go";
+            case "text/x-elixir" -> "elixir";
+            case "text/x-clojure" -> "clojure";
+            case "text/x-erlang" -> "erlang";
             case "text/x-java", "text/x-kotlin", "text/x-scala", "text/x-csharp",
                  "text/x-swift", "text/x-c", "text/x-cpp", "text/x-dart",
                  "text/x-groovy", "text/x-php5" -> "brace";
@@ -454,6 +461,87 @@ public final class OutlineModel {
             brace += netBraces(line);
             if (brace < 0) {
                 brace = 0;
+            }
+        }
+        return out;
+    }
+
+    // ---- Elixir ------------------------------------------------------------
+
+    private static final Pattern ELIXIR = Pattern.compile(
+            "^(\\s*)(defmodule|defmacrop?|defp?)\\s+([A-Za-z0-9_.?!]+)");
+
+    private static List<Item> elixir(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        Deque<Integer> cols = new ArrayDeque<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher m = ELIXIR.matcher(lines[i]);
+            if (m.find()) {
+                int col = m.group(1).length();
+                while (!cols.isEmpty() && cols.peek() >= col) {
+                    cols.pop();
+                }
+                int depth = cols.size();
+                cols.push(col);
+                OutlineKind kind = m.group(2).equals("defmodule") ? OutlineKind.MODULE
+                        : depth > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION;
+                out.add(new Item(kind, m.group(3), null, i, depth));
+            }
+        }
+        return out;
+    }
+
+    // ---- Clojure -----------------------------------------------------------
+
+    private static final Pattern CLOJURE = Pattern.compile(
+            "^\\((ns|defprotocol|defrecord|deftype|defmacro|defn-?|def)\\s+([A-Za-z0-9_*+!?<>=.'/-]+)");
+
+    /** Top-level forms only; Lisp nesting by parens is not this outline's business. */
+    private static List<Item> clojure(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher m = CLOJURE.matcher(lines[i]);
+            if (m.find()) {
+                OutlineKind kind = switch (m.group(1)) {
+                    case "ns" -> OutlineKind.MODULE;
+                    case "defprotocol" -> OutlineKind.INTERFACE;
+                    case "defrecord", "deftype" -> OutlineKind.TYPE;
+                    case "def" -> OutlineKind.FIELD;
+                    default -> OutlineKind.FUNCTION;
+                };
+                out.add(new Item(kind, m.group(2), m.group(1), i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Erlang ------------------------------------------------------------
+
+    private static final Pattern ERLANG_ATTR = Pattern.compile(
+            "^-(module|behaviou?r|export)\\s*\\(\\s*([^)]*?)\\s*\\)");
+    private static final Pattern ERLANG_FUN = Pattern.compile(
+            "^([a-z][A-Za-z0-9_@]*)\\(([^)]*)\\)\\s*(?:when\\b[^-]*)?->");
+
+    /** Module attributes plus function clause heads at column 0. */
+    private static List<Item> erlang(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            Matcher a = ERLANG_ATTR.matcher(line);
+            if (a.find()) {
+                String attr = a.group(1);
+                String value = a.group(2).replaceAll("[\\[\\]]", "").trim();
+                Item item = switch (attr) {
+                    case "module" -> new Item(OutlineKind.MODULE, value, null, i, 0);
+                    case "export" -> new Item(OutlineKind.SECTION, "export", trim(value, 40), i, 0);
+                    default -> new Item(OutlineKind.INTERFACE, value, "behaviour", i, 0);
+                };
+                out.add(item);
+                continue;
+            }
+            Matcher f = ERLANG_FUN.matcher(line);
+            if (f.find()) {
+                out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
             }
         }
         return out;

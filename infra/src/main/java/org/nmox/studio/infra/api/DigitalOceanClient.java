@@ -17,7 +17,6 @@ import org.json.JSONObject;
 import org.nmox.studio.infra.model.InfraGraph;
 import org.nmox.studio.infra.model.InfraGraph.InfraNode;
 import org.nmox.studio.infra.model.NodeKind;
-import org.openide.util.NbPreferences;
 
 /**
  * The live wire to DigitalOcean's v2 REST API. Executes deploy plans
@@ -28,29 +27,9 @@ import org.openide.util.NbPreferences;
 public final class DigitalOceanClient {
 
     public static final String API = "https://api.digitalocean.com";
-    private static final String PREF_TOKEN = "doToken";
     private static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{(id|ip)-of:([^}]+)}");
 
     private final HttpClient http = org.nmox.studio.core.http.HttpClientFactory.shared();
-
-    // ---- token ----
-
-    public static String token() {
-        String env = System.getenv("DIGITALOCEAN_TOKEN");
-        if (env != null && !env.isBlank()) {
-            return env;
-        }
-        String pref = NbPreferences.forModule(DigitalOceanClient.class).get(PREF_TOKEN, "");
-        return pref.isBlank() ? null : pref;
-    }
-
-    public static void storeToken(String token) {
-        NbPreferences.forModule(DigitalOceanClient.class).put(PREF_TOKEN, token == null ? "" : token);
-    }
-
-    public static boolean hasToken() {
-        return token() != null;
-    }
 
     // ---- plan execution ----
 
@@ -317,9 +296,16 @@ public final class DigitalOceanClient {
     /**
      * The REST path addressing a node's live resource - shared by
      * destroy and drift checks; null when the provider offers no
-     * per-resource endpoint (Cloudflare records, Hetzner kinds).
+     * per-resource endpoint (R2 buckets) or the node lacks the context
+     * the path needs (a Cloudflare record without its zone).
      */
     static String resourcePath(org.nmox.studio.infra.model.NodeKind kind, String id) {
+        return resourcePath(kind, id, Map.of());
+    }
+
+    /** Same, with the node's props for kinds whose path needs context. */
+    static String resourcePath(org.nmox.studio.infra.model.NodeKind kind, String id,
+            Map<String, String> props) {
         return switch (kind) {
             case DROPLET, GPU_DROPLET -> "/v2/droplets/" + id;
             case VPC -> "/v2/vpcs/" + id;
@@ -339,6 +325,18 @@ public final class DigitalOceanClient {
             case GRADIENT_AI -> "/v2/gen-ai/agents/" + id;
             case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
                 "/v2/databases/" + id;
+            // Hetzner Cloud v1 (relative to api.hetzner.cloud/v1)
+            case HZ_SERVER -> "/servers/" + id;
+            case HZ_NETWORK -> "/networks/" + id;
+            case HZ_LB -> "/load_balancers/" + id;
+            case HZ_VOLUME -> "/volumes/" + id;
+            case HZ_FIREWALL -> "/firewalls/" + id;
+            case HZ_FLOATING_IP -> "/floating_ips/" + id;
+            // Cloudflare records live under their zone; no zone, no path
+            case CF_DNS_RECORD -> {
+                String zone = props.getOrDefault("zoneId", "");
+                yield zone.isBlank() ? null : "/zones/" + zone + "/dns_records/" + id;
+            }
             default -> null;
         };
     }
@@ -356,13 +354,17 @@ public final class DigitalOceanClient {
             if (node.doId == null) {
                 continue;
             }
-            String path = resourcePath(node.kind, node.doId);
+            String path = resourcePath(node.kind, node.doId, node.props);
             if (path == null) {
                 onStatus.accept(node, "unverifiable (no read API)");
                 continue;
             }
             try {
-                send("GET", path, "");
+                JSONObject response = send(node.kind.provider(), "GET", path, "");
+                String ip = extractPublicIp(node.kind, response);
+                if (ip != null) {
+                    node.ip = ip; // ssh parity: the context menu offers root@ip
+                }
                 onStatus.accept(node, "live");
             } catch (IOException ex) {
                 String msg = ex.getMessage() == null ? "" : ex.getMessage();
@@ -408,10 +410,43 @@ public final class DigitalOceanClient {
         if (node.doId == null) {
             return;
         }
-        String path = resourcePath(node.kind, node.doId);
+        String path = resourcePath(node.kind, node.doId, node.props);
         if (path != null) {
-            send("DELETE", path, "");
+            send(node.kind.provider(), "DELETE", path, "");
             node.doId = null;
+        }
+    }
+
+    /**
+     * Pulls a public IPv4 out of a per-resource GET, per provider shape:
+     * DO droplets nest it in networks.v4, Hetzner servers in
+     * public_net.ipv4. Null for kinds without one, or odd responses.
+     */
+    static String extractPublicIp(NodeKind kind, JSONObject response) {
+        try {
+            return switch (kind) {
+                case DROPLET, GPU_DROPLET -> {
+                    JSONArray v4 = response.getJSONObject("droplet")
+                            .getJSONObject("networks").optJSONArray("v4");
+                    String found = null;
+                    for (int i = 0; v4 != null && i < v4.length(); i++) {
+                        JSONObject net = v4.getJSONObject(i);
+                        if ("public".equals(net.optString("type"))) {
+                            found = net.optString("ip_address", null);
+                        }
+                    }
+                    yield found;
+                }
+                case HZ_SERVER -> {
+                    String ip = response.getJSONObject("server")
+                            .getJSONObject("public_net").getJSONObject("ipv4")
+                            .optString("ip", "");
+                    yield ip.isEmpty() ? null : ip;
+                }
+                default -> null;
+            };
+        } catch (RuntimeException ex) {
+            return null; // no IP is fine; a drift check never fails over it
         }
     }
 

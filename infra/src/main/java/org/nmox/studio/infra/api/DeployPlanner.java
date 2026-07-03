@@ -46,7 +46,33 @@ public final class DeployPlanner {
         return requests;
     }
 
-    /** Kahn's algorithm over creation-dependency edges (stable order). */
+    /**
+     * The distinct clouds this plan's real (non-skipped) requests will
+     * actually call - the honest basis for the live/dry-run gate.
+     */
+    public static java.util.Set<CloudProvider> providersUsed(List<DoRequest> plan, InfraGraph graph) {
+        java.util.Set<CloudProvider> used = new java.util.LinkedHashSet<>();
+        for (DoRequest request : plan) {
+            if (request.skipped()) {
+                continue;
+            }
+            InfraNode node = graph.node(request.nodeId());
+            if (node != null) {
+                used.add(node.kind.provider());
+            }
+        }
+        return used;
+    }
+
+    /**
+     * Live only when every cloud the plan touches has its token - a
+     * pure-Hetzner stack must not be held hostage to a DigitalOcean key.
+     */
+    public static boolean liveEligible(java.util.Set<CloudProvider> used,
+            java.util.function.Predicate<CloudProvider> hasToken) {
+        return used.stream().allMatch(hasToken);
+    }
+
     /**
      * The teardown order for everything deployed: creation order
      * reversed, so dependents (attachments, LBs, records) fall before
@@ -59,6 +85,7 @@ public final class DeployPlanner {
         return order;
     }
 
+    /** Kahn's algorithm over creation-dependency edges (stable order). */
     private static List<InfraNode> topologicalOrder(InfraGraph graph) {
         List<InfraNode> nodes = graph.getNodes();
         Map<String, Integer> indegree = new LinkedHashMap<>();
@@ -353,6 +380,10 @@ public final class DeployPlanner {
                         .put("server_type", p.getOrDefault("serverType", "cx22"))
                         .put("location", p.getOrDefault("location", "fsn1"))
                         .put("image", p.getOrDefault("image", "ubuntu-24.04"));
+                String userData = p.getOrDefault("userData", "");
+                if (!userData.isBlank()) {
+                    body.put("user_data", userData); // cloud-init: the server configures itself
+                }
                 JSONArray networks = new JSONArray();
                 for (InfraNode prov : providers) {
                     if (prov.kind == NodeKind.HZ_NETWORK) {
