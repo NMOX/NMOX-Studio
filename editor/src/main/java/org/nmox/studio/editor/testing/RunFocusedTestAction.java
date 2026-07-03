@@ -81,10 +81,10 @@ public class RunFocusedTestAction extends BaseAction {
                         .setStatusText(code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]"));
     }
 
-    private record Focused(List<String> command, File dir) {
+    record Focused(List<String> command, File dir) {
     }
 
-    private static Focused commandFor(String mime, File file, String name, int line) {
+    static Focused commandFor(String mime, File file, String name, int line) {
         File root = file.getParentFile();
         // walk up to the relevant manifest so runners resolve correctly
         for (File d = root; d != null; d = d.getParentFile()) {
@@ -116,7 +116,7 @@ public class RunFocusedTestAction extends BaseAction {
         };
     }
 
-    private static Pattern patternFor(String mime) {
+    static Pattern patternFor(String mime) {
         return switch (mime) {
             case "text/javascript", "text/typescript" -> JS_TEST;
             case "text/x-python" -> PY_TEST;
@@ -128,7 +128,7 @@ public class RunFocusedTestAction extends BaseAction {
     }
 
     /** Nearest declaration at or above the caret. */
-    private static String nearestMatch(Document doc, int caret, Pattern pattern) {
+    static String nearestMatch(Document doc, int caret, Pattern pattern) {
         if (pattern == null) {
             return null;
         }

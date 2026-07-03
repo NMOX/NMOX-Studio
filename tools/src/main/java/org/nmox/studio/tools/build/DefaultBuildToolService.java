@@ -34,7 +34,13 @@ public class DefaultBuildToolService implements BuildToolService {
     
     @Override
     public BuildToolType detectBuildTool(File projectDir) {
-        // Check for specific build tool configs
+        // Detection is by config file on disk, in catalog order: a tool's
+        // dedicated config names it, package.json (NPM_SCRIPTS' config file)
+        // marks a plain npm-scripts project, and a directory with none of
+        // these is honestly UNKNOWN. Dependency contents are deliberately not
+        // consulted — a bundler listed only in package.json does not make the
+        // project that bundler's, and NPM_SCRIPTS' handler already probes for
+        // the right run script (dev/serve/start), so it is the better route.
         for (BuildToolType type : BuildToolType.values()) {
             if (type.getConfigFiles() != null) {
                 for (String configFile : type.getConfigFiles()) {
@@ -44,21 +50,7 @@ public class DefaultBuildToolService implements BuildToolService {
                 }
             }
         }
-        
-        // Check package.json for build tool dependencies
-        File packageJson = new File(projectDir, "package.json");
-        if (packageJson.exists()) {
-            try {
-                String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
-                if (content.contains("\"webpack\"")) return BuildToolType.WEBPACK;
-                if (content.contains("\"vite\"")) return BuildToolType.VITE;
-                if (content.contains("\"parcel\"")) return BuildToolType.PARCEL;
-                return BuildToolType.NPM_SCRIPTS;
-            } catch (IOException e) {
-                // Fall through
-            }
-        }
-        
+
         return BuildToolType.UNKNOWN;
     }
     

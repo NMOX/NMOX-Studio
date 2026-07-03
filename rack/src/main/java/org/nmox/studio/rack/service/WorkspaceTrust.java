@@ -15,9 +15,24 @@ import org.openide.NotifyDescriptor;
  */
 public final class WorkspaceTrust {
 
-    private static final String PREF_TRUSTED_KEYS = "trusted_workspaces";
+    /**
+     * Legacy storage: every trusted path joined into ONE preference value with
+     * {@link File#pathSeparator}. java.util.prefs caps a single value at
+     * {@link Preferences#MAX_VALUE_LENGTH} (8 KB); a long-lived install that
+     * trusted enough projects would overflow it and every subsequent trust()
+     * would throw "Value too long". Read once for migration, then removed.
+     */
+    private static final String LEGACY_JOINED_KEY = "trusted_workspaces";
     private static final Set<String> trustedPaths = new HashSet<>();
     private static final Preferences prefs = Preferences.userNodeForPackage(WorkspaceTrust.class);
+    /**
+     * Current storage: one entry per trusted path under this child node —
+     * key = a short stable hash (Preferences keys are capped at 80 chars, and
+     * paths are not), value = the path (a single path is always well under the
+     * per-value limit). This grows one small entry at a time and can never
+     * overflow a value the way the joined string could.
+     */
+    private static final Preferences trustedNode = prefs.node("trusted");
 
     static {
         load();
@@ -27,26 +42,77 @@ public final class WorkspaceTrust {
     }
 
     private static synchronized void load() {
-        String data = prefs.get(PREF_TRUSTED_KEYS, "");
-        if (!data.isEmpty()) {
-            for (String path : data.split(File.pathSeparator)) {
+        // Migrate the legacy joined value (if any) to per-path entries, then
+        // drop it so the overflow-prone key never comes back.
+        String legacy = prefs.get(LEGACY_JOINED_KEY, "");
+        if (!legacy.isEmpty()) {
+            for (String path : legacy.split(File.pathSeparator)) {
                 if (!path.isBlank()) {
-                    trustedPaths.add(path.trim());
+                    remember(path.trim());
                 }
             }
+            prefs.remove(LEGACY_JOINED_KEY);
+            flush(prefs);
+            flush(trustedNode);
+        }
+        try {
+            for (String key : trustedNode.keys()) {
+                String path = trustedNode.get(key, "");
+                if (!path.isBlank()) {
+                    trustedPaths.add(path);
+                }
+            }
+        } catch (BackingStoreException ignore) {
+            // best effort; the in-memory set still holds for this session
         }
     }
 
-    private static synchronized void save() {
-        String joined = String.join(File.pathSeparator, trustedPaths);
-        prefs.put(PREF_TRUSTED_KEYS, joined);
+    /** Records one trusted path as its own preference entry (in memory + store). */
+    private static void remember(String path) {
+        trustedPaths.add(path);
+        trustedNode.put(keyFor(path), path);
+    }
+
+    /** A short, stable, collision-resistant key for a path (fits the 80-char key cap). */
+    private static String keyFor(String path) {
+        try {
+            byte[] h = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(path.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder(24);
+            for (int i = 0; i < 12; i++) {
+                sb.append(Character.forDigit((h[i] >> 4) & 0xF, 16));
+                sb.append(Character.forDigit(h[i] & 0xF, 16));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException impossible) {
+            // SHA-256 is a required algorithm on every conformant JVM (JCA spec),
+            // so this branch is unreachable — fail loudly rather than fall back
+            // to a weaker key.
+            throw new AssertionError("SHA-256 unavailable", impossible);
+        }
+    }
+
+    private static void flush(Preferences node) {
         try {
             // Persist now. java.util.prefs flushes lazily / on clean exit, so
             // without this an abrupt quit loses the grant and the user is asked
             // to trust the same folder again on the next launch.
-            prefs.flush();
+            node.flush();
         } catch (BackingStoreException ignore) {
             // best effort; the in-memory set still holds for this session
+        }
+    }
+
+    /** Test hook: forget every trusted path, in memory and in the store. */
+    static synchronized void clearForTest() {
+        trustedPaths.clear();
+        try {
+            trustedNode.clear();
+            prefs.remove(LEGACY_JOINED_KEY);
+            flush(trustedNode);
+            flush(prefs);
+        } catch (BackingStoreException ignore) {
+            // best effort
         }
     }
 
@@ -69,8 +135,8 @@ public final class WorkspaceTrust {
     /** Adds the directory to the trusted list and persists it. */
     public static synchronized void trust(File dir) {
         if (dir != null) {
-            trustedPaths.add(dir.getAbsolutePath());
-            save();
+            remember(dir.getAbsolutePath());
+            flush(trustedNode);
         }
     }
 

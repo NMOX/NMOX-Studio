@@ -80,4 +80,98 @@ class WebProjectCommandsTest {
                 .containsExactly("python3", "-m", "pytest");
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.NONE, ActionProvider.COMMAND_BUILD)).isNull();
     }
+
+    @Test
+    @DisplayName("Node RUN prefers dev, then start, then serve")
+    void nodeRunPrefersServeLast() throws Exception {
+        // only 'serve' exists — RUN must fall all the way through to it
+        File onlyServe = Files.createDirectory(dir.resolve("only-serve")).toFile();
+        Files.writeString(onlyServe.toPath().resolve("package.json"),
+                "{\"scripts\":{\"serve\":\"http-server\"}}");
+        assertThat(WebProjectCommands.commandFor(onlyServe, ProjectKind.NODE, ActionProvider.COMMAND_RUN))
+                .containsExactly("npm", "run", "serve");
+    }
+
+    @Test
+    @DisplayName("Node CLEAN maps to the clean script when it exists")
+    void nodeCleanUsesScript() throws Exception {
+        File withClean = Files.createDirectory(dir.resolve("with-clean")).toFile();
+        Files.writeString(withClean.toPath().resolve("package.json"),
+                "{\"scripts\":{\"clean\":\"rimraf dist\"}}");
+        assertThat(WebProjectCommands.commandFor(withClean, ProjectKind.NODE, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("npm", "run", "clean");
+    }
+
+    @Test
+    @DisplayName("An unrecognized action on Node returns null rather than guessing")
+    void nodeUnknownActionIsNull() throws Exception {
+        File d = Files.createDirectory(dir.resolve("node-unknown")).toFile();
+        Files.writeString(d.toPath().resolve("package.json"),
+                "{\"scripts\":{\"dev\":\"vite\"}}");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.NODE, "nonsense-action")).isNull();
+    }
+
+    @Test
+    @DisplayName("Gradle maps every action to its wrapper command")
+    void gradleFullMapping() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRADLE, ActionProvider.COMMAND_RUN))
+                .containsExactly("gradle", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRADLE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("gradle", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRADLE, ActionProvider.COMMAND_TEST))
+                .containsExactly("gradle", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRADLE, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("gradle", "clean");
+    }
+
+    @Test
+    @DisplayName("Swift and Zig can run/build/test but have no clean action")
+    void swiftAndZigLackClean() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.SWIFT, ActionProvider.COMMAND_RUN))
+                .containsExactly("swift", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.SWIFT, ActionProvider.COMMAND_CLEAN)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ZIG, ActionProvider.COMMAND_BUILD))
+                .containsExactly("zig", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ZIG, ActionProvider.COMMAND_TEST))
+                .containsExactly("zig", "build", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ZIG, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
+    @DisplayName("Dart runs and tests but has neither a build nor a clean action")
+    void dartRunsAndTestsOnly() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DART, ActionProvider.COMMAND_RUN))
+                .containsExactly("dart", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DART, ActionProvider.COMMAND_TEST))
+                .containsExactly("dart", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DART, ActionProvider.COMMAND_BUILD)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DART, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
+    @DisplayName("Make drives run/build/test/clean through the Makefile")
+    void makeFullMapping() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.MAKE, ActionProvider.COMMAND_RUN))
+                .containsExactly("make", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.MAKE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("make");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.MAKE, ActionProvider.COMMAND_TEST))
+                .containsExactly("make", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.MAKE, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("make", "clean");
+    }
+
+    @Test
+    @DisplayName("Ruby only exposes a test action, via rake")
+    void rubyTestsOnly() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.RUBY, ActionProvider.COMMAND_TEST))
+                .containsExactly("rake", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.RUBY, ActionProvider.COMMAND_RUN)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.RUBY, ActionProvider.COMMAND_BUILD)).isNull();
+    }
 }

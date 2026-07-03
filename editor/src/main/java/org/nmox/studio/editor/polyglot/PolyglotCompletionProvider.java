@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.polyglot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -236,24 +237,11 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                 String text = doc.getText(0, doc.getLength());
                 String prefix = prefixAt(text, caretOffset);
                 int anchor = caretOffset - prefix.length();
-                String prefixLower = prefix.toLowerCase();
 
-                for (String keyword : new TreeSet<>(keywords)) {
-                    if (keyword.toLowerCase().startsWith(prefixLower)) {
-                        resultSet.addItem(new JavaScriptKeywordCompletionItem(keyword, anchor, prefix.length()));
-                    }
+                for (String keyword : matchingKeywords(keywords, prefix)) {
+                    resultSet.addItem(new JavaScriptKeywordCompletionItem(keyword, anchor, prefix.length()));
                 }
-                Set<String> words = new TreeSet<>();
-                Matcher m = WORD.matcher(text);
-                while (m.find()) {
-                    String word = m.group();
-                    if (!keywords.contains(word)
-                            && word.toLowerCase().startsWith(prefixLower)
-                            && m.end() != caretOffset) {
-                        words.add(word);
-                    }
-                }
-                for (String word : words) {
+                for (String word : matchingIdentifiers(text, keywords, prefix, caretOffset)) {
                     resultSet.addItem(new JavaScriptObjectCompletionItem(word, anchor, prefix.length()));
                 }
             } catch (BadLocationException ex) {
@@ -262,15 +250,52 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                 resultSet.finish();
             }
         }
+    }
 
-        private static String prefixAt(String text, int offset) {
-            int start = Math.min(offset, text.length());
-            int i = start;
-            while (i > 0 && (Character.isLetterOrDigit(text.charAt(i - 1))
-                    || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$')) {
-                i--;
-            }
-            return text.substring(i, start);
+    /**
+     * The identifier fragment ending at {@code offset}: letters, digits,
+     * underscore or {@code $} walked back from the caret. Pure and
+     * package-visible for tests.
+     */
+    static String prefixAt(String text, int offset) {
+        int start = Math.min(offset, text.length());
+        int i = start;
+        while (i > 0 && (Character.isLetterOrDigit(text.charAt(i - 1))
+                || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$')) {
+            i--;
         }
+        return text.substring(i, start);
+    }
+
+    /** Language keywords matching the prefix (case-insensitive), sorted. */
+    static List<String> matchingKeywords(Set<String> keywords, String prefix) {
+        String prefixLower = prefix.toLowerCase();
+        List<String> out = new ArrayList<>();
+        for (String keyword : new TreeSet<>(keywords)) {
+            if (keyword.toLowerCase().startsWith(prefixLower)) {
+                out.add(keyword);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Every identifier in the document that matches the prefix and isn't a
+     * keyword — deduplicated and sorted — excluding the word the caret is
+     * currently completing (the one ending exactly at {@code caretOffset}).
+     */
+    static List<String> matchingIdentifiers(String text, Set<String> keywords, String prefix, int caretOffset) {
+        String prefixLower = prefix.toLowerCase();
+        Set<String> words = new TreeSet<>();
+        Matcher m = WORD.matcher(text);
+        while (m.find()) {
+            String word = m.group();
+            if (!keywords.contains(word)
+                    && word.toLowerCase().startsWith(prefixLower)
+                    && m.end() != caretOffset) {
+                words.add(word);
+            }
+        }
+        return new ArrayList<>(words);
     }
 }

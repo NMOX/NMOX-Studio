@@ -282,22 +282,128 @@ public class CssCompletionProvider implements CompletionProvider {
         return 0;
     }
     
+    /** Common CSS-wide keyword values offered for every property. */
+    static final List<String> COMMON_VALUES = Arrays.asList(
+        "inherit", "initial", "unset", "revert", "auto", "none");
+
+    /** Common selectors offered in the selector area. */
+    static final List<String> COMMON_SELECTORS = Arrays.asList(
+        "*", "body", "html", "div", "span", "p", "a", "h1", "h2", "h3",
+        ".class", "#id", ":hover", ":focus", ":active", ":visited",
+        "::before", "::after", ":first-child", ":last-child", ":nth-child()");
+
+    /**
+     * Where the caret sits in the stylesheet, derived from the text
+     * before it. Package-visible and pure so the context rules are
+     * testable without a live document.
+     */
+    static CssContext analyzeContext(String text) {
+        CssContext context = new CssContext();
+
+        // Find context within CSS
+        int lastBrace = text.lastIndexOf('{');
+        int lastCloseBrace = text.lastIndexOf('}');
+        int lastColon = text.lastIndexOf(':');
+        int lastSemicolon = text.lastIndexOf(';');
+
+        if (lastBrace > lastCloseBrace) {
+            // We're inside a rule block
+            if (lastColon > lastSemicolon && lastColon > lastBrace) {
+                // We're in a property value
+                context.type = CssContextType.PROPERTY_VALUE;
+                String propLine = text.substring(Math.max(lastSemicolon, lastBrace) + 1, lastColon).trim();
+                context.propertyName = propLine;
+                context.prefix = text.substring(lastColon + 1).trim();
+            } else {
+                // We're typing a property name
+                context.type = CssContextType.PROPERTY_NAME;
+                int start = Math.max(lastSemicolon, lastBrace) + 1;
+                context.prefix = text.substring(start).trim();
+            }
+        } else {
+            // We're outside a rule block (selector area)
+            context.type = CssContextType.SELECTOR;
+            int start = Math.max(lastCloseBrace, 0) + 1;
+            context.prefix = text.substring(start).trim();
+        }
+
+        return context;
+    }
+
+    /** Property names (any category) whose name starts with the prefix, sorted. */
+    static List<String> matchingProperties(String prefix) {
+        String p = prefix.toLowerCase();
+        Set<String> allProperties = new TreeSet<>();
+        for (List<String> props : CSS_PROPERTIES.values()) {
+            allProperties.addAll(props);
+        }
+        List<String> out = new ArrayList<>();
+        for (String property : allProperties) {
+            if (property.startsWith(p)) {
+                out.add(property);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Values offered for a property: the property's enumerated values (if
+     * any) followed by the CSS-wide common keywords, all prefix-filtered.
+     */
+    static List<String> matchingValues(String propertyName, String prefix) {
+        String p = prefix.toLowerCase();
+        List<String> out = new ArrayList<>();
+        if (propertyName != null && PROPERTY_VALUES.containsKey(propertyName)) {
+            for (String value : PROPERTY_VALUES.get(propertyName)) {
+                if (value.startsWith(p)) {
+                    out.add(value);
+                }
+            }
+        }
+        for (String value : COMMON_VALUES) {
+            if (value.startsWith(p)) {
+                out.add(value);
+            }
+        }
+        return out;
+    }
+
+    /** Common selectors whose text starts with the (case-sensitive) prefix. */
+    static List<String> matchingSelectors(String prefix) {
+        List<String> out = new ArrayList<>();
+        for (String selector : COMMON_SELECTORS) {
+            if (selector.startsWith(prefix)) {
+                out.add(selector);
+            }
+        }
+        return out;
+    }
+
     private static class CssCompletionQuery extends AsyncCompletionQuery {
-        
+
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
-                CssContext context = analyzeContext(doc, caretOffset);
-                
+                CssContext context = analyzeContext(doc.getText(0, caretOffset));
+
                 switch (context.type) {
                     case PROPERTY_NAME:
-                        addPropertyCompletions(resultSet, context, caretOffset);
+                        for (String property : matchingProperties(context.prefix)) {
+                            resultSet.addItem(new CssPropertyCompletionItem(
+                                property, caretOffset - context.prefix.length(), context.prefix.length()));
+                        }
                         break;
                     case PROPERTY_VALUE:
-                        addValueCompletions(resultSet, context, caretOffset);
+                        for (String value : matchingValues(context.propertyName, context.prefix)) {
+                            resultSet.addItem(new CssValueCompletionItem(
+                                value, caretOffset - context.prefix.length(), context.prefix.length()));
+                        }
                         break;
                     case SELECTOR:
-                        addSelectorCompletions(resultSet, context, caretOffset);
+                        for (String selector : matchingSelectors(context.prefix)) {
+                            resultSet.addItem(new CssSelectorCompletionItem(
+                                selector, caretOffset - context.prefix.length(), context.prefix.length()));
+                        }
                         break;
                 }
             } catch (BadLocationException ex) {
@@ -306,111 +412,15 @@ public class CssCompletionProvider implements CompletionProvider {
                 resultSet.finish();
             }
         }
-        
-        private CssContext analyzeContext(Document doc, int offset) throws BadLocationException {
-            String text = doc.getText(0, offset);
-            CssContext context = new CssContext();
-            
-            // Find context within CSS
-            int lastBrace = text.lastIndexOf('{');
-            int lastCloseBrace = text.lastIndexOf('}');
-            int lastColon = text.lastIndexOf(':');
-            int lastSemicolon = text.lastIndexOf(';');
-            
-            if (lastBrace > lastCloseBrace) {
-                // We're inside a rule block
-                if (lastColon > lastSemicolon && lastColon > lastBrace) {
-                    // We're in a property value
-                    context.type = CssContextType.PROPERTY_VALUE;
-                    String propLine = text.substring(Math.max(lastSemicolon, lastBrace) + 1, lastColon).trim();
-                    context.propertyName = propLine;
-                    context.prefix = text.substring(lastColon + 1).trim();
-                } else {
-                    // We're typing a property name
-                    context.type = CssContextType.PROPERTY_NAME;
-                    int start = Math.max(lastSemicolon, lastBrace) + 1;
-                    context.prefix = text.substring(start).trim();
-                }
-            } else {
-                // We're outside a rule block (selector area)
-                context.type = CssContextType.SELECTOR;
-                int start = Math.max(lastCloseBrace, 0) + 1;
-                context.prefix = text.substring(start).trim();
-            }
-            
-            return context;
-        }
-        
-        private void addPropertyCompletions(CompletionResultSet resultSet, CssContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            Set<String> allProperties = new HashSet<>();
-            
-            // Collect all properties
-            for (List<String> props : CSS_PROPERTIES.values()) {
-                allProperties.addAll(props);
-            }
-            
-            // Filter and add matching properties
-            for (String property : allProperties) {
-                if (property.startsWith(prefix)) {
-                    resultSet.addItem(new CssPropertyCompletionItem(
-                        property, caretOffset - prefix.length(), prefix.length()));
-                }
-            }
-        }
-        
-        private void addValueCompletions(CompletionResultSet resultSet, CssContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
-            
-            // Get predefined values for this property
-            if (context.propertyName != null && PROPERTY_VALUES.containsKey(context.propertyName)) {
-                for (String value : PROPERTY_VALUES.get(context.propertyName)) {
-                    if (value.startsWith(prefix)) {
-                        resultSet.addItem(new CssValueCompletionItem(
-                            value, caretOffset - prefix.length(), prefix.length()));
-                    }
-                }
-            }
-            
-            // Add common values
-            List<String> commonValues = Arrays.asList(
-                "inherit", "initial", "unset", "revert", "auto", "none"
-            );
-            
-            for (String value : commonValues) {
-                if (value.startsWith(prefix)) {
-                    resultSet.addItem(new CssValueCompletionItem(
-                        value, caretOffset - prefix.length(), prefix.length()));
-                }
-            }
-        }
-        
-        private void addSelectorCompletions(CompletionResultSet resultSet, CssContext context, int caretOffset) {
-            String prefix = context.prefix;
-            
-            // Add common selectors
-            List<String> selectors = Arrays.asList(
-                "*", "body", "html", "div", "span", "p", "a", "h1", "h2", "h3",
-                ".class", "#id", ":hover", ":focus", ":active", ":visited",
-                "::before", "::after", ":first-child", ":last-child", ":nth-child()"
-            );
-            
-            for (String selector : selectors) {
-                if (selector.startsWith(prefix)) {
-                    resultSet.addItem(new CssSelectorCompletionItem(
-                        selector, caretOffset - prefix.length(), prefix.length()));
-                }
-            }
-        }
     }
-    
-    private static class CssContext {
+
+    static class CssContext {
         CssContextType type = CssContextType.SELECTOR;
         String propertyName = null;
         String prefix = "";
     }
-    
-    private enum CssContextType {
+
+    enum CssContextType {
         SELECTOR, PROPERTY_NAME, PROPERTY_VALUE
     }
 }

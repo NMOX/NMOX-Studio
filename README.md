@@ -190,7 +190,11 @@ you its **ssh command** from the context menu.
 ### ✅ Proven, not promised
 CI runs real `npm install`/build/test/serve through the actual rack devices
 on every commit. Quitting the IDE reaps every child process — no orphaned
-dev servers, guaranteed and tested.
+dev servers, guaranteed and tested. Every commit also clears SpotBugs,
+find-sec-bugs, and **per-module JaCoCo coverage floors** on all eight code
+modules — coverage measured on the *testable surface* (pure-Swing windows
+and dialogs are excluded by name with a written reason, not chased with
+brittle tests), so the floors mean what they say.
 
 See the [CHANGELOG](CHANGELOG.md) for the full release history.
 

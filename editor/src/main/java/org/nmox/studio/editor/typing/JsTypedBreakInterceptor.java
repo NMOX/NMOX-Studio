@@ -29,29 +29,44 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         char prev = offset > 0 ? doc.getText(offset - 1, 1).charAt(0) : 0;
         char next = offset < doc.getLength() ? doc.getText(offset, 1).charAt(0) : 0;
+        String line = currentLine(doc, offset);
 
+        Break br = computeBreak(prev, next, line, lineIndent);
+        if (br != null) {
+            context.setText(br.text(), 0, br.caret());
+        }
+    }
+
+    /** The text inserted for a smart break and where the caret lands in it. */
+    record Break(String text, int caret) {
+    }
+
+    /**
+     * The smart-Enter decision, made purely from the character before and
+     * after the caret, the current line, and its indent. Returns null when
+     * there is nothing smart to do (plain newline at column 0). Package-
+     * visible so the branch logic is testable without a MutableContext.
+     */
+    static Break computeBreak(char prev, char next, String line, String lineIndent) {
         if (prev == '{' && next == '}') {
             // caret lands on the indented empty body line
             String text = "\n" + lineIndent + INDENT + "\n" + lineIndent;
-            context.setText(text, 0, 1 + lineIndent.length() + INDENT.length());
-            return;
+            return new Break(text, 1 + lineIndent.length() + INDENT.length());
         }
         if (prev == '{') {
             String text = "\n" + lineIndent + INDENT;
-            context.setText(text, 0, text.length());
-            return;
+            return new Break(text, text.length());
         }
-        String line = currentLine(doc, offset);
         String trimmed = line.trim();
         if ((trimmed.startsWith("/*") || trimmed.startsWith("*")) && !trimmed.contains("*/")) {
             String text = "\n" + lineIndent + (trimmed.startsWith("/*") ? " * " : "* ");
-            context.setText(text, 0, text.length());
-            return;
+            return new Break(text, text.length());
         }
         if (!lineIndent.isEmpty()) {
             String text = "\n" + lineIndent;
-            context.setText(text, 0, text.length());
+            return new Break(text, text.length());
         }
+        return null;
     }
 
     private static String currentLine(Document doc, int offset) throws BadLocationException {

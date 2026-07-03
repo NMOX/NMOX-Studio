@@ -102,4 +102,49 @@ class DefaultBuildToolServiceTest {
         touch(noScripts, "package.json", "{\"name\":\"app\"}");
         assertThat(service.getAvailableScripts(noScripts)).isEmpty();
     }
+
+    @Test
+    @DisplayName("A bundler declared only as a dependency does not override the package.json verdict")
+    void bundlerDependencyDoesNotOverrideNpmScripts(@TempDir File webpack,
+            @TempDir File vite, @TempDir File parcel) throws IOException {
+        // Detection reads config files on disk, never package.json contents:
+        // NPM_SCRIPTS claims package.json as its config file, so any
+        // package.json-bearing project resolves to NPM_SCRIPTS. Only a
+        // dedicated bundler config file (tested elsewhere) names the tool.
+        touch(webpack, "package.json",
+                "{\"name\":\"app\",\"devDependencies\":{\"webpack\":\"^5.0.0\"}}");
+        assertThat(service.detectBuildTool(webpack)).isEqualTo(BuildToolType.NPM_SCRIPTS);
+
+        touch(vite, "package.json",
+                "{\"name\":\"app\",\"dependencies\":{\"vite\":\"^5.0.0\"}}");
+        assertThat(service.detectBuildTool(vite)).isEqualTo(BuildToolType.NPM_SCRIPTS);
+
+        touch(parcel, "package.json",
+                "{\"name\":\"app\",\"devDependencies\":{\"parcel\":\"^2.0.0\"}}");
+        assertThat(service.detectBuildTool(parcel)).isEqualTo(BuildToolType.NPM_SCRIPTS);
+    }
+
+    @Test
+    @DisplayName("A package.json naming no known bundler is plain NPM scripts")
+    void packageJsonWithoutBundlerIsNpmScripts(@TempDir File dir) throws IOException {
+        touch(dir, "package.json",
+                "{\"name\":\"app\",\"dependencies\":{\"react\":\"^18.0.0\"}}");
+        assertThat(service.detectBuildTool(dir)).isEqualTo(BuildToolType.NPM_SCRIPTS);
+    }
+
+    @Test
+    @DisplayName("Scripts with extra whitespace and mixed quoting are still parsed by name")
+    void scriptsParsedDespiteWhitespace(@TempDir File dir) throws IOException {
+        touch(dir, "package.json",
+                "{ \"scripts\" : {  \"lint\" :\"eslint .\" ,  \"format\": \"prettier -w .\" } }");
+        assertThat(service.getAvailableScripts(dir)).containsExactly("lint", "format");
+    }
+
+    @Test
+    @DisplayName("stopAll is safe to call when nothing is running")
+    void stopAllIsSafeWhenIdle() {
+        // no processes were ever started; this must not throw
+        service.stopAll();
+        service.stopAll();
+    }
 }

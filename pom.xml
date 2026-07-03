@@ -121,6 +121,63 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.15</version>
+                <!--
+                  Coverage is measured on the TESTABLE surface. These classes are
+                  pure Swing rendering/layout/event-wiring with no branchable
+                  business logic — they cannot be unit-tested without a live
+                  windowing system, and the real logic they delegate to lives in
+                  service/model classes that ARE tested. Excluding them at the
+                  instrumentation level keeps both the report and the coverage
+                  floor honest: every name here is a deliberate, reviewed
+                  exclusion (mirrors config/spotbugs-exclude.xml's discipline),
+                  not a way to dodge a number. Widgets (Knob/Led/VuMeter/…) are
+                  NOT excluded — their model logic is tested; only their paint()
+                  stays uncovered, absorbed by the bundle floor.
+                -->
+                <configuration>
+                    <excludes>
+                        <!-- Dockable windows and modal dialogs (NetBeans window system) -->
+                        <exclude>**/*TopComponent.class</exclude>
+                        <exclude>**/*TopComponent$*.class</exclude>
+                        <exclude>**/*Dialog.class</exclude>
+                        <exclude>**/*Dialog$*.class</exclude>
+                        <!-- core: first-run editor-theme installer (FontColorSettings glue) -->
+                        <exclude>**/TerminalPhosphor.class</exclude>
+                        <!-- editor: Navigator tree panel + LSP status table panel -->
+                        <exclude>**/StructureNavigatorPanel*.class</exclude>
+                        <exclude>**/LanguageServersPanel*.class</exclude>
+                        <!-- tools: New Web Project wizard visual + iterator glue -->
+                        <exclude>**/WebProjectWizardPanelVisual*.class</exclude>
+                        <exclude>**/WebProjectWizardIterator*.class</exclude>
+                        <!-- rack: the rack canvas, file tree, and palette list + renderer -->
+                        <exclude>**/RackPanel.class</exclude>
+                        <exclude>**/RackPanel$*.class</exclude>
+                        <exclude>**/FileTreePanel*.class</exclude>
+                        <exclude>**/PalettePanel*.class</exclude>
+                        <!-- infra: property sheet, node-graph canvas, palette cell renderer -->
+                        <exclude>**/PropertyPanel*.class</exclude>
+                        <exclude>**/FlowCanvas*.class</exclude>
+                        <exclude>**/InfraPalette$Renderer.class</exclude>
+                        <!-- ui: main window shell + welcome launchpad screen -->
+                        <exclude>**/MainWindow*.class</exclude>
+                        <exclude>**/WelcomeScreen*.class</exclude>
+                        <!-- ui: menu actions that only open a dialog/file-chooser and
+                             delegate to logic tested in rack (PwaKit/Experiments/
+                             EnvironmentDoctor are rack classes with their own tests).
+                             These seven carry no testable branch of their own. The
+                             actions that DO hold ui-resident logic (StandardsKitAction's
+                             validate gate, NewLearningSpaceAction/SwitchProjectAction's
+                             filter predicates, GeneralOptionsPanelController, UpdateCheck)
+                             are kept and tested. -->
+                        <exclude>**/ui/actions/PwaKitAction*.class</exclude>
+                        <exclude>**/ui/actions/ManageExperimentsAction*.class</exclude>
+                        <exclude>**/ui/actions/EnvironmentDoctorAction*.class</exclude>
+                        <exclude>**/ui/actions/NewExperimentAction*.class</exclude>
+                        <exclude>**/ui/actions/OpenFileAction*.class</exclude>
+                        <exclude>**/ui/actions/OpenFolderAction*.class</exclude>
+                        <exclude>**/ui/actions/NewProjectAction*.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>

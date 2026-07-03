@@ -90,6 +90,23 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Closed by v1.27.0 (the coverage sprint)
+
+- ~~Thin/absent test coverage in several modules (ui at 0.4%, project at
+  12%, tools at 21%) and no coverage floor at all on ui/project~~ — ~320
+  new unit tests raised every module's testable-surface coverage; all
+  eight code modules now carry an enforced JaCoCo floor. Coverage is now
+  measured on the **testable surface**: pure-Swing windows/dialogs/canvases
+  are excluded at the root pom, each a named class with a written reason
+  (see the `<excludes>` block and [[coverage-measured-on-testable-surface]]).
+- ~~`WorkspaceTrust` persisted all trusted paths as one joined preference
+  value that could exceed java.util.prefs' 8 KB per-value cap and break
+  trust on a long-lived install~~ — **v1.27.0**, rewritten to one entry
+  per path (hash key + path value) with legacy-key migration; regression
+  test trusts 200 long paths without overflow. Invisible on CI (fresh
+  prefs each run); surfaced only once the local suite accumulated enough
+  trusted paths.
+
 ## Closed by v1.26.0 (the complete-system sprint)
 
 - ~~**0a.** Quick Search didn't index API Studio requests or infra

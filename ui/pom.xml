@@ -151,6 +151,42 @@
                     </archive>
                 </configuration>
             </plugin>
+            <!--
+              Coverage floor for the ui module. ui is a thin presentation shell:
+              its menu actions open dialogs and delegate to logic that is unit-
+              tested where it lives (rack's PwaKit/StandardsKit/EnvironmentDoctor,
+              core's UpdateCheck parser). The pure-Swing windows and dialog-only
+              actions are excluded at the root jacoco config; this floor guards
+              the genuine ui-resident logic (the options controller, the action
+              validate/filter predicates, UpdateCheck's tag parsing).
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>coverage-floor</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.12</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
