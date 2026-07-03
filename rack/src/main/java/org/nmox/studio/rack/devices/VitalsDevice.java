@@ -24,9 +24,11 @@ import org.nmox.studio.rack.ui.controls.VuMeter;
 public class VitalsDevice extends CommandDevice {
 
     private static final String[] MINIMUMS = {"off", "50", "70", "80", "90", "95"};
+    private static final String[] GATES = {"perf", "a11y", "both"};
 
     private final LcdDisplay urlLcd;
     private final Knob minKnob;
+    private final Knob gateKnob;
     private final VuMeter perfMeter = new VuMeter("PERF", false);
     private final VuMeter a11yMeter = new VuMeter("A11Y", false);
     private final VuMeter bestMeter = new VuMeter("BEST", false);
@@ -39,11 +41,13 @@ public class VitalsDevice extends CommandDevice {
         RackButton audit = place(new RackButton("AUDIT", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
         audit.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
-        urlLcd = place(new LcdDisplay(230, 1), 180, 46);
+        urlLcd = place(new LcdDisplay(170, 1), 180, 46);
         urlLcd.setText("http://localhost:5173");
         urlLcd.setEditable("URL to audit");
-        minKnob = place(new Knob("MIN", MINIMUMS, 0), 424, 40);
-        minKnob.setToolTipText("Performance floor: below it, FAIL fires instead of OK");
+        minKnob = place(new Knob("MIN", MINIMUMS, 0), 360, 40);
+        minKnob.setToolTipText("Score floor: below it, FAIL fires instead of OK");
+        gateKnob = place(new Knob("GATE", GATES, 0), 424, 40);
+        gateKnob.setToolTipText("Which standard the floor holds: performance, accessibility (WCAG), or both");
         place(perfMeter, 480, 34);
         place(a11yMeter, 480, 74);
         place(bestMeter, 560, 34);
@@ -56,6 +60,7 @@ public class VitalsDevice extends CommandDevice {
 
         param("url", urlLcd);
         param("min", minKnob);
+        param("gate", gateKnob);
     }
 
     /** Auditing a running URL needs no manifest - serve anything, score it. */
@@ -113,14 +118,32 @@ public class VitalsDevice extends CommandDevice {
         }
         Scores s = scores;
         int floor = minimum();
-        boolean gated = s != null && floor > 0 && pct(s.performance()) < floor;
-        if (gated) {
+        if (s == null || floor == 0) {
+            return true;
+        }
+        String gate = gateKnob.getSelectedOption();
+        boolean perfGated = !"a11y".equals(gate) && pct(s.performance()) < floor;
+        boolean a11yGated = !"perf".equals(gate) && pct(s.accessibility()) < floor;
+        if (perfGated || a11yGated) {
+            String which = perfGated && a11yGated ? "PERF+A11Y"
+                    : perfGated ? "PERF " + pct(s.performance()) : "A11Y " + pct(s.accessibility());
             onEdt(() -> {
                 statusLcd.setTextColor(new Color(255, 90, 80));
-                statusLcd.setText("PERF " + pct(s.performance()) + " < MIN " + floor + " — GATE CLOSED");
+                statusLcd.setText(which + " < MIN " + floor + " — GATE CLOSED");
             });
+            return false;
         }
-        return !gated;
+        return true;
+    }
+
+    /** Test seam: which standards the floor currently holds. */
+    String gate() {
+        return gateKnob.getSelectedOption();
+    }
+
+    /** Test seam: inject parsed scores as if a report streamed past. */
+    void scoresForTest(Scores s) {
+        this.scores = s;
     }
 
     int minimum() {
