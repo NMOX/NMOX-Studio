@@ -207,6 +207,7 @@
         <module>rack</module>
         <module>infra</module>
         <module>apiclient</module>
+        <module>dbstudio</module>
         <module>application</module>
         <module>NMOX-Studio-sample</module>
     </modules>

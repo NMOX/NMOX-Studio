@@ -54,7 +54,7 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "ApiClientTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 350)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 350)
 @ActionID(category = "Window", id = "org.nmox.studio.apiclient.ui.ApiClientTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 265),

@@ -4,6 +4,63 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.29.0] — 2026-07-04
+
+**DB Studio** — a first-class database management suite in its own tab,
+alongside the Rack, the Infra Designer, and API Studio. And the whole
+suite now greets you on first launch.
+
+### Added
+- **DB Studio (⇧⌘7)** — a new `dbstudio` module. Define connections,
+  browse structure, run queries, read results in grids — for five
+  engines minimum: **SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, and
+  CouchDB**.
+  - **Batteries included**: drivers are bundled — MariaDB Connector/J
+    (LGPL-2.1; one driver speaks both MySQL and MariaDB), PostgreSQL
+    (BSD-2), SQLite/xerial (Apache-2), MongoDB `mongodb-driver-sync`
+    (Apache-2). CouchDB needs no driver at all — it rides the shared
+    HTTP client against Couch's REST API.
+  - **Passwords never touch disk**: connection specs persist per project
+    in `.nmoxdb.json`; secrets live only in the OS keychain via the
+    platform Keyring.
+  - **One tree, per-engine semantics**: connection → tables/views (SQL),
+    collections (Mongo), or databases (Couch) → expand for columns or an
+    honest one-document shape sample.
+  - **Kind-aware console**: SQL engines get the SQL editor kit
+    (highlighting included); document engines get a JSON editor — Mongo
+    speaks Extended-JSON command documents (`{"find": "users", …}`),
+    CouchDB speaks Mango selectors (bare selectors auto-wrapped, plus an
+    `_all_dbs` convenience). Scripts split per statement — respecting
+    strings, identifiers, and comments — and an error in one statement
+    never stops the rest.
+  - **Results**: one tab per statement (rows / update counts / errors),
+    per-statement elapsed times, row-limit spinner with honest "first N
+    rows only" truncation flags, and a History tab (last 50 runs,
+    double-click to reload). Runs execute off the UI thread; CANCEL
+    actually cancels in-flight SQL.
+  - **⌘I reaches databases**: Quick Search finds connections and
+    already-discovered tables/collections and jumps to them in the tab.
+  - The engine is *proven*, not promised: 150 module tests including
+    real end-to-end JDBC against SQLite files in CI, canned-JSON parse
+    seams for CouchDB, and a 0.73 coverage floor from measured numbers.
+- **The whole suite opens by default now.** A fresh install lays out
+  **Workbench → Rack → DB Studio → Infra Designer → API Studio →
+  Docker** as tabs, with the Welcome launchpad selected — discovery by
+  seeing, not by hunting menus. The window system still remembers your
+  arrangement: close a tab once and it stays closed. (Boot smoke
+  verified: all six tabs construct headless, 6s boot unchanged.)
+
+### Deliberately not done (ledger)
+- Editing rows in the results grid — read-only results; `UPDATE`/
+  Mongo update commands in the console are the honest v1.
+- Mongo in-flight kill and cursor continuation (`getMore`) — CANCEL is
+  documented as a no-op there; first batch only.
+- Live Mongo/Couch integration tests — the logic is seam-tested against
+  canned responses (the same status as the cloud providers' live calls);
+  SQLite carries the real end-to-end burden.
+- SSH-tunneled connections — HELM runs remote commands today; tunneling
+  merits its own design if demand shows.
+
 ## [1.28.0] — 2026-07-04
 
 The LAMP/LEMP sprint: the IDE audited from a senior LAMP/LEMP engineer's

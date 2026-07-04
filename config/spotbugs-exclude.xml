@@ -117,6 +117,19 @@
         <Bug pattern="POTENTIAL_XML_INJECTION"/>
     </Match>
 
+    <!-- DB Studio's SQL console executes exactly the SQL the user typed —
+         Statement.execute(userSql) IS the product, the same contract as every
+         database tool (psql, DBeaver, DataGrip). The "tainted" string comes
+         from the user's own editor buffer and runs against a server the user
+         supplied their own credentials for; there is no second principal and
+         no trust boundary being crossed. Scoped to the one class that runs
+         user SQL, so a concatenated query anywhere else (e.g. building SQL
+         from metadata) would still be caught. -->
+    <Match>
+        <Class name="org.nmox.studio.dbstudio.engine.DbClient"/>
+        <Bug pattern="SQL_INJECTION_JDBC"/>
+    </Match>
+
     <!-- SpotBugs 4.10 adds two thread detectors that are noise here:
          USO flags synchronized methods in favour of private lock objects, but
          the classes it catches are final singletons / services (FlightRecorder,

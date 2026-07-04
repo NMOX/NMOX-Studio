@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
         preferredID = "DockerPanelTopComponent",
         persistenceType = TopComponent.PERSISTENCE_NEVER
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 400)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 400)
 @org.openide.awt.ActionID(category = "Window",
         id = "org.nmox.studio.rack.docker.DockerPanelTopComponent")
 @org.openide.awt.ActionReferences({
