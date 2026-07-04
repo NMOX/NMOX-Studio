@@ -1,7 +1,14 @@
 #!/bin/bash
 # Builds "NMOX Studio.app" and a distributable DMG from the Maven output.
 #
-#   ./packaging/macos/build-dmg.sh [version]
+#   ./packaging/macos/build-dmg.sh [--app-only] [version]
+#
+# --app-only stops after the .app bundle (no DMG). This is the honest way to
+# PLAY-TEST with full macOS fidelity: the Cmd-Tab switcher label comes from
+# the bundle's Info.plist and only attributes to the app when the JVM binary
+# lives INSIDE the bundle (the embedded runtime) — no bin-script launch or
+# -Xdock flag can rename the switcher entry for a bare JVM process (it says
+# "java").
 #
 # Prerequisites: `mvn package` has produced application/target/nmoxstudio,
 # and this runs on macOS (iconutil, hdiutil). The bundle is unsigned;
@@ -9,6 +16,11 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
+APP_ONLY=no
+if [ "${1:-}" = "--app-only" ]; then
+    APP_ONLY=yes
+    shift
+fi
 VERSION="${1:-$(date +%Y.%m.%d)}"
 APP_INPUT="application/target/nmoxstudio"
 STAGE="application/target/dist/macos"
@@ -76,6 +88,12 @@ cat > "$BUNDLE/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
+
+if [ "$APP_ONLY" = yes ]; then
+    echo "==> Done (app only): $BUNDLE"
+    echo "    Launch: open \"$BUNDLE\" --args --userdir <dir>"
+    exit 0
+fi
 
 echo "==> Building DMG"
 DMG_STAGE="$STAGE/dmg"
