@@ -26,7 +26,37 @@ class NpmServiceTest {
     void setUp() {
         npmService = new NpmService();
     }
-    
+
+    @Test
+    @DisplayName("parseGlobalList reads npm ls -g --json into sorted name/version pairs")
+    void parseGlobalListNormal() {
+        String json = """
+                {"name": "lib", "dependencies": {
+                    "typescript": {"version": "5.7.2"},
+                    "corepack": {"version": "0.29.4"},
+                    "npm": {"version": "10.9.2"}
+                }}""";
+        var packages = NpmService.parseGlobalList(json);
+        assertThat(packages).extracting(NpmService.GlobalPackage::name)
+                .containsExactly("corepack", "npm", "typescript"); // sorted
+        assertThat(packages.get(2).version()).isEqualTo("5.7.2");
+    }
+
+    @Test
+    @DisplayName("parseGlobalList tolerates missing versions, no dependencies, and garbage")
+    void parseGlobalListTolerance() {
+        assertThat(NpmService.parseGlobalList(
+                "{\"dependencies\": {\"weird\": {}}}"))
+                .singleElement()
+                .satisfies(p -> {
+                    assertThat(p.name()).isEqualTo("weird");
+                    assertThat(p.version()).isEmpty();
+                });
+        assertThat(NpmService.parseGlobalList("{\"name\": \"lib\"}")).isEmpty();
+        assertThat(NpmService.parseGlobalList("not json at all")).isEmpty();
+        assertThat(NpmService.parseGlobalList("")).isEmpty();
+    }
+
     @Test
     @DisplayName("Should detect NPM package manager from package-lock.json")
     void testDetectNpmPackageManager() throws IOException {

@@ -24,6 +24,66 @@ public class NpmService {
         NPM, YARN, PNPM
     }
 
+    /** One globally installed package, as reported by {@code npm ls -g}. */
+    public record GlobalPackage(String name, String version) {
+    }
+
+    /**
+     * Lists globally installed packages ({@code npm ls -g --depth=0 --json}),
+     * quietly: no output window, and tolerant of npm's non-zero exits — npm
+     * returns 1 for benign "extraneous"/"invalid" findings while still
+     * printing perfectly usable JSON, so the STDOUT is parsed regardless of
+     * the exit code. Completes exceptionally only when npm itself can't be
+     * launched (not installed / not on PATH).
+     */
+    public CompletableFuture<List<GlobalPackage>> listGlobalPackages() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport
+                        .builder(List.of(NPM_COMMAND, "ls", "-g", "--depth=0", "--json"));
+                pb.directory(new File(System.getProperty("user.home")));
+                Process process = pb.start();
+                String json = new String(process.getInputStream().readAllBytes(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+                process.getErrorStream().transferTo(java.io.OutputStream.nullOutputStream());
+                if (!process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                }
+                return parseGlobalList(json);
+            } catch (IOException e) {
+                throw new java.io.UncheckedIOException(e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    /**
+     * The pure heart of the global listing: {@code npm ls -g --json} prints
+     * {@code {"name": "lib", "dependencies": {"npm": {"version": "10.9.2"}, …}}}.
+     * Tolerant: malformed JSON or a missing dependencies object → empty list;
+     * a package without a version gets "". Sorted by name.
+     */
+    static List<GlobalPackage> parseGlobalList(String json) {
+        List<GlobalPackage> packages = new ArrayList<>();
+        try {
+            org.json.JSONObject root = new org.json.JSONObject(json);
+            org.json.JSONObject deps = root.optJSONObject("dependencies");
+            if (deps != null) {
+                for (String name : deps.keySet()) {
+                    org.json.JSONObject info = deps.optJSONObject(name);
+                    packages.add(new GlobalPackage(name,
+                            info == null ? "" : info.optString("version", "")));
+                }
+            }
+        } catch (org.json.JSONException malformed) {
+            return List.of();
+        }
+        packages.sort((a, b) -> a.name().compareToIgnoreCase(b.name()));
+        return packages;
+    }
+
     public CompletableFuture<String> install(File projectDir, PackageManager manager) {
         return runCommand(projectDir, getCommand(manager), "install");
     }
