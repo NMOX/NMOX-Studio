@@ -182,7 +182,10 @@ elapsed times and honest truncation flags, history keeps your last 50
 runs, and CANCEL actually cancels. Connection specs persist per project
 in `.nmoxdb.json`; **passwords live only in the OS keychain** via the
 platform Keyring. ⌘I finds your connections and tables like everything
-else.
+else. And it speaks platform: connections configured in the NetBeans
+**Services** window appear under a Services branch and run in the same
+console — any database with a registered driver, Java DB and Oracle
+included, with NetBeans owning drivers and credentials.
 
 ### 🌐 Standards & PWA, supported with gusto
 `.editorconfig` is **honored, not just highlighted** — every save

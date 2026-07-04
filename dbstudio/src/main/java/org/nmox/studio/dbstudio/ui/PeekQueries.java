@@ -26,6 +26,20 @@ final class PeekQueries {
     }
 
     /**
+     * Peek text for a JDBC connection whose dialect DB Studio doesn't
+     * model — a Services-window database like Derby or Oracle. The
+     * identifier quote comes from
+     * {@code JdbcUrlDialects.identifierQuote}; the row cap rides the
+     * SQL-standard {@code FETCH FIRST n ROWS ONLY} (Derby, Oracle 12c+,
+     * H2, DB2 — {@code LIMIT} is a MySQL/PostgreSQL/SQLite extension
+     * those engines reject).
+     */
+    static String consoleTextFor(String identifierQuote, TableInfo table, int limit) {
+        return "SELECT * FROM " + qualified(identifierQuote, table)
+                + " FETCH FIRST " + limit + " ROWS ONLY;";
+    }
+
+    /**
      * Whether running the peek right now can hit the intended container.
      * SQL and Mongo target the table/collection by name inside the console
      * text; CouchDB's console always queries {@code spec.database}, so a
@@ -40,7 +54,12 @@ final class PeekQueries {
 
     /** schema-qualified and identifier-quoted per engine dialect. */
     private static String qualified(DbEngine engine, TableInfo table) {
-        String q = (engine == DbEngine.MYSQL || engine == DbEngine.MARIADB) ? "`" : "\"";
+        return qualified(
+                (engine == DbEngine.MYSQL || engine == DbEngine.MARIADB) ? "`" : "\"", table);
+    }
+
+    /** schema-qualified with an explicit identifier quote. */
+    private static String qualified(String q, TableInfo table) {
         String name = q + table.name() + q;
         String schema = table.schema();
         return (schema == null || schema.isBlank()) ? name : q + schema + q + "." + name;

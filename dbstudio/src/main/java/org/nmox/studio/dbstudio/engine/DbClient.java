@@ -1,18 +1,14 @@
 package org.nmox.studio.dbstudio.engine;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
@@ -37,8 +33,9 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * user typed via {@code Statement.execute} — that is the product (a SQL
  * console, like every DB tool), not an injection surface; there is no
  * server-side trust boundary being crossed on the user's own machine.
- * The corresponding find-sec-bugs exclusion is scoped to this class in
- * {@code config/spotbugs-exclude.xml}.
+ * The execution itself lives in {@link JdbcCore} (shared with
+ * {@link ServicesBackend}); the corresponding find-sec-bugs exclusion
+ * is scoped to that class in {@code config/spotbugs-exclude.xml}.
  *
  * <p>As a {@link DbBackend}, "containers" are tables and views and the
  * "console" is a SQL script: {@link #listContainers()} delegates to
@@ -57,7 +54,8 @@ public final class DbClient implements DbBackend {
     private final char[] password;
 
     private Connection connection;           // guarded by this
-    private volatile Statement inFlight;     // read by cancel() from other threads
+    /** Cancellation seam shared with {@link JdbcCore}; fired by {@link #cancel()}. */
+    private final JdbcCore.CancelHook cancelHook = new JdbcCore.CancelHook();
 
     /**
      * @param spec     the connection to speak to
@@ -155,29 +153,13 @@ public final class DbClient implements DbBackend {
      * connection error itself is the return value of {@link #open()}.
      */
     public synchronized List<TableInfo> listTables() {
-        List<TableInfo> tables = new ArrayList<>();
         String openError = open();
         if (openError != null) {
             LOG.log(Level.WARNING, "listTables: cannot open {0}: {1}",
                     new Object[]{spec.name(), openError});
-            return tables;
+            return new ArrayList<>();
         }
-        try {
-            DatabaseMetaData meta = connection.getMetaData();
-            try (ResultSet rs = meta.getTables(scopeCatalog(), null, null,
-                    new String[]{"TABLE", "VIEW"})) {
-                while (rs.next()) {
-                    tables.add(new TableInfo(
-                            nz(rs.getString("TABLE_CAT")),
-                            nz(rs.getString("TABLE_SCHEM")),
-                            nz(rs.getString("TABLE_NAME")),
-                            nz(rs.getString("TABLE_TYPE"))));
-                }
-            }
-        } catch (SQLException e) {
-            LOG.log(Level.WARNING, "listTables failed for " + spec.name(), e);
-        }
-        return tables;
+        return JdbcCore.listTables(connection, scopeCatalog(), null, spec.name());
     }
 
     /** {@link DbBackend}'s name for {@link #listTables()}. */
@@ -193,35 +175,10 @@ public final class DbClient implements DbBackend {
      */
     @Override
     public synchronized List<ColumnInfo> columns(TableInfo table) {
-        List<ColumnInfo> columns = new ArrayList<>();
         if (table == null || open() != null) {
-            return columns;
+            return new ArrayList<>();
         }
-        String catalog = blankToNull(table.catalog());
-        String schema = blankToNull(table.schema());
-        try {
-            DatabaseMetaData meta = connection.getMetaData();
-            Set<String> pkNames = new HashSet<>();
-            try (ResultSet rs = meta.getPrimaryKeys(catalog, schema, table.name())) {
-                while (rs.next()) {
-                    pkNames.add(rs.getString("COLUMN_NAME"));
-                }
-            }
-            try (ResultSet rs = meta.getColumns(catalog, schema, table.name(), null)) {
-                while (rs.next()) {
-                    String name = nz(rs.getString("COLUMN_NAME"));
-                    columns.add(new ColumnInfo(
-                            name,
-                            nz(rs.getString("TYPE_NAME")),
-                            rs.getInt("COLUMN_SIZE"),
-                            rs.getInt("NULLABLE") != DatabaseMetaData.columnNoNulls,
-                            pkNames.contains(name)));
-                }
-            }
-        } catch (SQLException e) {
-            LOG.log(Level.WARNING, "columns failed for " + table.name(), e);
-        }
-        return columns;
+        return JdbcCore.columns(connection, table);
     }
 
     /**
@@ -241,14 +198,11 @@ public final class DbClient implements DbBackend {
         }
         String openError = open();
         if (openError != null) {
-            results.add(errorResult(statements.get(0), 0,
+            results.add(JdbcCore.errorResult(statements.get(0), 0,
                     "Could not open connection: " + openError));
             return results;
         }
-        for (String statement : statements) {
-            results.add(executeOne(statement, rowLimit));
-        }
-        return results;
+        return JdbcCore.runStatements(connection, statements, rowLimit, cancelHook);
     }
 
     /** {@link DbBackend}'s name for {@link #runScript}. */
@@ -265,62 +219,10 @@ public final class DbClient implements DbBackend {
      */
     @Override
     public void cancel() {
-        Statement running = inFlight;
-        if (running != null) {
-            try {
-                running.cancel();
-            } catch (SQLException e) {
-                LOG.log(Level.FINE, "cancel failed", e);
-            }
-        }
+        cancelHook.cancel();
     }
 
     // ---- internals ------------------------------------------------
-
-    private QueryResult executeOne(String statementSql, int rowLimit) {
-        long start = System.nanoTime();
-        int limit = rowLimit <= 0 ? Integer.MAX_VALUE : rowLimit;
-        try (Statement st = connection.createStatement()) {
-            inFlight = st;
-            boolean producedResultSet = st.execute(statementSql);
-            if (!producedResultSet) {
-                return new QueryResult(List.of(), List.of(), 0, st.getUpdateCount(),
-                        false, elapsedMs(start), null, statementSql);
-            }
-            try (ResultSet rs = st.getResultSet()) {
-                ResultSetMetaData md = rs.getMetaData();
-                int columnCount = md.getColumnCount();
-                List<String> names = new ArrayList<>(columnCount);
-                for (int c = 1; c <= columnCount; c++) {
-                    names.add(md.getColumnLabel(c));
-                }
-                List<List<String>> rows = new ArrayList<>();
-                boolean truncated = false;
-                while (rs.next()) {
-                    if (rows.size() >= limit) {
-                        truncated = true;
-                        break;
-                    }
-                    List<String> row = new ArrayList<>(columnCount);
-                    for (int c = 1; c <= columnCount; c++) {
-                        String value = rs.getString(c);
-                        row.add(value == null ? "NULL" : value);
-                    }
-                    rows.add(row);
-                }
-                return new QueryResult(names, rows, rows.size(), -1,
-                        truncated, elapsedMs(start), null, statementSql);
-            }
-        } catch (SQLException e) {
-            return errorResult(statementSql, elapsedMs(start), humanize(e));
-        } finally {
-            inFlight = null;
-        }
-    }
-
-    private static QueryResult errorResult(String statementSql, long elapsedMs, String error) {
-        return new QueryResult(List.of(), List.of(), 0, -1, false, elapsedMs, error, statementSql);
-    }
 
     private boolean isOpenLocked() {
         try {
@@ -362,31 +264,15 @@ public final class DbClient implements DbBackend {
     }
 
     private static String humanize(Throwable t) {
-        String message = t.getMessage();
-        if (message == null || message.isBlank()) {
-            message = t.getClass().getSimpleName();
-        }
-        return message.trim();
-    }
-
-    private static long elapsedMs(long startNanos) {
-        return (System.nanoTime() - startNanos) / 1_000_000L;
+        return JdbcCore.humanize(t);
     }
 
     private String scopeCatalog() {
         return switch (spec.engine()) {
-            case MYSQL, MARIADB, POSTGRES -> blankToNull(spec.database());
+            case MYSQL, MARIADB, POSTGRES -> JdbcCore.blankToNull(spec.database());
             case SQLITE -> null;
             // unreachable: the constructor rejects non-SQL engines
             case MONGODB, COUCHDB -> throw new IllegalStateException("not a JDBC engine");
         };
-    }
-
-    private static String blankToNull(String s) {
-        return s == null || s.isBlank() ? null : s;
-    }
-
-    private static String nz(String s) {
-        return s == null ? "" : s;
     }
 }

@@ -122,11 +122,12 @@
          database tool (psql, DBeaver, DataGrip). The "tainted" string comes
          from the user's own editor buffer and runs against a server the user
          supplied their own credentials for; there is no second principal and
-         no trust boundary being crossed. Scoped to the one class that runs
-         user SQL, so a concatenated query anywhere else (e.g. building SQL
-         from metadata) would still be caught. -->
+         no trust boundary being crossed. The execute call lives in JdbcCore
+         (extracted from DbClient so ServicesBackend shares it) — still the
+         ONE class that runs user SQL, so a concatenated query anywhere else
+         (e.g. building SQL from metadata) would still be caught. -->
     <Match>
-        <Class name="org.nmox.studio.dbstudio.engine.DbClient"/>
+        <Class name="org.nmox.studio.dbstudio.engine.JdbcCore"/>
         <Bug pattern="SQL_INJECTION_JDBC"/>
     </Match>
 

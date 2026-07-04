@@ -79,6 +79,16 @@
             <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- NetBeans Database Explorer (the Services window): DB Studio lists
+             ConnectionManager's connections under a "Services" tree branch and
+             wraps the live java.sql.Connection the explorer manages — NetBeans
+             owns drivers, lifecycle and stored credentials; a password never
+             passes through our code. The ide cluster already ships this module. -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-db</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.json</groupId>

@@ -232,6 +232,38 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- macOS Cmd-Tab / dock icon for DEV launches: the generated
+                 launcher hardcodes -Xdock:icon=<app-parent>/nmoxstudio.icns,
+                 which the packaged .app satisfies (Contents/Resources) but a
+                 bare target/ build never did — so dev instances showed the
+                 generic Java coffee cup. Copy the committed icns (built once
+                 from packaging/icons/nmox-studio.iconset via iconutil) to
+                 target/, the exact spot the launcher resolves. Plain file
+                 copy: inert on Linux/Windows builds. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dock-icon-for-dev-launches</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../packaging/icons</directory>
+                                    <includes>
+                                        <include>nmoxstudio.icns</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
