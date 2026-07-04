@@ -21,6 +21,7 @@ public final class ProjectInspector {
         DENO("deno.json", "deno.jsonc"),
         NODE("package.json"),
         RUST("Cargo.toml"),
+        FOUNDRY("foundry.toml"),
         GO("go.mod"),
         ELIXIR("mix.exs"),
         ERLANG("rebar.config"),

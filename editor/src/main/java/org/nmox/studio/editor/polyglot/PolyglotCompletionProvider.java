@@ -56,7 +56,8 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-haskell", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-zig", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class)
 })
 public class PolyglotCompletionProvider implements CompletionProvider {
 
@@ -208,7 +209,14 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "else elsif end ensure enum extend false for fun if in include instance_sizeof is_a "
                     + "lib macro module next nil of out pointerof private protected require rescue return "
                     + "select self sizeof struct super then true type typeof uninitialized union unless until "
-                    + "verbatim when while with yield puts print pp getter setter property")));
+                    + "verbatim when while with yield puts print pp getter setter property")),
+            Map.entry("text/x-solidity", set("abstract address anonymous assembly bool break bytes calldata "
+                    + "catch constant constructor continue contract delete do else emit enum error event "
+                    + "external fallback for function if immutable import indexed interface internal is "
+                    + "library mapping memory modifier new override payable pragma private public pure "
+                    + "receive require return returns revert storage string struct this try type uint "
+                    + "uint8 uint256 int int256 unchecked using view virtual while true false wei gwei "
+                    + "ether keccak256 abi msg block tx assert selfdestruct")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));

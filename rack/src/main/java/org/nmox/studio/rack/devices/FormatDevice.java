@@ -34,6 +34,12 @@ public class FormatDevice extends CommandDevice {
                     ? List.of("vendor/bin/pint")
                     : List.of("vendor/bin/pint", "--test");
         }
+        // Foundry lane: forge fmt writes by default; --check only verifies
+        if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY) {
+            return writeSwitch.isOn()
+                    ? List.of("forge", "fmt")
+                    : List.of("forge", "fmt", "--check");
+        }
         return List.of("npx", "prettier", writeSwitch.isOn() ? "--write" : "--check", ".");
     }
 }

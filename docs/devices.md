@@ -130,6 +130,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `MEASURE` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger)
 
+### GOVERNOR — Gas budget gate — forge snapshot --check
+
+> CHECK runs forge snapshot --check against the committed .gas-snapshot; TOLERANCE allows dialed drift.
+> Patch VERITAS OK → CHECK and OK → LAUNCHPAD: gas regressions physically cannot ship.
+
+- **In:** `RUN` (trigger)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
+
 ## SERVE
 
 ### SURGE — Dev Server — start/stop local serving
@@ -171,6 +179,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 - **In:** `RUN` (trigger), `PING` (trigger), `MIGRATE` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `RUNNING` (gate)
+
+### ANVIL — Local EVM chain — anvil devnet with unlocked accounts
+
+> START boots anvil on the dialed PORT: a local EVM chain, ten unlocked funded accounts, instant mining.
+> Patch URL → Contract Studio's network and SERVING → a gate; FORK-URL forks any live network's state.
+
+- **In:** `RUN` (trigger), `START` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
 ## FRAMEWORKS
 

@@ -103,6 +103,32 @@ class RackPresetsTest {
         }
     }
 
+    @Test
+    @DisplayName("Web3 Bench chains build → test → gas gate, with ANVIL free-running on the console")
+    void web3BenchWiresFoundryLane() {
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        try {
+            RackIO.fromJson(rack, RackPresets.WEB3_BENCH.buildPatch());
+            assertThat(rack.getDevices()).extracting(d -> d.getTypeId()).containsExactly(
+                    "master", "build", "test", "gas-budget", "anvil", "console");
+            assertThat(rack.getCables()).hasSize(7);
+            // a gas regression stops the train before anything ships
+            assertThat(wired(rack, "master", "trig1", "build", "run")).isTrue();
+            assertThat(wired(rack, "build", "ok", "test", "run")).isTrue();
+            assertThat(wired(rack, "test", "ok", "gas-budget", "run")).isTrue();
+            // every lane lands on the console, the chain's banner included
+            assertThat(wired(rack, "build", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "test", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "gas-budget", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "anvil", "out", "console", "in")).isTrue();
+            // VERITAS pinned to the forge runner
+            assertThat(stateOf(rack, "test").get("framework")).isEqualTo("25");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     /** The state map of the first device with the given type id. */
     private static java.util.Map<String, String> stateOf(Rack rack, String typeId) {
         return rack.getDevices().stream()

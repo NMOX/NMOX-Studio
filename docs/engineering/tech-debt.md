@@ -90,6 +90,36 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.33.0)
+
+### 12. Contract Studio never signs — and that's the design, not the debt
+No private-key handling of any kind: sends/deploys work only against a
+devnet's unlocked accounts (eth_sendTransaction); remote networks are
+read-only in the Studio. Revisit only with a hardware-wallet story
+where the key still never enters the IDE. What IS deferred:
+- **Tuple/struct ABI parameters** — parsed (functions list fine) but
+  refused at encode time with a pointer to `cast`. Build when a real
+  project needs it; the encoding is mechanical but the form UX isn't.
+- **eth_subscribe websockets** — the Watch pane polls at 2s, honest and
+  simple; the shared HttpClient has no WS. Revisit if devnet watching
+  ever feels laggy.
+- **Vyper / non-EVM chains (Solana, Move, ink!)** — grammar-only
+  support would mislead without a toolchain behind it.
+- **slither as a rack lane** — Doctor probes it and hints the install;
+  running it well needs a Python-env story. TYPEGUARD's solhint lane
+  covers day-to-day linting.
+- **Foundry project template** — `forge init` does it better (pulls
+  forge-std, sets remappings); a wizard shelling out to it is a later
+  nicety.
+
+### 13. REPL INSTALL argv-splits compound install commands (pre-v1.33)
+ReplDevice's INSTALL button (v1.31.0) splits the catalog's install
+command into argv without a shell, so entries containing `&&` or `|`
+(several existed before v1.33; the new solidity space's foundryup
+one-liner follows the same convention) pass the operators as literal
+arguments. Needs either shell-wrapping (the SOLDER path) or an honest
+refusal for compound commands. Flagged as its own follow-up task.
+
 ## Open — deferred deliberately, with reasons (added v1.29.0)
 
 ### 10. DB Studio: Mongo cancel is a no-op; cursors read firstBatch only

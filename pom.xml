@@ -208,6 +208,7 @@
         <module>infra</module>
         <module>apiclient</module>
         <module>dbstudio</module>
+        <module>web3</module>
         <module>application</module>
         <module>NMOX-Studio-sample</module>
     </modules>

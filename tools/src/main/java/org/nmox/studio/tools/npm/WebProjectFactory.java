@@ -19,7 +19,8 @@ public class WebProjectFactory implements ProjectFactory {
         "package.json", "Cargo.toml", "go.mod", "mix.exs", "rebar.config",
         "deps.edn", "project.clj", "Package.swift", "pom.xml", "build.gradle",
         "build.gradle.kts", "pyproject.toml", "requirements.txt", "Gemfile",
-        "composer.json", "angular.json", "bun.lock", "bunfig.toml", "deno.json", "deno.jsonc"};
+        "composer.json", "angular.json", "bun.lock", "bunfig.toml", "deno.json", "deno.jsonc",
+        "foundry.toml"};
 
     @Override
     public boolean isProject(FileObject projectDirectory) {

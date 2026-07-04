@@ -52,7 +52,14 @@ public final class EnvironmentDoctor {
                 new String[]{"apachectl", "Apache HTTP server", "preinstalled on macOS / apt install apache2"},
                 new String[]{"bun", "Bun runtime", "brew install oven-sh/bun/bun"},
                 new String[]{"deno", "Deno runtime", "brew install deno"},
-                new String[]{"mix", "Elixir/BEAM toolchain", "brew install elixir"}));
+                new String[]{"mix", "Elixir/BEAM toolchain", "brew install elixir"},
+                new String[]{"forge", "Foundry — smart-contract build/test", "curl -L https://foundry.paradigm.xyz | bash"},
+                new String[]{"anvil", "local EVM devnet — ANVIL device", "curl -L https://foundry.paradigm.xyz | bash"},
+                new String[]{"cast", "Ethereum RPC/ABI multitool", "curl -L https://foundry.paradigm.xyz | bash"},
+                new String[]{"chisel", "Solidity REPL — learning space", "curl -L https://foundry.paradigm.xyz | bash"},
+                new String[]{"solc", "Solidity compiler", "brew install solidity"},
+                new String[]{"slither", "static analysis for Solidity", "pip3 install slither-analyzer"},
+                new String[]{"solhint", "Solidity linter — TYPEGUARD lane", "npm install -g solhint"}));
         // every distinct REPL interpreter the learning catalog can launch
         Map<String, String[]> repls = new LinkedHashMap<>();
         for (LearningCatalog.Space space : LearningCatalog.all()) {

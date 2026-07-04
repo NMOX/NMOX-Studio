@@ -380,6 +380,44 @@ class DeviceCommandBuildingTest {
                 "npx", "tsc", "--noEmit", "--pretty", "false");
     }
 
+    // ---------------- the Foundry lanes ----------------
+
+    @Test
+    @DisplayName("FORGE, VERITAS and CRATE speak forge on a Foundry project")
+    void foundryAutoLanes() throws IOException {
+        assertBuild("foundry.toml", BuildDevice::new, Map.of(), "forge", "build");
+        assertBuild("foundry.toml", TestDevice::new, Map.of(), "forge", "test");
+        assertBuild("foundry.toml", PackageManagerDevice::new, Map.of(), "forge", "install");
+        // the explicit RUNNER position works off-lane too (index 25 = forge, append-only)
+        assertBuild("package.json", TestDevice::new, Map.of("framework", "25"), "forge", "test");
+    }
+
+    @Test
+    @DisplayName("GLOSS Foundry lane runs forge fmt, honoring WRITE vs CHECK")
+    void glossFoundryLane() throws IOException {
+        assertBuild("foundry.toml", FormatDevice::new, Map.of(), "forge", "fmt");
+        assertBuild("foundry.toml", FormatDevice::new, Map.of("write", "false"),
+                "forge", "fmt", "--check");
+    }
+
+    @Test
+    @DisplayName("TYPEGUARD Foundry lane runs solhint only when a config exists — null without")
+    void typeguardFoundryLane() throws IOException {
+        Rack rack = rackWith("foundry.toml");
+        try {
+            TypecheckDevice typeguard = aim(rack, new TypecheckDevice(), Map.of());
+            assertThat(typeguard.buildCommand())
+                    .as("no .solhint.json means no checker to run").isNull();
+
+            Files.writeString(projectDir.resolve(".solhint.json"),
+                    "{\"extends\":\"solhint:recommended\"}");
+            assertThat(typeguard.buildCommand())
+                    .containsExactly("npx", "solhint", "{src,test}/**/*.sol");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     // ---------------- ARTISAN / ArtisanDevice ----------------
 
     @Test

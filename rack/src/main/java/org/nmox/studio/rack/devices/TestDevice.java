@@ -17,7 +17,8 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno"};
+    // append-only: persisted patches store the knob index, not the label
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     private static final String[] COVERAGE_MINIMUMS = {"off", "50", "60", "70", "80", "90"};
@@ -27,6 +28,7 @@ public class TestDevice extends CommandDevice {
         Pattern.compile("^FAILED\\s+(\\S+)"),                                  // pytest node id
         Pattern.compile("^test (\\S+) \\.\\.\\. FAILED$"),                     // cargo
         Pattern.compile("^--- FAIL: (\\S+)"),                                  // go
+        Pattern.compile("^\\[FAIL[.:][^\\]]*\\]\\s+([A-Za-z0-9_]+)"),          // forge
     };
     /** Coverage summaries: istanbul text-summary, pytest-cov TOTAL, go -cover. */
     private static final Pattern[] COVERAGE_LINES = {
@@ -156,6 +158,7 @@ public class TestDevice extends CommandDevice {
                 yield cmd;
             }
             case "go" -> List.of("go", "test", "./...", "-run", alternation);
+            case "forge" -> List.of("forge", "test", "--match-test", alternation);
             default -> null;
         };
     }
@@ -205,6 +208,7 @@ public class TestDevice extends CommandDevice {
             case BUN: return "bun";
             case DENO: return "deno";
             case RUST: return "cargo";
+            case FOUNDRY: return "forge";
             case ELIXIR: return "mix";
             case ERLANG: return "rebar3";
             case CLOJURE: return "clojure";
@@ -242,6 +246,7 @@ public class TestDevice extends CommandDevice {
             case "bun" -> ProjectInspector.ProjectKind.BUN;
             case "deno" -> ProjectInspector.ProjectKind.DENO;
             case "cargo" -> ProjectInspector.ProjectKind.RUST;
+            case "forge" -> ProjectInspector.ProjectKind.FOUNDRY;
             case "mix" -> ProjectInspector.ProjectKind.ELIXIR;
             case "rebar3" -> ProjectInspector.ProjectKind.ERLANG;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
@@ -277,6 +282,7 @@ public class TestDevice extends CommandDevice {
             case "bun" -> cmd.addAll(List.of("bun", "test"));
             case "deno" -> cmd.addAll(List.of("deno", "test"));
             case "cargo" -> cmd.addAll(List.of("cargo", "test"));
+            case "forge" -> cmd.addAll(List.of("forge", "test"));
             case "mix" -> cmd.addAll(List.of("mix", "test"));
             case "rebar3" -> cmd.addAll(List.of("rebar3", "eunit"));
             case "clojure" -> cmd.addAll(List.of("clojure", "-X:test"));

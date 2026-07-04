@@ -108,6 +108,13 @@ class WebProjectFactoryTest {
     }
 
     @Test
+    @DisplayName("foundry.toml is a first-class manifest")
+    void foundryManifestMakesAProject(@TempDir Path foundry) throws IOException {
+        Files.writeString(foundry.resolve("foundry.toml"), "[profile.default]\nsrc = \"src\"\n");
+        assertThat(factory.isProject(mount(foundry))).as("foundry.toml").isTrue();
+    }
+
+    @Test
     @DisplayName("Bun and Deno manifests are recognized as projects")
     void bunAndDenoManifestsMakeProjects(@TempDir Path bun, @TempDir Path deno) throws IOException {
         Files.writeString(bun.resolve("bunfig.toml"), "[install]\n");

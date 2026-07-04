@@ -55,6 +55,12 @@ public class TypecheckDevice extends CommandDevice {
         if (effectiveKind() == ProjectInspector.ProjectKind.PHP) {
             return List.of("vendor/bin/phpstan", "analyse", "--no-progress", "--error-format=raw");
         }
+        // Foundry lane: solhint over the contract sources — only when the
+        // project carries a solhint config (configless solhint just errors);
+        // primaryAction turns the null into an honest LCD hint
+        if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY) {
+            return hasSolhintConfig() ? List.of("npx", "solhint", "{src,test}/**/*.sol") : null;
+        }
         List<String> cmd = new ArrayList<>(List.of("npx", "tsc", "--noEmit", "--pretty", "false"));
         if (strictSwitch.isOn()) {
             cmd.add("--strict");
@@ -72,9 +78,29 @@ public class TypecheckDevice extends CommandDevice {
     /** phpstan --error-format=raw line: path/File.php:42:Message */
     private static final java.util.regex.Pattern PHPSTAN_LOC = java.util.regex.Pattern.compile(
             "^(.+?\\.php):(\\d+):(.*)$");
+    /** solhint stylish summary: ✖ 5 problems (4 errors, 1 warning) */
+    private static final java.util.regex.Pattern SOLHINT_SUMMARY = java.util.regex.Pattern.compile(
+            "\\((\\d+) errors?");
+
+    /** True when the Foundry lane carries a solhint config to lint with. */
+    private boolean hasSolhintConfig() {
+        return new java.io.File(commandDir(), ".solhint.json").isFile();
+    }
 
     @Override
     protected void onLine(String line) {
+        if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY) {
+            java.util.regex.Matcher summary = SOLHINT_SUMMARY.matcher(line);
+            if (summary.find()) {
+                int errors = Integer.parseInt(summary.group(1));
+                onEdt(() -> {
+                    errorLcd.setTextColor(errors == 0 ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                    errorLcd.setText("E:" + errors);
+                    cleanLed.setOn(errors == 0);
+                });
+            }
+            return;
+        }
         if (effectiveKind() == ProjectInspector.ProjectKind.PHP) {
             java.util.regex.Matcher raw = PHPSTAN_LOC.matcher(line);
             if (raw.find()) {
@@ -136,6 +162,14 @@ public class TypecheckDevice extends CommandDevice {
             errorLcd.setTextColor(RackStyle.LCD_TEXT);
             errorLcd.setText("E:-");
         });
+        // honest absent: the Foundry lane has no checker without a config
+        if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY && !hasSolhintConfig()) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("NO .solhint.json — npm i -g solhint && solhint --init");
+            });
+            return;
+        }
         launch(buildCommand());
     }
 

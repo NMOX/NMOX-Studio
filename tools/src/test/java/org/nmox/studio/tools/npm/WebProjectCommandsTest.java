@@ -166,6 +166,21 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Foundry builds/tests/cleans with forge; run is honestly absent")
+    void foundryMapsToForge() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FOUNDRY, ActionProvider.COMMAND_BUILD))
+                .containsExactly("forge", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FOUNDRY, ActionProvider.COMMAND_TEST))
+                .containsExactly("forge", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FOUNDRY, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("forge", "clean");
+        // deploys are forge scripts, not a single 'run' - the menu greys out
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FOUNDRY, ActionProvider.COMMAND_RUN))
+                .isNull();
+    }
+
+    @Test
     @DisplayName("Ruby only exposes a test action, via rake")
     void rubyTestsOnly() {
         File d = dir.toFile();

@@ -118,6 +118,7 @@ public class BuildDevice extends CommandDevice {
             case BUN -> List.of("bun", "run", "build");
             case DENO -> List.of("deno", "task", "build");
             case RUST -> prod ? List.of("cargo", "build", "--release") : List.of("cargo", "build");
+            case FOUNDRY -> List.of("forge", "build");
             case GO -> List.of("go", "build", "./...");
             case ELIXIR -> List.of("mix", "compile");
             case ERLANG -> List.of("rebar3", "compile");

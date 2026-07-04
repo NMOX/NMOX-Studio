@@ -109,6 +109,11 @@ class ReplDeviceTest {
             repl.applyState(Map.of("engine", "node"));
             assertThat(repl.getState().get("command")).isEqualTo("node -i");
 
+            repl.applyState(Map.of("engine", "solidity"));
+            assertThat(repl.getState().get("command"))
+                    .as("the solidity space's chisel engine derives from the catalog")
+                    .isEqualTo("chisel");
+
             repl.applyState(Map.of("engine", "lisp"));
             assertThat(repl.getState().get("command")).isEqualTo("clisp");
             assertThat(repl.getState().get("snippets"))
