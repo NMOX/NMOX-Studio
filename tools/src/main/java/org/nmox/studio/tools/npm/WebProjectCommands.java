@@ -27,6 +27,10 @@ final class WebProjectCommands {
             case RUST:
                 return fixed(action, List.of("cargo", "run"), List.of("cargo", "build"),
                         List.of("cargo", "test"), List.of("cargo", "clean"));
+            case FOUNDRY:
+                // no single 'run' for a contract project - deploys are scripts
+                return fixed(action, null, List.of("forge", "build"),
+                        List.of("forge", "test"), List.of("forge", "clean"));
             case GO:
                 return fixed(action, List.of("go", "run", "."), List.of("go", "build", "./..."),
                         List.of("go", "test", "./..."), List.of("go", "clean"));

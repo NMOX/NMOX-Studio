@@ -67,6 +67,17 @@ registrations, which deliberately do NOT claim the generic `.conf`
 extension (only `.vhost` plus the exact names `.htaccess`,
 `httpd.conf`, `apache2.conf` via ConfigFileResolver).
 
+## Solidity (added 2026-07-04)
+
+| Grammar | Source | License |
+|---|---|---|
+| solidity.tmLanguage.json | juanfranblanco/vscode-solidity tag **0.0.187** (syntaxes/solidity.json) | MIT |
+
+The Solidity grammar is self-contained (no cross-grammar includes) and
+scoped `source.solidity`. Its upstream `fileTypes` metadata claims
+`sol` — which matches our own `.sol` extension registration in
+`SolidityGrammar`.
+
 ## Embed-only grammars (scope registry, no editor binding)
 
 These are registered under synthetic `text/x-nmox-embed-*` mimes purely

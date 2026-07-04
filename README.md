@@ -201,6 +201,32 @@ SELECTs and shows the engine's own query plan; and if your project's
 create the connection — prefilled dialog, password straight to the
 keychain.
 
+### ⛓️ Contract Studio (Web3)
+Smart contract development in its own tab (⇧⌘6) — **Solidity in the
+editor** (pinned TextMate grammar, Navigator outline, LSP catalog
+entry), **Foundry as a real toolchain** (`foundry.toml` projects get
+IDE-native Build/Test/Clean → forge, plus rack lanes), and a Studio
+that treats contracts like the first-class artifacts they are. The
+tree scans Foundry `out/` and Hardhat `artifacts/`; the **Interact**
+pane generates call forms straight from the ABI — CALL a view function
+and read the decoded return, SEND a write and watch the receipt land,
+with revert reasons decoded to their names. Deploys record into a
+per-project address book (`.nmoxweb3.json`). **Observation and
+oversight are built in**: the **Watch** pane follows blocks and
+ABI-decodes event logs live off your devnet; **Oversight** shows the
+per-function gas table (`forge test --gas-report`, parsed), every
+contract's size against the EIP-170 24 KB limit with headroom bars,
+and the deployment book. In the rack, **ANVIL** runs your local chain
+(port/chain-id/block-time/fork-url, READY gate, resurrection) and
+**GOVERNOR** holds the gas line (`forge snapshot --check` with a
+tolerance knob) alongside the other quality gates.
+
+**The security boundary is the feature**: the IDE never touches
+private keys — no key fields, no signing code. Deploys and sends go
+through the devnet's own unlocked accounts (`eth_sendTransaction` on
+anvil); remote networks are read-only in the Studio, and RPC URLs
+that embed API keys live only in the OS keychain, never on disk.
+
 ### 🌐 Standards & PWA, supported with gusto
 `.editorconfig` is **honored, not just highlighted** — every save
 applies the spec for real (trim_trailing_whitespace,
@@ -296,7 +322,7 @@ NMOX-Studio/
 │   ├── javascript/        # Regex-aware JavaScript lexer
 │   └── outline/           # Structure navigator (⌘7)
 ├── rack/                   # The Task Rack: hardware-styled task devices
-│   ├── devices/           # The 41 rack devices
+│   ├── devices/           # The 43 rack devices
 │   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
 │   ├── docker/            # HARBOR device + Docker panel
 │   └── projectstudio/     # Project Studio templates
@@ -308,6 +334,9 @@ NMOX-Studio/
 │   ├── model/             # Engines, connection specs, schema records
 │   ├── engine/            # DbBackend: JDBC + Mongo + CouchDB(HTTP)
 │   └── ui/                # The ⇧⌘7 tab: tree, console, results
+├── web3/                   # Contract Studio: Web3/EVM development
+│   ├── engine/            # Keccak-256, ABI codec, JSON-RPC client
+│   └── ui/                # The ⇧⌘6 tab: Interact, Watch, Oversight
 ├── project/               # Project and resource management
 ├── tools/                 # Development tools and utilities
 ├── branding/              # Splash, icons, NMOX Phosphor theme
@@ -330,6 +359,7 @@ NMOX-Studio/
 | **infra** | Node-RED-style multi-cloud Infra Designer | `InfraDesignerTopComponent`, provider api/model |
 | **apiclient** | API Studio — Postman-style request tab | `ApiClientTopComponent`, engine, `.nmoxapi.json` |
 | **dbstudio** | DB Studio — SQL + document database suite | `DbStudioTopComponent`, `DbBackend` (JDBC/Mongo/Couch), Keyring passwords |
+| **web3** | Contract Studio — Web3/EVM smart contracts | `Web3StudioTopComponent`, `AbiCodec`/`Keccak256`/`JsonRpcClient`, no-private-keys boundary |
 | **project** | Project and resource management | `ProjectExplorerTopComponent` |
 | **tools** | Development and debugging tools | Tool windows, utilities |
 | **branding** | Splash, icons, NMOX Phosphor theme | Branding resources |

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN"
+        "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <!-- Quick Search (Cmd+I) over Contract Studio: contract names with
+         their EIP-170 headroom, and the deployment address book; Enter
+         jumps to the hit in the tab. Window-system entries (the tab,
+         Shift+Cmd+6, the Window menu item) ride annotations on
+         Web3StudioTopComponent. -->
+    <folder name="QuickSearch">
+        <folder name="Contracts">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.web3.search.Bundle"/>
+            <attr name="position" intvalue="340"/>
+            <file name="org-nmox-studio-web3-search-Web3SearchProvider.instance"/>
+        </folder>
+    </folder>
+</filesystem>

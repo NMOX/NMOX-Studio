@@ -25,6 +25,8 @@ class EnvironmentDoctorTest {
                 .contains("composer", "mysql", "nginx", "apachectl");
         assertThat(tools).as("learning-space interpreters are swept")
                 .contains("clisp", "sqlite3");
+        assertThat(tools).as("the Web3 toolbelt is swept")
+                .contains("forge", "anvil", "cast", "chisel", "solc", "slither", "solhint");
         assertThat(tools).doesNotHaveDuplicates();
         assertThat(checks).allSatisfy(c -> {
             assertThat(c[1]).as("%s has a purpose", c[0]).isNotBlank();

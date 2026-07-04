@@ -489,4 +489,13 @@ public final class LanguageServers {
         }
     }
 
+    /** Solidity via @nomicfoundation/solidity-language-server. */
+    @MimeRegistration(mimeType = "text/x-solidity", service = LanguageServerProvider.class)
+    public static final class SolidityServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "nomicfoundation-solidity-language-server", "--stdio");
+        }
+    }
+
 }

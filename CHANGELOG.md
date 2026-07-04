@@ -4,6 +4,76 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.33.0] — 2026-07-04
+
+Web3 becomes a first-class citizen: **Contract Studio** (⇧⌘6), Solidity
+in the editor, Foundry in the toolchain, and two new rack devices. The
+security boundary is the feature: the IDE never touches private keys.
+
+### Added
+- **Contract Studio** — a new `web3` module and suite tab. The tree
+  scans Foundry `out/` and Hardhat `artifacts/` (auto-detected,
+  `.dbg.json` skipped); the **Interact** pane builds call forms from
+  the ABI — CALL view functions and read decoded returns, SEND writes
+  and watch receipts land ("Mined in block N · gas used 21,000"),
+  reverts decoded to their reasons, named custom errors included.
+  Deploys poll their receipt and record into a per-project address
+  book (`.nmoxweb3.json`, capped 200). Attach-by-address works for
+  already-deployed contracts. ⌘I reaches contracts and deployments.
+- **Observation: the Watch pane** — a 2-second poller follows your
+  devnet: blocks ("#N · 3 txs · gas 42%") interleaved with ABI-decoded
+  event logs (topic-matched via Keccak-256), newest first, ring-capped.
+  Poll errors gray the connection chip; they never dialog-spam.
+- **Oversight pane** — per-function gas table (`forge test
+  --gas-report`, parsed tolerant of both table styles), every
+  contract's bytes against the EIP-170 24,576-byte limit with headroom
+  bars, and the deployments book with copy-address.
+- **The no-private-keys boundary, test-pinned** — no key fields, no
+  signing code, no mnemonics. Sends go through `eth_sendTransaction`
+  on the node's own unlocked accounts (anvil/hardhat devnets); remote
+  networks are read-only with the reason shown ("Read-only network —
+  no unlocked accounts…"). RPC URLs that embed API keys live only in
+  the OS Keyring; a secret network serializes with **no URL in the
+  file** (pinned), and URLs are redacted to scheme+host in every
+  message.
+- **Solidity in the editor** — pinned TextMate grammar
+  (vscode-solidity 0.0.187, MIT), `.sol` MIME, keyword completion,
+  comment-aware spellcheck, Navigator outline (contracts, functions,
+  modifiers, events, errors, structs, enums — 44 outline mimes), and
+  `@nomicfoundation/solidity-language-server` in the LSP catalog.
+- **Foundry toolchain** — `foundry.toml` recognized (21st manifest);
+  IDE-native Build/Test/Clean → `forge build/test/clean`; rack AUTO
+  lanes: VERITAS→`forge test` (with named-failure re-runs via
+  `--match-test`), FORGE→`forge build`, GLOSS→`forge fmt`,
+  TYPEGUARD→solhint (only when `.solhint.json` exists — honest hint
+  otherwise), CRATE→`forge install`/`forge update`.
+- **ANVIL device** (42nd) — your local EVM chain in the rack: PORT and
+  BLK-TIME knobs, CHAIN-ID and FORK-URL params, READY trigger + URL
+  signal on "Listening on…", SERVING gate, resurrection like every
+  serve device, honest install hint when anvil is missing.
+- **GOVERNOR device** (43rd) — the gas budget gate: `forge snapshot
+  --check` with a TOLERANCE knob (0–25%); "WITHIN BUDGET" or the first
+  offending diff on the LCD; no snapshot → fails closed. The quality-
+  gates family (VITALS/VERITAS/GAUNTLET/PRISM/BEACON) gains its Web3
+  member. **Web3 Bench** preset wires MASTER→FORGE→VERITAS→GOVERNOR
+  with ANVIL free-running and MONITOR tapped.
+- **Solidity learning space** (52nd) — chisel REPL (the ENGINE knob
+  gains chisel automatically), Counter.sol sample, walked tutorial.
+- **Doctor** probes forge, anvil, cast, chisel, solc, slither, solhint
+  with real version commands and install hints. Welcome TOOLING gains
+  Contract Studio.
+
+### Internal
+- Vector-pinned cores: hand-rolled Keccak-256 (official vectors plus
+  OpenSSL-validated multi-block/rate-boundary cases), ABI codec pinned
+  to the Solidity spec's own worked examples (baz/sam/f), JSON-RPC 2.0
+  client with seam-tested transport, gas-report parser with zero
+  regexes (ReDoS-proof by construction).
+- web3: 245 tests, 89.5% line coverage (floor 0.80); editor 313,
+  tools 85, rack 585 (+27 incl. both new devices under the 247-
+  assertion contract test), SpotBugs + find-sec-bugs 0 findings, no
+  new exclusions. docs/devices.md regenerated (43 device cards).
+
 ## [1.32.0] — 2026-07-04
 
 DB Studio becomes a working DBA's tool: edit rows in the grid and apply

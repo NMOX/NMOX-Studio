@@ -61,6 +61,7 @@ public final class OutlineModel {
             case "fsharp" -> fsharp(lines);
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
+            case "solidity" -> solidity(lines);
             case "brace" -> braceLang(lines);
             case "shell" -> shell(lines);
             case "graphql" -> graphql(lines);
@@ -96,6 +97,7 @@ public final class OutlineModel {
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";
             case "text/x-zig" -> "zig";
+            case "text/x-solidity" -> "solidity";
             case "text/x-java", "text/x-kotlin", "text/x-scala", "text/x-csharp",
                  "text/x-swift", "text/x-c", "text/x-cpp", "text/x-dart",
                  "text/x-groovy", "text/x-php5" -> "brace";
@@ -848,6 +850,66 @@ public final class OutlineModel {
             Matcher f = ZIG_FN.matcher(line);
             if (f.find()) {
                 out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    // ---- Solidity ----------------------------------------------------------
+
+    private static final Pattern SOL_CONTAINER = Pattern.compile(
+            "^\\s*(?:abstract\\s+)?(contract|interface|library)\\s+([A-Za-z0-9_$]+)");
+    private static final Pattern SOL_FUNCTION = Pattern.compile(
+            "^\\s*function\\s+([A-Za-z0-9_$]+)");
+    private static final Pattern SOL_CONSTRUCTOR = Pattern.compile(
+            "^\\s*constructor\\s*\\(");
+    private static final Pattern SOL_MODIFIER = Pattern.compile(
+            "^\\s*modifier\\s+([A-Za-z0-9_$]+)");
+    private static final Pattern SOL_EVENT = Pattern.compile(
+            "^\\s*event\\s+([A-Za-z0-9_$]+)");
+    // an error declaration always carries its parameter list: `error Empty();`
+    private static final Pattern SOL_ERROR = Pattern.compile(
+            "^\\s*error\\s+([A-Za-z0-9_$]+)\\s*\\(");
+    private static final Pattern SOL_TYPE = Pattern.compile(
+            "^\\s*(struct|enum)\\s+([A-Za-z0-9_$]+)");
+
+    /** contract/interface/library contain their functions, constructor,
+     * modifiers, events, errors and structs/enums - nested by brace depth
+     * like the other C-shaped languages, with comment state carried across
+     * lines so a commented-out declaration never surfaces. */
+    private static List<Item> solidity(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        int brace = 0;
+        boolean[] state = {false, false};
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String code = stripNonCode(lines[i], state);
+            int depthHere = brace;
+            Matcher m;
+            if ((m = SOL_CONTAINER.matcher(code)).find()) {
+                OutlineKind kind = switch (m.group(1)) {
+                    case "interface" -> OutlineKind.INTERFACE;
+                    case "library" -> OutlineKind.MODULE;
+                    default -> OutlineKind.CLASS;
+                };
+                out.add(new Item(kind, m.group(2), m.group(1), i, depthHere));
+            } else if ((m = SOL_FUNCTION.matcher(code)).find()) {
+                out.add(new Item(depthHere > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION,
+                        m.group(1), null, i, depthHere));
+            } else if (SOL_CONSTRUCTOR.matcher(code).find()) {
+                out.add(new Item(OutlineKind.METHOD, "constructor", null, i, depthHere));
+            } else if ((m = SOL_MODIFIER.matcher(code)).find()) {
+                out.add(new Item(OutlineKind.METHOD, m.group(1), "modifier", i, depthHere));
+            } else if ((m = SOL_EVENT.matcher(code)).find()) {
+                out.add(new Item(OutlineKind.FIELD, m.group(1), "event", i, depthHere));
+            } else if ((m = SOL_ERROR.matcher(code)).find()) {
+                out.add(new Item(OutlineKind.FIELD, m.group(1), "error", i, depthHere));
+            } else if ((m = SOL_TYPE.matcher(code)).find()) {
+                out.add(new Item("enum".equals(m.group(1)) ? OutlineKind.ENUM : OutlineKind.TYPE,
+                        m.group(2), null, i, depthHere));
+            }
+            brace += netBraces(code);
+            if (brace < 0) {
+                brace = 0;
             }
         }
         return out;

@@ -78,6 +78,10 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> List.of("cargo", "update", "--dry-run");
                 default -> List.of("cargo", "fetch");
             };
+            case FOUNDRY -> switch (verb) {
+                case "update" -> List.of("forge", "update");
+                default -> List.of("forge", "install");
+            };
             case ELIXIR -> switch (verb) {
                 case "update" -> List.of("mix", "deps.update", "--all");
                 case "outdated" -> List.of("mix", "hex.outdated");

@@ -55,6 +55,22 @@ class LearningCatalogTest {
     }
 
     @Test
+    @DisplayName("Solidity rides chisel: REPL driver, Counter.sol sample, all three OS installs")
+    void solidityIsPresent() {
+        LearningCatalog.Space sol = LearningCatalog.find("solidity");
+        assertThat(sol).isNotNull();
+        assertThat(sol.driver().kind()).isEqualTo(LearningCatalog.DriverKind.REPL);
+        assertThat(sol.driver().command()).containsExactly("chisel");
+        assertThat(sol.driver().prompt()).isEqualTo("➜");
+        assertThat(sol.driver().snippets()).anyMatch(s -> s.contains("keccak256"));
+        assertThat(sol.install()).containsKeys("mac", "linux", "windows");
+        sol.install().forEach((os, cmd) ->
+                assertThat(cmd).as("install for %s names foundry", os).contains("foundry"));
+        assertThat(sol.files()).anyMatch(f -> f.path().equals("Counter.sol"));
+        assertThat(sol.tutorial()).contains("chisel");
+    }
+
+    @Test
     @DisplayName("Every REPL driver names a launchable command token")
     void replDriversNameACommand() {
         for (LearningCatalog.Space s : LearningCatalog.all()) {

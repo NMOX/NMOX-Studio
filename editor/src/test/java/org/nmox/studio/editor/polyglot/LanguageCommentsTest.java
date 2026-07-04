@@ -20,6 +20,7 @@ class LanguageCommentsTest {
         assertThat(LanguageComments.lineCommentFor("text/x-java")).isEqualTo("//");
         assertThat(LanguageComments.lineCommentFor("text/x-rust")).isEqualTo("//");
         assertThat(LanguageComments.lineCommentFor("text/x-go")).isEqualTo("//");
+        assertThat(LanguageComments.lineCommentFor("text/x-solidity")).isEqualTo("//");
     }
 
     @Test

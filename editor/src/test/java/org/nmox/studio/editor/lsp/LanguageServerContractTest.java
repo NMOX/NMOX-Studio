@@ -35,7 +35,7 @@ class LanguageServerContractTest {
         "text/x-haskell", "text/x-zig", "text/x-erlang", "text/x-elixir",
         "text/x-clojure", "text/x-lisp", "text/x-lua", "text/x-ocaml",
         "text/x-crystal", "text/x-julia", "text/x-r", "text/x-perl",
-        "text/x-groovy", "text/sh", "text/x-json",
+        "text/x-groovy", "text/sh", "text/x-json", "text/x-solidity",
         // the config layer
         "text/x-yaml", "text/x-toml", "text/x-dockerfile", "text/x-graphql",
         "text/x-vue", "text/x-svelte", "text/x-astro", "text/x-prisma"

@@ -607,6 +607,77 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("Solidity: contract contains functions/events/errors; interface, library, struct and enum surface")
+    void solidity() {
+        String src = """
+                // SPDX-License-Identifier: MIT
+                pragma solidity ^0.8.24;
+
+                interface IVault {
+                    function deposit(uint256 amount) external;
+                }
+
+                library SafeMath {
+                    function add(uint256 a, uint256 b) internal pure returns (uint256) {
+                        return a + b;
+                    }
+                }
+
+                abstract contract Ownable {
+                    modifier onlyOwner() {
+                        _;
+                    }
+                }
+
+                contract Token is Ownable {
+                    struct Account {
+                        uint256 balance;
+                    }
+
+                    enum Phase { Setup, Live }
+
+                    event Transfer(address indexed from, address indexed to, uint256 value);
+                    error InsufficientBalance(uint256 available, uint256 required);
+
+                    constructor(uint256 supply) {
+                        total = supply;
+                    }
+
+                    uint256 public total;
+
+                    function transfer(address to, uint256 value) public returns (bool) {
+                        return true;
+                    }
+
+                    /* function commentedOut() public {} */
+                }
+                """;
+        List<Item> items = outline("text/x-solidity", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.INTERFACE, "IVault"),
+                tuple(OutlineKind.MODULE, "SafeMath"),
+                tuple(OutlineKind.CLASS, "Ownable"),
+                tuple(OutlineKind.METHOD, "onlyOwner"),
+                tuple(OutlineKind.CLASS, "Token"),
+                tuple(OutlineKind.TYPE, "Account"),
+                tuple(OutlineKind.ENUM, "Phase"),
+                tuple(OutlineKind.FIELD, "Transfer"),
+                tuple(OutlineKind.FIELD, "InsufficientBalance"),
+                tuple(OutlineKind.METHOD, "constructor"),
+                tuple(OutlineKind.METHOD, "transfer"));
+        // members nest under their contract by brace depth
+        Item token = items.stream().filter(i -> i.name().equals("Token")).findFirst().orElseThrow();
+        Item transfer = items.stream().filter(i -> i.name().equals("transfer")).findFirst().orElseThrow();
+        assertThat(token.depth()).isEqualTo(0);
+        assertThat(transfer.depth()).as("function nests under its contract").isGreaterThan(token.depth());
+        // the modifier and event carry their detail badges
+        assertThat(items).anyMatch(i -> i.name().equals("onlyOwner") && "modifier".equals(i.detail()));
+        assertThat(items).anyMatch(i -> i.name().equals("Transfer") && "event".equals(i.detail()));
+        // a declaration inside a block comment never surfaces
+        assertThat(items).extracting(Item::name).doesNotContain("commentedOut");
+    }
+
+    @Test
     @DisplayName("Config sections: INI and TOML headers")
     void configSections() {
         assertThat(outline("text/x-ini", "[*]\nindent_style = space\n[*.md]\n"))

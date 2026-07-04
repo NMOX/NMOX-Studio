@@ -1745,6 +1745,39 @@
         }
       ],
       "tutorial": "# Docker Compose\n\nDocker Compose lets you define a whole multi-container application in one YAML\nfile — which images to run, their ports, volumes, and how they depend on each\nother — then start everything with a single `docker compose up`. It's how you\nrun a database, a cache, and your app together on your laptop with one command.\n\n## Get set up\n\nCompose needs **Docker** installed and running. On macOS/Windows that's Docker\nDesktop; on Linux install `docker.io` and the compose plugin. Confirm it works:\n\n```bash\ndocker compose version\n```\n\nIf that errors, Docker isn't installed or the daemon isn't running — start\nDocker Desktop (or `sudo systemctl start docker`) first.\n\n## Run it\n\nFrom this folder:\n\n```bash\ndocker compose up\n```\n\nThe first run **pulls the images** (redis and nginx), which needs an internet\nconnection and can take a minute. Once it settles:\n\n- Open **http://localhost:8080** — the nginx `web` service serves\n  `site/index.html`.\n- The `redis` service is live on port 6379 (try `redis-cli PING` if you have\n  the CLI).\n\nStop it with **Ctrl-C**, then clean up the containers:\n\n```bash\ndocker compose down\n```\n\n## The sample\n\n`compose.yaml` declares two **services**:\n\n- **`redis`** — the `redis:7-alpine` image, port 6379 published to your host.\n- **`web`** — `nginx:alpine`, port 8080→80, mounting `./site` as its web root\n  (read-only), and `depends_on: redis` so Redis starts first.\n\nChange `site/index.html`, then reload the browser — the volume mount means no\nrebuild needed.\n\n## Try this\n\n1. Add `environment: [ \"NGINX_HOST=localhost\" ]` under `web`.\n2. Run it detached with `docker compose up -d`, then `docker compose logs -f`.\n3. Add a third service (e.g. `postgres:16-alpine`) and give it a port.\n\n## Going further\n\nThe Compose file reference and a step-by-step guide:\nhttps://docs.docker.com/compose/gettingstarted/\n"
+    },
+    {
+      "slug": "solidity",
+      "name": "Solidity",
+      "category": "LANGUAGE",
+      "family": "Solidity",
+      "blurb": "The language of Ethereum smart contracts — programs that hold real value, so every line counts.",
+      "driver": {
+        "kind": "repl",
+        "command": [
+          "chisel"
+        ],
+        "prompt": "➜",
+        "snippets": [
+          "uint256 x = 42;",
+          "x * 2",
+          "keccak256(abi.encodePacked(\"hello\"))",
+          "address(0)",
+          "type(uint8).max"
+        ]
+      },
+      "install": {
+        "mac": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
+        "linux": "curl -L https://foundry.paradigm.xyz | bash && foundryup",
+        "windows": "curl -L https://foundry.paradigm.xyz | bash && foundryup    # run in Git Bash; foundryup ships no native PowerShell installer"
+      },
+      "files": [
+        {
+          "path": "Counter.sol",
+          "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.24;\n\n/// A tiny contract: one storage slot and three ways to touch it.\n/// Compile it with `forge build`; play with the ideas in chisel first.\ncontract Counter {\n    uint256 public number;\n\n    event Increment(uint256 newNumber);\n\n    function setNumber(uint256 newNumber) public {\n        number = newNumber;\n    }\n\n    function increment() public {\n        number++;\n        emit Increment(number);\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# Solidity\n\nSolidity is the language of Ethereum smart contracts — small programs that live on a blockchain, hold real value, and cannot be patched after deploy. That changes how you write code: every type is explicit, every overflow reverts, and gas makes every operation cost something. The good news: the core language is small, and you can learn most of it at a REPL.\n\n## Your REPL\n\nPress **START** on the REPL device to launch `chisel`, Foundry's Solidity REPL. At the `➜` prompt every line is compiled and executed inside a scratch EVM. Click **HINTS** for starters, or type these:\n\n```solidity\nuint256 x = 42;\nx * 2\nkeccak256(abi.encodePacked(\"hello\"))\naddress(0)\ntype(uint8).max\n```\n\n`uint256` is the workhorse integer — 256 bits, no negatives. `keccak256` is Ethereum's hash; `abi.encodePacked` turns values into the bytes it eats. `address(0)` is the zero address, and `type(uint8).max` is 255 — arithmetic past it reverts rather than wrapping. Type `!help` for chisel's own commands (`!source` shows the contract your session is building).\n\n## The sample\n\nOpen `Counter.sol` — the anatomy of every contract in one screen:\n\n- **`pragma solidity ^0.8.24;`** pins the compiler range. 0.8+ gives you checked arithmetic for free.\n- **`contract Counter { ... }`** is the unit of deployment — think class, but its fields live on-chain forever.\n- **`uint256 public number;`** is a storage variable; `public` auto-generates a free getter called `number()`.\n- **`event Increment(...)`** is the contract's logbook: cheap to emit, indexed off-chain, invisible to other contracts.\n- **`setNumber` / `increment`** are transactions: anyone can call them, each call costs gas, and state persists between calls.\n\nThere's no `main` — a contract is deployed once, then its functions are entry points for the rest of its life.\n\n## Try this\n\n1. In chisel, paste the whole `Counter` contract, then run `Counter c = new Counter();` and `c.increment();` — call `c.number()` to see state stick.\n2. Add a `decrement()` that refuses to go below zero: `require(number > 0, \"at zero\");` — then call it at zero and watch the revert.\n3. Hash yourself an id: `keccak256(abi.encodePacked(address(0), uint256(7)))` — this pattern is how Solidity builds mapping keys.\n\n## Going further\n\nInstall the toolchain (`curl -L https://foundry.paradigm.xyz | bash && foundryup`), then `forge init counter && cd counter && forge test` — the Foundry Book (https://book.getfoundry.sh) walks the whole road. The language reference lives at https://docs.soliditylang.org.\n\nTo quit the REPL, type `!quit` or press STOP."
     }
   ]
 }

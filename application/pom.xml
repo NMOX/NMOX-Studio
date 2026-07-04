@@ -170,6 +170,11 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>NMOX-Studio-web3</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-sample</artifactId>
             <version>${project.version}</version>
         </dependency>

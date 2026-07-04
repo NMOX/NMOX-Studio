@@ -82,6 +82,9 @@ public final class LanguageServerCatalog {
         add("OCaml", "ocamllsp", "opam install ocaml-lsp-server",
                 List.of("opam", "install", "ocaml-lsp-server"));
         add("Julia", "julia", "install Julia, then the LanguageServer.jl package", List.of());
+        add("Solidity", "nomicfoundation-solidity-language-server",
+                "npm install -g @nomicfoundation/solidity-language-server",
+                List.of("npm", "install", "-g", "@nomicfoundation/solidity-language-server"));
     }
 
     private LanguageServerCatalog() {

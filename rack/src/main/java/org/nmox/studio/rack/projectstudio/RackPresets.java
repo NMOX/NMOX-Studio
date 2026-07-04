@@ -236,6 +236,33 @@ public enum RackPresets {
             rack.connect(serve.getPort("out"), console.getPort("in"));
             rack.connect(deps.getPort("out"), console.getPort("in"));
         }
+    },
+
+    WEB3_BENCH("Web3 Bench",
+            "ANVIL chain + forge build/test + GOVERNOR gas gate, MONITOR watching") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice master = add(rack, DeviceType.MASTER, null);
+            // FORGE auto-detects the Foundry lane (forge build via foundry.toml)
+            RackDevice build = add(rack, DeviceType.BUILD, null);
+            // VERITAS pinned to forge
+            RackDevice test = add(rack, DeviceType.TEST, Map.of("framework", "25"));
+            RackDevice governor = add(rack, DeviceType.GAS_BUDGET, null);
+            // the devnet free-runs beside the lane: START it when Contract
+            // Studio or a deploy script needs a chain; its SERVING gate and
+            // ENABLE input follow the long-runner conventions for wiring up
+            RackDevice anvil = add(rack, DeviceType.LOCAL_CHAIN, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // build → test → gas gate: a regression stops the train
+            rack.connect(master.getPort("trig1"), build.getPort("run"));
+            rack.connect(build.getPort("ok"), test.getPort("run"));
+            rack.connect(test.getPort("ok"), governor.getPort("run"));
+            // every lane lands on the console, the chain's banner included
+            rack.connect(build.getPort("out"), console.getPort("in"));
+            rack.connect(test.getPort("out"), console.getPort("in"));
+            rack.connect(governor.getPort("out"), console.getPort("in"));
+            rack.connect(anvil.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;
