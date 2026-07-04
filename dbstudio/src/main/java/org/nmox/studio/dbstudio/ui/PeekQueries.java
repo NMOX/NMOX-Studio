@@ -1,5 +1,6 @@
 package org.nmox.studio.dbstudio.ui;
 
+import org.nmox.studio.dbstudio.engine.SqlDialect;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.dbstudio.model.TableInfo;
@@ -54,14 +55,11 @@ final class PeekQueries {
 
     /** schema-qualified and identifier-quoted per engine dialect. */
     private static String qualified(DbEngine engine, TableInfo table) {
-        return qualified(
-                (engine == DbEngine.MYSQL || engine == DbEngine.MARIADB) ? "`" : "\"", table);
+        return SqlDialect.qualifiedTable(engine, table);
     }
 
     /** schema-qualified with an explicit identifier quote. */
     private static String qualified(String q, TableInfo table) {
-        String name = q + table.name() + q;
-        String schema = table.schema();
-        return (schema == null || schema.isBlank()) ? name : q + schema + q + "." + name;
+        return SqlDialect.qualifiedTable(q, table);
     }
 }

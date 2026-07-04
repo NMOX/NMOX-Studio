@@ -92,12 +92,6 @@ specifically** — the boot-smoke number says it isn't the bottleneck.
 
 ## Open — deferred deliberately, with reasons (added v1.29.0)
 
-### 9. DB Studio results are read-only
-No in-grid row editing; mutations go through the console (`UPDATE …`,
-Mongo update commands) — which is the honest v1 of every serious DB tool.
-In-grid editing needs primary-key plumbing, dirty-state UX, and
-engine-specific write paths; build it as its own sprint when demand shows.
-
 ### 10. DB Studio: Mongo cancel is a no-op; cursors read firstBatch only
 Driver-level operation kill and `getMore` continuation are real work with
 a small v1 audience; both are documented in the backend javadoc and the
@@ -118,6 +112,23 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.32.0 (DB Studio 2, the working-DBA sprint)
+
+### 9. DB Studio results are read-only — CLOSED
+Built as its own sprint, exactly as the deferral prescribed. The
+primary-key plumbing is `EditGate` (single-table SELECT parse +
+column-metadata PK check, off-EDT, with an honest reason string for
+every refusal); the dirty-state UX is `EditSession`/`EditableResultsModel`
+(tinted cells, pending-edits chip, Revert); the write path is
+`UpdateBuilder` (dialect-quoted, PK-addressed UPDATEs shown verbatim in
+an Apply preview before running, stop-on-first-failure, re-run-for-truth
+after). Document engines stay read-only by design — the gate says so in
+words rather than silently refusing. Deliberate v1 limits, recorded
+here: PK cells are not editable (the key addresses the row), NULL PK
+originals are refused (grid can't distinguish SQL NULL from a 'NULL'
+string), typing `NULL` into a cell means SQL NULL, and INSERT/DELETE
+remain console work.
 
 ## Closed by v1.27.0 (the coverage sprint)
 

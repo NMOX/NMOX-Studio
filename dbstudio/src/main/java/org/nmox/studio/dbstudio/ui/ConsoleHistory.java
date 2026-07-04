@@ -50,4 +50,12 @@ final class ConsoleHistory {
     synchronized List<Entry> entries() {
         return List.copyOf(entries);
     }
+
+    /**
+     * Forgets everything — the project switched, and the new project's
+     * persisted history is about to be re-seeded via {@link #add}.
+     */
+    synchronized void clear() {
+        entries.clear();
+    }
 }

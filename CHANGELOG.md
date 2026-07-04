@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.32.0] — 2026-07-04
+
+DB Studio becomes a working DBA's tool: edit rows in the grid and apply
+them as reviewable SQL, export any result, keep your queries, connect
+from `.env`, and ask the planner what it's thinking. Closes debt ledger
+#9 (results are read-only).
+
+### Added
+- **In-grid row editing with an honest Apply** — run a simple
+  single-table SELECT (or just peek a table) against a SQL engine and
+  the grid unlocks: edited cells tint amber, a chip counts pending
+  edits, and **Apply…** shows the exact `UPDATE` statements it built —
+  primary-key WHERE clauses, dialect-quoted identifiers — for review
+  before anything runs. On failure it stops ("stopped after N of M"),
+  keeps your edits for retry; on success the query re-runs so the grid
+  shows database truth, not local hope. Grids that can't be edited
+  safely say why in plain words: "Read-only — no primary key",
+  "Read-only — not a single-table SELECT", "Read-only — document
+  engine", "Read-only — <t> is a view". Primary-key cells aren't
+  editable (the key is what addresses the row), NULL keys are refused,
+  and typing `NULL` means SQL NULL.
+- **Export CSV / JSON** — any result grid exports via a save dialog
+  (UTF-8, default filename from the table), document engines included.
+- **Persistent query history + saved queries** — every console run is
+  journaled (newest-first, capped 50) into the project's `.nmoxdb.json`
+  beside the connections and survives restarts; **Save…** names a query
+  and puts it on the shelf for next session. Still no passwords in the
+  file (test-pinned).
+- **Connections from `.env`** — aim DB Studio at a project whose `.env`
+  declares `DB_*` or `DATABASE_URL` (DB_* wins, all-or-nothing) and a
+  quiet balloon offers to create the matching connection, dialog
+  prefilled — password goes to the Keyring on save, never to disk. One
+  offer per project per session, no modal ambush.
+- **EXPLAIN button** — lights up for SELECT/WITH on SQL engines and
+  runs the engine's native plan syntax (`EXPLAIN QUERY PLAN` on
+  SQLite); the plan lands in a normal (read-only) result tab.
+
+### Internal
+- `SqlDialect` extracted as the one identifier-quoting seam
+  (PeekQueries pinned byte-identical); `quote()` now doubles embedded
+  quote chars so a hostile identifier can't break out. find-sec-bugs
+  flagged ReDoS in a new numeric-literal regex — fixed by replacing the
+  regex with a single-pass scanner, not by exclusion.
+- dbstudio: 317 tests (was 163), 87.1% line coverage (floor 0.73),
+  SpotBugs + find-sec-bugs at 0 findings.
+
 ## [1.31.0] — 2026-07-04
 
 The REPL grows up: pick an engine from the rack, and missing interpreters
