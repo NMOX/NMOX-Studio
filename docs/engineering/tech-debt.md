@@ -90,6 +90,25 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.29.0)
+
+### 9. DB Studio results are read-only
+No in-grid row editing; mutations go through the console (`UPDATE …`,
+Mongo update commands) — which is the honest v1 of every serious DB tool.
+In-grid editing needs primary-key plumbing, dirty-state UX, and
+engine-specific write paths; build it as its own sprint when demand shows.
+
+### 10. DB Studio: Mongo cancel is a no-op; cursors read firstBatch only
+Driver-level operation kill and `getMore` continuation are real work with
+a small v1 audience; both are documented in the backend javadoc and the
+UI truncation flag is honest about partial reads.
+
+### 11. DB Studio: no live Mongo/Couch integration tests
+The parse/command/flatten logic is seam-tested against canned responses
+(the DigitalOceanClient idiom); SQLite carries the real end-to-end JDBC
+burden in CI. Live-server tests would need containers in CI — revisit if
+a regression ever slips through the seams.
+
 ## Open — deferred deliberately, with reasons (added v1.28.0)
 
 ### 8. No MySQL/MariaDB learning space

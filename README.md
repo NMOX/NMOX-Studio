@@ -168,6 +168,22 @@ response time, body contains, JSON path, header present) that turn a
 probe into a check. The workspace persists as `.nmoxapi.json` beside the
 project.
 
+### 🗄️ DB Studio
+A database management suite in its own tab (⇧⌘7) — **SQLite, PostgreSQL,
+MySQL, MariaDB, MongoDB, and CouchDB**, batteries included: the drivers
+are bundled (CouchDB needs none — it's plain HTTP), so a fresh install
+connects to a real database in under a minute. One tree browses
+tables/views, Mongo collections, or Couch databases down to columns and
+document shapes; a kind-aware console speaks SQL (highlighted) to SQL
+engines and JSON to document engines — Extended-JSON commands for Mongo,
+Mango selectors for Couch. Scripts run statement-by-statement (an error
+in one never stops the rest), results land in per-statement grids with
+elapsed times and honest truncation flags, history keeps your last 50
+runs, and CANCEL actually cancels. Connection specs persist per project
+in `.nmoxdb.json`; **passwords live only in the OS keychain** via the
+platform Keyring. ⌘I finds your connections and tables like everything
+else.
+
 ### 🌐 Standards & PWA, supported with gusto
 `.editorconfig` is **honored, not just highlighted** — every save
 applies the spec for real (trim_trailing_whitespace,
@@ -270,6 +286,11 @@ NMOX-Studio/
 ├── infra/                  # Node-RED-style multi-cloud Infra Designer
 │   ├── api/               # Provider abstraction
 │   └── model/             # DigitalOcean, Hetzner, Cloudflare resources
+├── apiclient/              # API Studio: Postman-style request tab
+├── dbstudio/               # DB Studio: SQL + document database suite
+│   ├── model/             # Engines, connection specs, schema records
+│   ├── engine/            # DbBackend: JDBC + Mongo + CouchDB(HTTP)
+│   └── ui/                # The ⇧⌘7 tab: tree, console, results
 ├── project/               # Project and resource management
 ├── tools/                 # Development tools and utilities
 ├── branding/              # Splash, icons, NMOX Phosphor theme
@@ -290,6 +311,8 @@ NMOX-Studio/
 | **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
 | **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
 | **infra** | Node-RED-style multi-cloud Infra Designer | `InfraDesignerTopComponent`, provider api/model |
+| **apiclient** | API Studio — Postman-style request tab | `ApiClientTopComponent`, engine, `.nmoxapi.json` |
+| **dbstudio** | DB Studio — SQL + document database suite | `DbStudioTopComponent`, `DbBackend` (JDBC/Mongo/Couch), Keyring passwords |
 | **project** | Project and resource management | `ProjectExplorerTopComponent` |
 | **tools** | Development and debugging tools | Tool windows, utilities |
 | **branding** | Splash, icons, NMOX Phosphor theme | Branding resources |
