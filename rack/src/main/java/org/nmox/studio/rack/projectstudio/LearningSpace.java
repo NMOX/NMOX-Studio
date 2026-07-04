@@ -86,17 +86,32 @@ public final class LearningSpace {
     /** Prepends the OS-appropriate install hint to the tutorial. */
     static String tutorialWithInstall(LearningCatalog.Space space) {
         StringBuilder sb = new StringBuilder(space.tutorial());
-        String os = osKey();
-        String hint = space.install().getOrDefault(os, space.install().get("mac"));
-        if (hint != null && !hint.isBlank()) {
+        String hint = installHint(space);
+        if (!hint.isBlank()) {
             sb.append("\n\n---\n\n## Install\n\nIf the tool isn't found when you press "
                     + "START, install it:\n\n```sh\n").append(hint).append("\n```\n");
         }
         return sb.toString();
     }
 
+    /**
+     * The install command for the running OS — the single selection the
+     * tutorial hint, the REPL's INSTALL button, and the picker's
+     * availability line all share (mac entry as the fallback when the
+     * current OS has none). Blank when the catalog carries none.
+     */
+    public static String installHint(LearningCatalog.Space space) {
+        String hint = space.install().getOrDefault(osKey(), space.install().get("mac"));
+        return hint == null ? "" : hint;
+    }
+
     static String osKey() {
-        String os = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
+        return osKey(System.getProperty("os.name", ""));
+    }
+
+    /** mac/darwin → mac (checked first: "darwin" contains "win"), win → windows, else linux. */
+    static String osKey(String osName) {
+        String os = osName.toLowerCase(java.util.Locale.ROOT);
         if (os.contains("mac") || os.contains("darwin")) {
             return "mac";
         }
@@ -117,7 +132,8 @@ public final class LearningSpace {
         if (driver.kind() == LearningCatalog.DriverKind.REPL) {
             RackPresets.add(rack, DeviceType.REPL, Map.of(
                     "command", command,
-                    "snippets", String.join("\n", driver.snippets())));
+                    "snippets", String.join("\n", driver.snippets()),
+                    "install", installHint(space)));
         } else {
             RackDevice solder = RackPresets.add(rack, DeviceType.CMD,
                     Map.of("command", command));

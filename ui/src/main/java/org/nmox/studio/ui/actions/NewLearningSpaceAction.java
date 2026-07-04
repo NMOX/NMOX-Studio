@@ -1,13 +1,16 @@
 package org.nmox.studio.ui.actions;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -19,6 +22,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.nmox.studio.core.process.ToolLocator;
 import org.nmox.studio.rack.projectstudio.LearningCatalog;
 import org.nmox.studio.rack.projectstudio.LearningSpace;
 import org.nmox.studio.rack.service.RackService;
@@ -49,6 +53,10 @@ import org.openide.util.NbBundle.Messages;
 })
 @Messages("CTL_NewLearningSpaceAction=New Learning Space...")
 public final class NewLearningSpaceAction implements ActionListener {
+
+    private static final Color TOOL_OK = new Color(96, 176, 96);
+    private static final Color TOOL_MISSING = new Color(214, 143, 60);
+    private static final Color TOOL_PROBING = new Color(128, 128, 128);
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -98,6 +106,17 @@ public final class NewLearningSpaceAction implements ActionListener {
             }
         });
 
+        // availability up front: does this machine have the space's tool?
+        JLabel availability = new JLabel(" ");
+        availability.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 0, 2));
+        Map<String, Boolean> probeCache = new HashMap<>(); // EDT-confined, dialog-lifetime
+        list.addListSelectionListener(ev -> {
+            if (!ev.getValueIsAdjusting()) {
+                updateAvailability(list, availability, probeCache);
+            }
+        });
+        updateAvailability(list, availability, probeCache);
+
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("Learn by doing — pick a language, framework, or library:"),
@@ -105,6 +124,7 @@ public final class NewLearningSpaceAction implements ActionListener {
         JPanel body = new JPanel(new BorderLayout(0, 6));
         body.add(search, BorderLayout.NORTH);
         body.add(new JScrollPane(list), BorderLayout.CENTER);
+        body.add(availability, BorderLayout.SOUTH);
         panel.add(body, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(560, 460));
 
@@ -152,6 +172,72 @@ public final class NewLearningSpaceAction implements ActionListener {
         } catch (Exception ignored) {
             // the tutorial is on disk regardless; the file tree can open it
         }
+    }
+
+    /**
+     * Availability up front: probes the selected space's required tool
+     * with ToolLocator OFF the EDT, caches verdicts per tool name for
+     * the dialog's lifetime, and drops stale results — a probe only
+     * lands if the selection still requires the tool it probed (the NPM
+     * explorer's currentProjectDir guard, in miniature).
+     */
+    private static void updateAvailability(JList<LearningCatalog.Space> list,
+            JLabel label, Map<String, Boolean> cache) {
+        LearningCatalog.Space space = list.getSelectedValue();
+        String tool = space == null ? null : requiredTool(space);
+        if (tool == null) {
+            label.setText(" ");
+            return;
+        }
+        Boolean found = cache.get(tool);
+        if (found != null) {
+            renderAvailability(label, tool, found, LearningSpace.installHint(space));
+            return;
+        }
+        label.setForeground(TOOL_PROBING);
+        label.setText("requires " + tool + " — checking…");
+        org.openide.util.RequestProcessor.getDefault().post(() -> {
+            // present = ToolLocator resolves the bare name to a real path
+            boolean resolved = !ToolLocator.resolve(tool).equals(tool);
+            SwingUtilities.invokeLater(() -> {
+                cache.put(tool, resolved);
+                LearningCatalog.Space now = list.getSelectedValue();
+                if (now != null && tool.equals(requiredTool(now))) {
+                    renderAvailability(label, tool, resolved, LearningSpace.installHint(now));
+                }
+            });
+        });
+    }
+
+    private static void renderAvailability(JLabel label, String tool, boolean found,
+            String installHint) {
+        label.setForeground(found ? TOOL_OK : TOOL_MISSING);
+        label.setText(availabilityText(tool, found, installHint));
+    }
+
+    /** The availability line, pure: the ✓/✗ verdict plus the OS-appropriate install command. */
+    static String availabilityText(String tool, boolean found, String installHint) {
+        if (found) {
+            return "requires " + tool + " — ✓ found";
+        }
+        return "requires " + tool + " — ✗ not found"
+                + (installHint == null || installHint.isBlank() ? "" : " · " + installHint);
+    }
+
+    /**
+     * The external tool a space needs on PATH: the driver's first
+     * command token (the interpreter for REPL spaces, the runner for
+     * run spaces). Null when there is nothing meaningful to probe — no
+     * command at all, or a project-relative script (bin/rails) that
+     * cannot exist before the space is generated.
+     */
+    static String requiredTool(LearningCatalog.Space space) {
+        List<String> command = space.driver() == null ? List.of() : space.driver().command();
+        if (command.isEmpty()) {
+            return null;
+        }
+        String tool = command.get(0).trim();
+        return tool.isEmpty() || tool.contains("/") || tool.contains("\\") ? null : tool;
     }
 
     private static boolean matches(LearningCatalog.Space s, String q) {

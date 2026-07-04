@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.31.0] — 2026-07-04
+
+The REPL grows up: pick an engine from the rack, and missing interpreters
+install themselves. Born from a live session — creating the Common Lisp
+learning space on a machine without clisp meant a trip to the terminal.
+Never again.
+
+### Added
+- **ENGINE knob on the REPL** — turn it to lisp, python, node, ruby,
+  haskell, elixir, sqlite, redis… (26 engines, derived at runtime from
+  the learning catalog's own REPL drivers, deduped) and the command
+  field fills itself with the *correct* invocation — force-interactive
+  flags included (`python3 -i -q`, `node -i`). Picking an engine also
+  seeds its HINTS snippets (hints now work for any dialed engine, not
+  just generated learning spaces) and its per-OS install command. Type
+  your own command and the knob flips to CUSTOM — presets never fight
+  manual control. Saved patches win over knob seeding on load.
+- **INSTALL button on the REPL** — armed exactly when the dialed
+  interpreter has a known install command and isn't running. Click →
+  the install (brew/apt/choco, from the curated catalog) streams onto
+  the REPL screen → "installed — press START". Dial haskell without
+  ghci and the path from curiosity to a live GHCi prompt is two clicks.
+  Never auto-starts; STOP-ALL kills an in-flight install.
+- **The learning-space picker warns before you commit** — selecting a
+  space live-probes its interpreter off-EDT and shows "requires clisp —
+  ✓ found" or "✗ not found · brew install clisp" under the blurb,
+  before anything is created.
+- Catalog integrity test: the well-known interpreter spaces must carry
+  mac/linux/windows install commands — no future space ships without
+  its escape hatch.
+
 ## [1.30.2] — 2026-07-04
 
 ### Fixed
