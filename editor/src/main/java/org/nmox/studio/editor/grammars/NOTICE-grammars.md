@@ -54,6 +54,19 @@ textmate-lexer module.
 | proto.tmLanguage.json | zxh0/vscode-proto3 (proto3.tmLanguage.json) | MIT |
 | prisma.tmLanguage.json | prisma/language-tools | Apache-2.0 |
 
+## Apache config (added 2026-07-04)
+
+| Grammar | Source | License |
+|---|---|---|
+| apache.tmLanguage.json | mrmlnc/vscode-apache tag **1.2.0** (syntaxes/Apache.tmLanguage), converted plist→JSON | MIT |
+
+The Apache grammar is self-contained (no cross-grammar includes) and
+scoped `source.apacheconf`. Its upstream `fileTypes` metadata claims
+bare `conf` — inert here: NetBeans resolution comes from our own
+registrations, which deliberately do NOT claim the generic `.conf`
+extension (only `.vhost` plus the exact names `.htaccess`,
+`httpd.conf`, `apache2.conf` via ConfigFileResolver).
+
 ## Embed-only grammars (scope registry, no editor binding)
 
 These are registered under synthetic `text/x-nmox-embed-*` mimes purely

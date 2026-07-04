@@ -210,6 +210,32 @@ public enum RackPresets {
             rack.connect(blackbox.getPort("out"), console.getPort("in"));
             rack.connect(tail.getPort("out"), console.getPort("in"));
         }
+    },
+
+    LAMP_BENCH("LAMP Bench",
+            "Composer install fans out to phpunit + phpstan + Pint; IGNITION serves public/") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
+            // VERITAS pinned to phpunit
+            RackDevice test = add(rack, DeviceType.TEST, Map.of("framework", "11"));
+            // TYPEGUARD and GLOSS auto-detect the PHP lane (phpstan / Pint);
+            // GLOSS in CHECK mode - a bench verifies, it doesn't rewrite
+            RackDevice typecheck = add(rack, DeviceType.TYPECHECK, null);
+            RackDevice format = add(rack, DeviceType.FORMAT, Map.of("write", "false"));
+            // IGNITION pinned to php: `php -S 127.0.0.1:8000 -t public`
+            RackDevice serve = add(rack, DeviceType.RUN, Map.of("target", "19"));
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // one green install fans out to every checker in the lane
+            rack.connect(deps.getPort("ok"), test.getPort("run"));
+            rack.connect(deps.getPort("ok"), typecheck.getPort("run"));
+            rack.connect(deps.getPort("ok"), format.getPort("run"));
+            rack.connect(test.getPort("out"), console.getPort("in"));
+            rack.connect(typecheck.getPort("out"), console.getPort("in"));
+            rack.connect(format.getPort("out"), console.getPort("in"));
+            rack.connect(serve.getPort("out"), console.getPort("in"));
+            rack.connect(deps.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;

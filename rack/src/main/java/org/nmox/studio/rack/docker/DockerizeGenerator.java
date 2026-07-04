@@ -40,12 +40,21 @@ public final class DockerizeGenerator {
                 files.put("Dockerfile", python());
                 files.put(".dockerignore", ignore("__pycache__", ".venv", ".git"));
             }
+            case PHP -> {
+                files.put("Dockerfile", php());
+                files.put("docker/nginx.conf", phpNginxConf(name));
+                files.put(".dockerignore", ignore("vendor", ".env", ".git"));
+            }
             default -> {
                 files.put("Dockerfile", generic());
                 files.put(".dockerignore", ignore(".git"));
             }
         }
-        files.put("compose.yaml", compose(name, defaultPort(kind, nodeBuildsStatic)));
+        // php-fpm doesn't speak HTTP; its compose pairs the app with an
+        // nginx sidecar instead of publishing the app port directly
+        files.put("compose.yaml", kind == ProjectInspector.ProjectKind.PHP
+                ? phpCompose(name)
+                : compose(name, defaultPort(kind, nodeBuildsStatic)));
         return files;
     }
 
@@ -55,6 +64,7 @@ public final class DockerizeGenerator {
             case NODE -> nodeBuildsStatic ? 80 : 3000;
             case GO, RUST -> 8080;
             case PYTHON -> 8000;
+            case PHP -> 80; // the nginx sidecar fronts the fpm container
             default -> 8080;
         };
     }
@@ -150,6 +160,68 @@ public final class DockerizeGenerator {
                 EXPOSE 8000
                 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
                 """;
+    }
+
+    private static String php() {
+        return """
+                # Composer resolves dependencies in its own stage; the runtime
+                # image is slim FPM and never carries composer itself
+                FROM composer:2 AS deps
+                WORKDIR /app
+                COPY . .
+                RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+                FROM php:8.3-fpm-alpine
+                WORKDIR /var/www/html
+                COPY --from=deps /app/vendor ./vendor
+                COPY . .
+                EXPOSE 9000
+                CMD ["php-fpm"]
+                """;
+    }
+
+    /** The nginx sidecar's server block: static files, then the front controller. */
+    private static String phpNginxConf(String name) {
+        return """
+                server {
+                    listen 80;
+                    server_name _;
+
+                    root /var/www/html/public;
+                    index index.php;
+
+                    location / {
+                        try_files $uri $uri/ /index.php?$query_string;
+                    }
+
+                    location ~ \\.php$ {
+                        include fastcgi_params;
+                        fastcgi_pass %s:9000;
+                        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                    }
+                }
+                """.formatted(name);
+    }
+
+    /** fpm app + nginx sidecar, nginx published on 80. */
+    private static String phpCompose(String name) {
+        return """
+                services:
+                  %s:
+                    build: .
+                    restart: unless-stopped
+
+                  nginx:
+                    image: nginx:1.27-alpine
+                    ports:
+                      - "80:80"
+                    volumes:
+                      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+                      - .:/var/www/html:ro
+                    depends_on:
+                      - %s
+                    restart: unless-stopped
+                """.formatted(name, name);
     }
 
     private static String generic() {

@@ -153,6 +153,75 @@ class FrameworkDeviceTest {
         }
     }
 
+    // ---------------- ARTISAN / ArtisanDevice ----------------
+
+    @Test
+    @DisplayName("ARTISAN serve detects artisan's bracketed URL, fires READY once, no re-emit")
+    void artisanServeAndUrl() throws IOException {
+        Rack rack = rackWith("composer.json");
+        try {
+            Files.writeString(projectDir.resolve("artisan"), "#!/usr/bin/env php\n");
+            ArtisanDevice artisan = new ArtisanDevice();
+            Probe probe = new Probe();
+            rack.addDevice(artisan);
+            rack.addDevice(probe);
+            rack.connect(artisan.getPort("url"), probe.getPort("data"));
+            rack.connect(artisan.getPort("ready"), probe.getPort("trig"));
+
+            // default ACTION knob position is serve
+            assertThat(artisan.buildCommand()).containsExactly("php", "artisan", "serve");
+
+            // artisan serve announces: Server running on [http://127.0.0.1:8000].
+            artisan.onLine("   INFO  Server running on [http://127.0.0.1:8000].");
+            artisan.onLine("Server running on [http://127.0.0.1:8000]."); // same URL: no re-emit
+            settle(rack);
+
+            // the bracket and trailing period must not leak into the URL
+            assertThat(probe.data).extracting(Signal::payload)
+                    .containsExactly("http://127.0.0.1:8000");
+            assertThat(probe.trig).as("READY fires exactly once").hasSize(1);
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("ARTISAN onFinished drops the SERVING gate")
+    void artisanServingGateDrops() throws IOException {
+        Rack rack = rackWith("composer.json");
+        try {
+            ArtisanDevice artisan = new ArtisanDevice();
+            Probe probe = new Probe();
+            rack.addDevice(artisan);
+            rack.addDevice(probe);
+            rack.connect(artisan.getPort("serving"), probe.getPort("gate"));
+
+            artisan.onFinished(0);
+            settle(rack);
+            assertThat(probe.gate).anyMatch(s -> !s.high());
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("ARTISAN version currency reads the locked laravel/framework from composer.lock")
+    void artisanComposerLockVersion() throws IOException {
+        Files.writeString(projectDir.resolve("composer.lock"),
+                "{\"packages\":[{\"name\":\"symfony/console\",\"version\":\"v7.1.0\"},"
+                + "{\"name\":\"laravel/framework\",\"version\":\"v11.9.2\"}],"
+                + "\"packages-dev\":[{\"name\":\"laravel/pint\",\"version\":\"v1.16.0\"}]}");
+        assertThat(ProjectInspector.composerLockVersion(projectDir.toFile(), "laravel/framework"))
+                .as("composer's v prefix is stripped").isEqualTo("11.9.2");
+        assertThat(ProjectInspector.composerLockVersion(projectDir.toFile(), "laravel/pint"))
+                .as("packages-dev is searched too").isEqualTo("1.16.0");
+        assertThat(ProjectInspector.composerLockVersion(projectDir.toFile(), "not/here"))
+                .isNull();
+        Path empty = Files.createDirectory(projectDir.resolve("empty"));
+        assertThat(ProjectInspector.composerLockVersion(empty.toFile(), "laravel/framework"))
+                .as("no lock file → unknown").isNull();
+    }
+
     // ---------------- HALO / AngularDevice ----------------
 
     @Test

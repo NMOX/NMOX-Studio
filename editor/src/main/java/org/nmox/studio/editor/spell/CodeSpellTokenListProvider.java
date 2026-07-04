@@ -64,6 +64,7 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/x-handlebars", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-liquid", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-nginx-conf", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-apache-conf", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-makefile", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-protobuf", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-prisma", service = TokenListProvider.class),

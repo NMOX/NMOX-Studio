@@ -98,17 +98,17 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
-### GLOSS — Code Formatter — prettier
+### GLOSS — Code Formatter — prettier; pint on PHP lanes
 
-> Prettier over the project. WRITE rewrites; CHECK only verifies.
+> Prettier over the project (Laravel Pint on PHP lanes). WRITE rewrites; CHECK only verifies.
 > Patch REFLEX CHANGED → RUN for format-on-save.
 
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
-### TYPEGUARD — Type Checker — tsc, watch-aware
+### TYPEGUARD — Type Checker — tsc, watch-aware; phpstan on PHP lanes
 
-> tsc --noEmit. WATCH keeps the compiler resident and fires OK/FAIL per check.
+> tsc --noEmit (phpstan on PHP lanes). WATCH keeps the compiler resident and fires OK/FAIL per check.
 > STRICT adds --strict. E: count on the LCD.
 
 - **In:** `RUN` (trigger)
@@ -196,6 +196,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 > Version cluster tracks next against the registry.
 
 - **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
+### ARTISAN — Laravel Console — artisan serve/test/migrate, Packagist currency
+
+> SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials
+> test/migrate/fresh/queue/routes for RUN. Tinker is interactive — use the REPL device (php artisan tinker).
+
+- **In:** `RUN` (trigger), `SERVE` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
 ## OBSERVE

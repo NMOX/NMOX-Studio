@@ -682,7 +682,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         }
         try {
             for (Map.Entry<String, String> e : dockerizeFiles.entrySet()) {
-                Files.writeString(new File(dir, e.getKey()).toPath(), e.getValue(), java.nio.charset.StandardCharsets.UTF_8);
+                java.nio.file.Path target = new File(dir, e.getKey()).toPath();
+                Files.createDirectories(target.getParent()); // PHP ships docker/nginx.conf
+                Files.writeString(target, e.getValue(), java.nio.charset.StandardCharsets.UTF_8);
             }
             status("wrote " + String.join(", ", dockerizeFiles.keySet()) + " into " + dir.getName());
         } catch (Exception ex) {

@@ -38,6 +38,7 @@ class RunFocusedTestActionTest {
         assertThat(RunFocusedTestAction.patternFor("text/x-go")).isNotNull();
         assertThat(RunFocusedTestAction.patternFor("text/x-rust")).isNotNull();
         assertThat(RunFocusedTestAction.patternFor("text/x-elixir")).isNotNull();
+        assertThat(RunFocusedTestAction.patternFor("text/x-php5")).isNotNull();
         assertThat(RunFocusedTestAction.patternFor("text/x-ruby")).isNull();
     }
 
@@ -86,6 +87,34 @@ class RunFocusedTestActionTest {
         assertThat(RunFocusedTestAction.nearestMatch(doc("x = 1\n"), 5, p)).isNull();
         // a null pattern (unsupported mime) also yields null
         assertThat(RunFocusedTestAction.nearestMatch(doc("anything"), 0, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("PHP: classic test-prefixed methods are captured, nearest to the caret wins")
+    void phpNearestMatchClassicShape() throws BadLocationException {
+        String php = "<?php\nclass CalcTest extends TestCase {\n"
+                + "    public function testAdds(): void {}\n"
+                + "    public function testSubtracts(): void {}\n"
+                + "    public function helperNotATest(): void {}\n"
+                + "}\n";
+        Pattern p = RunFocusedTestAction.patternFor("text/x-php5");
+        assertThat(RunFocusedTestAction.nearestMatch(doc(php), php.indexOf("testSubtracts"), p))
+                .isEqualTo("testSubtracts");
+        // a public function without the test prefix (and no attribute) never matches
+        assertThat(RunFocusedTestAction.nearestMatch(
+                doc("<?php\npublic function helperNotATest(): void {}\n"), 5, p)).isNull();
+    }
+
+    @Test
+    @DisplayName("PHP: #[Test]-attributed methods are captured whatever their name")
+    void phpNearestMatchAttributeShape() throws BadLocationException {
+        String php = "<?php\nclass CalcTest extends TestCase {\n"
+                + "    #[Test]\n"
+                + "    public function addsNumbers(): void {}\n"
+                + "}\n";
+        Pattern p = RunFocusedTestAction.patternFor("text/x-php5");
+        assertThat(RunFocusedTestAction.nearestMatch(doc(php), php.indexOf("addsNumbers"), p))
+                .isEqualTo("addsNumbers");
     }
 
     // ---- command building --------------------------------------------------
@@ -177,6 +206,54 @@ class RunFocusedTestActionTest {
         Focused f = RunFocusedTestAction.commandFor("text/x-elixir", testFile, null, 42);
         assertThat(f.command()).containsExactly("mix", "test",
                 testFile.getAbsolutePath() + ":42");
+    }
+
+    @Test
+    @DisplayName("PHP with a composer-installed phpunit runs vendor/bin/phpunit --filter")
+    void phpVendorLocalCommand(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "composer.json").toPath(),
+                "{\"name\":\"acme/app\"}", StandardCharsets.UTF_8);
+        File vendorBin = new File(project, "vendor/bin");
+        assertThat(vendorBin.mkdirs()).isTrue();
+        File localPhpunit = new File(vendorBin, "phpunit");
+        Files.writeString(localPhpunit.toPath(), "#!/bin/sh\n", StandardCharsets.UTF_8);
+        File tests = new File(project, "tests");
+        assertThat(tests.mkdirs()).isTrue();
+        File testFile = new File(tests, "CalcTest.php");
+        Files.writeString(testFile.toPath(),
+                "<?php\npublic function testAdds(): void {}\n", StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor("text/x-php5", testFile, "testAdds", 1);
+        assertThat(f).isNotNull();
+        assertThat(f.command()).containsExactly(localPhpunit.getAbsolutePath(),
+                "--filter", "testAdds", "tests" + File.separator + "CalcTest.php");
+        assertThat(f.dir()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("PHP without vendor/bin/phpunit falls back to the global phpunit")
+    void phpGlobalCommand(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "composer.json").toPath(),
+                "{\"name\":\"acme/app\"}", StandardCharsets.UTF_8);
+        File testFile = new File(project, "CalcTest.php");
+        Files.writeString(testFile.toPath(),
+                "<?php\n#[Test]\npublic function addsNumbers(): void {}\n",
+                StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor("text/x-php5", testFile, "addsNumbers", 1);
+        assertThat(f.command()).containsExactly("phpunit",
+                "--filter", "addsNumbers", "CalcTest.php");
+        assertThat(f.dir()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("A PHP file with no focused test name yields no command")
+    void phpNoNameIsNull(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "composer.json").toPath(),
+                "{\"name\":\"acme/app\"}", StandardCharsets.UTF_8);
+        File testFile = new File(project, "NothingTest.php");
+        Files.writeString(testFile.toPath(), "<?php\n", StandardCharsets.UTF_8);
+        assertThat(RunFocusedTestAction.commandFor("text/x-php5", testFile, null, 1)).isNull();
     }
 
     @Test

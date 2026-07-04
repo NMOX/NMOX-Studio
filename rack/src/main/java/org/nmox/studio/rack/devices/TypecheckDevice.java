@@ -16,7 +16,8 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  * TYPEGUARD Type Checker: tsc --noEmit over the project. In WATCH mode
  * the compiler stays resident and TYPEGUARD fires OK/FAIL after every
  * incremental check - patch REFLEX out of the loop and let tsc's own
- * watcher drive the pipeline for TypeScript projects.
+ * watcher drive the pipeline for TypeScript projects. On PHP lanes it
+ * runs phpstan instead (raw format), feeding the same diagnostics bus.
  */
 public class TypecheckDevice extends CommandDevice {
 
@@ -50,6 +51,10 @@ public class TypecheckDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
+        // PHP lane: phpstan's raw format prints one file:line:message per error
+        if (effectiveKind() == ProjectInspector.ProjectKind.PHP) {
+            return List.of("vendor/bin/phpstan", "analyse", "--no-progress", "--error-format=raw");
+        }
         List<String> cmd = new ArrayList<>(List.of("npx", "tsc", "--noEmit", "--pretty", "false"));
         if (strictSwitch.isOn()) {
             cmd.add("--strict");
@@ -64,9 +69,26 @@ public class TypecheckDevice extends CommandDevice {
             java.util.Collections.synchronizedList(new java.util.ArrayList<>());
     private static final java.util.regex.Pattern TSC_LOC = java.util.regex.Pattern.compile(
             "^(.+?)\\((\\d+),(\\d+)\\):\\s+(error|warning)\\s+TS\\d+:\\s+(.*)$");
+    /** phpstan --error-format=raw line: path/File.php:42:Message */
+    private static final java.util.regex.Pattern PHPSTAN_LOC = java.util.regex.Pattern.compile(
+            "^(.+?\\.php):(\\d+):(.*)$");
 
     @Override
     protected void onLine(String line) {
+        if (effectiveKind() == ProjectInspector.ProjectKind.PHP) {
+            java.util.regex.Matcher raw = PHPSTAN_LOC.matcher(line);
+            if (raw.find()) {
+                java.io.File f = new java.io.File(raw.group(1));
+                if (!f.isAbsolute()) {
+                    f = new java.io.File(commandDir(), raw.group(1));
+                }
+                if (f.isFile()) {
+                    collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
+                            f, Integer.parseInt(raw.group(2)), raw.group(3).trim(), true));
+                }
+            }
+            return;
+        }
         java.util.regex.Matcher loc = TSC_LOC.matcher(line);
         if (loc.find()) {
             java.io.File f = new java.io.File(loc.group(1));
@@ -119,8 +141,18 @@ public class TypecheckDevice extends CommandDevice {
 
     @Override
     protected void onFinished(int exitCode) {
+        boolean php = effectiveKind() == ProjectInspector.ProjectKind.PHP;
+        if (php) {
+            // phpstan raw prints no "Found N errors" summary: the parsed
+            // lines are the count
+            int errors = collected.size();
+            onEdt(() -> {
+                errorLcd.setTextColor(errors == 0 ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                errorLcd.setText("E:" + errors);
+            });
+        }
         onEdt(() -> cleanLed.setOn(exitCode == 0));
-        org.nmox.studio.rack.engine.DiagnosticsBus.publish("tsc",
+        org.nmox.studio.rack.engine.DiagnosticsBus.publish(php ? "phpstan" : "tsc",
                 new java.util.ArrayList<>(collected));
     }
 }

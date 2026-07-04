@@ -4,6 +4,77 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.28.0] — 2026-07-04
+
+The LAMP/LEMP sprint: the IDE audited from a senior LAMP/LEMP engineer's
+chair — PHP, MySQL/MariaDB, nginx/Apache, Linux deploys — and every gap in
+that daily loop built. PHP was already half a citizen (composer/phpunit/
+Xdebug/intelephense); now it's a first-class one.
+
+### Added
+- **ARTISAN — the Laravel console** (the rack's 41st device), in Laravel
+  brand red: SERVE / TEST / MIGRATE / FRESH(+seed) / QUEUE / ROUTES on the
+  action knob, `composer.lock` version currency with an async
+  latest-version probe, and real long-runner wiring — READY fires once on
+  Laravel's "Server running on" line, URL emits on change, the SERVING
+  gate drops when the process dies. Tinker is deliberately not a knob
+  target — the REPL device handles interactive (the How-to-use card says
+  so).
+- **TYPEGUARD and GLOSS gained PHP lanes.** On a PHP project, TYPEGUARD
+  AUTO runs `vendor/bin/phpstan analyse` and feeds phpstan's findings into
+  the same diagnostics bus (squiggles included); GLOSS runs Laravel Pint,
+  honoring WRITE/CHECK. The tsc and Prettier lanes are byte-identical and
+  test-pinned.
+- **IGNITION's php target serves for real**: `php -S 127.0.0.1:8000 -t
+  public` when a composer-era `public/` docroot exists, root fallback
+  otherwise.
+- **Apache config editing** — `.htaccess`, `httpd.conf`, `apache2.conf`,
+  and `*.vhost` now highlight (pinned MIT grammar, self-contained), with
+  `#` comment-toggle and comments-only spellcheck. Generic `.conf` is
+  deliberately not claimed. The "A" in LAMP, finally.
+- **PHPUnit in Run Focused Test** — the test under the caret runs via
+  `vendor/bin/phpunit --filter <name>` (global fallback), matching both
+  `public function testX` and `#[Test]` shapes.
+- **"PHP Web (LEMP)" project template** — 14 honest files: guarded front
+  controller that works pre-`composer install` and doubles as a cli-server
+  router (`composer serve`), PSR-4 `src/` + a passing PHPUnit test,
+  `phpstan.neon.dist` (so the TYPEGUARD lane works out of the box),
+  `.env.example`, a working three-service `docker-compose.yml`
+  (nginx + php-fpm + MariaDB), the matching `docker/nginx.conf`
+  (front-controller `try_files`, `fastcgi_pass`), and
+  `deploy/cloud-init.yml` — a commented LEMP bootstrap you paste into a
+  droplet's user_data in the Infra designer. Validated for real:
+  `php -l` clean, compose config passes, PHPUnit ran the generated test
+  green.
+- **LAMP Bench rack preset** — CRATE (composer) fans out to VERITAS
+  (phpunit) + TYPEGUARD (phpstan) + GLOSS (pint --test) with IGNITION
+  serving and everything on the MONITOR bus; the template's rack aims at
+  it automatically.
+- **Dockerize learned PHP** — multi-stage `composer:2` →
+  `php:8.3-fpm-alpine` Dockerfile with an nginx sidecar in the generated
+  compose (port 80), plus `vendor/`+`.env` in `.dockerignore`.
+- **Environment Doctor probes the LAMP stack**: composer, mysql client,
+  nginx (whose version prints to stderr via `-v` — handled), apachectl.
+- **The Database Explorer was already on board — now documented.** The
+  app ships NetBeans' full DB tooling (10 modules: connections, schema
+  browsing, SQL editor with result grids, MySQL integration). Point it at
+  your MySQL/MariaDB from the Services window; bring the Connector/J jar
+  and the driver-registration UI does the rest.
+
+### Fixed
+- **Dockerize crashed writing nested output paths** — files like
+  `docker/nginx.conf` hit a missing-parent `NoSuchFileException`; parents
+  are now created.
+- **Every project template's README rendered its headings as code
+  blocks** — the generator emitted 12-space-indented Markdown (a
+  text-block min-indent bug). All templates now emit flush-left READMEs.
+
+### Deliberately not done
+- **No MySQL learning space** — learning-space REPLs launch local
+  interpreters; `mysql` needs a live server to connect to, which breaks
+  the type-in-and-learn model. The SQLite space already teaches SQL
+  against a real engine.
+
 ## [1.27.0] — 2026-07-03
 
 The coverage sprint: raise test coverage across the whole codebase to the

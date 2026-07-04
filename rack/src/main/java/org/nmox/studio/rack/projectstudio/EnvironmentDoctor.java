@@ -46,6 +46,10 @@ public final class EnvironmentDoctor {
                 new String[]{"python3", "Python — tooling and spaces", "brew install python"},
                 new String[]{"ruby", "Ruby toolchain", "brew install ruby"},
                 new String[]{"php", "PHP toolchain", "brew install php"},
+                new String[]{"composer", "PHP package manager", "brew install composer"},
+                new String[]{"mysql", "MySQL/MariaDB client", "brew install mysql-client"},
+                new String[]{"nginx", "web server", "brew install nginx"},
+                new String[]{"apachectl", "Apache HTTP server", "preinstalled on macOS / apt install apache2"},
                 new String[]{"bun", "Bun runtime", "brew install oven-sh/bun/bun"},
                 new String[]{"deno", "Deno runtime", "brew install deno"},
                 new String[]{"mix", "Elixir/BEAM toolchain", "brew install elixir"}));
@@ -75,9 +79,15 @@ public final class EnvironmentDoctor {
      */
     public static Finding probe(String tool, String purpose, String installHint) {
         try {
-            // go is the one holdout that rejects --version (it wants `go version`)
-            List<String> versionCmd = "go".equals(tool)
-                    ? List.of("go", "version") : List.of(tool, "--version");
+            // most tools speak --version; the holdouts get their own dialect
+            List<String> versionCmd = switch (tool) {
+                case "go" -> List.of("go", "version"); // rejects --version
+                // nginx has no --version and prints `nginx -v` to STDERR —
+                // redirectErrorStream below folds it into the read stream
+                case "nginx" -> List.of("nginx", "-v");
+                case "apachectl" -> List.of("apachectl", "-v"); // --version unsupported
+                default -> List.of(tool, "--version");
+            };
             Process p = ProcessSupport.builder(versionCmd)
                     .redirectErrorStream(true)
                     .start();

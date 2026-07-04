@@ -90,6 +90,16 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.28.0)
+
+### 8. No MySQL/MariaDB learning space
+Learning-space REPLs launch a local interpreter the user types into;
+`mysql`/`mariadb` clients need a live server to connect to, which breaks
+the zero-setup type-in-and-learn model. The SQLite space already teaches
+SQL against a real engine, and the Database Explorer (ships in the box)
+covers working with live MySQL. Revisit only if a self-contained embedded
+option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
 ## Closed by v1.27.0 (the coverage sprint)
 
 - ~~Thin/absent test coverage in several modules (ui at 0.4%, project at
