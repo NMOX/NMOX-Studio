@@ -133,6 +133,8 @@ public final class DbStudioTopComponent extends TopComponent {
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean rackListenerAttached;
     private String activeSpecId;
+    /** True while a console run is in flight; gates RUN and re-entry. */
+    private boolean running;
     private String consoleMime = "";
 
     public DbStudioTopComponent() {
@@ -185,6 +187,27 @@ public final class DbStudioTopComponent extends TopComponent {
 
             @Override
             public void treeWillCollapse(TreeExpansionEvent event) {
+            }
+        });
+        // double-click a table/collection/database → peek at its data: fill
+        // the console with an engine-appropriate query and run it. The same
+        // gesture every serious DB tool honors; without it the tree feels dead.
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() != 2) {
+                    return;
+                }
+                TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+                if (path == null) {
+                    return;
+                }
+                DefaultMutableTreeNode node =
+                        (DefaultMutableTreeNode) path.getLastPathComponent();
+                if (node.getUserObject() instanceof TableInfo info) {
+                    tree.setSelectionPath(path);
+                    peek(info);
+                }
             }
         });
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
@@ -265,7 +288,33 @@ public final class DbStudioTopComponent extends TopComponent {
 
     // ---- running the console ----
 
+    /**
+     * Double-click peek: put an engine-appropriate preview query for the
+     * container into the console and run it. For a CouchDB database node
+     * that the spec isn't aimed at, fill the console but explain instead of
+     * silently querying the wrong database.
+     */
+    private void peek(TableInfo info) {
+        ConnectionSpec spec = selectedConnection();
+        if (spec == null || running) {
+            return;
+        }
+        activeSpecId = spec.id();
+        applyConsoleMime(spec.engine());
+        int limit = (Integer) limitSpinner.getValue();
+        console.setText(PeekQueries.consoleTextFor(spec.engine(), info, limit));
+        if (PeekQueries.runnableAgainst(spec, info)) {
+            run();
+        } else {
+            status("Console queries \"" + spec.database() + "\" — Edit the connection's "
+                    + "database to \"" + info.name() + "\" to query it", FAIL_RED);
+        }
+    }
+
     private void run() {
+        if (running) {
+            return;
+        }
         ConnectionSpec spec = activeSpec();
         if (spec == null) {
             status("Select a connection first", FAIL_RED);
@@ -277,7 +326,8 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         int limit = (Integer) limitSpinner.getValue();
-        runButton.setEnabled(false);
+        running = true;
+        refreshActions();
         cancelButton.setEnabled(true);
         status("Running…", Color.GRAY);
         long started = System.currentTimeMillis();
@@ -290,7 +340,7 @@ public final class DbStudioTopComponent extends TopComponent {
                             openError, text));
             long totalMs = System.currentTimeMillis() - started;
             SwingUtilities.invokeLater(() -> {
-                runButton.setEnabled(true);
+                running = false;
                 cancelButton.setEnabled(false);
                 history.add(text, spec.engine().displayName(), System.currentTimeMillis());
                 refreshHistory();
@@ -453,6 +503,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 connecting.remove(spec.id());
                 if (error != null) {
                     status("Connect failed: " + error, FAIL_RED);
+                    balloon("Connect failed: " + spec.name(), error, false);
                     if (node != null) {
                         setPlaceholder(node, "not connected");
                     }
@@ -488,9 +539,13 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             String error = backend.test();
             backend.close();
-            SwingUtilities.invokeLater(() -> status(error == null
-                    ? "OK: " + spec.name() + " is reachable"
-                    : "Test failed: " + error, error == null ? OK_GREEN : FAIL_RED));
+            SwingUtilities.invokeLater(() -> {
+                status(error == null
+                        ? "OK: " + spec.name() + " is reachable"
+                        : "Test failed: " + error, error == null ? OK_GREEN : FAIL_RED);
+                balloon("Test " + spec.name() + (error == null ? ": reachable" : ": failed"),
+                        error, error == null);
+            });
         });
     }
 
@@ -524,6 +579,14 @@ public final class DbStudioTopComponent extends TopComponent {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(spec);
             node.add(new DefaultMutableTreeNode("Loading…"));
             root.add(node);
+        }
+        if (specs.isEmpty()) {
+            // first-run guidance: an empty tree with greyed buttons reads as
+            // broken; say what to do instead
+            root.add(new DefaultMutableTreeNode(
+                    "No connections yet — click Add below to create one"));
+            status("Add a connection, then double-click a table to peek at its data",
+                    Color.GRAY);
         }
         tree.setModel(new DefaultTreeModel(root));
         refreshActions();
@@ -637,6 +700,27 @@ public final class DbStudioTopComponent extends TopComponent {
         connectButton.setEnabled(selected);
         DbBackend backend = selected ? backends.get(spec.id()) : null;
         connectButton.setText(backend != null && backend.isOpen() ? "Disconnect" : "Connect");
+        // RUN gates on having a target: an always-armed button that silently
+        // no-ops reads as broken. The tooltip says why it's off.
+        boolean runnable = !running && activeSpec() != null;
+        runButton.setEnabled(runnable);
+        runButton.setToolTipText(runnable
+                ? "Execute the console against the active connection"
+                : running ? "A run is in flight" : "Select a connection first");
+    }
+
+    /**
+     * Feedback that cannot be missed: async outcomes (test, connect) land as
+     * balloon notifications in addition to the status strip. Failures carry
+     * the error; successes are one quiet line.
+     */
+    private static void balloon(String title, String detail, boolean ok) {
+        javax.swing.Icon icon = javax.swing.UIManager.getIcon(
+                ok ? "OptionPane.informationIcon" : "OptionPane.errorIcon");
+        org.openide.awt.NotificationDisplayer.getDefault().notify(
+                title, icon, detail == null ? "" : detail, null,
+                ok ? org.openide.awt.NotificationDisplayer.Priority.LOW
+                   : org.openide.awt.NotificationDisplayer.Priority.NORMAL);
     }
 
     // ---- CRUD ----
