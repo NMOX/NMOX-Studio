@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.30.2] — 2026-07-04
+
+### Fixed
+- **The ⌘Tab switcher labeled dev launches "java"** — the switcher name
+  comes from the app bundle's Info.plist and only attributes when the
+  JVM runs from inside a `.app`; no `-Xdock` flag can reach it. The DMG
+  script gained `--app-only`: it stops after building the real bundle
+  (embedded runtime included), giving dev play-testing full macOS
+  fidelity — icon, menu name, and switcher label. Packaged users were
+  always correct; this closes the last dev-launch branding gap.
+
 ## [1.30.1] — 2026-07-04
 
 ### Fixed
