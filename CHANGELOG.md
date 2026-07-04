@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.30.1] — 2026-07-04
+
+### Fixed
+- **NPM Explorer is no longer a dead end without a project** — where it
+  said only "No package.json found", it now lists the globally installed
+  packages (`npm ls -g --depth=0`, sorted, with versions and a count),
+  with Install sensibly disabled ("Open a project to install its
+  dependencies"). npm's benign non-zero exits (extraneous/invalid
+  findings) are tolerated — the JSON is parsed regardless — and a
+  missing npm shows an install hint instead of silence. The parse seam
+  is pure and test-pinned.
+
 ## [1.30.0] — 2026-07-04
 
 DB Studio joins the platform: connections configured in the NetBeans

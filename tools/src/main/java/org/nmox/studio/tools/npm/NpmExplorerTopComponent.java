@@ -55,6 +55,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
     private JTree tree;
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode rootNode;
+    private JButton installButton;
     private NpmService npmService;
     private org.nmox.studio.rack.model.Rack rackRef;
     private org.nmox.studio.rack.model.Rack.Listener rackListener;
@@ -101,7 +102,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
         refreshButton.addActionListener(e -> refreshProjectView());
         toolbar.add(refreshButton);
         
-        JButton installButton = new JButton("Install");
+        installButton = new JButton("Install");
         installButton.addActionListener(e -> runNpmCommand("install"));
         toolbar.add(installButton);
         
@@ -147,24 +148,22 @@ public final class NpmExplorerTopComponent extends TopComponent {
         // Try to find current project directory
         FileObject projectDir = findProjectDirectory();
         if (projectDir == null) {
-            rootNode.removeAllChildren();
-            rootNode.setUserObject("No package.json found");
-            treeModel.reload();
+            showGlobalPackages();
             return;
         }
-        
+
         File dir = FileUtil.toFile(projectDir);
         currentProjectDir = dir;
-        
+
         // Load package.json
         File packageJson = new File(dir, "package.json");
         if (!packageJson.exists()) {
-            rootNode.removeAllChildren();
-            rootNode.setUserObject("No package.json found");
-            treeModel.reload();
+            showGlobalPackages();
             return;
         }
-        
+        installButton.setEnabled(true);
+        installButton.setToolTipText("npm install in the project");
+
         try {
             String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
             JSONObject json = new JSONObject(content);
@@ -218,6 +217,47 @@ public final class NpmExplorerTopComponent extends TopComponent {
             rootNode.setUserObject("Error reading package.json");
             treeModel.reload();
         }
+    }
+
+    /**
+     * No project (or no package.json) is not a dead end: show what npm has
+     * installed globally instead. Install is disabled — it means "npm install
+     * in the project", and there is no project.
+     */
+    private void showGlobalPackages() {
+        currentProjectDir = null;
+        installButton.setEnabled(false);
+        installButton.setToolTipText("Open a project to install its dependencies");
+        rootNode.removeAllChildren();
+        rootNode.setUserObject("Global packages (npm -g)");
+        rootNode.add(new DefaultMutableTreeNode("Loading…"));
+        treeModel.reload();
+        npmService.listGlobalPackages().whenComplete((packages, error) ->
+            SwingUtilities.invokeLater(() -> {
+                // a newer refresh may have found a project meanwhile; don't
+                // clobber its tree with our stale global listing
+                if (currentProjectDir != null) {
+                    return;
+                }
+                rootNode.removeAllChildren();
+                if (error != null) {
+                    rootNode.setUserObject("Global packages (npm -g)");
+                    rootNode.add(new DefaultMutableTreeNode(
+                            "npm not found — install Node.js (brew install node)"));
+                } else {
+                    rootNode.setUserObject("Global packages (npm -g) — "
+                            + packages.size());
+                    for (NpmService.GlobalPackage pkg : packages) {
+                        rootNode.add(new DefaultMutableTreeNode(
+                                pkg.name() + "  " + pkg.version()));
+                    }
+                    if (packages.isEmpty()) {
+                        rootNode.add(new DefaultMutableTreeNode("(none installed)"));
+                    }
+                }
+                treeModel.reload();
+                tree.expandPath(new TreePath(rootNode.getPath()));
+            }));
     }
 
     private FileObject findProjectDirectory() {
