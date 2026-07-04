@@ -148,7 +148,9 @@ final class ConnectionDialog extends JPanel {
             JFileChooser chooser = new JFileChooser(fileField.getText().isBlank()
                     ? System.getProperty("user.home") : fileField.getText());
             chooser.setDialogTitle("SQLite database file");
-            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            // save-style dialog: an Open dialog can't pick a file that doesn't
+            // exist yet, but "point at a NEW db file" is the normal first use
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                 fileField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
         });

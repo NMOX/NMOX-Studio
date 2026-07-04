@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.29.1] — 2026-07-04
+
+DB Studio's live click-through (the house tradition) said it plainly:
+"a little raw, could use some working buttons." Every raw edge found,
+fixed:
+
+### Fixed
+- **Double-clicking a table now shows its data** — the gesture every
+  database tool owes its user. Double-click a table/collection/database
+  in the tree and an engine-appropriate peek query fills the console and
+  runs (`SELECT * … LIMIT n` with dialect quoting / Mongo `find` /
+  Couch Mango). A Couch database the connection isn't aimed at explains
+  itself instead of querying the wrong thing.
+- **Async feedback you can't miss** — Test and Connect outcomes now
+  raise balloon notifications (with the actual error) in addition to
+  the status strip. A failed Test no longer looks like a dead button.
+- **RUN gates honestly** — disabled until a connection is selected,
+  with a tooltip saying why; no more silent no-op clicks. Re-entry
+  during a run is blocked.
+- **First-run guidance** — an empty DB Studio now says "No connections
+  yet — click Add below to create one" in the tree and hints the
+  double-click-to-peek gesture in the status strip, instead of a blank
+  tree with greyed buttons.
+- **SQLite Browse can create a new database** — the file chooser was
+  open-style (couldn't select a file that doesn't exist yet); now
+  save-style, matching "created on first use" reality.
+
 ## [1.29.0] — 2026-07-04
 
 **DB Studio** — a first-class database management suite in its own tab,
