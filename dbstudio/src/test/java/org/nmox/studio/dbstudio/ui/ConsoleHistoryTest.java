@@ -82,4 +82,18 @@ class ConsoleHistoryTest {
         assertThat(history.entries()).hasSize(1);
         assertThat(history.entries().get(0).engine()).isEmpty();
     }
+
+    @Test
+    @DisplayName("clear forgets everything, ready for a project-switch reseed")
+    void clearForgetsEverything() {
+        ConsoleHistory history = new ConsoleHistory();
+        history.add("SELECT 1;", "SQLite", 1_000);
+        history.add("SELECT 2;", "SQLite", 2_000);
+
+        history.clear();
+
+        assertThat(history.entries()).isEmpty();
+        history.add("SELECT 3;", "PostgreSQL", 3_000); // still usable after clear
+        assertThat(history.entries()).hasSize(1);
+    }
 }

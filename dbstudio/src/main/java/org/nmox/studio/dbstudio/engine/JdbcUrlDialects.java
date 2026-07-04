@@ -50,8 +50,7 @@ public final class JdbcUrlDialects {
      * {@link #engineFor} cannot place.
      */
     public static String identifierQuote(String jdbcUrl) {
-        DbEngine engine = engineFor(jdbcUrl);
-        return engine == DbEngine.MYSQL || engine == DbEngine.MARIADB ? "`" : "\"";
+        return SqlDialect.identifierQuote(engineFor(jdbcUrl));
     }
 
     private static String normalized(String jdbcUrl) {

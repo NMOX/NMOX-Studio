@@ -179,13 +179,27 @@ engines and JSON to document engines — Extended-JSON commands for Mongo,
 Mango selectors for Couch. Scripts run statement-by-statement (an error
 in one never stops the rest), results land in per-statement grids with
 elapsed times and honest truncation flags, history keeps your last 50
-runs, and CANCEL actually cancels. Connection specs persist per project
+runs — persisted per project, next to named **saved queries** — and
+CANCEL actually cancels. Connection specs persist per project
 in `.nmoxdb.json`; **passwords live only in the OS keychain** via the
 platform Keyring. ⌘I finds your connections and tables like everything
 else. And it speaks platform: connections configured in the NetBeans
 **Services** window appear under a Services branch and run in the same
 console — any database with a registered driver, Java DB and Oracle
 included, with NetBeans owning drivers and credentials.
+
+The grids work for a living, too. Run a simple single-table SELECT (or
+peek a table) on a SQL engine and the grid unlocks for **in-grid row
+editing**: edited cells tint, a chip counts pending edits, and
+**Apply…** shows the exact `UPDATE` statements — primary-key WHERE
+clauses, properly quoted identifiers — before anything runs, then
+re-runs your query so you see database truth. Grids that can't be
+edited safely tell you why in plain words ("Read-only — no primary
+key"). Any result exports to **CSV or JSON**; **EXPLAIN** lights up for
+SELECTs and shows the engine's own query plan; and if your project's
+`.env` declares `DB_*` or `DATABASE_URL`, DB Studio quietly offers to
+create the connection — prefilled dialog, password straight to the
+keychain.
 
 ### 🌐 Standards & PWA, supported with gusto
 `.editorconfig` is **honored, not just highlighted** — every save

@@ -5,12 +5,16 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,8 +23,10 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -34,6 +40,8 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -44,11 +52,17 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.nmox.studio.dbstudio.engine.DbBackend;
+import org.nmox.studio.dbstudio.engine.EditGate;
+import org.nmox.studio.dbstudio.engine.EditSession;
+import org.nmox.studio.dbstudio.engine.ExplainQueries;
 import org.nmox.studio.dbstudio.engine.JdbcUrlDialects;
 import org.nmox.studio.dbstudio.engine.Passwords;
 import org.nmox.studio.dbstudio.engine.QueryResult;
+import org.nmox.studio.dbstudio.engine.ResultExports;
 import org.nmox.studio.dbstudio.engine.ServicesBackend;
 import org.nmox.studio.dbstudio.io.DbWorkspaceIO;
+import org.nmox.studio.dbstudio.io.EnvConnections;
+import org.nmox.studio.dbstudio.io.WorkspaceEdits;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
@@ -140,9 +154,38 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private final JEditorPane console = new JEditorPane();
     private final JButton runButton = new JButton("RUN");
+    private final JButton explainButton = new JButton("EXPLAIN");
     private final JButton cancelButton = new JButton("Cancel");
+    private final JButton saveQueryButton = new JButton("Save…");
+    private final JComboBox<Object> savedCombo = new JComboBox<>();
+    /** Guards the saved-combo's action listener during programmatic refills. */
+    private boolean savedComboRefreshing;
     private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(200, 1, 1_000_000, 100));
     private final JLabel statusLabel = new JLabel(" ");
+
+    /** The project's persisted console history (newest first) — mirrors .nmoxdb.json. */
+    private List<DbWorkspaceIO.HistoryEntry> persistedHistory = new ArrayList<>();
+    /** The project's saved queries — mirrors .nmoxdb.json. */
+    private List<DbWorkspaceIO.SavedQuery> savedQueries = new ArrayList<>();
+    /** Projects already offered a .env connection this session — one offer each, ever. */
+    private final Set<String> envOfferedProjects = new HashSet<>();
+    /** Re-checks EXPLAIN's enablement as the console text changes. */
+    private final DocumentListener consoleTextListener = new DocumentListener() {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            refreshActions();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            refreshActions();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            refreshActions();
+        }
+    };
 
     private final JTabbedPane resultsTabs = new JTabbedPane();
     private final DefaultListModel<ConsoleHistory.Entry> historyModel = new DefaultListModel<>();
@@ -270,6 +313,9 @@ public final class DbStudioTopComponent extends TopComponent {
         runButton.setToolTipText("Execute the console against the active connection");
         runButton.addActionListener(e -> run());
         bar.add(runButton);
+        explainButton.setEnabled(false);
+        explainButton.addActionListener(e -> explain());
+        bar.add(explainButton);
         bar.addSeparator();
         bar.add(new JLabel(" Limit: "));
         limitSpinner.setMaximumSize(limitSpinner.getPreferredSize());
@@ -281,13 +327,34 @@ public final class DbStudioTopComponent extends TopComponent {
         cancelButton.addActionListener(e -> cancel());
         bar.add(cancelButton);
         bar.addSeparator();
+        saveQueryButton.setToolTipText("Save the console text as a named query (.nmoxdb.json)");
+        saveQueryButton.addActionListener(e -> saveCurrentQuery());
+        bar.add(saveQueryButton);
+        savedCombo.setRenderer(new SavedQueryRenderer());
+        savedCombo.setToolTipText("Saved queries — selecting one loads it into the console");
+        savedCombo.addActionListener(e -> savedQueryPicked());
+        bar.add(savedCombo);
+        bar.addSeparator();
         statusLabel.setFont(statusLabel.getFont().deriveFont(Font.BOLD));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         bar.add(statusLabel);
         panel.add(bar, BorderLayout.NORTH);
 
         console.setFont(MONO);
+        // EXPLAIN follows the console text; setEditorKit swaps the document,
+        // so the listener re-attaches on every document change
+        console.getDocument().addDocumentListener(consoleTextListener);
+        console.addPropertyChangeListener("document", e -> {
+            if (e.getOldValue() instanceof javax.swing.text.Document old) {
+                old.removeDocumentListener(consoleTextListener);
+            }
+            if (e.getNewValue() instanceof javax.swing.text.Document doc) {
+                doc.addDocumentListener(consoleTextListener);
+            }
+            refreshActions();
+        });
         panel.add(new JScrollPane(console), BorderLayout.CENTER);
+        refreshSavedCombo();
         return panel;
     }
 
@@ -352,6 +419,25 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private void run() {
+        runText(console.getText());
+    }
+
+    /**
+     * Runs the engine's EXPLAIN wrapping of the console text through
+     * the normal run path — the plan lands in the results tabs like any
+     * other statement (and, starting with EXPLAIN, its grid naturally
+     * stays read-only).
+     */
+    private void explain() {
+        ConnectionSpec spec = activeSpec();
+        if (spec == null || spec.engine() == null
+                || !ExplainQueries.explainable(spec.engine(), console.getText())) {
+            return; // the button is disabled in these states; belt and braces
+        }
+        runText(ExplainQueries.explain(spec.engine(), console.getText()));
+    }
+
+    private void runText(String text) {
         if (running) {
             return;
         }
@@ -360,7 +446,6 @@ public final class DbStudioTopComponent extends TopComponent {
             status("Select a connection first", FAIL_RED);
             return;
         }
-        String text = console.getText();
         if (ConsoleMimes.isPlaceholderOrBlank(text)) {
             status("Nothing to run", FAIL_RED);
             return;
@@ -384,17 +469,44 @@ public final class DbStudioTopComponent extends TopComponent {
                         : List.of(new QueryResult(List.of(), List.of(), 0, -1, false, 0,
                                 openError, text));
             }
+            List<TabContent> tabs = gateAll(backend, spec, results);
             long totalMs = System.currentTimeMillis() - started;
             SwingUtilities.invokeLater(() -> {
                 running = false;
                 cancelButton.setEnabled(false);
                 history.add(text, engineLabel(spec), System.currentTimeMillis());
+                recordRun(text, engineLabel(spec));
                 refreshHistory();
-                showResults(results, totalMs);
+                showResults(spec, tabs, totalMs);
                 refreshActions(); // the run may have opened the connection
                 tree.repaint();
             });
         });
+    }
+
+    /** One result plus its editability verdict — what a results tab shows. */
+    private record TabContent(QueryResult result, EditGate.Decision decision) {
+    }
+
+    /**
+     * The editability verdict for each result, computed off-EDT right
+     * after the run (metadata lookups ride the still-warm backend).
+     * Only result grids get a verdict; updates and errors carry null.
+     */
+    private List<TabContent> gateAll(DbBackend backend, ConnectionSpec spec,
+            List<QueryResult> results) {
+        List<TabContent> tabs = new ArrayList<>();
+        for (QueryResult result : results) {
+            EditGate.Decision decision = null;
+            if (result.isResultSet() && backend != null) {
+                List<TableInfo> containers =
+                        containerCache.getOrDefault(spec.id(), List.of());
+                decision = EditGate.decide(spec.engine(), backend.kind(), result,
+                        containers, backend::columns);
+            }
+            tabs.add(new TabContent(result, decision));
+        }
+        return tabs;
     }
 
     private void cancel() {
@@ -406,23 +518,24 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
-    private void showResults(List<QueryResult> results, long totalMs) {
+    private void showResults(ConnectionSpec spec, List<TabContent> tabs, long totalMs) {
         while (resultsTabs.getTabCount() > 1) {
             resultsTabs.removeTabAt(0); // everything but the trailing History tab
         }
         int failed = 0;
-        for (int i = 0; i < results.size(); i++) {
-            QueryResult result = results.get(i);
-            if (result.isError()) {
+        for (int i = 0; i < tabs.size(); i++) {
+            TabContent content = tabs.get(i);
+            if (content.result().isError()) {
                 failed++;
             }
-            resultsTabs.insertTab(tabTitle(i, result), null, resultTab(result),
-                    result.statement(), resultsTabs.getTabCount() - 1);
+            resultsTabs.insertTab(tabTitle(i, content.result()), null,
+                    resultTab(spec, content), content.result().statement(),
+                    resultsTabs.getTabCount() - 1);
         }
-        if (!results.isEmpty()) {
+        if (!tabs.isEmpty()) {
             resultsTabs.setSelectedIndex(0);
         }
-        String summary = results.size() + (results.size() == 1 ? " statement" : " statements")
+        String summary = tabs.size() + (tabs.size() == 1 ? " statement" : " statements")
                 + (failed > 0 ? " · " + failed + " failed" : "")
                 + " · " + totalMs + " ms";
         status(summary, failed > 0 ? FAIL_RED : OK_GREEN);
@@ -439,8 +552,20 @@ public final class DbStudioTopComponent extends TopComponent {
         return base + " · " + result.updateCount() + " updated";
     }
 
-    private JComponent resultTab(QueryResult result) {
+    private JComponent resultTab(ConnectionSpec spec, TabContent content) {
         JPanel panel = new JPanel(new BorderLayout());
+        fillResultPanel(panel, spec, content);
+        return panel;
+    }
+
+    /**
+     * (Re)builds one results tab in place — Apply refreshes the grid by
+     * re-running the query and refilling the same panel with the fresh
+     * truth.
+     */
+    private void fillResultPanel(JPanel panel, ConnectionSpec spec, TabContent content) {
+        panel.removeAll();
+        QueryResult result = content.result();
         JLabel header = new JLabel(headerText(result));
         header.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         if (result.isError()) {
@@ -448,10 +573,18 @@ public final class DbStudioTopComponent extends TopComponent {
         }
         panel.add(header, BorderLayout.NORTH);
         if (result.isResultSet()) {
-            JTable table = new JTable(new ResultsTableModel(result));
-            table.setFont(MONO);
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
-            panel.add(new JScrollPane(table), BorderLayout.CENTER);
+            EditGate.Decision decision = content.decision();
+            if (decision != null && decision.editable()) {
+                panel.add(editableGrid(panel, spec, content), BorderLayout.CENTER);
+            } else {
+                JTable table = new JTable(new ResultsTableModel(result));
+                table.setFont(MONO);
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
+                String reason = decision == null ? "Read-only" : decision.reason();
+                table.setToolTipText(reason);
+                panel.add(new JScrollPane(table), BorderLayout.CENTER);
+                panel.add(readOnlyStrip(result, reason), BorderLayout.SOUTH);
+            }
         } else {
             JTextArea message = new JTextArea(result.isError()
                     ? result.error()
@@ -465,7 +598,197 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             panel.add(new JScrollPane(message), BorderLayout.CENTER);
         }
-        return panel;
+        panel.revalidate();
+        panel.repaint();
+    }
+
+    /** The grid plus the edit strip: dirty-cell tint, pending chip, Apply…/Revert, exports. */
+    private JComponent editableGrid(JPanel tabPanel, ConnectionSpec spec, TabContent content) {
+        EditSession session = content.decision().session();
+        JLabel chip = new JLabel("No pending edits");
+        chip.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+        JButton applyButton = new JButton("Apply…");
+        applyButton.setEnabled(false);
+        applyButton.setToolTipText("Preview and run the UPDATE statements for the pending edits");
+        JButton revertButton = new JButton("Revert");
+        revertButton.setEnabled(false);
+        revertButton.setToolTipText("Forget every pending edit");
+        EditableResultsModel model = new EditableResultsModel(session, () -> {
+            int dirty = session.dirtyCount();
+            chip.setText(dirty == 0 ? "No pending edits"
+                    : dirty + (dirty == 1 ? " edit pending" : " edits pending"));
+            chip.setForeground(dirty == 0 ? Color.GRAY : ACCENT);
+            applyButton.setEnabled(dirty > 0);
+            revertButton.setEnabled(dirty > 0);
+        });
+        JTable table = new JTable(model);
+        table.setFont(MONO);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        table.setDefaultRenderer(String.class, new DirtyCellRenderer(model));
+        table.setToolTipText("Double-click a cell to edit; Apply… previews the UPDATEs first");
+        applyButton.addActionListener(e -> applyEdits(tabPanel, spec, content, model));
+        revertButton.addActionListener(e -> model.revertAll());
+
+        JToolBar strip = new JToolBar();
+        strip.setFloatable(false);
+        chip.setForeground(Color.GRAY);
+        strip.add(chip);
+        strip.add(javax.swing.Box.createHorizontalGlue());
+        strip.add(applyButton);
+        strip.add(revertButton);
+        strip.addSeparator();
+        addExportButtons(strip, content.result());
+
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(new JScrollPane(table), BorderLayout.CENTER);
+        wrapper.add(strip, BorderLayout.SOUTH);
+        return wrapper;
+    }
+
+    /** The read-only grid's strip: the honest reason on the left, exports on the right. */
+    private JComponent readOnlyStrip(QueryResult result, String reason) {
+        JToolBar strip = new JToolBar();
+        strip.setFloatable(false);
+        JLabel why = new JLabel(reason);
+        why.setForeground(Color.GRAY);
+        why.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
+        strip.add(why);
+        strip.add(javax.swing.Box.createHorizontalGlue());
+        addExportButtons(strip, result);
+        return strip;
+    }
+
+    private void addExportButtons(JToolBar strip, QueryResult result) {
+        boolean hasRows = result.rowCount() > 0;
+        JButton csvButton = new JButton("CSV");
+        csvButton.setEnabled(hasRows);
+        csvButton.setToolTipText(hasRows ? "Export this grid as CSV (UTF-8)"
+                : "No rows to export");
+        csvButton.addActionListener(e -> exportResult(result, true));
+        JButton jsonButton = new JButton("JSON");
+        jsonButton.setEnabled(hasRows);
+        jsonButton.setToolTipText(hasRows ? "Export this grid as JSON (UTF-8)"
+                : "No rows to export");
+        jsonButton.addActionListener(e -> exportResult(result, false));
+        strip.add(csvButton);
+        strip.add(jsonButton);
+    }
+
+    /** Save-dialog then off-EDT write; the balloon carries the full path. */
+    private void exportResult(QueryResult result, boolean csv) {
+        String extension = csv ? ".csv" : ".json";
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(csv ? "Export as CSV" : "Export as JSON");
+        chooser.setSelectedFile(new File(projectDir(),
+                ResultExports.suggestedBaseName(result.statement()) + extension));
+        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File target = chooser.getSelectedFile();
+        RP.post(() -> {
+            try {
+                String text = csv ? ResultExports.toCsv(result) : ResultExports.toJson(result);
+                Files.writeString(target.toPath(), text, StandardCharsets.UTF_8);
+                SwingUtilities.invokeLater(() -> {
+                    status("Exported " + result.rowCount() + " row(s) → "
+                            + target.getName(), OK_GREEN);
+                    balloon("Exported " + result.rowCount() + " row(s)",
+                            target.getAbsolutePath(), true);
+                });
+            } catch (IOException | RuntimeException ex) {
+                SwingUtilities.invokeLater(() -> {
+                    status("Export failed: " + ex.getMessage(), FAIL_RED);
+                    balloon("Export failed", ex.getMessage(), false);
+                });
+            }
+        });
+    }
+
+    /**
+     * The Apply gesture: build the UPDATEs (any {@link UpdateBuilder}
+     * refusal lands verbatim in the status bar), preview them in a
+     * modal dialog, then run them one at a time through the backend's
+     * normal console path — on the first failure the rest stay unrun
+     * and the dirty state is kept for retry. On success the original
+     * query re-runs and the tab refills with fresh truth; the session
+     * is gone with the old grid.
+     */
+    private void applyEdits(JPanel tabPanel, ConnectionSpec spec, TabContent content,
+            EditableResultsModel model) {
+        if (running) {
+            status("A run is in flight — try again when it finishes", FAIL_RED);
+            return;
+        }
+        EditSession session = model.session();
+        List<String> statements;
+        try {
+            statements = session.statements(spec.engine());
+        } catch (IllegalArgumentException refusal) {
+            status(refusal.getMessage(), FAIL_RED);
+            return;
+        }
+        if (statements.isEmpty()) {
+            return; // Apply is disabled when clean; belt and braces
+        }
+        if (!ApplyPreviewDialog.confirm(statements, session.dirtyRowCount(),
+                session.table().name())) {
+            return;
+        }
+        int limit = (Integer) limitSpinner.getValue();
+        running = true;
+        refreshActions();
+        status("Applying " + statements.size() + " update(s)…", Color.GRAY);
+        RP.post(() -> {
+            DbBackend backend = backendFor(spec);
+            String failure = null;
+            int applied = 0;
+            if (backend == null) {
+                failure = "Connection no longer exists in the Services window";
+            } else {
+                String openError = backend.isOpen() ? null : backend.open();
+                if (openError != null) {
+                    failure = openError;
+                } else {
+                    for (String statement : statements) {
+                        List<QueryResult> outcome = backend.runConsole(statement, 1);
+                        QueryResult first = outcome.isEmpty() ? null : outcome.get(0);
+                        if (first == null || first.isError()) {
+                            failure = first == null
+                                    ? "The statement did not execute" : first.error();
+                            break;
+                        }
+                        applied++;
+                    }
+                }
+            }
+            if (failure != null) {
+                String reason = failure;
+                int done = applied;
+                SwingUtilities.invokeLater(() -> {
+                    running = false;
+                    refreshActions();
+                    status("Apply stopped: " + reason, FAIL_RED);
+                    balloon("Apply stopped after " + done + " of " + statements.size()
+                            + " update(s)", reason + " — your edits are kept; fix and retry.",
+                            false);
+                });
+                return;
+            }
+            // fresh truth: re-run the original query, re-gate, refill the tab
+            List<QueryResult> fresh = backend.runConsole(content.result().statement(), limit);
+            QueryResult freshResult = fresh.isEmpty() ? content.result() : fresh.get(0);
+            List<TabContent> regated = gateAll(backend, spec, List.of(freshResult));
+            SwingUtilities.invokeLater(() -> {
+                running = false;
+                refreshActions();
+                fillResultPanel(tabPanel, spec, regated.get(0));
+                status("Applied " + statements.size() + " update(s) — grid refreshed",
+                        OK_GREEN);
+                balloon("Applied " + statements.size() + " update(s) to "
+                        + session.table().name(), null, true);
+            });
+        });
     }
 
     private static String headerText(QueryResult result) {
@@ -485,6 +808,127 @@ public final class DbStudioTopComponent extends TopComponent {
     private void refreshHistory() {
         historyModel.clear();
         history.entries().forEach(historyModel::addElement);
+    }
+
+    // ---- persistent history + saved queries (.nmoxdb.json) ----
+
+    /** Appends one run to the persisted history and saves the workspace. */
+    private void recordRun(String text, String engine) {
+        persistedHistory = WorkspaceEdits.withRun(persistedHistory,
+                new DbWorkspaceIO.HistoryEntry(text, engine, System.currentTimeMillis()));
+        saveWorkspace();
+    }
+
+    /** "Save query…": name prompt (default = the text's first 30 chars), replace-by-name. */
+    private void saveCurrentQuery() {
+        String text = console.getText();
+        if (ConsoleMimes.isPlaceholderOrBlank(text)) {
+            status("Nothing to save — the console is empty", FAIL_RED);
+            return;
+        }
+        NotifyDescriptor.InputLine input =
+                new NotifyDescriptor.InputLine("Name:", "Save Query");
+        input.setInputText(WorkspaceEdits.defaultName(text));
+        if (DialogDisplayer.getDefault().notify(input) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = input.getInputText().strip();
+        if (name.isEmpty()) {
+            status("A saved query needs a name", FAIL_RED);
+            return;
+        }
+        ConnectionSpec spec = activeSpec();
+        savedQueries = WorkspaceEdits.withSaved(savedQueries,
+                new DbWorkspaceIO.SavedQuery(name, text, spec == null ? "" : engineLabel(spec)));
+        saveWorkspace();
+        refreshSavedCombo();
+        status("Saved \"" + name + "\"", OK_GREEN);
+    }
+
+    /** Selecting a saved query loads it into the console; the combo snaps back to its label. */
+    private void savedQueryPicked() {
+        if (savedComboRefreshing) {
+            return;
+        }
+        if (savedCombo.getSelectedItem() instanceof DbWorkspaceIO.SavedQuery query) {
+            console.setText(query.text());
+            status("Loaded \"" + query.name() + "\"", Color.GRAY);
+            SwingUtilities.invokeLater(() -> {
+                savedComboRefreshing = true;
+                try {
+                    savedCombo.setSelectedIndex(0);
+                } finally {
+                    savedComboRefreshing = false;
+                }
+            });
+        }
+    }
+
+    private void refreshSavedCombo() {
+        savedComboRefreshing = true;
+        try {
+            savedCombo.removeAllItems();
+            savedCombo.addItem(savedQueries.isEmpty()
+                    ? "No saved queries" : "Saved queries…");
+            for (DbWorkspaceIO.SavedQuery query : savedQueries) {
+                savedCombo.addItem(query);
+            }
+            savedCombo.setSelectedIndex(0);
+            savedCombo.setEnabled(!savedQueries.isEmpty());
+            savedCombo.setMaximumSize(savedCombo.getPreferredSize());
+        } finally {
+            savedComboRefreshing = false;
+        }
+    }
+
+    // ---- the .env connection offer ----
+
+    /**
+     * When the aimed project carries a {@code .env} with database
+     * config that isn't already a workspace connection, offer — once
+     * per project per session, as a quiet balloon, never a modal — to
+     * prefill the Add Connection dialog from it. The password rides
+     * the dialog's password field only; saving stores it in the OS
+     * keychain, exactly like a typed one.
+     */
+    private void offerEnvConnection() {
+        File dir = projectDir();
+        File envFile = new File(dir, ".env");
+        if (!envFile.isFile() || !envOfferedProjects.add(dir.getAbsolutePath())) {
+            return;
+        }
+        String content;
+        try {
+            content = Files.readString(envFile.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException unreadable) {
+            return; // no signal, no offer
+        }
+        EnvConnections.fromEnv(content).ifPresent(suggestion -> {
+            if (WorkspaceEdits.alreadyConfigured(suggestion, specs)) {
+                return;
+            }
+            org.openide.awt.NotificationDisplayer.getDefault().notify(
+                    "Found database config in .env",
+                    javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                    "Create a \"" + suggestion.database() + "\" ("
+                    + suggestion.engine().displayName()
+                    + ") connection? Click to review — nothing is saved until you confirm.",
+                    e -> createFromSuggestion(suggestion),
+                    org.openide.awt.NotificationDisplayer.Priority.LOW);
+        });
+    }
+
+    private void createFromSuggestion(EnvConnections.Suggestion suggestion) {
+        ConnectionSpec spec = ConnectionDialog.showSuggested(suggestion);
+        if (spec == null) {
+            return;
+        }
+        specs.add(spec);
+        saveWorkspace();
+        rebuildTree();
+        publishSearch();
+        selectConnection(spec.id());
+        status("Added " + spec.name() + " from .env", OK_GREEN);
     }
 
     // ---- the console follows the active connection's engine ----
@@ -887,11 +1331,40 @@ public final class DbStudioTopComponent extends TopComponent {
                 : null);
         // RUN gates on having a target: an always-armed button that silently
         // no-ops reads as broken. The tooltip says why it's off.
-        boolean runnable = !running && activeSpec() != null;
+        ConnectionSpec active = activeSpec();
+        boolean runnable = !running && active != null;
         runButton.setEnabled(runnable);
         runButton.setToolTipText(runnable
                 ? "Execute the console against the active connection"
                 : running ? "A run is in flight" : "Select a connection first");
+        refreshExplain(active);
+    }
+
+    /**
+     * EXPLAIN arms only when it can actually deliver a plan: a live SQL
+     * connection with a modeled dialect and a console holding a
+     * SELECT/WITH statement. Every off state says why in the tooltip.
+     */
+    private void refreshExplain(ConnectionSpec active) {
+        DbBackend backend = active == null ? null : backends.get(active.id());
+        boolean open = backend != null && backend.isOpen();
+        boolean explainable = !running && active != null && open
+                && ExplainQueries.explainable(active.engine(), console.getText());
+        explainButton.setEnabled(explainable);
+        if (explainable) {
+            explainButton.setToolTipText("Show the engine's query plan for the console text");
+        } else if (running) {
+            explainButton.setToolTipText("A run is in flight");
+        } else if (active == null) {
+            explainButton.setToolTipText("Select a connection first");
+        } else if (active.engine() == null
+                || active.engine().kind() != DbEngine.Kind.SQL) {
+            explainButton.setToolTipText("EXPLAIN applies to SQL engines");
+        } else if (!open) {
+            explainButton.setToolTipText("Connect first — EXPLAIN needs a live connection");
+        } else {
+            explainButton.setToolTipText("EXPLAIN applies to SELECT/WITH statements");
+        }
     }
 
     /**
@@ -1039,18 +1512,32 @@ public final class DbStudioTopComponent extends TopComponent {
         connecting.clear();
         activeSpecId = null;
         specs.clear();
-        specs.addAll(DbWorkspaceIO.load(projectDir()));
+        DbWorkspaceIO.Workspace workspace = DbWorkspaceIO.loadWorkspace(projectDir());
+        specs.addAll(workspace.connections());
+        persistedHistory = new ArrayList<>(workspace.history());
+        savedQueries = new ArrayList<>(workspace.saved());
+        // reseed the History tab from the persisted entries (stored newest
+        // first; adding oldest-first rebuilds that order)
+        history.clear();
+        for (int i = persistedHistory.size() - 1; i >= 0; i--) {
+            DbWorkspaceIO.HistoryEntry entry = persistedHistory.get(i);
+            history.add(entry.text(), entry.engine(), entry.at());
+        }
+        refreshHistory();
+        refreshSavedCombo();
         rebuildTree();
         publishSearch();
         status(specs.isEmpty() ? " "
                 : specs.size() + (specs.size() == 1 ? " connection" : " connections"), Color.GRAY);
+        offerEnvConnection();
     }
 
     private boolean saveFailureNotified;
 
     private void saveWorkspace() {
         try {
-            DbWorkspaceIO.save(projectDir(), specs);
+            DbWorkspaceIO.save(projectDir(), new DbWorkspaceIO.Workspace(
+                    specs, persistedHistory, savedQueries));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed save never interrupts editing — but never lose work silently
@@ -1165,6 +1652,61 @@ public final class DbStudioTopComponent extends TopComponent {
             } else if (userObject instanceof String placeholder) {
                 setText("<html><i><font color='#8a8a8a'>" + esc(placeholder)
                         + "</font></i></html>");
+            }
+            return this;
+        }
+    }
+
+    /**
+     * Tints cells holding uncommitted edits — the dirty color is the
+     * table background blended toward amber so it reads on both dark
+     * and light themes.
+     */
+    private static final class DirtyCellRenderer
+            extends javax.swing.table.DefaultTableCellRenderer {
+
+        private static final Color AMBER = new Color(0xC9, 0x93, 0x2B);
+
+        private final EditableResultsModel model;
+
+        DirtyCellRenderer(EditableResultsModel model) {
+            this.model = model;
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+                    row, column);
+            if (!isSelected) {
+                boolean dirty = model.isDirty(table.convertRowIndexToModel(row),
+                        table.convertColumnIndexToModel(column));
+                setBackground(dirty ? blend(table.getBackground(), AMBER)
+                        : table.getBackground());
+            }
+            return this;
+        }
+
+        private static Color blend(Color base, Color tint) {
+            return new Color(
+                    (base.getRed() * 65 + tint.getRed() * 35) / 100,
+                    (base.getGreen() * 65 + tint.getGreen() * 35) / 100,
+                    (base.getBlue() * 65 + tint.getBlue() * 35) / 100);
+        }
+    }
+
+    /** Saved-query combo entries: the name, plus a grey engine badge. */
+    private static final class SavedQueryRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof DbWorkspaceIO.SavedQuery query) {
+                setText("<html>" + esc(query.name())
+                        + (query.engine().isEmpty() ? ""
+                                : " <font color='#8a8a8a'>[" + esc(query.engine()) + "]</font>")
+                        + "</html>");
+                setToolTipText(query.text());
             }
             return this;
         }

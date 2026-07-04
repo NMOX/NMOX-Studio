@@ -258,14 +258,54 @@ final class ConnectionDialog extends JPanel {
     }
 
     /**
+     * Prefills the fields from a {@code .env} suggestion — a NEW
+     * connection the user still reviews and confirms. The suggested
+     * password goes into the password field ONLY: on OK it rides
+     * {@link #commit()} into the OS keychain like any typed password,
+     * and on Cancel it evaporates with the dialog; it never touches
+     * {@code .nmoxdb.json}.
+     */
+    private void prefill(org.nmox.studio.dbstudio.io.EnvConnections.Suggestion suggestion) {
+        nameField.setText(suggestion.database() + " (.env)");
+        engineCombo.setSelectedItem(suggestion.engine());
+        if (suggestion.engine() == DbEngine.SQLITE) {
+            fileField.setText(suggestion.database());
+        } else {
+            hostField.setText(suggestion.host());
+            portField.setText(suggestion.port() > 0 ? String.valueOf(suggestion.port()) : "");
+            databaseField.setText(suggestion.database());
+            userField.setText(suggestion.user());
+            if (suggestion.passwordOrNull() != null) {
+                passwordField.setText(suggestion.passwordOrNull());
+            }
+        }
+        lastDefaultPort = selectedEngine().defaultPort();
+        engineChanged();
+    }
+
+    /**
+     * Shows the add dialog prefilled from a {@code .env} suggestion.
+     * Returns the new spec, or null on cancel.
+     */
+    static ConnectionSpec showSuggested(
+            org.nmox.studio.dbstudio.io.EnvConnections.Suggestion suggestion) {
+        ConnectionDialog panel = new ConnectionDialog(null);
+        panel.prefill(suggestion);
+        return show(panel, "Add Database Connection");
+    }
+
+    /**
      * Shows the dialog. Returns the new/updated spec (same id when
      * editing), or null on cancel. Field problems re-open the dialog
      * after a warning rather than silently saving junk.
      */
     static ConnectionSpec show(ConnectionSpec existing) {
-        ConnectionDialog panel = new ConnectionDialog(existing);
-        DialogDescriptor descriptor = new DialogDescriptor(panel,
+        return show(new ConnectionDialog(existing),
                 existing == null ? "Add Database Connection" : "Edit Database Connection");
+    }
+
+    private static ConnectionSpec show(ConnectionDialog panel, String title) {
+        DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         while (true) {
             if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
                 return null;
