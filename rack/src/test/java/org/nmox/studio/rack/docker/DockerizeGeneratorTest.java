@@ -47,6 +47,28 @@ class DockerizeGeneratorTest {
     }
 
     @Test
+    @DisplayName("PHP stages composer deps into slim FPM with an nginx sidecar")
+    void phpFpmWithNginxSidecar() {
+        Map<String, String> files = DockerizeGenerator.generate(ProjectKind.PHP, "shop", false);
+        assertThat(files).containsKeys(
+                "Dockerfile", ".dockerignore", "compose.yaml", "docker/nginx.conf");
+        assertThat(files.get("Dockerfile"))
+                .contains("FROM composer:2 AS deps")
+                .contains("--no-dev --optimize-autoloader")
+                .contains("php:8.3-fpm-alpine")
+                .contains("COPY --from=deps /app/vendor ./vendor");
+        assertThat(files.get(".dockerignore")).contains("vendor").contains(".env");
+        // the sidecar publishes 80 and hands .php to the fpm container by name
+        assertThat(files.get("compose.yaml"))
+                .contains("shop:").contains("nginx:").contains("\"80:80\"")
+                .contains("./docker/nginx.conf");
+        assertThat(files.get("docker/nginx.conf"))
+                .contains("root /var/www/html/public")
+                .contains("fastcgi_pass shop:9000");
+        assertThat(DockerizeGenerator.defaultPort(ProjectKind.PHP, false)).isEqualTo(80);
+    }
+
+    @Test
     @DisplayName("Unknown toolchains say so instead of guessing")
     void genericIsHonest() {
         assertThat(DockerizeGenerator.generate(ProjectKind.NONE, "x", false).get("Dockerfile"))

@@ -237,6 +237,41 @@ public final class ProjectInspector {
         }
     }
 
+    /**
+     * The locked version of a package from composer.lock (searching
+     * packages, then packages-dev), with composer's "v" prefix stripped:
+     * "v11.9.2" -> "11.9.2". Null when there is no readable lock or the
+     * package is not in it.
+     */
+    public static String composerLockVersion(File dir, String packageName) {
+        File lock = new File(dir, "composer.lock");
+        if (!lock.isFile()) {
+            return null;
+        }
+        try {
+            JSONObject json = new JSONObject(Files.readString(lock.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            for (String section : new String[]{"packages", "packages-dev"}) {
+                org.json.JSONArray packages = json.optJSONArray(section);
+                if (packages == null) {
+                    continue;
+                }
+                for (int i = 0; i < packages.length(); i++) {
+                    JSONObject pkg = packages.optJSONObject(i);
+                    if (pkg != null && packageName.equals(pkg.optString("name"))) {
+                        String version = pkg.optString("version", "");
+                        if (version.isEmpty()) {
+                            return null;
+                        }
+                        return version.startsWith("v") ? version.substring(1) : version;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // unreadable or malformed lock: report unknown
+        }
+        return null;
+    }
+
     /** The declared version constraint of a dependency, or null. */
     public static String dependencyVersion(File projectDir, String name) {
         JSONObject json = read(projectDir);

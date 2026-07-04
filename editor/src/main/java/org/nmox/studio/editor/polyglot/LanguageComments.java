@@ -51,6 +51,7 @@ public final class LanguageComments {
             Map.entry("text/x-graphql", "#"),
             Map.entry("text/x-pug", "//"),
             Map.entry("text/x-nginx-conf", "#"),
+            Map.entry("text/x-apache-conf", "#"),
             Map.entry("text/x-makefile", "#"),
             Map.entry("text/x-protobuf", "//"),
             Map.entry("text/x-prisma", "//"),

@@ -176,8 +176,11 @@ public class RunDevice extends CommandDevice {
             case "ruby" -> new File(commandDir(), "config.ru").isFile()
                     ? List.of("rackup")
                     : List.of("ruby", entryPoint("main.rb", "app.rb"));
-            case "php" -> List.of("php", "-S", "localhost:8000",
-                    "-t", new File(commandDir(), "public").isDirectory() ? "public" : ".");
+            // composer-era layout serves the public/ docroot; a bare tree
+            // serves from the project root
+            case "php" -> new File(commandDir(), "public").isDirectory()
+                    ? List.of("php", "-S", "127.0.0.1:8000", "-t", "public")
+                    : List.of("php", "-S", "127.0.0.1:8000");
             case "make" -> List.of("make", "run");
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")

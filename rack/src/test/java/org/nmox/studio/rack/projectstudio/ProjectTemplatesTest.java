@@ -71,6 +71,50 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("PHP Web (LEMP) generates the full composer + compose + droplet stack")
+    void phpWebLempTemplate() throws Exception {
+        File dir = parent.resolve("php-web").toFile();
+
+        ProjectTemplates.PHP_WEB.generate(dir, "demo-app");
+
+        // composer.json parses: dev tooling, PSR-4 autoload, the scripts lane
+        JSONObject composer = new JSONObject(
+                Files.readString(dir.toPath().resolve("composer.json")));
+        assertThat(composer.getString("name")).isEqualTo("app/demo-app");
+        assertThat(composer.getJSONObject("require-dev").keySet())
+                .contains("phpunit/phpunit", "phpstan/phpstan", "laravel/pint");
+        assertThat(composer.getJSONObject("autoload").getJSONObject("psr-4")
+                .getString("App\\")).isEqualTo("src/");
+        assertThat(composer.getJSONObject("scripts").keySet())
+                .contains("test", "analyse", "fmt");
+
+        // the front controller guards the autoload and answers the health route
+        String front = Files.readString(dir.toPath().resolve("public/index.php"));
+        assertThat(front).contains("declare(strict_types=1)")
+                .contains("vendor/autoload.php").contains("/api/health");
+
+        // compose runs all three LEMP services; nginx hands PHP to the fpm box
+        String compose = Files.readString(dir.toPath().resolve("docker-compose.yml"));
+        assertThat(compose).contains("nginx").contains("php:8.3-fpm").contains("mariadb:11");
+        assertThat(Files.readString(dir.toPath().resolve("docker/nginx.conf")))
+                .contains("root /var/www/html/public").contains("fastcgi_pass php:9000");
+
+        // the droplet bootstrap installs the whole stack
+        String cloudInit = Files.readString(dir.toPath().resolve("deploy/cloud-init.yml"));
+        assertThat(cloudInit).startsWith("#cloud-config")
+                .contains("nginx").contains("mariadb-server").contains("php-fpm");
+
+        // PHPUnit boots the autoloader; a real class + test pair exists
+        assertThat(Files.readString(dir.toPath().resolve("phpunit.xml")))
+                .contains("vendor/autoload.php").contains("tests");
+        assertThat(dir.toPath().resolve("src/Greeting.php")).exists();
+        assertThat(dir.toPath().resolve("tests/GreetingTest.php")).exists();
+        assertThat(dir.toPath().resolve(".env.example")).exists();
+        assertThat(Files.readString(dir.toPath().resolve(".gitignore")))
+                .contains("vendor/").contains(".env");
+    }
+
+    @Test
     @DisplayName("Should refuse to generate into a non-empty directory")
     void shouldRefuseNonEmptyDirectory() throws Exception {
         File dir = parent.resolve("occupied").toFile();

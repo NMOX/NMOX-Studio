@@ -24,7 +24,8 @@ public final class ConfigFileResolver extends MIMEResolver {
 
     public ConfigFileResolver() {
         super("text/x-ini", "text/x-ignore", "text/x-properties",
-                "text/x-makefile", "text/x-nginx-conf", "text/x-markdown");
+                "text/x-makefile", "text/x-nginx-conf", "text/x-apache-conf",
+                "text/x-markdown");
     }
 
     @Override
@@ -48,6 +49,10 @@ public final class ConfigFileResolver extends MIMEResolver {
                 return "text/x-makefile";
             case "nginx.conf":
                 return "text/x-nginx-conf";
+            case ".htaccess":
+            case "httpd.conf":
+            case "apache2.conf":
+                return "text/x-apache-conf";
             default:
                 // dotenv family: .env, .env.local, .env.production, ...
                 if (name.equals(".env") || name.startsWith(".env.")) {

@@ -19,13 +19,14 @@ public enum DeviceType {
     ANGULAR("angular", "HALO", "Angular Console — serve/generate/update, stays current", new Color(0xDD, 0x00, 0x31), AngularDevice::new),
     PHOENIX("phoenix", "PHOENIX", "Phoenix Console — phx.server/gen/ecto, Hex currency", new Color(0xFD, 0x4F, 0x00), PhoenixDevice::new),
     NEXTJS("nextjs", "NEXUS", "Next.js Console — dev/build/start, registry currency", new Color(0xED, 0xED, 0xED), NextDevice::new),
+    ARTISAN("artisan", "ARTISAN", "Laravel Console — artisan serve/test/migrate, Packagist currency", new Color(0xFF, 0x2D, 0x20), ArtisanDevice::new),
     NPM_SCRIPT("npm-script", "NPM-9000", "Script Sequencer — run package.json scripts", new Color(203, 56, 55), NpmScriptDevice::new),
     PACKAGE_MANAGER("package-manager", "CRATE", "Package Manager — install & update deps", new Color(214, 121, 41), PackageManagerDevice::new),
     BUILD("build", "FORGE", "Build Engine — vite/webpack/rollup & co", new Color(232, 166, 35), BuildDevice::new),
     TEST("test", "VERITAS", "Test Harness — jest/vitest/mocha...", new Color(99, 197, 70), TestDevice::new),
     DEV_SERVER("dev-server", "SURGE", "Dev Server — start/stop local serving", new Color(64, 156, 255), DevServerDevice::new),
     LINT("lint", "PURITY", "Lint Filter — eslint/stylelint", new Color(168, 110, 221), LintDevice::new),
-    FORMAT("format", "GLOSS", "Code Formatter — prettier", new Color(73, 196, 184), FormatDevice::new),
+    FORMAT("format", "GLOSS", "Code Formatter — prettier; pint on PHP lanes", new Color(73, 196, 184), FormatDevice::new),
     GIT("git", "TIMELINE", "Git Sequencer — status/pull/commit/push", new Color(222, 78, 54), GitDevice::new),
     AUDIT("audit", "SENTRY", "Security Analyzer — npm audit meters", new Color(188, 42, 48), AuditDevice::new),
     DEPLOY("deploy", "LAUNCHPAD", "Deploy Output — armed deploys only", new Color(231, 52, 99), DeployDevice::new),
@@ -36,7 +37,7 @@ public enum DeviceType {
     REPL("repl", "REPL", "Read-Eval-Print Loop — type into clisp/python/node/ghci live", new Color(120, 230, 160), ReplDevice::new),
     ENV("env", "ATMOS", "Env Mixer — NODE_ENV/CI/custom vars", new Color(120, 144, 220), EnvDevice::new),
     TEMPO("tempo", "TEMPO", "Step Sequencer — fire pipelines on a clock", new Color(255, 211, 105), TempoDevice::new),
-    TYPECHECK("typecheck", "TYPEGUARD", "Type Checker — tsc, watch-aware", new Color(49, 120, 198), TypecheckDevice::new),
+    TYPECHECK("typecheck", "TYPEGUARD", "Type Checker — tsc, watch-aware; phpstan on PHP lanes", new Color(49, 120, 198), TypecheckDevice::new),
     TUNNEL("tunnel", "WORMHOLE", "Public Tunnel — cloudflared/ngrok/localtunnel", new Color(156, 89, 209), TunnelDevice::new),
     BENCH("bench", "GAUNTLET", "Load Bench — autocannon throughput", new Color(224, 122, 47), BenchDevice::new),
     DOCKER("docker", "HARBOR", "Docker Engine — panel, prune, status", new Color(36, 150, 237), DockerDevice::new),
@@ -104,7 +105,7 @@ public enum DeviceType {
             case SSH -> PaletteCategory.SHIP;
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE -> PaletteCategory.SERVE;
-            case ANGULAR, PHOENIX, NEXTJS -> PaletteCategory.FRAMEWORKS;
+            case ANGULAR, PHOENIX, NEXTJS, ARTISAN -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
@@ -124,8 +125,8 @@ public enum DeviceType {
             case BUILD -> "BUILD compiles with the detected tool (vite/cargo/mix/swift…).\nWATCH mode fires OK on every rebuild - patch OK → VERITAS for build-then-test.";
             case TEST -> "Runs the suite; the tally LCD shows live pass/fail.\nRUNNER=auto picks jest/pytest/cargo/mix… Patch OUT → MONITOR to read output.";
             case LINT -> "Static analysis; E/W counts land on the LCD, CLEAN lights when spotless.\nFIX rewrites violations in place (amber = it mutates your files).";
-            case FORMAT -> "Prettier over the project. WRITE rewrites; CHECK only verifies.\nPatch REFLEX CHANGED → RUN for format-on-save.";
-            case TYPECHECK -> "tsc --noEmit. WATCH keeps the compiler resident and fires OK/FAIL per check.\nSTRICT adds --strict. E: count on the LCD.";
+            case FORMAT -> "Prettier over the project (Laravel Pint on PHP lanes). WRITE rewrites; CHECK only verifies.\nPatch REFLEX CHANGED → RUN for format-on-save.";
+            case TYPECHECK -> "tsc --noEmit (phpstan on PHP lanes). WATCH keeps the compiler resident and fires OK/FAIL per check.\nSTRICT adds --strict. E: count on the LCD.";
             case DEV_SERVER -> "START serves your project; URL and READY outs feed SCOPE so the\nbrowser opens itself at the real address. RUNNING gates TEMPO nicely.";
             case TUNNEL -> "OPEN exposes a local port to the internet via cloudflared/ngrok.\nThe public URL lands on the LCD and the URL jack - patch into SCOPE to pop it.";
             case BROWSER -> "Opens the system browser at the dialed URL on OPEN or any trigger in.\nPatch a URL data jack in and SCOPE follows wherever the server actually is.";
@@ -133,6 +134,7 @@ public enum DeviceType {
             case ANGULAR -> "SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.\nThe version cluster nags when Angular moves - UPDATE runs ng update.";
             case PHOENIX -> "SERVER runs mix phx.server; GEN row drives phx.gen.*; MIGRATE runs ecto.\nVersion cluster tracks :phoenix against Hex.";
             case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";
+            case ARTISAN -> "SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials\ntest/migrate/fresh/queue/routes for RUN. Tinker is interactive — use the REPL device (php artisan tinker).";
             case CONSOLE -> "A glanceable 8-line screen. Patch any OUT (data) jack into IN,\nor dial TAP to stderr/all to hear every device unpatched — errors glow red.";
             case TERMINAL -> "5,000 lines of selectable scrollback. FOLLOW tails the output.\nPatch the OUT of anything chatty in here.";
             case REPL -> "Set COMMAND to an interpreter (clisp, python3, node, ghci), press START.\nType an expression and Enter to evaluate; HINTS lists starter snippets. A Learning Space seeds both for you.";

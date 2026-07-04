@@ -45,11 +45,12 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 39 devices:
+build → test, with output scrolling on a phosphor monitor. 41 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
 QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
-files), HELM (run commands on your servers over ssh), and more. Patches
+files), HELM (run commands on your servers over ssh), framework consoles
+for Phoenix, Next, Angular, and Laravel (ARTISAN), and more. Patches
 persist per project, ship as presets, and export to GitHub Actions.
 **[The full device reference](docs/devices.md)** is generated from the
 catalog itself — CI fails if it drifts.
@@ -95,6 +96,22 @@ reclaimable) and opens the Docker Panel: a disk-reclaim ledger, live
 container management with browser-jump ports, image tooling, volumes,
 networks — and **Dockerize**, which generates production multi-stage
 Dockerfiles from your project's detected toolchain.
+
+### 🐘 First-class LAMP/LEMP
+PHP is a full citizen: the **ARTISAN** device is a Laravel console
+(serve/test/migrate/fresh/queue/routes with composer.lock version
+currency), TYPEGUARD runs **phpstan** and GLOSS runs **Pint** on PHP
+projects, IGNITION serves `php -S` docroot-aware, and the test under
+your caret runs via PHPUnit. `.htaccess` and Apache configs highlight
+alongside nginx, php.ini, and `.env`. The **PHP Web (LEMP)** template
+scaffolds a guarded front controller, a passing PHPUnit suite, a working
+nginx + php-fpm + MariaDB compose stack, and a `deploy/cloud-init.yml`
+LEMP bootstrap you paste straight into a droplet in the Infra designer —
+with the **LAMP Bench** preset wiring composer → phpunit + phpstan +
+pint on one keypress. And the **Database Explorer** ships in the box:
+connect to MySQL/MariaDB from the Services window, browse schemas, and
+run SQL in a real editor with result grids (bring the Connector/J jar;
+the driver UI handles registration).
 
 ### ⌨️ Polyglot editing
 Bun and Deno are first-class toolchains (detected with precedence over
@@ -246,7 +263,7 @@ NMOX-Studio/
 │   ├── javascript/        # Regex-aware JavaScript lexer
 │   └── outline/           # Structure navigator (⌘7)
 ├── rack/                   # The Task Rack: hardware-styled task devices
-│   ├── devices/           # The 32 rack devices
+│   ├── devices/           # The 41 rack devices
 │   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
 │   ├── docker/            # HARBOR device + Docker panel
 │   └── projectstudio/     # Project Studio templates

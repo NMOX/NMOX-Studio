@@ -227,6 +227,27 @@ class DeviceCommandBuildingTest {
     }
 
     @Test
+    @DisplayName("IGNITION php serves the public/ docroot when present, the project root otherwise")
+    void ignitionPhpDocroot() throws IOException {
+        Rack rack = rackWith("composer.json");
+        try {
+            // no public/ dir: built-in server from the project root
+            RunDevice bare = aim(rack, new RunDevice(), Map.of()); // target=auto → php
+            assertThat(bare.buildCommand())
+                    .containsExactly("php", "-S", "127.0.0.1:8000");
+
+            // composer-era layout: serve the public/ docroot
+            Files.createDirectory(projectDir.resolve("public"));
+            // TARGETS index 19 = php (explicit knob, same command as auto)
+            RunDevice docroot = aim(rack, new RunDevice(), Map.of("target", "19"));
+            assertThat(docroot.buildCommand())
+                    .containsExactly("php", "-S", "127.0.0.1:8000", "-t", "public");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("IGNITION AUTO runs npm start when a start script exists, node index otherwise")
     void ignitionAutoNode() throws IOException {
         Rack withStart = new Rack();
@@ -335,6 +356,50 @@ class DeviceCommandBuildingTest {
                     .containsExactly("npx", "prettier", "--write", ".");
             assertThat(aim(rack, new FormatDevice(), Map.of("write", "false")).buildCommand())
                     .containsExactly("npx", "prettier", "--check", ".");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("GLOSS PHP lane runs Laravel Pint, honoring WRITE vs CHECK")
+    void glossPhpLane() throws IOException {
+        assertBuild("composer.json", FormatDevice::new, Map.of(),
+                "vendor/bin/pint");
+        assertBuild("composer.json", FormatDevice::new, Map.of("write", "false"),
+                "vendor/bin/pint", "--test");
+    }
+
+    @Test
+    @DisplayName("TYPEGUARD PHP lane runs phpstan raw; the tsc lane stays byte-identical")
+    void typeguardPhpLane() throws IOException {
+        assertBuild("composer.json", TypecheckDevice::new, Map.of(),
+                "vendor/bin/phpstan", "analyse", "--no-progress", "--error-format=raw");
+        // the JS/TS lane is pinned exactly as before
+        assertBuild("package.json", TypecheckDevice::new, Map.of(),
+                "npx", "tsc", "--noEmit", "--pretty", "false");
+    }
+
+    // ---------------- ARTISAN / ArtisanDevice ----------------
+
+    @Test
+    @DisplayName("ARTISAN builds one real artisan command per ACTION knob position")
+    void artisanActions() throws IOException {
+        Rack rack = rackWith("composer.json");
+        try {
+            // ACTIONS = {serve, test, migrate, fresh, queue, routes}
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "0")).buildCommand())
+                    .containsExactly("php", "artisan", "serve");
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "1")).buildCommand())
+                    .containsExactly("php", "artisan", "test");
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "2")).buildCommand())
+                    .containsExactly("php", "artisan", "migrate");
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "3")).buildCommand())
+                    .containsExactly("php", "artisan", "migrate:fresh", "--seed");
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "4")).buildCommand())
+                    .containsExactly("php", "artisan", "queue:work");
+            assertThat(aim(rack, new ArtisanDevice(), Map.of("action", "5")).buildCommand())
+                    .containsExactly("php", "artisan", "route:list");
         } finally {
             rack.shutdown();
         }

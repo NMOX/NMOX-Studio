@@ -9,6 +9,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 /**
  * GLOSS Formatter: prettier over the whole project. WRITE mode
  * rewrites files; CHECK mode only verifies (fails when unformatted).
+ * On PHP lanes it runs Laravel Pint instead, same two modes.
  */
 public class FormatDevice extends CommandDevice {
 
@@ -27,6 +28,12 @@ public class FormatDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
+        // PHP lane: Laravel Pint writes by default; --test only verifies
+        if (effectiveKind() == ProjectInspector.ProjectKind.PHP) {
+            return writeSwitch.isOn()
+                    ? List.of("vendor/bin/pint")
+                    : List.of("vendor/bin/pint", "--test");
+        }
         return List.of("npx", "prettier", writeSwitch.isOn() ? "--write" : "--check", ".");
     }
 }

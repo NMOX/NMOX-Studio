@@ -143,6 +143,35 @@ class DeviceOutputParsingTest {
         }
     }
 
+    @Test
+    @DisplayName("TYPEGUARD PHP lane parses phpstan raw lines into diagnostics")
+    void typecheckPhpstanDiagnostics() throws IOException {
+        // a PHP project: composer.json is the only manifest
+        Files.writeString(projectDir.resolve("composer.json"), "{}");
+        Rack rack = new Rack();
+        try {
+            rack.setProjectDir(projectDir.toFile());
+            Files.writeString(projectDir.resolve("User.php"), "<?php\n");
+            TypecheckDevice guard = new TypecheckDevice();
+            rack.addDevice(guard);
+
+            // phpstan --error-format=raw line: path:line:message
+            String path = projectDir.resolve("User.php").toString();
+            guard.onLine(path + ":7:Method App\\Models\\User::name() has no return type specified.");
+            guard.onLine("some unrelated chatter");
+            guard.onFinished(1);
+            settle(rack);
+
+            var problems = DiagnosticsBus.problemsFor(projectDir.resolve("User.php").toFile());
+            assertThat(problems).hasSize(1);
+            assertThat(problems).anyMatch(p -> p.line() == 7 && p.error()
+                    && p.message().contains("no return type"));
+        } finally {
+            DiagnosticsBus.publish("phpstan", java.util.List.of());
+            rack.shutdown();
+        }
+    }
+
     // ---------------- TIMELINE / GitDevice ----------------
 
     @Test

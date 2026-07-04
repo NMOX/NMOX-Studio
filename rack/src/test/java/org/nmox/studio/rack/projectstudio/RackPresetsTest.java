@@ -74,6 +74,42 @@ class RackPresetsTest {
         }
     }
 
+    @Test
+    @DisplayName("LAMP Bench fans composer install out to the PHP quality lane")
+    void lampBenchWiresPhpLane() {
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        try {
+            RackIO.fromJson(rack, RackPresets.LAMP_BENCH.buildPatch());
+            assertThat(rack.getDevices()).extracting(d -> d.getTypeId()).containsExactly(
+                    "package-manager", "test", "typecheck", "format", "run", "console");
+            assertThat(rack.getCables()).hasSize(8);
+            // one green install fans out to phpunit, phpstan and Pint
+            assertThat(wired(rack, "package-manager", "ok", "test", "run")).isTrue();
+            assertThat(wired(rack, "package-manager", "ok", "typecheck", "run")).isTrue();
+            assertThat(wired(rack, "package-manager", "ok", "format", "run")).isTrue();
+            // every lane lands on the console, IGNITION's serve log included
+            assertThat(wired(rack, "test", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "typecheck", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "format", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "run", "out", "console", "in")).isTrue();
+            // the knobs are pinned to the PHP lane: phpunit runner, php target
+            assertThat(stateOf(rack, "test").get("framework")).isEqualTo("11");
+            assertThat(stateOf(rack, "run").get("target")).isEqualTo("19");
+            assertThat(stateOf(rack, "format").get("write"))
+                    .as("a bench verifies, it doesn't rewrite").isEqualTo("false");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    /** The state map of the first device with the given type id. */
+    private static java.util.Map<String, String> stateOf(Rack rack, String typeId) {
+        return rack.getDevices().stream()
+                .filter(d -> d.getTypeId().equals(typeId))
+                .findFirst().orElseThrow().getState();
+    }
+
     /** True when a cable runs from (fromType, fromPort) to (toType, toPort). */
     private static boolean wired(Rack rack, String fromType, String fromPort,
             String toType, String toPort) {

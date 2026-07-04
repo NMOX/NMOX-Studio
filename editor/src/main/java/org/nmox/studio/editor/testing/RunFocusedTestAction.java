@@ -37,6 +37,8 @@ import org.openide.loaders.DataObject;
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-rust",
             popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-elixir",
+            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+    @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-php5",
             popupText = "Run Focused Test", popupPath = "", popupPosition = 7900)
 })
 public class RunFocusedTestAction extends BaseAction {
@@ -47,6 +49,11 @@ public class RunFocusedTestAction extends BaseAction {
     private static final Pattern GO_TEST = Pattern.compile("func\\s+(Test\\w+)");
     private static final Pattern RS_TEST = Pattern.compile("fn\\s+(\\w+)\\s*\\(");
     private static final Pattern EX_TEST = Pattern.compile("test\\s+\"(.+?)\"");
+    // PHPUnit's two declaration shapes: the classic test-prefixed method
+    // and the PHP 8 #[Test] attribute on an arbitrarily named method.
+    // The name lands in group 1 either way.
+    private static final Pattern PHP_TEST = Pattern.compile(
+            "(?:#\\[Test\\]\\s*public\\s+function|public\\s+function(?=\\s+test))\\s+(\\w+)\\s*\\(");
 
     public RunFocusedTestAction() {
         super("nmox-run-focused-test");
@@ -112,6 +119,17 @@ public class RunFocusedTestAction extends BaseAction {
                     : new Focused(List.of("cargo", "test", name), root);
             case "text/x-elixir" ->
                 new Focused(List.of("mix", "test", path + ":" + line), root);
+            case "text/x-php5" -> {
+                if (name == null) {
+                    yield null;
+                }
+                // like the jest/vitest split: prefer the project's own
+                // runner (composer's vendor/bin) over a global install
+                File local = new File(new File(root, "vendor"), "bin/phpunit");
+                String phpunit = local.isFile() ? local.getAbsolutePath() : "phpunit";
+                yield new Focused(List.of(phpunit, "--filter", name,
+                        root.toPath().relativize(file.toPath()).toString()), root);
+            }
             default -> null;
         };
     }
@@ -123,6 +141,7 @@ public class RunFocusedTestAction extends BaseAction {
             case "text/x-go" -> GO_TEST;
             case "text/x-rust" -> RS_TEST;
             case "text/x-elixir" -> EX_TEST;
+            case "text/x-php5" -> PHP_TEST;
             default -> null;
         };
     }
