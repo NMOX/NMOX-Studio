@@ -137,7 +137,7 @@ public enum DeviceType {
             case ARTISAN -> "SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials\ntest/migrate/fresh/queue/routes for RUN. Tinker is interactive — use the REPL device (php artisan tinker).";
             case CONSOLE -> "A glanceable 8-line screen. Patch any OUT (data) jack into IN,\nor dial TAP to stderr/all to hear every device unpatched — errors glow red.";
             case TERMINAL -> "5,000 lines of selectable scrollback. FOLLOW tails the output.\nPatch the OUT of anything chatty in here.";
-            case REPL -> "Set COMMAND to an interpreter (clisp, python3, node, ghci), press START.\nType an expression and Enter to evaluate; HINTS lists starter snippets. A Learning Space seeds both for you.";
+            case REPL -> "Dial ENGINE to a known interpreter — it seeds COMMAND (force-interactive flags included), HINTS snippets,\nand the install command — or stay on CUSTOM and set COMMAND yourself; press START. Type an expression and Enter\nto evaluate; INSTALL runs the catalog's install command when the interpreter is missing. A Learning Space seeds everything for you.";
             case BENCH -> "FIRE hammers the URL with autocannon; req/s on the meter.\nPatch SURGE URL → URL and READY → RUN to bench the second it serves.";
             case DEBUG -> "LAUNCH starts your runtime in debug-server mode; the attach\nendpoint (chrome://inspect, debugpy, dlv…) lands on the LCD.";
             case GIT -> "STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.\nAmber buttons mutate - the law of the rack.";

@@ -39,6 +39,16 @@ class LearningSpaceTest {
                 "# React\n\nbody");
     }
 
+    private static LearningCatalog.Space replNoInstall() {
+        return new LearningCatalog.Space("tcl", "Tcl",
+                LearningCatalog.Category.LANGUAGE, "Tcl", "blurb",
+                new LearningCatalog.Driver(LearningCatalog.DriverKind.REPL,
+                        List.of("tclsh"), "%", List.of("expr 1+1")),
+                Map.of(),
+                List.of(new LearningCatalog.SampleFile("hello.tcl", "puts 1")),
+                "# Tcl\n\nbody");
+    }
+
     @Test
     @DisplayName("A REPL space wires one REPL device seeded with command and snippets")
     void replSpaceWiresSeededRepl() {
@@ -74,6 +84,57 @@ class LearningSpaceTest {
         } finally {
             loaded.shutdown();
         }
+    }
+
+    @Test
+    @DisplayName("A REPL space seeds the OS-appropriate install command into the REPL's install param")
+    void replSpaceSeedsInstallParam() {
+        JSONObject patch = RackPresets.buildPatchFrom(rack -> LearningSpace.wire(rack, repl()));
+        Rack loaded = new Rack();
+        try {
+            org.nmox.studio.rack.model.RackIO.fromJson(loaded, patch);
+            RackDevice replDevice = loaded.getDevices().get(0);
+            assertThat(replDevice.getState().get("install"))
+                    .isNotBlank()
+                    .isEqualTo(LearningSpace.installHint(repl()));
+        } finally {
+            loaded.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("A space whose catalog entry has no install map seeds a blank install param")
+    void spaceWithoutInstallSeedsBlank() {
+        JSONObject patch = RackPresets.buildPatchFrom(
+                rack -> LearningSpace.wire(rack, replNoInstall()));
+        Rack loaded = new Rack();
+        try {
+            org.nmox.studio.rack.model.RackIO.fromJson(loaded, patch);
+            RackDevice replDevice = loaded.getDevices().get(0);
+            assertThat(replDevice.getState().get("install")).isEmpty();
+        } finally {
+            loaded.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("The OS key: mac/darwin map to mac (before the windows check), win to windows, else linux")
+    void osKeyPinning() {
+        assertThat(LearningSpace.osKey("Mac OS X")).isEqualTo("mac");
+        assertThat(LearningSpace.osKey("Darwin")).as("darwin contains 'win' — mac must win")
+                .isEqualTo("mac");
+        assertThat(LearningSpace.osKey("Windows 11")).isEqualTo("windows");
+        assertThat(LearningSpace.osKey("Linux")).isEqualTo("linux");
+        assertThat(LearningSpace.osKey("FreeBSD")).as("fallback").isEqualTo("linux");
+        assertThat(LearningSpace.osKey("")).isEqualTo("linux");
+    }
+
+    @Test
+    @DisplayName("installHint falls back to the mac entry and to blank when the map is empty")
+    void installHintFallback() {
+        // whatever OS runs this test: a mac-only map yields the mac hint
+        assertThat(LearningSpace.installHint(run())).isEqualTo("brew install node");
+        assertThat(LearningSpace.installHint(replNoInstall())).isEmpty();
     }
 
     @Test

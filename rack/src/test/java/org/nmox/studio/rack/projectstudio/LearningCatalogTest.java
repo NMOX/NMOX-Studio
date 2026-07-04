@@ -55,6 +55,33 @@ class LearningCatalogTest {
     }
 
     @Test
+    @DisplayName("Every REPL driver names a launchable command token")
+    void replDriversNameACommand() {
+        for (LearningCatalog.Space s : LearningCatalog.all()) {
+            if (s.driver().kind() == LearningCatalog.DriverKind.REPL) {
+                assertThat(s.driver().command())
+                        .as("%s repl has a command", s.slug()).isNotEmpty();
+                assertThat(s.driver().command().get(0))
+                        .as("%s repl command token is non-blank", s.slug()).isNotBlank();
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("The well-known interpreters carry install commands for all three OSes")
+    void wellKnownInterpretersCarryInstallCommands() {
+        for (String slug : List.of("lisp-clisp", "python", "javascript-node")) {
+            LearningCatalog.Space space = LearningCatalog.find(slug);
+            assertThat(space).as("%s is in the catalog", slug).isNotNull();
+            assertThat(space.install())
+                    .as("%s install map covers mac+linux+windows", slug)
+                    .containsKeys("mac", "linux", "windows");
+            space.install().forEach((os, cmd) -> assertThat(cmd)
+                    .as("%s install for %s is non-blank", slug, os).isNotBlank());
+        }
+    }
+
+    @Test
     @DisplayName("parse tolerates unknown/missing fields without throwing")
     void parseIsLenient() {
         org.json.JSONObject root = new org.json.JSONObject(

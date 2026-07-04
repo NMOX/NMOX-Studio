@@ -232,8 +232,9 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### REPL — Read-Eval-Print Loop — type into clisp/python/node/ghci live
 
-> Set COMMAND to an interpreter (clisp, python3, node, ghci), press START.
-> Type an expression and Enter to evaluate; HINTS lists starter snippets. A Learning Space seeds both for you.
+> Dial ENGINE to a known interpreter — it seeds COMMAND (force-interactive flags included), HINTS snippets,
+> and the install command — or stay on CUSTOM and set COMMAND yourself; press START. Type an expression and Enter
+> to evaluate; INSTALL runs the catalog's install command when the interpreter is missing. A Learning Space seeds everything for you.
 
 - **In:** `EVAL` (data)
 - **Out:** `OUT` (data)
