@@ -41,9 +41,13 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.nmox.studio.dbstudio.engine.DbBackend;
+import org.nmox.studio.dbstudio.engine.JdbcUrlDialects;
 import org.nmox.studio.dbstudio.engine.Passwords;
 import org.nmox.studio.dbstudio.engine.QueryResult;
+import org.nmox.studio.dbstudio.engine.ServicesBackend;
 import org.nmox.studio.dbstudio.io.DbWorkspaceIO;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
@@ -71,6 +75,16 @@ import org.openide.windows.TopComponent;
  * aimed project, exactly like the rack patch, the infra design, and the
  * API workspace — and by construction it never carries a password
  * (those live in the OS keychain via {@link Passwords}).
+ *
+ * <p>Below the workspace connections the tree carries a <b>Services</b>
+ * branch mirroring the NetBeans Database Explorer: every connection
+ * registered in the Services window appears here, browsable and
+ * runnable through {@link ServicesBackend} wrapping the explorer's own
+ * live {@code java.sql.Connection}. NetBeans owns those connections'
+ * drivers, credentials and lifecycle — Edit/Remove/Test are disabled
+ * for them and disconnecting is done in the Services window; the branch
+ * follows {@code ConnectionManager}'s connectionsChanged events while
+ * the tab is open.
  *
  * <p>Threading: every engine call ({@code open/close/test/
  * listContainers/columns/runConsole}) happens on the module's
@@ -106,6 +120,10 @@ public final class DbStudioTopComponent extends TopComponent {
             DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
     private final List<ConnectionSpec> specs = new ArrayList<>();
+    /** Synthesized display specs for the Services branch, ids prefixed {@code nb:} — never persisted. */
+    private final List<ConnectionSpec> serviceSpecs = new ArrayList<>();
+    /** The live NetBeans explorer connection behind each Services spec id. */
+    private final Map<String, DatabaseConnection> serviceConnections = new ConcurrentHashMap<>();
     /** At most one live backend per spec id; entries leave on disconnect/remove/close. */
     private final Map<String, DbBackend> backends = new ConcurrentHashMap<>();
     /** Containers the tree has fetched, by spec id — feeds Quick Search, never re-fetched there. */
@@ -132,6 +150,12 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean rackListenerAttached;
+    /** Follows the Services window's connection list while the tab is open. */
+    private final org.netbeans.api.db.explorer.ConnectionListener servicesListener =
+            () -> SwingUtilities.invokeLater(this::refreshServicesBranch);
+    private boolean servicesListenerAttached;
+    /** The tree node heading the Services branch; recreated by every rebuildTree. */
+    private DefaultMutableTreeNode servicesBranchNode;
     private String activeSpecId;
     /** True while a console run is in flight; gates RUN and re-entry. */
     private boolean running;
@@ -157,6 +181,7 @@ public final class DbStudioTopComponent extends TopComponent {
             }
         };
         attachRackListener();
+        attachServicesListener();
         reloadWorkspace();
     }
 
@@ -300,15 +325,30 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         activeSpecId = spec.id();
-        applyConsoleMime(spec.engine());
+        applyConsoleMimeFor(spec);
         int limit = (Integer) limitSpinner.getValue();
-        console.setText(PeekQueries.consoleTextFor(spec.engine(), info, limit));
+        console.setText(peekTextFor(spec, info, limit));
         if (PeekQueries.runnableAgainst(spec, info)) {
             run();
         } else {
             status("Console queries \"" + spec.database() + "\" — Edit the connection's "
                     + "database to \"" + info.name() + "\" to query it", FAIL_RED);
         }
+    }
+
+    /**
+     * The peek text for a container: the engine dialect when DB Studio
+     * knows it; otherwise (a Services connection to Derby, Oracle, …)
+     * the SQL-standard shape with the URL-inferred identifier quote.
+     */
+    private String peekTextFor(ConnectionSpec spec, TableInfo info, int limit) {
+        if (spec.engine() != null) {
+            return PeekQueries.consoleTextFor(spec.engine(), info, limit);
+        }
+        DatabaseConnection connection = serviceConnections.get(spec.id());
+        String quote = JdbcUrlDialects.identifierQuote(
+                connection == null ? null : connection.getDatabaseURL());
+        return PeekQueries.consoleTextFor(quote, info, limit);
     }
 
     private void run() {
@@ -333,16 +373,22 @@ public final class DbStudioTopComponent extends TopComponent {
         long started = System.currentTimeMillis();
         RP.post(() -> {
             DbBackend backend = backendFor(spec);
-            String openError = backend.isOpen() ? null : backend.open();
-            List<QueryResult> results = openError == null
-                    ? backend.runConsole(text, limit)
-                    : List.of(new QueryResult(List.of(), List.of(), 0, -1, false, 0,
-                            openError, text));
+            List<QueryResult> results;
+            if (backend == null) { // a Services connection that just left the explorer
+                results = List.of(new QueryResult(List.of(), List.of(), 0, -1, false, 0,
+                        "Connection no longer exists in the Services window", text));
+            } else {
+                String openError = backend.isOpen() ? null : backend.open();
+                results = openError == null
+                        ? backend.runConsole(text, limit)
+                        : List.of(new QueryResult(List.of(), List.of(), 0, -1, false, 0,
+                                openError, text));
+            }
             long totalMs = System.currentTimeMillis() - started;
             SwingUtilities.invokeLater(() -> {
                 running = false;
                 cancelButton.setEnabled(false);
-                history.add(text, spec.engine().displayName(), System.currentTimeMillis());
+                history.add(text, engineLabel(spec), System.currentTimeMillis());
                 refreshHistory();
                 showResults(results, totalMs);
                 refreshActions(); // the run may have opened the connection
@@ -444,7 +490,23 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- the console follows the active connection's engine ----
 
     private void applyConsoleMime(DbEngine engine) {
-        String mime = ConsoleMimes.mimeFor(engine.kind());
+        applyConsoleMime(ConsoleMimes.mimeFor(engine.kind()), ConsoleMimes.placeholderFor(engine));
+    }
+
+    /**
+     * Engine-aware for workspace specs; a Services connection whose
+     * dialect DB Studio doesn't model (null engine — Derby, Oracle, …)
+     * is still JDBC, so its console speaks SQL.
+     */
+    private void applyConsoleMimeFor(ConnectionSpec spec) {
+        if (spec.engine() != null) {
+            applyConsoleMime(spec.engine());
+        } else {
+            applyConsoleMime(ConsoleMimes.SQL_MIME, "SELECT …;");
+        }
+    }
+
+    private void applyConsoleMime(String mime, String placeholder) {
         String text = console.getText();
         boolean replaceable = ConsoleMimes.isPlaceholderOrBlank(text);
         if (!mime.equals(consoleMime)) {
@@ -456,9 +518,9 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             consoleMime = mime;
             console.setFont(MONO);
-            console.setText(replaceable ? ConsoleMimes.placeholderFor(engine) : text);
+            console.setText(replaceable ? placeholder : text);
         } else if (replaceable) {
-            console.setText(ConsoleMimes.placeholderFor(engine));
+            console.setText(placeholder);
         }
     }
 
@@ -469,8 +531,15 @@ public final class DbStudioTopComponent extends TopComponent {
         if (spec == null) {
             return;
         }
-        DbBackend backend = backends.get(spec.id());
         DefaultMutableTreeNode node = findConnectionNode(spec.id());
+        if (isServicesSpec(spec)) {
+            // NetBeans owns this connection's lifecycle — no disconnect here
+            // (that's the Services window's job); Connect (re)opens and
+            // refreshes the container list.
+            connect(spec, node, true);
+            return;
+        }
+        DbBackend backend = backends.get(spec.id());
         if (backend != null && backend.isOpen()) {
             backends.remove(spec.id());
             RP.post(backend::close);
@@ -497,8 +566,15 @@ public final class DbStudioTopComponent extends TopComponent {
         status("Connecting to " + spec.name() + "…", Color.GRAY);
         RP.post(() -> {
             DbBackend backend = backendFor(spec);
-            String error = backend.open();
-            List<TableInfo> containers = error == null ? backend.listContainers() : List.of();
+            String error;
+            List<TableInfo> containers;
+            if (backend == null) { // a Services connection that just left the explorer
+                error = "Connection no longer exists in the Services window";
+                containers = List.of();
+            } else {
+                error = backend.open();
+                containers = error == null ? backend.listContainers() : List.of();
+            }
             SwingUtilities.invokeLater(() -> {
                 connecting.remove(spec.id());
                 if (error != null) {
@@ -527,8 +603,8 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void testSelected() {
         ConnectionSpec spec = selectedConnection();
-        if (spec == null) {
-            return;
+        if (spec == null || isServicesSpec(spec)) {
+            return; // Services entries: Test is disabled, NetBeans owns the probe
         }
         status("Testing " + spec.name() + "…", Color.GRAY);
         RP.post(() -> {
@@ -549,9 +625,19 @@ public final class DbStudioTopComponent extends TopComponent {
         });
     }
 
-    /** The one live backend per spec id; created (with its keychain read) off-EDT. */
+    /**
+     * The one live backend per spec id; created (with its keychain read)
+     * off-EDT. Services specs wrap the NetBeans explorer's connection
+     * instead — no keychain involved — and yield null when that
+     * connection has just left the Services window (callers surface a
+     * "no longer exists" message).
+     */
     private DbBackend backendFor(ConnectionSpec spec) {
         return backends.computeIfAbsent(spec.id(), id -> {
+            if (id.startsWith(ServicesBackend.ID_PREFIX)) {
+                DatabaseConnection connection = serviceConnections.get(id);
+                return connection == null ? null : new ServicesBackend(connection);
+            }
             char[] password = Passwords.read(id);
             try {
                 return DbBackend.create(spec, password); // the backend copies the array
@@ -588,8 +674,80 @@ public final class DbStudioTopComponent extends TopComponent {
             status("Add a connection, then double-click a table to peek at its data",
                     Color.GRAY);
         }
+        // the Services branch always trails the workspace connections
+        servicesBranchNode = new DefaultMutableTreeNode(ServicesBranch.INSTANCE);
+        servicesBranchNode.add(new DefaultMutableTreeNode("Loading…"));
+        root.add(servicesBranchNode);
         tree.setModel(new DefaultTreeModel(root));
         refreshActions();
+        refreshServicesBranch();
+    }
+
+    /**
+     * Fills the Services branch from the NetBeans Database Explorer:
+     * the connection list is read off-EDT (first touch loads the
+     * explorer's registry), specs are synthesized per connection, and
+     * the branch refills on the EDT. Runs at every tree rebuild and on
+     * every ConnectionManager connectionsChanged event; backends and
+     * cached containers of connections that left the explorer are
+     * dropped (dropping a {@link ServicesBackend} never closes the
+     * underlying connection — NetBeans owns it).
+     */
+    private void refreshServicesBranch() {
+        RP.post(() -> {
+            List<ConnectionSpec> synthesized = new ArrayList<>();
+            Map<String, DatabaseConnection> byId = new HashMap<>();
+            for (DatabaseConnection connection : servicesConnections()) {
+                ConnectionSpec spec = ServicesBackend.specFor(connection);
+                synthesized.add(spec);
+                byId.put(spec.id(), connection);
+            }
+            SwingUtilities.invokeLater(() -> {
+                serviceSpecs.clear();
+                serviceSpecs.addAll(synthesized);
+                serviceConnections.clear();
+                serviceConnections.putAll(byId);
+                backends.keySet().removeIf(id ->
+                        id.startsWith(ServicesBackend.ID_PREFIX) && !byId.containsKey(id));
+                containerCache.keySet().removeIf(id ->
+                        id.startsWith(ServicesBackend.ID_PREFIX) && !byId.containsKey(id));
+                DefaultMutableTreeNode branch = servicesBranchNode;
+                if (branch == null) {
+                    return;
+                }
+                branch.removeAllChildren();
+                if (synthesized.isEmpty()) {
+                    branch.add(new DefaultMutableTreeNode(
+                            "No connections in the Services window yet"));
+                } else {
+                    for (ConnectionSpec spec : synthesized) {
+                        DefaultMutableTreeNode node = new DefaultMutableTreeNode(spec);
+                        node.add(new DefaultMutableTreeNode("Loading…"));
+                        branch.add(node);
+                    }
+                }
+                ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(branch);
+                refreshActions();
+            });
+        });
+    }
+
+    /** The explorer's registered connections; empty when it is unavailable (tests, stripped platform). */
+    private static List<DatabaseConnection> servicesConnections() {
+        try {
+            return Arrays.asList(ConnectionManager.getDefault().getConnections());
+        } catch (RuntimeException | LinkageError unavailable) {
+            return List.of();
+        }
+    }
+
+    private static boolean isServicesSpec(ConnectionSpec spec) {
+        return spec != null && spec.id().startsWith(ServicesBackend.ID_PREFIX);
+    }
+
+    /** The engine badge/history label; Services connections may have no modeled engine. */
+    private static String engineLabel(ConnectionSpec spec) {
+        return spec.engine() != null ? spec.engine().displayName() : "JDBC";
     }
 
     private static boolean hasPlaceholder(DefaultMutableTreeNode node) {
@@ -641,8 +799,18 @@ public final class DbStudioTopComponent extends TopComponent {
         if (!(tree.getModel().getRoot() instanceof DefaultMutableTreeNode root)) {
             return null;
         }
-        for (int i = 0; i < root.getChildCount(); i++) {
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) root.getChildAt(i);
+        DefaultMutableTreeNode workspaceHit = findConnectionChild(root, specId);
+        if (workspaceHit != null) {
+            return workspaceHit;
+        }
+        DefaultMutableTreeNode branch = servicesBranchNode;
+        return branch == null ? null : findConnectionChild(branch, specId);
+    }
+
+    private static DefaultMutableTreeNode findConnectionChild(
+            DefaultMutableTreeNode parent, String specId) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(i);
             if (child.getUserObject() instanceof ConnectionSpec spec
                     && spec.id().equals(specId)) {
                 return child;
@@ -674,7 +842,7 @@ public final class DbStudioTopComponent extends TopComponent {
         ConnectionSpec spec = selectedConnection();
         if (spec != null && !spec.id().equals(activeSpecId)) {
             activeSpecId = spec.id();
-            applyConsoleMime(spec.engine());
+            applyConsoleMimeFor(spec);
         }
         refreshActions();
     }
@@ -688,18 +856,35 @@ public final class DbStudioTopComponent extends TopComponent {
                 return spec;
             }
         }
+        for (ConnectionSpec spec : serviceSpecs) {
+            if (spec.id().equals(activeSpecId)) {
+                return spec;
+            }
+        }
         return null;
     }
 
     private void refreshActions() {
         ConnectionSpec spec = selectedConnection();
         boolean selected = spec != null;
-        editButton.setEnabled(selected);
-        removeButton.setEnabled(selected);
-        testButton.setEnabled(selected);
+        boolean services = isServicesSpec(spec);
+        // Services entries are owned by the NetBeans explorer: no edit,
+        // no remove, no test from here — the tooltip says where to go.
+        editButton.setEnabled(selected && !services);
+        removeButton.setEnabled(selected && !services);
+        testButton.setEnabled(selected && !services);
+        String managedElsewhere = services ? "Managed in the Services window" : null;
+        editButton.setToolTipText(managedElsewhere);
+        removeButton.setToolTipText(managedElsewhere);
+        testButton.setToolTipText(managedElsewhere);
         connectButton.setEnabled(selected);
         DbBackend backend = selected ? backends.get(spec.id()) : null;
-        connectButton.setText(backend != null && backend.isOpen() ? "Disconnect" : "Connect");
+        // Services connections never show Disconnect: NetBeans owns the lifecycle
+        connectButton.setText(!services && backend != null && backend.isOpen()
+                ? "Disconnect" : "Connect");
+        connectButton.setToolTipText(services
+                ? "Connect through NetBeans (drivers and credentials live in the Services window)"
+                : null);
         // RUN gates on having a target: an always-armed button that silently
         // no-ops reads as broken. The tooltip says why it's off.
         boolean runnable = !running && activeSpec() != null;
@@ -739,8 +924,8 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void editSelected() {
         ConnectionSpec spec = selectedConnection();
-        if (spec == null) {
-            return;
+        if (spec == null || isServicesSpec(spec)) {
+            return; // Services entries are edited in the Services window
         }
         ConnectionSpec updated = ConnectionDialog.show(spec);
         if (updated == null) {
@@ -761,8 +946,8 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void removeSelected() {
         ConnectionSpec spec = selectedConnection();
-        if (spec == null) {
-            return;
+        if (spec == null || isServicesSpec(spec)) {
+            return; // Services entries are removed in the Services window
         }
         NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(
                 "Remove connection \"" + spec.name() + "\"? Its stored password is deleted too.",
@@ -900,16 +1085,40 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    private void attachServicesListener() {
+        if (servicesListenerAttached) {
+            return;
+        }
+        try {
+            ConnectionManager.getDefault().addConnectionListener(servicesListener);
+            servicesListenerAttached = true;
+        } catch (RuntimeException | LinkageError unavailable) {
+            // DB explorer absent (tests, stripped platform): the branch stays empty
+        }
+    }
+
     @Override
     public void componentOpened() {
         if (!rackListenerAttached) {
             attachRackListener();
         }
+        attachServicesListener();
+        refreshServicesBranch(); // the Services list may have changed while closed
     }
 
     @Override
     public void componentClosed() {
+        // drops our Services backends too — their close() is a reference-drop
+        // no-op; the NetBeans explorer keeps its connections
         closeAllBackends();
+        if (servicesListenerAttached) {
+            try {
+                ConnectionManager.getDefault().removeConnectionListener(servicesListener);
+            } catch (RuntimeException | LinkageError ignored) {
+                // already unavailable — nothing to detach from
+            }
+            servicesListenerAttached = false;
+        }
         if (rackListenerAttached) {
             try {
                 org.nmox.studio.rack.service.RackService.getDefault()
@@ -934,10 +1143,17 @@ public final class DbStudioTopComponent extends TopComponent {
             if (userObject instanceof ConnectionSpec spec) {
                 DbBackend backend = backends.get(spec.id());
                 boolean connected = backend != null && backend.isOpen();
+                String badge = isServicesSpec(spec)
+                        ? (spec.engine() != null
+                                ? "Services · " + spec.engine().displayName() : "Services")
+                        : spec.engine().displayName();
                 setText("<html>" + (connected ? "<b>" : "") + esc(spec.name())
                         + (connected ? "</b>" : "")
-                        + " <font color='#8a8a8a'>(" + spec.engine().displayName()
+                        + " <font color='#8a8a8a'>(" + esc(badge)
                         + ")</font></html>");
+            } else if (userObject instanceof ServicesBranch) {
+                setText("<html><b>Services</b> <font color='#8a8a8a'>"
+                        + "(NetBeans Database Explorer)</font></html>");
             } else if (userObject instanceof TableInfo info) {
                 String kind = info.type() == null || "TABLE".equalsIgnoreCase(info.type())
                         ? "" : " <font color='#8a8a8a'>(" + esc(info.type().toLowerCase(java.util.Locale.ROOT)) + ")</font>";
@@ -979,5 +1195,18 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private static String esc(String s) {
         return s == null ? "" : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    /**
+     * User object heading the Services branch — a marker type, because
+     * a plain String would render as a grey placeholder and read as
+     * loading state.
+     */
+    private static final class ServicesBranch {
+
+        static final ServicesBranch INSTANCE = new ServicesBranch();
+
+        private ServicesBranch() {
+        }
     }
 }

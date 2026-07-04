@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.30.0] — 2026-07-04
+
+DB Studio joins the platform: connections configured in the NetBeans
+**Services** window now work in DB Studio directly. Plus the dev-launch
+branding trilogy completes.
+
+### Added
+- **The Services bridge** — DB Studio's tree gains a "Services" branch
+  listing every connection from the NetBeans Database Explorer
+  (`ConnectionManager`), live-updated as you add/remove them there.
+  Select one and it behaves like a native connection: browse tables,
+  double-click-peek, run console SQL, grids/history/cancel. The bridge
+  wraps the **live `java.sql.Connection` NetBeans manages**, so any
+  database Services can reach — Java DB/Derby, Oracle, anything with a
+  registered driver — runs in DB Studio's console, with NetBeans owning
+  drivers, credentials, and lifecycle. Passwords never pass through our
+  code; close() never closes NB's shared connection; Edit/Remove/Test
+  stay honestly disabled ("Managed in the Services window"). Peeks on
+  non-bundled engines use SQL-standard `FETCH FIRST n ROWS ONLY` with
+  double-quoted identifiers (Derby and Oracle reject `LIMIT`).
+- The JDBC statement loop was **extracted into a shared `JdbcCore`**
+  (DbClient shed 142 lines, its SQLite e2e suite untouched), so both
+  backends run one proven engine. The Services adapter is verified by a
+  fully headless test through the real NetBeans API — driver
+  registration → connection → our backend → temp SQLite → rows.
+
+### Fixed
+- **⌘Tab and the dock showed the Java coffee cup on dev launches** —
+  the generated launcher hardcodes `-Xdock:icon=<app-parent>/
+  nmoxstudio.icns`, which only the packaged .app satisfied. The icns is
+  now a committed asset (built once from the same iconset the DMG uses)
+  and the application build copies it to exactly that spot. Completes
+  the dev-branding trilogy (window title and menu-bar name shipped in
+  v1.29.2).
+
 ## [1.29.2] — 2026-07-04
 
 Two more live-observation fixes, straight from the user's screen:

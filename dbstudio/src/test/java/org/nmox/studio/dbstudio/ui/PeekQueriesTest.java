@@ -43,6 +43,22 @@ class PeekQueriesTest {
     }
 
     @Test
+    @DisplayName("The explicit-quote path speaks SQL standard: quoted identifiers + FETCH FIRST")
+    void explicitQuotePath() {
+        // Derby through the Services window: double-quote identifiers, and the
+        // row cap must be FETCH FIRST — Derby rejects the LIMIT extension
+        assertThat(PeekQueries.consoleTextFor("\"", table("APP", "INVOICES"), 200))
+                .isEqualTo("SELECT * FROM \"APP\".\"INVOICES\" FETCH FIRST 200 ROWS ONLY;");
+        assertThat(PeekQueries.consoleTextFor("\"", table(null, "T"), 5))
+                .isEqualTo("SELECT * FROM \"T\" FETCH FIRST 5 ROWS ONLY;");
+        assertThat(PeekQueries.consoleTextFor("\"", table("", "T"), 5))
+                .isEqualTo("SELECT * FROM \"T\" FETCH FIRST 5 ROWS ONLY;");
+        // the quote is the caller's choice (JdbcUrlDialects decides)
+        assertThat(PeekQueries.consoleTextFor("`", table("shop", "orders"), 10))
+                .isEqualTo("SELECT * FROM `shop`.`orders` FETCH FIRST 10 ROWS ONLY;");
+    }
+
+    @Test
     @DisplayName("Couch peek is only runnable when the spec is aimed at that database")
     void couchAimGuard() {
         ConnectionSpec aimed = new ConnectionSpec("id1", "couch", DbEngine.COUCHDB,
