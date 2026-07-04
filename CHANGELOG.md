@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.29.2] — 2026-07-04
+
+Two more live-observation fixes, straight from the user's screen:
+
+### Fixed
+- **The macOS app menu said "nmoxstudio"** on dev/bin-script launches —
+  the generated launcher defaults the dock name to the executable
+  basename. The conf now sets `APP_DOCK_NAME="NMOX Studio"` (read only by
+  the launcher's Darwin block; inert elsewhere). The packaged .app was
+  already correct via its own wrapper.
+- **The Welcome launchpad's TOOLING column didn't list DB Studio** — the
+  one suite tab missing from it. "DB Studio  ⇧⌘7" now sits between
+  Project Studio and API Studio.
+
 ## [1.29.1] — 2026-07-04
 
 DB Studio's live click-through (the house tradition) said it plainly:
