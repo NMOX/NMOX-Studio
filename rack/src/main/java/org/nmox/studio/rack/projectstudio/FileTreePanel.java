@@ -43,13 +43,34 @@ public class FileTreePanel extends JPanel {
     private static final Set<String> HEAVY_DIRS = Set.of("node_modules", ".git", "dist", "build", "coverage");
     private static final String PLACEHOLDER = "…";
 
+    /**
+     * Directory-listing seam. Production lists the real filesystem; a test can
+     * inject a slow lister to prove {@link #setRootDirectory} never blocks the
+     * caller (the EDT) while a directory is walked.
+     */
+    interface DirLister {
+        /** Children of {@code dir}, or null when it cannot be listed. */
+        File[] list(File dir);
+    }
+
+    private static final DirLister REAL_LISTER = File::listFiles;
+
     private final JTree tree;
     private final DefaultTreeModel model;
+    private final DirLister lister;
+    /** Every filesystem walk runs here, never on the EDT. */
+    private final org.openide.util.RequestProcessor scanner =
+            new org.openide.util.RequestProcessor("nmox-filetree-scan", 1, true);
     private File root;
     private FileWatcher watcher;
 
     public FileTreePanel() {
+        this(REAL_LISTER);
+    }
+
+    FileTreePanel(DirLister lister) {
         super(new BorderLayout());
+        this.lister = lister;
         model = new DefaultTreeModel(new DefaultMutableTreeNode("No project"));
         tree = new JTree(model);
         tree.setRootVisible(true);
@@ -59,7 +80,7 @@ public class FileTreePanel extends JPanel {
         tree.addTreeWillExpandListener(new javax.swing.event.TreeWillExpandListener() {
             @Override
             public void treeWillExpand(javax.swing.event.TreeExpansionEvent event) {
-                loadChildren((DefaultMutableTreeNode) event.getPath().getLastPathComponent());
+                loadChildrenAsync((DefaultMutableTreeNode) event.getPath().getLastPathComponent());
             }
 
             @Override
@@ -96,7 +117,7 @@ public class FileTreePanel extends JPanel {
 
     public void setRootDirectory(File dir) {
         this.root = dir;
-        rebuild();
+        rebuild();       // posts the filesystem walk to a background thread
         restartWatcher();
     }
 
@@ -117,6 +138,7 @@ public class FileTreePanel extends JPanel {
     }
 
     public void dispose() {
+        scanner.stop();
         if (watcher != null) {
             watcher.stop();
             watcher = null;
@@ -125,31 +147,94 @@ public class FileTreePanel extends JPanel {
 
     // ---- tree building ----
 
+    /**
+     * Rebuilds the whole tree. The filesystem walk of the root directory runs
+     * on a background thread — never the EDT — so a fresh launch that aims at a
+     * slow or permission-gated directory still draws its window promptly. The
+     * model swap and re-expansion happen back on the EDT.
+     */
     private void rebuild() {
-        if (root == null || !root.isDirectory()) {
-            model.setRoot(new DefaultMutableTreeNode("No project"));
+        File current = root;
+        if (current == null || !isDirectorySafe(current)) {
+            SwingUtilities.invokeLater(() -> model.setRoot(new DefaultMutableTreeNode("No project")));
             return;
         }
         Set<String> expanded = expandedPaths();
-        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(root);
-        addChildren(rootNode, root);
-        model.setRoot(rootNode);
-        tree.expandPath(new TreePath(rootNode.getPath()));
-        reExpand(rootNode, expanded);
+        scanner.post(() -> {
+            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(current);
+            // resolve the root and every previously-expanded subtree here, on
+            // the background thread, so the EDT only swaps a finished model
+            addChildrenDeep(rootNode, current, expanded);
+            SwingUtilities.invokeLater(() -> {
+                if (current != root) {
+                    return; // aim changed while we were listing; a newer scan owns the tree
+                }
+                model.setRoot(rootNode);
+                tree.expandPath(new TreePath(rootNode.getPath()));
+                reExpand(rootNode, expanded);
+            });
+        });
     }
 
-    /** Fills in real children for a node (replacing the lazy placeholder). */
-    private void loadChildren(DefaultMutableTreeNode node) {
-        if (node.getChildCount() == 1
-                && PLACEHOLDER.equals(((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject())) {
-            node.removeAllChildren();
-            addChildren(node, (File) node.getUserObject());
-            model.nodeStructureChanged(node);
+    /**
+     * Off-EDT: fills a node's children and recurses into any child that was
+     * expanded before the rebuild, so the whole visible subtree is resolved on
+     * the background scanner rather than a synchronous walk on the EDT.
+     */
+    private void addChildrenDeep(DefaultMutableTreeNode node, File dir, Set<String> expanded) {
+        addChildren(node, dir);
+        for (int i = 0; i < node.getChildCount(); i++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
+            if (child.getUserObject() instanceof File f && f.isDirectory()
+                    && expanded.contains(f.getAbsolutePath())) {
+                child.removeAllChildren(); // drop the lazy placeholder
+                addChildrenDeep(child, f, expanded);
+            }
         }
     }
 
+    /**
+     * Fills in real children for a node when the user expands it. The listing
+     * runs on the background scanner; the model update returns to the EDT.
+     */
+    private void loadChildrenAsync(DefaultMutableTreeNode node) {
+        if (node.getChildCount() != 1
+                || !PLACEHOLDER.equals(((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject())
+                || !(node.getUserObject() instanceof File dir)) {
+            return;
+        }
+        // the placeholder still present at apply-time is what guards against a
+        // double-post racing two model updates for the same node
+        scanner.post(() -> {
+            DefaultMutableTreeNode filled = new DefaultMutableTreeNode(dir);
+            addChildren(filled, dir);
+            SwingUtilities.invokeLater(() -> {
+                if (node.getChildCount() == 1
+                        && PLACEHOLDER.equals(((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject())) {
+                    node.removeAllChildren();
+                    // snapshot first: node.add() detaches from filled, so
+                    // iterating filled while adding would skip every other child
+                    List<DefaultMutableTreeNode> kids = new ArrayList<>();
+                    for (int i = 0; i < filled.getChildCount(); i++) {
+                        kids.add((DefaultMutableTreeNode) filled.getChildAt(i));
+                    }
+                    for (DefaultMutableTreeNode kid : kids) {
+                        node.add(kid);
+                    }
+                    model.nodeStructureChanged(node);
+                }
+            });
+        });
+    }
+
+    /**
+     * Fills a node's children synchronously (already off the EDT — callers run
+     * on the scanner). A directory gets a lazy placeholder rather than being
+     * probed here, so building one level never recurses into a protected or
+     * slow child directory.
+     */
     private void addChildren(DefaultMutableTreeNode node, File dir) {
-        File[] files = dir.listFiles();
+        File[] files = lister.list(dir);
         if (files == null) {
             return;
         }
@@ -159,18 +244,24 @@ public class FileTreePanel extends JPanel {
         for (File f : files) {
             DefaultMutableTreeNode child = new DefaultMutableTreeNode(f);
             if (f.isDirectory()) {
-                // lazy: a placeholder until the user expands
-                if (hasAnyChild(f)) {
-                    child.add(new DefaultMutableTreeNode(PLACEHOLDER));
-                }
+                // lazy and cheap: assume every directory is expandable and show
+                // a placeholder. Resolving real emptiness would mean a File.list
+                // per child, which on ~ would touch the TCC-protected folders —
+                // the whole bug. An empty dir that expands to nothing is a
+                // trivial, self-correcting cost.
+                child.add(new DefaultMutableTreeNode(PLACEHOLDER));
             }
             node.add(child);
         }
     }
 
-    private static boolean hasAnyChild(File dir) {
-        String[] names = dir.list();
-        return names != null && names.length > 0;
+    /** isDirectory() can itself stat a protected path; keep it off the EDT-blocking hot path. */
+    private static boolean isDirectorySafe(File dir) {
+        try {
+            return dir.isDirectory();
+        } catch (SecurityException ex) {
+            return false;
+        }
     }
 
     private Set<String> expandedPaths() {
@@ -193,9 +284,10 @@ public class FileTreePanel extends JPanel {
     }
 
     private void reExpand(DefaultMutableTreeNode node, Set<String> expanded) {
+        // EDT-only: the subtree is already resolved off-EDT (addChildrenDeep),
+        // so here we only re-open the tree paths — no filesystem access.
         Object user = node.getUserObject();
         if (user instanceof File f && expanded.contains(f.getAbsolutePath())) {
-            loadChildren(node);
             tree.expandPath(new TreePath(node.getPath()));
             List<DefaultMutableTreeNode> children = new ArrayList<>();
             for (int i = 0; i < node.getChildCount(); i++) {

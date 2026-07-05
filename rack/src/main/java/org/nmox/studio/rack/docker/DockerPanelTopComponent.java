@@ -656,17 +656,33 @@ public final class DockerPanelTopComponent extends TopComponent {
                 DockerizeGenerator.buildsStatic(projectDir()));
     }
 
+    /** Detection walks the project directory; keep it off the EDT. */
+    private static final org.openide.util.RequestProcessor DOCKERIZE_RP =
+            new org.openide.util.RequestProcessor("nmox-dockerize", 1, true);
+
     private void regenerateDockerize() {
-        ProjectInspector.ProjectKind kind = currentKind();
-        boolean statics = DockerizeGenerator.buildsStatic(projectDir());
-        dockerizeFiles = DockerizeGenerator.generate(kind, imageName(), statics);
-        dockerizeInfo.setText("Project: " + projectDir().getName()
-                + "   ·   detected toolchain: " + kind
-                + (statics ? " (static bundle → nginx)" : "")
-                + "   ·   image: " + imageName() + "   ·   port: " + currentPort());
-        dockerfilePreview.setText(dockerizeFiles.getOrDefault("Dockerfile", ""));
-        ignorePreview.setText(dockerizeFiles.getOrDefault(".dockerignore", ""));
-        composePreview.setText(dockerizeFiles.getOrDefault("compose.yaml", ""));
+        // detectKind + buildsStatic walk the project directory; on a $HOME aim
+        // that would touch the TCC-protected folders on the EDT during startup
+        // (this panel opens at startup). Detect on the background thread and
+        // apply the previews on the EDT.
+        File dir = projectDir();
+        DOCKERIZE_RP.post(() -> {
+            ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(dir);
+            boolean statics = DockerizeGenerator.buildsStatic(dir);
+            String image = dir.getName().toLowerCase().replaceAll("[^a-z0-9_-]", "-");
+            int port = DockerizeGenerator.defaultPort(kind, statics);
+            Map<String, String> files = DockerizeGenerator.generate(kind, image, statics);
+            SwingUtilities.invokeLater(() -> {
+                dockerizeFiles = files;
+                dockerizeInfo.setText("Project: " + dir.getName()
+                        + "   ·   detected toolchain: " + kind
+                        + (statics ? " (static bundle → nginx)" : "")
+                        + "   ·   image: " + image + "   ·   port: " + port);
+                dockerfilePreview.setText(files.getOrDefault("Dockerfile", ""));
+                ignorePreview.setText(files.getOrDefault(".dockerignore", ""));
+                composePreview.setText(files.getOrDefault("compose.yaml", ""));
+            });
+        });
     }
 
     private void writeDockerizeFiles() {

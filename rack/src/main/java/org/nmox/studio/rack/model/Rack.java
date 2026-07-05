@@ -44,7 +44,12 @@ public final class Rack {
     private final Map<Cable, Long> lastTriggerAt = new ConcurrentHashMap<>();
     private static final long TRIGGER_COOLDOWN_MS = 150;
 
-    private volatile File projectDir = new File(System.getProperty("user.home"));
+    // A neutral, non-scanning placeholder: the dedicated ~/NMOX workspace,
+    // NOT created here and never enumerated on construction. The app-startup
+    // path (RackService) creates it and aims here for real; pointing the
+    // default at a normally-empty (and often not-yet-existent) directory means
+    // a freshly constructed rack never walks $HOME or a TCC-protected folder.
+    private volatile File projectDir = new File(System.getProperty("user.home"), "NMOX");
     private int cableColorCursor;
 
     /** One reversible edit: dropping a device, deleting a cable, reordering. */

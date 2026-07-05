@@ -628,4 +628,20 @@ public abstract class RackDevice extends JPanel {
             SwingUtilities.invokeLater(r);
         }
     }
+
+    /**
+     * Shared background executor for device work that must never run on the
+     * EDT — chiefly directory-walking project detection triggered by
+     * {@link #projectChanged} or {@link #onAttached}, which can fire on the EDT
+     * during window-system restore and, on a $HOME aim, stack macOS TCC
+     * permission prompts. A single daemon thread keeps ordering per device
+     * predictable and cheap.
+     */
+    private static final org.openide.util.RequestProcessor DEVICE_BG =
+            new org.openide.util.RequestProcessor("nmox-device-bg", 1, true);
+
+    /** Runs {@code r} off the EDT on the shared device background thread. */
+    protected static void offEdt(Runnable r) {
+        DEVICE_BG.post(r);
+    }
 }

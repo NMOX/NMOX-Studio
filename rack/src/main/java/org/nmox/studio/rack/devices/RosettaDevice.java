@@ -68,16 +68,22 @@ public class RosettaDevice extends RackDevice {
     }
 
     private void refreshDetected() {
-        var kinds = ProjectInspector.detectKinds(projectDir());
-        String mix = kinds.isEmpty() ? "NO TOOLCHAINS"
-                : kinds.keySet().stream().map(Enum::name).collect(Collectors.joining("+"));
-        String selected = toolchainKnob.getSelectedOption();
-        String active = "auto".equals(selected)
-                ? (kinds.isEmpty() ? "" : "  [" + kinds.keySet().iterator().next() + "]")
-                : "  [" + selected.toUpperCase() + "]";
-        onEdt(() -> {
-            detectedLcd.setTextColor(kinds.size() > 1 ? RackStyle.LCD_AMBER : RackStyle.LCD_TEXT);
-            detectedLcd.setText(mix + active);
+        // detectKinds walks the project directory; on a $HOME aim that would
+        // touch the TCC-protected folders on the EDT during startup. Detect on
+        // the background thread and marshal the LCD update back to the EDT.
+        File dir = projectDir();
+        offEdt(() -> {
+            var kinds = ProjectInspector.detectKinds(dir);
+            String mix = kinds.isEmpty() ? "NO TOOLCHAINS"
+                    : kinds.keySet().stream().map(Enum::name).collect(Collectors.joining("+"));
+            String selected = toolchainKnob.getSelectedOption();
+            String active = "auto".equals(selected)
+                    ? (kinds.isEmpty() ? "" : "  [" + kinds.keySet().iterator().next() + "]")
+                    : "  [" + selected.toUpperCase() + "]";
+            onEdt(() -> {
+                detectedLcd.setTextColor(kinds.size() > 1 ? RackStyle.LCD_AMBER : RackStyle.LCD_TEXT);
+                detectedLcd.setText(mix + active);
+            });
         });
     }
 
