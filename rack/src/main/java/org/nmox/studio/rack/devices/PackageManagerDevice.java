@@ -143,6 +143,16 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> List.of("composer", "outdated");
                 default -> List.of("composer", "install");
             };
+            // the classic web package manager; npx surfaces its absence honestly
+            case BOWER -> switch (verb) {
+                case "update" -> List.of("npx", "bower", "update");
+                case "outdated" -> List.of("npx", "bower", "list"); // annotates available updates
+                default -> List.of("npx", "bower", "install");
+            };
+            // taskfile/bundler configs and bare static sites declare no
+            // installable dependencies of their own — their packages ride
+            // the NODE lane whenever a package.json exists
+            case WEBPACK, GRUNT, GULP, STATIC -> null;
             default -> List.of(manager(),
                     "update".equals(verb) && "yarn".equals(manager()) ? "upgrade" : verb);
         };
@@ -167,16 +177,29 @@ public class PackageManagerDevice extends CommandDevice {
             launch(cmd("install"));
             return;
         }
-        var kinds = ProjectInspector.detectKinds(projectDir());
-        if (kinds.size() <= 1) {
+        if (ProjectInspector.detectKinds(projectDir()).size() <= 1) {
             launch(cmd("install"));
             return;
         }
+        launchSequence(installSteps());
+    }
+
+    /**
+     * The AUTO install sequence: one step per detected toolchain that
+     * actually installs anything, each in its own manifest directory —
+     * npm before bower on a classic web repo, kinds that carry no
+     * installable dependencies (GRUNT, STATIC…) skipped rather than
+     * derailing the train. Package-private test seam.
+     */
+    List<Step> installSteps() {
         List<Step> steps = new java.util.ArrayList<>();
-        for (var entry : kinds.entrySet()) {
-            steps.add(new Step(cmdFor(entry.getKey(), "install"), entry.getValue()));
+        for (var entry : ProjectInspector.detectKinds(projectDir()).entrySet()) {
+            List<String> command = cmdFor(entry.getKey(), "install");
+            if (command != null) {
+                steps.add(new Step(command, entry.getValue()));
+            }
         }
-        launchSequence(steps);
+        return steps;
     }
 
     @Override

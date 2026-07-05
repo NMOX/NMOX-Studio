@@ -229,6 +229,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 }
                 names.add(kind.name().toLowerCase());
             }
+            // classic web libraries ride the same background walk: one
+            // chip per detected library, version and honest EOL note
+            // included ("jquery 1.12.4 — EOL"). Subtle by design — no
+            // dialogs, no alarm colors, just the truth on a chip.
+            for (var library : org.nmox.studio.rack.devices.LegacyWeb.scan(dir)) {
+                names.add(library.label());
+            }
         } catch (RuntimeException | LinkageError ex) {
             // detection is decoration; the workbench works without it
         }

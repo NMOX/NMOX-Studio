@@ -678,6 +678,46 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("CoffeeScript: classes contain bound methods; top-level arrows surface; comments are immune")
+    void coffeescript() {
+        String src = """
+                # a 2012-flavoured Backbone view
+                class App.TaskView extends Backbone.View
+                  render: ->
+                    @$el.html @template()
+                    this
+
+                  onClick: (event) =>
+                    event.preventDefault()
+
+                helper = (x) ->
+                  x * 2
+
+                square = (n) -> n * n
+
+                # render: -> (a commented-out method must not surface)
+                ###
+                inBlock: ->
+                ###
+                """;
+        List<Item> items = outline("text/coffeescript", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.CLASS, "App.TaskView"),
+                tuple(OutlineKind.METHOD, "render"),
+                tuple(OutlineKind.METHOD, "onClick"),
+                tuple(OutlineKind.FUNCTION, "helper"),
+                tuple(OutlineKind.FUNCTION, "square"));
+        // methods nest under their class by indentation
+        Item view = items.stream().filter(i -> i.name().equals("App.TaskView")).findFirst().orElseThrow();
+        Item render = items.stream().filter(i -> i.name().equals("render")).findFirst().orElseThrow();
+        assertThat(view.depth()).isEqualTo(0);
+        assertThat(render.depth()).as("bound method nests under its class").isGreaterThan(view.depth());
+        // neither the # line nor the ### block leaks a symbol
+        assertThat(items).extracting(Item::name).doesNotContain("inBlock");
+        assertThat(items).hasSize(5);
+    }
+
+    @Test
     @DisplayName("Config sections: INI and TOML headers")
     void configSections() {
         assertThat(outline("text/x-ini", "[*]\nindent_style = space\n[*.md]\n"))

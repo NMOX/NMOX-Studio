@@ -27,6 +27,19 @@ class EnvironmentDoctorTest {
                 .contains("clisp", "sqlite3");
         assertThat(tools).as("the Web3 toolbelt is swept")
                 .contains("forge", "anvil", "cast", "chisel", "solc", "slither", "solhint");
+        assertThat(tools).as("the classic web toolbelt is swept")
+                .contains("webpack", "grunt", "gulp", "bower", "coffee");
+        // the classics install from npm, and the hints say exactly how
+        for (String[] check : checks) {
+            switch (check[0]) {
+                case "webpack" -> assertThat(check[2]).isEqualTo("npm install -g webpack-cli");
+                case "grunt" -> assertThat(check[2]).isEqualTo("npm install -g grunt-cli");
+                case "gulp" -> assertThat(check[2]).isEqualTo("npm install -g gulp-cli");
+                case "bower" -> assertThat(check[2]).isEqualTo("npm install -g bower");
+                case "coffee" -> assertThat(check[2]).isEqualTo("npm install -g coffeescript");
+                default -> { }
+            }
+        }
         assertThat(tools).doesNotHaveDuplicates();
         assertThat(checks).allSatisfy(c -> {
             assertThat(c[1]).as("%s has a purpose", c[0]).isNotBlank();

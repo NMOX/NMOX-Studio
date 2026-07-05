@@ -62,6 +62,7 @@ public final class OutlineModel {
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
             case "solidity" -> solidity(lines);
+            case "coffeescript" -> coffeescript(lines);
             case "brace" -> braceLang(lines);
             case "shell" -> shell(lines);
             case "graphql" -> graphql(lines);
@@ -98,6 +99,7 @@ public final class OutlineModel {
             case "text/x-crystal" -> "crystal";
             case "text/x-zig" -> "zig";
             case "text/x-solidity" -> "solidity";
+            case "text/coffeescript" -> "coffeescript";
             case "text/x-java", "text/x-kotlin", "text/x-scala", "text/x-csharp",
                  "text/x-swift", "text/x-c", "text/x-cpp", "text/x-dart",
                  "text/x-groovy", "text/x-php5" -> "brace";
@@ -913,6 +915,69 @@ public final class OutlineModel {
             }
         }
         return out;
+    }
+
+    // ---- CoffeeScript ------------------------------------------------------
+
+    // `class Name` / `class App.Router extends Backbone.Router` — the
+    // dotted-name form was the Backbone era's namespacing idiom.
+    private static final Pattern COFFEE_CLASS = Pattern.compile(
+            "^(\\s*)class\\s+([A-Za-z_$][A-Za-z0-9_$.]*)");
+    // `name: (args) ->`, `name: =>`, `name = ->`, `@static: ->` — the
+    // parameter list is optional and both arrow flavours count. Anchored,
+    // single optional non-nested group: linear.
+    private static final Pattern COFFEE_FUNC = Pattern.compile(
+            "^(\\s*)(@?[A-Za-z_$][A-Za-z0-9_$]*)\\s*[:=]\\s*(?:\\([^)]*\\)\\s*)?[-=]>");
+
+    /** class declarations plus `name: ->` / `name = ->` bindings, nested by
+     * indentation (the language's own nesting), with `###` block-comment
+     * state carried across lines so documentation examples never surface.
+     * {@link #stripNonCode} additionally blanks backtick embedded-JS spans. */
+    private static List<Item> coffeescript(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        Deque<Integer> cols = new ArrayDeque<>();
+        boolean inBlockComment = false;
+        boolean[] state = {false, false};
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String stripped = lines[i].stripLeading();
+            if (inBlockComment) {
+                // `###` both opens and closes; a closing marker may trail text
+                if (stripped.contains("###")) {
+                    inBlockComment = false;
+                }
+                continue;
+            }
+            if (stripped.startsWith("###") && !stripped.startsWith("####")) {
+                // one-line `### herecomment ###` closes itself
+                inBlockComment = stripped.indexOf("###", 3) < 0;
+                continue;
+            }
+            if (stripped.startsWith("#")) {
+                continue;
+            }
+            String code = stripNonCode(lines[i], state);
+            Matcher m;
+            if ((m = COFFEE_CLASS.matcher(code)).find()) {
+                int depth = indentDepth(cols, m.group(1).length());
+                out.add(new Item(OutlineKind.CLASS, m.group(2), null, i, depth));
+            } else if ((m = COFFEE_FUNC.matcher(code)).find()) {
+                int depth = indentDepth(cols, m.group(1).length());
+                out.add(new Item(depth > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION,
+                        m.group(2), null, i, depth));
+            }
+        }
+        return out;
+    }
+
+    /** Pops the indentation stack to the given column and pushes it; the
+     * resulting stack size (before the push) is the item's depth. */
+    private static int indentDepth(Deque<Integer> cols, int col) {
+        while (!cols.isEmpty() && cols.peek() >= col) {
+            cols.pop();
+        }
+        int depth = cols.size();
+        cols.push(col);
+        return depth;
     }
 
     // ---- Brace languages (Java/Kotlin/Swift/C#/C/C++/Dart/Groovy/PHP) ----

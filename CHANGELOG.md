@@ -4,6 +4,69 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.34.0] — 2026-07-05
+
+The classic web release: the stacks that used to be number one — jQuery,
+MooTools, Prototype, Backbone, Knockout, Webpack, Grunt, Gulp, Bower,
+CoffeeScript, and the script-tag site with no manifest at all — open,
+run, and grow in NMOX Studio just like the modern ones.
+
+### Added
+- **Script-tag sites are projects now.** A folder containing nothing but
+  `index.html` and assets opens as a project (new STATIC kind — strictly
+  a last resort, suppressed the moment any real toolchain manifest is
+  present, so modern apps never misclassify). IGNITION serves the folder
+  (`python3 -m http.server`) with READY/URL jacks, so VITALS, BEACON,
+  and the browser devices work on a 2005-vintage site unchanged.
+- **Legacy toolchains are recognized citizens** — `bower.json`,
+  `Gruntfile.js` (and `.coffee`), `gulpfile.js` (+babel/mjs), and
+  `webpack.config.js` (+cjs/mjs) all open as projects (30 manifests
+  now). FORGE detects webpack/grunt/gulp from config files, not just
+  package.json deps, and its TOOLS knob gains grunt and gulp lanes.
+  CRATE grows a Bower lane (`bower install`/`update`) slotted into the
+  install-all sequence.
+- **DYNAMO (44th device)** — the legacy task runner: statically parses
+  Gruntfiles (`registerTask`, loadNpmTasks-implied tasks, CoffeeScript
+  form) and gulpfiles (v3 `gulp.task` and v4 `exports.build`), lists
+  the tasks on a knob — instantly, no node required to browse — and GO
+  runs the dialed task via `npx grunt|gulp <task>`. Classic Web Bench
+  preset wires CRATE → DYNAMO → IGNITION with MONITOR and VITALS.
+- **Honest version currency for the classics** — the project header
+  chips now name detected libraries with their version, and jQuery
+  1.x/2.x reads `jquery 1.12.4 — EOL` (detection merges package.json,
+  bower.json, and `<script src>` tags including versioned filenames).
+- **Classic Kit (File → Classic Kit…)** — extend any codebase with the
+  classics: add jQuery 3.7.1, MooTools 1.6.0, Prototype 1.7.3,
+  Backbone 1.6.0 (+Underscore 1.13.7, wired first — it's a hard
+  dependency), or Knockout 3.5.1 — **vendored** (pinned minified builds
+  bundled with the IDE, ~527 KB, sha256-recorded in NOTICE-vendor.md;
+  written to `vendor/`, script tags wired idempotently into index.html)
+  or as **npm dependencies** (Prototype honestly refuses npm mode — no
+  canonical package). Generate a `webpack.config.js` (entry
+  auto-detected), `Gruntfile.js`, `gulpfile.js`, or `bower.json` for an
+  existing project — never clobbering: an existing file gets a
+  `.suggested` sibling instead. Running the kit twice is a no-op.
+- **"Classic Web (jQuery)" template** — script-tag era, no build step:
+  vendored jQuery 3.7.1, era-honest page skeleton, rack pre-wired with
+  the Classic Web Bench.
+- **CoffeeScript is a real language** — pinned TextMate grammar
+  (48 grammars), Navigator outline (classes and `name: ->` methods, 45
+  mimes), `#` comments, keyword completion, comment-only spellcheck.
+  Registering `source.coffee` also un-pruned the CoffeeScript fences
+  the Pug/Vue/Svelte grammars already referenced.
+- **Completion knows the classic APIs** — when a project's deps or
+  script tags show jQuery, MooTools, Prototype, Backbone, Underscore,
+  or Knockout, their APIs join JS/HTML/CoffeeScript completion (295
+  entries with signatures: `$.aj` → `$.ajax(url[, settings])`,
+  `myEl.addC` → `.addClass` with the receiver preserved, `_.deb` →
+  `_.debounce`). Detection walks up from the edited file and caches on
+  manifest timestamps — no per-keystroke disk reads.
+- **Doctor probes the era's tools** — webpack, grunt, gulp, bower,
+  coffee, each with its install hint.
+- rack 671 / editor 341 / tools 92 / ui 39 / project 17 tests;
+  SpotBugs + find-sec-bugs at zero findings (two potential-XML-injection
+  findings in the new kit fixed by idiom, not exclusion).
+
 ## [1.33.4] — 2026-07-05
 
 ### Fixed

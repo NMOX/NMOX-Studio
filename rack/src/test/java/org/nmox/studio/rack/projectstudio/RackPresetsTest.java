@@ -129,6 +129,34 @@ class RackPresetsTest {
         }
     }
 
+    @Test
+    @DisplayName("Classic Web Bench chains install → task run → static serve, VITALS off the serve URL")
+    void classicWebWiresTheEra() {
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        try {
+            RackIO.fromJson(rack, RackPresets.CLASSIC_WEB.buildPatch());
+            assertThat(rack.getDevices()).extracting(d -> d.getTypeId()).containsExactly(
+                    "master", "package-manager", "task-runner", "run", "vitals", "console");
+            assertThat(rack.getCables()).hasSize(8);
+            // the 2012 pipeline: install → task → serve
+            assertThat(wired(rack, "master", "trig1", "package-manager", "run")).isTrue();
+            assertThat(wired(rack, "package-manager", "ok", "task-runner", "run")).isTrue();
+            assertThat(wired(rack, "task-runner", "ok", "run", "run")).isTrue();
+            // the serve URL feeds the quality gate, READY pulls its trigger
+            assertThat(wired(rack, "run", "url", "vitals", "url")).isTrue();
+            assertThat(wired(rack, "run", "ready", "vitals", "run")).isTrue();
+            // MONITOR tapped on every lane
+            assertThat(wired(rack, "package-manager", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "task-runner", "out", "console", "in")).isTrue();
+            assertThat(wired(rack, "run", "out", "console", "in")).isTrue();
+            // IGNITION pinned to the static lane
+            assertThat(stateOf(rack, "run").get("target")).isEqualTo("23");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     /** The state map of the first device with the given type id. */
     private static java.util.Map<String, String> stateOf(Rack rack, String typeId) {
         return rack.getDevices().stream()

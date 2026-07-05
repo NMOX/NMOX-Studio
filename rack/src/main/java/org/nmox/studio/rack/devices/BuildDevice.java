@@ -1,6 +1,7 @@
 package org.nmox.studio.rack.devices;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.nmox.studio.rack.ui.controls.Knob;
@@ -29,7 +30,8 @@ public class BuildDevice extends CommandDevice {
 
     private volatile long lastWatchFire;
 
-    private static final String[] TOOLS = {"auto", "vite", "webpack", "rollup", "esbuild", "parcel"};
+    // APPEND-ONLY: patches persist the knob by index (grunt=6, gulp=7 since v1.34)
+    private static final String[] TOOLS = {"auto", "vite", "webpack", "rollup", "esbuild", "parcel", "grunt", "gulp"};
 
     private final Knob toolKnob;
     private final ToggleSwitch prodSwitch;
@@ -98,18 +100,46 @@ public class BuildDevice extends CommandDevice {
         if (!"auto".equals(tool)) {
             return tool;
         }
-        // non-Node toolchains build with their own tool
+        // non-Node toolchains build with their own tool; the classic web
+        // kinds map straight onto their knob positions
         ProjectInspector.ProjectKind kind = effectiveKind();
-        if (kind != ProjectInspector.ProjectKind.NODE
-                && kind != ProjectInspector.ProjectKind.NONE) {
-            return "kind:" + kind.name();
+        switch (kind) {
+            case WEBPACK -> {
+                return "webpack";
+            }
+            case GRUNT -> {
+                return "grunt";
+            }
+            case GULP -> {
+                return "gulp";
+            }
+            case BOWER, STATIC, NODE, NONE -> {
+                // fall through to the script/dependency/config-file scan
+            }
+            default -> {
+                return "kind:" + kind.name();
+            }
         }
         if (ProjectInspector.hasScript(projectDir(), "build")) {
             return "npm-script";
         }
         String dep = ProjectInspector.firstDependency(projectDir(),
                 "vite", "webpack", "rollup", "esbuild", "parcel");
-        return dep != null ? dep : "npm-script";
+        if (dep != null) {
+            return dep;
+        }
+        // a legacy repo declares its build tool by config file, not by deps
+        File dir = ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
+        if (ProjectInspector.hasManifestAt(dir, ProjectInspector.ProjectKind.WEBPACK)) {
+            return "webpack";
+        }
+        if (ProjectInspector.hasManifestAt(dir, ProjectInspector.ProjectKind.GRUNT)) {
+            return "grunt";
+        }
+        if (ProjectInspector.hasManifestAt(dir, ProjectInspector.ProjectKind.GULP)) {
+            return "gulp";
+        }
+        return "npm-script";
     }
 
     /** The build command for non-Node toolchains. */
@@ -190,6 +220,11 @@ public class BuildDevice extends CommandDevice {
                 }
             }
             case "parcel" -> cmd.addAll(List.of("npx", "parcel", watch ? "watch" : "build"));
+            // the classic runners take a task, not a flag: watch is a task
+            case "grunt" -> cmd.addAll(watch
+                    ? List.of("npx", "grunt", "watch") : List.of("npx", "grunt"));
+            case "gulp" -> cmd.addAll(watch
+                    ? List.of("npx", "gulp", "watch") : List.of("npx", "gulp"));
             default -> cmd.addAll(List.of("npm", "run", "build"));
         }
         return cmd;

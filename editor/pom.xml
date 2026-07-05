@@ -64,11 +64,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         
+        <!-- compile scope (was test-only): the classic-apis catalog and
+             library detector parse bundled/manifest JSON at runtime; the
+             NBM wraps the module's own copy like apiclient/dbstudio do -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20260522</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- Testing dependencies -->

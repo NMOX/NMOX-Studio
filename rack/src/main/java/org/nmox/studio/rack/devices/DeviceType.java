@@ -52,7 +52,8 @@ public enum DeviceType {
     BEACON("beacon", "BEACON", "Cert & Uptime Sentinel — TLS runway and reachability, gated", new Color(240, 180, 60), BeaconDevice::new),
     BUNDLE_SIZE("bundle-size", "PRISM", "Bundle-Size Gate — weigh the build, hold the line", new Color(150, 120, 220), BundleSizeDevice::new),
     LOCAL_CHAIN("anvil", "ANVIL", "Local EVM chain — anvil devnet with unlocked accounts", new Color(0x8A, 0x9B, 0xA8), AnvilDevice::new),
-    GAS_BUDGET("gas-budget", "GOVERNOR", "Gas budget gate — forge snapshot --check", new Color(0xC9, 0xA2, 0x27), GovernorDevice::new);
+    GAS_BUDGET("gas-budget", "GOVERNOR", "Gas budget gate — forge snapshot --check", new Color(0xC9, 0xA2, 0x27), GovernorDevice::new),
+    TASK_RUNNER("task-runner", "DYNAMO", "Grunt/Gulp task runner — dial a task, GO", new Color(210, 150, 50), DynamoDevice::new);
 
     private final String id;
     private final String title;
@@ -103,7 +104,7 @@ public enum DeviceType {
 
     public PaletteCategory getPaletteCategory() {
         return switch (this) {
-            case MASTER, REFLEX, JOIN, TEMPO, RUN, NPM_SCRIPT, CMD -> PaletteCategory.AUTOMATE;
+            case MASTER, REFLEX, JOIN, TEMPO, RUN, NPM_SCRIPT, TASK_RUNNER, CMD -> PaletteCategory.AUTOMATE;
             case SSH -> PaletteCategory.SHIP;
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE, LOCAL_CHAIN -> PaletteCategory.SERVE;
@@ -160,6 +161,7 @@ public enum DeviceType {
             case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.";
             case LOCAL_CHAIN -> "START boots anvil on the dialed PORT: a local EVM chain, ten unlocked funded accounts, instant mining.\nPatch URL → Contract Studio's network and SERVING → a gate; FORK-URL forks any live network's state.";
             case GAS_BUDGET -> "CHECK runs forge snapshot --check against the committed .gas-snapshot; TOLERANCE allows dialed drift.\nPatch VERITAS OK → CHECK and OK → LAUNCHPAD: gas regressions physically cannot ship.";
+            case TASK_RUNNER -> "The Grunt/Gulp era as a device: TASK lists what the Gruntfile or gulpfile declares (static parse, instant).\nDial a task, GO runs npx grunt/gulp <task>; RUNNER settles grunt-vs-gulp when a repo carries both. Patch OK onward to chain.";
         };
     }
 

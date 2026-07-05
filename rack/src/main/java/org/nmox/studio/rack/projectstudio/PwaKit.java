@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -246,19 +245,13 @@ public final class PwaKit {
         return out;
     }
 
-    private static final Pattern HEAD_CLOSE = Pattern.compile("</head>", Pattern.CASE_INSENSITIVE);
-
     /**
      * Wires index.html's head - manifest link, theme-color meta,
      * apple-touch-icon link, service worker registration - inserting
-     * only the pieces that aren't already there. Running it twice
-     * changes nothing.
+     * only the pieces that aren't already there (via the shared
+     * {@link HtmlWiring} seam). Running it twice changes nothing.
      */
     public static String wireHead(String html, Options opts) {
-        Matcher close = HEAD_CLOSE.matcher(html);
-        if (!close.find()) {
-            return html;
-        }
         StringBuilder add = new StringBuilder();
         if (opts.manifest() && !html.contains("rel=\"manifest\"")) {
             add.append("  <link rel=\"manifest\" href=\"/site.webmanifest\">\n");
@@ -279,11 +272,7 @@ public final class PwaKit {
                       </script>
                     """);
         }
-        if (add.isEmpty()) {
-            return html;
-        }
-        int at = close.start();
-        return html.substring(0, at) + add + html.substring(at);
+        return HtmlWiring.insertBeforeHeadClose(html, add.toString());
     }
 
     /**

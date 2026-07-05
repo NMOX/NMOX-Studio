@@ -113,6 +113,26 @@ connect to MySQL/MariaDB from the Services window, browse schemas, and
 run SQL in a real editor with result grids (bring the Connector/J jar;
 the driver UI handles registration).
 
+### 🕰️ The classic web, first-class
+The stacks that used to be number one still run half the internet, and
+NMOX Studio treats them like it. A **script-tag site with no manifest at
+all** opens as a project and serves with one keypress (VITALS and BEACON
+work on it unchanged). `bower.json`, `Gruntfile.js`, `gulpfile.js`, and
+`webpack.config.js` are project manifests; FORGE builds through webpack,
+grunt, or gulp straight from the config file; CRATE runs `bower install`
+in sequence; and the **DYNAMO** device reads your Gruntfile or gulpfile
+and puts its tasks on a knob — no node required just to browse them.
+Completion knows the classic APIs (`$.ajax`, `_.debounce`,
+`ko.observable`…) whenever your deps or script tags carry jQuery,
+MooTools, Prototype, Backbone, Underscore, or Knockout — and a project
+still on jQuery 1.x wears an honest **EOL** chip. CoffeeScript
+highlights and outlines like any other language. Want to go the other
+way? The **Classic Kit** (File → Classic Kit…) extends any codebase with
+pinned vendored builds (script tags wired idempotently) or npm deps, and
+generates webpack/Grunt/gulp/bower scaffolds without ever clobbering a
+file you wrote. There's even a **Classic Web (jQuery)** template —
+script-tag era, no build step, served as-is.
+
 ### ⌨️ Polyglot editing
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export

@@ -22,11 +22,17 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class RunDevice extends CommandDevice {
 
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno"};
+    // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static"};
+
+    /** The static lane's fixed port: python3 -m http.server on 8000. */
+    private static final String STATIC_PORT = "8000";
 
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
     private final Led liveLed;
+    private final java.util.concurrent.atomic.AtomicBoolean readyFired =
+            new java.util.concurrent.atomic.AtomicBoolean();
 
     public RunDevice() {
         super("run", "IGNITION", "POLYGLOT RUNTIME", new Color(255, 94, 58), 2);
@@ -47,6 +53,9 @@ public class RunDevice extends CommandDevice {
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("running", "RUNNING", SignalType.GATE);
+        // the static lane announces its address like every serve device
+        addOutPort("ready", "READY", SignalType.TRIGGER);
+        addOutPort("url", "URL", SignalType.DATA);
 
         param("target", targetKnob);
         param("args", argsLcd);
@@ -54,9 +63,25 @@ public class RunDevice extends CommandDevice {
 
     @Override
     protected void primaryAction() {
+        readyFired.set(false);
         emit("running", Signal.gate(true));
         onEdt(() -> liveLed.setOn(true));
         launch(buildCommand());
+    }
+
+    /**
+     * The static lane's serve announcement: python's http.server prints
+     * "Serving HTTP on ..." the moment it listens — READY fires once and
+     * the URL jack carries the local address, SURGE-style.
+     */
+    @Override
+    protected void onLine(String line) {
+        if (line.contains("Serving HTTP") && readyFired.compareAndSet(false, true)) {
+            String url = "http://localhost:" + STATIC_PORT;
+            onEdt(() -> statusLcd.setText("SERVING  " + url));
+            emit("url", Signal.data(url));
+            emit("ready", Signal.trigger());
+        }
     }
 
     @Override
@@ -104,6 +129,12 @@ public class RunDevice extends CommandDevice {
             case RUBY -> "ruby";
             case PHP -> "php";
             case MAKE, CMAKE -> "make";
+            // the classic web kinds RUN by serving the site dir: a
+            // grunt/bower-era project's runnable artifact IS its folder.
+            // webpack runs its dev server — the same command the IDE's
+            // Run action maps to, so F6 and IGNITION agree.
+            case GRUNT, GULP, BOWER, STATIC -> "static";
+            case WEBPACK -> "webpack"; // internal: resolved by AUTO, not on the knob
             default -> "node";
         };
     }
@@ -111,6 +142,8 @@ public class RunDevice extends CommandDevice {
 
     private static ProjectInspector.ProjectKind kindForTarget(String target) {
         return switch (target) {
+            case "static" -> ProjectInspector.ProjectKind.STATIC;
+            case "webpack" -> ProjectInspector.ProjectKind.WEBPACK;
             case "rust" -> ProjectInspector.ProjectKind.RUST;
             case "elixir" -> ProjectInspector.ProjectKind.ELIXIR;
             case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
@@ -182,6 +215,10 @@ public class RunDevice extends CommandDevice {
                     ? List.of("php", "-S", "127.0.0.1:8000", "-t", "public")
                     : List.of("php", "-S", "127.0.0.1:8000");
             case "make" -> List.of("make", "run");
+            // the 2005 stack: serve the folder itself; python3 is a
+            // Doctor-probed staple, and READY/URL fire on its banner
+            case "static" -> List.of("python3", "-m", "http.server", STATIC_PORT);
+            case "webpack" -> List.of("npx", "webpack", "serve", "--mode", "development");
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")
                     : List.of("node", entryPoint("index.js", "main.js", "src/index.js"));

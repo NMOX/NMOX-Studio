@@ -14,6 +14,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -57,11 +58,27 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-zig", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
+    // classic-library entries only (JS/HTML have their own primary providers)
+    @MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class)
 })
 public class PolyglotCompletionProvider implements CompletionProvider {
 
     private static final Pattern WORD = Pattern.compile("[A-Za-z_$][A-Za-z0-9_$]{1,}");
+
+    /**
+     * Mimes whose projects may use the classic web libraries; for these
+     * the query merges catalog entries for whatever
+     * {@link ClassicLibraryDetector} finds around the file. CoffeeScript
+     * is here on purpose — the classic libraries were its era.
+     */
+    static final Set<String> CLASSIC_MIMES = Set.of(
+            "text/javascript", "text/html", "text/coffeescript");
+
+    private static final org.nmox.studio.editor.classic.ClassicLibraryDetector CLASSIC_DETECTOR =
+            new org.nmox.studio.editor.classic.ClassicLibraryDetector();
 
     static final Map<String, Set<String>> KEYWORDS = Map.ofEntries(
             Map.entry("text/x-java", set("abstract assert boolean break byte case catch char class const continue "
@@ -216,7 +233,11 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "library mapping memory modifier new override payable pragma private public pure "
                     + "receive require return returns revert storage string struct this try type uint "
                     + "uint8 uint256 int int256 unchecked using view virtual while true false wei gwei "
-                    + "ether keccak256 abi msg block tx assert selfdestruct")));
+                    + "ether keccak256 abi msg block tx assert selfdestruct")),
+            Map.entry("text/coffeescript", set("if unless then else switch when for while until loop by "
+                    + "class extends super this new return try catch finally throw break continue do "
+                    + "yield await typeof instanceof delete in of not and or is isnt true false yes no "
+                    + "on off null undefined require module exports -> =>")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));
@@ -235,22 +256,38 @@ public class PolyglotCompletionProvider implements CompletionProvider {
         return 0; // explicit Ctrl+Space only; auto-popup stays a JS/TS feature
     }
 
+    /** Runs off the EDT: AsyncCompletionTask posts the query to a worker. */
     private static final class Query extends AsyncCompletionQuery {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 String mime = (String) doc.getProperty("mimeType");
-                Set<String> keywords = KEYWORDS.getOrDefault(mime, Set.of());
                 String text = doc.getText(0, doc.getLength());
-                String prefix = prefixAt(text, caretOffset);
-                int anchor = caretOffset - prefix.length();
 
-                for (String keyword : matchingKeywords(keywords, prefix)) {
-                    resultSet.addItem(new JavaScriptKeywordCompletionItem(keyword, anchor, prefix.length()));
+                // keywords + buffer identifiers only for the mimes this
+                // provider owns; on JS/HTML the primary providers already
+                // offer both and doubling them would be noise
+                if (KEYWORDS.containsKey(mime)) {
+                    Set<String> keywords = KEYWORDS.get(mime);
+                    String prefix = prefixAt(text, caretOffset);
+                    int anchor = caretOffset - prefix.length();
+                    for (String keyword : matchingKeywords(keywords, prefix)) {
+                        resultSet.addItem(new JavaScriptKeywordCompletionItem(keyword, anchor, prefix.length()));
+                    }
+                    for (String word : matchingIdentifiers(text, keywords, prefix, caretOffset)) {
+                        resultSet.addItem(new JavaScriptObjectCompletionItem(word, anchor, prefix.length()));
+                    }
                 }
-                for (String word : matchingIdentifiers(text, keywords, prefix, caretOffset)) {
-                    resultSet.addItem(new JavaScriptObjectCompletionItem(word, anchor, prefix.length()));
+
+                if (CLASSIC_MIMES.contains(mime)) {
+                    java.nio.file.Path file = fileOf(doc);
+                    if (file != null) {
+                        for (CompletionItem item
+                                : classicItems(CLASSIC_DETECTOR.detect(file), text, caretOffset)) {
+                            resultSet.addItem(item);
+                        }
+                    }
                 }
             } catch (BadLocationException ex) {
                 // stale offsets; popup simply shows nothing
@@ -258,6 +295,42 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                 resultSet.finish();
             }
         }
+    }
+
+    /** The edited file behind a document, or null (unsaved buffer, virtual fs). */
+    private static java.nio.file.Path fileOf(Document doc) {
+        org.openide.filesystems.FileObject fo =
+                org.netbeans.modules.editor.NbEditorUtilities.getFileObject(doc);
+        java.io.File file = fo == null ? null : org.openide.filesystems.FileUtil.toFile(fo);
+        return file == null ? null : file.toPath();
+    }
+
+    /**
+     * Completion items for every catalog entry of the detected libraries
+     * that matches the classic prefix at the caret. Pure and
+     * package-visible for tests: (libraries, text, caret) → items.
+     */
+    static List<CompletionItem> classicItems(Set<String> libraryIds, String text, int caretOffset) {
+        if (libraryIds.isEmpty()) {
+            return List.of();
+        }
+        String prefix = org.nmox.studio.editor.classic.ClassicApiMatcher.prefixAt(text, caretOffset);
+        List<CompletionItem> out = new ArrayList<>();
+        for (String id : libraryIds) {
+            org.nmox.studio.editor.classic.ClassicApiCatalog.Library lib =
+                    org.nmox.studio.editor.classic.ClassicApiCatalog.library(id);
+            if (lib == null) {
+                continue;
+            }
+            for (org.nmox.studio.editor.classic.ClassicApiCatalog.Entry entry : lib.entries()) {
+                int len = org.nmox.studio.editor.classic.ClassicApiMatcher.matchLength(entry.name(), prefix);
+                if (len >= 0) {
+                    out.add(new org.nmox.studio.editor.classic.ClassicApiCompletionItem(
+                            entry, lib.display(), caretOffset - len, len));
+                }
+            }
+        }
+        return out;
     }
 
     /**

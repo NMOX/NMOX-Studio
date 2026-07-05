@@ -78,6 +78,24 @@ scoped `source.solidity`. Its upstream `fileTypes` metadata claims
 `sol` — which matches our own `.sol` extension registration in
 `SolidityGrammar`.
 
+## CoffeeScript (added 2026-07-05)
+
+| Grammar | Source | License |
+|---|---|---|
+| coffeescript.tmLanguage.json | microsoft/vscode tag **1.95.0** extensions/coffeescript (upstream atom/language-coffee-script commit 0f6db9143663e18b1ad00667820f46747dba495e, per the grammar's own `version` field) | MIT |
+
+Scoped `source.coffee`; no upstream `fileTypes` metadata (the VS Code
+extension claims `.coffee`/`.cson`/`.iced` in package.json) — our own
+registration in `CoffeeScriptGrammar` claims `coffee`, `litcoffee`
+and `cson`. Two cross-grammar includes: `source.js` (backtick embedded
+JavaScript) resolves through the embed-only registry below;
+`source.js.regexp` is unresolvable upstream-wide — VS Code ships no
+grammar with that scope either — so TM4E prunes that inner include and
+regex literals keep their `string.regexp.coffee` colouring without
+sub-token detail, exactly as in VS Code. Registering `source.coffee`
+also makes the coffee fences already referenced by the pug, scss, vue
+and svelte grammars resolvable.
+
 ## Embed-only grammars (scope registry, no editor binding)
 
 These are registered under synthetic `text/x-nmox-embed-*` mimes purely

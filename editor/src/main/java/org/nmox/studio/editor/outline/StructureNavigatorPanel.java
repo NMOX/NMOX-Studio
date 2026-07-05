@@ -75,6 +75,7 @@ import org.openide.util.RequestProcessor;
     @NavigatorPanel.Registration(mimeType = "text/x-crystal", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-zig", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-solidity", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/coffeescript", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-java", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-kotlin", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-scala", position = 100, displayName = "#LBL_Structure"),

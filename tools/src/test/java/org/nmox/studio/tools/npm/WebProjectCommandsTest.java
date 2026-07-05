@@ -189,4 +189,52 @@ class WebProjectCommandsTest {
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.RUBY, ActionProvider.COMMAND_RUN)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.RUBY, ActionProvider.COMMAND_BUILD)).isNull();
     }
+
+    @Test
+    @DisplayName("Webpack builds for production and runs its dev server; test/clean honestly absent")
+    void webpackBuildsAndServes() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.WEBPACK, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npx", "webpack", "--mode", "production");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.WEBPACK, ActionProvider.COMMAND_RUN))
+                .containsExactly("npx", "webpack", "serve", "--mode", "development");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.WEBPACK, ActionProvider.COMMAND_TEST)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.WEBPACK, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
+    @DisplayName("Grunt and Gulp build their default task; run/test/clean grey out")
+    void taskRunnersBuildOnly() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRUNT, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npx", "grunt");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRUNT, ActionProvider.COMMAND_RUN)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GRUNT, ActionProvider.COMMAND_TEST)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GULP, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npx", "gulp");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GULP, ActionProvider.COMMAND_RUN)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GULP, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
+    @DisplayName("Bower is a package manager, not a build system: every action is null")
+    void bowerHasNoActions() {
+        File d = dir.toFile();
+        for (String action : new String[]{ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_BUILD,
+            ActionProvider.COMMAND_TEST, ActionProvider.COMMAND_CLEAN}) {
+            assertThat(WebProjectCommands.commandFor(d, ProjectKind.BOWER, action))
+                    .as("bower " + action).isNull();
+        }
+    }
+
+    @Test
+    @DisplayName("A static site runs by serving the folder — the exact command the rack's lane uses")
+    void staticServesTheFolder() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_RUN))
+                .containsExactly("python3", "-m", "http.server", "8000");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_BUILD)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_TEST)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
 }

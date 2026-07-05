@@ -38,7 +38,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 > TARGET=auto follows the detected toolchain; ARGS feed the command line.
 
 - **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
-- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `RUNNING` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `RUNNING` (gate), `READY` (trigger), `URL` (data)
 
 ### NPM-9000 — Script Sequencer — run package.json scripts
 
@@ -60,6 +60,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 > Runs exactly what you type - make seed-db, ./scripts/fixtures.sh - argv only, no shell.
 > Patch VERITAS OK → RUN to chain custom steps; SOLDER exports to CI like any device.
+
+- **In:** `RUN` (trigger)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
+
+### DYNAMO — Grunt/Gulp task runner — dial a task, GO
+
+> The Grunt/Gulp era as a device: TASK lists what the Gruntfile or gulpfile declares (static parse, instant).
+> Dial a task, GO runs npx grunt/gulp <task>; RUNNER settles grunt-vs-gulp when a repo carries both. Patch OK onward to chain.
 
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
