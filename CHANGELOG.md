@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.33.3] — 2026-07-05
+
+### Fixed
+- **The last fresh-launch startup storm.** After v1.33.2's coalescer,
+  one more self-sustaining UI-thread loop remained (caught by thread
+  dumps of the live hang): the Infra designer's `FlowCanvas.fit()` —
+  and its sibling `selectNode()` — re-posted themselves via
+  `invokeLater` at full speed whenever the canvas had no size yet. On a
+  fresh launch the Infra tab is open-but-unselected, so its canvas
+  stays 0×0 and the loop spun forever, starving first paint. Both
+  sites now arm a single resize listener and run exactly once when a
+  real size arrives (regression tests pin the bounded,
+  arm-at-most-once behavior — and were proven to fail against the old
+  code). A repo-wide audit of all 116 `invokeLater` sites, every
+  paint/layout path, and every property/registry listener found no
+  further self-sustaining loops. **Live-verified**: a fresh install
+  now boots to a painted window with the event thread idle, the
+  workspace tree rooted at `~/NMOX`, and zero permission prompts —
+  the full first-launch experience the v1.33.x arc set out to fix.
+  infra 170 tests; SpotBugs + find-sec-bugs clean.
+
 ## [1.33.2] — 2026-07-04
 
 ### Fixed
