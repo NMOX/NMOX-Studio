@@ -85,11 +85,22 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private final org.openide.util.RequestProcessor detector =
             new org.openide.util.RequestProcessor("nmox-workbench-detect", 1, true);
 
+    /**
+     * Collapses a burst of registry events into a single deferred refresh.
+     * At startup the window system opens and activates ~10 TopComponents in a
+     * tight run, each firing PROP_OPENED and PROP_ACTIVATED; reacting to every
+     * one with a full {@link #refresh()} (which rebuilds the whole panel and
+     * spawns a background detection task per row) is what let the burst
+     * compound into an EDT-starving post storm. Coalescing drops any event that
+     * arrives while a refresh is already queued, so N events cost one refresh.
+     */
+    private final RefreshCoalescer refreshCoalescer = new RefreshCoalescer(this::refresh);
+
     private final PropertyChangeListener registryListener = (PropertyChangeEvent evt) -> {
         String p = evt.getPropertyName();
         if (TopComponent.Registry.PROP_OPENED.equals(p)
                 || TopComponent.Registry.PROP_ACTIVATED.equals(p)) {
-            refresh();
+            refreshCoalescer.request();
         }
     };
 
@@ -117,7 +128,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     new org.nmox.studio.rack.model.Rack.Listener() {
                 @Override
                 public void projectChanged() {
-                    SwingUtilities.invokeLater(ProjectExplorerTopComponent.this::refresh);
+                    // through the coalescer: an aim that lands amid the startup
+                    // registry burst folds into the one queued refresh
+                    refreshCoalescer.request();
                 }
             });
         } catch (RuntimeException | LinkageError ex) {
@@ -325,9 +338,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     () -> aimAt(dir));
             if (sub != null) {
                 WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
-                    String kinds = String.join(" · ", names);
-                    if (!kinds.isEmpty() && sub.getParent() != null) {
-                        sub.setText(shorten(kinds, 38));
+                    String kinds = shorten(String.join(" · ", names), 38);
+                    // idempotent: skip the setText (and the layout it triggers)
+                    // when the subtitle already shows this value
+                    if (!kinds.isEmpty() && sub.getParent() != null
+                            && !kinds.equals(sub.getText())) {
+                        sub.setText(kinds);
                     }
                 });
             }

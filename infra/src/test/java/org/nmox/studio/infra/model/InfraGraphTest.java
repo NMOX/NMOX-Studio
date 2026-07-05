@@ -191,4 +191,23 @@ class InfraGraphTest {
         assertThat(graph.getWires()).isEmpty();
         assertThat(listener.changes).hasValue(1);
     }
+
+    @Test
+    @DisplayName("clearing an already-empty graph fires nothing (no spurious save on fresh launch)")
+    void clearWhenEmptyIsSilent() {
+        // The regression: on a fresh launch with no .nmoxinfra.json the designer
+        // calls load(), which clears the (empty) graph. If clear() fired a change
+        // there, the deferred save-debounce would write .nmoxinfra.json into the
+        // freshly-created ~/NMOX workspace and churn the canvas repaint listener —
+        // an unwanted reaction to a non-change. clear() must be idempotent.
+        InfraGraph graph = new InfraGraph();
+        CountingListener listener = new CountingListener();
+        graph.addListener(listener);
+
+        graph.clear();
+        graph.clear();
+
+        assertThat(graph.getNodes()).isEmpty();
+        assertThat(listener.changes).as("no change fired for an empty clear").hasValue(0);
+    }
 }
