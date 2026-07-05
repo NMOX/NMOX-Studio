@@ -52,6 +52,21 @@ class SessionStateTest {
     }
 
     @Test
+    @DisplayName("A snapshot is a fact: the running list cannot be mutated after capture")
+    void runningListIsImmutable() {
+        java.util.List<SessionState.Entry> mutable = new java.util.ArrayList<>();
+        mutable.add(new SessionState.Entry(0, "console", "MONITOR"));
+        SessionState state = new SessionState("/p", 1L, mutable);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> state.running().add(new SessionState.Entry(1, "x", "X")))
+                .isInstanceOf(UnsupportedOperationException.class);
+        // and the constructor copied: editing the caller's list changes nothing
+        mutable.clear();
+        assertThat(state.running()).hasSize(1);
+    }
+
+    @Test
     @DisplayName("Corrupt JSON is a null session, not an exception")
     void corruptJsonIsNull() {
         assertThat(SessionState.fromJson("{nope")).isNull();

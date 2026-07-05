@@ -70,13 +70,24 @@ public final class InteractiveProcess {
         return session;
     }
 
+    private static final java.util.logging.Logger LOGGER =
+            java.util.logging.Logger.getLogger(InteractiveProcess.class.getName());
+
     private void pump(InputStream stream, Consumer<String> onLine) {
         Thread t = new Thread(() -> {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    onLine.accept(line);
+                    try {
+                        onLine.accept(line);
+                    } catch (RuntimeException ex) {
+                        // a throwing consumer must not kill the pump: with no
+                        // reader the pipe fills, the interpreter blocks on
+                        // write, and the REPL hangs with no diagnostic
+                        LOGGER.log(java.util.logging.Level.WARNING,
+                                "REPL line consumer failed; pump continues", ex);
+                    }
                 }
             } catch (IOException closed) {
                 // the process ended and the pipe closed; the waiter reports exit
@@ -106,7 +117,11 @@ public final class InteractiveProcess {
     }
 
     /**
-     * Sends EOF then, failing a graceful goodbye, kills the tree.
+     * Sends EOF then, failing a graceful goodbye, kills the tree — TERM
+     * first, then KILL after a bounded grace, mirroring
+     * CommandExecutor.killAndWait's ladder so a TERM-trapping REPL cannot
+     * survive the shutdown reaper as an orphan. Called from panic() at JVM
+     * shutdown, so it stays synchronous and bounded (~2s worst case).
      * Idempotent — safe to call from dispose and the shutdown reaper.
      */
     public void stop() {
@@ -123,6 +138,11 @@ public final class InteractiveProcess {
             if (!process.waitFor(500, java.util.concurrent.TimeUnit.MILLISECONDS)) {
                 process.descendants().forEach(ProcessHandle::destroy);
                 process.destroy();
+                if (!process.waitFor(1_500, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                    // shutdown hooks get no second chance: escalate to KILL
+                    process.descendants().forEach(ProcessHandle::destroyForcibly);
+                    process.destroyForcibly();
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();

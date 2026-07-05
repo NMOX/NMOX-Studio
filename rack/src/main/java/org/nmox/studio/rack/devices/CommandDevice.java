@@ -228,6 +228,9 @@ public abstract class CommandDevice extends RackDevice {
 
     /** One step of a multi-toolchain sequence: a command and where to run it. */
     protected record Step(List<String> command, java.io.File dir) {
+        protected Step {
+            command = List.copyOf(command); // callers keep no mutation handle
+        }
     }
 
     /**
@@ -341,9 +344,24 @@ public abstract class CommandDevice extends RackDevice {
 
     @Override
     public void receive(Port in, Signal signal) {
+        if (isDisposed()) {
+            return; // a signal delivered after removal must not launch anything
+        }
         if ("run".equals(in.getId()) && signal.type() == SignalType.TRIGGER) {
             primaryAction();
         }
+    }
+
+    /**
+     * A device deleted mid-serve must not leave a ghost URL in the registry:
+     * the exit pump usually deregisters via {@code onFinished}, but a kill
+     * the kernel refuses (or any path that skips the pump) would otherwise
+     * strand the entry forever. Deregistering an absent id is a no-op.
+     */
+    @Override
+    public void dispose() {
+        deregisterServing();
+        super.dispose();
     }
 
     // ---- serving registry ----

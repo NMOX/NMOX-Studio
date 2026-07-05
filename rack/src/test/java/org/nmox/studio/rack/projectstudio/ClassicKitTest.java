@@ -427,6 +427,27 @@ class ClassicKitTest {
     }
 
     @Test
+    @DisplayName("Options copies its sets: immutable to callers, insertion order kept")
+    void optionsSetsAreImmutableCopies() {
+        java.util.Set<String> libs = new java.util.LinkedHashSet<>(
+                List.of("knockout", "jquery"));
+        java.util.Set<String> gens = new java.util.LinkedHashSet<>(List.of("gulp", "webpack"));
+        ClassicKit.Options opts = options(libs, ClassicKit.Mode.VENDORED, gens);
+
+        assertThat(opts.libraries()).containsExactly("knockout", "jquery");
+        assertThat(opts.generators()).containsExactly("gulp", "webpack");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> opts.libraries().add("x"))
+                .isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> opts.generators().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        // defensive copy: mutating the caller's sets changes nothing
+        libs.clear();
+        gens.clear();
+        assertThat(opts.libraries()).hasSize(2);
+        assertThat(opts.generators()).hasSize(2);
+    }
+
+    @Test
     @DisplayName("Only Prototype is npm-incapable; the catalog carries five libraries")
     void catalogShape() {
         assertThat(ClassicKit.libraries()).hasSize(5);

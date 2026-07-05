@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,14 +28,15 @@ public final class PortScanner {
     public static CompletableFuture<List<PortInfo>> scan() {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                ProcessBuilder pb = ProcessSupport.builder(
-                        List.of("lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pcn"));
-                Process p = pb.start();
-                String out = new String(p.getInputStream().readAllBytes());
-                if (!p.waitFor(10, TimeUnit.SECONDS)) {
-                    p.destroyForcibly(); // a wedged lsof must not leak as a child
-                }
-                return parse(out);
+                // runBounded: waitFor FIRST while both streams drain on their
+                // own threads (stderr included — it was never consumed here
+                // before), forcible kill on timeout, UTF-8 explicit. A wedged
+                // lsof used to pin a commonPool thread per sweep until the
+                // whole pool starved app-wide.
+                ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                        List.of("lsof", "-nP", "-iTCP", "-sTCP:LISTEN", "-F", "pcn"),
+                        null, java.time.Duration.ofSeconds(10));
+                return parse(r.stdout());
             } catch (Exception ex) {
                 return List.of();
             }

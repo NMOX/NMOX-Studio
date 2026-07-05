@@ -41,6 +41,15 @@ public final class ClassicKit {
 
     /** What the wizard collected: library ids, delivery mode, generator ids. */
     public record Options(Set<String> libraries, Mode mode, Set<String> generators) {
+
+        public Options {
+            // LinkedHashSet copies: immutable to callers, but Set.copyOf would
+            // scramble iteration order and with it the generated-file order
+            libraries = java.util.Collections.unmodifiableSet(
+                    new java.util.LinkedHashSet<>(libraries));
+            generators = java.util.Collections.unmodifiableSet(
+                    new java.util.LinkedHashSet<>(generators));
+        }
     }
 
     /** One touched (or skipped) file, for the wizard's report. */

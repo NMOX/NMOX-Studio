@@ -35,11 +35,18 @@ import org.openide.NotifyDescriptor;
  */
 public class NewProjectDialog extends JDialog {
 
+    /** Template generation + git init run here, never on the EDT. */
+    private static final org.openide.util.RequestProcessor CREATE_RP =
+            new org.openide.util.RequestProcessor("nmox-new-project", 1, true);
+
     private final JTextField nameField = new JTextField("my-app", 20);
     private final JTextField locationField = new JTextField(28);
     private final JList<ProjectTemplates> templateList = new JList<>(ProjectTemplates.values());
     private final JCheckBox installBox = new JCheckBox("Run npm install after creating", true);
     private final JLabel previewLabel = new JLabel(" ");
+    private final JButton createButton = new JButton("Create Project");
+    private final JButton cancelButton = new JButton("Cancel");
+    private final JButton browseButton = new JButton("…");
 
     private File createdProject;
 
@@ -82,7 +89,7 @@ public class NewProjectDialog extends JDialog {
             }
         });
 
-        JButton browse = new JButton("…");
+        JButton browse = browseButton;
         browse.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(new File(locationField.getText()));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -142,14 +149,12 @@ public class NewProjectDialog extends JDialog {
         c.gridy = 4;
         form.add(previewLabel, c);
 
-        JButton create = new JButton("Create Project");
-        create.addActionListener(e -> createProject());
-        JButton cancel = new JButton("Cancel");
-        cancel.addActionListener(e -> dispose());
+        createButton.addActionListener(e -> createProject());
+        cancelButton.addActionListener(e -> dispose());
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttons.add(cancel);
-        buttons.add(create);
-        getRootPane().setDefaultButton(create);
+        buttons.add(cancelButton);
+        buttons.add(createButton);
+        getRootPane().setDefaultButton(createButton);
 
         setLayout(new BorderLayout());
         add(form, BorderLayout.CENTER);
@@ -196,25 +201,45 @@ public class NewProjectDialog extends JDialog {
             warn(dir.getName() + " already exists in that location.");
             return;
         }
-        try {
-            template.generate(dir, name);
-        } catch (IOException ex) {
-            error("Could not create the project: " + ex.getMessage());
-            return;
-        }
+        // generate + git init are file IO plus up to four git spawns — off the
+        // EDT, with the dialog locked (busy) until the outcome is known
+        setBusy(true);
+        CREATE_RP.post(() -> {
+            try {
+                template.generate(dir, name);
+            } catch (IOException ex) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    setBusy(false);
+                    error("Could not create the project: " + ex.getMessage());
+                });
+                return;
+            }
+            ProjectTemplates.initGitRepo(dir); // best-effort, each spawn bounded
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                createdProject = dir;
+                // aim the rack: the template's patch mounts automatically
+                RackService.getDefault().openProject(dir);
+                if (installBox.isSelected()) {
+                    CommandExecutor.run("Project Setup", dir, Map.of(),
+                            List.of("npm", "install"), line -> {
+                            }, code -> {
+                            });
+                }
+                dispose();
+            });
+        });
+    }
 
-        createdProject = dir;
-        ProjectTemplates.initGitRepo(dir);
-        // aim the rack: the template's patch mounts automatically
-        RackService.getDefault().openProject(dir);
-
-        if (installBox.isSelected()) {
-            CommandExecutor.run("Project Setup", dir, Map.of(),
-                    List.of("npm", "install"), line -> {
-                    }, code -> {
-                    });
-        }
-        dispose();
+    /** Locks the form while creation runs; the button says why. */
+    private void setBusy(boolean busy) {
+        createButton.setEnabled(!busy);
+        createButton.setText(busy ? "Creating…" : "Create Project");
+        cancelButton.setEnabled(!busy);
+        nameField.setEnabled(!busy);
+        locationField.setEnabled(!busy);
+        templateList.setEnabled(!busy);
+        installBox.setEnabled(!busy);
+        browseButton.setEnabled(!busy);
     }
 
     // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----

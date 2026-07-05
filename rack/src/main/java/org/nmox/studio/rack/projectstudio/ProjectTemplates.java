@@ -1571,13 +1571,12 @@ public enum ProjectTemplates {
 
     private static int run(File dir, String... cmd) {
         try {
-            ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport
-                    .builder(java.util.List.of(cmd))
-                    .directory(dir)
-                    .redirectErrorStream(true);
-            Process proc = pb.start();
-            proc.getInputStream().readAllBytes();
-            return proc.waitFor(30, java.util.concurrent.TimeUnit.SECONDS) ? proc.exitValue() : -1;
+            // bounded for real: waitFor runs while the streams drain on their
+            // own threads, and a wedged git is forcibly killed on timeout
+            // instead of surviving as a zombie behind an unbounded read
+            return org.nmox.studio.core.process.ProcessSupport
+                    .runBounded(java.util.List.of(cmd), dir, java.time.Duration.ofSeconds(30))
+                    .exitCode(); // -1 on timeout, matching the old contract
         } catch (Exception ex) {
             return -1;
         }

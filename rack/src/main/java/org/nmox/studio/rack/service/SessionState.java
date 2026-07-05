@@ -15,6 +15,10 @@ import org.nmox.studio.rack.model.RackDevice;
  */
 public record SessionState(String project, long at, List<Entry> running) {
 
+    public SessionState {
+        running = List.copyOf(running); // snapshots are facts; no one edits a fact
+    }
+
     /** One live device: matched on resume by position and type. */
     public record Entry(int index, String typeId, String title) {
     }
