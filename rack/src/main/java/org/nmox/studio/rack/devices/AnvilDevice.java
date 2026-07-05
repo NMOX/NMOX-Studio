@@ -163,6 +163,7 @@ public class AnvilDevice extends CommandDevice {
             String url = "http://" + listening.group(1);
             onEdt(() -> statusLcd.setText("CHAIN UP  " + url + "  id " + chainIdLcd.getText().trim()));
             emit("url", Signal.data(url));
+            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
             if (readyFired.compareAndSet(false, true)) {
                 emit("ready", Signal.trigger());
             }
@@ -181,6 +182,7 @@ public class AnvilDevice extends CommandDevice {
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("serving", Signal.gate(false));
         onEdt(() -> {
             screenLcd.clear();

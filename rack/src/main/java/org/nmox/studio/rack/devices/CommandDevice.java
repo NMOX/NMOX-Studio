@@ -346,6 +346,45 @@ public abstract class CommandDevice extends RackDevice {
         }
     }
 
+    // ---- serving registry ----
+
+    /**
+     * This device instance's registry key: stable for the instance's
+     * lifetime, distinct across two racked units of the same type.
+     */
+    protected final String servingId() {
+        return getTypeId() + "@" + Integer.toHexString(System.identityHashCode(this));
+    }
+
+    /**
+     * Announces this device's live URL to the {@link org.nmox.studio.rack.service.ServingRegistry}
+     * — call at the exact moment the URL signal is emitted. Re-announcing
+     * the same URL is a no-op inside the registry.
+     */
+    protected final void registerServing(String url, org.nmox.studio.rack.service.ServingRegistry.Kind kind) {
+        org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                new org.nmox.studio.rack.service.ServingRegistry.Serving(
+                        servingId(), getTitle(), url, kind, projectDir()));
+    }
+
+    /** Withdraws this device's serving — call from the exit/stop path. */
+    protected final void deregisterServing() {
+        org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister(servingId());
+    }
+
+    /** True when the changed-manifest batch carries any of these filenames. */
+    protected static boolean anyNamed(java.util.List<java.nio.file.Path> changed, String... names) {
+        for (java.nio.file.Path p : changed) {
+            String name = p.getFileName() == null ? "" : p.getFileName().toString();
+            for (String candidate : names) {
+                if (candidate.equals(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /** Convenience for one-off env additions; not yet per-launch. */
     protected void putRackEnv(String key, String value) {
         if (getRack() != null) {

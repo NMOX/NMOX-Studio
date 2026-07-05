@@ -31,6 +31,8 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class BeaconDevice extends RackDevice {
 
     private static final String[] MINIMUMS = {"off", "7", "14", "30"};
+    /** Factory URL; while the LCD still shows it, CHECK may auto-aim. */
+    private static final String DEFAULT_URL = "https://example.com";
 
     private final LcdDisplay urlLcd;
     private final LcdDisplay resultLcd;
@@ -44,7 +46,7 @@ public class BeaconDevice extends RackDevice {
 
         RackButton check = place(new RackButton("CHECK", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         urlLcd = place(new LcdDisplay(220, 1), 130, 46);
-        urlLcd.setText("https://example.com");
+        urlLcd.setText(DEFAULT_URL);
         urlLcd.setEditable("URL to watch");
         minKnob = place(new Knob("MIN DAYS", MINIMUMS, 0), 370, 40);
         minKnob.setToolTipText("Certificate floor: fewer days left than this fires FAIL");
@@ -73,8 +75,27 @@ public class BeaconDevice extends RackDevice {
         return reachable && (floorDays == 0 || certDays < 0 || certDays >= floorDays);
     }
 
+    /**
+     * The watch target: an explicitly dialed URL always wins; a blank,
+     * factory-default, or auto LCD aims at the project's live WEB server
+     * from the serving registry (read at CHECK time, never polled), with
+     * the LCD showing the pick as "auto: &lt;url&gt;".
+     */
+    String effectiveUrl() {
+        String dialed = urlLcd.getText().trim();
+        if (!AutoUrl.isAuto(dialed, DEFAULT_URL)) {
+            return dialed;
+        }
+        String auto = AutoUrl.firstWebServing(projectDir());
+        if (auto != null) {
+            onEdt(() -> urlLcd.setText(AutoUrl.AUTO_PREFIX + auto));
+            return auto;
+        }
+        return AutoUrl.fallback(dialed);
+    }
+
     private void check() {
-        String url = urlLcd.getText().trim();
+        String url = effectiveUrl();
         if (url.isEmpty()) {
             return;
         }

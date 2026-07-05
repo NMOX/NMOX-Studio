@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Signal;
 import org.nmox.studio.rack.model.SignalType;
@@ -21,9 +19,6 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  * against the registry so the rack nags when the framework moves.
  */
 public class NextDevice extends CommandDevice {
-
-    private static final Pattern LOCAL_URL =
-            Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"']*)");
 
     private final LcdDisplay versionLcd;
     private final Led currentLed;
@@ -129,9 +124,8 @@ public class NextDevice extends CommandDevice {
 
     @Override
     protected void onLine(String line) {
-        Matcher m = LOCAL_URL.matcher(line);
-        if (m.find()) {
-            String url = m.group(1);
+        String url = ServeUrls.firstLocalUrl(line);
+        if (url != null) {
             if (readyFired.compareAndSet(false, true)) {
                 emit("ready", Signal.trigger());
             }
@@ -139,12 +133,14 @@ public class NextDevice extends CommandDevice {
                 announcedUrl = url;
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
                 emit("url", Signal.data(url));
+                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
     }

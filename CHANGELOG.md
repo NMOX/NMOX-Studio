@@ -4,6 +4,68 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.35.0] — 2026-07-05
+
+The connections release: the parts of the studio now talk to each other.
+Servers announce themselves, edited manifests re-sync the devices that
+read them, studios notice the world changing around them — and nothing
+storms, because every new reaction is bounded, equality-guarded, and
+regression-tested.
+
+### Added
+- **The Serving Registry** — one live answer to "who is serving what."
+  Every serve device (SURGE, IGNITION's static and webpack lanes,
+  ARTISAN, HALO, NEXUS, PHOENIX, and ANVIL as a chain) announces its
+  URL the moment it's ready and withdraws it on stop. What that unlocks:
+  - The **status line** grows a `⇄ serving: <url>` chip — click it to
+    open any live server in the browser.
+  - **⌘I gains "Live Servers"** — running servers are search results;
+    selecting one opens it (chains focus Contract Studio).
+  - **VITALS and BEACON auto-target**: leave the URL blank and they
+    aim at the running server for the aimed project (`auto: <url>` on
+    the LCD; an explicit URL always wins).
+  - **API Studio offers `{{baseUrl}}`** when a dev server for the
+    aimed project appears and the active environment lacks one — one
+    quiet balloon per server per session; accepting writes the variable
+    (creating a "Local" environment if none exists).
+  - **Contract Studio auto-connects**: start ANVIL and the network
+    chip goes green by itself; stop it and the chip greys immediately.
+    No more re-selecting the combo to make the studio notice.
+- **Manifest edits re-sync the rack** — saving package.json,
+  Gruntfile/gulpfile, composer.json/lock, bower.json, lockfiles,
+  webpack configs, foundry.toml, .gas-snapshot, or .env pulses exactly
+  the devices that read them: NPM-9000 re-lists scripts, DYNAMO
+  re-parses tasks, CRATE refreshes its deps LCD, HALO and ARTISAN
+  re-check version currency — without re-aiming the project. A kit
+  writing ten files costs one coalesced re-sync, not ten (test-pinned).
+  `.env` saves surface a status-line note ("env changed — restarts pick
+  it up") — honest about running processes keeping their old env.
+- **Contract Studio watches the build** — new artifacts in Foundry's
+  `out/` or Hardhat's `artifacts/` auto-rescan the contracts tree,
+  whether the build came from FORGE, a terminal, or CI.
+- **DB Studio talks to Docker** — running containers that publish a
+  database port (postgres/mysql/mariadb/mongo/couchdb, inferred from
+  image name first, port second) get a quiet connection offer with the
+  dialog prefilled; at most two balloons per pass, one offer per
+  container per session, total silence without a Docker daemon.
+- **Studios notice external edits** — hand-edit (or git-pull over)
+  `.nmoxdb.json`, `.nmoxapi.json`, `.nmoxweb3.json`, or
+  `.nmoxinfra.json` and the studio reloads: silently when it holds no
+  unsaved state, with a "changed on disk — Reload?" balloon when it
+  does. Self-writes are discriminated from foreign edits by stamp, so a
+  studio never reacts to its own saves — and never silently clobbers
+  yours. A saved `.env` also re-arms DB Studio's connection offer.
+- **Open the manifest behind the device** — NPM-9000, DYNAMO, CRATE,
+  HALO, ARTISAN, GOVERNOR, and FORGE grow a context-menu jump straight
+  to the file their knobs are built from.
+- **Less duplication behind the scenes** — one shared URL-from-output
+  scanner replaces four device-private copies (deliberately different
+  parsers kept, with reasons), and package.json script parsing in the
+  rack rides one cached path.
+- rack 714 / dbstudio 349 / web3 271 / infra 181 / apiclient 91 tests
+  (+133 this release); every new listener carries a bounded-reaction
+  storm test; SpotBugs + find-sec-bugs at zero findings.
+
 ## [1.34.0] — 2026-07-05
 
 The classic web release: the stacks that used to be number one — jQuery,

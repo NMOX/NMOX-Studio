@@ -23,10 +23,6 @@ public class DevServerDevice extends CommandDevice {
     private static final String[] SERVERS = {"auto", "vite", "http-server", "serve"};
     private static final String[] PORTS = {"3000", "4200", "5173", "8000", "8080", "9000"};
 
-    /** A local URL printed by the server (vite "Local:", CRA, serve...). */
-    private static final java.util.regex.Pattern LOCAL_URL =
-            java.util.regex.Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"']*)");
-
     private final Knob serverKnob;
     private final Knob portKnob;
     private final Led liveLed;
@@ -136,24 +132,24 @@ public class DevServerDevice extends CommandDevice {
             emit("ready", Signal.trigger());
             announcedUrl = localUrl();
             emit("url", Signal.data(announcedUrl));
+            registerServing(announcedUrl, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
         }
         // trust the server's own printed address over the knob: in AUTO
         // mode the npm script picks the port, not us. Re-emit on change
         // so a patched SCOPE follows the real URL.
         String plain = line.replaceAll("\\[[;\\d]*m", ""); // strip ANSI color
-        java.util.regex.Matcher m = LOCAL_URL.matcher(plain);
-        if (m.find()) {
-            String real = m.group(1);
-            if (!real.equals(announcedUrl)) {
-                announcedUrl = real;
-                onEdt(() -> statusLcd.setText("UP  " + real));
-                emit("url", Signal.data(real));
-            }
+        String real = ServeUrls.firstLocalUrl(plain);
+        if (real != null && !real.equals(announcedUrl)) {
+            announcedUrl = real;
+            onEdt(() -> statusLcd.setText("UP  " + real));
+            emit("url", Signal.data(real));
+            registerServing(real, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
         }
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("running", Signal.gate(false));
         onEdt(() -> {
             liveLed.setBlinking(false);

@@ -52,6 +52,21 @@ public class DynamoDevice extends CommandDevice {
         reloadTasks();
     }
 
+    /** Manifest pulse: a saved Gruntfile/gulpfile refreshes the TASK knob. */
+    @Override
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+        if (anyNamed(changed, "Gruntfile.js", "Gruntfile.coffee",
+                "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs")) {
+            reloadTasks();
+        }
+    }
+
+    /** The faceplate context menu's "Open Gruntfile/gulpfile". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        return java.util.Optional.ofNullable(taskfile(effectiveRunner()));
+    }
+
     /** The taskfile walk never runs on the EDT (window restore fires these). */
     private void reloadTasks() {
         offEdt(this::reloadTasksNow);
@@ -80,11 +95,21 @@ public class DynamoDevice extends CommandDevice {
         final List<String> options = names;
         final File parsed = file;
         onEdt(() -> {
-            taskKnob.setOptions(options.toArray(new String[0]));
+            // equality-guarded: setOptions always fires a knob change, and a
+            // reload that parsed the same tasks must not re-fire downstream
+            String[] fresh = options.toArray(new String[0]);
+            if (!java.util.Arrays.equals(fresh, taskKnob.getOptions())) {
+                taskKnob.setOptions(fresh);
+            }
             statusLcd.setText(parsed == null ? "NO GRUNTFILE OR GULPFILE"
                     : empty ? "NO TASKS IN " + parsed.getName().toUpperCase(java.util.Locale.ROOT)
                     : options.size() + " TASKS — " + parsed.getName());
         });
+    }
+
+    /** Test seam: the TASK knob, so tests can count its change events. */
+    Knob taskKnobForTest() {
+        return taskKnob;
     }
 
     /** The dialed runner, or in AUTO whichever taskfile the project carries. */

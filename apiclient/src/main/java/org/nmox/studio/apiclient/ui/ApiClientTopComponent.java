@@ -79,6 +79,16 @@ public final class ApiClientTopComponent extends TopComponent {
     private final Timer saveDebounce;
     private boolean loading;
 
+    /** Rack servings → the {{baseUrl}} offer; null when the rack is absent. */
+    private org.nmox.studio.apiclient.api.ServingBridge servingBridge;
+    /** One offer per (url + project) per session — recorded at offer time. */
+    private final java.util.Set<String> offeredBaseUrls = new java.util.HashSet<>();
+    /** Polls .nmoxapi.json for foreign edits while the tab is open. */
+    private org.nmox.studio.apiclient.api.WorkspaceFilePulse filePulse;
+    /** Distinguishes our own saves from foreign edits. */
+    private final org.nmox.studio.apiclient.api.SelfWriteTracker selfWrites =
+            new org.nmox.studio.apiclient.api.SelfWriteTracker();
+
     private final JTree tree = new JTree();
     private final JComboBox<String> envCombo = new JComboBox<>();
     private final JComboBox<String> methodCombo =
@@ -542,7 +552,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     // ---- persistence ----
 
-    private File projectDir() {
+    private File projectDirOrNull() {
         try {
             File dir = org.nmox.studio.rack.service.RackService.getDefault()
                     .getRack().getProjectDir();
@@ -552,7 +562,12 @@ public final class ApiClientTopComponent extends TopComponent {
         } catch (RuntimeException | LinkageError ignored) {
             // rack unavailable (tests, stripped platform)
         }
-        return new File(System.getProperty("user.home"));
+        return null;
+    }
+
+    private File projectDir() {
+        File dir = projectDirOrNull();
+        return dir != null ? dir : new File(System.getProperty("user.home"));
     }
 
     private void loadWorkspace() {
@@ -563,6 +578,7 @@ public final class ApiClientTopComponent extends TopComponent {
         } catch (Exception ex) {
             workspace = Workspace.starter();
         }
+        selfWrites.noteSync(new File(projectDir(), WorkspaceIO.FILENAME));
         DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
         workspace.environments.forEach(e -> envs.addElement(e.name));
         envCombo.setModel(envs);
@@ -589,6 +605,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private void save() {
         try {
             WorkspaceIO.save(projectDir(), workspace);
+            selfWrites.noteSync(new File(projectDir(), WorkspaceIO.FILENAME));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed autosave never interrupts editing — but a chronically
@@ -607,9 +624,139 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     @Override
+    public void componentOpened() {
+        try {
+            if (servingBridge == null) {
+                servingBridge = new org.nmox.studio.apiclient.api.ServingBridge(
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault(),
+                        this::onServings);
+            }
+            servingBridge.attach();
+            // a server already running when the tab opens is seen too —
+            // the registry snapshot belongs off the EDT
+            Thread poke = new Thread(servingBridge::refresh, "nmox-api-serving-poke");
+            poke.setDaemon(true);
+            poke.start();
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack unavailable (tests, stripped platform): no offers, no loss
+        }
+        if (filePulse == null) {
+            filePulse = new org.nmox.studio.apiclient.api.WorkspaceFilePulse(
+                    new File(projectDir(), WorkspaceIO.FILENAME),
+                    this::onWorkspaceFileChanged);
+            filePulse.start(
+                    org.nmox.studio.apiclient.api.WorkspaceFilePulse.DEFAULT_INTERVAL_MS);
+        }
+    }
+
+    @Override
     public void componentClosed() {
+        if (servingBridge != null) {
+            try {
+                servingBridge.detach();
+            } catch (RuntimeException | LinkageError ignored) {
+                // already unavailable — nothing to detach from
+            }
+        }
+        if (filePulse != null) {
+            filePulse.stop();
+            filePulse = null;
+        }
         saveDebounce.stop();
         save();
+    }
+
+    // ---- the {{baseUrl}} offer ----
+
+    /** EDT, with a fresh registry snapshot: at most one balloon per (url+project). */
+    private void onServings(java.util.List<org.nmox.studio.rack.service.ServingRegistry.Serving> servings) {
+        org.nmox.studio.apiclient.api.BaseUrlOffer.Offer offer =
+                org.nmox.studio.apiclient.api.BaseUrlOffer.shouldOffer(
+                        servings, projectDirOrNull(), workspace, offeredBaseUrls);
+        if (offer == null) {
+            return;
+        }
+        offeredBaseUrls.add(offer.guardKey()); // offered is offered, accepted or not
+        String detail = offer.createEnvironment()
+                ? "Click to create environment \"" + offer.envName()
+                        + "\" with {{" + offer.key() + "}} set"
+                : "Click to set {{" + offer.key() + "}} in \"" + offer.envName() + "\"";
+        balloon("A server is running at " + offer.url(), detail, true,
+                e -> applyOffer(offer));
+    }
+
+    /** EDT, on balloon click: writes through the model and the normal save path. */
+    private void applyOffer(org.nmox.studio.apiclient.api.BaseUrlOffer.Offer offer) {
+        if (offer.createEnvironment()) {
+            if (!workspace.environments.isEmpty()) {
+                return; // environments appeared since the offer — don't second-guess them
+            }
+            Environment fresh = new Environment();
+            fresh.name = offer.envName();
+            fresh.variables.put(offer.key(), offer.url());
+            workspace.environments.add(fresh);
+            workspace.activeEnvironment = fresh.name;
+            loading = true;
+            DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
+            workspace.environments.forEach(env -> envs.addElement(env.name));
+            envCombo.setModel(envs);
+            envCombo.setSelectedItem(fresh.name);
+            loading = false;
+        } else {
+            Environment env = null;
+            for (Environment candidate : workspace.environments) {
+                if (candidate.name.equals(offer.envName())) {
+                    env = candidate;
+                }
+            }
+            if (env == null || org.nmox.studio.apiclient.api.BaseUrlOffer.hasBaseUrl(env)) {
+                return; // renamed or set by hand since the offer — never clobber
+            }
+            env.variables.put(offer.key(), offer.url());
+        }
+        touch();
+    }
+
+    // ---- foreign .nmoxapi.json edits ----
+
+    /**
+     * Pulse thread: the workspace file's stamp moved. Our own saves are
+     * filtered by the tracker (re-checked on the EDT so a save racing
+     * the tick never counts). Edits pending in the save debounce are
+     * never clobbered silently — those get the Reload? balloon instead.
+     */
+    private void onWorkspaceFileChanged(long mtime, long size) {
+        if (!selfWrites.isForeign(mtime, size)) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (!selfWrites.isForeign(mtime, size)) {
+                return; // our save landed between the tick and this dispatch
+            }
+            if (saveDebounce.isRunning()) {
+                balloon(WorkspaceIO.FILENAME + " changed on disk — Reload?",
+                        "You have unsaved edits; click to reload from disk and discard them",
+                        false, e -> {
+                            saveDebounce.stop();
+                            loadWorkspace();
+                        });
+            } else {
+                loadWorkspace();
+                balloon("Reloaded " + WorkspaceIO.FILENAME,
+                        "Picked up changes made outside the studio", true, null);
+            }
+        });
+    }
+
+    /** Balloons, the Contract Studio shape — plus an optional click action. */
+    private static void balloon(String title, String detail, boolean ok,
+            java.awt.event.ActionListener action) {
+        javax.swing.Icon icon = javax.swing.UIManager.getIcon(
+                ok ? "OptionPane.informationIcon" : "OptionPane.warningIcon");
+        org.openide.awt.NotificationDisplayer.getDefault().notify(
+                title, icon, detail == null ? "" : detail, action,
+                ok ? org.openide.awt.NotificationDisplayer.Priority.LOW
+                        : org.openide.awt.NotificationDisplayer.Priority.NORMAL);
     }
 
     private static String humanBytes(long b) {

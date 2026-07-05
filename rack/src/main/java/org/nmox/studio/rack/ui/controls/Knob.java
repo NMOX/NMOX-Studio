@@ -143,6 +143,15 @@ public class Knob extends JComponent {
     }
 
     /**
+     * The current option list of a stepped knob (copy), or null for a
+     * continuous knob — lets reload paths equality-guard before calling
+     * {@link #setOptions}, which always fires a change event.
+     */
+    public String[] getOptions() {
+        return options == null ? null : options.clone();
+    }
+
+    /**
      * Selects a stepped option by its text; falls back to parsing a
      * numeric index (the legacy patch format). Unknown values keep the
      * current selection.

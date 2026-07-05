@@ -47,6 +47,17 @@ public class GovernorDevice extends CommandDevice {
         return ProjectInspector.ProjectKind.FOUNDRY;
     }
 
+    // No manifestChanged override: GOVERNOR checks .gas-snapshot at
+    // action time only (primaryAction fails closed when it is absent);
+    // there is no at-rest LCD state for a pulse to refresh.
+
+    /** The faceplate context menu's "Open .gas-snapshot". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        File snapshot = new File(commandDir(), ".gas-snapshot");
+        return snapshot.isFile() ? java.util.Optional.of(snapshot) : java.util.Optional.empty();
+    }
+
     /** Test seam: the dialed tolerance in percent (0 = exact). */
     int tolerancePercent() {
         String sel = toleranceKnob.getSelectedOption();

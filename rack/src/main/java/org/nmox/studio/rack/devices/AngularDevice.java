@@ -27,8 +27,6 @@ public class AngularDevice extends CommandDevice {
 
     private static final String[] SCHEMATICS = {
         "component", "service", "directive", "pipe", "guard", "interceptor", "resolver", "class"};
-    private static final java.util.regex.Pattern LOCAL_URL =
-            java.util.regex.Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"']*)");
 
     private final LcdDisplay versionLcd;
     private final Led currentLed;
@@ -108,6 +106,31 @@ public class AngularDevice extends CommandDevice {
         refreshVersions();
     }
 
+    /**
+     * Manifest pulse: package.json edits re-check version currency — but
+     * only when the installed @angular/core actually moved, so a save
+     * that touches scripts does not re-probe the registry.
+     */
+    @Override
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+        if (anyNamed(changed, "package.json", "package-lock.json")) {
+            offEdt(() -> {
+                if (!java.util.Objects.equals(installedVersion,
+                        AngularVersions.installed(projectDir()))) {
+                    refreshVersions();
+                }
+            });
+        }
+    }
+
+    /** The faceplate context menu's "Open package.json". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        File pkg = new File(ProjectInspector.kindDir(projectDir(),
+                ProjectInspector.ProjectKind.NODE), "package.json");
+        return pkg.isFile() ? java.util.Optional.of(pkg) : java.util.Optional.empty();
+    }
+
     /** Installed version from package.json; latest from the registry, async. */
     private void refreshVersions() {
         installedVersion = AngularVersions.installed(projectDir());
@@ -165,9 +188,8 @@ public class AngularDevice extends CommandDevice {
 
     @Override
     protected void onLine(String line) {
-        java.util.regex.Matcher m = LOCAL_URL.matcher(line);
-        if (m.find()) {
-            String url = m.group(1);
+        String url = ServeUrls.firstLocalUrl(line);
+        if (url != null) {
             if (readyFired.compareAndSet(false, true)) {
                 emit("ready", Signal.trigger());
             }
@@ -175,12 +197,14 @@ public class AngularDevice extends CommandDevice {
                 announcedUrl = url;
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
                 emit("url", Signal.data(url));
+                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
         // a finished `ng update` may have bumped package.json

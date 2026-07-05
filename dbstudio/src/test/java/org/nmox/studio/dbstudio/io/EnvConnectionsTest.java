@@ -260,4 +260,43 @@ class EnvConnectionsTest {
                 "DB_CONNECTION=mysql\nDB_DATABASE=shop").orElseThrow();
         assertThat(noPass.toString()).contains("passwordOrNull=null");
     }
+
+    // ---- manifest batches (the .env re-offer trigger) --------------------
+
+    @Test
+    @DisplayName("touchesEnv fires on an exact .env filename anywhere in the batch")
+    void touchesEnvExactName() {
+        assertThat(EnvConnections.touchesEnv(java.util.List.of(
+                java.nio.file.Path.of("/p/package.json"),
+                java.nio.file.Path.of("/p/apps/api/.env")))).isTrue();
+        assertThat(EnvConnections.touchesEnv(java.util.List.of(
+                java.nio.file.Path.of("/p/.env")))).isTrue();
+    }
+
+    @Test
+    @DisplayName("touchesEnv ignores lookalikes — .env.example, foo.env, package.json")
+    void touchesEnvIgnoresLookalikes() {
+        assertThat(EnvConnections.touchesEnv(java.util.List.of(
+                java.nio.file.Path.of("/p/.env.example"),
+                java.nio.file.Path.of("/p/foo.env"),
+                java.nio.file.Path.of("/p/package.json")))).isFalse();
+    }
+
+    @Test
+    @DisplayName("touchesEnv is one boolean per batch: many .env files, one reaction")
+    void touchesEnvIsBounded() {
+        // the caller keys ONE guard reset off this — a kit writing three
+        // .env files coalesces into a single true, never three reactions
+        assertThat(EnvConnections.touchesEnv(java.util.List.of(
+                java.nio.file.Path.of("/p/.env"),
+                java.nio.file.Path.of("/p/apps/web/.env"),
+                java.nio.file.Path.of("/p/apps/api/.env")))).isTrue();
+    }
+
+    @Test
+    @DisplayName("touchesEnv is null-safe and quiet on an empty batch")
+    void touchesEnvNullSafe() {
+        assertThat(EnvConnections.touchesEnv(null)).isFalse();
+        assertThat(EnvConnections.touchesEnv(java.util.List.of())).isFalse();
+    }
 }

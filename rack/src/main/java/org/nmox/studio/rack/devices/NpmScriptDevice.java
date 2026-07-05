@@ -2,10 +2,8 @@ package org.nmox.studio.rack.devices;
 
 import java.awt.Color;
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONObject;
 import org.nmox.studio.rack.ui.controls.Knob;
 import org.nmox.studio.rack.ui.controls.RackButton;
 import org.nmox.studio.rack.ui.controls.RackStyle;
@@ -48,30 +46,45 @@ public class NpmScriptDevice extends CommandDevice {
         reloadScripts();
     }
 
-    private void reloadScripts() {
+    /** Manifest pulse: a saved package.json refreshes the SCRIPT knob. */
+    @Override
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+        if (anyNamed(changed, "package.json")) {
+            offEdt(this::reloadScripts);
+        }
+    }
+
+    /** The faceplate context menu's "Open package.json". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
         File pkg = new File(ProjectInspector.kindDir(projectDir(),
                 ProjectInspector.ProjectKind.NODE), "package.json");
-        List<String> names = new ArrayList<>();
-        if (pkg.isFile()) {
-            try {
-                JSONObject json = new JSONObject(Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
-                if (json.has("scripts")) {
-                    for (String key : json.getJSONObject("scripts").keySet()) {
-                        names.add(key);
-                    }
-                }
-            } catch (Exception ex) {
-                // unreadable package.json: leave the placeholder
-            }
-        }
+        return pkg.isFile() ? java.util.Optional.of(pkg) : java.util.Optional.empty();
+    }
+
+    void reloadScripts() {
+        File pkg = new File(ProjectInspector.kindDir(projectDir(),
+                ProjectInspector.ProjectKind.NODE), "package.json");
+        List<String> names = new ArrayList<>(ProjectInspector.scripts(projectDir()).keySet());
         if (names.isEmpty()) {
             names.add("—");
         }
         names.sort(String::compareTo);
         onEdt(() -> {
-            scriptKnob.setOptions(names.toArray(new String[0]));
+            // equality-guarded: setOptions always fires a knob change, and
+            // a reload that found the same scripts must not re-fire (the
+            // manifest pulse would otherwise flash every listener per save)
+            String[] fresh = names.toArray(new String[0]);
+            if (!java.util.Arrays.equals(fresh, scriptKnob.getOptions())) {
+                scriptKnob.setOptions(fresh);
+            }
             statusLcd.setText(pkg.isFile() ? names.size() + " SCRIPTS LOADED" : "NO PACKAGE.JSON");
         });
+    }
+
+    /** Test seam: the SCRIPT knob, so tests can count its change events. */
+    Knob scriptKnobForTest() {
+        return scriptKnob;
     }
 
     /** npm speaks from the package.json directory, monorepo or not. */

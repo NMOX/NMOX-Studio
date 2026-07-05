@@ -127,6 +127,25 @@ public abstract class RackDevice extends JPanel {
     public void projectChanged(File dir) {
     }
 
+    /**
+     * Called on the rack router thread when project manifests changed on
+     * disk (coalesced; see {@code ManifestPulse}). Overriders check the
+     * batch for THEIR files, do file work via {@link #offEdt}, marshal UI
+     * via {@link #onEdt}, and stay idempotent: a reload that finds
+     * nothing new must not fire knob/option events.
+     */
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+    }
+
+    /**
+     * The manifest file this device is configured from, when it exists —
+     * the "Open package.json" faceplate context action reads this.
+     * Devices not backed by a manifest return empty.
+     */
+    public java.util.Optional<File> primaryManifest() {
+        return java.util.Optional.empty();
+    }
+
     /** Kill any running process and release resources. */
     public void dispose() {
         if (rack != null) {

@@ -73,6 +73,17 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean loading;
 
+    /** Off-EDT file stats for the external-edit check. */
+    private static final org.openide.util.RequestProcessor RP =
+            new org.openide.util.RequestProcessor("Infra Designer", 1);
+    /** Discriminates our own .nmoxinfra.json writes from foreign edits. */
+    private final org.nmox.studio.infra.model.DesignSync designSync =
+            new org.nmox.studio.infra.model.DesignSync();
+    /** Polls the design file's stamp while the tab is open; never runs closed. */
+    private final Timer externalCheck;
+    /** True while a stat is on its way to the EDT — checks never overlap. */
+    private boolean externalStatInFlight;
+
     public InfraDesignerTopComponent() {
         setName(org.openide.util.NbBundle.getMessage(InfraDesignerTopComponent.class, "CTL_InfraTopComponent"));
         setToolTipText(org.openide.util.NbBundle.getMessage(InfraDesignerTopComponent.class, "HINT_InfraTopComponent"));
@@ -103,6 +114,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
         saveDebounce = new Timer(1000, e -> save());
         saveDebounce.setRepeats(false);
+        externalCheck = new Timer(2000, e -> checkExternalEdit());
+        externalCheck.setRepeats(true);
         graphListener = new InfraGraph.Listener() {
             @Override
             public void graphChanged() {
@@ -523,14 +536,95 @@ public final class InfraDesignerTopComponent extends TopComponent {
         } finally {
             loading = false;
             refreshCost();
+            // the loaded version is now "ours": only later foreign writes
+            // should trigger the external-reload flow
+            designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
         }
     }
 
     private void save() {
         try {
             GraphIO.save(graph, designFile());
+            designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
         } catch (Exception ex) {
             // disk hiccup; the next change retries
+        }
+    }
+
+    // ---- .nmoxinfra.json edited outside the designer ----
+
+    /**
+     * The 2-second foreign-change check, EDT-side but I/O-free: the
+     * stat runs on {@link #RP}, the verdict lands back on the EDT.
+     * Checks never overlap; a closed tab never checks (the timer only
+     * runs between componentOpened and componentClosed).
+     */
+    private void checkExternalEdit() {
+        if (externalStatInFlight) {
+            return;
+        }
+        externalStatInFlight = true;
+        File file = designFile();
+        RP.post(() -> {
+            org.nmox.studio.infra.model.DesignSync.Stamp stamp =
+                    org.nmox.studio.infra.model.DesignSync.Stamp.of(file);
+            SwingUtilities.invokeLater(() -> {
+                externalStatInFlight = false;
+                handleExternalStamp(stamp);
+            });
+        });
+    }
+
+    /**
+     * EDT: reacts to a design-file stamp per the tested
+     * {@link org.nmox.studio.infra.model.DesignSync} conflict matrix.
+     * A pending {@code saveDebounce} IS the dirty state — every canvas
+     * edit restarts it and its save() ends it, so "running" exactly
+     * means "unsaved local edits".
+     */
+    private void handleExternalStamp(org.nmox.studio.infra.model.DesignSync.Stamp onDisk) {
+        if (!isOpened()) {
+            return; // a closed tab reacts to nothing
+        }
+        switch (designSync.check(onDisk, saveDebounce.isRunning())) {
+            case RELOAD -> {
+                // clean canvas: follow the disk. load() raises `loading`, so
+                // the graphChanged it fires never schedules a spurious save
+                // (the v1.33.2 guard stays intact).
+                load();
+                balloon("Reloaded " + GraphIO.DEFAULT_FILENAME,
+                        "The file changed outside the designer — the canvas follows it.",
+                        null);
+            }
+            case CONFLICT -> {
+                // Foreign edit vs unsaved canvas edits: NEVER clobber silently.
+                // Hold the pending debounced save so it can't overwrite the
+                // foreign version while the user decides. Clicking the balloon
+                // reloads (discarding the local edits); ignoring it means the
+                // NEXT canvas change restarts the debounce and that save wins —
+                // the pre-existing last-writer-wins behavior, unchanged.
+                saveDebounce.stop();
+                balloon(GraphIO.DEFAULT_FILENAME + " changed on disk — Reload?",
+                        "Click to reload; unsaved canvas edits are discarded. "
+                        + "Keep editing to keep your version instead.",
+                        e -> load());
+            }
+            case NONE -> {
+            }
+        }
+    }
+
+    /** Quiet corner notification — never a modal, never steals focus. */
+    private static void balloon(String title, String detail,
+            java.awt.event.ActionListener action) {
+        try {
+            org.openide.awt.NotificationDisplayer.getDefault().notify(
+                    title,
+                    javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                    detail == null ? "" : detail, action,
+                    org.openide.awt.NotificationDisplayer.Priority.LOW);
+        } catch (RuntimeException | LinkageError ignored) {
+            // notifications unavailable (tests, stripped platform)
         }
     }
 
@@ -566,9 +660,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     @Override
+    protected void componentOpened() {
+        externalCheck.start(); // foreign-change checks run only while open
+    }
+
+    @Override
     protected void componentClosed() {
         // stop the debounce timer and drop our listeners, so a close/reopen
         // cycle doesn't accumulate zombie listeners on the graph and the rack
+        externalCheck.stop();
         saveDebounce.stop();
         graph.removeListener(graphListener);
         try {

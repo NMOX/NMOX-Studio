@@ -295,6 +295,20 @@ final class ConnectionDialog extends JPanel {
     }
 
     /**
+     * Shows the add dialog prefilled from any suggestion, under the
+     * caller's connection name — the Docker offer path, where
+     * "shop-db (docker)" says more than the database name would.
+     * Returns the new spec, or null on cancel.
+     */
+    static ConnectionSpec showPrefilled(
+            org.nmox.studio.dbstudio.io.EnvConnections.Suggestion suggestion, String name) {
+        ConnectionDialog panel = new ConnectionDialog(null);
+        panel.prefill(suggestion);
+        panel.nameField.setText(name);
+        return show(panel, "Add Database Connection");
+    }
+
+    /**
      * Shows the dialog. Returns the new/updated spec (same id when
      * editing), or null on cancel. Field problems re-open the dialog
      * after a warning rather than silently saving junk.
