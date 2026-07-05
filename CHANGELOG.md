@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.33.4] — 2026-07-05
+
+### Fixed
+- **The .app bundle's Dock/⌘Tab icon is the NMOX rack again, not the
+  default Java icon.** The cluster's generated launcher passes
+  `-J-Xdock:icon=$progdir/../../nmoxstudio.icns` on macOS, which inside
+  the bundle resolves to `Contents/Resources/nmoxstudio.icns` — but
+  `build-dmg.sh` only ever wrote the hyphenated
+  `nmox-studio.icns` (for Info.plist's `CFBundleIconFile`). A dangling
+  `-Xdock:icon` path overrides the bundle's own icon attribution and
+  macOS falls back to the generic Java icon. The DMG build now copies
+  the icns under both names, satisfying the launcher's exact path (the
+  same arrangement `application/pom.xml` has staged next to the bare
+  cluster for dev launches since v1.30.0). Live-verified with an
+  `--app-only` bundle on a throwaway userdir: the running app's Dock
+  tile shows the NMOX icon, and the JVM's resolved `-Xdock:icon` path
+  exists inside the bundle.
+
 ## [1.33.3] — 2026-07-05
 
 ### Fixed

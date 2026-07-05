@@ -44,6 +44,13 @@ echo "==> Bundling Java runtime"
 echo "==> Building icns"
 iconutil -c icns packaging/icons/nmox-studio.iconset \
     -o "$BUNDLE/Contents/Resources/nmox-studio.icns"
+# The cluster's generated launcher passes
+# -J-Xdock:icon=$progdir/../../nmoxstudio.icns (unhyphenated), which resolves
+# to Contents/Resources/nmoxstudio.icns here. A dangling -Xdock:icon path
+# overrides the bundle's icon attribution and the Dock/Cmd-Tab fall back to
+# the default Java icon, so the icns must exist under BOTH names.
+cp "$BUNDLE/Contents/Resources/nmox-studio.icns" \
+   "$BUNDLE/Contents/Resources/nmoxstudio.icns"
 
 echo "==> Writing launcher"
 cat > "$BUNDLE/Contents/MacOS/nmox-studio" <<'LAUNCHER'
