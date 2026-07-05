@@ -115,6 +115,50 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("Classic Web (jQuery) is the script-tag era: vendored jQuery, no package.json")
+    void classicWebJqueryTemplate() throws Exception {
+        File dir = parent.resolve("classic-web").toFile();
+
+        ProjectTemplates.CLASSIC_WEB_JQUERY.generate(dir, "retro-site");
+
+        // the era-honest file set — and deliberately NO Node toolchain
+        assertThat(dir.toPath().resolve("css/style.css")).exists();
+        assertThat(dir.toPath().resolve("js/app.js")).exists();
+        assertThat(dir.toPath().resolve("package.json")).doesNotExist();
+        assertThat(dir.toPath().resolve("eslint.config.mjs")).doesNotExist();
+
+        // index.html loads jQuery from a plain script tag, header/content
+        // divs, no modules
+        String html = Files.readString(dir.toPath().resolve("index.html"));
+        assertThat(html).contains("<script src=\"vendor/jquery-3.7.1.min.js\"></script>")
+                .contains("<div id=\"header\">").contains("<div id=\"content\">")
+                .doesNotContain("type=\"module\"");
+        assertThat(Files.readString(dir.toPath().resolve("js/app.js")))
+                .contains("$(document).ready");
+
+        // the vendored build is byte-equal to the bundled pinned resource
+        assertThat(Files.readAllBytes(dir.toPath().resolve("vendor/jquery-3.7.1.min.js")))
+                .isEqualTo(ClassicKit.vendorBytes("jquery-3.7.1.min.js"));
+
+        // vendor/ is committed on purpose: the .gitignore must not eat it
+        assertThat(Files.readString(dir.toPath().resolve(".gitignore")))
+                .doesNotContain("vendor/");
+
+        // the patch parses and is the Classic Web Bench wiring: same device
+        // roster (CRATE → DYNAMO → static IGNITION, VITALS, MONITOR), same cabling
+        JSONObject patch = new JSONObject(Files.readString(
+                dir.toPath().resolve(RackIO.DEFAULT_FILENAME)));
+        JSONObject bench = RackPresets.CLASSIC_WEB.buildPatch();
+        assertThat(deviceTypes(patch)).isEqualTo(deviceTypes(bench));
+        assertThat(patch.getJSONArray("cables").length())
+                .isEqualTo(bench.getJSONArray("cables").length());
+
+        // no manifest, but it still opens: the STATIC last resort
+        assertThat(ProjectInspector.detectKind(dir))
+                .isEqualTo(ProjectInspector.ProjectKind.STATIC);
+    }
+
+    @Test
     @DisplayName("Should refuse to generate into a non-empty directory")
     void shouldRefuseNonEmptyDirectory() throws Exception {
         File dir = parent.resolve("occupied").toFile();
@@ -142,6 +186,16 @@ class ProjectTemplatesTest {
         log.waitFor();
         org.assertj.core.api.Assertions.assertThat(out)
                 .as("the first commit").contains("Initial commit");
+    }
+
+    /** The ordered device-type roster of a serialized patch. */
+    private static java.util.List<String> deviceTypes(JSONObject patch) {
+        java.util.List<String> types = new java.util.ArrayList<>();
+        var devices = patch.getJSONArray("devices");
+        for (int i = 0; i < devices.length(); i++) {
+            types.add(devices.getJSONObject(i).getString("type"));
+        }
+        return types;
     }
 
     private static boolean gitAvailable() {

@@ -59,7 +59,12 @@ public final class EnvironmentDoctor {
                 new String[]{"chisel", "Solidity REPL — learning space", "curl -L https://foundry.paradigm.xyz | bash"},
                 new String[]{"solc", "Solidity compiler", "brew install solidity"},
                 new String[]{"slither", "static analysis for Solidity", "pip3 install slither-analyzer"},
-                new String[]{"solhint", "Solidity linter — TYPEGUARD lane", "npm install -g solhint"}));
+                new String[]{"solhint", "Solidity linter — TYPEGUARD lane", "npm install -g solhint"},
+                new String[]{"webpack", "classic bundler — FORGE webpack lane", "npm install -g webpack-cli"},
+                new String[]{"grunt", "classic task runner — DYNAMO grunt lane", "npm install -g grunt-cli"},
+                new String[]{"gulp", "classic task runner — DYNAMO gulp lane", "npm install -g gulp-cli"},
+                new String[]{"bower", "classic web package manager — CRATE bower lane", "npm install -g bower"},
+                new String[]{"coffee", "CoffeeScript compiler", "npm install -g coffeescript"}));
         // every distinct REPL interpreter the learning catalog can launch
         Map<String, String[]> repls = new LinkedHashMap<>();
         for (LearningCatalog.Space space : LearningCatalog.all()) {

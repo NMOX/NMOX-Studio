@@ -1390,6 +1390,95 @@ public enum ProjectTemplates {
                 - to deploy: paste `deploy/cloud-init.yml` into a droplet's user_data in the Infra designer
                 """;
         }
+    },
+
+    CLASSIC_WEB_JQUERY("Classic Web (jQuery)",
+            "script-tag era, no build step — served as-is") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "index.html", """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                  <meta charset="utf-8">
+                  <title>%s</title>
+                  <link rel="stylesheet" href="css/style.css">
+                  <script src="vendor/jquery-3.7.1.min.js"></script>
+                  <script src="js/app.js"></script>
+                </head>
+                <body>
+                  <div id="header">
+                    <h1>%s</h1>
+                  </div>
+                  <div id="content">
+                    <p>A classic page: jQuery from a plain script tag, no build step.</p>
+                    <button id="clicker">clicks: 0</button>
+                  </div>
+                </body>
+                </html>
+                """.formatted(name, name));
+            write(dir, "css/style.css", """
+                body { font-family: Verdana, Geneva, sans-serif; margin: 0; }
+                #header { background: #333; color: #fff; padding: 16px 24px; }
+                #header h1 { margin: 0; font-size: 22px; }
+                #content { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+                button { font: inherit; padding: 6px 14px; cursor: pointer; }
+                """);
+            write(dir, "js/app.js", """
+                // The classic starting point: wait for the DOM, then wire things up.
+                $(document).ready(function () {
+                  var clicks = 0;
+                  $('#clicker').on('click', function () {
+                    clicks += 1;
+                    $(this).text('clicks: ' + clicks);
+                  });
+                });
+                """);
+            // the bundled pinned build, byte for byte (see the Classic Kit's
+            // NOTICE-vendor.md for provenance and SHA-256)
+            Path vendored = dir.resolve("vendor/jquery-3.7.1.min.js");
+            Files.createDirectories(vendored.getParent());
+            Files.write(vendored, ClassicKit.vendorBytes("jquery-3.7.1.min.js"));
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            // the Classic Web Bench preset IS this template's wiring - one definition
+            return RackPresets.CLASSIC_WEB.buildPatch();
+        }
+
+        @Override
+        boolean lintable() {
+            return false; // no package.json — nothing to hold an eslint dep
+        }
+
+        @Override
+        boolean prettier() {
+            return false; // script-tag era: no Node toolchain at all
+        }
+
+        @Override
+        String gitignore() {
+            // vendor/ is deliberately NOT ignored: pinned files committed
+            // alongside the code are this era's lockfile
+            return """
+                dist/
+                bower_components/
+                .env
+                """;
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - no install, no build: index.html loads `vendor/jquery-3.7.1.min.js` from a
+                  plain script tag and `js/app.js` does its work in $(document).ready
+                - IGNITE on IGNITION serves this folder statically and VITALS scores the page
+                - DYNAMO runs taskfiles: add a Gruntfile.js or gulpfile.js (File → Classic
+                  Kit…) and its tasks appear on the knob
+                - `vendor/` is committed on purpose — pinned files are the era's lockfile
+                """;
+        }
     };
 
     private final String displayName;

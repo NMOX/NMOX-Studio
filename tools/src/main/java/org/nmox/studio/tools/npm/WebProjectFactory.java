@@ -20,7 +20,11 @@ public class WebProjectFactory implements ProjectFactory {
         "deps.edn", "project.clj", "Package.swift", "pom.xml", "build.gradle",
         "build.gradle.kts", "pyproject.toml", "requirements.txt", "Gemfile",
         "composer.json", "angular.json", "bun.lock", "bunfig.toml", "deno.json", "deno.jsonc",
-        "foundry.toml"};
+        "foundry.toml",
+        // classic web (v1.34): manifest-only legacy repos open as projects
+        "bower.json", "Gruntfile.js", "Gruntfile.coffee",
+        "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",
+        "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"};
 
     @Override
     public boolean isProject(FileObject projectDirectory) {
@@ -29,7 +33,12 @@ public class WebProjectFactory implements ProjectFactory {
                 return true;
             }
         }
-        return false;
+        // the static last resort, deliberate: a directory with an
+        // index.html is a project — a 2005 site deserves to open too.
+        // Kind precedence (any real manifest outranks STATIC) lives in
+        // ProjectInspector; recognition here is just a boolean.
+        return projectDirectory.getFileObject("index.html") != null
+                || projectDirectory.getFileObject("index.htm") != null;
     }
 
     @Override

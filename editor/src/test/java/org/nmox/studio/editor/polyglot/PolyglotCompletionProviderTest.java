@@ -96,4 +96,51 @@ class PolyglotCompletionProviderTest {
         assertThat(p.getAutoQueryTypes(null, "a")).isZero();
         assertThat(p.getAutoQueryTypes(null, ".")).isZero();
     }
+
+    // ---- CoffeeScript ------------------------------------------------------
+
+    @Test
+    @DisplayName("CoffeeScript keywords include its own words, not just JavaScript's")
+    void coffeescriptKeywords() {
+        Set<String> coffee = PolyglotCompletionProvider.KEYWORDS.get("text/coffeescript");
+        assertThat(coffee).contains("unless", "isnt", "yes", "no", "on", "off", "->", "=>");
+        assertThat(PolyglotCompletionProvider.CLASSIC_MIMES)
+                .containsExactlyInAnyOrder("text/javascript", "text/html", "text/coffeescript");
+    }
+
+    // ---- classic library entries ---------------------------------------------
+
+    @Test
+    @DisplayName("classicItems offers detected libraries' entries for the dotted prefix")
+    void classicItemsMatchDottedPrefixes() {
+        String text = "$.aj";
+        List<org.netbeans.spi.editor.completion.CompletionItem> items =
+                PolyglotCompletionProvider.classicItems(Set.of("jquery"), text, text.length());
+        assertThat(items).extracting(i -> i.getInsertPrefix().toString())
+                .containsExactly("$.ajax", "$.ajaxSetup");
+        // no libraries detected -> nothing offered, whatever the prefix
+        assertThat(PolyglotCompletionProvider.classicItems(Set.of(), text, text.length())).isEmpty();
+        // a detected id the catalog doesn't know is skipped, not an error
+        assertThat(PolyglotCompletionProvider.classicItems(Set.of("dojo"), text, text.length())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Accepting a dot-tail match replaces only the tail, keeping the receiver")
+    void classicItemAcceptKeepsReceiver() throws Exception {
+        String text = "myEl.addC";
+        List<org.netbeans.spi.editor.completion.CompletionItem> items =
+                PolyglotCompletionProvider.classicItems(Set.of("jquery"), text, text.length());
+        org.netbeans.spi.editor.completion.CompletionItem addClass = items.stream()
+                .filter(i -> i.getInsertPrefix().toString().equals(".addClass"))
+                .findFirst().orElseThrow();
+
+        javax.swing.text.StyledDocument doc = new javax.swing.text.DefaultStyledDocument();
+        doc.insertString(0, text, null);
+        javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+        pane.setDocument(doc);
+        pane.setCaretPosition(text.length());
+        addClass.defaultAction(pane);
+        assertThat(doc.getText(0, doc.getLength())).isEqualTo("myEl.addClass");
+        assertThat(pane.getCaretPosition()).isEqualTo("myEl.addClass".length());
+    }
 }

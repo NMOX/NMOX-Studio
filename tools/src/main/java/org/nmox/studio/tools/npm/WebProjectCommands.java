@@ -60,6 +60,25 @@ final class WebProjectCommands {
             case RUBY:
                 return ActionProvider.COMMAND_TEST.equals(action)
                         ? List.of("rake", "test") : null;
+            case WEBPACK:
+                // run = webpack-dev-server; when it isn't installed the
+                // command's own error is the honest answer, no probing
+                return fixed(action,
+                        List.of("npx", "webpack", "serve", "--mode", "development"),
+                        List.of("npx", "webpack", "--mode", "production"), null, null);
+            case GRUNT:
+                // a task runner has a default task, not a run/test story
+                return fixed(action, null, List.of("npx", "grunt"), null, null);
+            case GULP:
+                return fixed(action, null, List.of("npx", "gulp"), null, null);
+            case BOWER:
+                // a package manager, not a build system - CRATE installs
+                return null;
+            case STATIC:
+                // the same command IGNITION's static lane runs, so the
+                // IDE's Run and the rack agree on what "run" means here
+                return ActionProvider.COMMAND_RUN.equals(action)
+                        ? List.of("python3", "-m", "http.server", "8000") : null;
             default:
                 return null;
         }

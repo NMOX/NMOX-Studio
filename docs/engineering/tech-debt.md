@@ -90,6 +90,28 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.34.0)
+
+### 13. Classic web: the second shelf stays deferred
+v1.34.0 made jQuery/MooTools/Prototype/Backbone/Knockout, Webpack/Grunt/
+Gulp/Bower, CoffeeScript, and manifest-less script-tag sites first-class.
+Deliberately NOT built, with reasons:
+- **YUI / Dojo / ExtJS completion + kit entries** — genuinely rarer in
+  surviving codebases, and ExtJS licensing complicates bundling; the
+  script-tag detection still names them in no way that misleads (they
+  simply aren't badged). Add per demand, one catalog JSON block each.
+- **Dedicated AngularJS 1.x tooling** — such projects open fine via the
+  script-tag/bower/grunt support; HALO stays Angular 2+. A 1.x-specific
+  device would imply migration tooling we don't have.
+- **RequireJS / Browserify build lanes** — in the wild these run via
+  package.json scripts, which FORGE already executes; a dedicated lane
+  would duplicate the npm-script path for near-zero reach.
+- **jQuery 1.x→3.x migration assistant** — the EOL chip is honest
+  awareness; automated rewriting (deprecated API scan + jquery-migrate
+  wiring) is a real feature for a future sprint, not a checkbox.
+- **Literate CoffeeScript (.litcoffee)** — rides the source.coffee
+  grammar approximately (the .sass/SCSS-style honesty note applies).
+
 ## Open — deferred deliberately, with reasons (added v1.33.0)
 
 ### 12. Contract Studio never signs — and that's the design, not the debt

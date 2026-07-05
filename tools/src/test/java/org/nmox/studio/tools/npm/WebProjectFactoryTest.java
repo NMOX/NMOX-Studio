@@ -123,4 +123,43 @@ class WebProjectFactoryTest {
         Files.writeString(deno.resolve("deno.json"), "{}");
         assertThat(factory.isProject(mount(deno))).as("deno.json").isTrue();
     }
+
+    @Test
+    @DisplayName("The classic web manifests are recognized: bower, Gruntfile, gulpfile, webpack.config")
+    void classicWebManifestsMakeProjects(@TempDir Path root) throws IOException {
+        String[][] cases = {
+            {"bower", "bower.json"},
+            {"grunt", "Gruntfile.js"},
+            {"grunt-coffee", "Gruntfile.coffee"},
+            {"gulp", "gulpfile.js"},
+            {"gulp-babel", "gulpfile.babel.js"},
+            {"gulp-mjs", "gulpfile.mjs"},
+            {"webpack", "webpack.config.js"},
+            {"webpack-cjs", "webpack.config.cjs"},
+            {"webpack-mjs", "webpack.config.mjs"},
+        };
+        for (String[] c : cases) {
+            Path dir = Files.createDirectory(root.resolve(c[0]));
+            Files.writeString(dir.resolve(c[1]), "");
+            assertThat(factory.isProject(mount(dir))).as(c[1]).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("The static last resort: a bare index.html (or .htm) directory is a project")
+    void bareIndexHtmlDirIsAProject(@TempDir Path html, @TempDir Path htm) throws IOException {
+        Files.writeString(html.resolve("index.html"), "<html></html>");
+        Files.writeString(html.resolve("style.css"), "body {}");
+        assertThat(factory.isProject(mount(html))).as("a 2005 site is a project too").isTrue();
+
+        Files.writeString(htm.resolve("index.htm"), "<html></html>");
+        assertThat(factory.isProject(mount(htm))).as("index.htm spelling").isTrue();
+    }
+
+    @Test
+    @DisplayName("Other HTML files are not the static last resort — only an index page is")
+    void nonIndexHtmlDoesNotPromote(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("about.html"), "<html></html>");
+        assertThat(factory.isProject(mount(dir))).isFalse();
+    }
 }

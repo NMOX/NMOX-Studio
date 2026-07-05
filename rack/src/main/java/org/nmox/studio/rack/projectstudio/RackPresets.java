@@ -263,6 +263,32 @@ public enum RackPresets {
             rack.connect(governor.getPort("out"), console.getPort("in"));
             rack.connect(anvil.getPort("out"), console.getPort("in"));
         }
+    },
+
+    CLASSIC_WEB("Classic Web Bench",
+            "CRATE installs (npm + bower), DYNAMO runs the taskfile, IGNITION serves the site, VITALS scores it") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice master = add(rack, DeviceType.MASTER, null);
+            RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
+            RackDevice tasks = add(rack, DeviceType.TASK_RUNNER, null);
+            // IGNITION pinned to the static lane: python3 -m http.server
+            // from the site root (TARGETS index 23 = static)
+            RackDevice serve = add(rack, DeviceType.RUN, Map.of("target", "23"));
+            RackDevice vitals = add(rack, DeviceType.VITALS, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // install → task run → serve: the 2012 pipeline, one press
+            rack.connect(master.getPort("trig1"), deps.getPort("run"));
+            rack.connect(deps.getPort("ok"), tasks.getPort("run"));
+            rack.connect(tasks.getPort("ok"), serve.getPort("run"));
+            // the serve URL feeds the quality gate; READY pulls its trigger
+            rack.connect(serve.getPort("url"), vitals.getPort("url"));
+            rack.connect(serve.getPort("ready"), vitals.getPort("run"));
+            // MONITOR tapped on every lane
+            rack.connect(deps.getPort("out"), console.getPort("in"));
+            rack.connect(tasks.getPort("out"), console.getPort("in"));
+            rack.connect(serve.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;

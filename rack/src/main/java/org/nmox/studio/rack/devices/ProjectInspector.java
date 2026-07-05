@@ -41,6 +41,18 @@ public final class ProjectInspector {
         PHP("composer.json"),
         CMAKE("CMakeLists.txt"),
         MAKE("Makefile"),
+        // ---- classic web (v1.34): every real toolchain manifest above
+        // outranks these, and they outrank NONE ----
+        WEBPACK("webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"),
+        GRUNT("Gruntfile.js", "Gruntfile.coffee"),
+        GULP("gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs"),
+        BOWER("bower.json"),
+        /**
+         * The last resort, root-only, and only when nothing else matched:
+         * a bare directory with an index.html is a project too — the
+         * oldest stack on the web deserves to open like any other.
+         */
+        STATIC("index.html", "index.htm"),
         NONE();
 
         private final String[] manifests;
@@ -70,7 +82,7 @@ public final class ProjectInspector {
     public static java.util.LinkedHashMap<ProjectKind, File> detectKinds(File projectDir) {
         java.util.LinkedHashMap<ProjectKind, File> found = new java.util.LinkedHashMap<>();
         for (ProjectKind kind : ProjectKind.values()) {
-            if (kind == ProjectKind.NONE) {
+            if (kind == ProjectKind.NONE || kind == ProjectKind.STATIC) {
                 continue;
             }
             File dir = manifestDirFor(projectDir, kind);
@@ -78,12 +90,41 @@ public final class ProjectInspector {
                 found.put(kind, dir);
             }
         }
+        // STATIC is the true last resort: a ROOT index.html, and only when
+        // no real manifest matched anywhere — so a Vite app (root
+        // index.html beside package.json) never grows a spurious kind.
+        if (found.isEmpty() && hasManifestAt(projectDir, ProjectKind.STATIC)) {
+            found.put(ProjectKind.STATIC, projectDir);
+        }
         return found;
+    }
+
+    /** True when one of the kind's manifests sits directly in this directory. */
+    public static boolean hasManifestAt(File dir, ProjectKind kind) {
+        for (String manifest : kind.manifests) {
+            if (new File(dir, manifest).isFile()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The directory carrying this kind's manifest — the root, then one
+     * level of subdirectories — or null when the kind is absent.
+     */
+    public static File manifestDir(File projectDir, ProjectKind kind) {
+        return manifestDirFor(projectDir, kind);
     }
 
     private static File manifestDirFor(File root, ProjectKind kind) {
         if (kind == ProjectKind.DOTNET) {
             return dotnetDir(root);
+        }
+        if (kind == ProjectKind.STATIC) {
+            // STATIC never walks subdirectories: it means "serve THIS folder",
+            // not "some docs/ dir happens to hold an index.html"
+            return hasManifestAt(root, kind) ? root : null;
         }
         for (String manifest : kind.manifests) {
             if (new File(root, manifest).isFile()) {
