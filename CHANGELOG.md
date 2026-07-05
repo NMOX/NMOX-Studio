@@ -4,6 +4,132 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.36.0] — 2026-07-05
+
+The senior review release. A very-senior-NetBeans-RCP-developer pass
+over the whole codebase: six read-only audit lenses (platform/module
+architecture, device/process lifecycle, listener symmetry, timers,
+EDT & process hygiene, API quality & house laws), then fixes for
+everything the audit proved — and a written blessing for everything
+that looked wrong but is deliberate. No new features; net −3,000 lines.
+The audit's headline was what **held**: the orphan-process guarantee,
+the storm laws, the Keyring boundaries, and the v1.35 listener-symmetry
+pass all survived adversarial reading with file:line evidence. What it
+caught clustered in the two oldest surfaces and in the *mutation* half
+of code whose *read* half was hardened in earlier sprints.
+
+### Fixed
+- **Infra Designer's inverted listener lifecycle** (the review's
+  sharpest finding). Listeners attached in the constructor and were
+  removed on close but never re-added — after one close/reopen,
+  auto-save was dead, the never-clobber dirty guard was blind (external
+  edits silently overwrote unsaved canvas work), and a stale project
+  binding could write project A's design into project B's
+  `.nmoxinfra.json`. Listeners now attach per-open (ApiClient's
+  attached-flag idiom), reopen re-loads the currently-aimed project,
+  and close flushes the pending debounced save. Autosave failures now
+  warn once per streak instead of vanishing; the five cloud workers
+  (deploy/sync/refresh/destroy×2) serialize on the designer's
+  RequestProcessor with their buttons locked while running.
+- **Docker survives a wedged daemon.** DockerClient read stdout to EOF
+  *before* starting its 15-second timeout, so a docker CLI stuck on a
+  frozen daemon (silent, pipe open) was never killed — the first hung
+  refresh pinned all four pool threads forever and every Docker feature
+  silently froze on stale data until restart. Output now drains on its
+  own thread while the timeout runs first; the kill is real (regression
+  test proven to fail on the old code). The same read-before-timeout
+  idiom died at four more sites via the new `ProcessSupport.runBounded`
+  — SONAR's lsof scan could starve the JVM-wide commonPool, and
+  CommandProbe/ProjectTemplates/NpmService each had the latent hang.
+- **The EDT war's missing half: mutations.** New Project ran the
+  template write plus up to four sequential git spawns on the EDT
+  (every creation froze the UI; pathologically ~2 minutes); Experiments
+  discard/promote ran recursive deletes and git on the EDT; the file
+  tree's Delete could beachball for minutes on a `node_modules`; the 5s
+  session snapshot wrote to disk on the paint thread. All moved to
+  RequestProcessors with dialogs honestly locked and progress shown;
+  the snapshot writer is latest-wins so a slow disk never backlogs.
+- **Corrupt workspace files can no longer be clobbered by autosave.**
+  A studio workspace that failed to parse loaded as empty — and the
+  first edit autosaved emptiness over the user's original (sharpest
+  case: Contract Studio's deployment address book). All four studios
+  now keep the unreadable original as `<file>.bak` and say so in a
+  balloon before starting empty.
+- **Ghost servings and disposed devices.** Deleting a device mid-serve
+  now deregisters its ⇄ serving entry on dispose, and a disposed flag
+  (cleared on undo re-attach, so ⌘Z still revives devices) guards the
+  signal router and exec — a queued trigger can never launch a process
+  into a deleted device. REPL stop gained the TERM→wait→KILL rung, so
+  a TERM-trapping interpreter can't outlive the shutdown reaper;
+  InteractiveProcess and CommandProbe pumps survive throwing consumers.
+- **The JavaScript context menu was silently scrambled.** A hand-written
+  layer.xml actions block collided with the annotation-generated set
+  (three same-position conflicts; Tools/Properties rendered mid-menu
+  among Cut/Copy). The annotations own loader wiring now. Also merged
+  the duplicate `Editors` folders, deleted a dead type-mismatched
+  editor-kit registration, and fixed four ⌘I Quick Search category
+  position collisions (Rack vs Go To Type, Infra vs API Studio, plus
+  rack's Projects folder now joins the platform category
+  deterministically).
+- **Error-path UX.** The last surviving JOptionPane (NPM Explorer) is
+  now a platform dialog; all 15 `printStackTrace` sites downgraded —
+  the worst popped the red exception dialog for a malformed
+  `package.json` the user was editing in this very IDE (now: log line
+  plus the reason on the error node); 11 identical completion-item
+  document edits collapsed into one tested helper logging at INFO.
+  API Studio's Send button re-enables when a request worker fails
+  (a hand-edited `"target": null` assertion left it dead until
+  restart), and a null assertion target is a failed assertion, not an
+  NPE. Docker panel: no more dual instances (window-system singleton),
+  auto-refresh honestly resumes on reopen, and the "publishes no host
+  ports" message now distinguishes no-ports from unparseable-ports.
+  Failed debug launches reap the spawned dlv/debugpy adapter instead
+  of orphaning a listener per retry. The Workbench's rack listener got
+  the open/close pair (project switches no longer rebuild a closed
+  Workbench with per-project disk walks).
+
+### Security
+- **Cloud API tokens moved from plaintext Preferences to the OS
+  keychain** (DigitalOcean/Hetzner/Cloudflare) — the last secrets
+  outside the Keyring. Legacy tokens migrate on first read, and the
+  old preference is deleted only after the keychain save succeeds, so
+  a degraded session can never destroy the only durable copy. When no
+  keychain is reachable, DB Studio, Contract Studio, and the Infra
+  designer now say so once per session instead of silently not saving.
+
+### Removed
+- The never-consumed v0.x `tools.build` service (shipped a latent pipe
+  deadlock and regex-parsed JSON), the dead v0.x `CodeIndexService`
+  (two executors, a watch loop that died permanently on first
+  exception), the sample template module from the shipped product (it
+  remains in the repo as a dev template), a dead `deployment` build
+  profile generating an update site no workflow used, the ui module's
+  wildcard package export, and a dead ui→tools dependency edge.
+
+### Internal
+- New `core` facility: `ProcessSupport.runBounded` — one-shot tool
+  runs whose timeout is actually real (both streams drain on helper
+  threads while `waitFor` runs first; forcible kill unblocks the
+  drains). Five call sites adopted it.
+- Immutability hardening: `LearningCatalog`, `SessionState`,
+  `ClassicKit`, `CommandDevice` presets, `HeaderGrader.Report`,
+  `NodeKind.Prop` all hand out unmodifiable copies (order-preserving
+  where generated files depend on iteration order).
+- `InfraGraph.setStatus` equality-guarded (the storm law); cloud syncs
+  no longer re-fire per node per refresh.
+- Tests: 45 new (including regression tests proven to fail on the old
+  code for the DockerClient timeout, the disposed-device races, and
+  the Infra listener bookkeeping); suites covering the deleted dead
+  code went with it. Totals: core 18, rack 734, tools 59, project 18,
+  ui 39, editor 336, infra 193, apiclient 97, dbstudio 355, web3 271 —
+  2,120 across the ten code modules. Coverage floors hold everywhere
+  with headroom (rack 0.699 vs 0.60, infra 0.768 vs 0.72, dbstudio
+  0.870 vs 0.73, web3 0.892 vs 0.80).
+- The debt ledger gained the audit's deliberate deferrals (items
+  15–24, each with its reason) and a closed section for this sprint;
+  the v1.33-era REPL-INSTALL entry that v1.35.1 actually fixed was
+  finally moved out of the open list.
+
 ## [1.35.1] — 2026-07-05
 
 The finishing pass: the security alerts, the flagged-but-unfixed bug,

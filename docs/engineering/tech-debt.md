@@ -1,11 +1,13 @@
 # Technical Debt Ledger
 
 The **current** debt record. Rewritten during the v1.22.0 Snow Leopard
-sprint, extended by the v1.23.0 completeness sprint, and worked through
-end-to-end by the v1.26.0 complete-system sprint (2026-07-03). Every
-entry is either open with a reason it was deferred, or closed with the
-version that closed it. The v0.x-era debt documents in `docs/hack/` are
-archaeology; this file is the truth.
+sprint, extended by the v1.23.0 completeness sprint, worked through
+end-to-end by the v1.26.0 complete-system sprint (2026-07-03), and
+re-audited whole by the v1.36.0 senior-review sprint (2026-07-05: a
+six-lens read-only architecture audit, then fixes for everything it
+proved). Every entry is either open with a reason it was deferred, or
+closed with the version that closed it. The v0.x-era debt documents in
+`docs/hack/` are archaeology; this file is the truth.
 
 The v1.26.0 sprint took a rule to the whole ledger: **build every
 feature-shaped item; re-examine every refactor-shaped item with fresh
@@ -90,6 +92,93 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.36.0)
+
+The v1.36.0 senior review fixed everything cheap-and-clearly-right its
+six audit lenses confirmed (see CHANGELOG). What follows is what the
+audit found and the sprint *deliberately did not fix*, each with the
+reason it can wait.
+
+### 15. panic() still blocks the EDT on Stop All and the switch guard
+`RackDevice.panic()` = synchronous `killAndWait(1500)` — correct in the
+shutdown hook (async escalation threads never run at shutdown), but the
+EDT paths (Stop All, `stopLiveForSwitch`) can freeze up to ~2.5s per
+stubborn live device. The fix is an async stop flow with the switch
+decision waiting on a callback — a redesign of the confirm-then-switch
+sequence, not a wrapper. Bounded, rare (only stubborn processes), and
+the freeze reads as "stopping tools" — deferred until the switch flow
+is next opened.
+
+### 16. Studio workspace saves run on the EDT debounce
+ApiClient/Infra/DbStudio write their small workspace JSONs from Swing
+debounce timers on the EDT (reads got the off-EDT care; the write half
+didn't). Local files, milliseconds each — but wrapping them in an RP
+interacts with the close-flush ("stop(); save()") ordering and each
+studio's SelfWriteTracker stamp discrimination, so it needs its own
+careful pass with storm tests rather than a drive-by wrap. The v1.36.0
+sprint fixed the *recurring* EDT write (session snapshots, 5s cadence);
+these are per-edit debounces.
+
+### 17. RackPanel / RackTopComponent constructor-wired rack listeners
+Both singletons attach in their constructors and never detach, so
+presets/Learning Spaces rebuild faceplates into a closed rack window.
+Bounded (singletons, no leak) and purely offscreen-CPU; the fix needs a
+reopen-resync path that rebuilds state on attach, which carries real
+regression risk for a cost that is idle repaints. The Workbench got the
+fix (its listener drove per-project disk walks); these two wait.
+
+### 18. CommandExecutor exit detection and stale-run guards
+Two hardening ideas from the lifecycle audit: drive exit from
+`process.onExit()` with a bounded drain (today a forcibly-killed
+process whose pipes linger can delay `onFinished`), and a per-launch
+generation counter so a stale run's `onFinished` can't drop the gate of
+the run that replaced it. Both are engine-core changes under the
+device-contract tests; neither has a reproduced failure in the wild.
+Queued behind a reproduction or the next engine sprint.
+
+### 19. Rack polish cluster: undo across presets, trigger bookkeeping
+Loading a preset/patch doesn't clear undo history (⌘Z can "undo" into
+the previous patch's structure), `lastTriggerAt` entries survive device
+removal, and TAIL/TEMPO don't re-sync their displays on undo re-attach.
+All small, none data-loss, all in one undo/presets neighborhood — one
+housekeeping slice when the rack is next open.
+
+### 20. Module spec versions are frozen at 1.0
+Every NBM ships OpenIDE-Module-Specification-Version 1.0 because the
+reactor POM version is `1.0-SNAPSHOT` and nbm-maven-plugin derives from
+it. Nothing consumes the spec versions today (no update center, no
+inter-module version ranges). The clean fix is a coordinated reactor
+version scheme (all 13 poms tracking the release train); hardcoding
+1.36 per manifest would just re-freeze one release later. Do it as part
+of any future update-center story (see 21).
+
+### 21. Platform autoupdate modules ship with no update center
+The Plugins infrastructure is in the cluster but no UC is configured —
+dead weight in the download, ~harmless at runtime. Trimming the
+autoupdate modules changes the Plugins menu and needs a release-size
+check on all three OS packages; the unused build-side update-site
+generation (a dead `deployment` profile) was already removed in
+v1.36.0. Revisit with 20 if an update-center story ever lands.
+
+### 22. `netbeans.default_userdir_root` boot warning
+One cosmetic WARNING per boot. The conf-file route word-splits on
+macOS's "Application Support" path; the safe fix is launcher-side and
+per-OS. Not worth launcher risk for a log line — batch it with the next
+installer/launcher sprint.
+
+### 23. org.json rides in 8 module copies (~710 KB total)
+Re-confirmed as the correct architecture (module classloaders make a
+shared wrapper ClassCastException territory — see ledger item 3). The
+one real improvement is a single `<orgjson.version>` root property so
+Dependabot bumps all eight in one PR. Trivial, but touches all module
+poms — batched with the next dependency sweep.
+
+### 24. i18n: ~450 user-visible strings are hardcoded
+The house style is deliberate English-only UI (Bundle.properties exists
+only where the platform requires it). Recording the reality: NMOX
+Studio is not localizable today, and making it so is a dedicated
+sprint's worth of @Messages migration, not incremental cleanup.
+
 ## Open — deferred deliberately, with reasons (added v1.35.0)
 
 ### 14. Connections: what the corpus callosum deliberately doesn't carry
@@ -148,14 +237,6 @@ where the key still never enters the IDE. What IS deferred:
   forge-std, sets remappings); a wizard shelling out to it is a later
   nicety.
 
-### 13. REPL INSTALL argv-splits compound install commands (pre-v1.33)
-ReplDevice's INSTALL button (v1.31.0) splits the catalog's install
-command into argv without a shell, so entries containing `&&` or `|`
-(several existed before v1.33; the new solidity space's foundryup
-one-liner follows the same convention) pass the operators as literal
-arguments. Needs either shell-wrapping (the SOLDER path) or an honest
-refusal for compound commands. Flagged as its own follow-up task.
-
 ## Open — deferred deliberately, with reasons (added v1.29.0)
 
 ### 10. DB Studio: Mongo cancel is a no-op; cursors read firstBatch only
@@ -178,6 +259,68 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.36.0 (the senior review sprint)
+
+A six-lens read-only audit (platform/module shape, device/process
+lifecycle, listener symmetry, timers, EDT & process hygiene, API
+quality & house laws) followed by fixes for everything it proved. The
+audit's strongest result was negative space: the orphan-process
+guarantee, the storm laws, the Keyring boundaries, and the v1.35
+listener-symmetry pass all **held** under adversarial reading. What it
+caught clustered in the two oldest surfaces and in the *mutation* half
+of code whose read half was fixed in earlier wars. Highlights (full
+list in CHANGELOG 1.36.0):
+
+- ~~Infra Designer attached its listeners in the constructor and removed
+  them on close — one close/reopen killed auto-save, disabled the
+  never-clobber dirty guard, and could write project A's design into
+  project B's `.nmoxinfra.json`~~ — listeners attach per-open, reopen
+  re-loads, close flushes the debounce, save failures warn once.
+- ~~DockerClient read stdout to EOF before starting its 15s timeout —
+  a wedged daemon pinned all four pool threads forever and silently
+  bricked every Docker feature until restart~~ — drain threads + real
+  timeout (regression test fails on the old code). The same
+  read-before-timeout idiom died at four more sites via the new
+  `ProcessSupport.runBounded` (PortScanner was eating commonPool
+  threads app-wide; CommandProbe, ProjectTemplates, NpmService).
+- ~~New Project ran template writes + four git spawns on the EDT;
+  Experiments discard/promote ran recursive deletes and git on the
+  EDT; file-tree delete could beachball for minutes on node_modules~~
+  — all on RequestProcessors with the dialogs honestly locked.
+- ~~A corrupt studio workspace file loaded as empty and the first edit
+  autosaved emptiness over the user's original (sharpest case: web3's
+  deployment address book)~~ — all four studios keep a `.bak` of the
+  unreadable original and say so.
+- ~~Infra cloud API tokens lived in plaintext Preferences while every
+  sibling secret rode the OS keychain~~ — Keyring with a migration
+  that deletes the pref only after the keychain save succeeds.
+- ~~The editor layer.xml's hand-written JS loader actions collided with
+  the annotation-generated set (three same-position warnings, Tools/
+  Properties rendered mid-menu); duplicate `Editors` folders; a dead
+  type-mismatched editor-kit entry; four ⌘I category position
+  collisions~~ — annotations own loader wiring; one merged folder;
+  renumbered categories.
+- ~~Dead code shipped: the never-consumed `tools.build` service (with a
+  latent pipe deadlock), v0.x `CodeIndexService` (two executors, a
+  watch loop that died on first exception), the sample module in the
+  product, a dead `deployment`/update-site profile, a wildcard ui
+  export, a dead ui→tools dependency~~ — all deleted; net −3,000 lines.
+- ~~A deleted-mid-serve device could leave a ghost ⇄ serving entry, and
+  a queued signal could launch a process into a disposed device~~ —
+  dispose deregisters; a disposed flag (cleared on undo re-attach)
+  guards the router and exec.
+- ~~The v1.22 JOptionPane eviction missed exactly one; 15
+  printStackTrace sites could pop the red exception dialog for routine
+  races (worst: a malformed package.json the user is mid-edit on)~~ —
+  DialogDisplayer / named-logger INFO/FINE, with the 11 identical
+  completion bodies collapsed into one tested helper.
+
+Also closed here: **v1.33's REPL-INSTALL item** (the argv-split entry
+below the classic-web section) was actually fixed in v1.35.1 — compound
+catalog commands run via `/bin/sh -lc`; SOLDER keeps its no-shell
+stance for user-typed commands. Removed from the open list where it had
+lingered.
 
 ## Closed by v1.32.0 (DB Studio 2, the working-DBA sprint)
 
