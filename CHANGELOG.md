@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Windows shortcuts, taskbar pins, and the installer now wear the NMOX
+  icon.** The Windows sibling of v1.33.4's macOS Dock-icon gap: the
+  Start-menu and desktop shortcuts pointed at `bin\nmoxstudio64.exe`,
+  whose embedded PE icon is the stock nbm-maven-plugin launcher stub
+  (generic NetBeans), and the setup exe showed Inno Setup's default icon
+  — the running app's window icon was branded, but nothing a user clicks
+  to get there was. Now: `BrandingArtGenerator` emits a committed
+  multi-resolution `packaging/icons/nmox-studio.ico` (16/32/48 as 32-bit
+  BMP entries + 256 as a PNG-compressed entry, with a parse-back
+  self-check), the Inno Setup script brands the setup exe
+  (`SetupIconFile`), ships the `.ico` into `{app}` and points both
+  shortcuts at it (`IconFilename`), and the release workflow patches
+  every launcher exe's icon group with rcedit before packing — so the
+  exe file icon and pinned-taskbar icon are branded too. A new
+  `windows-installer-check` workflow (PRs touching the packaging surface
+  + on-demand) builds the real installer on windows-latest,
+  byte-verifies the branded 256px entry inside every launcher exe and
+  the setup exe, then silent-installs and asserts both shortcuts resolve
+  to the branded icon.
+
 ## [1.33.4] — 2026-07-05
 
 ### Fixed
