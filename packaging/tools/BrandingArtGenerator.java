@@ -10,7 +10,14 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.file.Files;
+import java.util.Arrays;
 import javax.imageio.ImageIO;
 
 /**
@@ -25,6 +32,7 @@ import javax.imageio.ImageIO;
  *   branding/.../core/core.jar/org/netbeans/core/startup/frame.gif (+32/48)
  *   packaging/icons/nmox-studio-{16..1024}.png
  *   packaging/icons/nmox-studio.iconset/   (feed to iconutil on macOS)
+ *   packaging/icons/nmox-studio.ico        (Windows shortcuts/installer/exe)
  */
 public final class BrandingArtGenerator {
 
@@ -66,7 +74,115 @@ public final class BrandingArtGenerator {
             String name = "icon_" + s[0] + "x" + s[0] + (s[1] == 2 ? "@2x" : "") + ".png";
             ImageIO.write(icon(px), "png", new File(iconset, name));
         }
+
+        File ico = new File(icons, "nmox-studio.ico");
+        writeIco(ico, new int[]{16, 32, 48, 256});
+        verifyIco(ico, new int[]{16, 32, 48, 256});
         System.out.println("branding art generated");
+    }
+
+    // ---- Windows .ico: classic layout — small sizes as 32-bit BMP entries,
+    //      256 as a PNG-compressed entry (Vista+ convention) ----
+
+    private static void writeIco(File file, int[] sizes) throws Exception {
+        byte[][] blobs = new byte[sizes.length][];
+        for (int i = 0; i < sizes.length; i++) {
+            BufferedImage img = icon(sizes[i]);
+            blobs[i] = sizes[i] >= 256 ? pngBytes(img) : bmpIcoEntry(img);
+        }
+        ByteBuffer dir = ByteBuffer.allocate(6 + 16 * sizes.length).order(ByteOrder.LITTLE_ENDIAN);
+        dir.putShort((short) 0);            // reserved
+        dir.putShort((short) 1);            // resource type: icon
+        dir.putShort((short) sizes.length);
+        int offset = dir.capacity();
+        for (int i = 0; i < sizes.length; i++) {
+            int s = sizes[i];
+            dir.put((byte) (s >= 256 ? 0 : s)); // width; 0 encodes 256
+            dir.put((byte) (s >= 256 ? 0 : s)); // height
+            dir.put((byte) 0);                  // palette entries (none)
+            dir.put((byte) 0);                  // reserved
+            dir.putShort((short) 1);            // color planes
+            dir.putShort((short) 32);           // bits per pixel
+            dir.putInt(blobs[i].length);
+            dir.putInt(offset);
+            offset += blobs[i].length;
+        }
+        try (OutputStream out = new FileOutputStream(file)) {
+            out.write(dir.array());
+            for (byte[] blob : blobs) {
+                out.write(blob);
+            }
+        }
+    }
+
+    /**
+     * One 32-bit BGRA BMP icon entry: BITMAPINFOHEADER whose height covers
+     * both planes (XOR color data + 1-bit AND mask), rows bottom-up.
+     */
+    private static byte[] bmpIcoEntry(BufferedImage img) {
+        int w = img.getWidth(), h = img.getHeight();
+        int maskRowBytes = ((w + 31) / 32) * 4; // 1bpp rows pad to 32 bits
+        ByteBuffer b = ByteBuffer.allocate(40 + w * h * 4 + maskRowBytes * h).order(ByteOrder.LITTLE_ENDIAN);
+        b.putInt(40);           // BITMAPINFOHEADER size
+        b.putInt(w);
+        b.putInt(h * 2);        // XOR plane + AND mask
+        b.putShort((short) 1);  // planes
+        b.putShort((short) 32); // bpp
+        b.putInt(0);            // BI_RGB, uncompressed
+        b.putInt(w * h * 4);
+        b.putInt(0); b.putInt(0); b.putInt(0); b.putInt(0);
+        for (int y = h - 1; y >= 0; y--) {
+            for (int x = 0; x < w; x++) {
+                int argb = img.getRGB(x, y);
+                b.put((byte) argb);           // B
+                b.put((byte) (argb >> 8));    // G
+                b.put((byte) (argb >> 16));   // R
+                b.put((byte) (argb >>> 24));  // A
+            }
+        }
+        byte[] maskRow = new byte[maskRowBytes];
+        for (int y = h - 1; y >= 0; y--) {
+            Arrays.fill(maskRow, (byte) 0);   // 0 = opaque; alpha channel refines
+            for (int x = 0; x < w; x++) {
+                if ((img.getRGB(x, y) >>> 24) == 0) {
+                    maskRow[x / 8] |= (byte) (0x80 >> (x % 8));
+                }
+            }
+            b.put(maskRow);
+        }
+        return b.array();
+    }
+
+    private static byte[] pngBytes(BufferedImage img) throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ImageIO.write(img, "png", bos);
+        return bos.toByteArray();
+    }
+
+    /** Parse the written .ico back and fail loudly if the structure is off. */
+    private static void verifyIco(File file, int[] sizes) throws Exception {
+        ByteBuffer b = ByteBuffer.wrap(Files.readAllBytes(file.toPath())).order(ByteOrder.LITTLE_ENDIAN);
+        if (b.getShort() != 0 || b.getShort() != 1 || b.getShort() != sizes.length) {
+            throw new IllegalStateException("bad ICONDIR header in " + file);
+        }
+        for (int size : sizes) {
+            int w = b.get() & 0xFF;
+            b.position(b.position() + 7);
+            int len = b.getInt();
+            int off = b.getInt();
+            if ((w == 0 ? 256 : w) != size || off + len > b.capacity()) {
+                throw new IllegalStateException("bad ICONDIRENTRY for size " + size + " in " + file);
+            }
+            if (size >= 256) { // PNG-compressed entry must carry the PNG signature
+                byte[] sig = new byte[8];
+                b.mark();
+                b.position(off).get(sig).reset();
+                if (!Arrays.equals(sig, new byte[]{(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'})) {
+                    throw new IllegalStateException("256px entry is not PNG-compressed in " + file);
+                }
+            }
+        }
+        System.out.println("verified " + file + " (" + sizes.length + " entries)");
     }
 
     // ---- the app icon: a rack device faceplate with a patched cable ----

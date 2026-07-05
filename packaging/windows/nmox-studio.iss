@@ -27,14 +27,22 @@ SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequiredOverridesAllowed=dialog
 UninstallDisplayName=NMOX Studio
+; Brand the setup exe itself (and Add/Remove Programs) with the NMOX icon.
+SetupIconFile=..\icons\nmox-studio.ico
+UninstallDisplayIcon={app}\nmox-studio.ico
 
 [Files]
 Source: "..\..\application\target\nmoxstudio\*"; DestDir: "{app}"; \
     Flags: recursesubdirs createallsubdirs ignoreversion
+; Shipped so shortcuts stay branded even where the exe's embedded icon
+; is the stock launcher one (e.g. installers built outside CI's rcedit step).
+Source: "..\icons\nmox-studio.ico"; DestDir: "{app}"
 
 [Icons]
-Name: "{group}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"
-Name: "{autodesktop}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; Tasks: desktopicon
+Name: "{group}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; \
+    IconFilename: "{app}\nmox-studio.ico"
+Name: "{autodesktop}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; \
+    IconFilename: "{app}\nmox-studio.ico"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop icon"; GroupDescription: "Additional icons:"

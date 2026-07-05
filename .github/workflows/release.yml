@@ -101,6 +101,20 @@ jobs:
             --strip-debug --no-header-files --no-man-pages `
             --output application\target\nmoxstudio\jre
           Add-Content application\target\nmoxstudio\etc\nmoxstudio.conf "`n# bundled runtime: the app runs on its own Java, whatever the host has`njdkhome=`"jre`""
+      - name: Brand launcher icons
+        # The nbm-maven-plugin launcher stubs ship with the stock NetBeans
+        # icon; swap in ours so the exe file icon and pinned-taskbar icon
+        # are branded (shortcuts get theirs via IconFilename in the .iss).
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe" -OutFile rcedit.exe
+          $launchers = Get-ChildItem application\target\nmoxstudio\bin\*.exe
+          if (-not $launchers) { throw "no launcher exes found to brand" }
+          foreach ($exe in $launchers) {
+            & .\rcedit.exe $exe.FullName --set-icon packaging\icons\nmox-studio.ico
+            if ($LASTEXITCODE -ne 0) { throw "rcedit failed on $($exe.Name)" }
+            Write-Host "branded $($exe.Name)"
+          }
       - name: Install Inno Setup
         run: choco install innosetup --no-progress -y
       - name: Build installer
