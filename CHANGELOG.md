@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.33.2] — 2026-07-04
+
+### Fixed
+- **Fresh-launch startup no longer hangs before first paint.** v1.33.1
+  moved several startup scans off the UI thread — which was correct, but
+  it *unmasked* a latent feedback loop that the old blocking scan had
+  been hiding. On a fresh userdir the window system opens and activates
+  all ten default-open suite tabs in a burst, and the Project Explorer
+  was running a full rebuild on **every** open/activate event (~20 of
+  them), each fanning out per-row background detection that posted back
+  to the UI thread and churned still more events — a self-sustaining
+  storm that pegged the event thread at 100% CPU and starved first
+  paint. Before v1.33.1 the first rebuild blocked forever on the old
+  `$HOME` scan, so the loop never got a second iteration and stayed
+  invisible. Fix: a **refresh coalescer** collapses a burst of events
+  into a single rebuild (500 → 1, test-pinned), and the async row
+  updates are now idempotent (no needless re-layout when a value is
+  unchanged).
+- **No stray `.nmoxinfra.json` written into a fresh workspace.**
+  `InfraGraph.clear()` fired a change event even on an already-empty
+  graph, and a flag-reset race let a plain project load schedule a
+  spurious save — so aiming at the new empty `~/NMOX` wrote an infra
+  file on every launch. `clear()` is now silent when empty and the
+  load path captures its guard synchronously. rack 594 / project 17 /
+  infra 166 tests; SpotBugs + find-sec-bugs clean.
+
 ## [1.33.1] — 2026-07-04
 
 ### Fixed

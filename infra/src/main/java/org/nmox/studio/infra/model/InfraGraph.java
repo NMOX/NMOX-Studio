@@ -146,6 +146,13 @@ public final class InfraGraph {
     }
 
     public synchronized void clear() {
+        // idempotent: clearing an already-empty graph must not fire a change.
+        // A spurious graphChanged here (e.g. from load() on a fresh launch with
+        // no design file) schedules a needless save that writes .nmoxinfra.json
+        // into the workspace and churns the canvas repaint listener.
+        if (nodes.isEmpty() && wires.isEmpty()) {
+            return;
+        }
         nodes.clear();
         wires.clear();
         fireChanged();

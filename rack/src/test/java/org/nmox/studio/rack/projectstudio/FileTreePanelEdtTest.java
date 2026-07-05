@@ -68,6 +68,78 @@ class FileTreePanelEdtTest {
     }
 
     @Test
+    @DisplayName("re-expanding the tree after a rebuild never storms the directory lister")
+    void reExpandDoesNotStormTheLister() throws Exception {
+        // A nested tree so re-expansion has real depth to walk.
+        File a = new File(dir, "a");
+        File b = new File(a, "b");
+        File c = new File(b, "c");
+        assertThat(c.mkdirs()).isTrue();
+        assertThat(new File(c, "leaf.txt").createNewFile()).isTrue();
+        assertThat(new File(dir, "top.txt").createNewFile()).isTrue();
+
+        java.util.concurrent.atomic.AtomicInteger listCalls =
+                new java.util.concurrent.atomic.AtomicInteger();
+        FileTreePanel.DirLister counting = d -> {
+            listCalls.incrementAndGet();
+            return d.listFiles();
+        };
+        FileTreePanel panel = new FileTreePanel(counting);
+
+        panel.setRootDirectory(dir);
+        drain(1500);
+
+        // expand every visible row twice, then rebuild the whole tree while it is
+        // expanded — the reExpand path. A re-entrant treeWillExpand -> scan ->
+        // model-swap -> treeWillExpand loop would drive the lister to thousands.
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            javax.swing.JTree tree = findTree(panel);
+            if (tree != null) {
+                for (int pass = 0; pass < 2; pass++) {
+                    for (int i = 0; i < tree.getRowCount(); i++) {
+                        tree.expandRow(i);
+                    }
+                }
+            }
+        });
+        drain(2000);
+        panel.setRootDirectory(dir);
+        drain(2000);
+
+        assertThat(listCalls.get())
+                .as("the walk is bounded by tree depth, not a re-entrant storm")
+                .isLessThan(200);
+        panel.dispose();
+    }
+
+    private static javax.swing.JTree findTree(java.awt.Container c) {
+        for (java.awt.Component comp : c.getComponents()) {
+            if (comp instanceof javax.swing.JTree t) {
+                return t;
+            }
+            if (comp instanceof java.awt.Container cc) {
+                javax.swing.JTree r = findTree(cc);
+                if (r != null) {
+                    return r;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void drain(long ms) throws Exception {
+        long end = System.currentTimeMillis() + ms;
+        while (System.currentTimeMillis() < end) {
+            try {
+                javax.swing.SwingUtilities.invokeAndWait(() -> { });
+            } catch (Exception ignored) {
+                // interrupted — not relevant to the bound assertion
+            }
+            Thread.sleep(50);
+        }
+    }
+
+    @Test
     @DisplayName("a non-directory root shows 'No project' without any listing")
     void nonDirectoryRootNeverLists() throws Exception {
         AtomicBoolean listed = new AtomicBoolean(false);

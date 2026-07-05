@@ -106,9 +106,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
         graphListener = new InfraGraph.Listener() {
             @Override
             public void graphChanged() {
+                // Capture `loading` HERE, synchronously with the change, not in
+                // the deferred runnable: load() fires graphChanged while loading
+                // is true but resets it in its finally BEFORE this invokeLater
+                // runs, so a deferred check would miss the guard and schedule a
+                // spurious save that writes .nmoxinfra.json on a plain load.
+                boolean fromLoad = loading;
                 SwingUtilities.invokeLater(() -> {
                     refreshCost();
-                    if (!loading) {
+                    if (!fromLoad) {
                         saveDebounce.restart();
                     }
                 });
