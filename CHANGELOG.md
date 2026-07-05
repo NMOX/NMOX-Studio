@@ -4,11 +4,11 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.33.4] — 2026-07-05
 
 ### Fixed
 - **Windows shortcuts, taskbar pins, and the installer now wear the NMOX
-  icon.** The Windows sibling of v1.33.4's macOS Dock-icon gap: the
+  icon.** The Windows sibling of the macOS Dock-icon gap below: the
   Start-menu and desktop shortcuts pointed at `bin\nmoxstudio64.exe`,
   whose embedded PE icon is the stock nbm-maven-plugin launcher stub
   (generic NetBeans), and the setup exe showed Inno Setup's default icon
@@ -27,9 +27,6 @@ All notable changes to NMOX Studio are documented here. The format follows
   the setup exe, then silent-installs and asserts both shortcuts resolve
   to the branded icon.
 
-## [1.33.4] — 2026-07-05
-
-### Fixed
 - **The .app bundle's Dock/⌘Tab icon is the NMOX rack again, not the
   default Java icon.** The cluster's generated launcher passes
   `-J-Xdock:icon=$progdir/../../nmoxstudio.icns` on macOS, which inside
