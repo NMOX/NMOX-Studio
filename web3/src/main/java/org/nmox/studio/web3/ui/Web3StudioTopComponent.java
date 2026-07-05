@@ -217,8 +217,8 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** Polls artifacts + workspace file while the tab is open; null when closed/no project. */
     private org.nmox.studio.web3.engine.ArtifactPulse pulse;
     /** Distinguishes our own .nmoxweb3.json writes from foreign edits. */
-    private final org.nmox.studio.web3.engine.SelfWriteTracker selfWrites =
-            new org.nmox.studio.web3.engine.SelfWriteTracker();
+    private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
+            new org.nmox.studio.core.util.SelfWriteTracker();
 
     public Web3StudioTopComponent() {
         setName(Bundle.CTL_Web3StudioTopComponent());

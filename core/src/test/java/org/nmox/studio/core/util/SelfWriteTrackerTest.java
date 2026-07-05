@@ -1,4 +1,4 @@
-package org.nmox.studio.apiclient.api;
+package org.nmox.studio.core.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,9 +9,9 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Self-write vs foreign-edit discrimination for .nmoxapi.json: the
- * stamp the studio last wrote or loaded is "ours"; anything else is a
- * foreign change.
+ * Self-write vs foreign-edit discrimination for a studio's workspace
+ * file: the stamp the studio last wrote or loaded is "ours"; anything
+ * else is a foreign change.
  */
 class SelfWriteTrackerTest {
 
@@ -24,8 +24,8 @@ class SelfWriteTrackerTest {
         SelfWriteTracker tracker = new SelfWriteTracker();
         tracker.noteSync(1000, 42);
         assertThat(tracker.isForeign(1000, 42)).isFalse();
-        assertThat(tracker.isForeign(2000, 42)).isTrue();
-        assertThat(tracker.isForeign(1000, 43)).isTrue();
+        assertThat(tracker.isForeign(2000, 42)).isTrue();  // touched
+        assertThat(tracker.isForeign(1000, 43)).isTrue();  // rewritten same-mtime
     }
 
     @Test
@@ -33,7 +33,7 @@ class SelfWriteTrackerTest {
     void freshTracker() {
         SelfWriteTracker tracker = new SelfWriteTracker();
         assertThat(tracker.isForeign(1000, 42)).isTrue();
-        assertThat(tracker.isForeign(-1, -1)).isFalse();
+        assertThat(tracker.isForeign(-1, -1)).isFalse(); // "no file" matches "never saw one"
     }
 
     @Test

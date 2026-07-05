@@ -241,13 +241,16 @@ public class ReplDevice extends RackDevice {
      * INSTALL: runs the seeded install command — curated catalog data,
      * not user input — through the same CommandExecutor path every
      * one-shot device uses, streaming its output onto the REPL screen.
-     * Never auto-starts the REPL afterwards: the user presses START.
+     * Plain commands run as argv; the catalog's compound commands
+     * ("curl … | bash && foundryup") go through the shell so their
+     * operators keep their meaning ({@link #installArgv}). Never
+     * auto-starts the REPL afterwards: the user presses START.
      */
     private void runInstall() {
         if (!installActionAvailable()) {
             return;
         }
-        List<String> command = splitArgs(installLcd.getText());
+        List<String> command = installArgv(installLcd.getText());
         if (command.isEmpty()) {
             return;
         }
@@ -271,6 +274,60 @@ public class ReplDevice extends RackDevice {
     /** The INSTALL rule, pinned pure: a seeded command, REPL not live, no install in flight. */
     static boolean installEnabled(String installCommand, boolean live, boolean installing) {
         return installCommand != null && !installCommand.isBlank() && !live && !installing;
+    }
+
+    /**
+     * The shell operators an argv split would pass as LITERAL arguments
+     * to the first token — the catalog's compound installs ("curl … |
+     * bash && foundryup") silently misfire without a shell. {@code |}
+     * also covers {@code ||}; {@code #} is here because several catalog
+     * entries carry a trailing comment the shell must strip. Substring
+     * checks suffice for curated catalog data.
+     */
+    private static final String[] SHELL_OPERATORS =
+            {"&&", "|", ";", ">", "<", "`", "$(", "#"};
+
+    /** True when an argv split would mangle the command's shell operators. */
+    static boolean needsShell(String command) {
+        if (command == null) {
+            return false;
+        }
+        for (String operator : SHELL_OPERATORS) {
+            if (command.contains(operator)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** {@link #installArgv(String, boolean)} for the OS this JVM runs on. */
+    static List<String> installArgv(String command) {
+        return installArgv(command, System.getProperty("os.name", "")
+                .toLowerCase(Locale.ROOT).contains("win"));
+    }
+
+    /**
+     * The command INSTALL executes: a plain single-binary command
+     * argv-splits exactly as before (no shell layer — SOLDER's rule for
+     * typed commands, kept here where it works); a compound catalog
+     * command runs through the shell with the RAW string as one
+     * argument — never re-split — so pipes and chains keep their
+     * meaning. {@code sh -l} because installers like foundryup land in
+     * profile-managed PATH dirs; {@code cmd /c} is the Windows
+     * equivalent for the catalog's winget/choco chains.
+     */
+    static List<String> installArgv(String command, boolean windows) {
+        if (!needsShell(command)) {
+            return splitArgs(command);
+        }
+        return windows
+                ? List.of("cmd", "/c", command)
+                : List.of("/bin/sh", "-lc", command);
+    }
+
+    /** What INSTALL will run right now, from the seeded param. Test seam. */
+    List<String> installCommand() {
+        return installArgv(installLcd.getText());
     }
 
     boolean installActionAvailable() {
