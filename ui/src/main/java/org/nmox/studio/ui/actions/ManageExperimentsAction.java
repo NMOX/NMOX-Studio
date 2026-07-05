@@ -44,6 +44,15 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_ManageExperimentsAction=Experiments...")
 public final class ManageExperimentsAction implements ActionListener {
 
+    /**
+     * The one worker lane for experiment filesystem churn (create,
+     * promote, discard) — shared with {@link NewExperimentAction}.
+     * Discarding a node_modules tree or moving + git-initializing a
+     * promotion can take a minute; on the EDT that was a beachball.
+     */
+    static final org.openide.util.RequestProcessor EXPERIMENTS_RP =
+            new org.openide.util.RequestProcessor("Experiments", 1);
+
     @Override
     public void actionPerformed(ActionEvent e) {
         DefaultListModel<File> model = new DefaultListModel<>();
@@ -99,6 +108,21 @@ public final class ManageExperimentsAction implements ActionListener {
                 RackService.getDefault().openProjectQuietly(dir);
             }
         });
+        // move + git init / recursive delete run on EXPERIMENTS_RP with a
+        // ProgressHandle — node_modules trees made these minute-long EDT
+        // freezes. All three buttons grey while a worker runs (Open on a
+        // dir being discarded would aim the studio at a vanishing tree).
+        Runnable disableButtons = () -> {
+            open.setEnabled(false);
+            promote.setEnabled(false);
+            discard.setEnabled(false);
+        };
+        Runnable enableButtons = () -> {
+            open.setEnabled(true);
+            promote.setEnabled(true);
+            discard.setEnabled(true);
+        };
+
         promote.addActionListener(a -> {
             File dir = list.getSelectedValue();
             if (dir == null) {
@@ -111,19 +135,33 @@ public final class ManageExperimentsAction implements ActionListener {
                 return;
             }
             File destParent = chooser.getSelectedFile();
-            try {
-                File promoted = Experiments.promote(dir, destParent);
-                dialog.dispose();
-                // a real project now: open loudly so it reaches the recents
-                RackService.getDefault().openProject(promoted);
-                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(dir.getName() + " graduated: "
-                                + promoted.getAbsolutePath() + "\n(marker removed, git initialized)",
-                                NotifyDescriptor.INFORMATION_MESSAGE)));
-            } catch (Exception ex) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Could not promote: " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
+            disableButtons.run();
+            EXPERIMENTS_RP.post(() -> {
+                org.netbeans.api.progress.ProgressHandle handle =
+                        org.netbeans.api.progress.ProgressHandle.createHandle("Promoting experiment…");
+                handle.start();
+                try {
+                    File promoted = Experiments.promote(dir, destParent);
+                    SwingUtilities.invokeLater(() -> {
+                        dialog.dispose();
+                        // a real project now: open loudly so it reaches the recents
+                        RackService.getDefault().openProject(promoted);
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(dir.getName() + " graduated: "
+                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)",
+                                        NotifyDescriptor.INFORMATION_MESSAGE));
+                    });
+                } catch (Exception ex) {
+                    String message = "Could not promote: " + ex.getMessage();
+                    SwingUtilities.invokeLater(() -> {
+                        enableButtons.run();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                message, NotifyDescriptor.ERROR_MESSAGE));
+                    });
+                } finally {
+                    handle.finish();
+                }
+            });
         });
         discard.addActionListener(a -> {
             File dir = list.getSelectedValue();
@@ -137,18 +175,33 @@ public final class ManageExperimentsAction implements ActionListener {
             if (answer != NotifyDescriptor.YES_OPTION) {
                 return;
             }
-            try {
-                Experiments.discard(dir);
-                model.removeElement(dir);
-                if (model.isEmpty()) {
-                    dialog.dispose();
-                } else {
-                    list.setSelectedIndex(0);
+            disableButtons.run();
+            EXPERIMENTS_RP.post(() -> {
+                org.netbeans.api.progress.ProgressHandle handle =
+                        org.netbeans.api.progress.ProgressHandle.createHandle("Discarding experiment…");
+                handle.start();
+                try {
+                    Experiments.discard(dir);
+                    SwingUtilities.invokeLater(() -> {
+                        enableButtons.run();
+                        model.removeElement(dir);
+                        if (model.isEmpty()) {
+                            dialog.dispose();
+                        } else {
+                            list.setSelectedIndex(0);
+                        }
+                    });
+                } catch (Exception ex) {
+                    String message = "Could not discard: " + ex.getMessage();
+                    SwingUtilities.invokeLater(() -> {
+                        enableButtons.run();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                message, NotifyDescriptor.ERROR_MESSAGE));
+                    });
+                } finally {
+                    handle.finish();
                 }
-            } catch (Exception ex) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Could not discard: " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
+            });
         });
 
         dialog.setVisible(true);

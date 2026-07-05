@@ -26,6 +26,10 @@ public final class HeaderGrader {
     }
 
     public record Report(String grade, List<Check> checks) {
+
+        public Report {
+            checks = List.copyOf(checks); // graded is graded — the report can't be edited
+        }
     }
 
     public static Report grade(Map<String, List<String>> headers) {

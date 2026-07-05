@@ -65,22 +65,34 @@ public final class NewExperimentAction implements ActionListener {
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
-        try {
-            File dir = Experiments.create(
-                    (ProjectTemplates) template.getSelectedItem(), name.getText());
-            RackService.getDefault().openProjectQuietly(dir);
-            org.openide.windows.TopComponent workbench = org.openide.windows.WindowManager
-                    .getDefault().findTopComponent("ProjectExplorerTopComponent");
-            if (workbench != null) {
-                workbench.open();
-                workbench.requestActive();
+        ProjectTemplates chosen = (ProjectTemplates) template.getSelectedItem();
+        String chosenName = name.getText();
+        // the full template write ran on the EDT until v1.36 — a big
+        // template froze the whole UI; now it runs on the experiments lane
+        ManageExperimentsAction.EXPERIMENTS_RP.post(() -> {
+            org.netbeans.api.progress.ProgressHandle handle =
+                    org.netbeans.api.progress.ProgressHandle.createHandle("Creating experiment…");
+            handle.start();
+            try {
+                File dir = Experiments.create(chosen, chosenName);
+                SwingUtilities.invokeLater(() -> {
+                    RackService.getDefault().openProjectQuietly(dir);
+                    org.openide.windows.TopComponent workbench = org.openide.windows.WindowManager
+                            .getDefault().findTopComponent("ProjectExplorerTopComponent");
+                    if (workbench != null) {
+                        workbench.open();
+                        workbench.requestActive();
+                    }
+                });
+            } catch (Exception ex) {
+                String message = "Could not create the experiment: " + ex.getMessage();
+                // deferred a dispatch: shown while the wizard is still disposing,
+                // the error can stack behind the main window and soft-lock the app
+                SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+            } finally {
+                handle.finish();
             }
-        } catch (Exception ex) {
-            String message = "Could not create the experiment: " + ex.getMessage();
-            // deferred a dispatch: shown while the wizard is still disposing,
-            // the error can stack behind the main window and soft-lock the app
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
-        }
+        });
     }
 }

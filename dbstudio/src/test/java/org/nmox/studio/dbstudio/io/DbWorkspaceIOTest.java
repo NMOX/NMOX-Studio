@@ -107,6 +107,36 @@ class DbWorkspaceIOTest {
     }
 
     @Test
+    @DisplayName("A corrupt file is copied to .bak BEFORE the empty fallback")
+    void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws Exception {
+        String corrupt = "{ the saved queries were in here ]";
+        Files.writeString(dir.resolve(DbWorkspaceIO.FILENAME), corrupt, StandardCharsets.UTF_8);
+
+        DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(dir.toFile());
+
+        assertThat(outcome.workspace()).isEqualTo(DbWorkspaceIO.Workspace.empty());
+        assertThat(outcome.backup()).isNotNull();
+        assertThat(outcome.backup().getName()).isEqualTo(DbWorkspaceIO.FILENAME + ".bak");
+        assertThat(Files.readString(outcome.backup().toPath(), StandardCharsets.UTF_8))
+                .as("the backup carries the original bytes").isEqualTo(corrupt);
+    }
+
+    @Test
+    @DisplayName("Guarded load: missing and clean files make no backup")
+    void guardedLoadMakesNoBackupWithoutCorruption(@TempDir Path dir) throws Exception {
+        DbWorkspaceIO.LoadOutcome missing = DbWorkspaceIO.loadWorkspaceGuarded(dir.toFile());
+        assertThat(missing.workspace()).isEqualTo(DbWorkspaceIO.Workspace.empty());
+        assertThat(missing.backup()).isNull();
+        assertThat(dir.resolve(DbWorkspaceIO.FILENAME + ".bak")).doesNotExist();
+
+        DbWorkspaceIO.save(dir.toFile(), richWorkspace());
+        DbWorkspaceIO.LoadOutcome clean = DbWorkspaceIO.loadWorkspaceGuarded(dir.toFile());
+        assertThat(clean.workspace().connections()).hasSize(3);
+        assertThat(clean.backup()).isNull();
+        assertThat(dir.resolve(DbWorkspaceIO.FILENAME + ".bak")).doesNotExist();
+    }
+
+    @Test
     @DisplayName("An unknown engine from a newer NMOX skips that connection, keeps the rest")
     void unknownEngineSkipped() {
         String future = """

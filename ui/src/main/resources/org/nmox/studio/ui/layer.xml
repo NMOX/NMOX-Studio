@@ -21,9 +21,15 @@
     </folder>
     <!-- The Quick Search widget in the toolbar: the platform ships the
          action (Cmd+I) and the Actions/Files providers; this puts the
-         search field where every modern tool has one. -->
+         search field where every modern tool has one. On macOS the
+         applemenu module registers the same toolbar (folder position
+         710) and the two merge; off-mac this entry is load-bearing, so
+         it carries the same position and a real display name for the
+         View → Toolbars menu instead of the raw folder name. -->
     <folder name="Toolbars">
         <folder name="QuickSearch">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.resources.Bundle"/>
+            <attr name="position" intvalue="710"/>
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
             </file>

@@ -1764,7 +1764,21 @@ public final class DbStudioTopComponent extends TopComponent {
         connecting.clear();
         activeSpecId = null;
         specs.clear();
-        DbWorkspaceIO.Workspace workspace = DbWorkspaceIO.loadWorkspace(projectDir());
+        DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(projectDir());
+        DbWorkspaceIO.Workspace workspace = outcome.workspace();
+        if (outcome.backup() != null) {
+            // corrupt file: the IO layer copied it aside BEFORE handing us the
+            // empty fallback (the next save can't clobber it) — say so
+            try {
+                org.openide.awt.NotificationDisplayer.getDefault().notify(
+                        "Couldn't read " + DbWorkspaceIO.FILENAME + " — starting empty",
+                        javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
+                        "The unreadable original was kept at " + outcome.backup().getName() + ".",
+                        null);
+            } catch (RuntimeException | LinkageError ignored) {
+                // notifications unavailable (tests, stripped platform)
+            }
+        }
         specs.addAll(workspace.connections());
         persistedHistory = new ArrayList<>(workspace.history());
         savedQueries = new ArrayList<>(workspace.saved());

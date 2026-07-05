@@ -71,6 +71,12 @@
             <artifactId>org-netbeans-spi-quicksearch</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- OS keychain for cloud API tokens (the dbstudio/web3 rule) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.json</groupId>

@@ -118,5 +118,24 @@ public final class RpcSecrets {
             LOG.log(Level.WARNING,
                     "Keyring backend unavailable; Web3 RPC secrets held in memory for this session only", t);
         }
+        warnOnce();
+    }
+
+    /** One session-scoped balloon: silent degradation loses secret URLs silently. */
+    private static final java.util.concurrent.atomic.AtomicBoolean WARNED =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
+    private static void warnOnce() {
+        if (!WARNED.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            org.openide.awt.NotificationDisplayer.getDefault().notify(
+                    "Keychain unavailable",
+                    javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
+                    "Secret RPC URLs will not be saved this session.", null);
+        } catch (RuntimeException | LinkageError ignored) {
+            // notifications unavailable (tests, stripped platform)
+        }
     }
 }

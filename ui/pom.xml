@@ -30,11 +30,8 @@
             <artifactId>NMOX-Studio-rack</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>NMOX-Studio-tools</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        <!-- (the ui→tools edge was dead: no ui source imports
+             org.nmox.studio.tools — removed in v1.36) -->
 
         <!-- NetBeans Platform APIs -->
         <dependency>
@@ -107,6 +104,12 @@
             <artifactId>org-openide-loaders</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- ProgressHandle for the experiment create/promote/discard workers -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-progress</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <!-- Testing dependencies -->
         <dependency>
@@ -130,9 +133,8 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <publicPackages>
-                        <publicPackage>org.nmox.studio.ui.*</publicPackage>
-                    </publicPackages>
+                    <!-- no publicPackages: nothing imports org.nmox.studio.ui —
+                         the wildcard export was dead API surface -->
                     <moduleDependencies>
                         <dependency>
                             <id>org.openide.modules</id>

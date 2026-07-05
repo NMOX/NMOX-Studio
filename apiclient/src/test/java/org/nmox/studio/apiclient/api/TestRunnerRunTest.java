@@ -46,4 +46,21 @@ class TestRunnerRunTest {
     void noAssertionsYieldsEmpty() {
         assertThat(TestRunner.run(new Request(), response())).isEmpty();
     }
+
+    @Test
+    @DisplayName("A null target (hand-edited .nmoxapi.json) fails honestly, never NPEs")
+    void nullTargetIsAFailedAssertionNotACrash() {
+        Request r = new Request();
+        for (Assertion.Kind kind : Assertion.Kind.values()) {
+            r.tests.add(new Assertion(kind, null));
+        }
+
+        List<TestRunner.Result> results = TestRunner.run(r, response());
+
+        assertThat(results).hasSize(Assertion.Kind.values().length);
+        assertThat(results).allSatisfy(result -> {
+            assertThat(result.passed()).isFalse();
+            assertThat(result.detail()).contains("no target");
+        });
+    }
 }

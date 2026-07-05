@@ -25,6 +25,10 @@ class HeaderGraderTest {
                 "Cross-Origin-Opener-Policy", List.of("same-origin")));
         assertThat(report.grade()).isEqualTo("A");
         assertThat(report.checks()).allMatch(c -> c.verdict() == HeaderGrader.Verdict.PASS);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> report.checks().add(new HeaderGrader.Check("x", HeaderGrader.Verdict.PASS, "y")))
+                .as("graded is graded — the report is immutable")
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test

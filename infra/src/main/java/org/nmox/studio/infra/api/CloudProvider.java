@@ -1,12 +1,16 @@
 package org.nmox.studio.infra.api;
 
-import org.openide.util.NbPreferences;
-
 /**
  * The clouds the designer can deploy to. Each provider carries its API
  * base, its token storage, and the env var honored as a fallback - so
  * a single canvas can hold DigitalOcean droplets, Hetzner servers and
  * the Cloudflare DNS records that front them.
+ *
+ * <p>Tokens live in the OS keychain via {@link CloudTokens} (the DB
+ * Studio / Contract Studio rule; pre-v1.36 plaintext preferences are
+ * migrated on first read). The resolved value is cached per provider so
+ * EDT callers ({@code hasToken()} gating buttons and plans) never block
+ * on an OS keychain call — the designer primes the cache off the EDT.
  */
 public enum CloudProvider {
 
@@ -36,14 +40,9 @@ public enum CloudProvider {
         };
     }
 
-    /** The explicit prefs node shared with the Options panel. */
-    private static java.util.prefs.Preferences prefs() {
-        return NbPreferences.root().node("nmox/cloud");
-    }
-
     /** Stored token, else the provider's env var, else null. */
     public String token() {
-        String stored = prefs().get(prefKey, "");
+        String stored = CloudTokens.readCached(prefKey, keychainDescription());
         if (!stored.isBlank()) {
             return stored;
         }
@@ -52,18 +51,14 @@ public enum CloudProvider {
     }
 
     public void storeToken(String token) {
-        java.util.prefs.Preferences p = prefs();
-        p.put(prefKey, token == null ? "" : token.trim());
-        try {
-            // flush now: an abrupt exit between put() and the lazy backing-store
-            // timer would otherwise silently lose the API token
-            p.flush();
-        } catch (java.util.prefs.BackingStoreException ignore) {
-            // best effort; the value still holds for this session
-        }
+        CloudTokens.store(prefKey, token, keychainDescription());
     }
 
     public boolean hasToken() {
         return token() != null;
+    }
+
+    private String keychainDescription() {
+        return "NMOX Studio " + displayName() + " API token";
     }
 }

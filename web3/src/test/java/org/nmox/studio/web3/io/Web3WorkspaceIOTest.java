@@ -123,6 +123,56 @@ class Web3WorkspaceIOTest {
     }
 
     @Test
+    @DisplayName("a corrupt file is copied to .bak BEFORE the empty fallback — the address book survives")
+    void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws IOException {
+        String corrupt = "{{{ the address book was in here";
+        Files.writeString(new File(dir.toFile(), Web3WorkspaceIO.FILENAME).toPath(),
+                corrupt, StandardCharsets.UTF_8);
+
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir.toFile());
+
+        assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+        assertThat(outcome.backup()).isNotNull();
+        assertThat(outcome.backup().getName()).isEqualTo(Web3WorkspaceIO.FILENAME + ".bak");
+        assertThat(Files.readString(outcome.backup().toPath(), StandardCharsets.UTF_8))
+                .as("the backup carries the original bytes").isEqualTo(corrupt);
+    }
+
+    @Test
+    @DisplayName("guarded load: missing and clean files make no backup")
+    void guardedLoadMakesNoBackupWithoutCorruption(@TempDir Path dir) throws IOException {
+        Web3WorkspaceIO.LoadOutcome missing = Web3WorkspaceIO.loadGuarded(dir.toFile());
+        assertThat(missing.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+        assertThat(missing.backup()).isNull();
+        assertThat(dir.resolve(Web3WorkspaceIO.FILENAME + ".bak")).doesNotExist();
+
+        Web3WorkspaceIO.save(dir.toFile(), new Web3WorkspaceIO.Workspace(
+                List.of(new Network("Local", 31337, false, "http://127.0.0.1:8545")),
+                List.of()));
+        Web3WorkspaceIO.LoadOutcome clean = Web3WorkspaceIO.loadGuarded(dir.toFile());
+        assertThat(clean.workspace().networks()).hasSize(1);
+        assertThat(clean.backup()).isNull();
+        assertThat(dir.resolve(Web3WorkspaceIO.FILENAME + ".bak")).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("guarded load keeps the secret-URL rule: a smuggled url still loads as null")
+    void guardedLoadKeepsSecretUrlRule(@TempDir Path dir) throws IOException {
+        Files.writeString(new File(dir.toFile(), Web3WorkspaceIO.FILENAME).toPath(), """
+                {"version": 1, "networks": [
+                  {"name": "Sneaky", "chainId": 1, "secretUrl": true,
+                   "url": "https://mainnet.example/SECRET-KEY"}
+                ], "deployments": []}""", StandardCharsets.UTF_8);
+
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir.toFile());
+
+        assertThat(outcome.backup()).isNull();
+        assertThat(outcome.workspace().networks().get(0).secretUrl()).isTrue();
+        assertThat(outcome.workspace().networks().get(0).plainUrl())
+                .as("a hand-smuggled url never survives a load").isNull();
+    }
+
+    @Test
     @DisplayName("unknown keys and a future version stamp are ignored, state loads anyway")
     void futureFileTolerated() {
         String future = """

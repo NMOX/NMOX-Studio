@@ -162,6 +162,26 @@ class InfraGraphTest {
     }
 
     @Test
+    @DisplayName("setStatus with the same value fires nothing — the storm law guard")
+    void sameStatusIsSilent() {
+        InfraGraph graph = new InfraGraph();
+        var droplet = graph.addNode(NodeKind.DROPLET, 0, 0);
+        CountingListener listener = new CountingListener();
+        graph.addListener(listener);
+
+        graph.setStatus(droplet, "live");
+        // cloud sync re-sets "live" on every node on every Refresh pass
+        graph.setStatus(droplet, "live");
+        graph.setStatus(droplet, "live");
+
+        assertThat(droplet.status).isEqualTo("live");
+        assertThat(listener.statusChanges).as("one real change, two echoes").hasValue(1);
+
+        graph.setStatus(droplet, "drifted");
+        assertThat(listener.statusChanges).as("a real change still fires").hasValue(2);
+    }
+
+    @Test
     @DisplayName("providersOf lists exactly the nodes wired into the target")
     void providersAreTracked() {
         InfraGraph graph = new InfraGraph();

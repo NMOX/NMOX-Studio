@@ -145,6 +145,65 @@ public final class Web3WorkspaceIO {
         }
     }
 
+    /**
+     * A guarded load: the {@code workspace} is never null (empty on any
+     * failure, like {@link #load}); {@code backup} is non-null when the
+     * file EXISTED but failed to parse and was copied aside.
+     */
+    public record LoadOutcome(Workspace workspace, File backup) {
+    }
+
+    /**
+     * Loads like {@link #load}, but guards the user's file against the
+     * corrupt-load → empty-model → save-clobbers-original sequence —
+     * sharpest here, where the deployment address book lives: when
+     * {@code .nmoxweb3.json} exists and fails to parse, the unreadable
+     * original is copied to {@code .nmoxweb3.json.bak} BEFORE the empty
+     * fallback is returned, so the studio's next save can never destroy
+     * the only copy. Missing/unreadable files make no backup. Never
+     * throws. (Serialization policy untouched: secret networks still
+     * never carry a {@code url} — see {@link #toJson}.)
+     */
+    public static LoadOutcome loadGuarded(File dir) {
+        File file = new File(dir, FILENAME);
+        if (!file.isFile()) {
+            return new LoadOutcome(Workspace.empty(), null);
+        }
+        String json;
+        try {
+            json = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, "Cannot read " + file, e);
+            return new LoadOutcome(Workspace.empty(), null);
+        }
+        if (json.isBlank()) {
+            return new LoadOutcome(Workspace.empty(), null); // nothing to lose
+        }
+        try {
+            JSONObject root = new JSONObject(json);
+            return new LoadOutcome(new Workspace(
+                    networks(root.optJSONArray("networks")),
+                    cappedDeployments(deployments(root.optJSONArray("deployments")))), null);
+        } catch (RuntimeException malformed) {
+            LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
+                    new Object[]{FILENAME, malformed.getMessage()});
+            return new LoadOutcome(Workspace.empty(), backupCorrupt(file));
+        }
+    }
+
+    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    private static File backupCorrupt(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".bak");
+        try {
+            Files.copy(file.toPath(), backup.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return backup;
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Could not back up corrupt " + file, e);
+            return null;
+        }
+    }
+
     // ---- internals -------------------------------------------------------
 
     private static List<Network> networks(JSONArray array) {
