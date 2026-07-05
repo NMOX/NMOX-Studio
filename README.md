@@ -90,6 +90,22 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
 - **Session Resurrection**: crash, `kill -9`, or power loss — relaunch and
   the IDE offers your running dev servers back. One click and they're alive.
 
+### 🧬 Wired together
+The parts talk to each other. Every running server — dev servers,
+`php -S`, static serves, even ANVIL's local chain — announces itself to
+one live registry: the **status line** grows a `⇄ serving` chip (click
+to open), **⌘I finds running servers**, VITALS and BEACON **auto-target**
+the served URL when theirs is blank, API Studio quietly offers to set
+`{{baseUrl}}`, and Contract Studio **connects itself** the moment your
+chain is up. Edit a manifest and the rack keeps up: save package.json
+and NPM-9000 re-lists your scripts; save the Gruntfile and DYNAMO
+re-parses its tasks — no re-aiming, and a wizard writing ten files costs
+one re-sync, not ten. Build your contracts anywhere (rack, terminal, CI)
+and Contract Studio's tree refreshes itself. Run a postgres container
+and DB Studio offers the connection, prefilled. Hand-edit any studio's
+workspace file and it reloads — silently when it's safe, with a polite
+"Reload?" when you have unsaved work, and never, ever by clobbering it.
+
 ### 🐳 First-class Docker
 The HARBOR device tracks the daemon (containers up, images held, disk
 reclaimable) and opens the Docker Panel: a disk-reclaim ledger, live

@@ -26,8 +26,6 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class PhoenixDevice extends CommandDevice {
 
     private static final String[] GENERATORS = {"html", "live", "json", "context", "schema", "auth"};
-    private static final Pattern LOCAL_URL =
-            Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"']*)");
     /** mix.exs dependency line: {:phoenix, "~> 1.8.1"} */
     private static final Pattern MIX_PHOENIX =
             Pattern.compile("\\{:phoenix\\s*,\\s*\"[~><= ]*([0-9][^\"]*)\"");
@@ -154,9 +152,8 @@ public class PhoenixDevice extends CommandDevice {
 
     @Override
     protected void onLine(String line) {
-        Matcher m = LOCAL_URL.matcher(line);
-        if (m.find()) {
-            String url = m.group(1);
+        String url = ServeUrls.firstLocalUrl(line);
+        if (url != null) {
             if (readyFired.compareAndSet(false, true)) {
                 emit("ready", Signal.trigger());
             }
@@ -164,12 +161,14 @@ public class PhoenixDevice extends CommandDevice {
                 announcedUrl = url;
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
                 emit("url", Signal.data(url));
+                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
     }

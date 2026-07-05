@@ -222,10 +222,36 @@ public class PackageManagerDevice extends CommandDevice {
         refreshDepsLcd();
     }
 
+    /**
+     * Manifest pulse: dependency-declaring files refresh the DEPS LCD.
+     * Idempotent by construction — the refresh only rewrites LCD text,
+     * it fires no signals or knob events.
+     */
+    @Override
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+        if (anyNamed(changed, "package.json", "package-lock.json",
+                "bower.json", "composer.json", "composer.lock")) {
+            refreshDepsLcd();
+        }
+    }
+
+    /** The faceplate context menu's "Open package.json". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        File pkg = new File(ProjectInspector.kindDir(projectDir(),
+                ProjectInspector.ProjectKind.NODE), "package.json");
+        return pkg.isFile() ? java.util.Optional.of(pkg) : java.util.Optional.empty();
+    }
+
     /** Installs and updates change package.json; re-read the truth. */
     @Override
     protected void onFinished(int exitCode) {
         refreshDepsLcd();
+    }
+
+    /** Test seam: the DEPS LCD text the refresh writes. */
+    String depsTextForTest() {
+        return depsLcd.getText();
     }
 
     private void refreshDepsLcd() {

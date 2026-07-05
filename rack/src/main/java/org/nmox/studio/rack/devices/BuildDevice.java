@@ -172,6 +172,39 @@ public class BuildDevice extends CommandDevice {
         };
     }
 
+    // No manifestChanged override: FORGE is stateless — effectiveTool()
+    // re-resolves scripts/deps/config files on every buildCommand(), so
+    // there is nothing cached for a manifest pulse to invalidate.
+
+    /** The faceplate context menu's "Open <build config>". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        File dir = ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
+        String tool = effectiveTool();
+        String[] candidates = switch (tool) {
+            case "webpack" -> new String[]{"webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"};
+            case "grunt" -> new String[]{"Gruntfile.js", "Gruntfile.coffee"};
+            case "gulp" -> new String[]{"gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs"};
+            default -> new String[0];
+        };
+        for (String name : candidates) {
+            File config = new File(dir, name);
+            if (config.isFile()) {
+                return java.util.Optional.of(config);
+            }
+        }
+        if (tool.startsWith("kind:")) {
+            ProjectInspector.ProjectKind kind =
+                    ProjectInspector.ProjectKind.valueOf(tool.substring(5));
+            File manifest = new File(ProjectInspector.kindDir(projectDir(), kind), kind.manifest());
+            if (manifest.isFile()) {
+                return java.util.Optional.of(manifest);
+            }
+        }
+        File pkg = new File(dir, "package.json");
+        return pkg.isFile() ? java.util.Optional.of(pkg) : java.util.Optional.empty();
+    }
+
     /** Builds run where the effective toolchain's manifest lives. */
     @Override
     protected java.io.File commandDir() {

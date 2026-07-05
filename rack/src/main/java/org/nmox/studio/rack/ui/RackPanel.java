@@ -305,12 +305,38 @@ public class RackPanel extends JPanel implements Rack.Listener {
                 menu.add(howTo);
                 menu.addSeparator();
             }
+            // manifest-backed devices open their configuration file straight
+            // from the faceplate: NPM-9000 → package.json, DYNAMO → its
+            // taskfile, ARTISAN → composer.json, GOVERNOR → .gas-snapshot
+            device.primaryManifest().ifPresent(manifest -> {
+                JMenuItem open = new JMenuItem("Open " + manifest.getName());
+                open.addActionListener(a -> openInEditor(manifest));
+                menu.add(open);
+                menu.addSeparator();
+            });
             JMenuItem remove = new JMenuItem("Remove " + device.getTitle());
             remove.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                     java.awt.event.KeyEvent.VK_DELETE, 0));
             remove.addActionListener(a -> rack.removeDevice(device));
             menu.add(remove);
             menu.show(device, e.getX(), e.getY());
+        }
+    }
+
+    /** The Project Studio file tree's open-file idiom: DataObject → OpenCookie. */
+    private static void openInEditor(java.io.File file) {
+        try {
+            org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil
+                    .toFileObject(org.openide.filesystems.FileUtil.normalizeFile(file));
+            if (fo != null) {
+                org.openide.cookies.OpenCookie open = org.openide.loaders.DataObject
+                        .find(fo).getLookup().lookup(org.openide.cookies.OpenCookie.class);
+                if (open != null) {
+                    open.open();
+                }
+            }
+        } catch (java.io.IOException | RuntimeException ignored) {
+            // file vanished or no editor support; the click just does nothing
         }
     }
 

@@ -27,7 +27,11 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class ArtisanDevice extends CommandDevice {
 
     private static final String[] ACTIONS = {"serve", "test", "migrate", "fresh", "queue", "routes"};
-    /** artisan announces: "Server running on [http://127.0.0.1:8000]." */
+    /**
+     * artisan announces: "Server running on [http://127.0.0.1:8000]." —
+     * deliberately NOT the shared {@link ServeUrls} scan: this variant
+     * must also stop at {@code ]} or the bracket leaks into the URL.
+     */
     private static final Pattern LOCAL_URL =
             Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"'\\]]*)");
     /** composer show --available output: "versions : dev-master, 12.x-dev, v12.1.1, ..." */
@@ -167,14 +171,40 @@ public class ArtisanDevice extends CommandDevice {
                 announcedUrl = url;
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
                 emit("url", Signal.data(url));
+                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
+    }
+
+    /**
+     * Manifest pulse: composer.json/composer.lock edits re-check version
+     * currency — but only when the locked laravel/framework actually
+     * moved, so a `composer install` that changes nothing stays silent.
+     */
+    @Override
+    public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
+        if (anyNamed(changed, "composer.json", "composer.lock")) {
+            offEdt(() -> {
+                if (!java.util.Objects.equals(installedVersion,
+                        ProjectInspector.composerLockVersion(commandDir(), "laravel/framework"))) {
+                    refreshVersions();
+                }
+            });
+        }
+    }
+
+    /** The faceplate context menu's "Open composer.json". */
+    @Override
+    public java.util.Optional<File> primaryManifest() {
+        File composer = new File(commandDir(), "composer.json");
+        return composer.isFile() ? java.util.Optional.of(composer) : java.util.Optional.empty();
     }
 
     @Override

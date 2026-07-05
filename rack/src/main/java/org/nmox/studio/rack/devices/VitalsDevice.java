@@ -27,6 +27,8 @@ public class VitalsDevice extends CommandDevice {
     private static final String[] MINIMUMS = {"off", "50", "70", "80", "90", "95"};
     // append-only: persisted patches store the knob index, not the label
     private static final String[] GATES = {"perf", "a11y", "both", "best", "seo", "all"};
+    /** Factory URL; while the LCD still shows it, RUN may auto-aim. */
+    private static final String DEFAULT_URL = "http://localhost:5173";
 
     private final LcdDisplay urlLcd;
     private final Knob minKnob;
@@ -44,7 +46,7 @@ public class VitalsDevice extends CommandDevice {
         audit.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         urlLcd = place(new LcdDisplay(170, 1), 180, 46);
-        urlLcd.setText("http://localhost:5173");
+        urlLcd.setText(DEFAULT_URL);
         urlLcd.setEditable("URL to audit");
         minKnob = place(new Knob("MIN", MINIMUMS, 0), 360, 40);
         minKnob.setToolTipText("Score floor: below it, FAIL fires instead of OK");
@@ -79,13 +81,32 @@ public class VitalsDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
-        String url = urlLcd.getText().trim();
+        String url = effectiveUrl();
         if (url.isEmpty()) {
             return null;
         }
         return List.of("npx", "lighthouse", url,
                 "--output=json", "--output-path=stdout", "--quiet",
                 "--chrome-flags=--headless --no-sandbox");
+    }
+
+    /**
+     * The audit target: an explicitly dialed URL always wins; a blank,
+     * factory-default, or auto LCD aims at the project's live WEB server
+     * from the serving registry (read at RUN time, never polled), with
+     * the LCD showing the pick as "auto: &lt;url&gt;".
+     */
+    String effectiveUrl() {
+        String dialed = urlLcd.getText().trim();
+        if (!AutoUrl.isAuto(dialed, DEFAULT_URL)) {
+            return dialed;
+        }
+        String auto = AutoUrl.firstWebServing(projectDir());
+        if (auto != null) {
+            onEdt(() -> urlLcd.setText(AutoUrl.AUTO_PREFIX + auto));
+            return auto;
+        }
+        return AutoUrl.fallback(dialed);
     }
 
     @Override

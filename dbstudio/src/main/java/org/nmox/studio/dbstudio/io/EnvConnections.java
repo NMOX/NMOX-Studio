@@ -86,6 +86,26 @@ public final class EnvConnections {
     }
 
     /**
+     * Whether a manifest-change batch (the rack's coalesced
+     * {@code manifestChanged} payload) touches a {@code .env} file —
+     * exact filename match, so {@code .env.example} stays quiet. One
+     * boolean per batch by construction: however many .env files a kit
+     * writes, the caller reacts once.
+     */
+    public static boolean touchesEnv(java.util.List<java.nio.file.Path> batch) {
+        if (batch == null) {
+            return false;
+        }
+        for (java.nio.file.Path path : batch) {
+            java.nio.file.Path name = path == null ? null : path.getFileName();
+            if (name != null && ".env".equals(name.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * The connection the given {@code .env} content suggests, or empty
      * when the file carries too little signal. Null-safe, never throws.
      */

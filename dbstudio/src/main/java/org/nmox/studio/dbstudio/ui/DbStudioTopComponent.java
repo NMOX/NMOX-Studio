@@ -169,6 +169,21 @@ public final class DbStudioTopComponent extends TopComponent {
     private List<DbWorkspaceIO.SavedQuery> savedQueries = new ArrayList<>();
     /** Projects already offered a .env connection this session — one offer each, ever. */
     private final Set<String> envOfferedProjects = new HashSet<>();
+    /** Containers already offered a Docker connection this session — one balloon each, ever. */
+    private final Set<String> dockerOfferedContainers = new HashSet<>();
+    /** True while a docker container probe is in flight — probes never overlap. */
+    private boolean dockerProbeInFlight;
+    /** Discriminates our own .nmoxdb.json writes from foreign edits (git pull, hand edit). */
+    private final org.nmox.studio.dbstudio.io.ExternalEdits externalEdits =
+            new org.nmox.studio.dbstudio.io.ExternalEdits();
+    /** Watches .nmoxdb.json while the tab is open; null when closed. */
+    private org.nmox.studio.rack.engine.FileWatcher workspaceWatcher;
+    /** True while the add/edit connection dialog is up — external reloads wait. */
+    private boolean connectionDialogOpen;
+    /** A foreign .nmoxdb.json version seen while busy; re-checked when free. */
+    private org.nmox.studio.dbstudio.io.ExternalEdits.Stamp deferredExternalStamp;
+    /** The rack's coalesced manifest batches (.env included); attached while open. */
+    private java.util.function.Consumer<java.util.List<java.nio.file.Path>> manifestListener;
     /** Re-checks EXPLAIN's enablement as the console text changes. */
     private final DocumentListener consoleTextListener = new DocumentListener() {
         @Override
@@ -480,6 +495,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 showResults(spec, tabs, totalMs);
                 refreshActions(); // the run may have opened the connection
                 tree.repaint();
+                recheckDeferredExternal(); // a foreign .nmoxdb.json may have waited on us
             });
         });
     }
@@ -772,6 +788,7 @@ public final class DbStudioTopComponent extends TopComponent {
                     balloon("Apply stopped after " + done + " of " + statements.size()
                             + " update(s)", reason + " — your edits are kept; fix and retry.",
                             false);
+                    recheckDeferredExternal();
                 });
                 return;
             }
@@ -787,6 +804,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         OK_GREEN);
                 balloon("Applied " + statements.size() + " update(s) to "
                         + session.table().name(), null, true);
+                recheckDeferredExternal();
             });
         });
     }
@@ -919,7 +937,7 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private void createFromSuggestion(EnvConnections.Suggestion suggestion) {
-        ConnectionSpec spec = ConnectionDialog.showSuggested(suggestion);
+        ConnectionSpec spec = showConnectionDialog(() -> ConnectionDialog.showSuggested(suggestion));
         if (spec == null) {
             return;
         }
@@ -929,6 +947,231 @@ public final class DbStudioTopComponent extends TopComponent {
         publishSearch();
         selectConnection(spec.id());
         status("Added " + spec.name() + " from .env", OK_GREEN);
+    }
+
+    // ---- the Docker connection offer ----
+
+    /**
+     * When Docker runs a database container the workspace isn't wired
+     * to, offer — quiet balloon, at most
+     * {@link org.nmox.studio.dbstudio.io.DockerDbOffers#MAX_OFFERS_PER_REFRESH}
+     * per probe, once per container per session — to prefill the Add
+     * Connection dialog. Every rule (engine inference, port mapping,
+     * already-configured suppression, the cap) lives in the tested
+     * {@code DockerDbOffers} core; this method only probes and shows.
+     * No Docker daemon or CLI → an empty container list → total
+     * silence. Runs when the tab opens and on every workspace reload
+     * (project switch), never overlapping itself.
+     */
+    private void offerDockerConnections() {
+        if (dockerProbeInFlight) {
+            return;
+        }
+        java.util.concurrent.CompletableFuture<java.util.List<
+                org.nmox.studio.rack.docker.DockerClient.ContainerInfo>> probe;
+        try {
+            probe = org.nmox.studio.rack.docker.DockerClient.getDefault().containers();
+        } catch (RuntimeException | LinkageError rackUnavailable) {
+            return; // no rack (tests, stripped platform) — silence
+        }
+        dockerProbeInFlight = true;
+        probe.whenComplete((containers, error) -> SwingUtilities.invokeLater(() -> {
+            dockerProbeInFlight = false;
+            if (error != null || containers == null || !isOpened()) {
+                return; // daemon trouble or a since-closed tab — silence
+            }
+            showDockerOffers(containers);
+        }));
+    }
+
+    private void showDockerOffers(
+            java.util.List<org.nmox.studio.rack.docker.DockerClient.ContainerInfo> containers) {
+        List<ConnectionSpec> existing = new ArrayList<>(specs);
+        existing.addAll(serviceSpecs);
+        for (org.nmox.studio.dbstudio.io.DockerDbOffers.Offer offer
+                : org.nmox.studio.dbstudio.io.DockerDbOffers.plan(
+                        containers, existing, dockerOfferedContainers)) {
+            dockerOfferedContainers.add(offer.containerId());
+            org.openide.awt.NotificationDisplayer.getDefault().notify(
+                    "Database container running in Docker",
+                    javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                    org.nmox.studio.dbstudio.io.DockerDbOffers.offerText(offer)
+                    + " Click to review — nothing is saved until you confirm.",
+                    e -> createFromDockerOffer(offer),
+                    org.openide.awt.NotificationDisplayer.Priority.LOW);
+        }
+    }
+
+    private void createFromDockerOffer(org.nmox.studio.dbstudio.io.DockerDbOffers.Offer offer) {
+        ConnectionSpec spec = showConnectionDialog(() -> ConnectionDialog.showPrefilled(
+                org.nmox.studio.dbstudio.io.DockerDbOffers.suggestion(offer),
+                offer.containerName() + " (docker)"));
+        if (spec == null) {
+            return;
+        }
+        specs.add(spec);
+        saveWorkspace();
+        rebuildTree();
+        publishSearch();
+        selectConnection(spec.id());
+        status("Added " + spec.name() + " from Docker", OK_GREEN);
+    }
+
+    // ---- .env changes re-arm the offer ----
+
+    /**
+     * A {@code .env} in the aimed project changed on disk (the rack's
+     * manifest pulse, coalesced): the once-per-session offer guard
+     * resets so the next natural moment re-offers, and — when the tab
+     * is actually in front of the user — the same quiet offer flow
+     * re-runs once right away. Bounded: one coalesced batch is one
+     * listener call is one reset and at most one balloon, and
+     * {@code offerEnvConnection}'s alreadyConfigured check still
+     * suppresses noise.
+     */
+    private void envChangedOnDisk() {
+        envOfferedProjects.remove(projectDir().getAbsolutePath());
+        if (isOpened() && isShowing()) {
+            offerEnvConnection();
+        }
+    }
+
+    private void attachManifestListener() {
+        if (manifestListener != null) {
+            return;
+        }
+        java.util.function.Consumer<java.util.List<java.nio.file.Path>> listener = batch -> {
+            // rack watcher thread: filter here, marshal only real .env hits
+            if (EnvConnections.touchesEnv(batch)) {
+                SwingUtilities.invokeLater(this::envChangedOnDisk);
+            }
+        };
+        try {
+            org.nmox.studio.rack.service.RackService.getDefault().addManifestListener(listener);
+            manifestListener = listener;
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack unavailable (tests, stripped platform): no manifest events
+        }
+    }
+
+    private void detachManifestListener() {
+        if (manifestListener == null) {
+            return;
+        }
+        try {
+            org.nmox.studio.rack.service.RackService.getDefault()
+                    .removeManifestListener(manifestListener);
+        } catch (RuntimeException | LinkageError ignored) {
+            // already unavailable — nothing to detach from
+        }
+        manifestListener = null;
+    }
+
+    // ---- .nmoxdb.json edited outside the studio ----
+
+    /**
+     * Watches the project's {@code .nmoxdb.json} while the tab is open.
+     * The watcher reports on its own thread; the stamp is taken there
+     * (never stat on the EDT) and the verdict is decided on the EDT by
+     * the tested {@link org.nmox.studio.dbstudio.io.ExternalEdits}
+     * core. Only the project-root file matters — nested .nmoxdb.json
+     * files in a monorepo belong to their own aims.
+     */
+    private void restartWorkspaceWatcher() {
+        stopWorkspaceWatcher();
+        File dir = projectDir();
+        File workspaceFile = new File(dir, org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
+        org.nmox.studio.rack.engine.FileWatcher watcher;
+        try {
+            watcher = org.nmox.studio.rack.engine.FileWatcher.forFilenames(dir, 2_000,
+                    Set.of(org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME), batch -> {
+                        if (!batch.contains(workspaceFile.toPath())) {
+                            return;
+                        }
+                        org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
+                                org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
+                        SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
+                    });
+        } catch (RuntimeException | LinkageError rackUnavailable) {
+            return; // no rack (tests, stripped platform): no watcher
+        }
+        watcher.start();
+        workspaceWatcher = watcher;
+    }
+
+    private void stopWorkspaceWatcher() {
+        if (workspaceWatcher != null) {
+            workspaceWatcher.stop();
+            workspaceWatcher = null;
+        }
+    }
+
+    /**
+     * EDT: reacts to a {@code .nmoxdb.json} stamp per the
+     * {@code ExternalEdits} verdict. Nothing in the studio's persisted
+     * state is ever dirty (every change saves immediately), so a
+     * foreign version reloads silently — UNLESS a connection dialog is
+     * up or a run is in flight, in which case the version waits and is
+     * re-checked the moment the studio is free. Never a modal, never a
+     * clobber; a version already reacted to stays quiet (bounded).
+     */
+    private void handleExternalStamp(org.nmox.studio.dbstudio.io.ExternalEdits.Stamp onDisk) {
+        if (!isOpened()) {
+            return; // a closed tab reacts to nothing
+        }
+        switch (externalEdits.check(onDisk, connectionDialogOpen || running)) {
+            case RELOAD -> {
+                deferredExternalStamp = null;
+                reloadWorkspace();
+                balloon("Reloaded " + org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME,
+                        "The file changed outside DB Studio — connections, history and "
+                        + "saved queries follow it.", true);
+            }
+            case DEFER -> deferredExternalStamp = onDisk;
+            case NONE -> {
+            }
+        }
+    }
+
+    /**
+     * After the busy state ends (dialog closed, run finished): if a
+     * foreign version waited, re-stat off-EDT — the file may have
+     * changed again, including by our own just-completed save, which
+     * the core then correctly ignores — and re-decide.
+     */
+    private void recheckDeferredExternal() {
+        if (deferredExternalStamp == null) {
+            return;
+        }
+        deferredExternalStamp = null;
+        File workspaceFile = new File(projectDir(),
+                org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
+        RP.post(() -> {
+            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
+                    org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
+            SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
+        });
+    }
+
+    /**
+     * Runs one of the modal connection dialogs with the busy flag held,
+     * so an external .nmoxdb.json reload can never yank the tree out
+     * from under an open dialog; any deferred version is re-checked as
+     * soon as the dialog closes. Note the deliberate ordering when the
+     * dialog is confirmed: the caller's save runs first, making our
+     * version the newest — a foreign edit made WHILE the dialog was
+     * open loses to the user's explicit confirmation (last writer
+     * wins, exactly like the rest of the studio's persistence).
+     */
+    private ConnectionSpec showConnectionDialog(
+            java.util.function.Supplier<ConnectionSpec> dialog) {
+        connectionDialogOpen = true;
+        try {
+            return dialog.get();
+        } finally {
+            connectionDialogOpen = false;
+            recheckDeferredExternal();
+        }
     }
 
     // ---- the console follows the active connection's engine ----
@@ -1384,7 +1627,7 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- CRUD ----
 
     private void addConnection() {
-        ConnectionSpec spec = ConnectionDialog.show(null);
+        ConnectionSpec spec = showConnectionDialog(() -> ConnectionDialog.show(null));
         if (spec == null) {
             return;
         }
@@ -1400,7 +1643,7 @@ public final class DbStudioTopComponent extends TopComponent {
         if (spec == null || isServicesSpec(spec)) {
             return; // Services entries are edited in the Services window
         }
-        ConnectionSpec updated = ConnectionDialog.show(spec);
+        ConnectionSpec updated = showConnectionDialog(() -> ConnectionDialog.show(spec));
         if (updated == null) {
             return;
         }
@@ -1529,15 +1772,26 @@ public final class DbStudioTopComponent extends TopComponent {
         publishSearch();
         status(specs.isEmpty() ? " "
                 : specs.size() + (specs.size() == 1 ? " connection" : " connections"), Color.GRAY);
+        // the freshly loaded version is now "ours" — only later foreign
+        // writes should trigger the external-reload flow
+        externalEdits.recordOwn(org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(
+                new File(projectDir(), org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME)));
         offerEnvConnection();
+        if (isOpened()) {
+            restartWorkspaceWatcher(); // the project dir may have changed
+            offerDockerConnections();
+        }
     }
 
     private boolean saveFailureNotified;
 
     private void saveWorkspace() {
         try {
-            DbWorkspaceIO.save(projectDir(), new DbWorkspaceIO.Workspace(
+            File dir = projectDir();
+            DbWorkspaceIO.save(dir, new DbWorkspaceIO.Workspace(
                     specs, persistedHistory, savedQueries));
+            externalEdits.recordOwn(org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(
+                    new File(dir, DbWorkspaceIO.FILENAME)));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed save never interrupts editing — but never lose work silently
@@ -1590,11 +1844,18 @@ public final class DbStudioTopComponent extends TopComponent {
             attachRackListener();
         }
         attachServicesListener();
+        attachManifestListener();
+        restartWorkspaceWatcher();
         refreshServicesBranch(); // the Services list may have changed while closed
+        offerDockerConnections();
     }
 
     @Override
     public void componentClosed() {
+        // a closed tab reacts to nothing: watcher and manifest listener go
+        stopWorkspaceWatcher();
+        detachManifestListener();
+        deferredExternalStamp = null;
         // drops our Services backends too — their close() is a reference-drop
         // no-op; the NetBeans explorer keeps its connections
         closeAllBackends();

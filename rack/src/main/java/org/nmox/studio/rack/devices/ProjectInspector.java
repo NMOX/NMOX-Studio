@@ -243,6 +243,24 @@ public final class ProjectInspector {
     }
 
     /**
+     * The scripts declared in package.json (name → command line), empty
+     * when there is no readable package.json or no scripts block. The
+     * ONE package.json script parse rack devices share (NPM-9000's knob;
+     * tools/project keep their own readers — out of this module).
+     */
+    public static java.util.Map<String, String> scripts(File projectDir) {
+        java.util.Map<String, String> result = new java.util.LinkedHashMap<>();
+        JSONObject json = read(projectDir);
+        JSONObject scripts = json == null ? null : json.optJSONObject("scripts");
+        if (scripts != null) {
+            for (String key : scripts.keySet()) {
+                result.put(key, scripts.optString(key, ""));
+            }
+        }
+        return result;
+    }
+
+    /**
      * Counts of [dependencies, devDependencies] declared in package.json,
      * or null when there is no readable package.json.
      */

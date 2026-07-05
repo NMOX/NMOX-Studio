@@ -32,6 +32,7 @@ public final class FileWatcher {
     private final File root;
     private final long intervalMs;
     private final Set<String> extensions;   // lower-case, no dot; null = all files
+    private final Set<String> filenames;    // exact names; null = extension rule
     private final Consumer<List<Path>> onChange;
 
     private volatile boolean running;
@@ -44,10 +45,26 @@ public final class FileWatcher {
      * @param onChange   called on the watcher thread with changed paths
      */
     public FileWatcher(File root, long intervalMs, Set<String> extensions, Consumer<List<Path>> onChange) {
+        this(root, intervalMs, extensions, null, onChange);
+    }
+
+    private FileWatcher(File root, long intervalMs, Set<String> extensions,
+            Set<String> filenames, Consumer<List<Path>> onChange) {
         this.root = root;
         this.intervalMs = Math.max(200, intervalMs);
         this.extensions = extensions;
+        this.filenames = filenames;
         this.onChange = onChange;
+    }
+
+    /**
+     * A watcher matching files by EXACT name rather than extension —
+     * manifest names like {@code package.json} or {@code .env}, where an
+     * extension rule would sweep in every .json in the tree.
+     */
+    public static FileWatcher forFilenames(File root, long intervalMs,
+            Set<String> filenames, Consumer<List<Path>> onChange) {
+        return new FileWatcher(root, intervalMs, null, filenames, onChange);
     }
 
     public synchronized void start() {
@@ -129,10 +146,13 @@ public final class FileWatcher {
     }
 
     private boolean matches(Path file) {
+        String name = file.getFileName().toString();
+        if (filenames != null) {
+            return filenames.contains(name);
+        }
         if (extensions == null) {
             return true;
         }
-        String name = file.getFileName().toString();
         int dot = name.lastIndexOf('.');
         return dot >= 0 && extensions.contains(name.substring(dot + 1).toLowerCase());
     }

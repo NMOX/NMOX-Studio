@@ -33,6 +33,8 @@ public class RunDevice extends CommandDevice {
     private final Led liveLed;
     private final java.util.concurrent.atomic.AtomicBoolean readyFired =
             new java.util.concurrent.atomic.AtomicBoolean();
+    /** True while the current launch is the webpack-serve lane. Test seam. */
+    volatile boolean webpackLane;
 
     public RunDevice() {
         super("run", "IGNITION", "POLYGLOT RUNTIME", new Color(255, 94, 58), 2);
@@ -64,28 +66,43 @@ public class RunDevice extends CommandDevice {
     @Override
     protected void primaryAction() {
         readyFired.set(false);
+        List<String> cmd = buildCommand();
+        webpackLane = cmd.contains("webpack");
         emit("running", Signal.gate(true));
         onEdt(() -> liveLed.setOn(true));
-        launch(buildCommand());
+        launch(cmd);
     }
 
     /**
-     * The static lane's serve announcement: python's http.server prints
-     * "Serving HTTP on ..." the moment it listens — READY fires once and
-     * the URL jack carries the local address, SURGE-style.
+     * The serving lanes' announcements: python's http.server prints
+     * "Serving HTTP on ..." the moment it listens, webpack-dev-server
+     * prints its local URL — READY fires once and the URL jack carries
+     * the address, SURGE-style. Other lanes announce nothing.
      */
     @Override
     protected void onLine(String line) {
         if (line.contains("Serving HTTP") && readyFired.compareAndSet(false, true)) {
-            String url = "http://localhost:" + STATIC_PORT;
-            onEdt(() -> statusLcd.setText("SERVING  " + url));
-            emit("url", Signal.data(url));
-            emit("ready", Signal.trigger());
+            announceServing("http://localhost:" + STATIC_PORT);
+            return;
         }
+        if (webpackLane && !readyFired.get()) {
+            String url = ServeUrls.firstLocalUrl(line);
+            if (url != null && readyFired.compareAndSet(false, true)) {
+                announceServing(url);
+            }
+        }
+    }
+
+    private void announceServing(String url) {
+        onEdt(() -> statusLcd.setText("SERVING  " + url));
+        emit("url", Signal.data(url));
+        emit("ready", Signal.trigger());
+        registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
     }
 
     @Override
     protected void onFinished(int exitCode) {
+        deregisterServing();
         emit("running", Signal.gate(false));
         onEdt(() -> liveLed.setOn(false));
     }

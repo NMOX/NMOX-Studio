@@ -90,6 +90,28 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.35.0)
+
+### 14. Connections: what the corpus callosum deliberately doesn't carry
+v1.35.0 wired the parts together (ServingRegistry, ManifestPulse, studio
+auto-reload, Docker→DB offers). Deferred with reasons:
+- **IGNITION's `php -S` lane doesn't register as serving** — the static
+  and webpack lanes do; the php lane needs the same one-line announce.
+  Small, safe, next touch of RunDevice.
+- **SelfWriteTracker is duplicated** (web3 + apiclient, ~40 lines each,
+  javadoc'd) — promoting one copy to core is a cross-module move the
+  studio waves couldn't make; do it next time core is open anyway.
+- **API Studio doesn't follow mid-session re-aims** — its workspace
+  pulse binds to the project dir captured at tab-open (pre-existing: it
+  never reloaded on re-aim either). A rack projectChanged listener is
+  the fix; needs its own dirty-handling thought.
+- **A public plugin-facing event API** — the registry and pulse stay
+  module-internal until an external consumer exists.
+- **Docker offers beyond databases** (redis/rabbitmq/…) — DB engines
+  only; other services have no studio to offer into yet.
+- **WebSocket/live push** — polling registries are honest and simple;
+  revisit only if a real lag complaint appears.
+
 ## Open — deferred deliberately, with reasons (added v1.34.0)
 
 ### 13. Classic web: the second shelf stays deferred

@@ -15,5 +15,13 @@
             <attr name="position" intvalue="300"/>
             <file name="org-nmox-studio-rack-search-DeviceSearchProvider.instance"/>
         </folder>
+        <!-- What is serving right now: live URLs from the ServingRegistry,
+             ahead of the device catalog because a running server is the
+             more urgent answer to "vite" than racking a new device. -->
+        <folder name="LiveServers">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.search.Bundle"/>
+            <attr name="position" intvalue="275"/>
+            <file name="org-nmox-studio-rack-search-LiveServerSearchProvider.instance"/>
+        </folder>
     </folder>
 </filesystem>

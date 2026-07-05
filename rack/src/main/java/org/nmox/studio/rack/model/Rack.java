@@ -418,6 +418,29 @@ public final class Rack {
     }
 
     /**
+     * Fans a coalesced manifest-edit batch out to every device on the
+     * router thread — the same single-threaded path signals travel, so a
+     * test's settle (EDT flush + {@link #awaitRouterIdle}) drains it and
+     * device reactions stay ordered against signal deliveries.
+     */
+    public void manifestChanged(List<java.nio.file.Path> changed) {
+        if (changed == null || changed.isEmpty()) {
+            return;
+        }
+        List<java.nio.file.Path> batch = List.copyOf(changed);
+        router.submit(() -> {
+            for (RackDevice d : getDevices()) {
+                try {
+                    d.manifestChanged(batch);
+                } catch (RuntimeException ex) {
+                    java.util.logging.Logger.getLogger(Rack.class.getName())
+                            .warning("Device " + d.getTitle() + " failed on manifest change: " + ex);
+                }
+            }
+        });
+    }
+
+    /**
      * Block until the router thread has delivered every signal emitted before
      * this call. Delivery is asynchronous on a single background thread, so a
      * caller that needs to observe a receiver's state after an {@link #emit}

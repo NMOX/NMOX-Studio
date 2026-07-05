@@ -212,6 +212,14 @@ public final class Web3StudioTopComponent extends TopComponent {
     private boolean rackListenerAttached;
     private boolean saveFailureNotified;
 
+    /** Auto-connects the chip when the rack serves a matching chain; null when rack absent. */
+    private org.nmox.studio.web3.engine.ChainAutoConnect chainAutoConnect;
+    /** Polls artifacts + workspace file while the tab is open; null when closed/no project. */
+    private org.nmox.studio.web3.engine.ArtifactPulse pulse;
+    /** Distinguishes our own .nmoxweb3.json writes from foreign edits. */
+    private final org.nmox.studio.web3.engine.SelfWriteTracker selfWrites =
+            new org.nmox.studio.web3.engine.SelfWriteTracker();
+
     public Web3StudioTopComponent() {
         setName(Bundle.CTL_Web3StudioTopComponent());
         setToolTipText(Bundle.HINT_Web3StudioTopComponent());
@@ -1225,20 +1233,48 @@ public final class Web3StudioTopComponent extends TopComponent {
             List<ContractArtifact> found = ArtifactScanner.scan(dir.toPath());
             EventMatcher matcher = EventMatcher.build(found);
             SwingUtilities.invokeLater(() -> {
-                artifacts = found;
-                eventMatcher = matcher;
-                rebuildContractsBranch();
-                sizeModel.refresh();
-                publishSearch();
-                if (session != null
-                        && artifactByName(session.artifact().name()) == null) {
-                    session = null; // the artifact left the build output
-                    rebuildInteract();
-                }
+                applyArtifacts(found, matcher);
                 status(found.size() + (found.size() == 1
                         ? " contract artifact" : " contract artifacts"), Color.GRAY);
             });
         });
+    }
+
+    /**
+     * A build finished somewhere (rack lane, terminal, CI) — the pulse
+     * saw artifact JSON move. Rescan quietly: the tree updating IS the
+     * feedback, so no balloon and no status churn; identical scan
+     * results apply nothing (the storm-law equality guard).
+     */
+    private void autoRescan() {
+        File dir = projectDirOrNull();
+        if (dir == null) {
+            return;
+        }
+        RP.post(() -> {
+            List<ContractArtifact> found = ArtifactScanner.scan(dir.toPath());
+            EventMatcher matcher = EventMatcher.build(found);
+            SwingUtilities.invokeLater(() -> {
+                if (found.equals(artifacts)) {
+                    return; // nothing actually changed — fire no UI updates
+                }
+                applyArtifacts(found, matcher);
+            });
+        });
+    }
+
+    /** EDT: installs a scan result into the tree, models, and search index. */
+    private void applyArtifacts(List<ContractArtifact> found, EventMatcher matcher) {
+        artifacts = found;
+        eventMatcher = matcher;
+        rebuildContractsBranch();
+        sizeModel.refresh();
+        publishSearch();
+        if (session != null
+                && artifactByName(session.artifact().name()) == null) {
+            session = null; // the artifact left the build output
+            rebuildInteract();
+        }
     }
 
     // ---- networks + connection chip ------------------------------------------
@@ -1432,6 +1468,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void reloadWorkspace() {
+        Network previous = selectedNetwork();
         stopWatch();
         session = null;
         networks.clear();
@@ -1439,14 +1476,26 @@ public final class Web3StudioTopComponent extends TopComponent {
         Web3WorkspaceIO.Workspace workspace = Web3WorkspaceIO.load(workspaceDir());
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
+        selfWrites.noteSync(new File(workspaceDir(), Web3WorkspaceIO.FILENAME));
         rebuildNetworksBranch();
         rebuildDeploymentsBranch();
         deploymentsModel.refresh();
         refreshWatchFilter();
         rebuildInteract();
         publishSearch();
-        refreshNetworkCombo(null);
+        // keep the user's network if the reloaded list still has it —
+        // an external edit that adds a deployment must not yank the combo
+        Network keep = null;
+        if (previous != null) {
+            for (Network network : networks) {
+                if (network.name().equals(previous.name())) {
+                    keep = network;
+                }
+            }
+        }
+        refreshNetworkCombo(keep);
         rescan();
+        restartPulseIfOpen();
     }
 
     /** Writes networks AND deployments together — adding one never clobbers the other. */
@@ -1454,6 +1503,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         try {
             Web3WorkspaceIO.save(workspaceDir(),
                     new Web3WorkspaceIO.Workspace(networks, deployments));
+            selfWrites.noteSync(new File(workspaceDir(), Web3WorkspaceIO.FILENAME));
             saveFailureNotified = false;
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(Web3StudioTopComponent.class.getName())
@@ -1524,11 +1574,34 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (!rackListenerAttached) {
             attachRackListener();
         }
+        try {
+            if (chainAutoConnect == null) {
+                chainAutoConnect = new org.nmox.studio.web3.engine.ChainAutoConnect(
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault(),
+                        new ChainSeam());
+            }
+            chainAutoConnect.attach();
+            // a chain that started while the tab was closed still connects;
+            // the snapshot read belongs off the EDT
+            org.nmox.studio.web3.engine.ChainAutoConnect poker = chainAutoConnect;
+            RP.post(poker::refresh);
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack unavailable (tests, stripped platform): manual combo still works
+        }
+        restartPulseIfOpen();
     }
 
     @Override
     public void componentClosed() {
         stopWatch();
+        stopPulse();
+        if (chainAutoConnect != null) {
+            try {
+                chainAutoConnect.detach();
+            } catch (RuntimeException | LinkageError ignored) {
+                // already unavailable — nothing to detach from
+            }
+        }
         if (rackListenerAttached) {
             try {
                 org.nmox.studio.rack.service.RackService.getDefault()
@@ -1537,6 +1610,90 @@ public final class Web3StudioTopComponent extends TopComponent {
                 // already unavailable — nothing to detach from
             }
             rackListenerAttached = false;
+        }
+    }
+
+    /**
+     * (Re)aims the pulse at the current project — from componentOpened
+     * and from every workspace reload (the project may have switched).
+     * No project or a closed tab means no pulse at all.
+     */
+    private void restartPulseIfOpen() {
+        stopPulse();
+        if (!isOpened()) {
+            return;
+        }
+        File dir = projectDirOrNull();
+        if (dir == null) {
+            return;
+        }
+        pulse = new org.nmox.studio.web3.engine.ArtifactPulse(dir,
+                new File(dir, Web3WorkspaceIO.FILENAME), new PulseSink());
+        pulse.start(org.nmox.studio.web3.engine.ArtifactPulse.DEFAULT_INTERVAL_MS);
+    }
+
+    private void stopPulse() {
+        if (pulse != null) {
+            pulse.stop();
+            pulse = null;
+        }
+    }
+
+    /** What the auto-connector drives — the exact paths the combo uses. */
+    private final class ChainSeam implements org.nmox.studio.web3.engine.ChainAutoConnect.Chain {
+
+        @Override
+        public String selectedUrl() {
+            Network network = selectedNetwork();
+            return network == null || network.secretUrl() ? null : network.plainUrl();
+        }
+
+        @Override
+        public boolean connected() {
+            return connected;
+        }
+
+        @Override
+        public void connect() {
+            networkSelected(); // the same connect/re-poll the combo re-select did
+        }
+
+        @Override
+        public void disconnect() {
+            // the existing not-connected state, no dialogs: chip greys,
+            // write gates follow; a running Watch fails-and-greys on its own
+            connected = false;
+            accounts = List.of();
+            chip(NOT_CONNECTED, Color.GRAY);
+            refreshFromCombo();
+            refreshSessionAccounts();
+            updateWatchAddresses();
+        }
+    }
+
+    /** Pulse-thread callbacks marshalled onto the EDT. */
+    private final class PulseSink implements org.nmox.studio.web3.engine.ArtifactPulse.Sink {
+
+        @Override
+        public void artifactsChanged() {
+            SwingUtilities.invokeLater(Web3StudioTopComponent.this::autoRescan);
+        }
+
+        @Override
+        public void workspaceChanged(long mtime, long size) {
+            if (!selfWrites.isForeign(mtime, size)) {
+                return; // our own save — the tracker already knows this stamp
+            }
+            SwingUtilities.invokeLater(() -> {
+                if (!selfWrites.isForeign(mtime, size)) {
+                    return; // our save raced the tick; the EDT re-check settles it
+                }
+                // networks and deployments persist the moment they change —
+                // there is no dirty in-memory state to clobber, so reload silently
+                reloadWorkspace();
+                balloon("Reloaded " + Web3WorkspaceIO.FILENAME,
+                        "Picked up changes made outside the studio", true);
+            });
         }
     }
 

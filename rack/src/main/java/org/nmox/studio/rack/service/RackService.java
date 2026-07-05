@@ -49,13 +49,75 @@ public class RackService {
                 public void projectChanged() {
                     autoLoadPatch();
                     offerResume();
+                    restartManifestPulse();
                 }
             });
             followOpenProjects();
             aimAtDefaultWorkspace();
             startSessionSnapshots();
+            restartManifestPulse();
         }
         return rack;
+    }
+
+    // ---- manifest pulse: edited manifests re-sync what reads them ----
+
+    private ManifestPulse manifestPulse;
+    private final java.util.List<java.util.function.Consumer<java.util.List<java.nio.file.Path>>>
+            manifestListeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final long ENV_NOTE_MS = 5_000;
+    private volatile long envChangedAt;
+
+    /** One watcher for THE aimed project; re-aimed racks get a fresh one. */
+    private synchronized void restartManifestPulse() {
+        if (manifestPulse != null) {
+            manifestPulse.stop();
+        }
+        manifestPulse = new ManifestPulse(rack.getProjectDir(), this::dispatchManifestBatch);
+        manifestPulse.start();
+    }
+
+    private void dispatchManifestBatch(java.util.List<java.nio.file.Path> batch) {
+        // devices react on the router thread (settle-drainable in tests);
+        // .env deliberately reloads nothing — env is read at launch — but
+        // the status line notes it so the honesty is visible
+        rack.manifestChanged(batch);
+        for (java.nio.file.Path p : batch) {
+            if (p.getFileName() != null && ".env".equals(p.getFileName().toString())) {
+                envChangedAt = System.currentTimeMillis();
+                break;
+            }
+        }
+        for (var listener : manifestListeners) {
+            try {
+                listener.accept(batch);
+            } catch (RuntimeException ex) {
+                java.util.logging.Logger.getLogger(RackService.class.getName())
+                        .warning("Manifest listener failed: " + ex);
+            }
+        }
+    }
+
+    /**
+     * Studio-facing manifest events (includes .env changes): the batch of
+     * changed manifest paths, coalesced, delivered off-EDT. W2 studios
+     * subscribe here instead of running their own watchers.
+     */
+    public void addManifestListener(java.util.function.Consumer<java.util.List<java.nio.file.Path>> l) {
+        manifestListeners.add(l);
+    }
+
+    public void removeManifestListener(java.util.function.Consumer<java.util.List<java.nio.file.Path>> l) {
+        manifestListeners.remove(l);
+    }
+
+    /**
+     * True for a few seconds after a .env edit — the status line shows
+     * "env changed — restarts pick it up" while this holds (running
+     * processes honestly keep their launch-time env).
+     */
+    public boolean envNoteActive() {
+        return System.currentTimeMillis() - envChangedAt < ENV_NOTE_MS;
     }
 
     /**
