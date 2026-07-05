@@ -62,6 +62,48 @@ public final class DockerDbOffers {
     }
 
     /**
+     * The visibility gate: DB Studio is a default-open tab, so at app
+     * startup a probe finishes while the tab sits invisible behind the
+     * others — balloons shown then expire unseen AND consume the
+     * once-per-container-session guard, silencing the offer for good.
+     * This holds a probe result taken while hidden and releases it once
+     * on the next showing, so {@link #plan} runs (and the caller
+     * consumes the guard) only when the user can actually see the
+     * balloon. Bounded: the latest held probe only — an older one is
+     * stale by definition. Single-caller state, confined to the EDT.
+     */
+    public static final class Hold {
+
+        private List<ContainerInfo> held;
+
+        /**
+         * A probe finished: the containers to display right now —
+         * the result itself when the tab is showing, nothing (held for
+         * the next showing) when it is hidden.
+         */
+        public List<ContainerInfo> onProbe(List<ContainerInfo> containers, boolean showing) {
+            if (showing) {
+                held = null; // displaying fresher truth — drop anything staler
+                return containers;
+            }
+            held = containers;
+            return List.of();
+        }
+
+        /** The tab just became visible: the held plan, released once. */
+        public List<ContainerInfo> onShowing() {
+            List<ContainerInfo> plan = held == null ? List.of() : held;
+            held = null;
+            return plan;
+        }
+
+        /** A closed tab reacts to nothing — and holds nothing. */
+        public void clear() {
+            held = null;
+        }
+    }
+
+    /**
      * host:container publish pairs — "0.0.0.0:15432->5432/tcp" is host
      * 15432, container 5432. Digits around a literal "->" only: linear
      * time, no alternation to backtrack (the DockerClient idiom).

@@ -173,6 +173,9 @@ public final class DbStudioTopComponent extends TopComponent {
     private final Set<String> dockerOfferedContainers = new HashSet<>();
     /** True while a docker container probe is in flight — probes never overlap. */
     private boolean dockerProbeInFlight;
+    /** A probe result finished while the tab was hidden; released on next showing. */
+    private final org.nmox.studio.dbstudio.io.DockerDbOffers.Hold dockerHold =
+            new org.nmox.studio.dbstudio.io.DockerDbOffers.Hold();
     /** Discriminates our own .nmoxdb.json writes from foreign edits (git pull, hand edit). */
     private final org.nmox.studio.dbstudio.io.ExternalEdits externalEdits =
             new org.nmox.studio.dbstudio.io.ExternalEdits();
@@ -960,8 +963,12 @@ public final class DbStudioTopComponent extends TopComponent {
      * already-configured suppression, the cap) lives in the tested
      * {@code DockerDbOffers} core; this method only probes and shows.
      * No Docker daemon or CLI → an empty container list → total
-     * silence. Runs when the tab opens and on every workspace reload
-     * (project switch), never overlapping itself.
+     * silence. Runs when the tab becomes visible (componentShowing —
+     * NOT componentOpened: this default-open tab opens hidden at
+     * startup) and on every workspace reload (project switch), never
+     * overlapping itself. A probe that finishes while the tab is hidden
+     * is held by {@code dockerHold} — never ballooned unseen, guard
+     * unconsumed — and released on the next showing.
      */
     private void offerDockerConnections() {
         if (dockerProbeInFlight) {
@@ -980,7 +987,9 @@ public final class DbStudioTopComponent extends TopComponent {
             if (error != null || containers == null || !isOpened()) {
                 return; // daemon trouble or a since-closed tab — silence
             }
-            showDockerOffers(containers);
+            // a hidden tab holds instead of showing: a balloon nobody can
+            // see would expire unseen and burn the once-per-session guard
+            showDockerOffers(dockerHold.onProbe(containers, isShowing()));
         }));
     }
 
@@ -1847,7 +1856,28 @@ public final class DbStudioTopComponent extends TopComponent {
         attachManifestListener();
         restartWorkspaceWatcher();
         refreshServicesBranch(); // the Services list may have changed while closed
-        offerDockerConnections();
+        // the Docker offer probe waits for componentShowing — a default-open
+        // tab is opened at startup while still hidden behind the others
+    }
+
+    /**
+     * The tab is actually about to be seen (unlike componentOpened,
+     * which fires at startup while this default-open tab is hidden
+     * behind the others — the v1.35.0 click-through found the Docker
+     * offer balloons expiring unseen there, guard consumed, offer lost
+     * for the session). A plan held from a probe that finished while
+     * hidden shows now; otherwise a fresh probe runs — its balloons can
+     * be seen, so only now may the once-per-container guard be spent.
+     */
+    @Override
+    public void componentShowing() {
+        java.util.List<org.nmox.studio.rack.docker.DockerClient.ContainerInfo> held =
+                dockerHold.onShowing();
+        if (held.isEmpty()) {
+            offerDockerConnections();
+        } else {
+            showDockerOffers(held); // the probe already ran — don't re-probe
+        }
     }
 
     @Override
@@ -1856,6 +1886,7 @@ public final class DbStudioTopComponent extends TopComponent {
         stopWorkspaceWatcher();
         detachManifestListener();
         deferredExternalStamp = null;
+        dockerHold.clear(); // a held Docker plan is stale by reopen time
         // drops our Services backends too — their close() is a reference-drop
         // no-op; the NetBeans explorer keeps its connections
         closeAllBackends();

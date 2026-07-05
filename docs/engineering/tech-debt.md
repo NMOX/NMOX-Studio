@@ -94,17 +94,9 @@ specifically** — the boot-smoke number says it isn't the bottleneck.
 
 ### 14. Connections: what the corpus callosum deliberately doesn't carry
 v1.35.0 wired the parts together (ServingRegistry, ManifestPulse, studio
-auto-reload, Docker→DB offers). Deferred with reasons:
-- **IGNITION's `php -S` lane doesn't register as serving** — the static
-  and webpack lanes do; the php lane needs the same one-line announce.
-  Small, safe, next touch of RunDevice.
-- **SelfWriteTracker is duplicated** (web3 + apiclient, ~40 lines each,
-  javadoc'd) — promoting one copy to core is a cross-module move the
-  studio waves couldn't make; do it next time core is open anyway.
-- **API Studio doesn't follow mid-session re-aims** — its workspace
-  pulse binds to the project dir captured at tab-open (pre-existing: it
-  never reloaded on re-aim either). A rack projectChanged listener is
-  the fix; needs its own dirty-handling thought.
+auto-reload, Docker→DB offers); v1.35.1 closed its three small IOUs
+(php -S serving registration, SelfWriteTracker→core, API Studio re-aim
+following). Still deferred, with reasons:
 - **A public plugin-facing event API** — the registry and pulse stay
   module-internal until an external consumer exists.
 - **Docker offers beyond databases** (redis/rabbitmq/…) — DB engines

@@ -96,6 +96,74 @@ class ReplDeviceTest {
         }
     }
 
+    // ---------------- INSTALL: argv vs shell ----------------
+
+    @Test
+    @DisplayName("needsShell spots the operators an argv split would pass as literal arguments")
+    void needsShellRule() {
+        assertThat(ReplDevice.needsShell("brew install clisp")).isFalse();
+        assertThat(ReplDevice.needsShell("winget install -e --id GnuWin32.Make")).isFalse();
+        assertThat(ReplDevice.needsShell("curl -L https://foundry.paradigm.xyz | bash && foundryup"))
+                .as("the solidity space's pipe + chain").isTrue();
+        assertThat(ReplDevice.needsShell("brew install node && npm install -g ts-node")).isTrue();
+        assertThat(ReplDevice.needsShell("winget install make ; choco install mingw")).isTrue();
+        assertThat(ReplDevice.needsShell("echo done > flag")).isTrue();
+        assertThat(ReplDevice.needsShell("psql < seed.sql")).isTrue();
+        assertThat(ReplDevice.needsShell("echo `id`")).isTrue();
+        assertThat(ReplDevice.needsShell("echo $(id)")).isTrue();
+        assertThat(ReplDevice.needsShell("pip3 install torch    # CPU wheel, large"))
+                .as("catalog trailing comments need the shell to strip them").isTrue();
+        assertThat(ReplDevice.needsShell(null)).isFalse();
+        assertThat(ReplDevice.needsShell("")).isFalse();
+    }
+
+    @Test
+    @DisplayName("A plain install keeps the argv path — no shell layer")
+    void installArgvPlainCommand() {
+        assertThat(ReplDevice.installArgv("brew install clisp", false))
+                .containsExactly("brew", "install", "clisp");
+        assertThat(ReplDevice.installArgv("brew install \"weird name\"", false))
+                .as("quotes still group on the argv path")
+                .containsExactly("brew", "install", "weird name");
+        assertThat(ReplDevice.installArgv("", false)).isEmpty();
+        assertThat(ReplDevice.installArgv(null, false)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A compound install goes through the shell with the RAW string — never re-split")
+    void installArgvCompoundCommand() {
+        String foundry = "curl -L https://foundry.paradigm.xyz | bash && foundryup";
+        assertThat(ReplDevice.installArgv(foundry, false))
+                .containsExactly("/bin/sh", "-lc", foundry);
+        String quoted = "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh";
+        assertThat(ReplDevice.installArgv(quoted, false))
+                .as("quoting passes through untouched — the shell does the splitting")
+                .containsExactly("/bin/sh", "-lc", quoted);
+        assertThat(ReplDevice.installArgv("winget install make ; choco install mingw", true))
+                .as("the catalog's windows chains wrap with cmd /c")
+                .containsExactly("cmd", "/c", "winget install make ; choco install mingw");
+    }
+
+    @Test
+    @DisplayName("INSTALL builds its command from the seeded param: argv plain, shell for compound")
+    void installCommandFollowsSeededParam() {
+        ReplDevice repl = new ReplDevice();
+        try {
+            repl.applyState(Map.of("install", "brew install clisp"));
+            assertThat(repl.installCommand()).containsExactly("brew", "install", "clisp");
+
+            // the solidity engine's real catalog seed — the flagged bug
+            repl.applyState(Map.of("engine", "solidity"));
+            String seeded = repl.getState().get("install");
+            assertThat(seeded).contains("|");
+            assertThat(repl.installCommand())
+                    .as("CI runs the mac/linux path; the shell gets the raw seeded string")
+                    .containsExactly("/bin/sh", "-lc", seeded);
+        } finally {
+            repl.dispose();
+        }
+    }
+
     // ---------------- ENGINE: the preset knob ----------------
 
     @Test

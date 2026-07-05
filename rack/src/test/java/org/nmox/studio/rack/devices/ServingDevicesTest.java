@@ -147,6 +147,30 @@ class ServingDevicesTest {
     }
 
     @Test
+    @DisplayName("IGNITION's php lane registers its pinned address on the Development Server banner")
+    void ignitionPhpLaneRegisters() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            RunDevice run = new RunDevice();
+            rack.addDevice(run);
+            run.phpLane = true; // what primaryAction sets for `php -S 127.0.0.1:8000`
+            run.onLine("[Sat Jul  4 12:00:00 2026] PHP 8.3.8 Development Server (http://127.0.0.1:8000) started");
+            assertThat(mine()).extracting(Serving::url, Serving::kind)
+                    .containsExactly(org.assertj.core.groups.Tuple.tuple(
+                            "http://127.0.0.1:8000", Kind.WEB));
+
+            // announce-once: request-log lines and repeated banners don't re-register
+            run.onLine("[Sat Jul  4 12:00:05 2026] 127.0.0.1:52114 [200]: GET /");
+            assertThat(mine()).hasSize(1);
+
+            run.onFinished(143); // the STOP button's SIGTERM exit
+            assertThat(mine()).as("stop deregisters").isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("IGNITION's other lanes never register (no URL is ever announced)")
     void ignitionPlainLaneSilent() throws IOException {
         Rack rack = aimedRack();
@@ -155,6 +179,8 @@ class ServingDevicesTest {
             rack.addDevice(run);
             run.onLine("go: downloading github.com/x/y v1.2.3");
             run.onLine("listening logs mention http://localhost:9999 sometimes");
+            // php's banner in some other lane's log: the phpLane gate holds
+            run.onLine("PHP 8.3.8 Development Server (http://127.0.0.1:8000) started");
             assertThat(mine()).as("non-serving lanes stay out of the registry").isEmpty();
         } finally {
             rack.shutdown();

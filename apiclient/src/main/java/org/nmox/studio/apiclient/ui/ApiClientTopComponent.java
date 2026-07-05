@@ -50,7 +50,9 @@ import org.openide.windows.TopComponent;
  * response below, and an environment selector whose {@code {{vars}}}
  * let one request travel from localhost to prod. The workspace persists
  * as {@code .nmoxapi.json} beside the aimed project, exactly like the
- * rack patch and the infra design.
+ * rack patch and the infra design — and it follows the rack's aim
+ * mid-session: re-aiming saves pending edits to the old project, then
+ * rebinds workspace, file pulse, and offers to the new one.
  */
 @TopComponent.Description(preferredID = "ApiClientTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
@@ -86,8 +88,13 @@ public final class ApiClientTopComponent extends TopComponent {
     /** Polls .nmoxapi.json for foreign edits while the tab is open. */
     private org.nmox.studio.apiclient.api.WorkspaceFilePulse filePulse;
     /** Distinguishes our own saves from foreign edits. */
-    private final org.nmox.studio.apiclient.api.SelfWriteTracker selfWrites =
-            new org.nmox.studio.apiclient.api.SelfWriteTracker();
+    private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
+            new org.nmox.studio.core.util.SelfWriteTracker();
+    /** Follows the rack's mid-session re-aims; see onProjectReaimed. */
+    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private boolean rackListenerAttached;
+    /** The storm-law core deciding which re-aims load and which loads bind. */
+    private final org.nmox.studio.apiclient.api.ProjectRebind rebind;
 
     private final JTree tree = new JTree();
     private final JComboBox<String> envCombo = new JComboBox<>();
@@ -124,6 +131,13 @@ public final class ApiClientTopComponent extends TopComponent {
         center.setDividerLocation(240);
         add(center, BorderLayout.CENTER);
 
+        rebind = new org.nmox.studio.apiclient.api.ProjectRebind(projectDir());
+        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+            @Override
+            public void projectChanged() {
+                SwingUtilities.invokeLater(ApiClientTopComponent.this::onProjectReaimed);
+            }
+        };
         loadWorkspace();
     }
 
@@ -570,15 +584,32 @@ public final class ApiClientTopComponent extends TopComponent {
         return dir != null ? dir : new File(System.getProperty("user.home"));
     }
 
-    private void loadWorkspace() {
-        loading = true;
+    /** The dir this workspace is bound to — saves and the pulse aim here. */
+    private File boundDir() {
+        return rebind.boundDir();
+    }
+
+    /** Disk half of a load — safe off the EDT. */
+    private Workspace readWorkspace(File dir) {
         try {
-            Workspace loaded = WorkspaceIO.load(projectDir());
-            workspace = loaded != null ? loaded : Workspace.starter();
+            Workspace loaded = WorkspaceIO.load(dir);
+            return loaded != null ? loaded : Workspace.starter();
         } catch (Exception ex) {
-            workspace = Workspace.starter();
+            return Workspace.starter();
         }
-        selfWrites.noteSync(new File(projectDir(), WorkspaceIO.FILENAME));
+    }
+
+    /** (Re)loads the bound project's workspace in place — EDT. */
+    private void loadWorkspace() {
+        applyWorkspace(readWorkspace(boundDir()), boundDir());
+    }
+
+    /** EDT half of a load: binds a read workspace to the UI. */
+    private void applyWorkspace(Workspace loaded, File dir) {
+        loading = true;
+        workspace = loaded;
+        current = null;
+        selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
         DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
         workspace.environments.forEach(e -> envs.addElement(e.name));
         envCombo.setModel(envs);
@@ -604,8 +635,10 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private void save() {
         try {
-            WorkspaceIO.save(projectDir(), workspace);
-            selfWrites.noteSync(new File(projectDir(), WorkspaceIO.FILENAME));
+            // the bound dir, not the live rack aim: during a re-aim the
+            // debounced edits still belong to the project they were made in
+            WorkspaceIO.save(boundDir(), workspace);
+            selfWrites.noteSync(new File(boundDir(), WorkspaceIO.FILENAME));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed autosave never interrupts editing — but a chronically
@@ -623,8 +656,21 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    private void attachRackListener() {
+        try {
+            org.nmox.studio.rack.service.RackService.getDefault()
+                    .getRack().addListener(rackListener);
+            rackListenerAttached = true;
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack unavailable (tests, stripped platform): no project switches to follow
+        }
+    }
+
     @Override
     public void componentOpened() {
+        if (!rackListenerAttached) {
+            attachRackListener();
+        }
         try {
             if (servingBridge == null) {
                 servingBridge = new org.nmox.studio.apiclient.api.ServingBridge(
@@ -632,21 +678,13 @@ public final class ApiClientTopComponent extends TopComponent {
                         this::onServings);
             }
             servingBridge.attach();
-            // a server already running when the tab opens is seen too —
-            // the registry snapshot belongs off the EDT
-            Thread poke = new Thread(servingBridge::refresh, "nmox-api-serving-poke");
-            poke.setDaemon(true);
-            poke.start();
         } catch (RuntimeException | LinkageError ignored) {
             // rack unavailable (tests, stripped platform): no offers, no loss
         }
-        if (filePulse == null) {
-            filePulse = new org.nmox.studio.apiclient.api.WorkspaceFilePulse(
-                    new File(projectDir(), WorkspaceIO.FILENAME),
-                    this::onWorkspaceFileChanged);
-            filePulse.start(
-                    org.nmox.studio.apiclient.api.WorkspaceFilePulse.DEFAULT_INTERVAL_MS);
-        }
+        // a server already running when the tab opens is seen too
+        pokeServingBridge();
+        restartFilePulse();
+        onProjectReaimed(); // the aim may have moved while the tab was closed
     }
 
     @Override
@@ -658,12 +696,90 @@ public final class ApiClientTopComponent extends TopComponent {
                 // already unavailable — nothing to detach from
             }
         }
+        if (rackListenerAttached) {
+            try {
+                org.nmox.studio.rack.service.RackService.getDefault()
+                        .getRack().removeListener(rackListener);
+            } catch (RuntimeException | LinkageError ignored) {
+                // already unavailable — nothing to detach from
+            }
+            rackListenerAttached = false;
+        }
         if (filePulse != null) {
             filePulse.stop();
             filePulse = null;
         }
         saveDebounce.stop();
         save();
+    }
+
+    // ---- following the rack's aim ----
+
+    /**
+     * EDT, from every rack projectChanged (and from componentOpened, to
+     * catch aims that moved while the tab was closed). Until v1.35.0 the
+     * workspace and pulse bound at componentOpened only, so a mid-session
+     * re-aim left API Studio on the old project — this closes that gap.
+     * The storm laws live in the tested {@link
+     * org.nmox.studio.apiclient.api.ProjectRebind} core: re-aiming to the
+     * same dir is a no-op, an event storm for one aim is one load, the
+     * newest aim always wins. Edits pending in the debounce belong to the
+     * OLD project, so they force-save there first (the componentClosed
+     * semantics — save() targets the bound dir); the new workspace reads
+     * off the EDT and binds back on it; the pulse restarts on the new
+     * file with fresh self-write stamps; and the serving bridge refreshes
+     * so the {{baseUrl}} offer re-evaluates for the new project (its
+     * guard keys include the project dir).
+     */
+    private void onProjectReaimed() {
+        File aimed = projectDir();
+        if (!rebind.shouldLoad(aimed)) {
+            return; // same aim, or this load is already in flight
+        }
+        if (saveDebounce.isRunning()) {
+            saveDebounce.stop();
+            save(); // boundDir() is still the old project's — see save()
+        }
+        Thread loader = new Thread(() -> {
+            Workspace loaded = readWorkspace(aimed);
+            SwingUtilities.invokeLater(() -> {
+                if (!rebind.shouldApply(aimed, projectDir())) {
+                    return; // re-aimed again while reading — the newer aim wins
+                }
+                applyWorkspace(loaded, aimed);
+                restartFilePulse();
+                pokeServingBridge();
+            });
+        }, "nmox-api-rebind");
+        loader.setDaemon(true);
+        loader.start();
+    }
+
+    /** (Re)aims the pulse at the bound project's file; closed tab, no pulse. */
+    private void restartFilePulse() {
+        if (filePulse != null) {
+            filePulse.stop();
+            filePulse = null;
+        }
+        if (!isOpened()) {
+            return;
+        }
+        filePulse = new org.nmox.studio.apiclient.api.WorkspaceFilePulse(
+                new File(boundDir(), WorkspaceIO.FILENAME),
+                this::onWorkspaceFileChanged);
+        filePulse.start(
+                org.nmox.studio.apiclient.api.WorkspaceFilePulse.DEFAULT_INTERVAL_MS);
+    }
+
+    /** A fresh registry snapshot, taken off the EDT — offers re-evaluate. */
+    private void pokeServingBridge() {
+        org.nmox.studio.apiclient.api.ServingBridge bridge = servingBridge;
+        if (bridge == null) {
+            return;
+        }
+        Thread poke = new Thread(bridge::refresh, "nmox-api-serving-poke");
+        poke.setDaemon(true);
+        poke.start();
     }
 
     // ---- the {{baseUrl}} offer ----

@@ -297,4 +297,73 @@ class DockerDbOffersTest {
         assertThat(DockerDbOffers.publishedPorts(null)).isEmpty();
         assertThat(DockerDbOffers.publishedPorts("")).isEmpty();
     }
+
+    // ---- the visibility gate: balloons only where someone can see them ----
+
+    @Test
+    @DisplayName("hidden → plan held, guard unconsumed; showing → displayed once, guard consumed")
+    void hiddenHoldsThenShowingDisplaysOnce() {
+        DockerDbOffers.Hold hold = new DockerDbOffers.Hold();
+        Set<String> offered = new HashSet<>();
+        List<ContainerInfo> probe = List.of(
+                running("c1", "shop-db", "postgres:16", "0.0.0.0:5432->5432/tcp"));
+
+        // probe finishes while the tab is hidden: nothing to display,
+        // nothing planned, so the caller consumes no guard
+        assertThat(hold.onProbe(probe, false)).isEmpty();
+        assertThat(offered).isEmpty();
+
+        // the tab becomes visible: the held plan releases exactly once,
+        // and only this display pass records the container id
+        List<ContainerInfo> shown = hold.onShowing();
+        assertThat(shown).isEqualTo(probe);
+        for (DockerDbOffers.Offer offer : DockerDbOffers.plan(shown, List.of(), offered)) {
+            offered.add(offer.containerId()); // the caller's display-time add
+        }
+        assertThat(offered).containsExactly("c1");
+        assertThat(hold.onShowing()).as("released once, not on every showing").isEmpty();
+    }
+
+    @Test
+    @DisplayName("A probe finishing while showing displays immediately, holds nothing")
+    void showingDisplaysImmediately() {
+        DockerDbOffers.Hold hold = new DockerDbOffers.Hold();
+        List<ContainerInfo> probe = List.of(
+                running("c1", "shop-db", "postgres:16", "0.0.0.0:5432->5432/tcp"));
+
+        assertThat(hold.onProbe(probe, true)).isEqualTo(probe);
+        assertThat(hold.onShowing()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Bounded: only the latest hidden probe is held")
+    void latestPlanOnly() {
+        DockerDbOffers.Hold hold = new DockerDbOffers.Hold();
+        List<ContainerInfo> older = List.of(
+                running("c1", "old-db", "postgres:16", "0.0.0.0:5432->5432/tcp"));
+        List<ContainerInfo> newer = List.of(
+                running("c2", "new-db", "mariadb:11", "0.0.0.0:3306->3306/tcp"));
+
+        assertThat(hold.onProbe(older, false)).isEmpty();
+        assertThat(hold.onProbe(newer, false)).isEmpty();
+        assertThat(hold.onShowing()).isEqualTo(newer);
+    }
+
+    @Test
+    @DisplayName("A visible display drops any staler held plan; clear() empties the hold")
+    void freshDisplayAndClearDropHeld() {
+        DockerDbOffers.Hold hold = new DockerDbOffers.Hold();
+        List<ContainerInfo> older = List.of(
+                running("c1", "old-db", "postgres:16", "0.0.0.0:5432->5432/tcp"));
+        List<ContainerInfo> newer = List.of(
+                running("c2", "new-db", "mariadb:11", "0.0.0.0:3306->3306/tcp"));
+
+        hold.onProbe(older, false);
+        assertThat(hold.onProbe(newer, true)).isEqualTo(newer);
+        assertThat(hold.onShowing()).as("shown truth supersedes the held plan").isEmpty();
+
+        hold.onProbe(older, false);
+        hold.clear(); // the tab closed — a held plan is stale by reopen time
+        assertThat(hold.onShowing()).isEmpty();
+    }
 }

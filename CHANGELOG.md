@@ -4,6 +4,53 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.35.1] — 2026-07-05
+
+The finishing pass: the security alerts, the flagged-but-unfixed bug,
+the connection release's own IOUs, and one honest finding from the live
+demo — all closed.
+
+### Security
+- **PostgreSQL JDBC driver 42.7.5 → 42.7.11** — clears both open HIGH
+  advisories against the bundled driver (unbounded PBKDF2 iterations in
+  SCRAM authentication enabling CPU-exhaustion DoS, and a fallback to
+  insecure authentication despite `channelBinding=require`).
+
+### Fixed
+- **REPL INSTALL now runs compound install commands correctly.** Since
+  v1.31.0 the INSTALL button argv-split the catalog's install command,
+  so entries with shell operators — Foundry's
+  `curl -L … | bash && foundryup`, and a PyTorch entry whose trailing
+  `# CPU wheel` comment was being fed to pip3 as arguments — silently
+  did the wrong thing. Commands containing operators now run via
+  `/bin/sh -lc` with the raw string (never re-split; login shell so
+  profile-managed PATHs work); plain commands keep the exact prior
+  no-shell path. SOLDER is deliberately unchanged: user-typed commands
+  still never touch a shell (its documented security stance) — the
+  shell wrapper exists only for curated catalog data.
+- **`php -S` registers with the Serving Registry** — IGNITION's PHP
+  built-in-server lane now announces its URL and appears in the status
+  chip, ⌘I Live Servers, and auto-targeting, like every other serve
+  lane (the v1.35.0 ledger's own follow-up).
+- **API Studio follows mid-session re-aims** — re-aim the rack and the
+  studio force-saves any pending edits to the OLD project's
+  `.nmoxapi.json`, loads the new project's workspace, re-points its
+  file watcher, and re-evaluates `{{baseUrl}}` offers. Storm-tested:
+  a 100-event re-aim storm costs one load; an A→B→A bounce costs none.
+- **DB Studio's Docker offers wait until you can see them.** The live
+  demo caught the gap: the container probe ran at app startup while
+  the tab was hidden, the balloons expired unseen, and the
+  once-per-session guard was consumed — so the offer could never
+  reappear. The probe now fires when the tab actually becomes visible,
+  a probe completing while hidden holds its plan for the next showing,
+  and the guard is consumed only when an offer is actually displayed.
+- **One SelfWriteTracker** — the deliberately-duplicated
+  self-write-vs-foreign-edit discriminator (web3 + apiclient) is now a
+  single canonical class in core; dbstudio's ExternalEdits stays
+  separate on purpose (different verdict semantics, documented).
+- core 13 / rack 719 / dbstudio 353 / apiclient 94 / web3 268 tests;
+  SpotBugs + find-sec-bugs at zero findings on every touched module.
+
 ## [1.35.0] — 2026-07-05
 
 The connections release: the parts of the studio now talk to each other.

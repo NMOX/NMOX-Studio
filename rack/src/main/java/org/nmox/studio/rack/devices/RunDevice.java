@@ -28,6 +28,9 @@ public class RunDevice extends CommandDevice {
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
 
+    /** The php lane's fixed address: php -S serves here (docroot-aware). */
+    private static final String PHP_ADDRESS = "127.0.0.1:8000";
+
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
     private final Led liveLed;
@@ -35,6 +38,8 @@ public class RunDevice extends CommandDevice {
             new java.util.concurrent.atomic.AtomicBoolean();
     /** True while the current launch is the webpack-serve lane. Test seam. */
     volatile boolean webpackLane;
+    /** True while the current launch is the php built-in-server lane. Test seam. */
+    volatile boolean phpLane;
 
     public RunDevice() {
         super("run", "IGNITION", "POLYGLOT RUNTIME", new Color(255, 94, 58), 2);
@@ -68,6 +73,7 @@ public class RunDevice extends CommandDevice {
         readyFired.set(false);
         List<String> cmd = buildCommand();
         webpackLane = cmd.contains("webpack");
+        phpLane = cmd.contains("php");
         emit("running", Signal.gate(true));
         onEdt(() -> liveLed.setOn(true));
         launch(cmd);
@@ -76,13 +82,21 @@ public class RunDevice extends CommandDevice {
     /**
      * The serving lanes' announcements: python's http.server prints
      * "Serving HTTP on ..." the moment it listens, webpack-dev-server
-     * prints its local URL — READY fires once and the URL jack carries
+     * prints its local URL, php -S prints its "Development Server"
+     * banner (the URL is the lane's pinned address — the shared
+     * {@link ServeUrls} scan would drag the banner's closing paren,
+     * the ARTISAN problem) — READY fires once and the URL jack carries
      * the address, SURGE-style. Other lanes announce nothing.
      */
     @Override
     protected void onLine(String line) {
         if (line.contains("Serving HTTP") && readyFired.compareAndSet(false, true)) {
             announceServing("http://localhost:" + STATIC_PORT);
+            return;
+        }
+        if (phpLane && line.contains("Development Server")
+                && readyFired.compareAndSet(false, true)) {
+            announceServing("http://" + PHP_ADDRESS);
             return;
         }
         if (webpackLane && !readyFired.get()) {
@@ -229,8 +243,8 @@ public class RunDevice extends CommandDevice {
             // composer-era layout serves the public/ docroot; a bare tree
             // serves from the project root
             case "php" -> new File(commandDir(), "public").isDirectory()
-                    ? List.of("php", "-S", "127.0.0.1:8000", "-t", "public")
-                    : List.of("php", "-S", "127.0.0.1:8000");
+                    ? List.of("php", "-S", PHP_ADDRESS, "-t", "public")
+                    : List.of("php", "-S", PHP_ADDRESS);
             case "make" -> List.of("make", "run");
             // the 2005 stack: serve the folder itself; python3 is a
             // Doctor-probed staple, and READY/URL fire on its banner

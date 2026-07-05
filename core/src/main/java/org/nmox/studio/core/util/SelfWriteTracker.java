@@ -1,19 +1,22 @@
-package org.nmox.studio.apiclient.api;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 
 /**
- * Tells the studio's own workspace saves apart from foreign edits by
+ * Tells a studio's own workspace saves apart from foreign edits by
  * remembering the file stamp (mtime + size) of the last write or load
  * the studio itself performed. A stamp that differs from the last
  * self-sync is a foreign change — hand-edit, git checkout, another
- * tool — and only those trigger the reload path.
+ * tool — and only those trigger a reload.
+ *
+ * <p>The one shared copy: Contract Studio (.nmoxweb3.json) and API
+ * Studio (.nmoxapi.json) both discriminate this way. DB Studio's
+ * {@code ExternalEdits} stays deliberately separate — its verdicts
+ * (NONE/RELOAD/DEFER) carry different semantics.
  *
  * <p>Thread-safe: the pulse thread asks {@link #isForeign} while the
  * EDT records syncs. The EDT re-asks just before reloading, so a save
  * racing the pulse's tick never masquerades as a foreign edit.
- * (Deliberately the same shape as Contract Studio's tracker — the two
- * modules share no code layer to host one copy.)
  */
 public final class SelfWriteTracker {
 
