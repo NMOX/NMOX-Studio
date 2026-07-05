@@ -9,6 +9,8 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -67,6 +69,21 @@ public class FlowCanvas extends JPanel {
     private InfraNode wireFrom;
     private Point2D wireGhost;
     private Point panStart;
+
+    /**
+     * At most one deferral listener is armed while the canvas is 0×0, so a
+     * fit()/selectNode() call before the window has sized this component
+     * waits on the real resize EVENT instead of busy-reposting itself onto
+     * the EDT forever (the startup-hang storm). Guarded by
+     * {@link #deferralArmed}: a second call while one is pending is dropped.
+     */
+    private boolean deferralArmed;
+
+    /** Test hook: how many times the fit() body has actually executed. */
+    int fitBodyRuns;
+
+    /** Test hook: how many times the selectNode() body has actually executed. */
+    int selectBodyRuns;
 
     public FlowCanvas(InfraGraph graph, Callbacks callbacks) {
         this.graph = graph;
@@ -132,10 +149,10 @@ public class FlowCanvas extends JPanel {
         if (node == null) {
             return;
         }
-        if (getWidth() <= 0 || getHeight() <= 0) {
-            javax.swing.SwingUtilities.invokeLater(() -> selectNode(node));
+        if (deferUntilSized(() -> selectNode(node))) {
             return;
         }
+        selectBodyRuns++;
         double cx = node.x + NODE_W / 2.0;
         double cy = node.y + NODE_H / 2.0;
         panX = getWidth() / 2.0 - cx * zoom;
@@ -153,15 +170,67 @@ public class FlowCanvas extends JPanel {
         }
     }
 
+    /**
+     * When this canvas has no size yet (called before the window system has
+     * laid it out — e.g. an open-at-startup tab that is not the selected
+     * one), arm a ONE-SHOT resize listener that runs {@code body} the first
+     * time a real size arrives, and return true so the caller stops. At most
+     * one such listener is armed at a time ({@link #deferralArmed}); repeat
+     * calls while unsized are dropped rather than each posting a fresh retry.
+     *
+     * <p>This replaces the former {@code invokeLater(this::fit)} busy-repost,
+     * which spun the EDT at full speed forever when the canvas was never
+     * sized — starving the main window's first paint (the startup-hang
+     * storm). We now wait on the resize EVENT, not on a spin.
+     *
+     * @return true if the call was deferred (caller must return); false if
+     *         the canvas is already sized and the caller should proceed.
+     */
+    private boolean deferUntilSized(Runnable body) {
+        if (getWidth() > 0 && getHeight() > 0) {
+            return false;
+        }
+        if (deferralArmed) {
+            // A listener is already pending; when it fires it re-runs the
+            // real entry point, which re-checks size. Don't stack another.
+            return true;
+        }
+        deferralArmed = true;
+        addComponentListener(new ComponentAdapter() {
+            /** Per-listener latch: this instance runs its body at most once. */
+            private boolean fired;
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                // Wait for the FIRST real size, then run the body exactly once.
+                // AWT can deliver a resize event to an already-captured
+                // listener more than once (a listener removed mid-dispatch is
+                // still called for an event snapshotted before removal), so we
+                // latch on `fired` — remove + disarm + latch all flip before
+                // body.run(), keeping the body strictly one-shot even under
+                // re-delivery or a re-entrant relayout.
+                if (fired || getWidth() <= 0 || getHeight() <= 0) {
+                    return;
+                }
+                fired = true;
+                deferralArmed = false;
+                removeComponentListener(this);
+                body.run();
+            }
+        });
+        return true;
+    }
+
     /** Centers the view on the design. */
     public void fit() {
         // called on load before the window system has sized this canvas:
         // dividing by width 0 slammed zoom to the floor ("way out").
-        // Defer one layout pass and fit against the real viewport.
-        if (getWidth() <= 0 || getHeight() <= 0) {
-            javax.swing.SwingUtilities.invokeLater(this::fit);
+        // Wait for the first real resize event, then fit against the real
+        // viewport (see deferUntilSized — this used to busy-repost the EDT).
+        if (deferUntilSized(this::fit)) {
             return;
         }
+        fitBodyRuns++;
         var nodes = graph.getNodes();
         if (nodes.isEmpty()) {
             zoom = 1.0;
