@@ -8,19 +8,22 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.json.JSONObject;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -51,6 +54,8 @@ import org.openide.filesystems.FileUtil;
     "HINT_NpmExplorerTopComponent=Shows NPM scripts and dependencies"
 })
 public final class NpmExplorerTopComponent extends TopComponent {
+
+    private static final Logger LOG = Logger.getLogger(NpmExplorerTopComponent.class.getName());
 
     private JTree tree;
     private DefaultTreeModel treeModel;
@@ -213,8 +218,12 @@ public final class NpmExplorerTopComponent extends TopComponent {
             }
             
         } catch (IOException | org.json.JSONException ex) {
-            Exceptions.printStackTrace(ex);
-            rootNode.setUserObject("Error reading package.json");
+            // a malformed package.json is usually one the user is editing in
+            // this very IDE right now — say why in the tree, never pop the
+            // exception dialog over their typing
+            LOG.log(Level.INFO, "package.json unreadable: {0}", ex.getMessage());
+            rootNode.removeAllChildren();
+            rootNode.setUserObject("Error reading package.json: " + ex.getMessage());
             treeModel.reload();
         }
     }
@@ -275,9 +284,16 @@ public final class NpmExplorerTopComponent extends TopComponent {
             // rack unavailable; fall through to context detection
         }
 
-        // Try to get from current context
-        Lookup.Result<DataObject> result = Utilities.actionsGlobalContext().lookupResult(DataObject.class);
-        for (DataObject dobj : result.allInstances()) {
+        // Fall back to the window system's current selection. The registry
+        // keeps the last real selection even while this explorer itself is
+        // the activated component (it never sets activated nodes of its
+        // own) — actionsGlobalContext() would read THIS component's empty
+        // lookup the moment the user clicks Refresh here.
+        for (Node n : TopComponent.getRegistry().getActivatedNodes()) {
+            DataObject dobj = n.getLookup().lookup(DataObject.class);
+            if (dobj == null) {
+                continue;
+            }
             FileObject file = dobj.getPrimaryFile();
             // Walk up to find package.json
             while (file != null) {
@@ -307,7 +323,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
 
     private void runNpmCommand(String command) {
         if (currentProjectDir == null) {
-            JOptionPane.showMessageDialog(this, "No project directory found");
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    "No project directory found", NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
         

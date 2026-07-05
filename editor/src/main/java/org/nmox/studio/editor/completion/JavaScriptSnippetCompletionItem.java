@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 public class JavaScriptSnippetCompletionItem implements CompletionItem {
     
@@ -27,30 +24,14 @@ public class JavaScriptSnippetCompletionItem implements CompletionItem {
     
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            
-            // Remove the partial text
-            doc.remove(startOffset, length);
-            
-            // Process the snippet code to expand template variables
-            String expandedCode = expandSnippet(snippet.code);
-            
-            // Insert the expanded snippet
-            doc.insertString(startOffset, expandedCode, null);
-            
-            // Find first placeholder position for cursor placement
+        // expanded snippet body; caret on the first placeholder when
+        // there is one, else after the whole insertion
+        String expandedCode = expandSnippet(snippet.code);
+        if (CompletionEdits.replace(component.getDocument(), startOffset, length, expandedCode)) {
             int firstPlaceholder = findFirstPlaceholder(expandedCode);
-            if (firstPlaceholder >= 0) {
-                component.setCaretPosition(startOffset + firstPlaceholder);
-            } else {
-                component.setCaretPosition(startOffset + expandedCode.length());
-            }
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            component.setCaretPosition(startOffset
+                    + (firstPlaceholder >= 0 ? firstPlaceholder : expandedCode.length()));
         }
-        
         Completion.get().hideAll();
     }
     

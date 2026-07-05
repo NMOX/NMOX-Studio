@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 public class HtmlTagCompletionItem implements CompletionItem {
     
@@ -29,33 +26,14 @@ public class HtmlTagCompletionItem implements CompletionItem {
     
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            
-            // Remove the partial text
-            doc.remove(startOffset, length);
-            
-            // Insert the tag
-            String insertion;
-            int newCaretPos;
-            
-            if (isVoid) {
-                // Self-closing tag
-                insertion = tagName + " />";
-                newCaretPos = startOffset + tagName.length() + 1;
-            } else {
-                // Regular tag with closing tag
-                insertion = tagName + "></" + tagName + ">";
-                newCaretPos = startOffset + tagName.length() + 1;
-            }
-            
-            doc.insertString(startOffset, insertion, null);
-            component.setCaretPosition(newCaretPos);
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+        // void tags self-close; regular tags get their closing pair,
+        // caret after the tag name either way
+        String insertion = isVoid
+                ? tagName + " />"
+                : tagName + "></" + tagName + ">";
+        if (CompletionEdits.replace(component.getDocument(), startOffset, length, insertion)) {
+            component.setCaretPosition(startOffset + tagName.length() + 1);
         }
-        
         Completion.get().hideAll();
     }
     

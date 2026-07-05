@@ -1,6 +1,8 @@
 package org.nmox.studio.editor.completion;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -9,14 +11,15 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.util.Exceptions;
 
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
     @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
     @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class)
 })
 public class JavaScriptCompletionProvider implements CompletionProvider {
-    
+
+    private static final Logger LOG = Logger.getLogger(JavaScriptCompletionProvider.class.getName());
+
     private static final Map<String, List<JavaScriptMethod>> GLOBAL_OBJECTS = new HashMap<>();
     private static final Set<String> KEYWORDS = new HashSet<>();
     private static final List<JavaScriptSnippet> SNIPPETS = new ArrayList<>();
@@ -205,7 +208,8 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
                     addDocumentIdentifiers(resultSet, doc, context, caretOffset);
                 }
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+                // the document moved under the async query — routine, no items
+                LOG.log(Level.FINE, "completion query raced the document: {0}", ex.getMessage());
             } finally {
                 resultSet.finish();
             }

@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 public class HtmlClosingTagCompletionItem implements CompletionItem {
     
@@ -27,23 +24,11 @@ public class HtmlClosingTagCompletionItem implements CompletionItem {
     
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            
-            // Remove the partial text
-            doc.remove(startOffset, length);
-            
-            // Insert the closing tag
-            String insertion = tagName + ">";
-            doc.insertString(startOffset, insertion, null);
-            
-            // Position cursor after the tag
+        // completes the closing tag, caret after the '>'
+        String insertion = tagName + ">";
+        if (CompletionEdits.replace(component.getDocument(), startOffset, length, insertion)) {
             component.setCaretPosition(startOffset + insertion.length());
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        
         Completion.get().hideAll();
     }
     

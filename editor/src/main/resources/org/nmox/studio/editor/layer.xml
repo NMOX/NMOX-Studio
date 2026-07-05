@@ -7,42 +7,14 @@
          triggered the "ineffective registration, use @MIMEResolver" warning
          (NB bug #191777), so it was removed. -->
 
-    <!-- File type actions and editors -->
-    <folder name="Loaders">
-        <folder name="text">
-            <folder name="javascript">
-                <folder name="Actions">
-                    <file name="org-openide-actions-OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                </folder>
-                <folder name="Factories">
-                    <file name="JavaScriptEditorKit.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.NbEditorKit"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    
-    <!-- The platform's markdown module wires the spellchecker's
-         whole-file PlainTokenListProvider to text/markdown, which flags
-         every identifier in fenced/inline code as a typo. Our
-         MarkdownSpellTokenListProvider (prose-only) replaces it; hide
-         the plain one so the two are never combined. -->
+    <!-- The JavaScript loader's context-menu actions live on
+         JavaScriptDataObject's @ActionReferences (the generated layer),
+         which carry the complete standard set with unique positions.
+         This module layer loads BEFORE the generated layer, so any
+         hand-written Loaders/text/javascript shadows here would win
+         attribute merges and collide with the annotation positions —
+         keep loader wiring on the annotations only. -->
+
     <folder name="Editors">
         <!-- The IDE always runs the FlatLaf Dark look and feel (forced in
              nmoxstudio.conf), but the editor's color profile is a separate
@@ -58,22 +30,22 @@
              storage validates the attribute against display names. -->
         <attr name="currentFontColorProfile" stringvalue="FlatLaf Dark"/>
         <folder name="text">
+            <!-- The platform's markdown module wires the spellchecker's
+                 whole-file PlainTokenListProvider to text/markdown, which flags
+                 every identifier in fenced/inline code as a typo. Our
+                 MarkdownSpellTokenListProvider (prose-only) replaces it; hide
+                 the plain one so the two are never combined. -->
             <folder name="markdown">
                 <folder name="TokenListProvider">
                     <file name="org-netbeans-modules-spellchecker-plain-PlainTokenListProvider.instance_hidden"/>
                 </folder>
             </folder>
-        </folder>
-    </folder>
-
-    <!-- Lexer language bindings + token coloring. The language.instance
-         entries are what make syntax highlighting actually happen: they
-         hand the editor infrastructure our Language for each MIME type.
-         The text/textmate pseudo-mime carries colorings for ALL TextMate
-         grammars; the platform only fills its "NetBeans" profile, so the
-         dark profile gets the NMOX Phosphor palette here. -->
-    <folder name="Editors">
-        <folder name="text">
+            <!-- Lexer language bindings + token coloring. The language.instance
+                 entries are what make syntax highlighting actually happen: they
+                 hand the editor infrastructure our Language for each MIME type.
+                 The text/textmate pseudo-mime carries colorings for ALL TextMate
+                 grammars; the platform only fills its "NetBeans" profile, so the
+                 dark profile gets the NMOX Phosphor palette here. -->
             <folder name="textmate">
                 <folder name="FontsColors">
                     <folder name="FlatLafDark">

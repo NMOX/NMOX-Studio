@@ -80,7 +80,8 @@ public class WebProject implements Project {
             try {
                 FileObject packageJson = projectDir.getFileObject("package.json");
                 if (packageJson != null) {
-                    String content = new String(Files.readAllBytes(FileUtil.toFile(packageJson).toPath()));
+                    // package.json is spec-UTF-8; readString decodes it as such
+                    String content = Files.readString(FileUtil.toFile(packageJson).toPath());
                     JSONObject json = new JSONObject(content);
                     if (json.has("name")) {
                         return json.getString("name");

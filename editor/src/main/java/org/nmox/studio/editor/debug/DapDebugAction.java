@@ -17,6 +17,7 @@ import org.nmox.studio.core.process.ToolLocator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 /**
  * Real breakpoint debugging through the platform's DAP client: toggle
@@ -32,6 +33,9 @@ import org.openide.loaders.DataObject;
             popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000)
 })
 public class DapDebugAction extends BaseAction {
+
+    /** Launches run off the EDT; interruptible daemon so it can never pin shutdown. */
+    private static final RequestProcessor RP = new RequestProcessor("nmox-dap", 1, true);
 
     public DapDebugAction() {
         super("nmox-debug-file");
@@ -49,7 +53,7 @@ public class DapDebugAction extends BaseAction {
         }
         File file = org.openide.filesystems.FileUtil.toFile(fo);
         String mime = (String) doc.getProperty("mimeType");
-        new Thread(() -> {
+        RP.post(() -> {
             try {
                 if ("text/x-python".equals(mime)) {
                     debugPython(file);
@@ -60,7 +64,7 @@ public class DapDebugAction extends BaseAction {
                 StatusDisplayer.getDefault().setStatusText(
                         "Debug failed: " + ex.getMessage() + " — is the debug adapter installed?");
             }
-        }, "nmox-dap-launch").start();
+        });
     }
 
     /** debugpy's adapter speaks DAP on stdio: the clean case. */
@@ -71,16 +75,24 @@ public class DapDebugAction extends BaseAction {
         pb.environment().put("PATH", ToolLocator.augmentedPath());
         pb.redirectError(ProcessBuilder.Redirect.DISCARD);
         Process adapter = pb.start();
-        DAPConfiguration.create(adapter.getInputStream(), adapter.getOutputStream())
-                .addConfiguration(Map.of(
-                        "type", "python",
-                        "request", "launch",
-                        "program", file.getAbsolutePath(),
-                        "cwd", file.getParentFile().getAbsolutePath(),
-                        "console", "internalConsole",
-                        "justMyCode", true))
-                .setSessionName("Python: " + file.getName())
-                .launch();
+        // once launch() hands off, the platform's DAP client owns the
+        // adapter's lifecycle; until then a failed configure/launch must
+        // not leave the spawned adapter running for the IDE's lifetime
+        try {
+            DAPConfiguration.create(adapter.getInputStream(), adapter.getOutputStream())
+                    .addConfiguration(Map.of(
+                            "type", "python",
+                            "request", "launch",
+                            "program", file.getAbsolutePath(),
+                            "cwd", file.getParentFile().getAbsolutePath(),
+                            "console", "internalConsole",
+                            "justMyCode", true))
+                    .setSessionName("Python: " + file.getName())
+                    .launch();
+        } catch (RuntimeException ex) {
+            adapter.destroyForcibly();
+            throw ex;
+        }
     }
 
     /** delve serves DAP on a TCP port; we connect a socket to it. */
@@ -93,17 +105,33 @@ public class DapDebugAction extends BaseAction {
         pb.redirectError(ProcessBuilder.Redirect.DISCARD);
         pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
         Process dlv = pb.start();
-        Socket socket = connectWithRetry(port, 20);
-        DAPConfiguration.create(socket.getInputStream(), socket.getOutputStream())
-                .addConfiguration(Map.of(
-                        "type", "go",
-                        "request", "launch",
-                        "mode", "debug",
-                        "program", file.getParentFile().getAbsolutePath()))
-                .setSessionName("Go: " + file.getName())
-                .launch();
-        if (!dlv.isAlive()) {
-            throw new IOException("delve exited immediately");
+        // any failure between spawn and a successful launch() hand-off
+        // must reap the listening dlv (and its socket) — otherwise every
+        // failed attempt piles up an orphaned adapter until IDE exit
+        Socket socket = null;
+        try {
+            socket = connectWithRetry(port, 20);
+            DAPConfiguration.create(socket.getInputStream(), socket.getOutputStream())
+                    .addConfiguration(Map.of(
+                            "type", "go",
+                            "request", "launch",
+                            "mode", "debug",
+                            "program", file.getParentFile().getAbsolutePath()))
+                    .setSessionName("Go: " + file.getName())
+                    .launch();
+            if (!dlv.isAlive()) {
+                throw new IOException("delve exited immediately");
+            }
+        } catch (IOException | InterruptedException | RuntimeException ex) {
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException closeFailure) {
+                    // the forcible kill below tears the connection down anyway
+                }
+            }
+            dlv.destroyForcibly();
+            throw ex;
         }
     }
 

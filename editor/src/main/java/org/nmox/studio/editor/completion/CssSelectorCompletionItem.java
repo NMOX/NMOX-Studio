@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 public class CssSelectorCompletionItem implements CompletionItem {
     
@@ -27,23 +24,11 @@ public class CssSelectorCompletionItem implements CompletionItem {
     
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            
-            // Remove the partial text
-            doc.remove(startOffset, length);
-            
-            // Insert the selector with opening brace
-            String insertion = selector + " {\n    \n}";
-            doc.insertString(startOffset, insertion, null);
-            
-            // Position cursor inside the rule block
+        // selector with an opened rule block, caret on the indented line
+        if (CompletionEdits.replace(component.getDocument(), startOffset, length,
+                selector + " {\n    \n}")) {
             component.setCaretPosition(startOffset + selector.length() + 6);
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        
         Completion.get().hideAll();
     }
     
