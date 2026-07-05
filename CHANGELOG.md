@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.33.1] — 2026-07-04
+
+### Fixed
+- **No more macOS permission storm on first launch.** A fresh launch
+  with no recent project aimed the rack at your **home directory**, and
+  Project Studio's file tree plus the Project Explorer's toolchain
+  detection both enumerated it **on the UI thread** during startup.
+  Walking `~` touches `~/Desktop`, `~/Downloads`, and `~/Pictures/Photos
+  Library` — the macOS TCC-protected folders — so each listing fired a
+  system permission prompt, and because it ran on the UI thread the
+  prompts stacked and the main window couldn't finish drawing. Fresh
+  launches now aim at a dedicated **`~/NMOX` workspace** (created on
+  first run); only that folder is ever scanned, so the app never touches
+  Desktop/Downloads/Photos and macOS never prompts. A recent or
+  resurrected project still takes precedence — `~/NMOX` is only the
+  no-project default.
+- **A slow folder can no longer freeze first paint.** Every startup
+  filesystem walk moved off the UI thread — FileTreePanel resolves
+  children lazily on expand via a background worker (directories get a
+  placeholder instead of a probing `File.list()`), and
+  `ProjectInspector.detectKinds` runs off-thread with the header filled
+  in asynchronously. A startup audit caught and fixed three more
+  reachable-on-the-EDT walks (the Docker panel and the ROSETTA /
+  package-manager devices' project-change handlers). rack 593 tests,
+  project 14; SpotBugs + find-sec-bugs clean.
+
 ## [1.33.0] — 2026-07-04
 
 Web3 becomes a first-class citizen: **Contract Studio** (⇧⌘6), Solidity

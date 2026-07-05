@@ -206,14 +206,20 @@ public class PackageManagerDevice extends CommandDevice {
     }
 
     private void refreshDepsLcd() {
-        int[] counts = ProjectInspector.dependencyCounts(projectDir());
-        var kinds = ProjectInspector.detectKinds(projectDir());
-        // a present-but-unparseable package.json is a fact worth stating,
-        // not a silent shrug - it breaks every AUTO knob downstream
-        boolean broken = counts == null && new File(
-                ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE),
-                "package.json").isFile();
-        onEdt(() -> {
+        // dependencyCounts / detectKinds / kindDir all walk the project
+        // directory; on a $HOME aim that would touch the TCC-protected folders
+        // on the EDT during startup. Read the truth on the background thread and
+        // marshal the LCD update back to the EDT.
+        File dir = projectDir();
+        offEdt(() -> {
+            int[] counts = ProjectInspector.dependencyCounts(dir);
+            var kinds = ProjectInspector.detectKinds(dir);
+            // a present-but-unparseable package.json is a fact worth stating,
+            // not a silent shrug - it breaks every AUTO knob downstream
+            boolean broken = counts == null && new File(
+                    ProjectInspector.kindDir(dir, ProjectInspector.ProjectKind.NODE),
+                    "package.json").isFile();
+            onEdt(() -> {
             depsLcd.setText(broken ? "PACKAGE.JSON UNREADABLE"
                     : counts != null && kinds.size() <= 1
                     ? counts[0] + "+" + counts[1] + " DEPS"
@@ -225,6 +231,7 @@ public class PackageManagerDevice extends CommandDevice {
                     : counts == null
                     ? "No package.json in the project"
                     : counts[0] + " dependencies, " + counts[1] + " devDependencies");
+            });
         });
     }
 }

@@ -81,6 +81,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     private final JPanel content = new JPanel();
     private final JPanel header = new JPanel();
+    /** Toolchain detection (File.list-heavy) runs here, never on the EDT. */
+    private final org.openide.util.RequestProcessor detector =
+            new org.openide.util.RequestProcessor("nmox-workbench-detect", 1, true);
 
     private final PropertyChangeListener registryListener = (PropertyChangeEvent evt) -> {
         String p = evt.getPropertyName();
@@ -171,15 +174,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         JPanel chips = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         chips.setBackground(BG);
         chips.setAlignmentX(LEFT_ALIGNMENT);
-        List<String> kinds = detectKindNames(dir);
-        if (kinds.isEmpty()) {
-            chips.add(chip("no toolchain yet", TEXT_DIM));
-        } else {
-            for (String kind : kinds) {
-                chips.add(chip(kind, ACCENT));
-            }
-        }
+        chips.add(chip("detecting…", TEXT_DIM));
         header.add(chips);
+        // Toolchain detection walks the project directory (File.list on every
+        // manifest lane), which on a fresh $HOME aim would touch the
+        // TCC-protected folders on the EDT. Run it on a background thread and
+        // fill the chips when it returns.
+        fillChipsAsync(chips, dir);
 
         JLabel path = new JLabel(dir.getAbsolutePath());
         path.setFont(TINY);
@@ -219,6 +220,29 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // detection is decoration; the workbench works without it
         }
         return names;
+    }
+
+    /**
+     * Detects {@code dir}'s toolchains on the background detector and replaces
+     * the placeholder chip with the real chips on the EDT. The chips panel is
+     * only touched if it is still showing (the header wasn't rebuilt under us).
+     */
+    private void fillChipsAsync(JPanel chips, File dir) {
+        WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, kinds -> {
+            if (chips.getParent() == null) {
+                return; // header rebuilt since; a newer request owns the chips
+            }
+            chips.removeAll();
+            if (kinds.isEmpty()) {
+                chips.add(chip("no toolchain yet", TEXT_DIM));
+            } else {
+                for (String kind : kinds) {
+                    chips.add(chip(kind, ACCENT));
+                }
+            }
+            chips.revalidate();
+            chips.repaint();
+        });
     }
 
     // ---- sections ----
@@ -293,11 +317,20 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         }
         for (File dir : recents) {
             boolean aimed = dir.equals(current);
-            String kinds = String.join(" · ", detectKindNames(dir));
-            row(dir.getName(), kinds.isEmpty() ? dir.getParent() : kinds,
+            // subtitle starts as the parent path; toolchain detection (which
+            // walks the directory) resolves off the EDT and refines it
+            JLabel sub = row(dir.getName(), dir.getParent(),
                     aimed, aimed ? ACCENT : null,
                     dir.getAbsolutePath() + (aimed ? "  (aimed)" : "  — click to aim the IDE here"),
                     () -> aimAt(dir));
+            if (sub != null) {
+                WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
+                    String kinds = String.join(" · ", names);
+                    if (!kinds.isEmpty() && sub.getParent() != null) {
+                        sub.setText(shorten(kinds, 38));
+                    }
+                });
+            }
         }
     }
 
@@ -421,8 +454,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         content.add(label);
     }
 
-    /** One clickable row: title, dim subtitle, optional status dot. */
-    private void row(String title, String subtitle, boolean bold, Color dot,
+    /**
+     * One clickable row: title, dim subtitle, optional status dot. Returns the
+     * subtitle label (or null when there is none) so a caller can refine it
+     * later — e.g. after off-EDT toolchain detection.
+     */
+    private JLabel row(String title, String subtitle, boolean bold, Color dot,
             String tooltip, Runnable onClick) {
         JPanel rowPanel = new JPanel();
         rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
@@ -444,8 +481,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         titleLabel.setFont(bold ? ROW_BOLD : ROW_FONT);
         titleLabel.setForeground(TEXT);
         rowPanel.add(titleLabel);
+        JLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            JLabel sub = new JLabel(shorten(subtitle, 38));
+            sub = new JLabel(shorten(subtitle, 38));
             sub.setFont(TINY);
             sub.setForeground(TEXT_DIM);
             sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
@@ -472,6 +510,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
         });
         content.add(rowPanel);
+        return sub;
     }
 
     /** Middle-ellipsis so deep paths keep their telling ends. */

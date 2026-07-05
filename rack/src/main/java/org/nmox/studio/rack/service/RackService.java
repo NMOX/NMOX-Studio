@@ -52,9 +52,76 @@ public class RackService {
                 }
             });
             followOpenProjects();
+            aimAtDefaultWorkspace();
             startSessionSnapshots();
         }
         return rack;
+    }
+
+    /**
+     * The dedicated home for a fresh launch: {@code <home>/NMOX}. Pure so a
+     * test can assert the path without touching the real home directory or
+     * creating anything.
+     */
+    static File defaultWorkspaceDir(String homePath) {
+        return new File(homePath, "NMOX");
+    }
+
+    /**
+     * When nothing has aimed the rack (no open project, no session to
+     * resurrect, no recent project restored), point it at {@code ~/NMOX}
+     * instead of $HOME. Scanning one initially-empty folder never touches a
+     * TCC-protected directory (~/Desktop, ~/Downloads, the Photos library), so
+     * a fresh launch draws its window without stacking macOS permission
+     * prompts on the EDT. Creating the directory is a real side effect and is
+     * done only inside the platform (netbeans.user set) — plain unit tests
+     * that construct a RackService must never write to the real home.
+     */
+    private void aimAtDefaultWorkspace() {
+        File workspace = defaultWorkspaceDir(System.getProperty("user.home"));
+        // followOpenProjects() may already have PASSIVELY aimed at an open
+        // project (which does not flip `aimed`). Only fall back to ~/NMOX when
+        // nothing aimed the rack at all — i.e. it still holds its construction
+        // default. Comparing against that default (also ~/NMOX) is the honest
+        // "was I aimed?" check that works for both passive and explicit aims.
+        if (aimed || !rack.getProjectDir().equals(workspace)) {
+            return; // an open project (or an explicit choice) already aimed us
+        }
+        if (System.getProperty("netbeans.user") != null) {
+            ensureWorkspace(workspace);
+        }
+        // passive: a later passive source (persisted rack window) may still
+        // re-aim, and any explicit user aim always outranks this. setProjectDir
+        // fires projectChanged only when the value actually changes, so this
+        // stays quiet when the rack already holds ~/NMOX from construction.
+        openProjectPassively(workspace);
+    }
+
+    /**
+     * Creates the workspace directory on first run and, only when creating it,
+     * drops a short README so the empty folder explains itself. Never
+     * overwrites an existing README.
+     */
+    private static void ensureWorkspace(File workspace) {
+        try {
+            if (workspace.isDirectory()) {
+                return; // already there; leave any existing README untouched
+            }
+            java.nio.file.Files.createDirectories(workspace.toPath());
+            File readme = new File(workspace, "README.md");
+            if (!readme.exists()) {
+                java.nio.file.Files.writeString(readme.toPath(),
+                        "# NMOX Studio workspace\n\n"
+                        + "New projects you create land here. You can open any "
+                        + "other folder from Workbench → Open.\n",
+                        java.nio.charset.StandardCharsets.UTF_8);
+            }
+        } catch (Exception ex) {
+            // a workspace we cannot create is not fatal: the rack simply aims
+            // at a path that does not resolve, which scans nothing
+            java.util.logging.Logger.getLogger(RackService.class.getName())
+                    .warning("Could not prepare workspace " + workspace + ": " + ex);
+        }
     }
 
     // ---- session resurrection: the mosh principle ----
