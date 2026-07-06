@@ -1473,7 +1473,21 @@ public final class Web3StudioTopComponent extends TopComponent {
         session = null;
         networks.clear();
         deployments.clear();
-        Web3WorkspaceIO.Workspace workspace = Web3WorkspaceIO.load(workspaceDir());
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(workspaceDir());
+        Web3WorkspaceIO.Workspace workspace = outcome.workspace();
+        if (outcome.backup() != null) {
+            // corrupt file: the IO layer copied it aside BEFORE handing us the
+            // empty fallback — the address book survives in the .bak
+            try {
+                org.openide.awt.NotificationDisplayer.getDefault().notify(
+                        "Couldn't read " + Web3WorkspaceIO.FILENAME + " — starting empty",
+                        javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
+                        "The unreadable original was kept at " + outcome.backup().getName() + ".",
+                        null);
+            } catch (RuntimeException | LinkageError ignored) {
+                // notifications unavailable (tests, stripped platform)
+            }
+        }
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
         selfWrites.noteSync(new File(workspaceDir(), Web3WorkspaceIO.FILENAME));

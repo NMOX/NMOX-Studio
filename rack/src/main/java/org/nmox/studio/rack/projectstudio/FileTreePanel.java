@@ -347,27 +347,25 @@ public class FileTreePanel extends JPanel {
                 line.setInputText(target.getName());
                 if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION
                         && !line.getInputText().isBlank()) {
-                    try {
-                        FileOps.rename(target, line.getInputText().trim());
-                        rebuild();
-                    } catch (IOException ex) {
-                        error(ex);
-                    }
+                    String newName = line.getInputText().trim();
+                    runFileOp(() -> FileOps.rename(target, newName), null);
                 }
             });
             menu.add(rename);
 
-            JMenuItem delete = new JMenuItem("Delete (to Trash)");
+            // honest label: FileOps.delete prefers the system Trash but falls
+            // back to a hard recursive delete when Trash is unavailable
+            JMenuItem delete = new JMenuItem("Delete…");
             delete.addActionListener(a -> {
                 if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                        "Delete \"" + target.getName() + "\"?", "Project Studio",
+                        "Delete \"" + target.getName()
+                        + "\"?\n(Moved to the system Trash when supported; "
+                        + "deleted permanently otherwise.)", "Project Studio",
                         NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
-                    try {
-                        FileOps.delete(target);
-                        rebuild();
-                    } catch (IOException ex) {
-                        error(ex);
-                    }
+                    runFileOp(() -> {
+                        FileOps.delete(target); // node_modules-sized trees take minutes
+                        return null;
+                    }, null);
                 }
             });
             menu.add(delete);
@@ -402,18 +400,42 @@ public class FileTreePanel extends JPanel {
                 || line.getInputText().isBlank()) {
             return;
         }
-        String name = line.getInputText();
-        try {
-            File created = directory
-                    ? FileOps.createDirectory(parent, name.trim())
-                    : FileOps.createFile(parent, name.trim());
-            rebuild();
-            if (created.isFile()) {
-                openInEditor(created);
+        String name = line.getInputText().trim();
+        runFileOp(() -> directory
+                ? FileOps.createDirectory(parent, name)
+                : FileOps.createFile(parent, name),
+                created -> {
+                    if (created != null && created.isFile()) {
+                        openInEditor(created);
+                    }
+                });
+    }
+
+    /** A file CRUD operation that can fail — and can be slow. */
+    private interface FileOp {
+        File run() throws IOException;
+    }
+
+    /**
+     * Runs a CRUD operation on the background scanner — never the EDT, where
+     * a recursive node_modules delete is a minutes-long beachball — then
+     * rebuilds the tree and hands the result to {@code onDone} back on the
+     * EDT. Errors surface as the usual dialog, also on the EDT.
+     */
+    private void runFileOp(FileOp op, java.util.function.Consumer<File> onDone) {
+        scanner.post(() -> {
+            try {
+                File result = op.run();
+                SwingUtilities.invokeLater(() -> {
+                    rebuild();
+                    if (onDone != null) {
+                        onDone.accept(result);
+                    }
+                });
+            } catch (IOException ex) {
+                SwingUtilities.invokeLater(() -> error(ex));
             }
-        } catch (IOException ex) {
-            error(ex);
-        }
+        });
     }
 
     private void openInEditor(File file) {

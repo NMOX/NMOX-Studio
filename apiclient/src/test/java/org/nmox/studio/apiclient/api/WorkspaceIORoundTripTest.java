@@ -125,6 +125,37 @@ class WorkspaceIORoundTripTest {
     }
 
     @Test
+    @DisplayName("A corrupt .nmoxapi.json is copied to .bak BEFORE the empty fallback")
+    void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws Exception {
+        String corrupt = "{ \"collections\": [ definitely-not-json";
+        Files.writeString(dir.resolve(WorkspaceIO.FILENAME), corrupt);
+
+        WorkspaceIO.LoadOutcome outcome = WorkspaceIO.loadGuarded(dir.toFile());
+
+        assertThat(outcome.workspace()).as("the fallback is empty (caller starts fresh)").isNull();
+        assertThat(outcome.backup()).isNotNull();
+        assertThat(outcome.backup().getName()).isEqualTo(WorkspaceIO.FILENAME + ".bak");
+        assertThat(Files.readString(outcome.backup().toPath()))
+                .as("the backup carries the original bytes").isEqualTo(corrupt);
+    }
+
+    @Test
+    @DisplayName("A missing file makes no backup and no workspace; a clean file makes no backup")
+    void guardedLoadHandlesMissingAndCleanFiles(@TempDir Path dir) throws Exception {
+        WorkspaceIO.LoadOutcome missing = WorkspaceIO.loadGuarded(dir.toFile());
+        assertThat(missing.workspace()).isNull();
+        assertThat(missing.backup()).isNull();
+        assertThat(dir.resolve(WorkspaceIO.FILENAME + ".bak")).doesNotExist();
+
+        WorkspaceIO.save(dir.toFile(), richWorkspace());
+        WorkspaceIO.LoadOutcome clean = WorkspaceIO.loadGuarded(dir.toFile());
+        assertThat(clean.workspace()).isNotNull();
+        assertThat(clean.workspace().activeEnvironment).isEqualTo("Prod");
+        assertThat(clean.backup()).isNull();
+        assertThat(dir.resolve(WorkspaceIO.FILENAME + ".bak")).doesNotExist();
+    }
+
+    @Test
     @DisplayName("Unknown fields, assertion kinds and auth types from a newer file are skipped, not fatal")
     void newerFileDegradesPolitely() {
         String futureJson = """

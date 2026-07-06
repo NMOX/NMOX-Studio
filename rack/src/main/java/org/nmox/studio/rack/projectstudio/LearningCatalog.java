@@ -41,6 +41,11 @@ public final class LearningCatalog {
 
     public record Driver(DriverKind kind, List<String> command, String prompt,
             List<String> snippets) {
+
+        public Driver {
+            command = List.copyOf(command);
+            snippets = List.copyOf(snippets);
+        }
     }
 
     public record SampleFile(String path, String content) {
@@ -49,6 +54,14 @@ public final class LearningCatalog {
     public record Space(String slug, String name, Category category, String family,
             String blurb, Driver driver, Map<String, String> install,
             List<SampleFile> files, String tutorial) {
+
+        public Space {
+            // the catalog is a shared 52-space cache handed to every caller;
+            // no one may mutate it. LinkedHashMap copy keeps install ordering
+            // (Map.copyOf would scramble the mac/linux/windows display order).
+            install = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(install));
+            files = List.copyOf(files);
+        }
 
         /** The file a fresh space should open first: the tutorial. */
         public String openFile() {
@@ -61,11 +74,13 @@ public final class LearningCatalog {
     private LearningCatalog() {
     }
 
-    /** Every space, in catalog order. Parsed once. */
+    /** Every space, in catalog order. Parsed once. Immutable — this is a
+     * shared cache returned from an exported package; a caller's add() or
+     * sort() must throw rather than corrupt the catalog for everyone. */
     public static List<Space> all() {
         List<Space> local = cache;
         if (local == null) {
-            local = load();
+            local = List.copyOf(load());
             cache = local;
         }
         return local;

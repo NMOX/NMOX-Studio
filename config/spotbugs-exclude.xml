@@ -73,19 +73,15 @@
          no remote attacker supplying them. -->
     <Match><Bug pattern="PATH_TRAVERSAL_IN"/></Match>
 
-    <!-- The source-parser grammar regexes (OutlineModel, CodeIndexService)
-         are flagged ReDoS-prone, but they only ever run on the user's own
-         source, off the EDT; OutlineModel additionally caps each line's length
-         before matching. Rewriting these many language-grammar regexes would
-         risk the parsers' correctness for no real gain. REDOS stays active
-         everywhere else — it already caught two genuine ones in the eslint and
-         docker output parsers (external tool output), which we fixed. -->
+    <!-- The source-parser grammar regexes (OutlineModel) are flagged
+         ReDoS-prone, but they only ever run on the user's own source, off
+         the EDT, and OutlineModel caps each line's length before matching.
+         Rewriting these many language-grammar regexes would risk the
+         parsers' correctness for no real gain. REDOS stays active
+         everywhere else — it already caught two genuine ones in the eslint
+         and docker output parsers (external tool output), which we fixed. -->
     <Match>
         <Class name="org.nmox.studio.editor.outline.OutlineModel"/>
-        <Bug pattern="REDOS"/>
-    </Match>
-    <Match>
-        <Class name="org.nmox.studio.editor.index.CodeIndexService"/>
         <Bug pattern="REDOS"/>
     </Match>
 

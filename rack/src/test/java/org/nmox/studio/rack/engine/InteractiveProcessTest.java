@@ -56,4 +56,59 @@ class InteractiveProcessTest {
                         List.of("nmox-definitely-not-a-real-binary-xyz"), null,
                         l -> { }, e -> { }, c -> { }));
     }
+
+    @Test
+    @DisplayName("A throwing line consumer does not kill the pump — later lines still arrive")
+    void throwingConsumerDoesNotKillThePump() throws Exception {
+        List<String> out = new CopyOnWriteArrayList<>();
+        CountDownLatch gotSecond = new CountDownLatch(1);
+
+        InteractiveProcess repl = InteractiveProcess.start(
+                List.of("cat"), null,
+                line -> {
+                    out.add(line);
+                    if (line.contains("boom")) {
+                        // the old pump died here: the pipe then filled, the
+                        // interpreter blocked on write, and the REPL hung
+                        throw new IllegalStateException("consumer bug");
+                    }
+                    if (line.contains("after")) {
+                        gotSecond.countDown();
+                    }
+                },
+                err -> { },
+                code -> { });
+        try {
+            repl.send("boom");
+            repl.send("after");
+            assertThat(gotSecond.await(3, TimeUnit.SECONDS))
+                    .as("the pump survives a consumer exception").isTrue();
+            assertThat(out).contains("boom", "after");
+        } finally {
+            repl.stop();
+        }
+    }
+
+    @Test
+    @DisplayName("stop() escalates TERM to KILL, so a TERM-trapping REPL cannot orphan")
+    void stopEscalatesToKillForTermTrappers() throws Exception {
+        CountDownLatch exited = new CountDownLatch(1);
+        // ignores both EOF (never reads stdin) and TERM (trapped): only the
+        // KILL rung of the ladder can end it — exactly the orphan shape the
+        // shutdown reaper must never leave behind
+        InteractiveProcess repl = InteractiveProcess.start(
+                List.of("bash", "-c", "trap '' TERM; while true; do sleep 0.2; done"),
+                null, l -> { }, e -> { }, code -> exited.countDown());
+
+        assertThat(repl.isAlive()).isTrue();
+        long start = System.nanoTime();
+        repl.stop(); // synchronous and bounded: ~2s worst case
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertThat(elapsedMs).as("stop stays bounded for the shutdown path")
+                .isLessThan(5_000);
+        assertThat(exited.await(5, TimeUnit.SECONDS))
+                .as("the TERM-trapping child was force-killed").isTrue();
+        assertThat(repl.isAlive()).isFalse();
+    }
 }

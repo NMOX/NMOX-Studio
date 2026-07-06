@@ -37,7 +37,16 @@ public final class DockerClient {
         return t;
     });
 
+    /** The CLI to invoke — "docker" in production, overridable for tests. */
+    private final String executable;
+
     private DockerClient() {
+        this("docker");
+    }
+
+    /** Test seam: run some other binary through the exact production path. */
+    DockerClient(String executable) {
+        this.executable = executable;
     }
 
     public static DockerClient getDefault() {
@@ -57,37 +66,59 @@ public final class DockerClient {
     /** Runs docker with the given args; never throws, never prompts. */
     public Result run(long timeoutSeconds, String... args) {
         List<String> cmd = new ArrayList<>();
-        cmd.add("docker");
+        cmd.add(executable);
         Collections.addAll(cmd, args);
         try {
             ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(cmd);
             Process p = pb.start();
-            // Drain stderr on its own thread so a large stderr burst can't fill
-            // its pipe and deadlock the stdout read (and vice versa). On a
-            // timeout, destroyForcibly() closes both pipes and unblocks both
-            // reads, so the timeout guarantee is real.
+            // BOTH streams drain on their own threads while waitFor runs first
+            // on this pool thread — so the timeout clock ticks even when the
+            // CLI sits silent with its pipes open (the wedged-daemon hang).
+            // On a timeout, destroyForcibly() closes both pipes and unblocks
+            // both drains, so the timeout guarantee is real; the bounded joins
+            // after just let the last buffered bytes land.
+            StringBuilder outBuf = new StringBuilder();
             StringBuilder errBuf = new StringBuilder();
-            Thread errDrain = new Thread(() -> {
-                try {
-                    errBuf.append(readAll(p.getErrorStream()));
-                } catch (IOException ignore) {
-                    // stderr unreadable; stdout + exit code are still useful
-                }
-            }, "docker-stderr");
-            errDrain.setDaemon(true);
-            errDrain.start();
-            String out = readAll(p.getInputStream());
+            Thread outDrain = drainOnThread(p.getInputStream(), outBuf, "docker-stdout");
+            Thread errDrain = drainOnThread(p.getErrorStream(), errBuf, "docker-stderr");
             if (!p.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
                 p.destroyForcibly();
-                return new Result(-1, out, "docker timed out after " + timeoutSeconds + "s");
+                outDrain.join(2000);
+                errDrain.join(2000);
+                return new Result(-1, snapshot(outBuf),
+                        "docker timed out after " + timeoutSeconds + "s");
             }
+            outDrain.join(2000);
             errDrain.join(2000);
-            return new Result(p.exitValue(), out, errBuf.toString());
+            return new Result(p.exitValue(), snapshot(outBuf), snapshot(errBuf));
         } catch (IOException ex) {
             return new Result(-1, "", "docker not found - install Docker Desktop or add docker to PATH");
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return new Result(-1, "", "interrupted");
+        }
+    }
+
+    /** Consumes one stream to EOF on a daemon thread; appends under the buffer's lock. */
+    private static Thread drainOnThread(java.io.InputStream in, StringBuilder into, String name) {
+        Thread t = new Thread(() -> {
+            try {
+                String all = readAll(in);
+                synchronized (into) {
+                    into.append(all);
+                }
+            } catch (IOException ignore) {
+                // pipe closed by the kill path; whatever landed is still useful
+            }
+        }, name);
+        t.setDaemon(true);
+        t.start();
+        return t;
+    }
+
+    private static String snapshot(StringBuilder sb) {
+        synchronized (sb) {
+            return sb.toString();
         }
     }
 

@@ -5,14 +5,18 @@
          catalog. The platform contributes Actions/Files/Recent Files;
          these make the rack itself searchable. -->
     <folder name="QuickSearch">
+        <!-- The platform's projectui module already defines the Projects
+             category (position 100, its own bundle). Contribute ONLY the
+             provider instance: re-declaring position/localizingBundle here
+             made two modules fight over the same folder's attributes with
+             nondeterministic resolution. -->
         <folder name="Projects">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.search.Bundle"/>
-            <attr name="position" intvalue="250"/>
             <file name="org-nmox-studio-rack-search-RecentProjectSearchProvider.instance"/>
         </folder>
+        <!-- 310, not 300: the platform's jumpto GoToType sits at 300. -->
         <folder name="Rack">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.search.Bundle"/>
-            <attr name="position" intvalue="300"/>
+            <attr name="position" intvalue="310"/>
             <file name="org-nmox-studio-rack-search-DeviceSearchProvider.instance"/>
         </folder>
         <!-- What is serving right now: live URLs from the ServingRegistry,

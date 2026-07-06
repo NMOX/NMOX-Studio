@@ -167,17 +167,22 @@ public final class DbWorkspaceIO {
             return Workspace.empty();
         }
         try {
-            JSONObject root = new JSONObject(json);
-            return new Workspace(
-                    connections(root.optJSONArray("connections")),
-                    cappedHistory(history(root.optJSONArray("history"))),
-                    dedupedByName(saved(root.optJSONArray("saved"))));
+            return parseStrict(json);
         } catch (RuntimeException malformed) {
             // the message carries the parse position; the stack adds nothing
             LOG.log(Level.WARNING, "Malformed {0}; starting with an empty workspace ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
             return Workspace.empty();
         }
+    }
+
+    /** The parse itself — throws on malformed JSON so guarded callers can react. */
+    private static Workspace parseStrict(String json) {
+        JSONObject root = new JSONObject(json);
+        return new Workspace(
+                connections(root.optJSONArray("connections")),
+                cappedHistory(history(root.optJSONArray("history"))),
+                dedupedByName(saved(root.optJSONArray("saved"))));
     }
 
     private static List<ConnectionSpec> connections(JSONArray array) {
@@ -282,6 +287,60 @@ public final class DbWorkspaceIO {
      */
     public static Workspace loadWorkspace(File dir) {
         return readWorkspace(new File(dir, FILENAME));
+    }
+
+    /**
+     * A guarded load: the {@code workspace} is never null (empty on any
+     * failure, like {@link #loadWorkspace}); {@code backup} is non-null
+     * when the file EXISTED but failed to parse and was copied aside.
+     */
+    public record LoadOutcome(Workspace workspace, File backup) {
+    }
+
+    /**
+     * Loads like {@link #loadWorkspace}, but guards the user's file
+     * against the corrupt-load → empty-model → save-clobbers-original
+     * sequence: when {@code .nmoxdb.json} exists and fails to parse,
+     * the unreadable original is copied to {@code .nmoxdb.json.bak}
+     * BEFORE the empty fallback is returned, so the studio's next save
+     * can never destroy the only copy. Missing/unreadable files make no
+     * backup. Never throws.
+     */
+    public static LoadOutcome loadWorkspaceGuarded(File dir) {
+        File file = new File(dir, FILENAME);
+        if (!file.isFile()) {
+            return new LoadOutcome(Workspace.empty(), null);
+        }
+        String json;
+        try {
+            json = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            LOG.log(Level.WARNING, "Cannot read " + file, e);
+            return new LoadOutcome(Workspace.empty(), null);
+        }
+        if (json.isBlank()) {
+            return new LoadOutcome(Workspace.empty(), null); // nothing to lose
+        }
+        try {
+            return new LoadOutcome(parseStrict(json), null);
+        } catch (RuntimeException malformed) {
+            LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
+                    new Object[]{FILENAME, malformed.getMessage()});
+            return new LoadOutcome(Workspace.empty(), backupCorrupt(file));
+        }
+    }
+
+    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    private static File backupCorrupt(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".bak");
+        try {
+            Files.copy(file.toPath(), backup.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return backup;
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Could not back up corrupt " + file, e);
+            return null;
+        }
     }
 
     private static Workspace readWorkspace(File file) {

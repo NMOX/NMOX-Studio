@@ -209,6 +209,10 @@ public enum NodeKind {
     /** A configurable property with a default and optional choices. */
     public record Prop(String key, String label, String type, String defaultValue, List<String> choices) {
 
+        public Prop {
+            choices = List.copyOf(choices); // a caller's list must not mutate the catalog
+        }
+
         static Prop text(String key, String label, String dflt) {
             return new Prop(key, label, "text", dflt, List.of());
         }

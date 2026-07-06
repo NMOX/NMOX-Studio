@@ -68,10 +68,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final JLabel tokenLabel = new JLabel();
     private final JLabel costLabel = new JLabel();
     private final JButton syncButton = new JButton("Sync from cloud");
+    private final JButton refreshButton = new JButton("Refresh");
+    private final JButton destroyStackButton = new JButton("Destroy stack…");
+    private final JButton deployButton = new JButton("DEPLOY");
     private final Timer saveDebounce;
     private final InfraGraph.Listener graphListener;
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean loading;
+    /** Once-per-open attach/detach of our graph + rack listeners (tested core). */
+    private final ListenerLifecycle listenerLifecycle =
+            new ListenerLifecycle(this::attachListeners, this::detachListeners);
+    /** Warn-once guard for autosave failures — reset by the next success. */
+    private boolean saveFailureNotified;
 
     /** Off-EDT file stats for the external-edit check. */
     private static final org.openide.util.RequestProcessor RP =
@@ -133,18 +141,39 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 });
             }
         };
-        graph.addListener(graphListener);
-
         rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(InfraDesignerTopComponent.this::load);
             }
         };
-        RackService.getDefault().getRack().addListener(rackListener);
-        load();
+        // listeners attach in componentOpened (and load() runs there), so a
+        // close→reopen cycle re-arms autosave/dirty-tracking and re-syncs to
+        // the currently-aimed project — the ApiClientTopComponent idiom.
+        // Until v1.36 they attached here and were removed for good on the
+        // first close: reopened designers silently stopped saving.
         refreshToken();
         refreshCost();
+    }
+
+    /** The attach action {@link #listenerLifecycle} runs once per open. */
+    private void attachListeners() {
+        graph.addListener(graphListener);
+        try {
+            RackService.getDefault().getRack().addListener(rackListener);
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack unavailable (tests, stripped platform): no project switches to follow
+        }
+    }
+
+    /** The detach action {@link #listenerLifecycle} runs once per close. */
+    private void detachListeners() {
+        graph.removeListener(graphListener);
+        try {
+            RackService.getDefault().getRack().removeListener(rackListener);
+        } catch (RuntimeException | LinkageError ignored) {
+            // rack already gone; nothing left to detach
+        }
     }
 
     private JToolBar buildToolbar() {
@@ -166,15 +195,22 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 panel.add(fields[i]);
             }
             DialogDescriptor dd = new DialogDescriptor(panel,
-                    "Cloud API tokens (stored in IDE settings; blank = keep current)");
+                    "Cloud API tokens (stored in the OS keychain; blank = keep current)");
             if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+                java.util.Map<org.nmox.studio.infra.api.CloudProvider, String> entered =
+                        new java.util.LinkedHashMap<>();
                 for (int i = 0; i < providers.length; i++) {
                     String value = new String(fields[i].getPassword()).trim();
                     if (!value.isEmpty()) {
-                        providers[i].storeToken(value);
+                        entered.put(providers[i], value);
                     }
                 }
-                refreshToken();
+                // keychain writes may block on OS calls — off the EDT, like
+                // every other keyring user in the suite
+                RP.post(() -> {
+                    entered.forEach(org.nmox.studio.infra.api.CloudProvider::storeToken);
+                    refreshToken();
+                });
             }
         });
         bar.add(token);
@@ -185,16 +221,14 @@ public final class InfraDesignerTopComponent extends TopComponent {
         syncButton.addActionListener(e -> syncFromCloud());
         bar.add(syncButton);
 
-        JButton refresh = new JButton("Refresh");
-        refresh.setToolTipText("Ask the cloud whether every deployed node still exists — deletions show as drifted");
-        refresh.addActionListener(e -> refreshDrift());
-        bar.add(refresh);
+        refreshButton.setToolTipText("Ask the cloud whether every deployed node still exists — deletions show as drifted");
+        refreshButton.addActionListener(e -> refreshDrift());
+        bar.add(refreshButton);
 
-        JButton destroyStack = new JButton("Destroy stack…");
-        destroyStack.setForeground(new Color(0xC6, 0x2B, 0x2B));
-        destroyStack.setToolTipText("Tear down every deployed resource in reverse dependency order");
-        destroyStack.addActionListener(e -> destroyStack());
-        bar.add(destroyStack);
+        destroyStackButton.setForeground(new Color(0xC6, 0x2B, 0x2B));
+        destroyStackButton.setToolTipText("Tear down every deployed resource in reverse dependency order");
+        destroyStackButton.addActionListener(e -> destroyStack());
+        bar.add(destroyStackButton);
 
         JButton zoomOut = new JButton("−");
         zoomOut.setToolTipText("Zoom out");
@@ -219,16 +253,36 @@ public final class InfraDesignerTopComponent extends TopComponent {
         bar.add(costLabel);
 
         // THE button, Node-RED red
-        JButton deploy = new JButton("DEPLOY");
-        deploy.setBackground(new Color(0xC6, 0x2B, 0x2B));
-        deploy.setForeground(Color.WHITE);
-        deploy.setOpaque(true);
-        deploy.setBorderPainted(false);
-        deploy.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        deploy.setToolTipText("Create everything in this design via each node's cloud API");
-        deploy.addActionListener(e -> deploy());
-        bar.add(deploy);
+        deployButton.setBackground(new Color(0xC6, 0x2B, 0x2B));
+        deployButton.setForeground(Color.WHITE);
+        deployButton.setOpaque(true);
+        deployButton.setBorderPainted(false);
+        deployButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        deployButton.setToolTipText("Create everything in this design via each node's cloud API");
+        deployButton.addActionListener(e -> deploy());
+        bar.add(deployButton);
         return bar;
+    }
+
+    /**
+     * Runs a cloud worker on {@link #RP} (throughput 1 — deploys, syncs
+     * and destroys are mutually exclusive by construction, so repeated
+     * clicks can't interleave graph mutations and save() writes), with
+     * the triggering button disabled until it finishes.
+     */
+    private void runExclusive(JButton trigger, Runnable work) {
+        if (trigger != null) {
+            trigger.setEnabled(false);
+        }
+        RP.post(() -> {
+            try {
+                work.run();
+            } finally {
+                if (trigger != null) {
+                    SwingUtilities.invokeLater(() -> trigger.setEnabled(true));
+                }
+            }
+        });
     }
 
     /** The live design shown in this window - read by Quick Search. */
@@ -303,11 +357,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
             DialogDisplayer.getDefault().notify(dd);
             return;
         }
-        Thread worker = new Thread(() -> {
+        runExclusive(deployButton, () -> {
             StringBuilder log = new StringBuilder("NMOX deploy " + java.time.LocalDateTime.now() + "\n");
             boolean ok = client.execute(plan, graph, (node, message) -> {
                 if (node != null) {
-                    graph.setStatus(node, message);
+                    // status updates land on the EDT, same as drift/destroy
+                    SwingUtilities.invokeLater(() -> graph.setStatus(node, message));
                     log.append("  ").append(node.kind.getDisplayName())
                             .append(" ").append(node.label).append(": ").append(message).append('\n');
                 }
@@ -321,9 +376,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     error("Deploy stopped on a failure; see node status and .nmox/deploy-log.");
                 }
             });
-        }, "nmox-infra-deploy");
-        worker.setDaemon(true);
-        worker.start();
+        });
     }
 
     /**
@@ -339,7 +392,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             info("Set a cloud API token first (DigitalOcean, Hetzner, or Cloudflare).");
             return;
         }
-        Thread worker = new Thread(() -> {
+        runExclusive(syncButton, () -> {
             var outcomes = client.syncAll(syncing, graph, provider ->
                     SwingUtilities.invokeLater(() -> org.openide.awt.StatusDisplayer.getDefault()
                             .setStatusText("Syncing from " + provider.displayName() + "…")));
@@ -373,14 +426,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     info("Imported live resources — " + summary);
                 }
             });
-        }, "nmox-infra-sync");
-        worker.setDaemon(true);
-        worker.start();
+        });
     }
 
     /** The drift check: designed vs actual, node by node. */
     private void refreshDrift() {
-        Thread worker = new Thread(() -> {
+        runExclusive(refreshButton, () -> {
             try {
                 client.refreshDrift(graph, (node, status) ->
                         SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
@@ -388,9 +439,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> error("Refresh failed: " + ex.getMessage()));
             }
-        }, "nmox-infra-refresh");
-        worker.setDaemon(true);
-        worker.start();
+        });
     }
 
     /**
@@ -419,7 +468,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         if (!go) {
             return;
         }
-        Thread worker = new Thread(() -> {
+        runExclusive(destroyStackButton, () -> {
             int failures = client.destroyAll(order, (node, status) ->
                     SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
             SwingUtilities.invokeLater(() -> {
@@ -428,9 +477,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     error(failures + " resource(s) could not be destroyed — check their status lines.");
                 }
             });
-        }, "nmox-infra-destroy-stack");
-        worker.setDaemon(true);
-        worker.start();
+        });
     }
 
     // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
@@ -478,17 +525,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 if (confirm("Really destroy " + node.kind.getDisplayName() + " "
                         + node.label + " on " + node.kind.provider().displayName() + "?",
                         "Destroy resource")) {
-                    Thread worker = new Thread(() -> {
+                    // the menu item dies with the menu, so there is no button to
+                    // grey — RP's throughput 1 still serializes repeated clicks
+                    runExclusive(null, () -> {
                         try {
                             client.destroy(node);
-                            graph.setStatus(node, "destroyed");
-                            SwingUtilities.invokeLater(this::save);
+                            SwingUtilities.invokeLater(() -> {
+                                graph.setStatus(node, "destroyed");
+                                save();
+                            });
                         } catch (Exception ex) {
-                            graph.setStatus(node, "destroy failed: " + ex.getMessage());
+                            SwingUtilities.invokeLater(() ->
+                                    graph.setStatus(node, "destroy failed: " + ex.getMessage()));
                         }
-                    }, "nmox-infra-destroy");
-                    worker.setDaemon(true);
-                    worker.start();
+                    });
                 }
             });
             menu.add(destroy);
@@ -525,7 +575,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
         try {
             File file = designFile();
             if (file.isFile()) {
-                GraphIO.load(graph, file);
+                // corrupt file: GraphIO copies it to .bak BEFORE handing back
+                // the empty fallback, so the next autosave can't destroy the
+                // user's only copy
+                File backup = GraphIO.loadGuarded(graph, file);
+                if (backup != null) {
+                    balloon("Couldn't read " + GraphIO.DEFAULT_FILENAME + " — starting empty",
+                            "The unreadable original was kept at " + backup.getName() + ".",
+                            null);
+                }
             } else {
                 graph.clear();
             }
@@ -546,8 +604,24 @@ public final class InfraDesignerTopComponent extends TopComponent {
         try {
             GraphIO.save(graph, designFile());
             designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
+            saveFailureNotified = false;
         } catch (Exception ex) {
-            // disk hiccup; the next change retries
+            // a failed autosave never interrupts editing — but a chronically
+            // failing one must not lose work silently: warn once per streak
+            // (the ApiClientTopComponent shape; every other suite already had it)
+            java.util.logging.Logger.getLogger(InfraDesignerTopComponent.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Infra design autosave failed", ex);
+            if (!saveFailureNotified) {
+                saveFailureNotified = true;
+                try {
+                    org.openide.awt.NotificationDisplayer.getDefault().notify(
+                            "Couldn't save " + GraphIO.DEFAULT_FILENAME,
+                            javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
+                            "Changes are not being persisted: " + ex.getMessage(), null);
+                } catch (RuntimeException | LinkageError ignored) {
+                    // notifications unavailable (tests, stripped platform)
+                }
+            }
         }
     }
 
@@ -628,24 +702,36 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * Recomputes the token indicator. The first token read per provider
+     * may block on an OS keychain call, so the reads run on {@link #RP}
+     * (priming CloudProvider's session cache for the EDT callers in
+     * deploy()/syncFromCloud()) and only the label updates land on the
+     * EDT. Callable from any thread.
+     */
     private void refreshToken() {
-        StringBuilder sb = new StringBuilder();
-        int connected = 0;
-        for (var provider : org.nmox.studio.infra.api.CloudProvider.values()) {
-            boolean has = provider.hasToken();
-            connected += has ? 1 : 0;
-            sb.append(has ? "●" : "○");
-        }
-        boolean any = connected > 0;
-        tokenLabel.setText(sb + (any ? " " + connected + "/3 clouds" : " no tokens (dry-run)"));
-        tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
-        tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
-        String tokened = org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
-                        org.nmox.studio.infra.api.CloudProvider::hasToken).stream()
-                .map(org.nmox.studio.infra.api.CloudProvider::displayName)
-                .collect(java.util.stream.Collectors.joining(", "));
-        syncButton.setToolTipText("Import existing cloud resources as live nodes — "
-                + (tokened.isEmpty() ? "no tokens set (use Tokens…)" : "syncs: " + tokened));
+        RP.post(() -> {
+            StringBuilder sb = new StringBuilder();
+            int connected = 0;
+            for (var provider : org.nmox.studio.infra.api.CloudProvider.values()) {
+                boolean has = provider.hasToken();
+                connected += has ? 1 : 0;
+                sb.append(has ? "●" : "○");
+            }
+            boolean any = connected > 0;
+            String label = sb + (any ? " " + connected + "/3 clouds" : " no tokens (dry-run)");
+            String tokened = org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
+                            org.nmox.studio.infra.api.CloudProvider::hasToken).stream()
+                    .map(org.nmox.studio.infra.api.CloudProvider::displayName)
+                    .collect(java.util.stream.Collectors.joining(", "));
+            SwingUtilities.invokeLater(() -> {
+                tokenLabel.setText(label);
+                tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
+                tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
+                syncButton.setToolTipText("Import existing cloud resources as live nodes — "
+                        + (tokened.isEmpty() ? "no tokens set (use Tokens…)" : "syncs: " + tokened));
+            });
+        });
     }
 
     private void refreshCost() {
@@ -661,20 +747,26 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     @Override
     protected void componentOpened() {
+        // attach BEFORE load(): listeners must not stack (CopyOnWriteArrayList
+        // double-attach = double-fire), and load() itself is idempotent — it
+        // re-reads the currently-aimed project's design, so an aim that moved
+        // while the tab was closed is picked up here.
+        listenerLifecycle.open();
+        load();
+        refreshToken();
         externalCheck.start(); // foreign-change checks run only while open
     }
 
     @Override
     protected void componentClosed() {
-        // stop the debounce timer and drop our listeners, so a close/reopen
-        // cycle doesn't accumulate zombie listeners on the graph and the rack
+        // stop the timers, flush any edits still sitting in the debounce (the
+        // last ~1s of canvas work must not die with the tab), and drop our
+        // listeners so a close/reopen cycle doesn't accumulate zombies
         externalCheck.stop();
-        saveDebounce.stop();
-        graph.removeListener(graphListener);
-        try {
-            RackService.getDefault().getRack().removeListener(rackListener);
-        } catch (RuntimeException | LinkageError ignore) {
-            // rack already gone; nothing left to detach
+        if (saveDebounce.isRunning()) {
+            saveDebounce.stop();
+            save();
         }
+        listenerLifecycle.close();
     }
 }

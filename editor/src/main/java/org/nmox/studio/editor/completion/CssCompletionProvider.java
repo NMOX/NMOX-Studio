@@ -1,6 +1,8 @@
 package org.nmox.studio.editor.completion;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -9,7 +11,6 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.util.Exceptions;
 
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
@@ -20,6 +21,8 @@ import org.openide.util.Exceptions;
             mimeType = "text/x-less", service = CompletionProvider.class)
 })
 public class CssCompletionProvider implements CompletionProvider {
+
+    private static final Logger LOG = Logger.getLogger(CssCompletionProvider.class.getName());
 
     private static final Map<String, List<String>> CSS_PROPERTIES = new HashMap<>();
     private static final Map<String, List<String>> PROPERTY_VALUES = new HashMap<>();
@@ -407,7 +410,8 @@ public class CssCompletionProvider implements CompletionProvider {
                         break;
                 }
             } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
+                // the document moved under the async query — routine, no items
+                LOG.log(Level.FINE, "completion query raced the document: {0}", ex.getMessage());
             } finally {
                 resultSet.finish();
             }

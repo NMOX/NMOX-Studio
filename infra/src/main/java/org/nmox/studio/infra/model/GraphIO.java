@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -93,5 +94,27 @@ public final class GraphIO {
 
     public static void load(InfraGraph graph, File file) throws IOException {
         fromJson(graph, new JSONObject(Files.readString(file.toPath(), StandardCharsets.UTF_8)));
+    }
+
+    /**
+     * Loads, guarding the user's file against the corrupt-load →
+     * empty-model → autosave-clobbers-original sequence: when the file
+     * exists but fails to parse, the unreadable original is copied to
+     * {@code <name>.bak} FIRST, the graph is cleared to the empty
+     * fallback, and the backup file is returned so the UI can say so.
+     * A clean load returns null. I/O failures still throw — there is
+     * nothing readable to back up.
+     */
+    public static File loadGuarded(InfraGraph graph, File file) throws IOException {
+        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        try {
+            fromJson(graph, new JSONObject(text));
+            return null;
+        } catch (RuntimeException malformed) {
+            File backup = new File(file.getParentFile(), file.getName() + ".bak");
+            Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            graph.clear(); // fromJson may have half-populated before throwing
+            return backup;
+        }
     }
 }

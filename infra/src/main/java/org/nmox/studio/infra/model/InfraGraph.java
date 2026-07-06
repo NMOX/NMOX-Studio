@@ -164,6 +164,12 @@ public final class InfraGraph {
     }
 
     public void setStatus(InfraNode node, String status) {
+        // equality-guarded (house storm law): cloud sync re-sets "live" on
+        // every node every Refresh — an unconditional fire would re-paint
+        // and re-notify per node per pass for a change that isn't one.
+        if (java.util.Objects.equals(node.status, status)) {
+            return;
+        }
         node.status = status;
         for (Listener l : listeners) {
             l.nodeStatusChanged(node);
@@ -176,6 +182,11 @@ public final class InfraGraph {
 
     public void removeListener(Listener l) {
         listeners.remove(l);
+    }
+
+    /** How many listeners are attached — a lifecycle-test seam, not an API. */
+    public int listenerCount() {
+        return listeners.size();
     }
 
     /** Public nudge after direct field edits (node drag, property change). */

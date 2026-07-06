@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 /** One enumerated attribute value, inserted as plain text inside the quotes. */
 public class HtmlAttributeValueCompletionItem implements CompletionItem {
@@ -28,13 +25,7 @@ public class HtmlAttributeValueCompletionItem implements CompletionItem {
 
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            doc.remove(startOffset, length);
-            doc.insertString(startOffset, value, null);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        CompletionEdits.replace(component.getDocument(), startOffset, length, value);
         Completion.get().hideAll();
     }
 

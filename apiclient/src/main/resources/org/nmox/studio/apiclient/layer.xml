@@ -6,7 +6,8 @@
     <folder name="QuickSearch">
         <folder name="ApiStudio">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.apiclient.search.Bundle"/>
-            <attr name="position" intvalue="320"/>
+            <!-- 325: infra's category holds 320, Databases 330, Contracts 340 -->
+            <attr name="position" intvalue="325"/>
             <file name="org-nmox-studio-apiclient-search-ApiRequestSearchProvider.instance"/>
         </folder>
     </folder>

@@ -407,11 +407,15 @@ public final class Rack {
                 for (Listener l : listeners) {
                     l.signalTravelled(c);
                 }
+                RackDevice target = c.getTo().getDevice();
+                if (target.isDisposed()) {
+                    return; // removed while this signal sat in the router queue
+                }
                 try {
-                    c.getTo().getDevice().receive(c.getTo(), signal);
+                    target.receive(c.getTo(), signal);
                 } catch (RuntimeException ex) {
                     java.util.logging.Logger.getLogger(Rack.class.getName())
-                            .warning("Device " + c.getTo().getDevice().getTitle() + " failed on signal: " + ex);
+                            .warning("Device " + target.getTitle() + " failed on signal: " + ex);
                 }
             });
         }

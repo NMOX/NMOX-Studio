@@ -98,6 +98,26 @@ class LearningCatalogTest {
     }
 
     @Test
+    @DisplayName("The catalog is immutable: no caller can corrupt the shared cache")
+    void catalogIsImmutable() {
+        List<LearningCatalog.Space> all = LearningCatalog.all();
+        LearningCatalog.Space first = all.get(0);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> all.add(first))
+                .as("all() add").isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> all.remove(0))
+                .as("all() remove").isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> first.files().clear())
+                .as("space files").isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> first.driver().command().add("x"))
+                .as("driver command").isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> first.driver().snippets().clear())
+                .as("driver snippets").isInstanceOf(UnsupportedOperationException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> first.install().put("os", "cmd"))
+                .as("install map").isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
     @DisplayName("parse tolerates unknown/missing fields without throwing")
     void parseIsLenient() {
         org.json.JSONObject root = new org.json.JSONObject(

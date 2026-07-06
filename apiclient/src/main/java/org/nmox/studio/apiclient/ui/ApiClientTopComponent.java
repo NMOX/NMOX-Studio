@@ -304,9 +304,29 @@ public final class ApiClientTopComponent extends TopComponent {
         Map<String, String> vars = env != null ? env.variables : Map.of();
         Request request = current;
         Thread worker = new Thread(() -> {
-            ApiResponse response = client.send(request, vars);
-            List<TestRunner.Result> results = TestRunner.run(request, response);
-            SwingUtilities.invokeLater(() -> showResponse(response, results));
+            boolean delivered = false;
+            String failure = "unexpected error";
+            try {
+                ApiResponse response = client.send(request, vars);
+                List<TestRunner.Result> results = TestRunner.run(request, response);
+                delivered = true;
+                SwingUtilities.invokeLater(() -> showResponse(response, results));
+            } catch (RuntimeException ex) {
+                failure = String.valueOf(ex.getMessage());
+                java.util.logging.Logger.getLogger(ApiClientTopComponent.class.getName())
+                        .log(java.util.logging.Level.WARNING, "API send worker failed", ex);
+            } finally {
+                if (!delivered) {
+                    // a throwing worker must never leave Send dead and the
+                    // status stuck on "Sending…" until restart
+                    String message = "Send failed — " + failure;
+                    SwingUtilities.invokeLater(() -> {
+                        sendButton.setEnabled(true);
+                        statusLabel.setForeground(FAIL_RED);
+                        statusLabel.setText(message);
+                    });
+                }
+            }
         }, "nmox-api-send");
         worker.setDaemon(true);
         worker.start();
@@ -592,8 +612,17 @@ public final class ApiClientTopComponent extends TopComponent {
     /** Disk half of a load — safe off the EDT. */
     private Workspace readWorkspace(File dir) {
         try {
-            Workspace loaded = WorkspaceIO.load(dir);
-            return loaded != null ? loaded : Workspace.starter();
+            WorkspaceIO.LoadOutcome outcome = WorkspaceIO.loadGuarded(dir);
+            if (outcome.backup() != null) {
+                // corrupt file: the IO layer copied it aside BEFORE handing us
+                // the empty fallback (the next autosave can't clobber it) — say so
+                File backup = outcome.backup();
+                SwingUtilities.invokeLater(() -> balloon(
+                        "Couldn't read " + WorkspaceIO.FILENAME + " — starting empty",
+                        "The unreadable original was kept at " + backup.getName() + ".",
+                        false, null));
+            }
+            return outcome.workspace() != null ? outcome.workspace() : Workspace.starter();
         } catch (Exception ex) {
             return Workspace.starter();
         }

@@ -75,6 +75,14 @@ public abstract class RackDevice extends JPanel {
     private int inPortCount;
     private int outPortCount;
     private volatile CommandExecutor.Handle running;
+    /**
+     * True after {@link #dispose()}, cleared by {@link #attach} — undo of a
+     * remove re-attaches the SAME instance, so a permanent flag would leave
+     * undo-restored devices dead. While set, queued signals and exec launches
+     * are refused: a trigger delivered after removal must never start a
+     * process inside a deleted device.
+     */
+    private volatile boolean disposed;
 
     protected RackDevice(String typeId, String title, String tagline, Color accent, int units) {
         this.typeId = typeId;
@@ -114,6 +122,8 @@ public abstract class RackDevice extends JPanel {
     // ---- lifecycle ----
 
     void attach(Rack rack) {
+        // re-attach (undo of a remove) brings the same instance back to life
+        disposed = false;
         this.rack = rack;
         rack.addListener(bayListener);
         onAttached();
@@ -148,10 +158,16 @@ public abstract class RackDevice extends JPanel {
 
     /** Kill any running process and release resources. */
     public void dispose() {
+        disposed = true;
         if (rack != null) {
             rack.removeListener(bayListener);
         }
         stopProcess();
+    }
+
+    /** True after dispose() until a re-attach (undo of remove) revives it. */
+    public final boolean isDisposed() {
+        return disposed;
     }
 
     public Rack getRack() {
@@ -267,6 +283,9 @@ public abstract class RackDevice extends JPanel {
     /** Full control: extra env and an explicit working directory. */
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
+        if (disposed) {
+            return; // a queued trigger must not launch into a deleted device
+        }
         stopProcess();
         // dotenv first (project root, then the lane's own dir in a
         // monorepo), rack-wide overrides above it, per-launch extras on

@@ -29,6 +29,13 @@ public final class TestRunner {
     }
 
     static Result evaluate(Assertion a, ApiResponse r) {
+        if (a.target == null) {
+            // a hand-edited .nmoxapi.json can carry "target": null — that's a
+            // failed assertion with an honest message, never an NPE that kills
+            // the send worker and leaves the Send button dead
+            return new Result(a.kind + " (no target)", false,
+                    "assertion has no target — fix it in the Tests tab or .nmoxapi.json");
+        }
         return switch (a.kind) {
             case STATUS_IS -> {
                 boolean ok = String.valueOf(r.status()).equals(a.target.trim());

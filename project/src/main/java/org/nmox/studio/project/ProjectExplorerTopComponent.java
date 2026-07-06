@@ -104,6 +104,23 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         }
     };
 
+    /**
+     * Rack aim changes fold into the same coalesced refresh. Added and
+     * removed in componentOpened/componentClosed beside registryListener —
+     * a listener that lives forever keeps rebuilding the CLOSED workbench
+     * offscreen (per-project detectAsync walks included) on every switch.
+     * Created lazily inside the rack-availability guard, kept for reuse so
+     * add and remove always see the same instance.
+     */
+    private org.nmox.studio.rack.model.Rack.Listener rackListener;
+
+    /**
+     * Guards double-attach: the rack's listener list is a
+     * CopyOnWriteArrayList, so adding the same listener twice would
+     * double-fire every event.
+     */
+    private boolean rackListenerAttached;
+
     public ProjectExplorerTopComponent() {
         setName(NbBundle.getMessage(ProjectExplorerTopComponent.class, "CTL_ProjectExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(ProjectExplorerTopComponent.class, "HINT_ProjectExplorerTopComponent"));
@@ -123,32 +140,46 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
 
-        try {
-            RackService.getDefault().getRack().addListener(
-                    new org.nmox.studio.rack.model.Rack.Listener() {
-                @Override
-                public void projectChanged() {
-                    // through the coalescer: an aim that lands amid the startup
-                    // registry burst folds into the one queued refresh
-                    refreshCoalescer.request();
-                }
-            });
-        } catch (RuntimeException | LinkageError ex) {
-            // rack unavailable (tests, stripped platform): static workbench
-        }
-
         refresh();
     }
 
     @Override
     public void componentOpened() {
         TopComponent.getRegistry().addPropertyChangeListener(registryListener);
+        if (!rackListenerAttached) {
+            try {
+                if (rackListener == null) {
+                    rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+                        @Override
+                        public void projectChanged() {
+                            // through the coalescer: an aim that lands amid the
+                            // startup registry burst folds into one queued refresh
+                            refreshCoalescer.request();
+                        }
+                    };
+                }
+                RackService.getDefault().getRack().addListener(rackListener);
+                rackListenerAttached = true;
+            } catch (RuntimeException | LinkageError ex) {
+                // rack unavailable (tests, stripped platform): static workbench
+            }
+        }
+        // one explicit re-sync: aims that happened while closed (listener
+        // detached) must show the moment the workbench reopens
         refresh();
     }
 
     @Override
     public void componentClosed() {
         TopComponent.getRegistry().removePropertyChangeListener(registryListener);
+        if (rackListenerAttached) {
+            try {
+                RackService.getDefault().getRack().removeListener(rackListener);
+            } catch (RuntimeException | LinkageError ex) {
+                // rack unavailable; nothing was attached to remove
+            }
+            rackListenerAttached = false;
+        }
     }
 
     // ---- assembly ----

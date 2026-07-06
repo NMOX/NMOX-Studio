@@ -181,6 +181,44 @@ public final class WorkspaceIO {
         return fromJson(Files.readString(f.toPath(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * A guarded load: {@code workspace} is null when the file is
+     * missing or unreadable (callers substitute the starter);
+     * {@code backup} is non-null when the file EXISTED but failed to
+     * parse and was copied aside first.
+     */
+    public record LoadOutcome(Workspace workspace, File backup) {
+    }
+
+    /**
+     * Loads like {@link #load}, but guards the user's file against the
+     * corrupt-load → empty-model → autosave-clobbers-original sequence:
+     * when the file exists and fails to parse, the unreadable original
+     * is copied to {@code .nmoxapi.json.bak} BEFORE the empty outcome
+     * is returned, so the studio's next autosave can never destroy the
+     * only copy. A missing file makes no backup; I/O failures still
+     * throw — there is nothing readable to back up.
+     */
+    public static LoadOutcome loadGuarded(File dir) throws IOException {
+        File f = new File(dir, FILENAME);
+        if (!f.isFile()) {
+            return new LoadOutcome(null, null);
+        }
+        String text = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+        try {
+            return new LoadOutcome(fromJson(text), null);
+        } catch (RuntimeException malformed) {
+            java.util.logging.Logger.getLogger(WorkspaceIO.class.getName()).log(
+                    java.util.logging.Level.WARNING,
+                    "Malformed {0}; keeping a .bak and starting empty ({1})",
+                    new Object[]{FILENAME, malformed.getMessage()});
+            File backup = new File(dir, FILENAME + ".bak");
+            Files.copy(f.toPath(), backup.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            return new LoadOutcome(null, backup);
+        }
+    }
+
     /** Indents a JSON body for the response viewer; non-JSON passes through. */
     public static String pretty(String body) {
         return org.nmox.studio.core.util.JsonUtil.pretty(body);

@@ -206,6 +206,17 @@ public class RackService {
     private volatile boolean anyLiveThisSession;
     private javax.swing.Timer sessionSnapshotTimer;
 
+    /**
+     * Snapshot file IO runs here, never on the EDT (where the 5s timer
+     * fires). Single-threaded so writes cannot interleave; latest-wins —
+     * a snapshot that arrives while one is still queued replaces it, so
+     * a slow disk never builds a backlog.
+     */
+    private static final org.openide.util.RequestProcessor SNAPSHOT_RP =
+            new org.openide.util.RequestProcessor("nmox-session-snapshot", 1, true);
+    private final java.util.concurrent.atomic.AtomicReference<Runnable> pendingSnapshotIo =
+            new java.util.concurrent.atomic.AtomicReference<>();
+
     /** Stops the continuous snapshot; the service is then quiescent. */
     void stopSessionSnapshots() {
         if (sessionSnapshotTimer != null) {
@@ -219,21 +230,41 @@ public class RackService {
             if (file == null) {
                 return;
             }
-            try {
-                SessionState state = SessionState.capture(rack);
-                if (!state.running().isEmpty()) {
-                    anyLiveThisSession = true;
-                    java.nio.file.Files.createDirectories(file.getParentFile().toPath());
-                    java.nio.file.Files.writeString(file.toPath(), state.toJson(), java.nio.charset.StandardCharsets.UTF_8);
-                } else if (anyLiveThisSession) {
-                    // tools ran and were stopped: nothing to resume anymore.
-                    // A session file from a PREVIOUS process stays untouched
-                    // until then, so an ignored resume offer survives another
-                    // restart instead of being silently consumed.
-                    java.nio.file.Files.deleteIfExists(file.toPath());
+            // capture stays on the EDT (cheap, needs live model state);
+            // the disk write/delete moves to the background writer
+            SessionState state = SessionState.capture(rack);
+            boolean live = !state.running().isEmpty();
+            if (live) {
+                anyLiveThisSession = true;
+            }
+            boolean delete = !live && anyLiveThisSession;
+            if (!live && !delete) {
+                // tools never ran this session: a session file from a
+                // PREVIOUS process stays untouched, so an ignored resume
+                // offer survives another restart instead of being consumed
+                return;
+            }
+            Runnable io = () -> {
+                try {
+                    if (live) {
+                        java.nio.file.Files.createDirectories(file.getParentFile().toPath());
+                        java.nio.file.Files.writeString(file.toPath(), state.toJson(),
+                                java.nio.charset.StandardCharsets.UTF_8);
+                    } else {
+                        // stopped after running: nothing to resume anymore
+                        java.nio.file.Files.deleteIfExists(file.toPath());
+                    }
+                } catch (Exception ignored) {
+                    // a failed snapshot must never disturb the rack
                 }
-            } catch (Exception ignored) {
-                // a failed snapshot must never disturb the rack
+            };
+            if (pendingSnapshotIo.getAndSet(io) == null) {
+                SNAPSHOT_RP.post(() -> {
+                    Runnable job = pendingSnapshotIo.getAndSet(null);
+                    if (job != null) {
+                        job.run();
+                    }
+                });
             }
         });
         snap.setRepeats(true);

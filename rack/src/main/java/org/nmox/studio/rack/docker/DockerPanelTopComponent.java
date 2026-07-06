@@ -78,12 +78,14 @@ public final class DockerPanelTopComponent extends TopComponent {
     private static final Color ACCENT = new Color(36, 150, 237);
     private static final Font MONO = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 
-    private static DockerPanelTopComponent instance;
+    /** Fallback only — used when the window system cannot supply the panel. */
+    private static DockerPanelTopComponent fallbackInstance;
 
     private final DockerClient client = DockerClient.getDefault();
     private final JLabel engineLabel = new JLabel("ENGINE: checking…");
     private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.Timer autoTimer = new javax.swing.Timer(15_000, e -> refreshAll());
+    private final JCheckBox autoBox = new JCheckBox("Auto-refresh 15s", false);
 
     private final JPanel enginePanel = new JPanel(new GridBagLayout());
     private final DefaultTableModel containersModel = model("", "NAME", "IMAGE", "STATUS", "PORTS", "CPU", "MEM");
@@ -129,16 +131,42 @@ public final class DockerPanelTopComponent extends TopComponent {
         add(statusLabel, BorderLayout.SOUTH);
     }
 
-    /** HARBOR's PANEL button lands here. */
+    /**
+     * HARBOR's PANEL button lands here. Routed through the window system so
+     * this and the Window-menu registration yield the SAME instance — two
+     * paths must never materialize two panels (and two refresh timers).
+     */
     public static void openPanel() {
         SwingUtilities.invokeLater(() -> {
-            if (instance == null) {
-                instance = new DockerPanelTopComponent();
+            DockerPanelTopComponent panel = null;
+            try {
+                if (org.openide.windows.WindowManager.getDefault()
+                        .findTopComponent("DockerPanelTopComponent")
+                        instanceof DockerPanelTopComponent registered) {
+                    panel = registered;
+                }
+            } catch (RuntimeException ex) {
+                // window system unavailable (tests, stripped platform)
             }
-            instance.open();
-            instance.requestActive();
-            instance.refreshAll();
+            if (panel == null) {
+                if (fallbackInstance == null) {
+                    fallbackInstance = new DockerPanelTopComponent();
+                }
+                panel = fallbackInstance;
+            }
+            panel.open();
+            panel.requestActive();
+            panel.refreshAll();
         });
+    }
+
+    @Override
+    public void componentOpened() {
+        // the checkbox survives a close; a re-open must make it honest again —
+        // "Auto-refresh 15s" checked with a stopped timer is a silent lie
+        if (autoBox.isSelected()) {
+            autoTimer.start();
+        }
     }
 
     @Override
@@ -157,17 +185,16 @@ public final class DockerPanelTopComponent extends TopComponent {
         JButton refresh = new JButton("Refresh All");
         refresh.addActionListener(e -> refreshAll());
         header.add(refresh);
-        JCheckBox auto = new JCheckBox("Auto-refresh 15s", false);
-        auto.setBackground(BG);
-        auto.setForeground(DIM);
-        auto.addActionListener(e -> {
-            if (auto.isSelected()) {
+        autoBox.setBackground(BG);
+        autoBox.setForeground(DIM);
+        autoBox.addActionListener(e -> {
+            if (autoBox.isSelected()) {
                 autoTimer.start();
             } else {
                 autoTimer.stop();
             }
         });
-        header.add(auto);
+        header.add(autoBox);
         return header;
     }
 
@@ -397,7 +424,16 @@ public final class DockerPanelTopComponent extends TopComponent {
             } catch (Exception ignored) {
             }
         }
-        status(c.name() + " publishes no host ports");
+        // three different truths, told apart: no ports at all, ports we could
+        // not recognize a host mapping in, and ports the browser refused
+        if (!c.hostPorts().isEmpty()) {
+            status("could not open a browser for " + c.name() + " (port "
+                    + c.hostPorts().get(0) + ")");
+        } else if (c.ports() == null || c.ports().isBlank()) {
+            status(c.name() + " publishes no host ports");
+        } else {
+            status("no recognizable host port in \"" + c.ports() + "\" for " + c.name());
+        }
     }
 
     private void textDialog(String title, String text) {

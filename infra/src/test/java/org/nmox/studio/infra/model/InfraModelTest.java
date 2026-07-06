@@ -9,8 +9,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class InfraModelTest {
+
+    @Test
+    @DisplayName("Prop.choices is defensively copied and immutable — the catalog can't be mutated")
+    void propChoicesAreImmutable() {
+        java.util.List<String> mine = new java.util.ArrayList<>(java.util.List.of("a", "b"));
+        NodeKind.Prop prop = new NodeKind.Prop("k", "K", "choice", "a", mine);
+
+        mine.add("smuggled");
+        assertThat(prop.choices()).as("caller's list mutations don't reach the record")
+                .containsExactly("a", "b");
+        assertThatThrownBy(() -> prop.choices().add("c"))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
 
     @ParameterizedTest
     @EnumSource(NodeKind.class)

@@ -81,6 +81,41 @@ class GraphIORoundTripTest {
     }
 
     @Test
+    @DisplayName("A corrupt design file is copied to .bak BEFORE the empty fallback")
+    void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws Exception {
+        File file = dir.resolve(GraphIO.DEFAULT_FILENAME).toFile();
+        String corrupt = "{ this is not json";
+        java.nio.file.Files.writeString(file.toPath(), corrupt,
+                java.nio.charset.StandardCharsets.UTF_8);
+
+        InfraGraph graph = new InfraGraph();
+        graph.addNode(NodeKind.DROPLET, 0, 0); // pre-existing canvas state
+        File backup = GraphIO.loadGuarded(graph, file);
+
+        assertThat(backup).isNotNull();
+        assertThat(backup.getName()).isEqualTo(GraphIO.DEFAULT_FILENAME + ".bak");
+        assertThat(java.nio.file.Files.readString(backup.toPath(),
+                java.nio.charset.StandardCharsets.UTF_8))
+                .as("the backup carries the original bytes").isEqualTo(corrupt);
+        assertThat(graph.getNodes()).as("the fallback model is empty").isEmpty();
+    }
+
+    @Test
+    @DisplayName("A clean guarded load parses the design and leaves no .bak behind")
+    void cleanGuardedLoadLeavesNoBackup(@TempDir Path dir) throws Exception {
+        File file = dir.resolve(GraphIO.DEFAULT_FILENAME).toFile();
+        GraphIO.save(deployedDesign(), file);
+
+        InfraGraph graph = new InfraGraph();
+        File backup = GraphIO.loadGuarded(graph, file);
+
+        assertThat(backup).isNull();
+        assertThat(graph.getNodes()).hasSize(2);
+        assertThat(dir.resolve(GraphIO.DEFAULT_FILENAME + ".bak"))
+                .as("no backup on a clean load").doesNotExist();
+    }
+
+    @Test
     @DisplayName("Loading replaces whatever the graph held before")
     void loadingReplacesExistingContent() {
         InfraGraph graph = new InfraGraph();

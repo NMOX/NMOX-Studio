@@ -4,14 +4,11 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
-import org.openide.util.Exceptions;
 
 public class JavaScriptMethodCompletionItem implements CompletionItem {
     
@@ -27,23 +24,11 @@ public class JavaScriptMethodCompletionItem implements CompletionItem {
     
     @Override
     public void defaultAction(JTextComponent component) {
-        try {
-            StyledDocument doc = (StyledDocument) component.getDocument();
-            
-            // Remove the partial text
-            doc.remove(startOffset, length);
-            
-            // Insert the method name with parentheses
-            String insertion = method.name + "()";
-            doc.insertString(startOffset, insertion, null);
-            
-            // Position cursor between parentheses
+        // call parentheses included, caret between them
+        if (CompletionEdits.replace(component.getDocument(), startOffset, length,
+                method.name + "()")) {
             component.setCaretPosition(startOffset + method.name.length() + 1);
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        
         Completion.get().hideAll();
     }
     

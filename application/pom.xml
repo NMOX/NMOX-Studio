@@ -173,11 +173,8 @@
             <artifactId>NMOX-Studio-web3</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>NMOX-Studio-sample</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+        <!-- (NMOX-Studio-sample stays in the reactor as a dev template but
+             does not ship in the product cluster — dropped in v1.36) -->
         <!-- JUnit 5 for tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -272,25 +269,8 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>deployment</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.netbeans.utilities</groupId>
-                        <artifactId>nbm-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>extra</id>
-                                <goals>
-                                    <goal>autoupdate</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <!-- (the archetype's "deployment" profile with its nbm:autoupdate
+         update-site goal was removed in v1.36: no workflow or script ever
+         activated it, and releases ship via GitHub Releases — there is no
+         update center) -->
 </project>
