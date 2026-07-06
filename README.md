@@ -45,11 +45,12 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 41 devices:
+build → test, with output scrolling on a phosphor monitor. 44 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
 QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
-files), HELM (run commands on your servers over ssh), framework consoles
+files), HELM (run commands on your servers over ssh), an in-rack REPL,
+the ANVIL local EVM chain, the DYNAMO Grunt/Gulp runner, framework consoles
 for Phoenix, Next, Angular, and Laravel (ARTISAN), and more. Patches
 persist per project, ship as presets, and export to GitHub Actions.
 **[The full device reference](docs/devices.md)** is generated from the

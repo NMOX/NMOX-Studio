@@ -99,7 +99,7 @@ NMOX-Studio/
 ├── editor/                  # File type support, JavaScript lexer, syntax highlighting, completion
 ├── tools/                   # NPM integration, build tools
 ├── rack/                    # Reason-style task rack: drag-drop device wiring, control surfaces
-├── infra/                   # Node-RED-style DigitalOcean infrastructure designer
+├── infra/                   # Node-RED-style multi-cloud infra designer (DO/Hetzner/Cloudflare)
 ├── apiclient/               # API Studio — Postman-style request/collection/test suite
 ├── dbstudio/                # DB Studio — SQL + document database suite (5 engines, bundled drivers)
 ├── web3/                    # Contract Studio — Web3/EVM smart contracts (Keccak/ABI/JSON-RPC cores)
@@ -115,15 +115,15 @@ NMOX-Studio/
 | Module | Purpose | Key Components |
 |--------|---------|----------------|
 | **core** | Cross-cutting platform touches | `TerminalPhosphor` (phosphor Terminal theme on first run) |
-| **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 45+ TextMate grammars incl. HTML/CSS/SCSS/Less + the config layer, JS/HTML/CSS completion providers, LSP providers, `OutlineModel`/`StructureNavigatorPanel` (Navigator outline for 43 mimes), `ConfigFileResolver` (dotfile MIME) |
+| **editor** | File editing and language support | `JavaScriptLexer` (regex-aware), `JavaScriptDataObject`, `TypeScriptDataObject`, `WebFileSupport` (HTML), 48 TextMate grammars incl. HTML/CSS/SCSS/Less + the config layer, JS/HTML/CSS completion providers, LSP providers, `OutlineModel`/`StructureNavigatorPanel` (Navigator outline for 45 mimes), `ConfigFileResolver` (dotfile MIME) |
 | **tools** | Development tools and integrations | `NpmService`, `WebProjectFactory`, `NpmExplorerTopComponent` |
-| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 41 task devices (incl. ROSETTA mixed-repo selector, QUORUM lane-join barrier, IGNITION polyglot runtime, INSPECTOR debug launcher, ARTISAN Laravel console, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), cross-lane coordination (QUORUM join, `RackDevice.enableGate` readiness gates on long-runners, REFLEX per-lane GLOB routing), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
+| **rack** | Reason-style virtual task rack + project lifecycle | `RackTopComponent`, `Rack`/`RackDevice` model, 44 task devices (incl. ROSETTA mixed-repo selector, QUORUM lane-join barrier, IGNITION polyglot runtime, INSPECTOR debug launcher, ARTISAN Laravel console, the REPL, ANVIL local EVM chain, GOVERNOR gas gate, DYNAMO Grunt/Gulp runner, HARBOR docker, BLACKBOX flight recorder, SONAR port scanner, PREFLIGHT ship check, PHOSPHOR terminal), cross-lane coordination (QUORUM join, `RackDevice.enableGate` readiness gates on long-runners, REFLEX per-lane GLOB routing), patch-cable wiring, `FileWatcher`, `RackIO` persistence, `RackService`, `ProjectStudioTopComponent` (templates, file CRUD, package.json editor, presets) |
 | **apiclient** | API Studio (Postman-style) | `ApiClientTopComponent` tab, collections/requests tree, request builder (params/headers/body/auth/tests), response viewer, `{{var}}` environments, `.nmoxapi.json` per-project persistence; `ApiClient`/`TestRunner`/`WorkspaceIO` engine |
 | **dbstudio** | DB Studio (database suite, ⇧⌘7) | `DbStudioTopComponent` (connections+schema tree, kind-aware SQL/JSON console, per-statement result grids + history), `DbBackend.create()` dispatch — `DbClient` JDBC (SQLite/PG/MySQL/MariaDB, bundled drivers), `MongoBackend` (Extended-JSON runCommand), `CouchBackend` (pure HTTP Mango); `SqlSplitter`, `DocumentGrid`, `Passwords` (Keyring-only), `.nmoxdb.json` specs, `DbSearchProvider` (⌘I) |
 | **web3** | Contract Studio (⇧⌘6) | `Web3StudioTopComponent` (Interact/Watch/Oversight, network manager, DS-6), `Keccak256`/`AbiCodec` (spec-vector-pinned), `JsonRpcClient` (Transport seam, URL redaction), `ArtifactScanner` (Foundry out/ + Hardhat artifacts/), `GasReportParser`, `ContractSizeCheck` (EIP-170), `Web3WorkspaceIO` (.nmoxweb3.json, secret networks never serialize URLs), `RpcSecrets` (Keyring), `Web3SearchProvider` (⌘I) |
-| **infra** | DigitalOcean infra designer | `InfraDesignerTopComponent`, `NodeKind` catalog (22 DO offerings), `FlowCanvas`, `DeployPlanner`, `DigitalOceanClient`, cost estimation, `.nmoxinfra.json` persistence |
+| **infra** | Multi-cloud infra designer (DO/Hetzner/Cloudflare) | `InfraDesignerTopComponent`, `NodeKind` catalog, `FlowCanvas`, `DeployPlanner`, per-provider clients, `CloudTokens` (Keyring), cost estimation, `.nmoxinfra.json` persistence |
 | **project** | Project management | `ProjectExplorerTopComponent`, `WebProject`, wizards |
-| **ui** | Core UI components | `MainWindow`, `WelcomeScreen`, `StartupInitializer`, actions |
+| **ui** | Core UI components | `MainWindow` (the Welcome launchpad), `UpdateCheck`, actions, Options panels |
 | **branding** | Application identity | Splash screen, icons, custom branding |
 | **application** | Final assembly | Distribution package creation |
 
