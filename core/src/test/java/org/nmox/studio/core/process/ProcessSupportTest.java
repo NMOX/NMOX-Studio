@@ -55,6 +55,24 @@ class ProcessSupportTest {
     }
 
     @Test
+    @DisplayName("timeout kills grandchildren holding the pipe, not just the shell")
+    @Timeout(15)
+    void shouldKillGrandchildHoldingPipeOnTimeout() throws Exception {
+        // The Linux CI failure mode: a shell that SPAWNS its command (dash;
+        // any `cmd &`) dies on destroyForcibly while the grandchild keeps the
+        // pipe's write end open — the drains never see EOF. `sleep 60 & wait`
+        // forces that shape on every OS; the descendant sweep must clear it.
+        long start = System.nanoTime();
+        ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                List.of("sh", "-c", "sleep 60 & wait"), null, Duration.ofMillis(500));
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        assertThat(r.timedOut()).isTrue();
+        assertThat(r.exitCode()).isEqualTo(-1);
+        assertThat(elapsedMs).isLessThan(10_000);
+    }
+
+    @Test
     @DisplayName("a child chatty on stderr cannot deadlock the pipe")
     @Timeout(30)
     void shouldDrainChattyStderrWithoutDeadlock() throws Exception {

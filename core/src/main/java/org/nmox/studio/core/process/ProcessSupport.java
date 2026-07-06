@@ -87,12 +87,12 @@ public final class ProcessSupport {
         try {
             finished = p.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            p.destroyForcibly();
+            killTree(p);
             Thread.currentThread().interrupt();
             throw new IOException("Interrupted waiting for " + command.get(0), e);
         }
         if (!finished) {
-            p.destroyForcibly();
+            killTree(p);
         }
         joinQuietly(outDrain);
         joinQuietly(errDrain);
@@ -104,6 +104,19 @@ public final class ProcessSupport {
         synchronized (sb) {
             return sb.toString();
         }
+    }
+
+    /**
+     * Kill the child AND its descendants. Killing only the direct child is
+     * not enough to unblock the drains: a shell that spawned (rather than
+     * exec'd) its command — dash on Linux, any {@code cmd &} — leaves a
+     * grandchild holding the pipe's write end, and the read side never
+     * sees EOF. Same lesson the rack's killAndWait descendant sweep
+     * encodes.
+     */
+    private static void killTree(Process p) {
+        p.descendants().forEach(ProcessHandle::destroyForcibly);
+        p.destroyForcibly();
     }
 
     private static Thread drain(InputStream stream, StringBuilder into, String name) {
