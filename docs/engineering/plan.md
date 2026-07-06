@@ -1,0 +1,165 @@
+# The Plan
+
+*Written 2026-07-06, at v1.36.0, as a capstone digest by the assistant that
+built v1.8→v1.36 with David. This is the current-reality companion to
+[tech-debt.md](tech-debt.md) (the itemized ledger): where the project
+stands, what's genuinely not done, what's worth doing next, and the working
+method that got it here. Unlike most of docs/engineering/, this file is NOT
+historical — keep it true or delete it.*
+
+## Where the project stands
+
+NMOX Studio is a shipping NetBeans RCP IDE (v1.36.0, 2,120 tests, six
+release assets per tag, Homebrew cask) whose identity is the **Reason-style
+task rack**: 44 hardware-styled devices wired with patch cables, backed by
+real process execution, session resurrection, and CI export. Around it: a
+48-grammar polyglot editor with LSP, four studios (API, DB, Contract/Web3,
+Infra), the classic-web-first-class layer, Learning Spaces, and the v1.35
+"connections" spine (ServingRegistry + ManifestPulse) that keeps every
+surface live-synced to every other.
+
+The v1.36.0 senior review is the trust anchor: six adversarial audit lenses
+found the house laws **held** — the orphan-process guarantee, the storm
+laws, the Keyring boundaries, the listener symmetry. What needed fixing was
+concentrated in the two oldest surfaces and is fixed. The codebase's
+verified state is the most valuable asset this project has; every section
+below is written to protect it.
+
+## Not done (the honest gaps)
+
+Itemized with reasons in [tech-debt.md](tech-debt.md); the digest, ranked
+by how much they'd matter to a daily driver:
+
+1. **Windows is build-verified, never test-executed.** The release ships a
+   real installer (bundled runtime, branded, byte-checked by
+   windows-installer-check), but all 2,120 tests run on ubuntu+macos only.
+   The suite leans on POSIX (`sh`, `sleep`, lsof fixtures). A Windows test
+   lane is its own sprint: per-OS guards or fixtures for process tests,
+   and expect the process-tree/charset laws to surface Windows-shaped bugs
+   the moment they run there.
+2. **`panic()` still blocks the EDT on Stop All and project-switch** (up to
+   ~2.5s per stubborn device). The shutdown-hook path is correct and must
+   stay synchronous; the interactive paths need an async redesign of the
+   switch guard. Deferred because half-doing it risks the orphan guarantee.
+3. **Studio workspace JSON writes ride the EDT debounce** (apiclient/infra/
+   dbstudio, small local writes). Wrapping them in RP interacts with
+   SelfWriteTracker self-write stamps and the close-flush ordering — needs
+   one careful pass, not five scattered ones.
+4. **Module spec versions are frozen at 1.0** because the reactor POM is
+   `1.0-SNAPSHOT`; app versioning lives in branding + tags. The clean fix
+   is a coordinated reactor version scheme (13 poms). Cosmetic until
+   there's an update center (see below) — then it becomes load-bearing.
+5. **The autoupdate modules ship with no update center.** Either remove
+   them from the cluster (Plugins menu implications) or build a real UC
+   fed by the release workflow. Decide when there's a reason; the current
+   state is dead weight, not breakage.
+6. **JS/TS ride a custom lexer pipeline** while 46 other grammars ride
+   TextMate+CSL — two code paths for one concern. Migrating JS/TS to
+   TextMate would delete the lexer but lose the regex-aware token
+   subtleties and the completion hooks built on it. Only worth it bundled
+   with an editor-intelligence sprint (below).
+7. **i18n**: ~450 hardcoded UI strings. A reality note, not a plan — do it
+   only if a non-English audience actually materializes.
+8. **Small residue**: `.sass` indented dialect approximated by the SCSS
+   grammar; project templates hardcoded in ProjectTemplates.java (fine at
+   this scale; extract to data when a second consumer appears); Docker
+   connection-offer balloon fades in ~1s (LOW priority balloon — bump
+   persistence); the `netbeans.default_userdir_root` boot warning (launcher
+   conf word-splits on "Application Support"; needs a launcher-safe fix);
+   MySQL learning space skipped (REPL model needs a live server).
+
+## Could be done (opportunities, in the product's own voice)
+
+Ideas that fit the identity — the rack as the honest, visible automation
+surface. Each earns its place only as a full vertical slice (device +
+tests + docs + live verify), never as a checkbox:
+
+- **Debugging completes the loop.** INSPECTOR launches debug configs and
+  DAP works for Go/Python, but JS/TS — the flagship languages — debug via
+  browser devtools outside the IDE. A CDP/DAP bridge for node and the
+  browser, wired as a rack device with a real control surface, would close
+  the largest daily-driver gap. This is the single highest-value feature
+  left.
+- **Git as a surface, not just a device.** The ide cluster already ships
+  git internals; the GIT device runs commands. A diff/blame/history
+  experience (or PR review via `gh`) is the second-largest gap for a
+  daily driver. Start from what the platform gives for free.
+- **The IDE's own accessibility.** The rack's knobs, LEDs, and LCDs are
+  custom-painted Swing — visually rich, screen-reader opaque. VITALS gates
+  WCAG for the *user's* project while the IDE itself is unaudited. Honest
+  fix: accessible names/roles on every control (the widget library is one
+  file — one sweep covers all 44 devices), keyboard operation for knobs.
+- **Performance: the 7s cold start** (measured v1.26, palette not the
+  bottleneck). The win is lazy module enablement and deferring studio tab
+  construction until first show — measure first; the v1.33.x storm arc
+  proved startup assumptions wrong twice.
+- **A public device SPI.** Deliberately deferred (v1.35 ledger): third
+  parties writing rack devices. The internal `RackDevice` contract is
+  stable and storm-law-tested now; opening it means freezing it. Do this
+  only after spec versions (gap #4) are real, or every plugin breaks on
+  every release.
+- **Learning Spaces as a community catalog.** 52 built-in; the catalog is
+  already data-driven JSON. A `~/.nmox/learn-catalog.d/` drop-in dir plus
+  a documented schema is a small change with outsized reach.
+- **AI assistance, if ever, through the rack's metaphor.** An "ORACLE"
+  device that explains the error currently on the MONITOR bus would fit;
+  a chat sidebar would not. The product's differentiation is tactile
+  honesty — anything added should be visible, wired, and unpluggable.
+
+## Planned (the method — keep doing this)
+
+The cadence that produced 28 releases without a broken main:
+
+1. **Sprint → gated PR → tag → live-verify.** One background fail-closed
+   pipeline script per release (see the scratchpad templates and the
+   `gated-ship-pipeline` memory): local `mvn verify` before push, CI green
+   before merge, main green before tag, 6 assets before done. Never touch
+   the tree while it runs.
+2. **Review-then-fix with evidence.** The v1.36.0 shape worked: read-only
+   audit lenses first, findings with file:line proof, then triage into
+   FIX-NOW / FIX-LATER-with-reason / FINE-AS-IS-blessed. Fixes carry
+   regression tests proven against the old code where possible.
+3. **The ledger is decisions, not wishes.** Every deferred item in
+   tech-debt.md has a reason; every blessed oddity has a written rationale
+   (SpotBugs exclusions, coverage exclusions, SOLDER's no-shell stance,
+   org.json's 8-copy isolation). If a future session can't find the
+   reason, it will "fix" something deliberate.
+4. **Docs truth pass every ship.** CHANGELOG + CLAUDE.md status/history +
+   README claims + ledger. devices.md is generated and CI-gated — the
+   model for any future generated doc.
+5. **Live-verify before claiming fixed.** Hard rule since v1.33.2. Boot
+   the real assembled app; user-visible fixes get a click-through.
+
+**The house laws** (each earned by a real incident — enforcement lives in
+CI gates and regression tests, this list is the index): no EDT I/O and no
+EDT process spawns, including the *mutation* half (v1.33.x, v1.36.0);
+listeners bounded + equality-guarded + attach/detach symmetric per open
+(v1.33.2, v1.35, v1.36.0); process timeouts are waitFor-first with both
+streams drained on threads and the **whole tree** killed — dash spawns
+grandchildren where bash execs (v1.36.0 ubuntu CI); UTF-8 explicit at
+every byte↔char boundary; secrets in the OS Keyring only, never prefs or
+files, RPC URLs never serialized; DialogDisplayer/NotificationDisplayer,
+never JOptionPane; prefs values under 8KB, lists as one-entry-per-item;
+coverage floors on the testable surface with pure-Swing excluded by name
+with reasons; rack tests drain the EDT *and* the router
+(`awaitRouterIdle`) before asserting.
+
+**Failure patterns to grep for in new code** — every bug class that
+actually shipped, once: constructor-attached listeners on TopComponents
+(the remove-half retrofitted without the re-add half); read-to-EOF before
+a timed waitFor; a corrupt file loading as empty then autosaving emptiness
+over the original; `invokeLater(this::self)` while a component is 0×0;
+full-refresh listeners fanning out per event across default-open tabs;
+filesystem walks of `$HOME` on any thread the user waits on (macOS TCC);
+unverified `pkill`.
+
+## What I'd do next, in order
+
+If the next session asks "what now": **(1)** the JS/node debugging slice —
+biggest daily-driver gap, fits the rack; **(2)** the git surface; **(3)**
+the rack accessibility sweep — cheap, right, and differentiating ("the
+accessible IDE with knobs"); **(4)** Windows test lane before any of the
+above grows Windows-specific code paths; **(5)** startup performance,
+measured first. Resist: new studios (six tabs is the discovery ceiling),
+new languages (48 grammars is past diminishing returns), and any feature
+that can't be drawn as a device with an honest control surface.

@@ -316,6 +316,7 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 
 - `docs/devices.md` - The 44-device reference (GENERATED from DeviceType by DeviceDocsTest; CI fails on drift)
 - `docs/engineering/tech-debt.md` - The CURRENT debt ledger: open items with deferral reasons, closed items by version
+- `docs/engineering/plan.md` - The CURRENT plan: where the project stands, honest gaps, ranked opportunities, the working method + house laws + failure patterns — read this first when deciding what to do next
 - `CONTRIBUTING.md` - Contribution guidelines
 - `docs/hack/` and `docs/product/` and most of `docs/engineering/` - v0.x-era documents kept for archaeology; every one carries a "Historical document" banner and none describes the shipping product
 
