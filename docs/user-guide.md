@@ -23,25 +23,41 @@ macOS `.dmg`, Windows `-setup.exe`, Debian/Ubuntu `.deb`, generic Linux
 first. The `-portable.zip` is the one bring-your-own-Java artifact
 (needs Java 21+ on PATH, or launch with `--jdkhome <path-to-jdk>`).
 
+> **macOS, first launch:** the app is not yet notarized, and Gatekeeper's
+> quarantine can leave it doing *nothing at all* when opened normally —
+> no window, no error. **Right-click the app → Open** the first time
+> (or run `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`).
+> Homebrew users can sidestep it entirely with
+> `brew install --cask --no-quarantine nmox-studio`.
+
 ## 2. First launch
 
 The IDE opens with the full suite of tabs along the editor area:
-**Workbench → Rack → DB → Web3 → Infra → API → Docker** — every major
-surface is one click away from minute one. A `~/NMOX` folder is created
-as your default workspace; the rack aims there until you open a project.
+**Welcome → Task Rack → DB Studio → Contract Studio → Infra Designer →
+API Studio → Docker Panel** — every major surface is one click away from
+minute one. On the left dock: **Project Studio** (file tree + templates),
+the **Workbench** home base, and the **NPM Explorer**. A `~/NMOX` folder
+is created as your default workspace; the rack aims there until you open
+a project.
 
 ![First launch — the Welcome launchpad with every suite tab open](images/welcome.png)
 
-Window shortcuts, worth learning on day one:
+Shortcuts, worth learning on day one (they're also all listed right on
+the Welcome tab):
 
 | Shortcut | Opens |
 |---|---|
 | **⌘I** | Quick Search — reaches everything (see §9) |
+| **⌘9** | Task Rack |
+| **⌘0** | Workbench |
 | **⇧⌘6** | Contract Studio (Web3) |
 | **⇧⌘7** | DB Studio |
 | **⇧⌘8** | API Studio |
 | **⇧⌘9** | Infra Designer |
+| **⌘8** | Docker Panel |
 | **⌘7** | Navigator outline for the current file |
+| **⇧⌘N / ⇧⌘O** | New Project… / Open Folder… |
+| **⇧⌘E / ⇧⌘L** | New Experiment… / New Learning Space… |
 
 ## 3. Projects
 
@@ -307,8 +323,35 @@ right there, streaming progress onto the REPL screen. Spaces live in
 - **A device's GO does nothing**: check its LCD — devices explain
   themselves in words, and the GO tooltip shows the exact command it
   would run, so you can try it in a terminal.
+- **The app opens to nothing on macOS** (no window, no error, first
+  launch after install): that's Gatekeeper quarantine — see the note in
+  §1. Right-click → Open once and it's fixed forever.
 - Logs live under `~/Library/Application Support/nmoxstudio/…/var/log/`
   (macOS) if you need to file an issue.
+
+## Appendix: the files NMOX Studio writes (and what to commit)
+
+Everything the IDE persists for a project is a readable JSON file in the
+project root, designed to be shared with your team:
+
+| File | What's in it | Commit it? |
+|---|---|---|
+| `.nmoxapi.json` | API Studio collections, requests, environments, tests | **Yes** — your teammate gets your whole API workspace |
+| `.nmoxdb.json` | DB connection specs, saved queries, history | **Yes** — passwords are *never* in it (OS keychain only) |
+| `.nmoxweb3.json` | Contract Studio networks + deployment address book | **Yes** — secret RPC URLs are *never* in it (keychain only) |
+| `.nmoxinfra.json` | The infra canvas: nodes, wiring, properties | **Yes** — API tokens are *never* in it (keychain only) |
+| `.gas-snapshot` | Foundry per-test gas baselines (GOVERNOR gates on it) | **Yes** — that's how gas regressions get caught in review |
+| `.env` | Your environment variables | **No** — that's the whole point of `.env` |
+| `*.bak` | A workspace file that failed to parse, kept for you | No — recover what you need, then delete |
+
+Edit any of the four `.nmox*.json` files outside the IDE (or pull a
+teammate's changes) and the matching studio reloads on its own — unless
+you have unsaved changes there, in which case it asks first.
+
+Outside the project: `~/NMOX` is the default workspace, experiments live
+in `~/.nmox/experiments`, Learning Spaces in `~/.nmox/learn`, and the
+IDE's own state (window layout, rack patches, preferences) in the
+platform userdir (`~/Library/Application Support/nmoxstudio` on macOS).
 
 ---
 
