@@ -365,5 +365,6 @@ platform userdir (`~/Library/Application Support/nmoxstudio` on macOS).
 
 ---
 
-*Found something this guide gets wrong? That's a bug — the project treats
-documentation drift as CI-worthy. Please file an issue.*
+*NMOX Studio is free and open source (Apache 2.0). Found something this
+guide gets wrong, or have an idea? Please
+[open an issue](https://github.com/NMOX/NMOX-Studio/issues).*
