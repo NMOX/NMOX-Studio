@@ -315,6 +315,7 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 ## Documentation
 
 - `docs/user-guide.md` - The user manual: install → first launch → projects → rack → studios → wizards → safety nets. Part of the docs truth pass — keep it accurate every ship
+- `docs/making-a-smart-contract.md` - Worked tutorial: a real escrow contract built the Contract Studio way (code, tests, gas gate, live ANVIL loop) — all output real
 - `docs/devices.md` - The 44-device reference (GENERATED from DeviceType by DeviceDocsTest; CI fails on drift)
 - `docs/engineering/tech-debt.md` - The CURRENT debt ledger: open items with deferral reasons, closed items by version
 - `docs/engineering/plan.md` - The CURRENT plan: where the project stands, honest gaps, ranked opportunities, the working method + house laws + failure patterns — read this first when deciding what to do next
