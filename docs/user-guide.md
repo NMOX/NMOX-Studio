@@ -174,6 +174,8 @@ commit it, and your teammate has your workspace. When a dev server starts
 in the rack, API Studio offers to set `{{baseUrl}}` for you.
 
 ### DB Studio (⇧⌘7)
+![A SQLite connection, a query, 8 rows in 1 ms — and the status bar giving the honest reason this grid is read-only](images/db-studio.png)
+
 Connect to SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, or CouchDB —
 drivers are bundled, nothing to install. Passwords go **only** to your OS
 keychain. Three ways connections find you: add one manually, accept the
@@ -241,6 +243,8 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   gulp, or bower scaffolds.
 
 ## 9. Quick Search, status line, and staying oriented
+
+![⌘I finds devices too — typing "grunt" surfaces DYNAMO, ready to jump to](images/quick-search.png)
 
 **⌘I is the universal finder.** One box reaches: your projects (recent
 and known), every rack device (jump straight to a device's controls),
