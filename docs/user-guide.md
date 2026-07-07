@@ -224,6 +224,8 @@ EIP-170 size verdicts per contract, and your deployment address book
 never reach the file).
 
 ### Infra Designer (⇧⌘9)
+![A stack taking shape — DNS, load balancer, droplet, and a volume with its property sheet; the toolbar prices the design live (≈ $28/mo) and stays honest about dry-run mode until you add API tokens](images/infra-designer.png)
+
 Design cloud infrastructure like a Node-RED flow: drag nodes (droplets,
 volumes, load balancers, DNS, workers) onto the canvas, wire them, and
 see the estimated monthly cost before anything exists. Three providers:
