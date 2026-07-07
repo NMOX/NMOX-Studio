@@ -239,6 +239,8 @@ persists to `.nmoxinfra.json`.
 
 ## 7. Docker
 
+![Engine up, a postgres container running — status dot, ports, and the verb row: start, stop, logs, inspect](images/docker-panel.png)
+
 The Docker tab is a control panel: engine status, containers, images,
 volumes, networks — start, stop, logs, prune. The HARBOR rack device
 gives you the same at a glance from the rack. The **Dockerize** tab
