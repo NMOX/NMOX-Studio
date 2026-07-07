@@ -191,6 +191,8 @@ NetBeans Database Explorer connections (Oracle, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
 ### Contract Studio (⇧⌘6)
+![ANVIL running in the rack, and Contract Studio connected to it by itself — chain 31337, the escrow contract in the artifact tree with its EIP-170 size usage, the live RPC on the serving chip](images/contract-studio.png)
+
 *Want the full worked example? **[Making a Smart Contract](making-a-smart-contract.md)** builds a real escrow contract — code, tests, gas gate, and the live ANVIL loop.*
 
 Web3 development with a hard safety rule: **the IDE never touches a
