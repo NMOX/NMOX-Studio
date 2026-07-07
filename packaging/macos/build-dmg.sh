@@ -63,8 +63,35 @@ RES="$DIR/../Resources/nmoxstudio"
 # -Xdock:name: the menu bar shows the JVM process's own idea of its
 # name ("nmoxstudio") unless told otherwise - Info.plist can't reach
 # the java child process. macOS-only flag; never in the shared conf.
-if "$RES/jre/bin/java" -version >/dev/null 2>&1; then
+# Bounded probe: Gatekeeper quarantine makes exec of the bundled java
+# neither succeed nor fail - it hangs the assessment, and an unbounded
+# probe turns that into "the app does nothing" with no window and no
+# error (observed live on a quarantined brew install). Run the probe in
+# the background and give it 10s; treat a hang exactly like a failure.
+"$RES/jre/bin/java" -version >/dev/null 2>&1 &
+PROBE=$!
+i=0
+while kill -0 "$PROBE" 2>/dev/null && [ $i -lt 100 ]; do
+    sleep 0.1
+    i=$((i+1))
+done
+if kill -0 "$PROBE" 2>/dev/null; then
+    kill -9 "$PROBE" 2>/dev/null
+    wait "$PROBE" 2>/dev/null
+    PROBE_OK=1   # nonzero = probe hung
+else
+    wait "$PROBE"
+    PROBE_OK=$?
+fi
+if [ "$PROBE_OK" = "0" ]; then
     exec "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
+fi
+# A quarantined bundle is the common cause of a hung/blocked probe -
+# name the actual fix instead of blaming a missing JDK.
+APP=$(cd "$DIR/../.." && pwd)
+if xattr -p com.apple.quarantine "$APP" >/dev/null 2>&1; then
+    osascript -e 'display dialog "macOS Gatekeeper has quarantined NMOX Studio, which blocks its bundled Java runtime from starting.\n\nFix (one time): right-click NMOX Studio in Applications and choose Open - or run:\n\nxattr -d com.apple.quarantine \"/Applications/NMOX Studio.app\"\n\nHomebrew users can reinstall with --no-quarantine." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
+    exit 1
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
