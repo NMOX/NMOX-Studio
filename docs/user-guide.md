@@ -191,6 +191,8 @@ NetBeans Database Explorer connections (Oracle, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
 ### Contract Studio (⇧⌘6)
+*Want the full worked example? **[Making a Smart Contract](making-a-smart-contract.md)** builds a real escrow contract — code, tests, gas gate, and the live ANVIL loop.*
+
 Web3 development with a hard safety rule: **the IDE never touches a
 private key.** Sends go through your devnet's unlocked accounts only.
 Build with Foundry or Hardhat and your compiled contracts appear in the
