@@ -12,9 +12,16 @@ current). For contributor/build docs, see the README and CLAUDE.md.
 
 **macOS (recommended):**
 ```bash
-brew tap nmox/nmox-studio https://github.com/NMOX/NMOX-Studio
-brew install --cask nmox-studio
+brew tap NMOX/NMOX-Studio https://github.com/NMOX/NMOX-Studio
+brew trust --cask nmox/nmox-studio/nmox-studio
+brew install --cask --no-quarantine nmox-studio
 ```
+
+The `brew trust` line is Homebrew's one-time acknowledgment for any
+third-party tap — you won't be asked again for updates. The
+`--no-quarantine` flag matters: the app is not yet notarized, and
+without it Gatekeeper's quarantine leaves the installed app silently
+doing nothing (see the note below).
 
 **Everything else:** grab an asset from the
 [latest release](https://github.com/NMOX/NMOX-Studio/releases/latest) —
@@ -23,12 +30,11 @@ macOS `.dmg`, Windows `-setup.exe`, Debian/Ubuntu `.deb`, generic Linux
 first. The `-portable.zip` is the one bring-your-own-Java artifact
 (needs Java 21+ on PATH, or launch with `--jdkhome <path-to-jdk>`).
 
-> **macOS, first launch:** the app is not yet notarized, and Gatekeeper's
-> quarantine can leave it doing *nothing at all* when opened normally —
-> no window, no error. **Right-click the app → Open** the first time
-> (or run `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`).
-> Homebrew users can sidestep it entirely with
-> `brew install --cask --no-quarantine nmox-studio`.
+> **macOS, first launch** (DMG installs, or brew without
+> `--no-quarantine`): Gatekeeper's quarantine can leave the app doing
+> *nothing at all* when opened normally — no window, no error.
+> **Right-click the app → Open** the first time, or run
+> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
 ## 2. First launch
 
