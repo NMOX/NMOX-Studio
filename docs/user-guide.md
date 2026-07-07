@@ -30,6 +30,8 @@ The IDE opens with the full suite of tabs along the editor area:
 surface is one click away from minute one. A `~/NMOX` folder is created
 as your default workspace; the rack aims there until you open a project.
 
+![First launch — the Welcome launchpad with every suite tab open](images/welcome.png)
+
 Window shortcuts, worth learning on day one:
 
 | Shortcut | Opens |
@@ -77,6 +79,8 @@ bundler, test runner, dev server, linter, git, deploy — is a hardware
 device in a rack: knobs choose the task, GO runs it, LEDs show state, and
 an LCD tells you what happened in words.
 
+![The rack aimed at a classic jQuery site — the Classic Web Bench preset: MAESTRO, CRATE, DYNAMO (its TASK knob parsed the real Gruntfile), IGNITION serving static, VITALS gating quality](images/task-rack.png)
+
 **The basics:**
 - **Add devices** by dragging them from the palette (it has categories and
   a search filter). Every device has a *How to use* card in the palette.
@@ -93,6 +97,8 @@ an LCD tells you what happened in words.
 - **Presets** give you a full wired rack in one click — Ship Gate, Dev
   Intelligence, Monorepo Lanes, LAMP Bench, Web3 Bench, Uptime Watch.
   Patches persist per project automatically.
+
+![Tab flips the rack — patch cables wire MAESTRO through CRATE, DYNAMO, and IGNITION into VITALS](images/rack-rear.png)
 
 **Coordination, when your pipeline grows:**
 - **QUORUM** joins lanes: it fires only when *all* of its wired inputs
@@ -129,6 +135,8 @@ refresh buttons.
 
 ## 5. The editor
 
+![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
+
 48 languages highlight properly — the modern stack, the classic stack
 (CoffeeScript included), and the whole config layer down to `.env`,
 `.editorconfig`, nginx and Apache configs, Dockerfiles, and lockfiles.
@@ -154,6 +162,8 @@ refresh buttons.
 ## 6. The studios
 
 ### API Studio (⇧⌘8)
+![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
+
 A Postman-style client that lives with your project. Build requests
 (params, headers, body, auth), organize them in collections, and define
 `{{variables}}` per environment. Every response is graded on its security

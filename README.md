@@ -39,8 +39,8 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 |---|---|
 | ![Welcome screen](docs/images/welcome.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
 | *Welcome screen* | *Flip the rack (Tab) and patch task pipelines by cable* |
-| ![Editor](docs/images/editor.png) | ![Workbench and Infra Designer](docs/images/workbench-infra.png) |
-| *Phosphor-on-dark editing, 45+ languages* | *Workbench home base beside the multi-cloud Infra Designer* |
+| ![Editor](docs/images/editor.png) | ![API Studio](docs/images/api-studio.png) |
+| *Phosphor-on-dark editing, 45+ languages* | *API Studio — a live response, graded on its security headers* |
 
 ## Features
 
