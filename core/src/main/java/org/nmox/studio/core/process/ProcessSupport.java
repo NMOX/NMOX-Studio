@@ -107,14 +107,14 @@ public final class ProcessSupport {
     }
 
     /**
-     * Kill the child AND its descendants. Killing only the direct child is
-     * not enough to unblock the drains: a shell that spawned (rather than
+     * Kill the child AND its descendants — descendants first. Killing only
+     * the direct child is not enough: a shell that spawned (rather than
      * exec'd) its command — dash on Linux, any {@code cmd &} — leaves a
      * grandchild holding the pipe's write end, and the read side never
-     * sees EOF. Same lesson the rack's killAndWait descendant sweep
-     * encodes.
+     * sees EOF; likewise a debug server whose debuggee must not outlive it.
+     * Same lesson the rack's killAndWait descendant sweep encodes.
      */
-    private static void killTree(Process p) {
+    public static void killTree(Process p) {
         p.descendants().forEach(ProcessHandle::destroyForcibly);
         p.destroyForcibly();
     }

@@ -65,6 +65,9 @@
                     <attr name="instanceCreate" methodvalue="org.nmox.studio.editor.javascript.JavaScriptTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+                <file name="DAPBreakpoints.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
+                </file>
                 <!-- Phosphor is a dark palette: it belongs only to the dark
                      profile. Mapping it under "NetBeans" (the light profile)
                      painted pale-on-white JS whenever that profile was
@@ -86,6 +89,9 @@
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.nmox.studio.editor.typescript.TypeScriptLanguage.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+                <file name="DAPBreakpoints.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
                 </file>
                 <!-- dark palette, dark profile only — see the javascript
                      folder above -->

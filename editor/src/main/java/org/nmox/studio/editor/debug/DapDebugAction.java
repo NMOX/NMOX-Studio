@@ -13,6 +13,8 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.lsp.client.debugger.api.DAPConfiguration;
+import org.nmox.studio.editor.debug.dap.DapProxy;
+import org.nmox.studio.editor.debug.dap.JsDebugServer;
 import org.nmox.studio.core.process.ToolLocator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -24,12 +26,18 @@ import org.openide.util.RequestProcessor;
  * breakpoints in the gutter, run "Debug File", and the NetBeans
  * debugger UI (variables, call stack, stepping) drives the language's
  * own debug adapter - debugpy for Python on stdio, delve for Go over
- * a local socket.
+ * a local socket, and the vendored js-debug for JavaScript/TypeScript
+ * through the {@link org.nmox.studio.editor.debug.dap.DapProxy} that
+ * flattens its multi-session protocol.
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/x-python",
             popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/x-go",
+            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
+    @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/javascript",
+            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
+    @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/typescript",
             popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000)
 })
 public class DapDebugAction extends BaseAction {
@@ -55,10 +63,12 @@ public class DapDebugAction extends BaseAction {
         String mime = (String) doc.getProperty("mimeType");
         RP.post(() -> {
             try {
-                if ("text/x-python".equals(mime)) {
-                    debugPython(file);
-                } else if ("text/x-go".equals(mime)) {
-                    debugGo(file);
+                switch (mime) {
+                    case "text/x-python" -> debugPython(file);
+                    case "text/x-go" -> debugGo(file);
+                    case "text/javascript", "text/typescript" -> debugNode(file);
+                    default -> {
+                    }
                 }
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
@@ -133,6 +143,54 @@ public class DapDebugAction extends BaseAction {
             dlv.destroyForcibly();
             throw ex;
         }
+    }
+
+    /**
+     * Node scripts debug through the vendored js-debug server. Its parent
+     * connection only coordinates — the real target arrives on a child
+     * session the platform client can't open — so the streams handed to
+     * DAPConfiguration come from the DapProxy that flattens the two.
+     */
+    private static void debugNode(File file) throws IOException, InterruptedException {
+        File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
+                "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
+        if (serverJs == null) {
+            throw new IOException("bundled js-debug adapter missing from this installation");
+        }
+        File root = projectRoot(file);
+        JsDebugServer server = JsDebugServer.start(serverJs);
+        try {
+            DapProxy proxy = DapProxy.start(server.port(), server::stop);
+            DAPConfiguration.create(proxy.clientInput(), proxy.clientOutput())
+                    .addConfiguration(Map.of(
+                            "type", "pwa-node",
+                            "request", "launch",
+                            "name", file.getName(),
+                            "program", file.getAbsolutePath(),
+                            "cwd", root.getAbsolutePath(),
+                            "console", "internalConsole",
+                            // one child per session; user subprocesses run
+                            // undebugged instead of pausing for an attach
+                            // that will never come
+                            "autoAttachChildProcesses", false))
+                    .setSessionName("Node: " + file.getName())
+                    .launch();
+        } catch (IOException | RuntimeException ex) {
+            server.stop();
+            throw ex;
+        }
+    }
+
+    /** cwd = nearest ancestor holding a project manifest, so requires and
+     *  node_modules resolve the way a terminal run from the root would. */
+    private static File projectRoot(File file) {
+        File root = file.getParentFile();
+        for (File d = root; d != null; d = d.getParentFile()) {
+            if (org.nmox.studio.rack.devices.ProjectInspector.hasProjectManifest(d)) {
+                return d;
+            }
+        }
+        return root;
     }
 
     private static Socket connectWithRetry(int port, int attempts) throws IOException, InterruptedException {
