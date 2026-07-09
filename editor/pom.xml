@@ -219,6 +219,17 @@
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Ships the vendored js-debug DAP adapter as cluster
+                         files on disk (a node script must exist as a real
+                         file to run) — located at runtime via
+                         InstalledFileLocator, never packed into the jar. -->
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/release</directory>
+                        </nbmResource>
+                    </nbmResources>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

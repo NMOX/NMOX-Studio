@@ -1,0 +1,14 @@
+js-debug (vscode-js-debug) — the Debug Adapter Protocol server for
+Node.js and Chrome, vendored here so JavaScript/TypeScript breakpoint
+debugging works out of the box with zero setup.
+
+  Version:  v1.117.0
+  Source:   https://github.com/microsoft/vscode-js-debug
+  Artifact: js-debug-dap-v1.117.0.tar.gz (extracted verbatim)
+  SHA-256:  ad8d04ede9d4b75cc290fd5438a65047a06f786d04f604b6112485b36f090772
+  License:  MIT (Copyright (c) Microsoft Corporation) — see
+            js-debug/LICENSE alongside this file.
+
+Not a Maven dependency, so it does not appear in the generated SBOM and
+is not tracked by Dependabot; version bumps are manual (re-download the
+release tarball, replace js-debug/, update this NOTICE).

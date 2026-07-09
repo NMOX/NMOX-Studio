@@ -1,1 +1,4 @@
 * text=auto
+
+# Vendored third-party artifacts ship byte-verbatim (NOTICE sha256 depends on it)
+editor/src/main/release/jsdebug/** -text
