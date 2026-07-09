@@ -28,9 +28,9 @@ front to back or dipped into by section.
 Grab a build from the
 **[latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)** —
 macOS `.dmg`, Windows installer, Debian/Ubuntu `.deb`, or generic Linux
-`.tar.gz`, each bundling its own Java runtime. macOS users on Homebrew can
-`brew install --cask --no-quarantine nmox-studio` (see the
-[User Guide](user-guide.md#1-install) for the full three-line tap). The
+`.tar.gz`, each bundling its own Java runtime. macOS users on Homebrew install with a tap, a one-time `brew trust`, and
+`brew install --cask nmox-studio` — see the
+[User Guide](user-guide.md#1-install) for the full three-line block. The
 `-portable.zip` is the one bring-your-own-Java build.
 
 ## Building from source, or contributing

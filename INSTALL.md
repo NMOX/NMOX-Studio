@@ -14,7 +14,8 @@ Download artifacts from the
 
 1. Open `NMOX-Studio-<version>-macos.dmg` and drag **NMOX Studio** to
    Applications.
-2. The build is unsigned, so the **first** launch needs one of:
+2. The build is ad-hoc signed but not notarized, so the **first** launch
+   needs one of:
    - right-click the app → **Open** → Open, or
    - `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`
 

@@ -24,10 +24,10 @@ Once it's running, **[the User Guide](docs/user-guide.md)** walks every feature 
 ```bash
 brew tap NMOX/NMOX-Studio https://github.com/NMOX/NMOX-Studio
 brew trust --cask nmox/nmox-studio/nmox-studio
-brew install --cask --no-quarantine nmox-studio
+brew install --cask nmox-studio
 ```
 
-The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install). Pass `--no-quarantine`: the app is not yet notarized, and a quarantined install launches to nothing at all — no window, no error. (Already installed without it? Right-click the app → *Open* once, or `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`.)
+The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install). The app is ad-hoc signed but not yet notarized, so the first launch needs one extra step: right-click the app → *Open* once and confirm, or `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
 Update later with `brew update && brew upgrade --cask nmox-studio`; remove cleanly with `brew uninstall --cask --zap nmox-studio`.
 

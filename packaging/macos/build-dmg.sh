@@ -11,8 +11,9 @@
 # "java").
 #
 # Prerequisites: `mvn package` has produced application/target/nmoxstudio,
-# and this runs on macOS (iconutil, hdiutil). The bundle is unsigned;
-# see INSTALL.md for the Gatekeeper note shipped to users.
+# and this runs on macOS (iconutil, hdiutil). The bundle is ad-hoc signed
+# (a valid but unattributed signature - NOT notarized); see INSTALL.md for
+# the Gatekeeper note shipped to users.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
@@ -90,7 +91,7 @@ fi
 # name the actual fix instead of blaming a missing JDK.
 APP=$(cd "$DIR/../.." && pwd)
 if xattr -p com.apple.quarantine "$APP" >/dev/null 2>&1; then
-    osascript -e 'display dialog "macOS Gatekeeper has quarantined NMOX Studio, which blocks its bundled Java runtime from starting.\n\nFix (one time): right-click NMOX Studio in Applications and choose Open - or run:\n\nxattr -d com.apple.quarantine \"/Applications/NMOX Studio.app\"\n\nHomebrew users can reinstall with --no-quarantine." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
+    osascript -e 'display dialog "macOS Gatekeeper has quarantined NMOX Studio, which blocks its bundled Java runtime from starting.\n\nFix (one time): right-click NMOX Studio in Applications and choose Open - or run:\n\nxattr -d com.apple.quarantine \"/Applications/NMOX Studio.app\"" buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
     exit 1
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
@@ -123,6 +124,21 @@ cat > "$BUNDLE/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
+# Ad-hoc sign the bundle. Unsigned arm64 Mach-O binaries do not execute at
+# all on Apple silicon (the hard "app is damaged" failure); an ad-hoc
+# signature is valid though unattributed, which downgrades that to the
+# ordinary "unidentified developer" prompt a right-click > Open clears.
+# This is NOT notarization and does NOT remove the quarantine xattr - the
+# launcher's Gatekeeper dialog above still stands. Guarded like iconutil so
+# the script degrades cleanly if codesign is somehow absent.
+if command -v codesign >/dev/null; then
+    echo "==> Ad-hoc signing bundle"
+    codesign --force --deep --sign - "$BUNDLE"
+    codesign --verify --deep --strict "$BUNDLE" || { echo "ERROR: codesign verify failed"; exit 1; }
+else
+    echo "==> Skipping ad-hoc signing (codesign not found)"
+fi
+
 if [ "$APP_ONLY" = yes ]; then
     echo "==> Done (app only): $BUNDLE"
     echo "    Launch: open \"$BUNDLE\" --args --userdir <dir>"
@@ -139,5 +155,5 @@ rm -f "$DMG"
 hdiutil create -volname "NMOX Studio" -srcfolder "$DMG_STAGE" -ov -format UDZO "$DMG" >/dev/null
 
 echo "==> Done: $DMG"
-echo "    Unsigned build - first launch needs: right-click > Open,"
+echo "    Ad-hoc signed, not notarized - first launch needs: right-click > Open,"
 echo "    or: xattr -dr com.apple.quarantine '/Applications/NMOX Studio.app'"
