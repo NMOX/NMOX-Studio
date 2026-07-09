@@ -248,7 +248,13 @@ public class RunDevice extends CommandDevice {
             case "make" -> List.of("make", "run");
             // the 2005 stack: serve the folder itself; python3 is a
             // Doctor-probed staple, and READY/URL fire on its banner
-            case "static" -> List.of("python3", "-m", "http.server", STATIC_PORT);
+            // -u is load-bearing: http.server prints its "Serving HTTP on"
+            // banner to stdout, which python block-buffers when it isn't a
+            // TTY. Without -u the banner sits in the buffer, onLine never
+            // sees it, and the lane serves without ever announcing itself —
+            // no READY, no URL jack, no serving chip. (The access log is
+            // stderr, so output looked fine while the announcement was lost.)
+            case "static" -> List.of("python3", "-u", "-m", "http.server", STATIC_PORT);
             case "webpack" -> List.of("npx", "webpack", "serve", "--mode", "development");
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")

@@ -140,6 +140,25 @@
     <Match><Bug pattern="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE"/></Match>
     <Match><Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE"/></Match>
 
+    <!-- The DAP debug channel is loopback plaintext by protocol. The Debug
+         Adapter Protocol has no TLS mode, and the peer is a debug adapter
+         this IDE just spawned on the same machine (js-debug, delve, debugpy)
+         — none of them speak TLS, so there is nothing to negotiate with.
+         Every socket here is explicitly bound to InetAddress.getLoopbackAddress()
+         (DapProxy's rendezvous and dial, JsDebugServer's port probe), which is
+         the mitigation that actually applies: the channel never leaves the host.
+         Encrypting a pipe to a child process the IDE controls would add no
+         principal and no boundary. Scoped to the two DAP transport classes, so
+         any new unencrypted socket elsewhere still fails the gate. -->
+    <Match>
+        <Class name="org.nmox.studio.editor.debug.dap.DapProxy"/>
+        <Bug pattern="UNENCRYPTED_SERVER_SOCKET,UNENCRYPTED_SOCKET"/>
+    </Match>
+    <Match>
+        <Class name="org.nmox.studio.editor.debug.dap.JsDebugServer"/>
+        <Bug pattern="UNENCRYPTED_SERVER_SOCKET,UNENCRYPTED_SOCKET"/>
+    </Match>
+
     <!-- Tests may trip benign patterns; analyse main code only for the gate. -->
     <Match><Class name="~.*Test"/></Match>
 </FindBugsFilter>

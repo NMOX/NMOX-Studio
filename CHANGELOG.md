@@ -4,6 +4,61 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.37.0] — 2026-07-09
+
+### Added
+- **JavaScript and TypeScript breakpoint debugging**, zero setup. Set a
+  breakpoint in the gutter, right-click → *Debug File (breakpoints)*, and
+  the program stops there with call stack, variables, stepping and watch
+  expressions — the platform's own debugger UI, driving Microsoft's
+  `js-debug` (MIT, v1.117.0), **vendored in the box** so nothing needs
+  installing. `cwd` is the project root, so requires and `node_modules`
+  resolve as they do from a terminal.
+- `DapProxy`, a DAP session multiplexer. js-debug's first connection is
+  only a coordinator: after `launch` it sends a `startDebugging` reverse
+  request and expects the client to dial a *second* socket for the real
+  target. NetBeans' DAP client is stream-based and cannot dial, so a
+  direct wiring leaves the debuggee paused forever. The proxy answers that
+  request itself, opens the child session, replays the client's
+  breakpoints, and splices it in — one flat session as far as the IDE
+  knows. `RealJsDebugIntegrationTest` drives the real adapter end to end
+  and pins the whole message flow against future js-debug versions.
+- `ProcessSupport.killTree` promoted to public (descendants first): the
+  debuggee is a child of the adapter, and neither may outlive the session.
+
+### Fixed
+- **Security: debugging bypassed Workspace Trust.** The rack gates every
+  device launch behind a trust prompt; the debug action ran the project's
+  code — all three languages, not just the new one — without asking. It
+  now consults the same trust record at the same project root, and
+  *Keep Safe* blocks the launch before any adapter or debuggee spawns.
+- **The proxy slammed the client's socket shut on `terminated`.** After
+  forwarding the session's last event it called `close()`, which closed the
+  socket the DAP client reads from — discarding whatever bytes were still
+  sitting unread in that socket's receive buffer, `terminated` among them.
+  A finished session could stay marked live in the debugger UI. macOS hid
+  it (the reader thread usually drained first); Linux loses that race every
+  time, which is how CI caught it. The proxy now half-closes its own end,
+  so the FIN queues *behind* the frames it already wrote: the client drains
+  them, reads a clean EOF, and ends the session on its own terms. The
+  socket pair belongs to whoever took the streams. A dropped link now takes
+  the same graceful path instead of the same slam.
+- **IGNITION's static lane served silently.** `python3 -m http.server`
+  prints its `Serving HTTP on` banner to stdout, which python
+  block-buffers when it isn't a TTY, so the banner never reached the
+  device: no READY, no URL jack, no `⇄ serving` chip, no ⌘I Live Servers
+  entry (the access log is stderr, so output *looked* healthy). Fixed with
+  `python3 -u`. The old test injected the banner directly into `onLine()`,
+  so it passed while reality failed; the new test asserts the argv.
+
+### Notes
+- The vendored `js-debug` is not a Maven dependency: it does not appear in
+  the SBOM and Dependabot cannot see it. Version bumps are manual — see
+  `editor/src/main/release/jsdebug/NOTICE` (source URL, sha256, license).
+- A debug session follows one process. Child processes the program spawns
+  run undebugged rather than pausing for an attach that never comes
+  (`autoAttachChildProcesses: false`).
+
 ## [1.36.0] — 2026-07-05
 
 The senior review release. A very-senior-NetBeans-RCP-developer pass

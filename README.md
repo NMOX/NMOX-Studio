@@ -169,6 +169,19 @@ are never flagged as typos); a **Structure navigator** (⌘7) that outlines
 any file — classes, functions, tests, selectors, headings, config keys —
 and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 
+### 🐞 Breakpoints that actually stop
+
+Click the gutter, right-click → **Debug File**, and your program pauses
+there — call stack, variables in scope, stepping, watch expressions
+evaluated against the live process. **JavaScript and TypeScript debug
+out of the box**: Microsoft's [js-debug](https://github.com/microsoft/vscode-js-debug)
+(the engine VS Code uses) ships inside the IDE, so if `node` runs your
+file, you can debug it. Python (debugpy) and Go (delve) work the same
+way with their own adapters. Debugging runs your code, so it asks for
+Workspace Trust first — the same gate the rack uses.
+
+![A JavaScript breakpoint hit — live V8 variables and the Node call stack](docs/images/debug-javascript.png)
+
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
 (⇧⌘L) opens a searchable picker of **51 built-in tutorials** across

@@ -92,6 +92,44 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.37.0)
+
+### 25. One debug session per run: child processes run undebugged
+js-debug is a *multi-session* adapter: after `launch` it sends a
+`startDebugging` reverse request per debug target, expecting the client
+to open another socket. The platform's `DAPConfiguration` is
+single-session and cannot dial a second one, so `DapProxy` splices
+exactly **one** child session onto the client's connection and the
+launch config sets `autoAttachChildProcesses: false`. Consequence: a
+script that forks (a worker, a `child_process.spawn`) debugs the parent
+only — the children run at full speed instead of stopping at a
+breakpoint. This is the honest failure: the alternative (leaving
+auto-attach on) makes js-debug ask for sessions the client can't open,
+and the debuggee pauses forever waiting for an attach that never comes.
+Fixing it properly means either a platform change (a DAP client that
+accepts N sessions) or the proxy synthesizing multiple pseudo-clients
+and multiplexing their UIs — the second is a sprint, not a patch.
+**Deferred**: single-target debugging is the overwhelmingly common case,
+and the current behaviour is "children don't break" rather than "the
+session hangs." Browser/Chrome debugging (same adapter, different launch
+type) hits the same ceiling and waits on the same fix.
+
+### 26. Vendored js-debug is invisible to Dependabot and the SBOM
+`editor/src/main/release/jsdebug/` carries js-debug v1.117.0 (MIT, 2.5MB)
+as committed bytes, because upstream publishes no npm package — the
+GitHub release tarball is the only artifact. It therefore has no
+coordinate for Dependabot to watch and does not appear in the CycloneDX
+SBOM the release workflow generates, which is exactly the blind spot the
+SBOM exists to remove. Mitigation today is manual and written down: the
+version, source URL, and sha256 live in the vendored `NOTICE`, which
+also states the invisibility outright so nobody trusts the SBOM to cover
+it. **Deferred**: the real fixes are to either teach the release workflow
+to append a manual SBOM component (small, but hand-maintained metadata is
+its own staleness risk) or to fetch the tarball at build time (trades a
+reproducible committed artifact for a network dependency in CI). Revisit
+when a second vendored non-Maven artifact appears — one is a note, two is
+a mechanism.
+
 ## Open — deferred deliberately, with reasons (added v1.36.0)
 
 The v1.36.0 senior review fixed everything cheap-and-clearly-right its

@@ -284,8 +284,12 @@ class ClassicWebDevicesTest {
         try {
             RunDevice run = new RunDevice();
             rack.addDevice(run);
+            // -u, not cosmetic: without it python block-buffers the
+            // "Serving HTTP on" banner and the lane never announces
+            // itself (no READY, no URL, no serving chip). See
+            // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-m", "http.server", "8000");
+                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
             assertThat(run.commandDir()).isEqualTo(dir.toFile());
         } finally {
             rack.shutdown();
@@ -300,8 +304,12 @@ class ClassicWebDevicesTest {
         try {
             RunDevice run = new RunDevice();
             rack.addDevice(run);
+            // -u, not cosmetic: without it python block-buffers the
+            // "Serving HTTP on" banner and the lane never announces
+            // itself (no READY, no URL, no serving chip). See
+            // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-m", "http.server", "8000");
+                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
         } finally {
             rack.shutdown();
         }
@@ -316,8 +324,12 @@ class ClassicWebDevicesTest {
             RunDevice run = new RunDevice();
             rack.addDevice(run);
             run.applyState(Map.of("target", "23")); // static, appended index
+            // -u, not cosmetic: without it python block-buffers the
+            // "Serving HTTP on" banner and the lane never announces
+            // itself (no READY, no URL, no serving chip). See
+            // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-m", "http.server", "8000");
+                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
         } finally {
             rack.shutdown();
         }
