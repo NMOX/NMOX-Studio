@@ -175,10 +175,43 @@ refresh buttons.
   instead of failing silently.
 - **Run Focused Test**: with your caret in a test method, one action runs
   exactly that test — JS/TS, Go, Rust, Python, PHPUnit, and more.
-- **Debugging**: Python and Go get real breakpoint debugging (debugpy /
-  delve) through the INSPECTOR device or the editor action.
 - **`.editorconfig` is honored on save** — indent, charset, final
   newline. Your formatter devices (GLOSS et al.) handle the rest.
+
+### Debugging with real breakpoints
+
+Click the gutter (or **⌘F8**) to set a breakpoint, right-click →
+**Debug File (breakpoints)**, and the program stops there — with the
+call stack, the variables in scope, stepping, and watch expressions you
+can evaluate against the paused program.
+
+![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
+
+- **JavaScript and TypeScript** debug through
+  [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
+  engine VS Code uses — **bundled in the box**. Nothing to install: if
+  `node` runs your file, you can debug it. (TypeScript works where node
+  runs it directly, or via source maps on compiled output.)
+- **Python** uses debugpy, **Go** uses delve. Install those yourself;
+  the IDE tells you the command if they're missing.
+- The program runs with your project root as its working directory, so
+  `require`, imports, and `node_modules` resolve exactly as they would
+  from a terminal.
+- Debugging runs your project's code, so the first time in a folder the
+  IDE asks whether you trust it — the same gate the rack uses before it
+  fires a device. **Keep Safe** stops the launch before anything runs.
+
+![The Workspace Trust gate stopping a debug launch in an untrusted folder](images/debug-workspace-trust.png)
+
+The **INSPECTOR** rack device is a different tool for a different job: it
+starts your program with a debug port open (`node --inspect`, `dlv`,
+`debugpy`) and prints the endpoint, so you can attach an external client
+like chrome://inspect. Use the editor action for breakpoints in NMOX
+Studio; use INSPECTOR when something else does the debugging.
+
+One limit worth knowing: a debug session follows one process. Child
+processes your program spawns keep running, undebugged, rather than
+pausing for an attach that never comes.
 
 ## 6. The studios
 
@@ -274,6 +307,8 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
 ## 9. Quick Search, status line, and staying oriented
 
 ![⌘I finds devices too — typing "grunt" surfaces DYNAMO, ready to jump to](images/quick-search.png)
+
+![Live Servers: ⌘I finds whatever is serving right now, and Enter opens it](images/live-servers-search.png)
 
 **⌘I is the universal finder.** One box reaches: your projects (recent
 and known), every rack device (jump straight to a device's controls),

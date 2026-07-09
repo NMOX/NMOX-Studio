@@ -216,16 +216,6 @@ public class RunDevice extends CommandDevice {
         return candidates[0];
     }
 
-    /** Test seam: pick a lane without driving the knob's Swing model. */
-    void selectTargetForTest(String target) {
-        targetKnob.selectOption(target);
-    }
-
-    /** Test seam: the argv this lane would launch. */
-    List<String> buildCommandForTest() {
-        return buildCommand();
-    }
-
     @Override
     protected List<String> buildCommand() {
         List<String> cmd = new ArrayList<>(switch (effectiveTarget()) {

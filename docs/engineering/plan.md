@@ -74,12 +74,12 @@ Ideas that fit the identity — the rack as the honest, visible automation
 surface. Each earns its place only as a full vertical slice (device +
 tests + docs + live verify), never as a checkbox:
 
-- **Debugging completes the loop.** INSPECTOR launches debug configs and
-  DAP works for Go/Python, but JS/TS — the flagship languages — debug via
-  browser devtools outside the IDE. A CDP/DAP bridge for node and the
-  browser, wired as a rack device with a real control surface, would close
-  the largest daily-driver gap. This is the single highest-value feature
-  left.
+- ~~**Debugging completes the loop.**~~ **Done in v1.37.0** — JS/TS now
+  debug in-IDE through the vendored js-debug adapter and the `DapProxy`
+  multiplexer. What's left of this thread: **browser/Chrome debugging**
+  (js-debug speaks it; needs a launch config and a target picker) and
+  **multi-process sessions** (today one child session per run; child
+  processes run undebugged).
 - **Git as a surface, not just a device.** The ide cluster already ships
   git internals; the GIT device runs commands. A diff/blame/history
   experience (or PR review via `gh`) is the second-largest gap for a
@@ -155,11 +155,11 @@ unverified `pkill`.
 
 ## What I'd do next, in order
 
-If the next session asks "what now": **(1)** the JS/node debugging slice —
-biggest daily-driver gap, fits the rack; **(2)** the git surface; **(3)**
+If the next session asks "what now": **(1)** the git surface — now the
+biggest daily-driver gap, since debugging landed in v1.37.0; **(2)**
 the rack accessibility sweep — cheap, right, and differentiating ("the
-accessible IDE with knobs"); **(4)** Windows test lane before any of the
-above grows Windows-specific code paths; **(5)** startup performance,
-measured first. Resist: new studios (six tabs is the discovery ceiling),
+accessible IDE with knobs"); **(3)** Windows test lane before any of the
+above grows Windows-specific code paths; **(4)** startup performance,
+measured first; **(5)** browser debugging, extending v1.37.0's adapter. Resist: new studios (six tabs is the discovery ceiling),
 new languages (48 grammars is past diminishing returns), and any feature
 that can't be drawn as a device with an honest control surface.

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -79,7 +80,9 @@ public final class JsDebugServer {
                         sawReady.set(true);
                         settled.countDown();
                     }
-                    LOG.log(Level.FINE, "js-debug: {0}", line);
+                    // the adapter's output is untrusted text: strip control
+                    // characters so it cannot forge extra log records
+                    LOG.log(Level.FINE, "js-debug: {0}", sanitize(line));
                 }
             } catch (IOException ex) {
                 LOG.log(Level.FINE, "js-debug output pump ended", ex);
@@ -128,8 +131,20 @@ public final class JsDebugServer {
         ProcessSupport.killTree(process);
     }
 
+    /**
+     * The adapter's output is untrusted text: strip control characters so a
+     * crafted line cannot forge extra log records. The regex already removes
+     * CR and LF; the explicit char replaces follow because they are the only
+     * form find-sec-bugs recognizes as a CRLF sanitizer.
+     */
+    private static String sanitize(String line) {
+        return line.replaceAll("\\p{Cntrl}", "").replace('\r', ' ').replace('\n', ' ');
+    }
+
+    /** Loopback-bound: the adapter is local, and the probe socket must not
+     *  be reachable from the network even for the instant it is open. */
     private static int freePort() throws IOException {
-        try (ServerSocket s = new ServerSocket(0)) {
+        try (ServerSocket s = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
             return s.getLocalPort();
         }
     }

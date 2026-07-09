@@ -126,9 +126,9 @@ class ServingDevicesTest {
         try {
             RunDevice run = new RunDevice();
             rack.addDevice(run);
-            run.selectTargetForTest("static");
+            run.applyState(java.util.Map.of("target", "23")); // static lane
 
-            List<String> cmd = run.buildCommandForTest();
+            List<String> cmd = run.buildCommand();
 
             // python block-buffers stdout when it is not a TTY, and the
             // "Serving HTTP on" banner is a stdout print(). Without -u it
