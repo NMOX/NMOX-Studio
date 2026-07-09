@@ -164,6 +164,25 @@ class DapProxyTest {
                         .put("__pendingTargetId", "target-1")));
     }
 
+    @Test
+    @DisplayName("terminated reaches the client, then a clean EOF — its socket is never slammed shut")
+    void shouldHalfCloseClientAfterTerminated() throws Exception {
+        spliceChild();
+        adapter.eventChild("terminated", new JSONObject());
+
+        assertThat(client.awaitEvent("terminated"))
+                .as("the last event of the session must be delivered").isNotNull();
+        assertThat(closedCallback.await(10, TimeUnit.SECONDS))
+                .as("the adapter is stopped once the session ends").isTrue();
+
+        // The proxy half-closes its end so the FIN queues *behind* the frames
+        // it already wrote. Closing the client's socket instead (the pre-fix
+        // behaviour) discards whatever the client hasn't read yet — reliably
+        // the terminated event on Linux — and getInputStream() throws here.
+        assertThat(proxy.clientInput().read())
+                .as("clean EOF, not a slammed socket").isEqualTo(-1);
+    }
+
     private void spliceChild() throws Exception {
         driveToChildDance();
         adapter.parentReceived(); // success reply to startDebugging

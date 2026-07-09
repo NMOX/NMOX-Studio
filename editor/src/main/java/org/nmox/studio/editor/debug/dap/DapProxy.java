@@ -47,6 +47,10 @@ public final class DapProxy {
 
     private volatile Socket childSocket;
     private volatile boolean spliced;
+    /** Session over: pumps stopped, client half-closed. Set once. */
+    private final AtomicBoolean sessionEnded = new AtomicBoolean();
+    /** onClosed fires exactly once, from whichever path gets there first. */
+    private final AtomicBoolean adapterStopped = new AtomicBoolean();
     private volatile JSONObject childConfiguration;
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -165,7 +169,7 @@ public final class DapProxy {
             case "event" -> {
                 forwardToClient(frame, null);
                 if ("terminated".equals(frame.optString("event"))) {
-                    close();
+                    endSession();
                 }
             }
             case "request" -> onReverseRequest(Link.PARENT, frame);
@@ -195,7 +199,7 @@ public final class DapProxy {
                 } else {
                     forwardToClient(frame, null);
                     if ("terminated".equals(event)) {
-                        close();
+                        endSession();
                     }
                 }
             }
@@ -346,7 +350,9 @@ public final class DapProxy {
             } catch (IOException ex) {
                 LOG.log(Level.FINE, name + " pump ended", ex);
             } finally {
-                close();
+                // a dropped link ends the session; it must not slam the
+                // client's socket shut on top of frames it hasn't read
+                endSession();
             }
         }, name);
         t.setDaemon(true);
@@ -363,16 +369,47 @@ public final class DapProxy {
         return s;
     }
 
+    /**
+     * The session is over — `terminated` arrived, or a link dropped. The
+     * client must still be able to read what we already wrote to it: closing
+     * its socket here discards bytes sitting unread in the receive buffer,
+     * and the last thing written is precisely the `terminated` event. (macOS
+     * usually lost that race harmlessly because the reader thread had already
+     * drained; Linux loses it every time.) So half-close: the FIN queues
+     * *behind* the buffered frames, the client drains them, reads EOF, and
+     * ends the session on its own terms. The socket pair belongs to whoever
+     * took clientInput()/clientOutput() — {@link #close()} is theirs to call.
+     */
+    private void endSession() {
+        if (!sessionEnded.compareAndSet(false, true)) {
+            return;
+        }
+        try {
+            proxySideClient.shutdownOutput();
+        } catch (IOException ex) {
+            LOG.log(Level.FINE, "client half-close failed", ex);
+        }
+        closeQuietly(childSocket);
+        closeQuietly(parentSocket);
+        stopAdapter();
+    }
+
     /** Idempotent; closes every socket and fires onClosed exactly once. */
     public void close() {
         if (!closed.compareAndSet(false, true)) {
             return;
         }
+        sessionEnded.set(true);
         closeQuietly(childSocket);
         closeQuietly(parentSocket);
         closeQuietly(proxySideClient);
         closeQuietly(actionSideClient);
-        if (onClosed != null) {
+        stopAdapter();
+    }
+
+    /** onClosed stops the adapter; it must fire exactly once across both paths. */
+    private void stopAdapter() {
+        if (adapterStopped.compareAndSet(false, true) && onClosed != null) {
             onClosed.run();
         }
     }

@@ -32,6 +32,17 @@ All notable changes to NMOX Studio are documented here. The format follows
   code — all three languages, not just the new one — without asking. It
   now consults the same trust record at the same project root, and
   *Keep Safe* blocks the launch before any adapter or debuggee spawns.
+- **The proxy slammed the client's socket shut on `terminated`.** After
+  forwarding the session's last event it called `close()`, which closed the
+  socket the DAP client reads from — discarding whatever bytes were still
+  sitting unread in that socket's receive buffer, `terminated` among them.
+  A finished session could stay marked live in the debugger UI. macOS hid
+  it (the reader thread usually drained first); Linux loses that race every
+  time, which is how CI caught it. The proxy now half-closes its own end,
+  so the FIN queues *behind* the frames it already wrote: the client drains
+  them, reads a clean EOF, and ends the session on its own terms. The
+  socket pair belongs to whoever took the streams. A dropped link now takes
+  the same graceful path instead of the same slam.
 - **IGNITION's static lane served silently.** `python3 -m http.server`
   prints its `Serving HTTP on` banner to stdout, which python
   block-buffers when it isn't a TTY, so the banner never reached the
