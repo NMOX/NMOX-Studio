@@ -103,17 +103,17 @@
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.9</version>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.11</version>
+            <version>42.7.13</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.47.1.0</version>
+            <version>3.53.2.0</version>
         </dependency>
         <!-- Bundled MongoDB driver (Apache-2, like sqlite-jdbc) — the one
              non-JDBC driver; CouchDB needs none (plain HTTP via the core
@@ -121,7 +121,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>5.5.1</version>
+            <version>5.9.0</version>
         </dependency>
 
         <!-- Quick Search provider (Cmd+I) -->
