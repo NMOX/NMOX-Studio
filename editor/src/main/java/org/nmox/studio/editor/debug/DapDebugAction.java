@@ -63,6 +63,15 @@ public class DapDebugAction extends BaseAction {
         String mime = (String) doc.getProperty("mimeType");
         RP.post(() -> {
             try {
+                // Debugging runs the project's code — the same thing the rack
+                // gates before it fires a device. Ask once per folder, on the
+                // same trust record the rack uses; a "Keep Safe" answer stops
+                // the launch before any adapter or debuggee is spawned.
+                if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectRoot(file))) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "Debug cancelled — workspace not trusted.");
+                    return;
+                }
                 switch (mime) {
                     case "text/x-python" -> debugPython(file);
                     case "text/x-go" -> debugGo(file);

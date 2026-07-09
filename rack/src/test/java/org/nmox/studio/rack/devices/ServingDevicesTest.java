@@ -120,6 +120,29 @@ class ServingDevicesTest {
     }
 
     @Test
+    @DisplayName("the static lane runs python unbuffered, or its banner never reaches onLine")
+    void ignitionStaticLaneIsUnbuffered() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            RunDevice run = new RunDevice();
+            rack.addDevice(run);
+            run.selectTargetForTest("static");
+
+            List<String> cmd = run.buildCommandForTest();
+
+            // python block-buffers stdout when it is not a TTY, and the
+            // "Serving HTTP on" banner is a stdout print(). Without -u it
+            // sits in the buffer: the lane serves, the access log (stderr)
+            // scrolls, and READY/URL/serving-chip never fire. Observed live.
+            assertThat(cmd).containsExactly(
+                    "python3", "-u", "-m", "http.server", "8000");
+            assertThat(cmd.indexOf("-u")).isLessThan(cmd.indexOf("-m"));
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("IGNITION's webpack lane announces the printed dev-server URL once")
     void ignitionWebpackLaneRegisters() throws IOException {
         Rack rack = aimedRack();
