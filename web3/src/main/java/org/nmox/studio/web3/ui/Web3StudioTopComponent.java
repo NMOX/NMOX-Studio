@@ -210,6 +210,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private final org.nmox.studio.rack.model.Rack.Listener rackListener;
     private boolean rackListenerAttached;
+    /** An artifact walk is owed but the tab is hidden; served on componentShowing. */
+    boolean rescanPending;
     private boolean saveFailureNotified;
 
     /** Auto-connects the chip when the rack serves a matching chain; null when rack absent. */
@@ -1228,6 +1230,15 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NO_PROJECT_HINT, Color.GRAY);
             return;
         }
+        // Hidden tabs take a note instead of walking: open-at-startup means
+        // this runs during boot behind the selected tab, and the scan is a
+        // Files.walk over out/ + artifacts/ nobody is looking at. The walk
+        // waits for componentShowing (the DB Studio Docker-offer idiom) —
+        // the window system fires it at startup for the tab that IS selected.
+        if (!isShowing()) {
+            rescanPending = true;
+            return;
+        }
         status("Scanning artifacts…", Color.GRAY);
         RP.post(() -> {
             List<ContractArtifact> found = ArtifactScanner.scan(dir.toPath());
@@ -1249,6 +1260,12 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void autoRescan() {
         File dir = projectDirOrNull();
         if (dir == null) {
+            return;
+        }
+        if (!isShowing()) {
+            // same visibility economy as rescan(): a build storm behind a
+            // hidden tab becomes one deferred walk on next show, not N walks
+            rescanPending = true;
             return;
         }
         RP.post(() -> {
@@ -1580,6 +1597,14 @@ public final class Web3StudioTopComponent extends TopComponent {
             rackListenerAttached = true;
         } catch (RuntimeException | LinkageError ignored) {
             // rack unavailable (tests, stripped platform): no project switches to follow
+        }
+    }
+
+    @Override
+    protected void componentShowing() {
+        if (rescanPending) {
+            rescanPending = false;
+            rescan();
         }
     }
 

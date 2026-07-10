@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.38.0] — 2026-07-09
+
+The startup-truth release. Measured first (startup-log phases + JFR on
+cold, warm, dev-tree, and installed-app boots), then fixed exactly what
+the profile named. Headline finding: the 7-second cold start recorded at
+v1.26 no longer exists — the v1.33.x storm fixes removed it. The window
+paints in **1.4s** (warm OS cache) to **2.7s** (first boot), ~90% of
+which is the platform module system reading 519 cluster jars: the
+deliberate price of shipping real editors, git, and databases. What was
+NOT deliberate was hidden tabs working at boot — fixed below,
+JFR-verified: the IDE now spawns **zero** external processes at startup.
+
+### Fixed
+- **NPM Explorer ran `npm ls -g` twice on every boot** — once from its
+  constructor, once from componentOpened, both of which fire during
+  window-system load while the tab is hidden. Per JFR these were the only
+  processes the whole IDE spawned at boot. The refresh now waits for
+  componentShowing (the DB Studio Docker-offer idiom), and a rack re-aim
+  while hidden takes a note instead of spawning behind an invisible tab.
+- **Contract Studio walked the artifact tree at boot** — the constructor's
+  rescan ran `Files.walk` over `out/` + `artifacts/` for a tree nobody was
+  looking at. Both rescan paths (initial and build-pulse) now defer while
+  hidden and coalesce to a single walk on first show; a build storm behind
+  a hidden tab becomes one deferred scan, not N.
+- **Docker panel generated dockerize previews at boot** (a project-dir
+  detect walk). Deferred to first show; the docker daemon calls were
+  already correctly gated and stay untouched.
+- **Project Explorer and Project Studio each did their boot work twice**
+  (constructor + componentOpened both fired the toolchain-detect walk /
+  the directory list + FileWatcher spin-up). componentOpened owns the work
+  now; the constructors are passive.
+
+### Notes
+- Every fix is pinned by a source-gate test (the DebugTrustGateTest idiom),
+  the NPM one proven to fail against the old code. Verified live: a fresh
+  boot with JFR shows 0 process starts, and clicking each tab serves its
+  deferred work (npm globals, artifact scan, dockerize previews) on first
+  show.
+- The audit found the rest of the suite already clean: DB Studio and the
+  Workbench launchpad were the model (componentShowing gates since
+  v1.35.1), Infra's token check is local-only, API Studio loads one JSON
+  file. No default-open tab touches the network at boot.
+
 ## [1.37.0] — 2026-07-09
 
 ### Added

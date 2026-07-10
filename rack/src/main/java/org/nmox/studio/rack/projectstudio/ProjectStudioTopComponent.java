@@ -68,8 +68,10 @@ public final class ProjectStudioTopComponent extends TopComponent {
         add(treePanel, BorderLayout.CENTER);
         statusLabel.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
         add(statusLabel, BorderLayout.SOUTH);
-
-        syncToRack();
+        // No syncToRack here: this tab is open-at-startup, so componentOpened
+        // always follows construction and runs its own sync — a constructor
+        // sync lists the project directory and spins up a FileWatcher twice
+        // per boot.
     }
 
     private JToolBar buildToolbar() {

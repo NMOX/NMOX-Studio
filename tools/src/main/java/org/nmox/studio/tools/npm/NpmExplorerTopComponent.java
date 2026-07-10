@@ -65,6 +65,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
     private org.nmox.studio.rack.model.Rack rackRef;
     private org.nmox.studio.rack.model.Rack.Listener rackListener;
     private File currentProjectDir;
+    /** A refresh is owed but the tab is hidden; served on componentShowing. */
+    boolean refreshPending;
 
     public NpmExplorerTopComponent() {
         initComponents();
@@ -85,15 +87,22 @@ public final class NpmExplorerTopComponent extends TopComponent {
             rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
                 @Override
                 public void projectChanged() {
-                    javax.swing.SwingUtilities.invokeLater(
-                            NpmExplorerTopComponent.this::refreshProjectView);
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        // hidden tabs take a note instead of refreshing: the
+                        // no-project branch spawns npm, and a re-aim storm
+                        // must not turn into a process storm behind a tab
+                        // nobody can see
+                        if (isShowing()) {
+                            refreshProjectView();
+                        } else {
+                            refreshPending = true;
+                        }
+                    });
                 }
             };
         } catch (RuntimeException | LinkageError ex) {
             // rack unavailable; manual Refresh still works
         }
-
-        refreshProjectView();
     }
 
     private void initComponents() {
@@ -340,7 +349,21 @@ public final class NpmExplorerTopComponent extends TopComponent {
         if (rackRef != null && rackListener != null) {
             rackRef.addListener(rackListener);
         }
-        refreshProjectView();
+        // No refresh here: open-at-startup tabs get componentOpened during
+        // window-system load while hidden behind the selected tab, and the
+        // no-project fallback spawns `npm ls -g` — a process this IDE has no
+        // business running for a tab nobody is looking at. The refresh waits
+        // for componentShowing (the DB Studio Docker-offer idiom), which the
+        // window system also fires at startup for the tab that IS selected.
+        refreshPending = true;
+    }
+
+    @Override
+    protected void componentShowing() {
+        if (refreshPending) {
+            refreshPending = false;
+            refreshProjectView();
+        }
     }
 
     @Override

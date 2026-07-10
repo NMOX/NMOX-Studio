@@ -89,10 +89,19 @@ tests + docs + live verify), never as a checkbox:
   WCAG for the *user's* project while the IDE itself is unaudited. Honest
   fix: accessible names/roles on every control (the widget library is one
   file — one sweep covers all 44 devices), keyboard operation for knobs.
-- **Performance: the 7s cold start** (measured v1.26, palette not the
-  bottleneck). The win is lazy module enablement and deferring studio tab
-  construction until first show — measure first; the v1.33.x storm arc
-  proved startup assumptions wrong twice.
+- ~~**Performance: the 7s cold start**~~ **Re-measured and largely done in
+  v1.38.0.** The 7s figure (v1.26) no longer reproduces — the v1.33.x storm
+  fixes removed it. Fresh numbers (M-series, JDK 23, startup-log + JFR):
+  window painted in **1.4s** (warm OS cache) to **2.7s** (cold), fully
+  quiet ~4.5s. ~90% of time-to-window is the platform's module-system
+  Preparation — I/O-bound scanning of 519 cluster jars, the deliberate
+  price of shipping editors/git/db (310 modules on). What v1.38.0 DID fix:
+  every piece of boot work hidden default-open tabs were doing — `npm ls
+  -g` spawned twice per boot (the only processes the IDE launched at boot,
+  per JFR), Contract Studio's artifact tree walk, the dockerize detect
+  walk, and the ctor+componentOpened double-fires — all now gated on
+  componentShowing or deduped, JFR-verified zero boot spawns. What's left
+  is cluster trimming for ~100ms/30 jars — not worth the feature risk.
 - **A public device SPI.** Deliberately deferred (v1.35 ledger): third
   parties writing rack devices. The internal `RackDevice` contract is
   stable and storm-law-tested now; opening it means freezing it. Do this
@@ -159,7 +168,9 @@ If the next session asks "what now": **(1)** the git surface — now the
 biggest daily-driver gap, since debugging landed in v1.37.0; **(2)**
 the rack accessibility sweep — cheap, right, and differentiating ("the
 accessible IDE with knobs"); **(3)** Windows test lane before any of the
-above grows Windows-specific code paths; **(4)** startup performance,
-measured first; **(5)** browser debugging, extending v1.37.0's adapter. Resist: new studios (six tabs is the discovery ceiling),
+above grows Windows-specific code paths; **(4)** browser debugging,
+extending v1.37.0's adapter. (Startup performance was measured and
+closed out in v1.38.0 — window in 1.4–2.7s, zero boot spawns; see the
+struck item above before reopening it.) Resist: new studios (six tabs is the discovery ceiling),
 new languages (48 grammars is past diminishing returns), and any feature
 that can't be drawn as a device with an honest control surface.
