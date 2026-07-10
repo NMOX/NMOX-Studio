@@ -227,6 +227,24 @@ pausing for an attach that never comes.
 
 ## 6. The studios
 
+### Git, on the status line
+
+Aim at any project inside a git repository and the status line grows a
+**⎇ branch chip** — `⎇ main ±3` means you're on `main` with three changed
+files. The branch is read from `.git/HEAD` directly (no git process runs
+until you interact); the count refreshes on aim, on click, and every 30
+seconds while visible.
+
+![The platform's Show History window opened from the git chip, with the branch and dirty count in the status line](images/git-history.png)
+
+Click the chip for **History** — the full search-and-diff history browser
+(message/author/date filters, per-commit diffs) — or **Refresh**. The rest
+of the git surface lives where NetBeans puts it: select a file (or open it
+in the editor) and the **Team** menu offers Show Changes, Diff, blame
+(*Annotate*), branch operations, and shelving, all against the repository
+the file belongs to. In-editor change stripes appear in the gutter as you
+edit a tracked file.
+
 ### API Studio (⌥⌘8)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
 
