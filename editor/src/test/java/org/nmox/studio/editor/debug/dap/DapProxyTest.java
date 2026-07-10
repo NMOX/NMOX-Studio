@@ -280,6 +280,22 @@ class DapProxyTest {
         adapter.childReceived(); // launch
         adapter.eventChild("initialized", new JSONObject());
         adapter.childReceived(); // configurationDone (no breakpoints cached here)
+        // The proxy sets `spliced` on the line *after* it writes
+        // configurationDone, so observing that frame on the child doesn't
+        // prove the flag is up yet. Await the flag itself before firing the
+        // first post-splice request — otherwise it can win the race and route
+        // to the parent, and the child never sees it. (Windows CI, PR #128.)
+        awaitSpliced();
+    }
+
+    private void awaitSpliced() throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (!proxy.spliced()) {
+            if (System.nanoTime() > deadline) {
+                throw new AssertionError("proxy never reached the spliced state");
+            }
+            Thread.sleep(2);
+        }
     }
 
     // --- test doubles -----------------------------------------------------
