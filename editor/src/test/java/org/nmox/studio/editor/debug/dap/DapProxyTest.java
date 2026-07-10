@@ -171,6 +171,76 @@ class DapProxyTest {
         assertThat(adapter.connectionCount()).isEqualTo(2);
     }
 
+    @Test
+    @DisplayName("pwa-chrome: the browser child dance replays the recon transcript shape")
+    void shouldRunChromeShapedChildDance() throws Exception {
+        // the v1.43.0 recon transcript, verbatim shapes: a pwa-chrome launch,
+        // breakpoints cached during configuration, then the page target's
+        // startDebugging (name "about:blank", a __pendingTargetId) on the
+        // parent link and the same configuration replayed to the child
+        client.request("setBreakpoints", new JSONObject()
+                .put("source", new JSONObject().put("path", "/work/site/app.js"))
+                .put("breakpoints", new JSONArray().put(new JSONObject().put("line", 7))));
+        adapter.respondParent(adapter.parentReceived(), new JSONObject());
+        client.awaitResponse("setBreakpoints");
+
+        client.request("launch", new JSONObject()
+                .put("type", "pwa-chrome").put("request", "launch")
+                .put("url", "http://127.0.0.1:3000/")
+                .put("webRoot", "/work/site")
+                .put("runtimeExecutable", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+                .put("userDataDir", "/tmp/profile-1"));
+        adapter.respondParent(adapter.parentReceived(), new JSONObject());
+        client.awaitResponse("launch");
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-chrome")
+                        .put("name", "about:blank")
+                        .put("__pendingTargetId", "B4E5D9B9E3BCEC26C0954D2D1AF9DB47")));
+        adapter.parentReceived(); // proxy's success reply
+
+        adapter.respondChild(adapter.childReceived(), new JSONObject()); // initialize
+        JSONObject childLaunch = adapter.childReceived();
+        assertThat(childLaunch.getString("command")).isEqualTo("launch");
+        assertThat(childLaunch.getJSONObject("arguments").getString("type"))
+                .isEqualTo("pwa-chrome");
+        assertThat(childLaunch.getJSONObject("arguments").getString("__pendingTargetId"))
+                .isEqualTo("B4E5D9B9E3BCEC26C0954D2D1AF9DB47");
+
+        adapter.eventChild("initialized", new JSONObject());
+        JSONObject replayed = adapter.childReceived();
+        assertThat(replayed.getString("command")).isEqualTo("setBreakpoints");
+        assertThat(replayed.getJSONObject("arguments").getJSONObject("source")
+                .getString("path")).isEqualTo("/work/site/app.js");
+        assertThat(adapter.childReceived().getString("command"))
+                .isEqualTo("configurationDone");
+    }
+
+    @Test
+    @DisplayName("a worker target's startDebugging on the CHILD link is answered there and never surfaces")
+    void shouldAnswerWorkerTargetOnChildLink() throws Exception {
+        // recon finding: for browsers the page target's startDebugging comes
+        // on the parent link but WORKER targets arrive on the CHILD link.
+        // The proxy must answer where it was asked — an unanswered reverse
+        // request wedges js-debug — and must not dial a third connection.
+        spliceChild();
+
+        adapter.requestChild("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-chrome")
+                        .put("name", "http://127.0.0.1:3000/worker.js")
+                        .put("__pendingTargetId", "worker-target-1")));
+
+        JSONObject reply = adapter.childReceived();
+        assertThat(reply.getString("type")).isEqualTo("response");
+        assertThat(reply.getString("command")).isEqualTo("startDebugging");
+        assertThat(reply.getBoolean("success")).isTrue();
+        assertThat(adapter.connectionCount()).isEqualTo(2);
+        assertThat(client.receivedCommands()).doesNotContain("startDebugging");
+    }
+
     // --- scripted flows ---------------------------------------------------
 
     private void driveToChildDance() throws Exception {
@@ -352,6 +422,13 @@ class DapProxyTest {
 
         void requestParent(String command, JSONObject arguments) throws IOException {
             sendTo(0, new JSONObject()
+                    .put("seq", adapterSeq.incrementAndGet()).put("type", "request")
+                    .put("command", command).put("arguments", arguments));
+        }
+
+        /** Browser worker targets ask on the CHILD connection (recon-pinned). */
+        void requestChild(String command, JSONObject arguments) throws IOException {
+            sendTo(1, new JSONObject()
                     .put("seq", adapterSeq.incrementAndGet()).put("type", "request")
                     .put("command", command).put("arguments", arguments));
         }

@@ -141,6 +141,12 @@ public final class JsDebugServer {
         return process.isAlive();
     }
 
+    /** Test seam: the adapter's handle, so tests can assert the whole
+     *  descendant tree (the debuggee, the launched browser) really died. */
+    ProcessHandle processHandle() {
+        return process.toHandle();
+    }
+
     /**
      * The adapter's output is untrusted text: strip control characters so a
      * crafted line cannot forge extra log records. The regex already removes
