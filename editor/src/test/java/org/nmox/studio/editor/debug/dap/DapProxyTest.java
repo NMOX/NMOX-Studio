@@ -139,6 +139,26 @@ class DapProxyTest {
     }
 
     @Test
+    @DisplayName("a disconnect racing the child dance still reaches the child")
+    void shouldFanOutDisconnectDuringChildDance() throws Exception {
+        // The Windows-lane catch: the splice flag flips only after the
+        // initialized/replay handshake, but the child CONNECTION exists from
+        // the startDebugging answer on. A disconnect landing in that window
+        // used to go parent-only — and a child that never hears disconnect
+        // keeps the debuggee alive. Freeze the dance mid-flight (initialize
+        // answered, launch consumed, no initialized event yet) and insist
+        // the child hears the disconnect anyway.
+        driveToChildDance();
+        adapter.parentReceived(); // success reply to startDebugging
+        adapter.respondChild(adapter.childReceived(), new JSONObject()); // initialize
+        adapter.childReceived(); // launch — the dance now waits on initialized
+
+        client.request("disconnect", new JSONObject());
+        assertThat(adapter.childReceived().getString("command")).isEqualTo("disconnect");
+        assertThat(adapter.parentReceived().getString("command")).isEqualTo("disconnect");
+    }
+
+    @Test
     @DisplayName("a second startDebugging gets a polite yes and no third connection")
     void shouldIgnoreExtraTargets() throws Exception {
         spliceChild();

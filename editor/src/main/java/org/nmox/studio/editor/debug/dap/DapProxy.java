@@ -121,8 +121,14 @@ public final class DapProxy {
         int clientSeq = frame.optInt("seq");
         switch (command) {
             case "disconnect", "terminate" -> {
-                // both connections must hear it; the client gets one reply
-                if (spliced && childSocket != null) {
+                // Both connections must hear it; the client gets one reply.
+                // Gated on childSocket, NOT spliced: a disconnect can land
+                // while the child dance is still running (spliced flips only
+                // after the initialized/replay handshake), and a child that
+                // exists but never hears disconnect keeps the debuggee
+                // alive. Found by the Windows lane, where the runner's
+                // scheduling lands the client's disconnect in that window.
+                if (childSocket != null) {
                     send(Link.CHILD, frame, clientSeq);
                     send(Link.PARENT, frame, PROXY);
                 } else {

@@ -32,7 +32,10 @@ class DeviceDocsTest {
             return;
         }
         assertThat(doc).as("docs/devices.md missing — regenerate with -Dnmox.docs.write=true").exists();
-        assertThat(Files.readString(doc.toPath()))
+        // A Windows checkout materializes the file with CRLF (the runner's
+        // core.autocrlf=true); the generator's \n content is the canonical
+        // form, so fold line endings before comparing.
+        assertThat(Files.readString(doc.toPath()).replace("\r\n", "\n"))
                 .as("docs/devices.md is stale — regenerate with -Dnmox.docs.write=true")
                 .isEqualTo(generated);
     }

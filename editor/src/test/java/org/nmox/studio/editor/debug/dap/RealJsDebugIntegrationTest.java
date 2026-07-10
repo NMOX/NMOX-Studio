@@ -79,7 +79,13 @@ class RealJsDebugIntegrationTest {
                 .put("type", "pwa-node").put("request", "launch")
                 .put("name", "hello.js")
                 .put("program", hello.toAbsolutePath().toString())
-                .put("cwd", dir.toAbsolutePath().toString())
+                // NOT dir: whatever js-debug spawns inherits this cwd, and on
+                // Windows a process's cwd handle blocks the directory's
+                // deletion — @TempDir cleanup lost that race twice on CI
+                // (files inside deleted fine, the ROOT stayed locked). A
+                // durable cwd keeps the temp dir deletable no matter what
+                // outlives the session by a beat.
+                .put("cwd", SERVER_JS.getParentFile().getAbsolutePath())
                 .put("console", "internalConsole")
                 .put("autoAttachChildProcesses", false));
 

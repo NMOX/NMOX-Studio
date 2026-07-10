@@ -30,7 +30,7 @@ below is written to protect it.
 Itemized with reasons in [tech-debt.md](tech-debt.md); the digest, ranked
 by how much they'd matter to a daily driver:
 
-1. **Windows is build-verified, never test-executed.** The release ships a
+1. ~~**Windows is build-verified, never test-executed.**~~ **Closed in v1.42.0** — windows-latest runs the full verify as a blocking gate (one evidenced disable; assembled-app probes remain POSIX, ledger 37). The original text, for the record: The release ships a
    real installer (bundled runtime, branded, byte-checked by
    windows-installer-check), but all 2,120 tests run on ubuntu+macos only.
    The suite leans on POSIX (`sh`, `sleep`, lsof fixtures). A Windows test
@@ -175,7 +175,9 @@ unverified `pkill`; **a keyboard shortcut registered but never pressed** —
 profile, so four studio chords opened Properties/Tasks/Palette/Editor for
 three releases while the Welcome screen advertised them (v1.38.1); **a UI
 affordance documented but never exercised** — the Breakpoints window was
-empty from the day debugging shipped.
+empty from the day debugging shipped; **a test that spawns a process into
+its `@TempDir` must confirm the process dead — or point its cwd elsewhere —
+before cleanup** (Windows file locking; three incidents in v1.42.0).
 
 ## What I'd do next, in order
 

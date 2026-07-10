@@ -114,10 +114,58 @@ public final class ProcessSupport {
      * grandchild holding the pipe's write end, and the read side never
      * sees EOF; likewise a debug server whose debuggee must not outlive it.
      * Same lesson the rack's killAndWait descendant sweep encodes.
+     *
+     * <p>Known limit, Windows only: a grandchild spawned THROUGH an MSYS
+     * shell (Git Bash) is invisible to this sweep — MSYS implements exec by
+     * starting a new Windows process and exiting the old one, which breaks
+     * the parent-PID chain {@link ProcessHandle#descendants()} walks (the
+     * same reason taskkill /T fails on Git-Bash trees; a real fix needs Job
+     * Objects, outside pure Java). Native Windows process trees — node,
+     * npm.cmd→cmd→node, docker — keep intact chains and are swept. Either
+     * way runBounded still returns on time: its drain joins are bounded, so
+     * a surviving grandchild costs up to 2×5s of tail-drain wait, no hang.
      */
     public static void killTree(Process p) {
         p.descendants().forEach(ProcessHandle::destroyForcibly);
         p.destroyForcibly();
+    }
+
+    /**
+     * {@link #killTree}, then wait — boundedly — for the whole tree to have
+     * actually exited. destroyForcibly is asynchronous: it returns while the
+     * OS is still tearing the process down, and on Windows the dying process
+     * keeps its open files and working directory locked until it is truly
+     * gone — a caller that deletes those files next (a debug session's
+     * teardown, JUnit's @TempDir cleanup) races that lock and loses. The
+     * descendant snapshot is taken BEFORE the kill, while the parent-PID
+     * chain is still walkable.
+     *
+     * @return true when every process in the tree is confirmed dead within
+     *         the timeout; false means something may still be exiting (the
+     *         caller can proceed, but file locks may linger)
+     */
+    public static boolean killTreeAndWait(Process p, Duration timeout) {
+        List<ProcessHandle> tree = new java.util.ArrayList<>(p.descendants().toList());
+        tree.add(p.toHandle());
+        tree.forEach(ProcessHandle::destroyForcibly);
+        long deadline = System.nanoTime() + timeout.toNanos();
+        for (ProcessHandle ph : tree) {
+            long left = deadline - System.nanoTime();
+            if (left <= 0) {
+                break;
+            }
+            try {
+                ph.onExit().get(left, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (java.util.concurrent.ExecutionException
+                    | java.util.concurrent.TimeoutException ignored) {
+                // ExecutionException cannot really happen (onExit completes
+                // normally); timeout falls through to the aliveness verdict
+            }
+        }
+        return tree.stream().noneMatch(ProcessHandle::isAlive);
     }
 
     private static Thread drain(InputStream stream, StringBuilder into, String name) {

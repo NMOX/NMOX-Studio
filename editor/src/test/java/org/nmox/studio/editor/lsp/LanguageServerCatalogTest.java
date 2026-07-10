@@ -43,9 +43,24 @@ class LanguageServerCatalogTest {
     @Test
     @DisplayName("Install detection: a ubiquitous tool reads as present, a nonsense one as absent")
     void detection() {
-        // 'sh' is on every unix PATH the IDE augments; the nonsense name is on none
+        // 'sh' is on every unix PATH the IDE augments, and Git Bash puts
+        // sh.exe on the Windows runners' PATH; the nonsense name is on none
         assertThat(LanguageServerCatalog.isInstalled("sh")).isTrue();
         assertThat(LanguageServerCatalog.isInstalled("nmox-no-such-binary-zzz")).isFalse();
+    }
+
+    @Test
+    @DisplayName("PATH-entry probing sees Windows spellings — .exe and npm's .cmd shims")
+    void windowsSpellingsDetected(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
+        // Pure file probing, so the Windows-shaped names are testable on any
+        // OS. Before this, no language server was EVER detected as installed
+        // on Windows: nothing there is executable under its bare name.
+        new java.io.File(dir, "native-server.exe").createNewFile();
+        new java.io.File(dir, "npm-server.cmd").createNewFile();
+
+        assertThat(LanguageServerCatalog.foundIn(dir, "native-server")).isTrue();
+        assertThat(LanguageServerCatalog.foundIn(dir, "npm-server")).isTrue();
+        assertThat(LanguageServerCatalog.foundIn(dir, "absent-server")).isFalse();
     }
 
     @Test

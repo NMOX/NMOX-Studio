@@ -84,6 +84,12 @@ class ServicesBackendTest {
             assertThat(backend.runConsole("SELECT title FROM books;", 10).get(0).rows())
                     .containsExactly(List.of("dune"));
         } finally {
+            // backend.close() is a documented no-op, so the NB-owned SQLite
+            // connection is still LIVE here — disconnect through the same
+            // owner before unregistering, or the open nb.db handle makes
+            // Windows' @TempDir cleanup fail (POSIX deletes open files
+            // silently, which is why this leak went unnoticed).
+            ConnectionManager.getDefault().disconnect(dbconn);
             ConnectionManager.getDefault().removeConnection(dbconn);
         }
     }

@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.42.0] — 2026-07-10
+
+The Windows lane. Every release since v1.4.1 shipped a real Windows
+installer; every test ran on Linux and macOS. windows-latest now runs the
+full verify — tests, SpotBugs, coverage floors, the test-execution audit —
+as a blocking gate, and getting it green surfaced exactly what the plan
+predicted it would.
+
+### Added
+- **windows-latest in the CI matrix**, full `mvn verify` + audit, blocking.
+  Green in 7m24s across all 14 modules. The assembled-app probes (boot
+  smoke, rendering) stay Linux/macOS — the .exe launcher and runner
+  display story are ledger 37.
+
+### Fixed
+- **No language server was ever detected as installed on Windows** —
+  `LanguageServerCatalog` probed bare names with `canExecute()`, which
+  never matches `.exe`/`.cmd`. It now probes the same suffixes ToolLocator
+  resolves. Regression test runs on every OS.
+- **A DapProxy disconnect race on every OS**, exposed by Windows
+  scheduling: stop landing mid child-session handshake told only the
+  parent adapter and left the debuggee alive. The fan-out now gates on the
+  child socket, not the post-handshake flag; a new test freezes the
+  handshake mid-flight and fails on the old gate.
+- **`ProcessSupport.killTreeAndWait`**: `destroyForcibly` is async, and a
+  dying Windows process still holds file/cwd locks; `JsDebugServer.stop()`
+  now returns only after the tree is confirmed dead (bounded).
+- Five tests made honest across OSes (canonical-path/CRLF/per-OS-shell
+  fixtures; two `@TempDir` cwd-lock cleanups; one genuine connection leak
+  in the DB Services test that every OS had been tolerating).
+
+### Notes
+- One Windows disable, total, with runner-proven evidence: the
+  grandchild-pipe timeout test — Git Bash breaks the Windows parent-PID
+  chain at exec, so MSYS-spawned grandchildren are invisible to any pure
+  Java `descendants()` walk (documented in `killTree`'s javadoc; native
+  Windows trees ARE swept; ledger 38 records the Job-Objects fix if
+  Git-Bash-under-timeout ever matters).
+- New failure pattern (plan.md): a test that spawns a process into its
+  `@TempDir` must confirm the process dead — or point its cwd elsewhere —
+  before cleanup; Windows file locking turned that into three separate
+  incidents this sprint.
+
 ## [1.41.0] — 2026-07-10
 
 The accessibility sweep. The rack's custom-painted widget library (knobs,

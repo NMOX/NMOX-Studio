@@ -121,14 +121,24 @@ public final class JsDebugServer {
         return port;
     }
 
-    /** Idempotent. Descendants first — the debuggee must not outlive us. */
+    /**
+     * Idempotent. Descendants first — the debuggee must not outlive us —
+     * and stop() does not return until the tree is confirmed dead (bounded):
+     * on Windows a dying node still locks its open scripts and cwd, and the
+     * caller's next move is typically to delete exactly those files.
+     */
     public void stop() {
         if (stopped) {
             return;
         }
         stopped = true;
         LIVE.remove(this);
-        ProcessSupport.killTree(process);
+        ProcessSupport.killTreeAndWait(process, java.time.Duration.ofSeconds(5));
+    }
+
+    /** Test seam: whether the adapter process is still alive. */
+    boolean processAlive() {
+        return process.isAlive();
     }
 
     /**
