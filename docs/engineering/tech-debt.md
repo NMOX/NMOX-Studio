@@ -227,6 +227,22 @@ cause as item 25 — the platform's single-session DAP client — and the
 same fix: the N-session client/multiplexer sprint. Recorded so the first
 "my page hangs in the debugger" report finds its reason.
 
+### 40. On Windows, only the product's Stop reaps the browser — not disconnect
+The v1.43.0 recon pinned that a DAP `disconnect` alone reaps the whole
+browser via js-debug's `cleanUp: wholeBrowser` default (zero Chrome procs
+3s after disconnect). That holds on macOS and Linux; the Windows CI lane
+proved it does NOT hold there. js-debug renames the launched browser
+process, which snaps the parent-PID chain its forceful cleanup — and our
+own `descendants()` walk — relies on (the same MSYS/rename genealogy break
+recorded in item 38), so Chrome's detached tree outlives `disconnect`.
+This is **not** a product bug: `BrowserDebugAction`'s session cleanup runs
+`JsDebugServer.stop() -> ProcessSupport.killTreeAndWait` on every teardown
+path, so Stop leaves zero orphans on Windows too. The debt is that the
+platform reaper, not js-debug, is load-bearing on Windows — a real fix for
+the underlying rename-breaks-the-tree problem needs Job Objects (outside
+pure Java), tracked jointly with item 38. `RealChromeIntegrationTest` pins
+the honest split: mac/Linux prove disconnect-alone; every OS proves Stop.
+
 ## Open — deferred deliberately, with reasons (added v1.42.0)
 
 ### 37. Windows runs the tests, not the assembled-app probes

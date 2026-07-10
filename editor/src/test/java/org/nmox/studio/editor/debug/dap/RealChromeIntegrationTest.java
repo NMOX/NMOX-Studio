@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import org.nmox.studio.core.process.ProcessSupport;
 import org.nmox.studio.editor.debug.BrowserLocator;
+import org.openide.util.BaseUtilities;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -42,9 +44,15 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * Pins the three recon findings the product relies on: the page target's
  * startDebugging arrives once on the parent link and the proxy's child
  * dance suffices for browser-side breakpoints; source paths map back
- * through webRoot to the real file; and a client disconnect alone tears
- * down every browser process (js-debug's cleanUp: wholeBrowser default) —
- * the platform's Stop needs no extra kill for Chrome.
+ * through webRoot to the real file; and a client disconnect reaps the
+ * browser through js-debug's {@code cleanUp: wholeBrowser} default — on
+ * macOS and Linux that disconnect ALONE suffices, but on Windows js-debug
+ * renames the launched browser process, snapping the parent-PID chain its
+ * forceful cleanup (and our descendants() walk) relies on, so the browser
+ * outlives disconnect there. The PRODUCT never leans on disconnect: every
+ * teardown path runs {@code JsDebugServer.stop() -> killTreeAndWait} as the
+ * backstop, which is the reaper the disconnect assertion below actually
+ * pins on every OS (ledger 40).
  */
 @Timeout(180)
 class RealChromeIntegrationTest {
@@ -80,7 +88,7 @@ class RealChromeIntegrationTest {
     }
 
     @Test
-    @DisplayName("breakpoint in browser-side JS: hit in headless Chrome, stack mapped to the file, disconnect kills the browser")
+    @DisplayName("breakpoint in browser-side JS: hit in headless Chrome, stack mapped to the file, Stop kills the browser tree")
     void shouldHitBrowserBreakpointEndToEnd(@TempDir Path tmp) throws Exception {
         assumeTrue(nodePresent(), "node not installed");
         File browser = BrowserLocator.find();
@@ -162,16 +170,40 @@ class RealChromeIntegrationTest {
         nb.request("continue", new JSONObject().put("threadId", threadId));
         nb.awaitResponse("continue");
 
-        // Stop semantics: a client disconnect ALONE must take Chrome down —
-        // js-debug owns the browser it launched (cleanUp: wholeBrowser)
         nb.request("disconnect", new JSONObject());
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+
+        // macOS + Linux: js-debug's cleanUp:wholeBrowser reaps the browser on
+        // disconnect ALONE (recon: zero Chrome procs 3s after disconnect) —
+        // the stronger property, pinned only where it holds. NOT on Windows:
+        // js-debug renames the browser process, snapping the parent-PID chain
+        // its forceful cleanup walks (same root cause documented on
+        // ProcessSupport.killTree / ledger 38), so Chrome's detached tree
+        // outlives disconnect. The product never relies on it there.
+        if (!BaseUtilities.isWindows()) {
+            assertTreeDeadWithin(tree, Duration.ofSeconds(30),
+                    "disconnect tears down every browser process (macOS/Linux)");
+        }
+
+        // The contract the product actually guarantees on EVERY OS: Stop
+        // (JsDebugServer.stop() -> ProcessSupport.killTreeAndWait — exactly
+        // what BrowserDebugAction's session cleanup invokes) leaves zero
+        // browser orphans. On Windows this is the ONLY reliable browser
+        // reaper (ledger 40).
+        server.stop();
+        assertThat(tree.stream().noneMatch(ProcessHandle::isAlive))
+                .as("Stop leaves zero browser orphans").isTrue();
+    }
+
+    /** Poll until every handle in {@code tree} has exited, or {@code budget}
+     *  elapses; then assert the tree is dead. */
+    private static void assertTreeDeadWithin(List<ProcessHandle> tree,
+            Duration budget, String why) throws InterruptedException {
+        long deadline = System.nanoTime() + budget.toNanos();
         while (tree.stream().anyMatch(ProcessHandle::isAlive)
                 && System.nanoTime() < deadline) {
             Thread.sleep(200);
         }
-        assertThat(tree.stream().noneMatch(ProcessHandle::isAlive))
-                .as("disconnect tears down every browser process").isTrue();
+        assertThat(tree.stream().noneMatch(ProcessHandle::isAlive)).as(why).isTrue();
     }
 
     /** Loopback HTTP over the fixture dir — the in-JVM stand-in for the

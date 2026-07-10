@@ -23,12 +23,32 @@ class BrowserLocatorTest {
     void shouldListMacCandidates() {
         List<File> candidates = BrowserLocator.candidates(Map.of(), true, false);
 
-        assertThat(candidates).isNotEmpty();
-        assertThat(candidates.get(0).getPath())
+        // These are macOS *data* paths; File.getPath() renders them with the
+        // HOST separator, so on a Windows runner get(0) comes back as
+        // "\Applications\...". Normalize to '/' and assert the INTENT
+        // (order + "/Applications" location), never the host's rendering.
+        List<String> paths = candidates.stream()
+                .map(f -> f.getPath().replace(File.separatorChar, '/'))
+                .toList();
+
+        assertThat(paths).isNotEmpty();
+        assertThat(paths.get(0))
                 .isEqualTo("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome");
-        assertThat(candidates).extracting(File::getPath)
-                .anyMatch(p -> p.contains("Microsoft Edge"))
-                .anyMatch(p -> p.contains("Chromium"));
+        assertThat(paths).allMatch(p -> p.startsWith("/Applications/"));
+        // Chrome first, then Edge before Chromium.
+        assertThat(firstIndexContaining(paths, "Microsoft Edge"))
+                .isPositive()
+                .isLessThan(firstIndexContaining(paths, "Chromium"));
+    }
+
+    /** Index of the first path containing {@code needle}, or -1. */
+    private static int firstIndexContaining(List<String> paths, String needle) {
+        for (int i = 0; i < paths.size(); i++) {
+            if (paths.get(i).contains(needle)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Test
