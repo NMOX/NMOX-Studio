@@ -97,7 +97,11 @@ public class PalettePanel extends JPanel {
         JList<Object> list = new JList<>(model);
         list.setBackground(RackStyle.RACK_BG);
         list.setCellRenderer(new DeviceRenderer());
-        list.setDragEnabled(true);
+        // setDragEnabled throws HeadlessException by spec; headless JVMs
+        // (unit tests) have nothing to drag anyway — double-click still adds
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            list.setDragEnabled(true);
+        }
         list.setTransferHandler(new TransferHandler() {
             @Override
             public int getSourceActions(JComponent c) {

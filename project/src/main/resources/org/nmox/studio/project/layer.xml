@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN"
+        "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <!-- Menu accelerators come from Keymaps-profile shadows, not from
+         Shortcuts/ registrations (the v1.38.1 finding, debt #28): without
+         this the Window menu shows "Workbench" with no ⌥⌘0 beside it.
+         Same action as the Shortcuts/DA-0 binding on the TopComponent —
+         behavior is unchanged, the chord just becomes discoverable. The
+         chord is audited free of platform claims by WindowShortcutsTest,
+         which also pins this shadow against the registration. -->
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <file name="DA-0.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-project-ProjectExplorerTopComponent.instance"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

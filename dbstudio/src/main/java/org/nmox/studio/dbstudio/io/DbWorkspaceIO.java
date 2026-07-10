@@ -268,8 +268,12 @@ public final class DbWorkspaceIO {
 
     /** Writes the whole workspace as {@code .nmoxdb.json} into the directory. */
     public static void save(File dir, Workspace workspace) throws IOException {
-        Files.writeString(new File(dir, FILENAME).toPath(), toJson(workspace),
-                StandardCharsets.UTF_8);
+        // atomic rename, never truncate-then-write: the workspace watcher
+        // (and any foreign reader) must never observe a torn .nmoxdb.json —
+        // the other three studios' writers went atomic in v1.39; this one
+        // was missed and matters more now that writes run off the EDT
+        org.nmox.studio.core.util.AtomicFiles.writeString(
+                new File(dir, FILENAME).toPath(), toJson(workspace));
     }
 
     /**

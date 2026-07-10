@@ -76,12 +76,18 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
     });
 
+    /** True while this panel is in the hierarchy and listening to the rack. */
+    private boolean listenerAttached;
+
     public RackPanel(Rack rack) {
         this.rack = rack;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(RackStyle.RACK_BG);
         setFocusTraversalKeysEnabled(false);
-        rack.addListener(this);
+        // the rack listener attaches in addNotify, NOT here (ledger item
+        // 17): a constructor-wired listener on this long-lived panel kept
+        // rebuilding faceplates into a CLOSED rack window on every preset
+        // or Learning Space load, forever
 
         setTransferHandler(new PaletteDropHandler());
 
@@ -122,9 +128,29 @@ public class RackPanel extends JPanel implements Rack.Listener {
         return rack;
     }
 
-    /** Stop animation timers when the panel leaves the hierarchy. */
+    /**
+     * Listen exactly while in the hierarchy; the re-sync rebuild on attach
+     * catches everything the model did while we weren't showing (presets,
+     * Learning Spaces, undo — the events the old constructor wiring spent
+     * offscreen repaints on).
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (!listenerAttached) {
+            rack.addListener(this);
+            listenerAttached = true;
+        }
+        rebuild();
+    }
+
+    /** Stop listening and stop animation timers when the panel leaves the hierarchy. */
     @Override
     public void removeNotify() {
+        if (listenerAttached) {
+            rack.removeListener(this);
+            listenerAttached = false;
+        }
         flashTimer.stop();
         dropClearTimer.stop();
         super.removeNotify();

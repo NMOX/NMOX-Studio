@@ -61,11 +61,58 @@ class WindowShortcutsTest {
                 new String[] {"D-8", "Docker Panel  ⌘8"});
     }
 
+    /**
+     * Where each window's Keymaps-profile shadow lives (debt #28). The
+     * Shortcuts/ registration binds the chord but the Window-menu item
+     * only SHOWS an accelerator when a Keymaps shadow names the same
+     * chord — two mechanisms, so this test pins them together. Studios
+     * carry their shadow in their own module's layer; the rack windows'
+     * shadows are hosted in ui's layer (see the comment there).
+     */
+    private static final Map<String, String> KEYMAP_LAYERS = new LinkedHashMap<>();
+    static {
+        KEYMAP_LAYERS.put("../dbstudio/src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java",
+                "../dbstudio/src/main/resources/org/nmox/studio/dbstudio/layer.xml");
+        KEYMAP_LAYERS.put("../web3/src/main/java/org/nmox/studio/web3/ui/Web3StudioTopComponent.java",
+                "../web3/src/main/resources/org/nmox/studio/web3/layer.xml");
+        KEYMAP_LAYERS.put("../apiclient/src/main/java/org/nmox/studio/apiclient/ui/ApiClientTopComponent.java",
+                "../apiclient/src/main/resources/org/nmox/studio/apiclient/layer.xml");
+        KEYMAP_LAYERS.put("../infra/src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java",
+                "../infra/src/main/resources/org/nmox/studio/infra/layer.xml");
+        KEYMAP_LAYERS.put("../project/src/main/java/org/nmox/studio/project/ProjectExplorerTopComponent.java",
+                "../project/src/main/resources/org/nmox/studio/project/layer.xml");
+        KEYMAP_LAYERS.put("../rack/src/main/java/org/nmox/studio/rack/RackTopComponent.java",
+                "src/main/resources/org/nmox/studio/ui/layer.xml");
+        KEYMAP_LAYERS.put("../rack/src/main/java/org/nmox/studio/rack/docker/DockerPanelTopComponent.java",
+                "src/main/resources/org/nmox/studio/ui/layer.xml");
+    }
+
     private static final Pattern SHORTCUT = Pattern.compile(
             "path\\s*=\\s*\"Shortcuts\"\\s*,\\s*name\\s*=\\s*\"([^\"]+)\"");
 
+    /** The window action's id — its layer instance is this with dots → dashes. */
+    private static final Pattern WINDOW_ACTION_ID = Pattern.compile(
+            "ActionID\\(category = \"Window\",\\s*id = \"([^\"]+)\"");
+
     private static String read(String path) throws Exception {
         return Files.readString(Path.of(path), StandardCharsets.UTF_8);
+    }
+
+    /** The layer must carry {@code <chord>.shadow → <actionInstance>}. */
+    private static void assertShadow(String layerPath, String chord,
+            String actionInstance) throws Exception {
+        Pattern shadow = Pattern.compile("<file name=\"" + Pattern.quote(chord)
+                + "\\.shadow\">\\s*<attr name=\"originalFile\" stringvalue=\"([^\"]+)\"/>");
+        Matcher m = shadow.matcher(read(layerPath));
+        assertThat(m.find())
+                .as(layerPath + " carries a Keymaps shadow for " + chord
+                        + " — without it the menu shows no accelerator (debt #28)")
+                .isTrue();
+        assertThat(m.group(1))
+                .as(chord + ".shadow must invoke the SAME action as the Shortcuts "
+                        + "binding — a Keymaps entry overrides Shortcuts, so a "
+                        + "mismatch would change what the chord does")
+                .isEqualTo(actionInstance);
     }
 
     @Test
@@ -87,6 +134,22 @@ class WindowShortcutsTest {
     }
 
     @Test
+    @DisplayName("every window's chord has a Keymaps shadow so its menu item shows the accelerator")
+    void windowMenuItemsShowTheirAccelerators() throws Exception {
+        for (Map.Entry<String, String[]> e : WINDOWS.entrySet()) {
+            String source = read(e.getKey());
+            Matcher chord = SHORTCUT.matcher(source);
+            assertThat(chord.find()).as(e.getKey() + " registers a shortcut").isTrue();
+            Matcher id = WINDOW_ACTION_ID.matcher(source);
+            assertThat(id.find()).as(e.getKey() + " declares a Window ActionID").isTrue();
+            String layer = KEYMAP_LAYERS.get(e.getKey());
+            assertThat(layer).as(e.getKey() + " has a layer mapped for its shadow").isNotNull();
+            assertShadow(layer, chord.group(1),
+                    "Actions/Window/" + id.group(1).replace('.', '-') + ".instance");
+        }
+    }
+
+    @Test
     @DisplayName("Open Folder does not fight the platform's Open Project for ⇧⌘O")
     void openFolderOwnsAFreeChord() throws Exception {
         String action = read("src/main/java/org/nmox/studio/ui/actions/OpenFolderAction.java");
@@ -96,6 +159,10 @@ class WindowShortcutsTest {
         assertThat(RESERVED).doesNotContain(m.group(1));
         assertThat(read("src/main/java/org/nmox/studio/ui/MainWindow.java"))
                 .contains("\"Open Folder…  ⌥⌘O\"");
+        // and the File-menu item shows the chord — same mechanism as the
+        // windows (debt #28), same drift gate
+        assertShadow("src/main/resources/org/nmox/studio/ui/layer.xml", "DA-O",
+                "Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance");
     }
 
     @Test

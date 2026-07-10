@@ -28,6 +28,19 @@ public class UpdateCheck implements Runnable {
 
     @Override
     public void run() {
+        // The autoupdate machinery warns at first touch when
+        // netbeans.default_userdir_root is unset. The launcher conf cannot
+        // set it safely — the value contains "Application Support" and the
+        // conf parsers word-split on the space (ledger 22, two attempts).
+        // Setting it here is launcher-free and beats every consumer: the
+        // earliest reader is this class's own check, 15s after UI-ready.
+        if (System.getProperty("netbeans.default_userdir_root") == null) {
+            java.io.File userdir = org.openide.modules.Places.getUserDirectory();
+            if (userdir != null && userdir.getParentFile() != null) {
+                System.setProperty("netbeans.default_userdir_root",
+                        userdir.getParentFile().getAbsolutePath());
+            }
+        }
         Preferences prefs = NbPreferences.root().node("nmox/ui");
         if (!prefs.getBoolean("updateCheck", true)) {
             return;

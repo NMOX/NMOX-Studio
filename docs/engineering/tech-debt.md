@@ -155,14 +155,13 @@ suite-tabs-first layout IS the discovery design (v1.29.0), and moving modes
 churns every user's persisted layout — do it deliberately, with migration,
 or not at all.
 
-### 34. Progress and EDT polish: ProgressHandle gaps, debounced saves on EDT
-DB Studio connects, infra cloud sync, and web3 artifact scans run multi-second
-work with status-bar text but no ProgressHandle (rack ops have faceplate LEDs
-— those are fine). The apiclient/infra autosave debounce timers fire on the
-EDT and write JSON synchronously (small files, sub-perceptible today — and
-now atomic, so torn reads are gone). **Deferred**: both are polish;
-wrap the three long ops in ProgressHandle and hop the debounce bodies to a
-module RP next time those files are open for feature work.
+### 34. ProgressHandle gaps — MOSTLY CLOSED (v1.44.0)
+DB Studio connect and infra cloud sync run under finally-guarded
+ProgressHandles (per-provider ticks on sync); no cancel wiring —
+neither op has an interrupt seam (DB cancel aborts statements, not
+connects; commented in code). The debounce half closed with #16.
+Remaining sliver: web3 artifact scan (a fast Files.walk) is still
+status-text-only — lowest value, deferred.
 
 ### 35. No @OnStop seam — all shutdown work rides JVM hooks
 Blessed for what we use it for: process reaping must survive System.exit and
@@ -201,14 +200,6 @@ TreeModel/NodeModel for DAPLineBreakpoint — a real sprint, and one that would
 fork behaviour from stock NetBeans. Worth reporting upstream first. The user
 guide now says plainly that breakpoints are managed in the gutter, because a
 silently empty window is worse than a documented limit.
-
-### 28. Window-menu items for our studios show no accelerator
-`@ActionReference(path = "Shortcuts", …)` binds the chord but does not put it
-next to the Window-menu item, so the studios' ⌥⌘ chords are discoverable only
-from the Welcome launchpad and the docs. The platform's own windows get their
-accelerators from Keymaps-profile shadows. Cosmetic, and fixing it means
-duplicating each registration into a keymap profile — deferred until someone
-actually reports missing them.
 
 ## Open — deferred deliberately, with reasons (added v1.43.0)
 
@@ -288,56 +279,12 @@ session hangs." Browser/Chrome debugging shipped in v1.43.0 on the same
 one-child splice; it hits the same ceiling, with the harsher worker
 consequence recorded as item 39.
 
-### 26. Vendored js-debug is invisible to Dependabot and the SBOM
-`editor/src/main/release/jsdebug/` carries js-debug v1.117.0 (MIT, 2.5MB)
-as committed bytes, because upstream publishes no npm package — the
-GitHub release tarball is the only artifact. It therefore has no
-coordinate for Dependabot to watch and does not appear in the CycloneDX
-SBOM the release workflow generates, which is exactly the blind spot the
-SBOM exists to remove. Mitigation today is manual and written down: the
-version, source URL, and sha256 live in the vendored `NOTICE`, which
-also states the invisibility outright so nobody trusts the SBOM to cover
-it. **Deferred**: the real fixes are to either teach the release workflow
-to append a manual SBOM component (small, but hand-maintained metadata is
-its own staleness risk) or to fetch the tarball at build time (trades a
-reproducible committed artifact for a network dependency in CI). Revisit
-when a second vendored non-Maven artifact appears — one is a note, two is
-a mechanism.
-
 ## Open — deferred deliberately, with reasons (added v1.36.0)
 
 The v1.36.0 senior review fixed everything cheap-and-clearly-right its
 six audit lenses confirmed (see CHANGELOG). What follows is what the
 audit found and the sprint *deliberately did not fix*, each with the
 reason it can wait.
-
-### 15. panic() still blocks the EDT on Stop All and the switch guard
-`RackDevice.panic()` = synchronous `killAndWait(1500)` — correct in the
-shutdown hook (async escalation threads never run at shutdown), but the
-EDT paths (Stop All, `stopLiveForSwitch`) can freeze up to ~2.5s per
-stubborn live device. The fix is an async stop flow with the switch
-decision waiting on a callback — a redesign of the confirm-then-switch
-sequence, not a wrapper. Bounded, rare (only stubborn processes), and
-the freeze reads as "stopping tools" — deferred until the switch flow
-is next opened.
-
-### 16. Studio workspace saves run on the EDT debounce
-ApiClient/Infra/DbStudio write their small workspace JSONs from Swing
-debounce timers on the EDT (reads got the off-EDT care; the write half
-didn't). Local files, milliseconds each — but wrapping them in an RP
-interacts with the close-flush ("stop(); save()") ordering and each
-studio's SelfWriteTracker stamp discrimination, so it needs its own
-careful pass with storm tests rather than a drive-by wrap. The v1.36.0
-sprint fixed the *recurring* EDT write (session snapshots, 5s cadence);
-these are per-edit debounces.
-
-### 17. RackPanel / RackTopComponent constructor-wired rack listeners
-Both singletons attach in their constructors and never detach, so
-presets/Learning Spaces rebuild faceplates into a closed rack window.
-Bounded (singletons, no leak) and purely offscreen-CPU; the fix needs a
-reopen-resync path that rebuilds state on attach, which carries real
-regression risk for a cost that is idle repaints. The Workbench got the
-fix (its listener drove per-project disk walks); these two wait.
 
 ### 18. CommandExecutor exit detection and stale-run guards
 Two hardening ideas from the lifecycle audit: drive exit from
@@ -371,12 +318,6 @@ autoupdate modules changes the Plugins menu and needs a release-size
 check on all three OS packages; the unused build-side update-site
 generation (a dead `deployment` profile) was already removed in
 v1.36.0. Revisit with 20 if an update-center story ever lands.
-
-### 22. `netbeans.default_userdir_root` boot warning
-One cosmetic WARNING per boot. The conf-file route word-splits on
-macOS's "Application Support" path; the safe fix is launcher-side and
-per-OS. Not worth launcher risk for a log line — batch it with the next
-installer/launcher sprint.
 
 ### 23. org.json rides in 8 module copies (~710 KB total)
 Re-confirmed as the correct architecture (module classloaders make a
@@ -471,6 +412,57 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.44.0 (the debt sweep)
+
+### 15. panic() blocked the EDT on Stop All and the switch guard — CLOSED
+Interactive stops now run on `RequestProcessor("Rack Stop", 4)` via
+`Rack.stopAllAsync`/`stopAsync`; completion marshals to the EDT, the
+switch swap proceeds only in the callback (dialog unchanged), Stop All
+disables while a pass is in flight, and the status line says "Stopping
+N tools…". The old path held the EDT 1,513ms per SIGTERM-proof device —
+measured by the regression test, which fails on the synchronous code.
+The shutdown reaper's panics stay synchronous, source-gate-pinned.
+
+### 16. Studio workspace saves ran on the EDT debounce — CLOSED
+The one careful pass: all four studios snapshot workspace JSON on the
+EDT and write on a dedicated single-throughput SaveLane; write+stamp
+are one lane task and every foreign-vs-own verdict rides the same lane
+behind pending writes, so a poll can never see a write without its
+stamp; componentClosed and every workspace read drain the lane
+(bounded ms). No existing module RP was safe (throughput >1, or shared
+with multi-second cloud ops) — hence the named lanes. DbWorkspaceIO,
+the last non-atomic workspace writer, went AtomicFiles in passing.
+(The ledger text was imprecise: dbstudio/web3 had no debounce timers —
+they saved synchronously per action; same treatment.) 4× SaveLaneTest
+storm/EDT/close-flush tests + 4× wiring source gates.
+
+### 17. RackPanel / RackTopComponent constructor-wired listeners — CLOSED
+Attach moved to addNotify/componentOpened with a rebuild/re-label
+re-sync, detach to removeNotify/componentClosed (the v1.35 symmetry
+idiom); lifecycle tests in the Workbench shape prove open/close/reopen
+keeps exactly one registration and a preset loaded into a closed
+window renders on reopen. Mutation-proven against the ctor wiring.
+
+### 22. netbeans.default_userdir_root boot warning — CLOSED
+Launcher-free fix: an @OnStart setter (UpdateCheck) derives the value
+from Places.getUserDirectory().getParent() before any autoupdate
+consumer touches it. Both conf attempts word-split on "Application
+Support"; code sidesteps every launcher parser on all three OSes.
+
+### 26. Vendored js-debug invisible to the SBOM — CLOSED
+The release workflow appends a hand-written CycloneDX component (purl,
+MIT, the NOTICE's sha256) to the aggregate BOM. Still invisible to
+Dependabot — bumps stay manual per NOTICE — but the SBOM no longer has
+a blind spot. Bump the workflow constant and the NOTICE together.
+
+### 28. Window-menu items showed no accelerator — CLOSED
+Every advertised chord now has a Keymaps/NetBeans shadow invoking the
+same action as its Shortcuts registration, so Window-menu (and Open
+Folder's File-menu) items show their accelerators. WindowShortcutsTest
+pins each shadow's chord AND target instance against the source
+registration — the two mechanisms can no longer drift (the v1.38.1
+failure class, now structurally impossible for our windows).
 
 ## Closed by v1.36.0 (the senior review sprint)
 

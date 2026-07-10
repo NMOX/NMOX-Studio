@@ -42,6 +42,27 @@
                  binding - profile entries outrank Shortcuts. Mask it so
                  Cmd+O opens files, like every other editor on earth. -->
             <file name="D-O.shadow_hidden"/>
+            <!-- Menu accelerators come from Keymaps-profile shadows, not
+                 from Shortcuts/ registrations (the v1.38.1 finding, debt
+                 #28): without these the Window menu shows "Task Rack" /
+                 "Docker Panel" (and File shows "Open Folder…") with no
+                 chord beside them. Each shadow points at the SAME action
+                 its Shortcuts binding invokes — behavior is unchanged,
+                 the chord just becomes discoverable. The rack windows'
+                 shadows live here beside the D-O mask (the system
+                 filesystem merges every module's layer, so placement is
+                 free) because ui owns the advertised-shortcut contract:
+                 the Welcome labels and WindowShortcutsTest, which pins
+                 each shadow against its registration. -->
+            <file name="D-9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
+            </file>
+            <file name="D-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
+            </file>
+            <file name="DA-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

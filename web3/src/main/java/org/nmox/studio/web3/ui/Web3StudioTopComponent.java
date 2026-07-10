@@ -129,6 +129,15 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The module's worker pool — every RPC/process call runs here, never on the EDT. */
     static final RequestProcessor RP = new RequestProcessor("Contract Studio", 3);
 
+    /**
+     * Workspace writes ride their own single-throughput lane, NOT
+     * {@link #RP} — RP's throughput 3 could interleave two writes, and
+     * a close flush must never queue behind a slow RPC (debt #16; the
+     * careful parts are documented on the lane class).
+     */
+    private static final org.nmox.studio.web3.engine.SaveLane SAVES =
+            new org.nmox.studio.web3.engine.SaveLane("Contract Studio workspace saves");
+
     /** Always first in the combo, never persisted — the devnet ANVIL provides. */
     static final Network LOCAL_ANVIL =
             new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545");
@@ -217,6 +226,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private boolean rackListenerAttached;
     /** An artifact walk is owed but the tab is hidden; served on componentShowing. */
     boolean rescanPending;
+    /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
     /** Auto-connects the chip when the rack serves a matching chain; null when rack absent. */
@@ -1491,6 +1501,10 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void reloadWorkspace() {
+        // the read below must see every queued write — an A→B→A re-aim
+        // bounce could otherwise read A's file before A's last save lands
+        // (bounded ms drain; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         Network previous = selectedNetwork();
         stopWatch();
         session = null;
@@ -1535,12 +1549,28 @@ public final class Web3StudioTopComponent extends TopComponent {
         restartPulseIfOpen();
     }
 
-    /** Writes networks AND deployments together — adding one never clobbers the other. */
+    /**
+     * Writes networks AND deployments together — adding one never
+     * clobbers the other. EDT: both lists are EDT-confined, so the JSON
+     * snapshot is taken here (secret URLs already stripped by toJson)
+     * and only the disk write rides the save lane (debt #16).
+     */
     private void saveWorkspace() {
+        File file = new File(workspaceDir(), Web3WorkspaceIO.FILENAME);
+        String json = Web3WorkspaceIO.toJson(
+                new Web3WorkspaceIO.Workspace(networks, deployments));
+        SAVES.save(() -> writeSnapshot(file, json));
+    }
+
+    /**
+     * Save lane only: the write and its self-stamp are ONE task, so a
+     * lane-ordered pulse verdict can never see the write without the
+     * stamp.
+     */
+    private void writeSnapshot(File file, String json) {
         try {
-            Web3WorkspaceIO.save(workspaceDir(),
-                    new Web3WorkspaceIO.Workspace(networks, deployments));
-            selfWrites.noteSync(new File(workspaceDir(), Web3WorkspaceIO.FILENAME));
+            org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
+            selfWrites.noteSync(file);
             saveFailureNotified = false;
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(Web3StudioTopComponent.class.getName())
@@ -1648,6 +1678,10 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
+        // a write may sit queued on the save lane (every edit saves the
+        // moment it is made) — drain it before the studio is torn down
+        // (bounded; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         stopWatch();
         stopPulse();
         if (chainAutoConnect != null) {
@@ -1739,15 +1773,23 @@ public final class Web3StudioTopComponent extends TopComponent {
             if (!selfWrites.isForeign(mtime, size)) {
                 return; // our own save — the tracker already knows this stamp
             }
-            SwingUtilities.invokeLater(() -> {
+            // the authoritative re-check rides the save lane: it queues
+            // behind any write+stamp pair the tick may have raced, so our
+            // own save mid-landing never counts as foreign (debt #16)
+            SAVES.classify(() -> {
                 if (!selfWrites.isForeign(mtime, size)) {
-                    return; // our save raced the tick; the EDT re-check settles it
+                    return; // our own save, caught mid-landing by the tick
                 }
-                // networks and deployments persist the moment they change —
-                // there is no dirty in-memory state to clobber, so reload silently
-                reloadWorkspace();
-                balloon("Reloaded " + Web3WorkspaceIO.FILENAME,
-                        "Picked up changes made outside the studio", true);
+                SwingUtilities.invokeLater(() -> {
+                    if (!selfWrites.isForeign(mtime, size)) {
+                        return; // our save landed between verdict and dispatch
+                    }
+                    // networks and deployments persist the moment they change —
+                    // there is no dirty in-memory state to clobber, so reload silently
+                    reloadWorkspace();
+                    balloon("Reloaded " + Web3WorkspaceIO.FILENAME,
+                            "Picked up changes made outside the studio", true);
+                });
             });
         }
     }

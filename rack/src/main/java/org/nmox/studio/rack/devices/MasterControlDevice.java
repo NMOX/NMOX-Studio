@@ -36,9 +36,11 @@ public class MasterControlDevice extends RackDevice {
         run.addActionListener(e -> fireAll());
         stopAll.addActionListener(e -> {
             if (getRack() != null) {
-                for (RackDevice d : getRack().getDevices()) {
-                    d.panic();
-                }
+                // async: this button lives on the EDT and panic() can block
+                // ~2.5s per stubborn device (ledger item 15); the shared
+                // in-flight guard also keeps MAESTRO and the toolbar's Stop
+                // All from stacking redundant kill passes on each other
+                getRack().stopAllAsync(null);
             }
         });
 

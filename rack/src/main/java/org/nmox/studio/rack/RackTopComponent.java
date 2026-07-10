@@ -70,8 +70,17 @@ public final class RackTopComponent extends TopComponent {
      * an input-map binding is not enough - we intercept at the keyboard
      * focus manager, exactly while the rack is the activated TopComponent.
      */
-    private static final int MENU_MASK =
-            java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+    private static final int MENU_MASK = menuMask();
+
+    private static int menuMask() {
+        try {
+            return java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (java.awt.HeadlessException ex) {
+            // headless test JVMs have no toolkit; no key events arrive there
+            // either, so any mask works — pick the cross-platform default
+            return java.awt.event.InputEvent.CTRL_DOWN_MASK;
+        }
+    }
 
     private final java.awt.KeyEventDispatcher tabFlipDispatcher = e -> {
         if (e.getID() != KeyEvent.KEY_PRESSED
@@ -140,13 +149,23 @@ public final class RackTopComponent extends TopComponent {
         setFocusTraversalKeysEnabled(false);
 
         updateProjectLabel();
-        rack.addListener(new Rack.Listener() {
-            @Override
-            public void projectChanged() {
-                javax.swing.SwingUtilities.invokeLater(RackTopComponent.this::updateProjectLabel);
-            }
-        });
+        // the rack listener attaches in componentOpened, not here (ledger
+        // item 17): constructor wiring on this singleton kept re-labelling
+        // a closed window on every project switch, forever
     }
+
+    /**
+     * Attached in componentOpened, detached in componentClosed — the v1.35
+     * listener-symmetry idiom (see ProjectExplorerTopComponent). The
+     * componentOpened re-sync repaint covers whatever moved while closed.
+     */
+    private final Rack.Listener projectListener = new Rack.Listener() {
+        @Override
+        public void projectChanged() {
+            javax.swing.SwingUtilities.invokeLater(RackTopComponent.this::updateProjectLabel);
+        }
+    };
+    private boolean projectListenerAttached;
 
     private JToolBar buildToolbar() {
         JToolBar bar = new JToolBar();
@@ -254,8 +273,31 @@ public final class RackTopComponent extends TopComponent {
         stopAll.setForeground(new Color(180, 40, 40));
         stopAll.setToolTipText("Kill every process the rack is running");
         stopAll.addActionListener(e -> {
+            // async: panic() escalates TERM → grace → KILL and can block
+            // ~2.5s per stubborn device — that must not freeze the paint
+            // thread (ledger item 15). The devices' own STOP LEDs/status
+            // show the honest per-device state; the button disables until
+            // the pass completes so it cannot double-fire.
+            int live = 0;
             for (RackDevice d : rack.getDevices()) {
-                d.panic();
+                if (d.isLive()) {
+                    live++;
+                }
+            }
+            final int n = live;
+            boolean started = rack.stopAllAsync(() -> {
+                stopAll.setEnabled(true);
+                if (n > 0) {
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                            "Stopped " + n + (n == 1 ? " tool" : " tools"));
+                }
+            });
+            if (started) {
+                stopAll.setEnabled(false);
+                if (n > 0) {
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                            "Stopping " + n + (n == 1 ? " tool…" : " tools…"));
+                }
             }
         });
         bar.add(stopAll);
@@ -291,6 +333,11 @@ public final class RackTopComponent extends TopComponent {
     public void componentOpened() {
         java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .addKeyEventDispatcher(tabFlipDispatcher);
+        if (!projectListenerAttached) {
+            rack.addListener(projectListener);
+            projectListenerAttached = true;
+        }
+        updateProjectLabel(); // re-sync: the aim may have moved while closed
     }
 
     @Override
@@ -299,6 +346,10 @@ public final class RackTopComponent extends TopComponent {
         // survives until the module is unloaded
         java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
                 .removeKeyEventDispatcher(tabFlipDispatcher);
+        if (projectListenerAttached) {
+            rack.removeListener(projectListener);
+            projectListenerAttached = false;
+        }
     }
 
     void writeProperties(java.util.Properties p) {

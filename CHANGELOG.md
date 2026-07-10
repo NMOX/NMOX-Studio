@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.44.0] — 2026-07-10
+
+The debt sweep. No new features: seven ledger items worked with the
+v1.26.0 rule — fresh evidence, never a remembered reason — and each
+closed with the test that would have caught it.
+
+### Fixed
+- **Stop All and project-switch no longer freeze the IDE.** Stopping a
+  SIGTERM-proof tool held the paint thread 1.5 seconds per device
+  (measured); stops now run on a bounded worker, the switch proceeds
+  only when everything is dead, Stop All can't double-fire, and the
+  status line narrates. The shutdown reaper stays synchronous —
+  source-gate-pinned — so the orphan guarantee is untouched (proven on
+  live process handles).
+- **Workspace saves left the paint thread** — all four studios snapshot
+  on the EDT and write on a dedicated single-throughput SaveLane; the
+  write and its self-write stamp are one task, and foreign-vs-own
+  verdicts queue behind pending writes, closing the misclassification
+  race by construction. Close and reload drain the lane. Found in
+  passing: DbWorkspaceIO was the last non-atomic workspace writer
+  (v1.39's sweep missed it) — now AtomicFiles.
+- **Window-menu items show their keyboard shortcuts.** Keymaps shadows
+  now mirror every Shortcuts registration onto the same action;
+  WindowShortcutsTest pins chord AND target so the two registration
+  mechanisms — the v1.38.1 failure class — can no longer drift.
+- DB Studio connect and infra cloud sync show real progress bars
+  (per-provider ticks); the last constructor-wired rack listeners moved
+  to symmetric attach/detach with mutation-proven lifecycle tests; the
+  `netbeans.default_userdir_root` startup warning is gone (launcher-free
+  code setter — both conf attempts had word-split on "Application
+  Support"); the SBOM gains the vendored js-debug component (purl, MIT,
+  pinned sha256) — its one blind spot, closed.
+
+### Notes
+- Ledger: 15, 16, 17, 22, 26, 28 closed; 34 mostly closed (web3's fast
+  artifact walk stays status-text-only, lowest value). The big open
+  items remain deliberate: 29 (context-system migration — three
+  customers waiting), 20/21 (spec versions + update center), 38/40
+  (Windows Job Objects).
+
 ## [1.43.0] — 2026-07-10
 
 Browser debugging. The v1.37.0 machinery — the vendored js-debug adapter
