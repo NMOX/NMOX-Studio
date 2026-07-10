@@ -114,6 +114,16 @@ public final class ProcessSupport {
      * grandchild holding the pipe's write end, and the read side never
      * sees EOF; likewise a debug server whose debuggee must not outlive it.
      * Same lesson the rack's killAndWait descendant sweep encodes.
+     *
+     * <p>Known limit, Windows only: a grandchild spawned THROUGH an MSYS
+     * shell (Git Bash) is invisible to this sweep — MSYS implements exec by
+     * starting a new Windows process and exiting the old one, which breaks
+     * the parent-PID chain {@link ProcessHandle#descendants()} walks (the
+     * same reason taskkill /T fails on Git-Bash trees; a real fix needs Job
+     * Objects, outside pure Java). Native Windows process trees — node,
+     * npm.cmd→cmd→node, docker — keep intact chains and are swept. Either
+     * way runBounded still returns on time: its drain joins are bounded, so
+     * a surviving grandchild costs up to 2×5s of tail-drain wait, no hang.
      */
     public static void killTree(Process p) {
         p.descendants().forEach(ProcessHandle::destroyForcibly);
