@@ -101,6 +101,16 @@ public final class DapProxy {
         return proxy;
     }
 
+    /**
+     * Visible for tests: true once the child dance has completed and client
+     * requests route to the child. The flag flips just after the proxy writes
+     * {@code configurationDone}, so a test that infers the splice from that
+     * frame's arrival on the child can race ahead of it — await this instead.
+     */
+    boolean spliced() {
+        return spliced;
+    }
+
     /** Stream pair for {@code DAPConfiguration.create} — the client side. */
     public InputStream clientInput() throws IOException {
         return actionSideClient.getInputStream();
