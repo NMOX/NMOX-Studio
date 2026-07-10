@@ -9,13 +9,20 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -54,7 +61,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * backstop, which is the reaper the disconnect assertion below actually
  * pins on every OS (ledger 40).
  */
-@Timeout(180)
+// Sized so a worst-case green run (a 120s-window stopped await that lands
+// late, then the 30s disconnect poll) still finishes inside it, and a single
+// wedged await fails via its own diagnostic AssertionError, never this
+// blunter kill.
+@Timeout(240)
 class RealChromeIntegrationTest {
 
     /** The vendored adapter, straight from the module's release dir. */
@@ -65,9 +76,13 @@ class RealChromeIntegrationTest {
     private JsDebugServer server;
     private DapProxy proxy;
     private Path profile;
+    private AdapterLogTap adapterLog;
 
     @AfterEach
     void tearDown() throws IOException {
+        if (adapterLog != null) {
+            adapterLog.close();
+        }
         if (proxy != null) {
             proxy.close();
         }
@@ -117,9 +132,13 @@ class RealChromeIntegrationTest {
         String url = serveFixture(dir);
         profile = Files.createTempDirectory("nmox-chrome-e2e-profile-");
 
+        // the adapter's own output (Chrome launch errors land there) is the
+        // other half of any post-mortem — tap it before the adapter starts
+        adapterLog = new AdapterLogTap();
         server = JsDebugServer.start(SERVER_JS);
         proxy = DapProxy.start(server.port(), () -> { });
-        Client nb = new Client(proxy.clientInput(), proxy.clientOutput());
+        Client nb = new Client(proxy.clientInput(), proxy.clientOutput(),
+                adapterLog::dump);
 
         nb.request("initialize", new JSONObject()
                 .put("clientID", "test").put("adapterID", "test")
@@ -148,8 +167,14 @@ class RealChromeIntegrationTest {
         nb.request("configurationDone", new JSONObject());
 
         // Chrome spawns at configurationDone; the interval fires within a
-        // beat of the page loading and the stop arrives flat via the child
-        JSONObject stopped = nb.awaitEvent("stopped");
+        // beat of the page loading and the stop arrives flat via the child.
+        // This ONE await covers the whole browser cold start (launch, page
+        // load, breakpoint bind — ~2s when green), so it gets double the
+        // default window: a loaded ubuntu runner burned the full 60s once
+        // (actions/runs/29126426623 attempt 1) and the old frame-discarding
+        // await left no evidence of why. If this trips again, the transcript
+        // + adapter log in the failure message name the culprit.
+        JSONObject stopped = nb.awaitEvent("stopped", Duration.ofSeconds(120));
         assertThat(stopped.getJSONObject("body").getString("reason"))
                 .isEqualTo("breakpoint");
         int threadId = stopped.getJSONObject("body").getInt("threadId");
@@ -240,23 +265,43 @@ class RealChromeIntegrationTest {
         }
     }
 
-    /** Minimal DAP client — copied from RealJsDebugIntegrationTest; extract
-     *  a shared helper when a third integration test appears. */
+    /** Minimal DAP client — started as a copy of RealJsDebugIntegrationTest's,
+     *  then grew post-mortem diagnostics after a CI flake
+     *  (actions/runs/29126426623): every frame lands in a timestamped
+     *  transcript, EOF fails the pending await immediately instead of
+     *  spinning out the window, and timeout messages carry the transcript
+     *  plus the adapter's own output. Extract a shared helper when a third
+     *  integration test appears. */
     private static final class Client {
+        private static final Duration DEFAULT_AWAIT = Duration.ofSeconds(60);
+
         private final OutputStream out;
         private final BlockingQueue<JSONObject> frames = new LinkedBlockingQueue<>();
         private final AtomicInteger seq = new AtomicInteger();
+        private final List<String> transcript = Collections.synchronizedList(new ArrayList<>());
+        private final java.util.function.Supplier<String> extraDiagnostics;
+        private final long epoch = System.nanoTime();
+        private volatile boolean eof;
 
-        Client(InputStream in, OutputStream out) {
+        Client(InputStream in, OutputStream out,
+                java.util.function.Supplier<String> extraDiagnostics) {
             this.out = out;
+            this.extraDiagnostics = extraDiagnostics;
             Thread reader = new Thread(() -> {
                 try {
                     String json;
                     while ((json = DapFrames.read(in)) != null) {
-                        frames.add(new JSONObject(json));
+                        JSONObject f = new JSONObject(json);
+                        transcript.add(stamp() + " " + json);
+                        frames.add(f);
                     }
-                } catch (IOException ignored) {
-                    // stream closed at teardown
+                    transcript.add(stamp() + " <EOF>");
+                } catch (IOException ex) {
+                    // stream closed at teardown — or mid-session, which the
+                    // pending await reports via the eof flag below
+                    transcript.add(stamp() + " <stream error: " + ex + ">");
+                } finally {
+                    eof = true;
                 }
             }, "test-nb-client");
             reader.setDaemon(true);
@@ -272,25 +317,106 @@ class RealChromeIntegrationTest {
         }
 
         JSONObject awaitResponse(String command) throws InterruptedException {
-            return await(f -> "response".equals(f.optString("type"))
+            return await("response to '" + command + "'", DEFAULT_AWAIT,
+                    f -> "response".equals(f.optString("type"))
                     && command.equals(f.optString("command")));
         }
 
         JSONObject awaitEvent(String event) throws InterruptedException {
-            return await(f -> "event".equals(f.optString("type"))
+            return awaitEvent(event, DEFAULT_AWAIT);
+        }
+
+        JSONObject awaitEvent(String event, Duration budget) throws InterruptedException {
+            return await("event '" + event + "'", budget,
+                    f -> "event".equals(f.optString("type"))
                     && event.equals(f.optString("event")));
         }
 
-        private JSONObject await(java.util.function.Predicate<JSONObject> match)
+        private JSONObject await(String what, Duration budget,
+                java.util.function.Predicate<JSONObject> match)
                 throws InterruptedException {
-            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(60);
+            long deadline = System.nanoTime() + budget.toNanos();
             while (System.nanoTime() < deadline) {
                 JSONObject f = frames.poll(250, TimeUnit.MILLISECONDS);
                 if (f != null && match.test(f)) {
                     return f;
                 }
+                if (f == null && eof && frames.isEmpty()) {
+                    // the session died under us — say so NOW, with the
+                    // evidence, instead of burning the rest of the window
+                    throw new AssertionError(
+                            "DAP stream ended before " + what + " arrived\n" + diagnostics());
+                }
             }
-            throw new AssertionError("expected frame never arrived");
+            throw new AssertionError(
+                    what + " never arrived within " + budget.toSeconds() + "s\n" + diagnostics());
+        }
+
+        private String diagnostics() {
+            return "--- DAP transcript (client view) ---\n" + renderTranscript()
+                    + "\n--- js-debug adapter output ---\n" + extraDiagnostics.get();
+        }
+
+        /** Full transcript unless a runaway page flooded it (240 output
+         *  events/minute from the fixture's interval): keep both ends —
+         *  the launch story and what it was doing when time ran out. */
+        private String renderTranscript() {
+            List<String> lines = List.copyOf(transcript);
+            if (lines.size() <= 120) {
+                return String.join("\n", lines);
+            }
+            return String.join("\n", lines.subList(0, 60))
+                    + "\n... [" + (lines.size() - 120) + " frames elided] ...\n"
+                    + String.join("\n", lines.subList(lines.size() - 60, lines.size()));
+        }
+
+        private String stamp() {
+            return String.format("%8.3fs", (System.nanoTime() - epoch) / 1e9);
+        }
+    }
+
+    /**
+     * Collects the adapter's own output for failure messages. JsDebugServer
+     * already pumps every process line to its logger at FINE ("js-debug:
+     * {0}") — this taps that logger rather than re-plumbing the process.
+     * Chrome launch failures are only visible here: js-debug reports them on
+     * stderr, not as DAP frames the client transcript would catch.
+     */
+    private static final class AdapterLogTap extends Handler implements AutoCloseable {
+        private final Logger logger = Logger.getLogger(JsDebugServer.class.getName());
+        private final Level oldLevel = logger.getLevel();
+        private final List<String> lines = Collections.synchronizedList(new ArrayList<>());
+
+        AdapterLogTap() {
+            setLevel(Level.ALL);
+            logger.setLevel(Level.FINE);
+            logger.addHandler(this);
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if (msg != null && record.getParameters() != null) {
+                msg = MessageFormat.format(msg, record.getParameters());
+            }
+            lines.add(msg);
+        }
+
+        String dump() {
+            synchronized (lines) {
+                return lines.isEmpty() ? "<no adapter output captured>"
+                        : String.join("\n", lines);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() {
+            logger.removeHandler(this);
+            logger.setLevel(oldLevel);
         }
     }
 }
