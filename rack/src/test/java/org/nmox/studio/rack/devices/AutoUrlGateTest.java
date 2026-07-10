@@ -150,10 +150,20 @@ class AutoUrlGateTest {
                     .isEqualTo("https://example.com");
 
             registry.register(webServing("http://localhost:4242"));
+            // this call marshals a deferred "auto: …" label write to the EDT
             assertThat(beacon.effectiveUrl()).isEqualTo("http://localhost:4242");
+            // drain that deferred label BEFORE dialing: no write may be left
+            // in flight to race the explicit dial (this ordering is what the
+            // Windows lane lost — see AutoUrlLabelGuardTest for the guard that
+            // makes even a late write safe)
+            flushEdt();
 
             beacon.applyState(java.util.Map.of("url", "https://prod.example.io"));
             assertThat(beacon.effectiveUrl()).as("explicit dial wins")
+                    .isEqualTo("https://prod.example.io");
+            flushEdt();
+            assertThat(beacon.getState().get("url"))
+                    .as("an explicit dial is never rewritten")
                     .isEqualTo("https://prod.example.io");
         } finally {
             registry.deregister("fixture@auto-url");

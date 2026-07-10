@@ -89,7 +89,16 @@ public class BeaconDevice extends RackDevice {
         }
         String auto = AutoUrl.firstWebServing(projectDir());
         if (auto != null) {
-            onEdt(() -> urlLcd.setText(AutoUrl.AUTO_PREFIX + auto));
+            // Visible feedback only: label the pick as "auto: <url>". The
+            // write is marshalled to the EDT, where the guard re-reads the
+            // LCD — an explicit dial typed (or applied) between this read and
+            // the label write must never be clobbered by a stale auto value.
+            onEdt(() -> {
+                String label = AutoUrl.autoLabelOrKeep(urlLcd.getText(), DEFAULT_URL, auto);
+                if (label != null) {
+                    urlLcd.setText(label);
+                }
+            });
             return auto;
         }
         return AutoUrl.fallback(dialed);
