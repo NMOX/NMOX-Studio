@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.41.0] — 2026-07-10
+
+The accessibility sweep. The rack's custom-painted widget library (knobs,
+buttons, switches, LEDs, LCDs, VU meters) was screen-reader opaque —
+`getAccessibleContext()` returned null on every control — and mouse-only.
+Every control is now visible to assistive technology and the operable
+ones work from the keyboard, with the painted look unchanged except a
+visible focus ring.
+
+### Added
+- **Screen-reader visibility for all six rack widgets.** Each implements
+  `Accessible` with the right role: Knob = SLIDER with AccessibleValue
+  (continuous knobs report percent matching the painted readout, stepped
+  knobs report the position index with "Position n of m: name" in the
+  description), RackButton = PUSH_BUTTON with a working AccessibleAction,
+  ToggleSwitch = TOGGLE_BUTTON whose CHECKED state tracks the bat, Led and
+  LcdDisplay = read-only LABELs (LED description says on/off/blinking and
+  names the palette color; LCD description is the text on the glass),
+  VuMeter = PROGRESS_BAR reporting percent. Value/state/text changes fire
+  the matching accessible property events — guarded on the context field,
+  so nothing fires until assistive tech asks.
+- **Keyboard operation.** Knobs: arrows step (an option / 5%), Home/End
+  jump to the rails. Buttons: Space/Enter press — routed through the same
+  single fire path as the mouse, so a dimmed button ignores both alike.
+  Switches: Space flips. Clicking any operable control focuses it; a
+  `RackStyle.FOCUS_RING` ring (a hue the color law reserves for nothing
+  else) marks the focus owner. Indicators (LED/LCD/VU) are explicitly
+  non-focusable. Tab traverses controls in placement order; the rack-flip
+  Tab now yields whenever a faceplate control or the REPL field has focus
+  (the toolbar toggle still flips at any time).
+- **Every placed control has an accessible name**, enforced by a new
+  DeviceContractTest invariant across all 44 devices (failed first for
+  59 controls on 40 devices, then fixed by wiring names — never by
+  weakening the assertion). Labeled widgets reuse their silkscreen label;
+  label-less LCDs derive their name from the edit prompt or persistence
+  key, with explicit names where neither exists (one shared fix in
+  CommandDevice covered the status panel on 26 devices).
+- **A11yContractTest** (19 tests): roles, names, focus policy,
+  AccessibleValue arithmetic, keyboard actions invoked through the real
+  key bindings, and the property-change announcements.
+
 ## [1.40.0] — 2026-07-10
 
 The git surface. The plan's next daily-driver gap: the IDE shipped twelve

@@ -38,6 +38,7 @@ public class BundleSizeDevice extends RackDevice {
         maxKnob = place(new Knob("MAX", MAXIMUMS, 0), 330, 40);
         maxKnob.setToolTipText("Size budget: a build output over this fires FAIL");
         resultLcd = place(new LcdDisplay(200, 1), 404, 46);
+        resultLcd.getAccessibleContext().setAccessibleName("bundle size");
         resultLcd.setText("—");
         meter = place(new VuMeter("WEIGHT", false), 620, 40);
 

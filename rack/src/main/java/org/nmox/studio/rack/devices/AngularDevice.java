@@ -44,6 +44,7 @@ public class AngularDevice extends CommandDevice {
 
         // ---- row 1: version currency ----
         versionLcd = place(new LcdDisplay(210, 1), 44, 40);
+        versionLcd.getAccessibleContext().setAccessibleName("version");
         versionLcd.setText("v? → ?");
         versionLcd.setToolTipText("installed @angular/core → latest on the registry");
         currentLed = place(new Led("CURRENT", RackStyle.GO), 262, 46);

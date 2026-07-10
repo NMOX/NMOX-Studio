@@ -44,7 +44,9 @@ public class PreflightDevice extends RackDevice {
         runningLed = place(new Led("RUN", RackStyle.MUTATE), 180, 58);
 
         checklistLcd = place(new LcdDisplay(380, 6), 232, 34);
+        checklistLcd.getAccessibleContext().setAccessibleName("checklist");
         verdictLcd = place(new LcdDisplay(240, 1), 630, 34);
+        verdictLcd.getAccessibleContext().setAccessibleName("verdict");
         checklistLcd.appendLine("CHECK TO VERIFY READINESS");
         verdictLcd.setText("UNVERIFIED");
         verdictLcd.setToolTipText("the machine's opinion of whether you can ship");

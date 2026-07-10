@@ -48,6 +48,7 @@ public class ConsoleDevice extends RackDevice {
         int colX = RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - colW;
         int screenW = RackStyle.RACK_WIDTH - 2 * RackStyle.EAR_WIDTH - colW - 28;
         screen = place(new LcdDisplay(screenW, 8), RackStyle.EAR_WIDTH + 14, 42);
+        screen.getAccessibleContext().setAccessibleName("console output");
         RackButton clear = place(new RackButton("CLEAR", RackStyle.MUTATE), colX, 42);
         tapKnob = place(new Knob("TAP", TAPS, 1), colX + 70, 36);
         errLed = place(new Led("ERR", RackStyle.STOP), colX, 92);

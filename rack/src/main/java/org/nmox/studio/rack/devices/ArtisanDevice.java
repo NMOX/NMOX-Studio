@@ -50,6 +50,7 @@ public class ArtisanDevice extends CommandDevice {
         super("artisan", "ARTISAN", "LARAVEL CONSOLE", new Color(0xFF, 0x2D, 0x20), 3);
 
         versionLcd = place(new LcdDisplay(200, 1), 44, 40);
+        versionLcd.getAccessibleContext().setAccessibleName("version");
         versionLcd.setText("laravel ? → ?");
         versionLcd.setToolTipText("laravel/framework in composer.lock → latest on Packagist");
         currentLed = place(new Led("CURRENT", RackStyle.GO), 252, 46);

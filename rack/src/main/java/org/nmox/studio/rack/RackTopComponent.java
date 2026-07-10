@@ -94,6 +94,16 @@ public final class RackTopComponent extends TopComponent {
             return false;
         }
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
+            // faceplate controls are keyboard-operable: while one of them
+            // (or the REPL's text field) holds focus, Tab must traverse to
+            // the next control, not flip the rack — the toolbar toggle
+            // still flips at any time
+            java.awt.Component focus = java.awt.KeyboardFocusManager
+                    .getCurrentKeyboardFocusManager().getFocusOwner();
+            if (focus != null && focus != rackPanel && focus.isFocusable()
+                    && javax.swing.SwingUtilities.isDescendingFrom(focus, rackPanel)) {
+                return false;
+            }
             flipToggle.doClick();
             return true;
         }

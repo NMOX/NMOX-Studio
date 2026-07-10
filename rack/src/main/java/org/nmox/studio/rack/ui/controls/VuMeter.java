@@ -6,6 +6,9 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleValue;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -13,9 +16,11 @@ import javax.swing.Timer;
 /**
  * A segmented activity meter (green -> yellow -> red) with peak-hold and
  * decay, like the VU ladders on a mixing console. Devices pulse it as
- * output lines stream in, so a busy task "plays" the meter.
+ * output lines stream in, so a busy task "plays" the meter. A pure
+ * indicator: to assistive technology it is a PROGRESS_BAR (never
+ * focusable) reporting percent 0-100.
  */
-public class VuMeter extends JComponent {
+public class VuMeter extends JComponent implements javax.accessibility.Accessible {
 
     private static final int SEGMENTS = 12;
 
@@ -29,14 +34,18 @@ public class VuMeter extends JComponent {
     public VuMeter(String label, boolean vertical) {
         this.label = label;
         this.vertical = vertical;
+        // an indicator is not operable; keep it out of the Tab order
+        setFocusable(false);
         setPreferredSize(vertical ? new Dimension(26, 96) : new Dimension(110, 30));
         setSize(getPreferredSize());
         decayTimer = new Timer(70, e -> {
             boolean active = level > 0.001 || peak > 0.001;
+            int old = percent();
             level = Math.max(0, level - 0.06);
             if (System.currentTimeMillis() - peakTime > 1200) {
                 peak = Math.max(0, peak - 0.04);
             }
+            fireAccessibleValue(old);
             if (active) {
                 repaint();
             } else {
@@ -48,6 +57,7 @@ public class VuMeter extends JComponent {
     /** Kick the meter up to at least this level (0..1); it decays on its own. */
     public void pulse(double v) {
         Runnable r = () -> {
+            int old = percent();
             level = Math.max(level, Math.min(1, v));
             if (level > peak) {
                 peak = level;
@@ -57,6 +67,7 @@ public class VuMeter extends JComponent {
                 decayTimer.start();
             }
             repaint();
+            fireAccessibleValue(old);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
@@ -68,15 +79,33 @@ public class VuMeter extends JComponent {
     /** Pin the meter to a fixed level (for gauges such as severity counts). */
     public void setLevel(double v) {
         Runnable r = () -> {
+            int old = percent();
             level = Math.max(0, Math.min(1, v));
             peak = level;
             peakTime = System.currentTimeMillis();
             repaint();
+            fireAccessibleValue(old);
         };
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);
+        }
+    }
+
+    /** The lit-ladder resolution is coarse; percent is what a reader hears. */
+    private int percent() {
+        return (int) Math.round(level * 100);
+    }
+
+    private void fireAccessibleValue(int old) {
+        // guarded on the field: no assistive tech asked, nothing to tell —
+        // and only whole-percent moves fire, so decay ticks stay quiet
+        int now = percent();
+        if (accessibleContext != null && old != now) {
+            accessibleContext.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_VALUE_PROPERTY,
+                    Integer.valueOf(old), Integer.valueOf(now));
         }
     }
 
@@ -138,5 +167,52 @@ public class VuMeter extends JComponent {
             g.drawString(label, 2, y + 22);
         }
         g.dispose();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleVuMeter();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleVuMeter extends AccessibleJComponent implements AccessibleValue {
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.PROGRESS_BAR;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            String name = super.getAccessibleName();
+            return name != null ? name : label;
+        }
+
+        @Override
+        public AccessibleValue getAccessibleValue() {
+            return this;
+        }
+
+        @Override
+        public Number getCurrentAccessibleValue() {
+            return percent();
+        }
+
+        @Override
+        public boolean setCurrentAccessibleValue(Number n) {
+            return false; // a meter reports; it is not set from outside
+        }
+
+        @Override
+        public Number getMinimumAccessibleValue() {
+            return 0;
+        }
+
+        @Override
+        public Number getMaximumAccessibleValue() {
+            return 100;
+        }
     }
 }

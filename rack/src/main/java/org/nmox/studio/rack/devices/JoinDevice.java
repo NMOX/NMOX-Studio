@@ -47,6 +47,7 @@ public class JoinDevice extends RackDevice {
         RackButton reset = place(new RackButton("RESET", RackStyle.QUERY), RackStyle.TRANSPORT_X, 52);
         modeKnob = place(new Knob("MODE", MODES, 0), 180, 40);
         statusLcd = place(new LcdDisplay(190, 1), 270, 46);
+        statusLcd.getAccessibleContext().setAccessibleName("join status");
         statusLcd.setText("WAITING");
         passLed = place(new Led("PASS", RackStyle.GO), 486, 52);
         failLed = place(new Led("FAIL", RackStyle.STOP), 530, 52);

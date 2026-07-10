@@ -55,7 +55,9 @@ public class SonarDevice extends RackDevice {
         pingLed = place(new Led("PING", new Color(80, 220, 190)), 256, 58);
 
         countLcd = place(new LcdDisplay(330, 1), 320, 34);
+        countLcd.getAccessibleContext().setAccessibleName("open ports");
         fieldLcd = place(new LcdDisplay(330, 1), 320, 66);
+        fieldLcd.getAccessibleContext().setAccessibleName("port field");
         countLcd.setText("SWEEP TO SCAN");
         fieldLcd.setText("—");
         countLcd.setToolTipText("listening TCP ports on this machine");

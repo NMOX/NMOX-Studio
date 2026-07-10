@@ -106,12 +106,14 @@ public class ReplDevice extends RackDevice {
         screen.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         screen.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
         JScrollPane scroll = new JScrollPane(screen);
+        scroll.getAccessibleContext().setAccessibleName("REPL output");
         scroll.setBorder(BorderFactory.createLineBorder(new Color(8, 8, 9), 2));
         scroll.getViewport().setBackground(SCREEN_BG);
         scroll.setPreferredSize(new Dimension(fullW, 5 * RackStyle.UNIT - 178));
         place(scroll, left, 122);
 
         input = new JTextField();
+        input.getAccessibleContext().setAccessibleName("REPL input");
         input.setBackground(new Color(12, 22, 12));
         input.setForeground(RackStyle.LCD_TEXT);
         input.setCaretColor(RackStyle.LCD_TEXT);

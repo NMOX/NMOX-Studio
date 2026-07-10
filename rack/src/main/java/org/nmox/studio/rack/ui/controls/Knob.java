@@ -13,15 +13,23 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleValue;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 /**
  * A rotary knob in the style of studio hardware. Operates in two modes:
  * stepped (a fixed list of named positions, like a chicken-head selector)
  * or continuous (0.0 - 1.0). Drag vertically to turn, scroll to nudge,
- * double-click to reset.
+ * double-click to reset. Keyboard: arrows step, Home/End jump to the
+ * ends. To assistive technology it is a SLIDER; a continuous knob
+ * reports percent (matching the painted readout), a stepped knob
+ * reports its position index with the position's text in the
+ * description.
  */
-public class Knob extends JComponent {
+public class Knob extends JComponent implements javax.accessibility.Accessible {
 
     /** Sweep range: from 7 o'clock to 5 o'clock, like real gear. */
     private static final double START_ANGLE = Math.toRadians(220);
@@ -44,6 +52,7 @@ public class Knob extends JComponent {
         setPreferredSize(new Dimension(64, 78));
         setSize(getPreferredSize());
         installMouse();
+        installKeyboard();
         setToolTipText(label);
     }
 
@@ -55,13 +64,73 @@ public class Knob extends JComponent {
         setPreferredSize(new Dimension(64, 78));
         setSize(getPreferredSize());
         installMouse();
+        installKeyboard();
         setToolTipText(label);
+    }
+
+    private void installKeyboard() {
+        setFocusable(true);
+        // the focus ring is painted state, so focus changes must repaint
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
+        var im = getInputMap(WHEN_FOCUSED);
+        im.put(KeyStroke.getKeyStroke("UP"), "increment");
+        im.put(KeyStroke.getKeyStroke("RIGHT"), "increment");
+        im.put(KeyStroke.getKeyStroke("DOWN"), "decrement");
+        im.put(KeyStroke.getKeyStroke("LEFT"), "decrement");
+        im.put(KeyStroke.getKeyStroke("HOME"), "minimum");
+        im.put(KeyStroke.getKeyStroke("END"), "maximum");
+        getActionMap().put("increment", action(() -> nudge(1)));
+        getActionMap().put("decrement", action(() -> nudge(-1)));
+        getActionMap().put("minimum", action(() -> {
+            if (options != null) {
+                setSelectedIndex(0);
+            } else {
+                setValue(0);
+            }
+        }));
+        getActionMap().put("maximum", action(() -> {
+            if (options != null) {
+                setSelectedIndex(options.length - 1);
+            } else {
+                setValue(1);
+            }
+        }));
+    }
+
+    private static javax.swing.Action action(Runnable body) {
+        return new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                body.run();
+            }
+        };
+    }
+
+    /** One keyboard step: an option on stepped knobs, 5% on continuous. */
+    private void nudge(int direction) {
+        if (options != null) {
+            setSelectedIndex(selectedIndex + direction);
+        } else {
+            setValue(value + direction * 0.05);
+        }
     }
 
     private void installMouse() {
         MouseAdapter ma = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                // grabbing a knob aims the keyboard at it, like real gear
+                requestFocusInWindow();
                 dragOrigin = e.getPoint();
                 dragStartValue = value;
                 dragStartIndex = selectedIndex;
@@ -126,6 +195,7 @@ public class Knob extends JComponent {
             return;
         }
         String current = options[selectedIndex];
+        int old = selectedIndex;
         options = newOptions.clone();
         selectedIndex = 0;
         for (int i = 0; i < options.length; i++) {
@@ -136,6 +206,7 @@ public class Knob extends JComponent {
         }
         repaint();
         fireChanged();
+        fireAccessibleValue(old, selectedIndex);
     }
 
     public boolean isStepped() {
@@ -183,10 +254,12 @@ public class Knob extends JComponent {
         }
         int clamped = Math.max(0, Math.min(idx, options.length - 1));
         if (clamped != selectedIndex) {
+            int old = selectedIndex;
             selectedIndex = clamped;
             setToolTipText(label + ": " + options[selectedIndex]);
             repaint();
             fireChanged();
+            fireAccessibleValue(old, clamped);
         }
     }
 
@@ -197,9 +270,25 @@ public class Knob extends JComponent {
     public void setValue(double v) {
         double clamped = Math.max(0, Math.min(1, v));
         if (Math.abs(clamped - value) > 0.0001) {
+            int old = percent();
             value = clamped;
             repaint();
             fireChanged();
+            fireAccessibleValue(old, percent());
+        }
+    }
+
+    /** The painted readout rounds to percent; the accessible value matches. */
+    private int percent() {
+        return (int) Math.round(value * 100);
+    }
+
+    private void fireAccessibleValue(int old, int now) {
+        // guarded on the field: no assistive tech asked, nothing to tell
+        if (accessibleContext != null && old != now) {
+            accessibleContext.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_VALUE_PROPERTY,
+                    Integer.valueOf(old), Integer.valueOf(now));
         }
     }
 
@@ -247,6 +336,13 @@ public class Knob extends JComponent {
         g.setStroke(new java.awt.BasicStroke(2.4f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
         g.draw(new Line2D.Double(cx + c * 4, cy + s * 4, cx + c * (r - 4), cy + s * (r - 4)));
 
+        // keyboard focus ring, outside the tick marks
+        if (isFocusOwner()) {
+            g.setColor(RackStyle.FOCUS_RING);
+            g.setStroke(RackStyle.focusStroke());
+            g.draw(new Ellipse2D.Float(cx - r - 9, cy - r - 9, (r + 9) * 2, (r + 9) * 2));
+        }
+
         // labels
         g.setFont(RackStyle.LABEL_FONT);
         g.setColor(RackStyle.SILKSCREEN);
@@ -264,5 +360,74 @@ public class Knob extends JComponent {
         }
         g.drawString(valText, cx - fm.stringWidth(valText) / 2, cy + r + 26);
         g.dispose();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleKnob();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleKnob extends AccessibleJComponent implements AccessibleValue {
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.SLIDER;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            String name = super.getAccessibleName();
+            return name != null ? name : label;
+        }
+
+        @Override
+        public String getAccessibleDescription() {
+            // the field, not super: super falls back to the tooltip,
+            // which is the label - the description must add the value
+            if (accessibleDescription != null) {
+                return accessibleDescription;
+            }
+            if (options != null) {
+                return "Position " + (selectedIndex + 1) + " of " + options.length
+                        + ": " + options[selectedIndex];
+            }
+            return percent() + " percent";
+        }
+
+        @Override
+        public AccessibleValue getAccessibleValue() {
+            return this;
+        }
+
+        @Override
+        public Number getCurrentAccessibleValue() {
+            return options != null ? selectedIndex : percent();
+        }
+
+        @Override
+        public boolean setCurrentAccessibleValue(Number n) {
+            if (n == null) {
+                return false;
+            }
+            if (options != null) {
+                setSelectedIndex(n.intValue());
+            } else {
+                setValue(n.intValue() / 100.0);
+            }
+            return true;
+        }
+
+        @Override
+        public Number getMinimumAccessibleValue() {
+            return 0;
+        }
+
+        @Override
+        public Number getMaximumAccessibleValue() {
+            return options != null ? options.length - 1 : 100;
+        }
     }
 }

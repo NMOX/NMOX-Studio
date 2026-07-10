@@ -420,6 +420,12 @@ public abstract class RackDevice extends JPanel {
     protected void param(String key, LcdDisplay lcd) {
         paramGetters.put(key, lcd::getText);
         paramSetters.put(key, lcd::setText);
+        // the persistence key names the panel's purpose ("url", "glob") —
+        // reuse it as the accessible name where the device set none, so
+        // screen readers never meet an anonymous display
+        if (lcd.getAccessibleContext().getAccessibleName() == null) {
+            lcd.getAccessibleContext().setAccessibleName(key);
+        }
     }
 
     public Map<String, String> getState() {

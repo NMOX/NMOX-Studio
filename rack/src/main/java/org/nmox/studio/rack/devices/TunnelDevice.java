@@ -42,6 +42,7 @@ public class TunnelDevice extends CommandDevice {
         providerKnob = place(new Knob("CARRIER", PROVIDERS, 0), 180, 40);
         portKnob = place(new Knob("PORT", PORTS, 2), 254, 40);
         urlLcd = place(new LcdDisplay(150, 1), 328, 52);
+        urlLcd.getAccessibleContext().setAccessibleName("public URL");
         urlLcd.setText("—");
         liveLed = place(new Led("LIVE", new Color(156, 89, 209)), 442, 58);
 

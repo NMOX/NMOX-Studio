@@ -35,6 +35,7 @@ public class LintDevice extends CommandDevice {
         linterKnob = place(new Knob("LINTER", LINTERS, 0), 112, 40);
         fixSwitch = place(new ToggleSwitch("FIX", false), 182, 42);
         countLcd = place(new LcdDisplay(120, 1), 252, 52);
+        countLcd.getAccessibleContext().setAccessibleName("findings");
         cleanLed = place(new Led("CLEAN", RackStyle.GO), 386, 58);
         countLcd.setText("E:- W:-");
 

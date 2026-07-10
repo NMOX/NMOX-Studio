@@ -31,6 +31,7 @@ public class PackageManagerDevice extends CommandDevice {
         RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 254, 52);
         RackButton outdated = place(new RackButton("CHECK", RackStyle.QUERY), 318, 52);
         depsLcd = place(new LcdDisplay(96, 1), 382, 52);
+        depsLcd.getAccessibleContext().setAccessibleName("dependencies");
         depsLcd.setText("—");
         depsLcd.setToolTipText("dependencies + devDependencies declared in package.json");
 
