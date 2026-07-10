@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -25,6 +25,12 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: mvn -B verify
+        # Git Bash serves the audit script on Windows; the boot smoke and
+        # rendering probe stay POSIX-only below — the Windows launcher is a
+        # .exe and the runner's display story differs (ledger 37). The test
+        # suite IS the Windows gate; the assembled-app probes remain
+        # Linux+macOS until the launcher-path work happens.
+        shell: bash
 
       # Every module that ships test sources must have actually run them.
       # Guards the unbound-surefire class: the application module's tests
@@ -32,6 +38,7 @@ jobs:
       # Runs right after verify, while the surefire reports are fresh.
       - name: Test-execution audit
         run: ./scripts/test-execution-audit.sh
+        shell: bash
 
       # --- Release-gating checks against the ASSEMBLED app -----------------
       # These run after verify (which packages application/target/nmoxstudio)
