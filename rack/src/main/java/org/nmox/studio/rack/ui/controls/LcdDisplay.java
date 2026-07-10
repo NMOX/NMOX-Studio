@@ -10,6 +10,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
@@ -19,8 +21,11 @@ import org.openide.NotifyDescriptor;
  * A green-on-black LCD panel, one or more lines. Multi-line displays
  * scroll like a tiny console; single-line displays show a status string.
  * Optionally editable via double-click (used for URL entry and the like).
+ * To assistive technology it is a read-only LABEL (never focusable):
+ * the name says what the panel shows (explicit name, else the edit
+ * prompt), the description is the text currently on the glass.
  */
-public class LcdDisplay extends JComponent {
+public class LcdDisplay extends JComponent implements javax.accessibility.Accessible {
 
     /** One scrolled line and the color it glows in (null = panel default). */
     private record Entry(String text, Color color) {
@@ -36,6 +41,8 @@ public class LcdDisplay extends JComponent {
 
     public LcdDisplay(int widthPx, int lines) {
         this.lines = Math.max(1, lines);
+        // a display is not operable; keep it out of the Tab order
+        setFocusable(false);
         setPreferredSize(new Dimension(widthPx, 12 + this.lines * 15));
         setSize(getPreferredSize());
         addMouseListener(new java.awt.event.MouseAdapter() {
@@ -72,8 +79,10 @@ public class LcdDisplay extends JComponent {
 
     /** Single-line mode: replace the text outright. */
     public void setText(String t) {
+        String old = shownText();
         this.text = t == null ? "" : t;
         repaintLater();
+        fireTextChanged(old);
     }
 
     public String getText() {
@@ -87,6 +96,7 @@ public class LcdDisplay extends JComponent {
 
     /** Multi-line mode with a per-line glow color (null = panel default). */
     public void appendLine(String line, Color color) {
+        String old = shownText();
         synchronized (buffer) {
             buffer.add(new Entry(line == null ? "" : line, color));
             while (buffer.size() > lines) {
@@ -94,14 +104,58 @@ public class LcdDisplay extends JComponent {
             }
         }
         repaintLater();
+        fireTextChanged(old);
     }
 
     public void clear() {
+        String old = shownText();
         synchronized (buffer) {
             buffer.clear();
         }
         text = "";
         repaintLater();
+        fireTextChanged(old);
+    }
+
+    /** Everything currently on the glass, newest line last. */
+    private String shownText() {
+        if (lines == 1) {
+            return text;
+        }
+        StringBuilder sb = new StringBuilder();
+        synchronized (buffer) {
+            for (Entry e : buffer) {
+                if (sb.length() > 0) {
+                    sb.append('\n');
+                }
+                sb.append(e.text());
+            }
+        }
+        return sb.toString();
+    }
+
+    private void fireTextChanged(String oldShown) {
+        // guarded on the field: no assistive tech asked, nothing to tell
+        if (accessibleContext == null) {
+            return;
+        }
+        String now = shownText();
+        if (now.equals(oldShown)) {
+            return;
+        }
+        // marshal like repaintLater: appendLine streams in from process
+        // reader threads, and accessibility listeners expect the EDT
+        Runnable fire = () -> {
+            accessibleContext.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE, Boolean.TRUE);
+            accessibleContext.firePropertyChange(
+                    AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY, oldShown, now);
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            fire.run();
+        } else {
+            SwingUtilities.invokeLater(fire);
+        }
     }
 
     private void repaintLater() {
@@ -163,5 +217,39 @@ public class LcdDisplay extends JComponent {
         g.setColor(new Color(255, 255, 255, 24));
         g.draw(bezel);
         g.dispose();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleLcdDisplay();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleLcdDisplay extends AccessibleJComponent {
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.LABEL;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            // explicit name from the device first; an editable panel's
+            // prompt already says what it shows ("URL to watch", ...)
+            String name = super.getAccessibleName();
+            if (name != null) {
+                return name;
+            }
+            return editable ? editPrompt : null;
+        }
+
+        @Override
+        public String getAccessibleDescription() {
+            // the description IS the glass: read what the panel shows,
+            // not the "Double-click to edit" tooltip super falls back to
+            return accessibleDescription != null ? accessibleDescription : shownText();
+        }
     }
 }

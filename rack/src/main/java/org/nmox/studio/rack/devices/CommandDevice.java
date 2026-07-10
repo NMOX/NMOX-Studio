@@ -46,6 +46,8 @@ public abstract class CommandDevice extends RackDevice {
 
         int lcdW = 240;
         statusLcd = new LcdDisplay(lcdW, 1);
+        // one name here covers the shared status panel on every command device
+        statusLcd.getAccessibleContext().setAccessibleName("status");
         place(statusLcd, clusterX - lcdW - 14, 40);
         statusLcd.setText("READY");
 

@@ -55,6 +55,7 @@ public class ReflexDevice extends RackDevice {
         globLcd.setToolTipText("Route by file type: type rs to fire only on Rust saves, "
                 + "ts,tsx for the web lane. Empty = the FILTER knob decides.");
         lastChangeLcd = place(new LcdDisplay(176, 1), 324, 46);
+        lastChangeLcd.getAccessibleContext().setAccessibleName("last change");
         lastChangeLcd.setText("DISARMED");
         eyeLed = place(new Led("EYE", new Color(236, 106, 168)), 510, 52);
         meter = place(new VuMeter("CHANGES", false), 560, 46);

@@ -48,6 +48,7 @@ public class BenchDevice extends CommandDevice {
         RackButton stopBench = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 46);
         stopBench.addActionListener(e -> stopProcess());
         resultLcd = place(new LcdDisplay(120, 1), 328, 82);
+        resultLcd.getAccessibleContext().setAccessibleName("throughput");
         resultLcd.setText("—");
         reqMeter = place(new VuMeter("REQ/S", false), 460, 82);
         minKnob = place(new Knob("MIN R/S", MINIMUMS, 0), 560, 40);

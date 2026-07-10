@@ -32,6 +32,7 @@ public class NextDevice extends CommandDevice {
         super("nextjs", "NEXUS", "NEXT.JS CONSOLE", new Color(0xED, 0xED, 0xED), 2);
 
         versionLcd = place(new LcdDisplay(190, 1), 44, 40);
+        versionLcd.getAccessibleContext().setAccessibleName("version");
         versionLcd.setText("next ? → ?");
         currentLed = place(new Led("CURRENT", RackStyle.GO), 242, 46);
         outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 298, 46);

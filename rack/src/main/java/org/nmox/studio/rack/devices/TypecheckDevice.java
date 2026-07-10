@@ -39,6 +39,7 @@ public class TypecheckDevice extends CommandDevice {
         watchSwitch = place(new ToggleSwitch("WATCH", false), 180, 42);
         strictSwitch = place(new ToggleSwitch("STRICT", false), 250, 42);
         errorLcd = place(new LcdDisplay(110, 1), 324, 52);
+        errorLcd.getAccessibleContext().setAccessibleName("errors");
         errorLcd.setText("E:-");
         cleanLed = place(new Led("SOUND", RackStyle.GO), 442, 58);
 

@@ -39,6 +39,7 @@ public class TempoDevice extends RackDevice {
         tickLed = place(new Led("TICK", new Color(255, 211, 105)), 200, 52);
         barLed = place(new Led("BAR", new Color(255, 140, 60)), 244, 52);
         countLcd = place(new LcdDisplay(120, 1), 292, 46);
+        countLcd.getAccessibleContext().setAccessibleName("tick count");
         countLcd.setText("0");
 
         runSwitch.addChangeListener(this::syncTimer);

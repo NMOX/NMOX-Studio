@@ -45,8 +45,11 @@ public class DockerDevice extends RackDevice {
 
         int lcdX = 396;
         containersLcd = place(new LcdDisplay(150, 1), lcdX, 34);
+        containersLcd.getAccessibleContext().setAccessibleName("containers");
         imagesLcd = place(new LcdDisplay(150, 1), lcdX, 62);
+        imagesLcd.getAccessibleContext().setAccessibleName("images");
         reclaimLcd = place(new LcdDisplay(150, 1), lcdX, 90);
+        reclaimLcd.getAccessibleContext().setAccessibleName("reclaimable disk");
         containersLcd.setText("ENGINE?");
         imagesLcd.setText("—");
         reclaimLcd.setText("—");

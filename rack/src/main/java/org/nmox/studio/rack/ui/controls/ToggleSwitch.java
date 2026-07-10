@@ -11,13 +11,20 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.accessibility.AccessibleState;
+import javax.accessibility.AccessibleStateSet;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 /**
  * A two-position vertical toggle switch with silk-screened ON/OFF
  * (or custom) position labels, like the rocker switches on rack gear.
+ * Space flips a focused switch; to assistive technology it is a
+ * TOGGLE_BUTTON whose CHECKED state tracks the bat.
  */
-public class ToggleSwitch extends JComponent {
+public class ToggleSwitch extends JComponent implements javax.accessibility.Accessible {
 
     private final String label;
     private final String onText;
@@ -39,7 +46,34 @@ public class ToggleSwitch extends JComponent {
         setToolTipText(label);
         addMouseListener(new MouseAdapter() {
             @Override
+            public void mousePressed(MouseEvent e) {
+                // flipping a switch aims the keyboard at it, like real gear
+                requestFocusInWindow();
+            }
+
+            @Override
             public void mouseClicked(MouseEvent e) {
+                setOn(!on);
+            }
+        });
+
+        setFocusable(true);
+        // the focus ring is painted state, so focus changes must repaint
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
+        getInputMap(WHEN_FOCUSED).put(KeyStroke.getKeyStroke("SPACE"), "toggle");
+        getActionMap().put("toggle", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
                 setOn(!on);
             }
         });
@@ -55,6 +89,13 @@ public class ToggleSwitch extends JComponent {
             repaint();
             for (Runnable r : new ArrayList<>(listeners)) {
                 r.run();
+            }
+            // guarded on the field: no assistive tech asked, nothing to tell
+            if (accessibleContext != null) {
+                accessibleContext.firePropertyChange(
+                        AccessibleContext.ACCESSIBLE_STATE_PROPERTY,
+                        v ? null : AccessibleState.CHECKED,
+                        v ? AccessibleState.CHECKED : null);
             }
         }
     }
@@ -97,6 +138,51 @@ public class ToggleSwitch extends JComponent {
         g.setColor(RackStyle.SILKSCREEN);
         FontMetrics fm = g.getFontMetrics();
         g.drawString(label, cx - fm.stringWidth(label) / 2, wellY + wellH + 16);
+
+        // keyboard focus ring around the switch well
+        if (isFocusOwner()) {
+            g.setColor(RackStyle.FOCUS_RING);
+            g.setStroke(RackStyle.focusStroke());
+            g.draw(new RoundRectangle2D.Float(wellX - 4, wellY - 4, wellW + 8, wellH + 8, 8, 8));
+        }
         g.dispose();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleToggleSwitch();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleToggleSwitch extends AccessibleJComponent {
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.TOGGLE_BUTTON;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            String name = super.getAccessibleName();
+            return name != null ? name : label;
+        }
+
+        @Override
+        public String getAccessibleDescription() {
+            // the field, not super: super falls back to the tooltip,
+            // which is the label - the description must say the position
+            return accessibleDescription != null ? accessibleDescription : (on ? onText : offText);
+        }
+
+        @Override
+        public AccessibleStateSet getAccessibleStateSet() {
+            AccessibleStateSet states = super.getAccessibleStateSet();
+            if (on) {
+                states.add(AccessibleState.CHECKED);
+            }
+            return states;
+        }
     }
 }

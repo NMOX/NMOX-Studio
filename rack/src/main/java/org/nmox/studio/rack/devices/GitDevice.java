@@ -24,6 +24,7 @@ public class GitDevice extends CommandDevice {
         super("git", "TIMELINE", "GIT SEQUENCER", new Color(222, 78, 54), 2);
 
         branchLcd = place(new LcdDisplay(150, 1), 44, 46);
+        branchLcd.getAccessibleContext().setAccessibleName("branch");
         branchLcd.setText("…");
         dirtyLed = place(new Led("DIRTY", RackStyle.MUTATE), 200, 52);
 

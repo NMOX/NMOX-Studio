@@ -46,6 +46,7 @@ public class PhoenixDevice extends CommandDevice {
         super("phoenix", "PHOENIX", "FRAMEWORK CONSOLE", new Color(0xFD, 0x4F, 0x00), 3);
 
         versionLcd = place(new LcdDisplay(200, 1), 44, 40);
+        versionLcd.getAccessibleContext().setAccessibleName("version");
         versionLcd.setText("phx ? → ?");
         versionLcd.setToolTipText(":phoenix in mix.exs → latest on Hex");
         currentLed = place(new Led("CURRENT", RackStyle.GO), 252, 46);

@@ -109,6 +109,24 @@ class DeviceContractTest {
 
     @ParameterizedTest
     @EnumSource(DeviceType.class)
+    @DisplayName("Every placed control exposes a non-blank accessible name")
+    void controlsExposeAccessibleNames(DeviceType type) {
+        RackDevice device = type.create();
+        java.util.List<String> nameless = new java.util.ArrayList<>();
+        for (java.awt.Component c : device.getComponents()) {
+            String where = c.getClass().getSimpleName() + " at " + c.getX() + "," + c.getY();
+            if (!(c instanceof javax.accessibility.Accessible)
+                    || c.getAccessibleContext() == null
+                    || c.getAccessibleContext().getAccessibleName() == null
+                    || c.getAccessibleContext().getAccessibleName().isBlank()) {
+                nameless.add(where);
+            }
+        }
+        assertThat(nameless).as(type + " controls without an accessible name").isEmpty();
+    }
+
+    @ParameterizedTest
+    @EnumSource(DeviceType.class)
     @DisplayName("Every device has a palette category and a usage recipe")
     void shelfGuidance(DeviceType type) {
         assertThat(type.getPaletteCategory()).isNotNull();

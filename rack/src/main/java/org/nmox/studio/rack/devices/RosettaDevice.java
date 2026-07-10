@@ -32,6 +32,7 @@ public class RosettaDevice extends RackDevice {
 
         toolchainKnob = place(new Knob("TOOLCHAIN", TOOLCHAINS, 0), 44, 40);
         detectedLcd = place(new LcdDisplay(330, 1), 130, 46);
+        detectedLcd.getAccessibleContext().setAccessibleName("detected lanes");
         detectedLcd.setText("—");
         detectedLcd.setToolTipText("Toolchains detected in the project (root + one level deep)");
 

@@ -48,7 +48,9 @@ public class BlackboxDevice extends RackDevice {
         recLed = place(new Led("REC", new Color(255, 80, 60)), 116, 58);
 
         lastLcd = place(new LcdDisplay(420, 1), 180, 34);
+        lastLcd.getAccessibleContext().setAccessibleName("last event");
         healthLcd = place(new LcdDisplay(420, 1), 180, 66);
+        healthLcd.getAccessibleContext().setAccessibleName("health");
         lastLcd.setText("RECORDING — RUN SOMETHING");
         healthLcd.setText("NO ERRORS ON TAPE");
         lastLcd.setToolTipText("the last completed run on the tape");

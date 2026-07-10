@@ -52,6 +52,23 @@ public final class RackStyle {
     /** Blue: read-only queries (check/status/info). */
     public static final Color QUERY = new Color(70, 170, 235);
 
+    /**
+     * Keyboard focus ring on faceplate controls. The color law above
+     * reserves GO/STOP/MUTATE/QUERY for what a control DOES, so focus —
+     * which is about where the keyboard is, not meaning — gets its own
+     * hue that appears nowhere else on a faceplate and stays visible
+     * against both the dark plates and every LED color.
+     */
+    public static final Color FOCUS_RING = new Color(130, 200, 255);
+
+    /**
+     * One focus-ring stroke for every focusable control, so the ring
+     * reads identically on knobs, buttons and switches.
+     */
+    public static java.awt.BasicStroke focusStroke() {
+        return new java.awt.BasicStroke(1.8f);
+    }
+
     /** The transport column: primary GO and STOP live here on EVERY device. */
     public static final int TRANSPORT_X = 44;
     public static final int TRANSPORT_STOP_X = 108;

@@ -182,8 +182,8 @@ empty from the day debugging shipped.
 If the next session asks "what now": **(1)** ~~the git surface~~ — v1.40.0 shipped the branch chip + History; the
 remaining depth (Show Changes/Diff from our surfaces) is blocked on the
 ledger-29 context migration, which now has its first concrete customer; **(2)**
-the rack accessibility sweep — cheap, right, and differentiating ("the
-accessible IDE with knobs"); **(3)** Windows test lane before any of the
+~~the rack accessibility sweep~~ — shipped in v1.41.0 (roles, keyboard
+knobs, focus rings, the accessible-name law CI-gated in DeviceContractTest); **(3)** Windows test lane before any of the
 above grows Windows-specific code paths; **(4)** browser debugging,
 extending v1.37.0's adapter. (Startup performance was measured and
 closed out in v1.38.0 — window in 1.4–2.7s, zero boot spawns; see the

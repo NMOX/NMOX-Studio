@@ -13,14 +13,20 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import javax.accessibility.AccessibleAction;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 /**
  * A hardware push button with an integrated LED. Momentary by default;
  * the LED can be driven independently of presses (e.g. lit while a task
  * runs). Sized like the square soft-touch buttons on studio gear.
+ * Space or Enter presses a focused button; to assistive technology it
+ * is a PUSH_BUTTON named by its cap label.
  */
-public class RackButton extends JComponent {
+public class RackButton extends JComponent implements javax.accessibility.Accessible {
 
     private final String label;
     private final Color ledColor;
@@ -41,6 +47,8 @@ public class RackButton extends JComponent {
                 if (!enabledLook) {
                     return;
                 }
+                // pressing a button aims the keyboard at it, like real gear
+                requestFocusInWindow();
                 pressed = true;
                 repaint();
             }
@@ -54,19 +62,53 @@ public class RackButton extends JComponent {
                 pressed = false;
                 repaint();
                 if (fire) {
-                    java.awt.event.ActionEvent ev =
-                            new java.awt.event.ActionEvent(RackButton.this, java.awt.event.ActionEvent.ACTION_PERFORMED, label);
-                    for (ActionListener l : new ArrayList<>(listeners)) {
-                        l.actionPerformed(ev);
-                    }
+                    fireAction();
                 }
             }
         };
         addMouseListener(ma);
+
+        setFocusable(true);
+        // the focus ring is painted state, so focus changes must repaint
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
+        var im = getInputMap(WHEN_FOCUSED);
+        im.put(KeyStroke.getKeyStroke("SPACE"), "press");
+        im.put(KeyStroke.getKeyStroke("ENTER"), "press");
+        getActionMap().put("press", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                fireAction();
+            }
+        });
     }
 
     public void addActionListener(ActionListener l) {
         listeners.add(l);
+    }
+
+    /**
+     * The one firing path: mouse release, Space/Enter and the accessible
+     * action all land here, so no input channel can diverge from another.
+     */
+    private void fireAction() {
+        if (!enabledLook) {
+            return; // a dimmed button ignores the keyboard like it ignores the mouse
+        }
+        java.awt.event.ActionEvent ev = new java.awt.event.ActionEvent(
+                this, java.awt.event.ActionEvent.ACTION_PERFORMED, label);
+        for (ActionListener l : new ArrayList<>(listeners)) {
+            l.actionPerformed(ev);
+        }
     }
 
     private java.util.function.Supplier<String> commandPreview;
@@ -152,6 +194,59 @@ public class RackButton extends JComponent {
         FontMetrics fm = g.getFontMetrics();
         String text = label;
         g.drawString(text, (w - fm.stringWidth(text)) / 2, (pressed ? 1 : 0) + bh - 8);
+
+        // keyboard focus ring, just outside the cap
+        if (isFocusOwner()) {
+            g.setColor(RackStyle.FOCUS_RING);
+            g.setStroke(RackStyle.focusStroke());
+            g.draw(new RoundRectangle2D.Float(2.5f, 2.5f, w - 5, bh - 5, 8, 8));
+        }
         g.dispose();
+    }
+
+    @Override
+    public AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleRackButton();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleRackButton extends AccessibleJComponent implements AccessibleAction {
+
+        @Override
+        public AccessibleRole getAccessibleRole() {
+            return AccessibleRole.PUSH_BUTTON;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            String name = super.getAccessibleName();
+            return name != null ? name : label;
+        }
+
+        @Override
+        public AccessibleAction getAccessibleAction() {
+            return this;
+        }
+
+        @Override
+        public int getAccessibleActionCount() {
+            return 1;
+        }
+
+        @Override
+        public String getAccessibleActionDescription(int i) {
+            return i == 0 ? AccessibleAction.CLICK : null;
+        }
+
+        @Override
+        public boolean doAccessibleAction(int i) {
+            if (i != 0) {
+                return false;
+            }
+            fireAction();
+            return true;
+        }
     }
 }

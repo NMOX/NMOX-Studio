@@ -40,6 +40,7 @@ public class DebugDevice extends CommandDevice {
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         targetKnob = place(new Knob("TARGET", TARGETS, 0), 180, 40);
         endpointLcd = place(new LcdDisplay(210, 1), 254, 52);
+        endpointLcd.getAccessibleContext().setAccessibleName("debug endpoint");
         endpointLcd.setText("—");
         endpointLcd.setToolTipText("Attach your debugger client here");
         armedLed = place(new Led("WIRED", new Color(186, 85, 255)), 254 + 216, 84);

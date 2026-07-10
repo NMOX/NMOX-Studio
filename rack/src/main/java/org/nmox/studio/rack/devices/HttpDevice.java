@@ -70,6 +70,7 @@ public class HttpDevice extends RackDevice {
         RackButton view = place(new RackButton("VIEW", RackStyle.QUERY), RackStyle.TRANSPORT_X, 78);
         view.setToolTipText("Open the console: pretty-printed responses and the last 50 exchanges");
         statusLcd = place(new LcdDisplay(120, 1), 460, 40);
+        statusLcd.getAccessibleContext().setAccessibleName("response status");
         statusLcd.setText("—");
         latencyMeter = place(new VuMeter("LATENCY", false), 460, 78);
         okLed = place(new Led("2XX", RackStyle.GO), 600, 46);

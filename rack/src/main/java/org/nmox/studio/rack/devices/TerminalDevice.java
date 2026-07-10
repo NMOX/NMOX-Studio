@@ -43,6 +43,7 @@ public class TerminalDevice extends RackDevice {
         screen.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
 
         scroll = new JScrollPane(screen);
+        scroll.getAccessibleContext().setAccessibleName("terminal output");
         scroll.setBorder(BorderFactory.createLineBorder(new Color(8, 8, 9), 2));
         scroll.getViewport().setBackground(screen.getBackground());
         int w = RackStyle.RACK_WIDTH - 2 * RackStyle.EAR_WIDTH - 120;

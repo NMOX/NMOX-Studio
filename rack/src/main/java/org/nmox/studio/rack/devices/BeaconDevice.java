@@ -51,6 +51,7 @@ public class BeaconDevice extends RackDevice {
         minKnob = place(new Knob("MIN DAYS", MINIMUMS, 0), 370, 40);
         minKnob.setToolTipText("Certificate floor: fewer days left than this fires FAIL");
         resultLcd = place(new LcdDisplay(240, 1), 444, 46);
+        resultLcd.getAccessibleContext().setAccessibleName("probe result");
         resultLcd.setText("—");
         upLed = place(new Led("UP", RackStyle.GO), 700, 52);
         warnLed = place(new Led("WARN", RackStyle.STOP), 744, 52);

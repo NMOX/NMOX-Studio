@@ -53,6 +53,7 @@ public class AnvilDevice extends CommandDevice {
         super("anvil", "ANVIL", "LOCAL EVM CHAIN", new Color(0x8A, 0x9B, 0xA8), 3);
 
         screenLcd = place(new LcdDisplay(420, 2), 44, 32);
+        screenLcd.getAccessibleContext().setAccessibleName("chain log");
         screenLcd.appendLine("anvil devnet — press START");
         screenLcd.setToolTipText("The chain's account banner: unlocked, funded accounts anvil signs with");
 
