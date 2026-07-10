@@ -139,8 +139,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         scroll.getViewport().setBackground(BG);
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
-
-        refresh();
+        // No refresh here: this tab is open-at-startup, so componentOpened
+        // always follows construction and runs its own re-sync refresh — a
+        // constructor refresh just runs the toolchain-detect walk twice per
+        // boot. An instance that is deserialized but never opened stays
+        // blank, which is also right: nothing is looking at it.
     }
 
     @Override

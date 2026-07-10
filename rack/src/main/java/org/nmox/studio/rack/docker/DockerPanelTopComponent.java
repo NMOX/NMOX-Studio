@@ -671,8 +671,23 @@ public final class DockerPanelTopComponent extends TopComponent {
                     "-p", port + ":" + port, imageName());
         }));
         p.add(actions, BorderLayout.SOUTH);
-        regenerateDockerize();
+        // No regenerate here: this panel opens at startup, so construction
+        // happens behind the selected tab and the detect walk would run for
+        // previews nobody can see. First show generates them (the DB Studio
+        // Docker-offer idiom); Regenerate stays for re-runs.
+        dockerizePending = true;
         return p;
+    }
+
+    /** A dockerize preview is owed but the panel is hidden; served on show. */
+    private boolean dockerizePending;
+
+    @Override
+    protected void componentShowing() {
+        if (dockerizePending) {
+            dockerizePending = false;
+            regenerateDockerize();
+        }
     }
 
     private File projectDir() {
