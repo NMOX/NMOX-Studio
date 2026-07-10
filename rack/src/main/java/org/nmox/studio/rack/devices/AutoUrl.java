@@ -25,6 +25,20 @@ final class AutoUrl {
                 || dialed.startsWith(AUTO_PREFIX);
     }
 
+    /**
+     * The label the URL LCD should show for an auto pick, or {@code null}
+     * to leave the glass untouched. Pure and re-checkable: showing the
+     * "auto: &lt;url&gt;" label is only ever a cosmetic reflection of the
+     * pick, so it must be gated on the LCD STILL being an auto candidate.
+     * The device labels through this guard on the EDT, so a value that was
+     * an auto candidate when RUN read it but has since been explicitly
+     * dialed (the user typed a URL, a patch applied one) is left alone —
+     * a deferred label write can never clobber an explicit dial.
+     */
+    static String autoLabelOrKeep(String currentLcdText, String factoryDefault, String auto) {
+        return isAuto(currentLcdText.trim(), factoryDefault) ? AUTO_PREFIX + auto : null;
+    }
+
     /** The first live WEB serving for this project, or null. */
     static String firstWebServing(File projectDir) {
         for (ServingRegistry.Serving s : ServingRegistry.getDefault().snapshot()) {
