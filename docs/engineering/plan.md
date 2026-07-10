@@ -179,8 +179,9 @@ empty from the day debugging shipped.
 
 ## What I'd do next, in order
 
-If the next session asks "what now": **(1)** the git surface — now the
-biggest daily-driver gap, since debugging landed in v1.37.0; **(2)**
+If the next session asks "what now": **(1)** ~~the git surface~~ — v1.40.0 shipped the branch chip + History; the
+remaining depth (Show Changes/Diff from our surfaces) is blocked on the
+ledger-29 context migration, which now has its first concrete customer; **(2)**
 the rack accessibility sweep — cheap, right, and differentiating ("the
 accessible IDE with knobs"); **(3)** Windows test lane before any of the
 above grows Windows-specific code paths; **(4)** browser debugging,

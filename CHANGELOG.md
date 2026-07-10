@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.40.0] — 2026-07-10
+
+The git surface. The plan's next daily-driver gap: the IDE shipped twelve
+git modules (jgit, diff, versioning, the full Team menu) and no NMOX
+surface told you so much as the branch.
+
+### Added
+- **A git chip in the status line.** Aim at a project inside a git repo and
+  `⎇ main ±3` appears — branch read straight from `.git/HEAD` (worktree
+  `gitdir:` indirection and detached HEAD included), changed-file count
+  from a bounded `git status --porcelain`. Zero processes at boot, honest
+  to the v1.38.0 law: the count runs only on aim, on click, and on a 30s
+  tick that arms only while the chip is visible (source-gate tested). New
+  pure `GitFacts` core (9 tests) + `GitChip` model (8 tests incl. the
+  boot-guard state machine).
+- **History, one click away.** The chip menu opens the platform full
+  Show History browser for the repository via the git module exported
+  API — live-verified against a real repo: commits, authors, filters,
+  per-commit diffs.
+
+### Notes
+- The chip menu deliberately offers only what works without a selection
+  (History, Refresh). The platform Show Changes/Diff/Annotate are
+  NodeActions that read the global selection — which no NMOX window
+  publishes (ledger 29) — so those stay where they work: the Team menu,
+  with a file selected or open. Three invocation strategies were tried
+  live before accepting this; dead buttons do not ship (the v1.38.1
+  lesson). Ledger 29 gains its first concrete customer.
+- Found in passing: the second argument of the git module
+  openSearchHistory(File, String) is a commit-ish, not a path — jgit
+  says "COMMIT [path] does not exist" if you guess wrong.
+
 ## [1.39.0] — 2026-07-10
 
 The idiom release. Five senior-NetBeans-RCP audit lenses over the whole
