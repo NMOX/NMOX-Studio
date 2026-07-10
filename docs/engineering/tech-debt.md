@@ -210,6 +210,28 @@ accelerators from Keymaps-profile shadows. Cosmetic, and fixing it means
 duplicating each registration into a keymap profile — deferred until someone
 actually reports missing them.
 
+## Open — deferred deliberately, with reasons (added v1.42.0)
+
+### 37. Windows runs the tests, not the assembled-app probes
+The boot smoke test and rendering probe run on Linux (xvfb) and macOS
+only. Windows would need the .exe launcher path in boot-smoke-test.sh
+(it drives bin/nmoxstudio, a POSIX script) and an answer for the
+runner's non-interactive desktop. The windows-installer-check workflow
+already byte-verifies the installer; the missing piece is booting the
+assembled cluster. **Deferred**: the test suite is the payload of the
+Windows lane; the launcher work is its own small sprint.
+
+### 38. killTree cannot see through Git Bash's process genealogy
+On Windows, MSYS breaks the parent-PID chain at exec, so a grandchild
+spawned via Git Bash sh is invisible to ProcessHandle.descendants() —
+the same reason taskkill /T fails on such trees. Proven on the runner
+(the one Windows test disable, evidence in the test's comment).
+runBounded still returns bounded (worst case the drain tail waits
+2×5s). The real fix is Windows Job Objects via JNA/FFM. **Deferred**:
+matters only if rack/SOLDER-style Git-Bash commands run under
+runBounded timeouts on Windows; no such path ships today. Documented
+in killTree's javadoc so nobody trusts the sweep there.
+
 ## Open — deferred deliberately, with reasons (added v1.37.0)
 
 ### 25. One debug session per run: child processes run undebugged
