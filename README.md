@@ -72,7 +72,7 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
   servers. **Quick Search (⌘I)** finds actions, files, recent projects
   (Enter switches), rack devices (Enter racks them), **API Studio
   requests** (jumps to the request), and **infra nodes** (selects them
-  on the canvas). ⌘9 rack, ⌘8 Docker, ⌘0 workbench; the status line
+  on the canvas). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
   shows what's running.
 - **The rack has undo (⌘Z / ⇧⌘Z)**: add, remove, move a device or
   patch a cable and take it back — including a removed device, which
@@ -221,7 +221,7 @@ probe into a check. The workspace persists as `.nmoxapi.json` beside the
 project.
 
 ### 🗄️ DB Studio
-A database management suite in its own tab (⇧⌘7) — **SQLite, PostgreSQL,
+A database management suite in its own tab (⌥⌘7) — **SQLite, PostgreSQL,
 MySQL, MariaDB, MongoDB, and CouchDB**, batteries included: the drivers
 are bundled (CouchDB needs none — it's plain HTTP), so a fresh install
 connects to a real database in under a minute. One tree browses
@@ -254,7 +254,7 @@ create the connection — prefilled dialog, password straight to the
 keychain.
 
 ### ⛓️ Contract Studio (Web3)
-Smart contract development in its own tab (⇧⌘6) — **Solidity in the
+Smart contract development in its own tab (⌥⌘6) — **Solidity in the
 editor** (pinned TextMate grammar, Navigator outline, LSP catalog
 entry), **Foundry as a real toolchain** (`foundry.toml` projects get
 IDE-native Build/Test/Clean → forge, plus rack lanes), and a Studio
@@ -385,10 +385,10 @@ NMOX-Studio/
 ├── dbstudio/               # DB Studio: SQL + document database suite
 │   ├── model/             # Engines, connection specs, schema records
 │   ├── engine/            # DbBackend: JDBC + Mongo + CouchDB(HTTP)
-│   └── ui/                # The ⇧⌘7 tab: tree, console, results
+│   └── ui/                # The ⌥⌘7 tab: tree, console, results
 ├── web3/                   # Contract Studio: Web3/EVM development
 │   ├── engine/            # Keccak-256, ABI codec, JSON-RPC client
-│   └── ui/                # The ⇧⌘6 tab: Interact, Watch, Oversight
+│   └── ui/                # The ⌥⌘6 tab: Interact, Watch, Oversight
 ├── project/               # Project and resource management
 ├── tools/                 # Development tools and utilities
 ├── branding/              # Splash, icons, NMOX Phosphor theme

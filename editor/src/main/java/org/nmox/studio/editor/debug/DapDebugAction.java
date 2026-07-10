@@ -77,8 +77,10 @@ public class DapDebugAction extends BaseAction {
                     case "text/x-go" -> debugGo(file);
                     case "text/javascript", "text/typescript" -> debugNode(file);
                     default -> {
+                        return;
                     }
                 }
+                showOutput();
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
                         "Debug failed: " + ex.getMessage() + " — is the debug adapter installed?");
@@ -188,6 +190,25 @@ public class DapDebugAction extends BaseAction {
             server.stop();
             throw ex;
         }
+    }
+
+    /**
+     * The debuggee's stdout goes to an Output tab the DAP client creates — but
+     * nothing opens that window, so a debugged server's "listening on 3100"
+     * banner is invisible until the user hunts for it. Debugging a server
+     * without its console is debugging blind. Open Output and let it take the
+     * tab it just created; the session's own selection wins from there.
+     */
+    private static void showOutput() {
+        java.awt.EventQueue.invokeLater(() -> {
+            org.openide.windows.TopComponent output =
+                    org.openide.windows.WindowManager.getDefault()
+                            .findTopComponent("output");
+            if (output != null) {
+                output.open();
+                output.requestVisible();
+            }
+        });
     }
 
     /** cwd = nearest ancestor holding a project manifest, so requires and

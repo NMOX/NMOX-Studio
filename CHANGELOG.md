@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.38.1] — 2026-07-09
+
+The DX pass. Four senior-developer journeys walked end to end in the real
+app — debug a Node service, drive a database, serve a classic site, reach
+for the tools. The engine held up beautifully; the *surroundings* were
+where the bugs were, and every one of them sat exactly one keypress off
+the path a feature test walks.
+
+### Fixed
+- **Four of seven advertised keyboard shortcuts opened the wrong window.**
+  The Welcome launchpad and the docs promised ⌘0 Workbench, ⇧⌘6 Contract
+  Studio, ⇧⌘7 DB Studio, ⇧⌘8 API Studio. Pressing them gave the Editor,
+  Tasks, Properties and the Palette — the platform's Keymaps profile owns
+  those chords, and a Keymaps registration beats the `Shortcuts/` folder we
+  register in. (⇧⌘O "Open Folder" lost the same way, to Open Project, which
+  is why it dropped users in `~/NetBeansProjects` — a folder NMOX never
+  creates.) The studios now live on ⌥⌘6–9, Workbench on ⌥⌘0 and Open Folder
+  on ⌥⌘O — a digit family no shipped module claims. Every chord was pressed
+  in the assembled app, before and after. `WindowShortcutsTest` pins both
+  halves: no chord in the platform's reserved set, and Welcome advertises
+  exactly what is registered.
+- **A debug session's Output window never surfaced.** The debuggee's stdout
+  landed correctly in an Output tab, but nothing opened it, so a debugged
+  server's `listening on 3100` banner was invisible until you knew to press
+  ⌘4 and hunt. Debugging a server without its console is debugging blind;
+  the session now opens Output for you.
+- **Open Folder started in `$HOME`** — a wall of Library/Desktop/Downloads
+  (and on macOS, TCC prompts). It starts in the `~/NMOX` workspace, where
+  New Project puts things.
+
+### Notes
+- The v1.37.0 debugger was exercised against a real HTTP server: the trust
+  prompt named the right project root, the breakpoint stopped a live
+  request mid-flight, the call stack showed `Server.emit → parserOnIncoming`,
+  variables resolved, and Stop left zero orphans — adapter, debuggee and
+  port all released.
+- Two limits are now written down instead of merely suffered (ledger 27–28):
+  the platform's **Breakpoints window never lists DAP breakpoints** (verified
+  against Python, which uses none of our code — the gutter is the breakpoint
+  manager, and the user guide now says so), and Window-menu entries for our
+  studios show no accelerator.
+
 ## [1.38.0] — 2026-07-09
 
 The startup-truth release. Measured first (startup-log phases + JFR on

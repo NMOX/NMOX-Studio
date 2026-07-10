@@ -110,7 +110,12 @@ import org.openide.windows.TopComponent;
 @ActionID(category = "Window", id = "org.nmox.studio.web3.ui.Web3StudioTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 259),
-    @ActionReference(path = "Shortcuts", name = "DS-6")
+    // Cmd+Alt (DA-) — the studio row lives in the one digit family no
+    // shipped module claims. The old chord opened a platform window
+    // instead of this one: ⇧⌘6 was the platform's Tasks window. Keymaps-profile
+    // registrations beat Shortcuts-folder ones, so a layer-only audit
+    // misses these; WindowShortcutsTest pins the reserved list.
+    @ActionReference(path = "Shortcuts", name = "DA-6")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_Web3StudioAction",
         preferredID = "Web3StudioTopComponent")

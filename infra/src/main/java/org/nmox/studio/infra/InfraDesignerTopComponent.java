@@ -50,7 +50,12 @@ import org.openide.windows.TopComponent;
 @ActionID(category = "Window", id = "org.nmox.studio.infra.InfraDesignerTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 260),
-    @ActionReference(path = "Shortcuts", name = "DS-9")
+    // Cmd+Alt (DA-) — the studio row lives in the one digit family no
+    // shipped module claims. The old chord opened a platform window
+    // instead of this one: ⇧⌘9 worked, but the studio row must be one family. Keymaps-profile
+    // registrations beat Shortcuts-folder ones, so a layer-only audit
+    // misses these; WindowShortcutsTest pins the reserved list.
+    @ActionReference(path = "Shortcuts", name = "DA-9")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_InfraAction",
         preferredID = "InfraDesignerTopComponent")

@@ -112,7 +112,12 @@ import org.openide.windows.TopComponent;
 @ActionID(category = "Window", id = "org.nmox.studio.dbstudio.ui.DbStudioTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 258),
-    @ActionReference(path = "Shortcuts", name = "DS-7")
+    // Cmd+Alt (DA-) — the studio row lives in the one digit family no
+    // shipped module claims. The old chord opened a platform window
+    // instead of this one: ⇧⌘7 was the platform's Properties window. Keymaps-profile
+    // registrations beat Shortcuts-folder ones, so a layer-only audit
+    // misses these; WindowShortcutsTest pins the reserved list.
+    @ActionReference(path = "Shortcuts", name = "DA-7")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DbStudioAction",
         preferredID = "DbStudioTopComponent")
