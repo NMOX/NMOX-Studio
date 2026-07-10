@@ -33,8 +33,9 @@ public final class ProcessSupport {
 
     /** The OS null device: {@code /dev/null}, or {@code NUL} on Windows. */
     public static File nullDevice() {
-        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
-        return new File(windows ? "NUL" : "/dev/null");
+        // BaseUtilities, not Utilities: the latter lives in org-openide-util-ui,
+        // which core deliberately does not depend on
+        return new File(org.openide.util.BaseUtilities.isWindows() ? "NUL" : "/dev/null");
     }
 
     /** A hardened ProcessBuilder for a dev-tool command line. */

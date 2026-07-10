@@ -105,17 +105,12 @@ public final class LearningSpace {
         return hint == null ? "" : hint;
     }
 
+    /** The catalog's install-hint key for the OS this JVM runs on. */
     static String osKey() {
-        return osKey(System.getProperty("os.name", ""));
-    }
-
-    /** mac/darwin → mac (checked first: "darwin" contains "win"), win → windows, else linux. */
-    static String osKey(String osName) {
-        String os = osName.toLowerCase(java.util.Locale.ROOT);
-        if (os.contains("mac") || os.contains("darwin")) {
+        if (org.openide.util.Utilities.isMac()) {
             return "mac";
         }
-        return os.contains("win") ? "windows" : "linux";
+        return org.openide.util.Utilities.isWindows() ? "windows" : "linux";
     }
 
     /** Writes the pre-wired .nmoxrack.json for the space's driver. */

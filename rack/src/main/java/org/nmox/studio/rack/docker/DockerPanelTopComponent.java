@@ -54,7 +54,12 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(
         preferredID = "DockerPanelTopComponent",
-        persistenceType = TopComponent.PERSISTENCE_NEVER
+        // ALWAYS, like every other suite tab: with PERSISTENCE_NEVER the
+        // window system forgot the user's close, so openAtStartup forced
+        // this tab back open on every launch — the only tab that ignored
+        // being closed. Only open/closed state and position persist; the
+        // content is rebuilt from the live Docker daemon on show anyway.
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
 @TopComponent.Registration(mode = "editor", openAtStartup = true, position = 400)
 @org.openide.awt.ActionID(category = "Window",
@@ -772,5 +777,11 @@ public final class DockerPanelTopComponent extends TopComponent {
                     refreshAll();
                 });
         org.nmox.studio.rack.engine.CommandExecutor.showOutput("HARBOR");
+    }
+    void writeProperties(java.util.Properties p) {
+        p.setProperty("version", "1.0");
+    }
+
+    void readProperties(java.util.Properties p) {
     }
 }

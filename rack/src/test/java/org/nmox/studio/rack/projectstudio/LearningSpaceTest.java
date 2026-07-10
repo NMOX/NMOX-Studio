@@ -118,15 +118,18 @@ class LearningSpaceTest {
     }
 
     @Test
-    @DisplayName("The OS key: mac/darwin map to mac (before the windows check), win to windows, else linux")
+    @DisplayName("The OS key maps the platform onto the catalog's three install-hint keys")
     void osKeyPinning() {
-        assertThat(LearningSpace.osKey("Mac OS X")).isEqualTo("mac");
-        assertThat(LearningSpace.osKey("Darwin")).as("darwin contains 'win' — mac must win")
-                .isEqualTo("mac");
-        assertThat(LearningSpace.osKey("Windows 11")).isEqualTo("windows");
-        assertThat(LearningSpace.osKey("Linux")).isEqualTo("linux");
-        assertThat(LearningSpace.osKey("FreeBSD")).as("fallback").isEqualTo("linux");
-        assertThat(LearningSpace.osKey("")).isEqualTo("linux");
+        String key = LearningSpace.osKey();
+        assertThat(key).as("catalog carries exactly these keys")
+                .isIn("mac", "windows", "linux");
+        if (org.openide.util.Utilities.isMac()) {
+            assertThat(key).isEqualTo("mac");
+        } else if (org.openide.util.Utilities.isWindows()) {
+            assertThat(key).isEqualTo("windows");
+        } else {
+            assertThat(key).isEqualTo("linux");
+        }
     }
 
     @Test

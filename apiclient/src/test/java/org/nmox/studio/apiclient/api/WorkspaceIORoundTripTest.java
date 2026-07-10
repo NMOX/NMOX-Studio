@@ -125,6 +125,20 @@ class WorkspaceIORoundTripTest {
     }
 
     @Test
+    @DisplayName("save swaps atomically: repeated saves leave only the workspace file, no temp siblings")
+    void saveLeavesNoTempSiblings(@TempDir Path dir) throws Exception {
+        // a torn or leftover temp file would be read by the file pulse (and
+        // classified as a foreign edit) — the directory must stay clean
+        WorkspaceIO.save(dir.toFile(), richWorkspace());
+        WorkspaceIO.save(dir.toFile(), richWorkspace());
+
+        try (var files = Files.list(dir)) {
+            assertThat(files.map(p -> p.getFileName().toString()))
+                    .containsExactly(WorkspaceIO.FILENAME);
+        }
+    }
+
+    @Test
     @DisplayName("A corrupt .nmoxapi.json is copied to .bak BEFORE the empty fallback")
     void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws Exception {
         String corrupt = "{ \"collections\": [ definitely-not-json";

@@ -12,6 +12,11 @@ import org.openide.NotifyDescriptor;
 /**
  * Manages trusted workspace directories. Running terminal/process tools (like npm,
  * databases, docker, make) on untrusted external repositories presents safety risks.
+ *
+ * Deliberately stored in GLOBAL {@code java.util.prefs}, not
+ * {@code NbPreferences.forModule}: trust must survive userdir wipes/resets (a
+ * fresh userdir must not silently re-trust nothing the user granted), so do
+ * not "normalize" this to NbPreferences.
  */
 public final class WorkspaceTrust {
 

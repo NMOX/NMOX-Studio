@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -15,6 +16,10 @@ import org.openide.windows.OutputWriter;
 
 @ServiceProvider(service = NpmService.class)
 public class NpmService {
+
+    // package-manager runs block on a subprocess for up to a minute; they
+    // must never occupy the JVM-shared ForkJoinPool.commonPool
+    private static final RequestProcessor RP = new RequestProcessor("NPM Service", 3);
 
     private static final String NPM_COMMAND = "npm";
     private static final String YARN_COMMAND = "yarn";
@@ -52,7 +57,7 @@ public class NpmService {
             } catch (IOException e) {
                 throw new java.io.UncheckedIOException(e);
             }
-        });
+        }, RP);
     }
 
     /**
@@ -182,7 +187,7 @@ public class NpmService {
                 out.close();
                 err.close();
             }
-        });
+        }, RP);
     }
     
     /**
@@ -229,7 +234,9 @@ public class NpmService {
         return list;
     }
 
-    public static NpmService getInstance() {
+    // getDefault, not getInstance: this is the platform Lookup idiom, not
+    // a lazily-constructed singleton — @ServiceProvider owns the instance
+    public static NpmService getDefault() {
         return Lookup.getDefault().lookup(NpmService.class);
     }
 }

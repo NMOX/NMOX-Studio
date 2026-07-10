@@ -41,6 +41,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 /**
@@ -75,6 +76,10 @@ import org.openide.windows.TopComponent;
     "HINT_ApiClientTopComponent=Postman-style API management and testing"
 })
 public final class ApiClientTopComponent extends TopComponent {
+
+    // sends, rebind reads, and registry pokes are short bounded jobs: they
+    // share one small pool instead of a raw thread per click
+    private static final RequestProcessor RP = new RequestProcessor("API Studio", 2);
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
@@ -143,7 +148,8 @@ public final class ApiClientTopComponent extends TopComponent {
                 SwingUtilities.invokeLater(ApiClientTopComponent.this::onProjectReaimed);
             }
         };
-        loadWorkspace();
+        // no workspace read here: the constructor runs during window-system
+        // deserialization; componentOpened owns the initial load
     }
 
     // ---- toolbar: environment + send ----
@@ -308,7 +314,7 @@ public final class ApiClientTopComponent extends TopComponent {
         Environment env = workspace.active();
         Map<String, String> vars = env != null ? env.variables : Map.of();
         Request request = current;
-        Thread worker = new Thread(() -> {
+        RP.post(() -> {
             boolean delivered = false;
             String failure = "unexpected error";
             try {
@@ -332,9 +338,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     });
                 }
             }
-        }, "nmox-api-send");
-        worker.setDaemon(true);
-        worker.start();
+        });
     }
 
     private void showResponse(ApiResponse r, List<TestRunner.Result> results) {
@@ -700,8 +704,20 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    /** The initial load happened; re-opens rely on onProjectReaimed instead. */
+    private boolean loadedOnce;
+
     @Override
     public void componentOpened() {
+        if (!loadedOnce) {
+            // first open after construction: load the bound project's file
+            // exactly once. onProjectReaimed can't do it — its equality
+            // guard sees the ctor-time aim as "already bound" and skips.
+            // Must run before the serving bridge attaches: its offers read
+            // the workspace.
+            loadedOnce = true;
+            loadWorkspace();
+        }
         if (!rackListenerAttached) {
             attachRackListener();
         }
@@ -774,7 +790,7 @@ public final class ApiClientTopComponent extends TopComponent {
             saveDebounce.stop();
             save(); // boundDir() is still the old project's — see save()
         }
-        Thread loader = new Thread(() -> {
+        RP.post(() -> {
             Workspace loaded = readWorkspace(aimed);
             SwingUtilities.invokeLater(() -> {
                 if (!rebind.shouldApply(aimed, projectDir())) {
@@ -784,9 +800,7 @@ public final class ApiClientTopComponent extends TopComponent {
                 restartFilePulse();
                 pokeServingBridge();
             });
-        }, "nmox-api-rebind");
-        loader.setDaemon(true);
-        loader.start();
+        });
     }
 
     /** (Re)aims the pulse at the bound project's file; closed tab, no pulse. */
@@ -811,9 +825,7 @@ public final class ApiClientTopComponent extends TopComponent {
         if (bridge == null) {
             return;
         }
-        Thread poke = new Thread(bridge::refresh, "nmox-api-serving-poke");
-        poke.setDaemon(true);
-        poke.start();
+        RP.post(bridge::refresh);
     }
 
     // ---- the {{baseUrl}} offer ----

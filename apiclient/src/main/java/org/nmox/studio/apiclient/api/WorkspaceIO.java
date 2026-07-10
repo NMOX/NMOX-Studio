@@ -13,6 +13,7 @@ import org.nmox.studio.apiclient.model.ApiModel.Environment;
 import org.nmox.studio.apiclient.model.ApiModel.Pair;
 import org.nmox.studio.apiclient.model.ApiModel.Request;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
+import org.nmox.studio.core.util.AtomicFiles;
 
 /**
  * Reads and writes the workspace as {@code .nmoxapi.json} beside the
@@ -169,8 +170,9 @@ public final class WorkspaceIO {
     }
 
     public static void save(File dir, Workspace w) throws IOException {
-        Files.writeString(new File(dir, FILENAME).toPath(), toJson(w),
-                StandardCharsets.UTF_8);
+        // atomic rename, never truncate-then-write: the file pulse (and any
+        // foreign reader) must never observe a torn .nmoxapi.json
+        AtomicFiles.writeString(new File(dir, FILENAME).toPath(), toJson(w));
     }
 
     public static Workspace load(File dir) throws IOException {

@@ -67,23 +67,43 @@ public final class Rack {
     /** Off during bulk load (RackIO, presets, resume); on for interactive edits. */
     private boolean captureUndo;
 
-    /** Dev servers and watchers must not outlive the IDE as orphans. */
-    private final Thread processReaper = new Thread(() -> {
-        for (RackDevice d : getDevices()) {
-            try {
-                d.panic();
-            } catch (RuntimeException ignored) {
-                // best effort during JVM shutdown
-            }
-        }
-    }, "nmox-rack-reaper");
-
-    public Rack() {
+    /**
+     * Dev servers and watchers must not outlive the IDE as orphans, but a
+     * per-instance shutdown hook pins the whole device graph until JVM
+     * exit (tests construct racks by the hundred). One static hook over a
+     * live-set instead; {@link #shutdown()} removes the rack from the set.
+     */
+    private static final java.util.Set<Rack> LIVE = ConcurrentHashMap.newKeySet();
+    static {
         try {
-            Runtime.getRuntime().addShutdownHook(processReaper);
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                for (Rack rack : LIVE) {
+                    for (RackDevice d : rack.getDevices()) {
+                        try {
+                            d.panic();
+                        } catch (RuntimeException ignored) {
+                            // best effort during JVM shutdown
+                        }
+                    }
+                }
+            }, "nmox-rack-reaper"));
         } catch (IllegalStateException ignored) {
             // already shutting down
         }
+    }
+
+    public Rack() {
+        LIVE.add(this);
+    }
+
+    /** Test seam: whether the shutdown reaper still tracks this rack. */
+    static boolean reaperTracks(Rack rack) {
+        return LIVE.contains(rack);
+    }
+
+    /** Test seam: how many racks the shutdown reaper currently tracks. */
+    static int reaperTrackedCount() {
+        return LIVE.size();
     }
 
     // ---- devices ----
@@ -544,10 +564,6 @@ public final class Rack {
             d.dispose();
         }
         router.shutdownNow();
-        try {
-            Runtime.getRuntime().removeShutdownHook(processReaper);
-        } catch (IllegalStateException ignored) {
-            // already shutting down
-        }
+        LIVE.remove(this);
     }
 }

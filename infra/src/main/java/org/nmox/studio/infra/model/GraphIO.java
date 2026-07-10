@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.AtomicFiles;
 
 /**
  * Persists an infrastructure design as JSON in the project directory -
@@ -89,7 +90,9 @@ public final class GraphIO {
     }
 
     public static void save(InfraGraph graph, File file) throws IOException {
-        Files.writeString(file.toPath(), toJson(graph).toString(2), StandardCharsets.UTF_8);
+        // atomic rename, never truncate-then-write: external-edit watchers
+        // (and other readers) must never observe a torn .nmoxinfra.json
+        AtomicFiles.writeString(file.toPath(), toJson(graph).toString(2));
     }
 
     public static void load(InfraGraph graph, File file) throws IOException {

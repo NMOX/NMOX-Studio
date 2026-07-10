@@ -85,6 +85,23 @@ class Web3WorkspaceIOTest {
     }
 
     @Test
+    @DisplayName("save swaps atomically: repeated saves leave only the workspace file, no temp siblings")
+    void saveLeavesNoTempSiblings(@TempDir Path dir) throws IOException {
+        // a torn or leftover temp file would be read by the ArtifactPulse
+        // (and classified as a foreign edit) — the directory must stay clean
+        Web3WorkspaceIO.Workspace workspace = new Web3WorkspaceIO.Workspace(
+                List.of(new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545")),
+                List.of());
+        Web3WorkspaceIO.save(dir.toFile(), workspace);
+        Web3WorkspaceIO.save(dir.toFile(), workspace);
+
+        try (var files = Files.list(dir)) {
+            assertThat(files.map(p -> p.getFileName().toString()))
+                    .containsExactly(Web3WorkspaceIO.FILENAME);
+        }
+    }
+
+    @Test
     @DisplayName("deployments cap at 200 newest-first on write; the tail is dropped")
     void deploymentCap() {
         List<DeploymentRecord> many = new ArrayList<>();

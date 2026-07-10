@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.AtomicFiles;
 import org.nmox.studio.web3.model.DeploymentRecord;
 import org.nmox.studio.web3.model.Network;
 
@@ -123,8 +124,9 @@ public final class Web3WorkspaceIO {
 
     /** Writes the workspace as {@code .nmoxweb3.json} into the directory. */
     public static void save(File dir, Workspace workspace) throws IOException {
-        Files.writeString(new File(dir, FILENAME).toPath(), toJson(workspace),
-                StandardCharsets.UTF_8);
+        // atomic rename, never truncate-then-write: the ArtifactPulse (and
+        // any foreign reader) must never observe a torn .nmoxweb3.json
+        AtomicFiles.writeString(new File(dir, FILENAME).toPath(), toJson(workspace));
     }
 
     /**
