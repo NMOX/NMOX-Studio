@@ -60,7 +60,12 @@ import org.openide.windows.TopComponent;
 @ActionID(category = "Window", id = "org.nmox.studio.apiclient.ui.ApiClientTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 265),
-    @ActionReference(path = "Shortcuts", name = "DS-8")
+    // Cmd+Alt (DA-) — the studio row lives in the one digit family no
+    // shipped module claims. The old chord opened a platform window
+    // instead of this one: ⇧⌘8 was the platform's Palette. Keymaps-profile
+    // registrations beat Shortcuts-folder ones, so a layer-only audit
+    // misses these; WindowShortcutsTest pins the reserved list.
+    @ActionReference(path = "Shortcuts", name = "DA-8")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_ApiClientAction",
         preferredID = "ApiClientTopComponent")

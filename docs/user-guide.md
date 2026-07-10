@@ -54,14 +54,14 @@ the Welcome tab):
 |---|---|
 | **⌘I** | Quick Search — reaches everything (see §9) |
 | **⌘9** | Task Rack |
-| **⌘0** | Workbench |
-| **⇧⌘6** | Contract Studio (Web3) |
-| **⇧⌘7** | DB Studio |
-| **⇧⌘8** | API Studio |
-| **⇧⌘9** | Infra Designer |
+| **⌥⌘0** | Workbench |
+| **⌥⌘6** | Contract Studio (Web3) |
+| **⌥⌘7** | DB Studio |
+| **⌥⌘8** | API Studio |
+| **⌥⌘9** | Infra Designer |
 | **⌘8** | Docker Panel |
 | **⌘7** | Navigator outline for the current file |
-| **⇧⌘N / ⇧⌘O** | New Project… / Open Folder… |
+| **⇧⌘N / ⌥⌘O** | New Project… / Open Folder… |
 | **⇧⌘E / ⇧⌘L** | New Experiment… / New Learning Space… |
 
 ## 3. Projects
@@ -187,6 +187,18 @@ can evaluate against the paused program.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 
+Debugging a **server** works the same way: run *Debug File*, hit the
+endpoint from anywhere (curl, a browser, API Studio), and the breakpoint
+stops the request mid-flight. The debuggee's console — the `listening on
+3100` line and everything after it — appears in the **Output** window,
+which opens with the session.
+
+> **Breakpoints are managed in the gutter.** The IDE's *Breakpoints*
+> window (Window ▸ Debugging ▸ Breakpoints) does not yet list breakpoints
+> from the debug adapters, so use the gutter to add and remove them. This
+> is a NetBeans platform limitation, not an NMOX one — it affects Python
+> and Go breakpoints identically.
+
 - **JavaScript and TypeScript** debug through
   [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
   engine VS Code uses — **bundled in the box**. Nothing to install: if
@@ -215,7 +227,7 @@ pausing for an attach that never comes.
 
 ## 6. The studios
 
-### API Studio (⇧⌘8)
+### API Studio (⌥⌘8)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
 
 A Postman-style client that lives with your project. Build requests
@@ -227,7 +239,7 @@ as a test suite. Everything persists to `.nmoxapi.json` in your project —
 commit it, and your teammate has your workspace. When a dev server starts
 in the rack, API Studio offers to set `{{baseUrl}}` for you.
 
-### DB Studio (⇧⌘7)
+### DB Studio (⌥⌘7)
 ![A SQLite connection, a query, 8 rows in 1 ms — and the status bar giving the honest reason this grid is read-only](images/db-studio.png)
 
 Connect to SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, or CouchDB —
@@ -244,7 +256,7 @@ touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
 NetBeans Database Explorer connections (Oracle, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
-### Contract Studio (⇧⌘6)
+### Contract Studio (⌥⌘6)
 ![ANVIL running in the rack, and Contract Studio connected to it by itself — chain 31337, the escrow contract in the artifact tree with its EIP-170 size usage, the live RPC on the serving chip](images/contract-studio.png)
 
 *Want the full worked example? **[Making a Smart Contract](making-a-smart-contract.md)** builds a real escrow contract — code, tests, gas gate, and the live ANVIL loop.*
@@ -261,7 +273,7 @@ EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and
 never reach the file).
 
-### Infra Designer (⇧⌘9)
+### Infra Designer (⌥⌘9)
 ![A stack taking shape — DNS, load balancer, droplet, and a volume with its property sheet; the toolbar prices the design live (≈ $28/mo) and stays honest about dry-run mode until you add API tokens](images/infra-designer.png)
 
 Design cloud infrastructure like a Node-RED flow: drag nodes (droplets,

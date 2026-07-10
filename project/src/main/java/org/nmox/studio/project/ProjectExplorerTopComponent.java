@@ -51,7 +51,12 @@ import org.openide.windows.WindowManager;
 @ActionID(category = "Window", id = "org.nmox.studio.project.ProjectExplorerTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 205),
-    @ActionReference(path = "Shortcuts", name = "D-0")
+    // Cmd+Alt (DA-) — the studio row lives in the one digit family no
+    // shipped module claims. The old chord opened a platform window
+    // instead of this one: ⌘0 was the platform's Editor window. Keymaps-profile
+    // registrations beat Shortcuts-folder ones, so a layer-only audit
+    // misses these; WindowShortcutsTest pins the reserved list.
+    @ActionReference(path = "Shortcuts", name = "DA-0")
 })
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_ProjectExplorerAction",

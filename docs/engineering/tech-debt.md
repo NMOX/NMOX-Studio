@@ -92,6 +92,34 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.38.1)
+
+### 27. The Breakpoints window never lists DAP breakpoints
+Found by the v1.38.1 DX pass: set a JS breakpoint, hit it inside a live HTTP
+request — Window ▸ Debugging ▸ Breakpoints stays empty, during and after the
+session. Reproduced identically with a **Python** breakpoint, which runs
+entirely on the platform's own DAP path and touches none of our code, so this
+is not an NMOX regression. The machinery all appears present: spi-debugger-ui
+registers BreakpointsTreeModel/NodeModel under `Debugger/BreakpointsView`, and
+lsp-client registers its own `BreakpointModel` there plus a
+`DAPBreakpointActionProvider` that calls `DebuggerManager.addBreakpoint`. Yet
+the view shows nothing. Consequence for users: the editor gutter is the only
+breakpoint manager — no disable, no conditions, no delete-all, no overview.
+**Deferred**: fixing it means either finding the upstream defect (a day of
+platform archaeology in a view-model chain we don't own) or shipping our own
+TreeModel/NodeModel for DAPLineBreakpoint — a real sprint, and one that would
+fork behaviour from stock NetBeans. Worth reporting upstream first. The user
+guide now says plainly that breakpoints are managed in the gutter, because a
+silently empty window is worse than a documented limit.
+
+### 28. Window-menu items for our studios show no accelerator
+`@ActionReference(path = "Shortcuts", …)` binds the chord but does not put it
+next to the Window-menu item, so the studios' ⌥⌘ chords are discoverable only
+from the Welcome launchpad and the docs. The platform's own windows get their
+accelerators from Keymaps-profile shadows. Cosmetic, and fixing it means
+duplicating each registration into a keymap profile — deferred until someone
+actually reports missing them.
+
 ## Open — deferred deliberately, with reasons (added v1.37.0)
 
 ### 25. One debug session per run: child processes run undebugged

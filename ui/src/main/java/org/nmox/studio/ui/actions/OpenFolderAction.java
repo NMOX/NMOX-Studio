@@ -21,7 +21,10 @@ import org.openide.windows.WindowManager;
 )
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 60),
-    @ActionReference(path = "Shortcuts", name = "DS-O")
+    // Cmd+Alt+O: ⇧⌘O belongs to the platform's Open Project (projectui),
+    // which won every time and dropped the user into ~/NetBeansProjects —
+    // a folder NMOX never creates. See WindowShortcutsTest.
+    @ActionReference(path = "Shortcuts", name = "DA-O")
 })
 @Messages("CTL_OpenFolderAction=Open Folder...")
 public final class OpenFolderAction implements ActionListener {
@@ -33,8 +36,7 @@ public final class OpenFolderAction implements ActionListener {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
 
-        // Set to user's home directory by default
-        chooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        chooser.setCurrentDirectory(startDirectory());
 
         int result = chooser.showOpenDialog(null);
 
@@ -44,6 +46,17 @@ public final class OpenFolderAction implements ActionListener {
                 openFolder(selectedFolder);
             }
         }
+    }
+
+    /**
+     * Start where the user's projects actually live. $HOME is a wall of
+     * Library/Desktop/Downloads noise (and on macOS the TCC-protected ones
+     * prompt); the workspace is where New Project puts things.
+     */
+    private static File startDirectory() {
+        File workspace = new File(System.getProperty("user.home"), "NMOX");
+        return workspace.isDirectory()
+                ? workspace : new File(System.getProperty("user.home"));
     }
 
     private void openFolder(File folder) {

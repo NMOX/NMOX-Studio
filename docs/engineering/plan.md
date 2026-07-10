@@ -138,6 +138,13 @@ The cadence that produced 28 releases without a broken main:
    model for any future generated doc.
 5. **Live-verify before claiming fixed.** Hard rule since v1.33.2. Boot
    the real assembled app; user-visible fixes get a click-through.
+6. **Walk a persona's whole journey, not the feature you just built.**
+   v1.38.1: debugging a real server end-to-end (breakpoint inside a live
+   HTTP request) confirmed the engine — and the *surroundings* were where
+   the bugs were: shortcuts that opened the wrong window, a console that
+   never surfaced, a file chooser rooted in a folder we never create.
+   Every one of them sat one keypress off the path any feature test takes.
+   Press the keys the docs promise; open the windows the feature implies.
 
 **The house laws** (each earned by a real incident — enforcement lives in
 CI gates and regression tests, this list is the index): no EDT I/O and no
@@ -160,7 +167,12 @@ a timed waitFor; a corrupt file loading as empty then autosaving emptiness
 over the original; `invokeLater(this::self)` while a component is 0×0;
 full-refresh listeners fanning out per event across default-open tabs;
 filesystem walks of `$HOME` on any thread the user waits on (macOS TCC);
-unverified `pkill`.
+unverified `pkill`; **a keyboard shortcut registered but never pressed** —
+`Shortcuts/`-folder registrations lose silently to the platform's Keymaps
+profile, so four studio chords opened Properties/Tasks/Palette/Editor for
+three releases while the Welcome screen advertised them (v1.38.1); **a UI
+affordance documented but never exercised** — the Breakpoints window was
+empty from the day debugging shipped.
 
 ## What I'd do next, in order
 

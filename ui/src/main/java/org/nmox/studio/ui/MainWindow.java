@@ -116,17 +116,21 @@ public final class MainWindow extends TopComponent {
                     "org.nmox.studio.ui.actions.NewExperimentAction"));
             start.add(actionLink("New Learning Space…  ⇧⌘L", "File",
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
-            start.add(actionLink("Open Folder…  ⇧⌘O", "File",
+            start.add(actionLink("Open Folder…  ⌥⌘O", "File",
                     "org.nmox.studio.ui.actions.OpenFolderAction"));
 
+            // Every chord here is live-verified: the platform's Keymaps
+            // profile already owns ⌘0, ⇧⌘6, ⇧⌘7 and ⇧⌘8 (Editor, Tasks,
+            // Properties, Palette), so advertising them was advertising the
+            // wrong window. The studios live on ⌥⌘, which nothing claims.
             JPanel windows = column("TOOLING");
             windows.add(windowLink("Task Rack  ⌘9", "RackTopComponent"));
-            windows.add(windowLink("Workbench  ⌘0", "ProjectExplorerTopComponent"));
+            windows.add(windowLink("Workbench  ⌥⌘0", "ProjectExplorerTopComponent"));
             windows.add(windowLink("Project Studio", "ProjectStudioTopComponent"));
-            windows.add(windowLink("DB Studio  ⇧⌘7", "DbStudioTopComponent"));
-            windows.add(windowLink("Contract Studio  ⇧⌘6", "Web3StudioTopComponent"));
-            windows.add(windowLink("API Studio  ⇧⌘8", "ApiClientTopComponent"));
-            windows.add(windowLink("Infra Designer  ⇧⌘9", "InfraDesignerTopComponent"));
+            windows.add(windowLink("DB Studio  ⌥⌘7", "DbStudioTopComponent"));
+            windows.add(windowLink("Contract Studio  ⌥⌘6", "Web3StudioTopComponent"));
+            windows.add(windowLink("API Studio  ⌥⌘8", "ApiClientTopComponent"));
+            windows.add(windowLink("Infra Designer  ⌥⌘9", "InfraDesignerTopComponent"));
             windows.add(windowLink("Docker Panel  ⌘8", "DockerPanelTopComponent"));
 
             JPanel columns = new JPanel(new java.awt.GridLayout(1, 3, 44, 0));
