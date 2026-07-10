@@ -48,6 +48,12 @@ class JsDebugServerTest {
         JsDebugServer server = JsDebugServer.start(fake.toFile());
         assertThat(server.port()).isPositive();
         server.stop();
+        // stop() is a confirmed-dead handshake, not a fire-and-forget kill:
+        // on Windows a still-dying node keeps fake-server.js and the cwd
+        // locked, and @TempDir cleanup (the very next thing) would fail.
+        assertThat(server.processAlive())
+                .as("adapter process dead before stop() returns")
+                .isFalse();
         server.stop(); // idempotent
     }
 

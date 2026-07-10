@@ -130,6 +130,44 @@ public final class ProcessSupport {
         p.destroyForcibly();
     }
 
+    /**
+     * {@link #killTree}, then wait — boundedly — for the whole tree to have
+     * actually exited. destroyForcibly is asynchronous: it returns while the
+     * OS is still tearing the process down, and on Windows the dying process
+     * keeps its open files and working directory locked until it is truly
+     * gone — a caller that deletes those files next (a debug session's
+     * teardown, JUnit's @TempDir cleanup) races that lock and loses. The
+     * descendant snapshot is taken BEFORE the kill, while the parent-PID
+     * chain is still walkable.
+     *
+     * @return true when every process in the tree is confirmed dead within
+     *         the timeout; false means something may still be exiting (the
+     *         caller can proceed, but file locks may linger)
+     */
+    public static boolean killTreeAndWait(Process p, Duration timeout) {
+        List<ProcessHandle> tree = new java.util.ArrayList<>(p.descendants().toList());
+        tree.add(p.toHandle());
+        tree.forEach(ProcessHandle::destroyForcibly);
+        long deadline = System.nanoTime() + timeout.toNanos();
+        for (ProcessHandle ph : tree) {
+            long left = deadline - System.nanoTime();
+            if (left <= 0) {
+                break;
+            }
+            try {
+                ph.onExit().get(left, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (java.util.concurrent.ExecutionException
+                    | java.util.concurrent.TimeoutException ignored) {
+                // ExecutionException cannot really happen (onExit completes
+                // normally); timeout falls through to the aliveness verdict
+            }
+        }
+        return tree.stream().noneMatch(ProcessHandle::isAlive);
+    }
+
     private static Thread drain(InputStream stream, StringBuilder into, String name) {
         Thread t = new Thread(() -> {
             try (BufferedReader r = new BufferedReader(

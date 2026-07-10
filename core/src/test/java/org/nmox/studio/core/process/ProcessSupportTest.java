@@ -110,6 +110,22 @@ class ProcessSupportTest {
     }
 
     @Test
+    @DisplayName("killTreeAndWait returns only once the tree is confirmed dead")
+    @Timeout(20)
+    void shouldConfirmTreeDeadInKillTreeAndWait() throws Exception {
+        // The Windows lesson behind this API: destroyForcibly is async, and a
+        // dying process still holds its file/cwd locks — callers who delete
+        // those files next need the confirmed-dead handshake, not the kill.
+        Process p = ProcessSupport.builder(List.of("sh", "-c", "sleep 60")).start();
+        assertThat(p.isAlive()).isTrue();
+
+        boolean dead = ProcessSupport.killTreeAndWait(p, Duration.ofSeconds(10));
+
+        assertThat(dead).isTrue();
+        assertThat(p.isAlive()).isFalse();
+    }
+
+    @Test
     @DisplayName("a child chatty on stderr cannot deadlock the pipe")
     @Timeout(30)
     void shouldDrainChattyStderrWithoutDeadlock() throws Exception {

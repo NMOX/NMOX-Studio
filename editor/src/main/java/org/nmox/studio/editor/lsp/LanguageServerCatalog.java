@@ -100,13 +100,30 @@ public final class LanguageServerCatalog {
         return BY_BINARY.values();
     }
 
-    /** True if the binary resolves on the IDE's augmented PATH. */
+    /**
+     * True if the binary resolves on the IDE's augmented PATH. Deliberately
+     * NOT delegated to ToolLocator.resolve(): that caches misses for the JVM
+     * lifetime, and this probe must see a server the user just installed
+     * (the LSP health panel's install flow re-checks right after).
+     */
     public static boolean isInstalled(String binary) {
         for (String dir : ToolLocator.augmentedPath().split(File.pathSeparator)) {
-            if (new File(dir, binary).canExecute()) {
+            if (foundIn(new File(dir), binary)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * One PATH entry's verdict. On Windows nothing is executable under the
+     * bare name — native servers ship {@code .exe}, npm shims ship
+     * {@code .cmd} — so probe the same two suffixes ToolLocator resolves;
+     * without them no language server was EVER detected on Windows.
+     */
+    static boolean foundIn(File dir, String binary) {
+        return new File(dir, binary).canExecute()
+                || new File(dir, binary + ".exe").isFile()
+                || new File(dir, binary + ".cmd").isFile();
     }
 }
