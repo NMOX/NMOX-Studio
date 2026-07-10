@@ -127,20 +127,36 @@ class NpmServiceTest {
     }
     
     @Test
-    @DisplayName("Should get singleton instance")
-    void testGetInstance() {
+    @DisplayName("Should resolve the same Lookup-owned instance from getDefault")
+    void testGetDefault() {
         // Lookup.getDefault() won't work in unit tests without proper setup
         // This is expected behavior in tests - skip the null check
         try {
-            NpmService instance = NpmService.getInstance();
-            // If we get an instance, it should be a singleton
+            NpmService instance = NpmService.getDefault();
+            // If we get an instance, it should be the one Lookup owns
             if (instance != null) {
-                NpmService instance2 = NpmService.getInstance();
+                NpmService instance2 = NpmService.getDefault();
                 assertThat(instance2).isSameAs(instance);
             }
         } catch (Exception e) {
             // Expected in test environment without NetBeans platform
         }
+    }
+
+    @Test
+    @DisplayName("Subprocess futures run on the module RequestProcessor, never commonPool")
+    void testAsyncWorkNamesItsExecutor() throws Exception {
+        // supplyAsync with no executor puts a 30-60s blocking subprocess on
+        // the JVM-shared ForkJoinPool.commonPool; pin the RP argument
+        String source = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/tools/npm/NpmService.java"),
+                java.nio.charset.StandardCharsets.UTF_8);
+        int supplies = source.split("CompletableFuture.supplyAsync", -1).length - 1;
+        int bounded = source.split("\\}, RP\\)", -1).length - 1;
+        assertThat(supplies).isGreaterThan(0);
+        assertThat(bounded)
+                .as("every supplyAsync must name the NPM Service RequestProcessor")
+                .isEqualTo(supplies);
     }
     
     @Test

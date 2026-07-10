@@ -4,6 +4,86 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.39.0] — 2026-07-10
+
+The idiom release. Five senior-NetBeans-RCP audit lenses over the whole
+codebase — Lookup/services/actions, window-system wiring, FileSystems/
+DataObjects, threading/platform utilities, module wiring — then fixes for
+the twelve findings that were cheap and clearly right, written deferrals
+for the deep ones (ledger 29–36), and blessings-in-writing for what looks
+unidiomatic but is deliberate. No features; the release makes the internals
+*more platform-native* without moving a single control the user can see.
+
+### Fixed
+- **Open editors now follow the file tree.** Project Studio's create/rename/
+  delete went through raw `java.nio`, so deleting or renaming a file that
+  was open left the editor holding a stale buffer over a dead path (a later
+  save could resurrect the deleted file). CRUD now routes through the
+  platform — `DataObject.delete()`, locked `FileObject.rename`, masterfs-
+  visible creates — so editor buffers close and relocate with the file.
+  The trash-preferring delete survives.
+- **Workspace saves are atomic.** All five workspace writers (`.nmoxapi`,
+  `.nmoxweb3`, `.nmoxinfra`, rack patches, package.json edits) used
+  truncate-then-write, so our own change pollers — or an external tool —
+  could read a half-written file, and a poll landing inside the window
+  would misclassify our own save as a foreign edit and reload garbage.
+  New `core` `AtomicFiles` (temp sibling + `ATOMIC_MOVE`): readers now see
+  old bytes or new bytes, never a mixture.
+- **Every `new Rack()` leaked a JVM shutdown hook** pinning its whole
+  device graph until exit. One static reaper hook over a live-set now
+  (the JsDebugServer pattern); `shutdown()` deregisters. `RackReaperTest`
+  pins it.
+- **Docker Panel ignored being closed.** `PERSISTENCE_NEVER` +
+  `openAtStartup` meant the window system forgot the close and forced the
+  tab back on every launch — the only suite tab that wouldn't stay shut.
+  Now `PERSISTENCE_ALWAYS` like its siblings.
+- **Three studios loaded their workspace twice** — once in the constructor
+  (during window-system deserialization, the wrong lifecycle phase) and
+  once on open. The load now happens exactly once, in `componentOpened`;
+  moving it exposed that DB Studio's open-time reload would have run the
+  Docker probe behind a hidden tab at boot — caught and gated on
+  `isShowing()`, so the v1.38.0 zero-boot-spawns law still holds
+  (lifecycle-gate tests pin all three).
+- **Dead output hyperlinks on relative paths**: `FileUtil.toFileObject`
+  requires normalized files; compiler/stack-trace paths with `..` segments
+  silently returned null. Both un-normalized call sites fixed.
+- **API Studio was the only module doing background work on raw threads** —
+  send worker, workspace loader, serving poke now ride a named, bounded
+  `RequestProcessor("API Studio")`. NPM operations no longer occupy the
+  JVM-shared `ForkJoinPool.commonPool` for 30-second subprocess calls
+  (module RP passed as executor). `DockerClient` is now a real
+  `@ServiceProvider` resolved through Lookup instead of a bare static;
+  `NpmService.getInstance()` renamed `getDefault()` to say what it is.
+- Hand-rolled `os.name` sniffing (including a darwin-contains-"win" trap)
+  replaced with `Utilities.isMac()/isWindows()` (`BaseUtilities` in core,
+  which deliberately lacks the UI util module).
+
+### Notes
+- **Blessed in writing** (looks unidiomatic, is deliberate): mtime polling
+  over `FileObject` listeners (macOS WatchService lag + watching unmounted
+  `node_modules`-scale trees; skip-dirs conflict documented); RackBus as a
+  bespoke off-EDT output stream (no platform equivalent); JVM shutdown
+  hooks over `@OnStop` for process reaping (hooks fire on SIGTERM/
+  `System.exit`, `@OnStop` doesn't); WorkspaceTrust on global
+  `java.util.prefs` (trust must survive userdir wipes — now documented in
+  the class so nobody "normalizes" it); modeless SONAR/BLACKBOX viewers as
+  raw JDialogs.
+- **Ledger 29–36** record the deep deferrals with reasons: the rack as the
+  IDE's context system vs `OpenProjects`/`actionsGlobalContext` (identity,
+  not accident — migrate as its own release or not at all), the
+  `catch (LinkageError)` soft-dependency shape, rack's friend-less public
+  packages (must narrow before any plugin SDK), DiagnosticsBus vs the
+  platform hints/task-list plumbing, studios sharing the `editor` mode,
+  ProgressHandle gaps, the missing `@OnStop` seam, and FileTreePanel as a
+  raw JTree (the correctness half — editor-synced CRUD — shipped above).
+- What the audit found already right, kept: declarative action registration
+  throughout, real platform SPIs (`ProjectFactory`, `LanguageProvider`,
+  `MIMEResolver`, `StatusLineElementProvider`), all `findTopComponent` IDs
+  verified against real `preferredID`s, `invokeWhenUIReady` discipline,
+  named+bounded RequestProcessors, zero `JOptionPane`/`printStackTrace`,
+  layer hygiene with collision-free QuickSearch positions, acyclic module
+  graph with core exporting only leaf utilities.
+
 ## [1.38.1] — 2026-07-09
 
 The DX pass. Four senior-developer journeys walked end to end in the real

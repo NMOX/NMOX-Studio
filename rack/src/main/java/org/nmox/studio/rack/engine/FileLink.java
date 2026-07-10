@@ -61,7 +61,9 @@ public final class FileLink {
 
     public static void open(Location location) {
         try {
-            FileObject fo = FileUtil.toFileObject(location.file());
+            // tool output paths are often relative or carry '..'; toFileObject
+            // silently returns null for non-normalized files (a dead hyperlink)
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(location.file()));
             if (fo == null) {
                 return;
             }

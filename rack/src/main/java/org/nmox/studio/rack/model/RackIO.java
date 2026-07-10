@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.AtomicFiles;
 import org.nmox.studio.rack.devices.DeviceType;
 
 /**
@@ -95,7 +96,9 @@ public final class RackIO {
     }
 
     public static void save(Rack rack, File file) throws IOException {
-        Files.writeString(file.toPath(), toJson(rack).toString(2), StandardCharsets.UTF_8);
+        // atomic swap: mtime pollers and external readers of .nmoxrack.json
+        // must never observe a truncated patch
+        AtomicFiles.writeString(file.toPath(), toJson(rack).toString(2));
     }
 
     public static void load(Rack rack, File file) throws IOException {

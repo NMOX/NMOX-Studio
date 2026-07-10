@@ -41,6 +41,8 @@ public final class WorkspaceFilePulse {
         }
         running = true;
         long interval = Math.max(200, intervalMs);
+        // one long-lived sleep loop with its own start/stop lifecycle — a
+        // dedicated daemon thread, not a shared-pool slot held for hours
         thread = new Thread(() -> {
             while (running) {
                 tick();

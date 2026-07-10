@@ -158,7 +158,10 @@ files, RPC URLs never serialized; DialogDisplayer/NotificationDisplayer,
 never JOptionPane; prefs values under 8KB, lists as one-entry-per-item;
 coverage floors on the testable surface with pure-Swing excluded by name
 with reasons; rack tests drain the EDT *and* the router
-(`awaitRouterIdle`) before asserting.
+(`awaitRouterIdle`) before asserting; workspace files are written atomically —
+temp sibling + `ATOMIC_MOVE` via core `AtomicFiles`, never truncate-then-write
+(v1.39.0); file create/rename/delete goes through DataObject/FileObject so open
+editors follow (v1.39.0).
 
 **Failure patterns to grep for in new code** — every bug class that
 actually shipped, once: constructor-attached listeners on TopComponents

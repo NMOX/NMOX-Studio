@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.AtomicFiles;
 
 /**
  * Structured access to a project's package.json for the config editor.
@@ -37,7 +38,9 @@ public final class PackageJsonFile {
     }
 
     public void save() throws IOException {
-        Files.writeString(file.toPath(), json.toString(2) + "\n", StandardCharsets.UTF_8);
+        // atomic swap: npm/watchers reading package.json mid-save must see
+        // the old document or the new one, never a truncated file
+        AtomicFiles.writeString(file.toPath(), json.toString(2) + "\n");
     }
 
     // ---- identity fields ----

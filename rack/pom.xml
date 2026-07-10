@@ -136,6 +136,15 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- masterfs registers the disk URLMapper, so FileUtil.toFileObject
+             resolves real files in headless tests (FileOps' platform path);
+             at runtime the platform cluster provides it -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

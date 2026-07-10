@@ -248,7 +248,8 @@ public final class DbStudioTopComponent extends TopComponent {
         };
         attachRackListener();
         attachServicesListener();
-        reloadWorkspace();
+        // no workspace read here: the constructor runs during window-system
+        // deserialization; componentOpened owns the initial load
     }
 
     // ---- left: connections tree + toolbar ----
@@ -1807,7 +1808,12 @@ public final class DbStudioTopComponent extends TopComponent {
         offerEnvConnection();
         if (isOpened()) {
             restartWorkspaceWatcher(); // the project dir may have changed
-            offerDockerConnections();
+            // hidden tabs never probe (boot spawns zero processes — the
+            // v1.38.0 law); componentShowing probes fresh when the hold
+            // is empty, so a reload behind a hidden tab still offers on show
+            if (isShowing()) {
+                offerDockerConnections();
+            }
         }
     }
 
@@ -1866,6 +1872,9 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /** The initial load happened; re-aims arrive via the rack listener. */
+    private boolean loadedOnce;
+
     @Override
     public void componentOpened() {
         if (!rackListenerAttached) {
@@ -1873,6 +1882,12 @@ public final class DbStudioTopComponent extends TopComponent {
         }
         attachServicesListener();
         attachManifestListener();
+        if (!loadedOnce) {
+            // first open after construction: exactly one initial load. The
+            // rack listener only reloads on re-aims, so nothing else does it.
+            loadedOnce = true;
+            reloadWorkspace();
+        }
         restartWorkspaceWatcher();
         refreshServicesBranch(); // the Services list may have changed while closed
         // the Docker offer probe waits for componentShowing — a default-open

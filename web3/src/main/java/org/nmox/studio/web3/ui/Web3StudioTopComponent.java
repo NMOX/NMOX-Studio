@@ -259,7 +259,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
         };
         attachRackListener();
-        reloadWorkspace();
+        // no workspace read here: the constructor runs during window-system
+        // deserialization; componentOpened owns the initial load
     }
 
     // ---- toolbar -----------------------------------------------------------
@@ -1613,10 +1614,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
     }
 
+    /** The initial load happened; re-aims arrive via the rack listener. */
+    private boolean loadedOnce;
+
     @Override
     public void componentOpened() {
         if (!rackListenerAttached) {
             attachRackListener();
+        }
+        if (!loadedOnce) {
+            // first open after construction: exactly one initial load, and it
+            // must precede the chain auto-connect (which reads the networks).
+            // rescan() inside stays showing-gated — hidden tabs still defer.
+            loadedOnce = true;
+            reloadWorkspace();
         }
         try {
             if (chainAutoConnect == null) {

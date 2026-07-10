@@ -92,6 +92,96 @@ second off a 7s boot in exchange for lazy-init complexity and real
 regression risk. **Verdict: won't fix until a profiler names the palette
 specifically** — the boot-smoke number says it isn't the bottleneck.
 
+## Open — deferred deliberately, with reasons (added v1.39.0)
+
+The v1.39.0 idiom review put five senior-RCP lenses on the codebase (Lookup/
+services/actions, window system, FileSystems/DataObjects, threading/platform
+utilities, module wiring). Twelve cheap-and-clearly-right fixes shipped; what
+follows is what the review *deliberately did not fix*.
+
+### 29. The rack IS the context system — not OpenProjects/actionsGlobalContext
+The platform models "the current project" as `OpenProjects` plus selection via
+`Utilities.actionsGlobalContext()`; NMOX models it as ONE globally aimed rack
+(`RackService.getRack().getProjectDir()`), read directly by every module. Two
+consequences the audit named: project actions (PWA Kit, Standards Kit, Classic
+Kit, Switch Project…) are always-enabled and scold at runtime instead of
+auto-disabling via context, and our TopComponents are Lookup-opaque (none call
+`associateLookup`, so Navigator/Save/context actions can't see their
+selection — NpmExplorer even documents reading the registry by hand because
+its own lookup is empty). **Deferred as identity, not accident**: one aimed
+rack shared by every tool is the product's core metaphor, and the migration
+(publish the aim as a `Project` in a global Lookup, context-sensitive action
+registrations, per-TC lookups) is a coordinated sprint across all ten
+TopComponents, not a cleanup. Do it as its own release or not at all.
+
+### 30. `catch (LinkageError)` as the soft-dependency mechanism (~40 sites)
+project/infra/apiclient/web3/dbstudio/ui treat rack as optional by importing
+its concrete classes and catching `RuntimeException | LinkageError` around
+every call. It works and it is defensive — but the idiomatic shape is an
+interface published via `@ServiceProvider`, looked up with
+`Lookup.getDefault().lookup(...)`, branching on null. Catching classloader
+failures for control flow hides real breakage (a genuinely mismatched rack
+surfaces as a silently skipped feature). **Deferred**: converting means
+designing a rack facade interface and touching six modules; batch it with #29
+— they are the same surgery. Related hardening: suite-internal deps are
+spec-version only, so a mismatched rack *loads* and fails at call time;
+implementation-version dependencies would make the module loader refuse it
+up front (batch with ledger #20's version scheme).
+
+### 31. rack's six public packages have no OpenIDE-Module-Friends
+`model, devices, service, engine, projectstudio, docker` are world-exported;
+every actual consumer is a first-party sibling. Today that's harmless. The day
+an external plugin SDK ships, those packages become a public API we must
+version-support forever — and `rack.model` has zero external production
+importers at all (one test), so it may not need exporting once transitive
+signatures are checked. **Deferred with a tripwire**: MUST be narrowed to a
+friends list (and model possibly unexported) before any plugin story ships.
+
+### 32. DiagnosticsBus duplicates the platform's editor-hints/task-list plumbing
+Rack tools push diagnostics over a bespoke bus and editor draws its own
+squiggles (`RackSquiggler`); the platform's `HintsController`/TaskList would
+put the same findings in the standard Action Items window with standard
+navigation. **Deferred**: the bus works, is storm-law-tested, and the payoff
+is integration polish, not correctness. Candidate for an editor-intelligence
+sprint (pairs with the JS/TS lexer item #5).
+
+### 33. All seven studios live in the `editor` mode
+Documents opened later interleave with seven permanently-open tool tabs in one
+tab well; idiomatic RCP reserves `editor` for documents and docks tool windows
+in their own modes. A custom `studios` wsmode (plus a TopComponentGroup for
+the Docker/DB/Contract runtime cluster, and a look at whether three default-
+open explorer-side trees are two too many) is the direction. **Deferred**: the
+suite-tabs-first layout IS the discovery design (v1.29.0), and moving modes
+churns every user's persisted layout — do it deliberately, with migration,
+or not at all.
+
+### 34. Progress and EDT polish: ProgressHandle gaps, debounced saves on EDT
+DB Studio connects, infra cloud sync, and web3 artifact scans run multi-second
+work with status-bar text but no ProgressHandle (rack ops have faceplate LEDs
+— those are fine). The apiclient/infra autosave debounce timers fire on the
+EDT and write JSON synchronously (small files, sub-perceptible today — and
+now atomic, so torn reads are gone). **Deferred**: both are polish;
+wrap the three long ops in ProgressHandle and hop the debounce bodies to a
+module RP next time those files are open for feature work.
+
+### 35. No @OnStop seam — all shutdown work rides JVM hooks
+Blessed for what we use it for: process reaping must survive System.exit and
+SIGTERM, which skip @OnStop, so hooks strictly dominate there. But any FUTURE
+teardown that needs platform APIs still alive (flushing through NetBeans IO,
+keyring handles) has no home today. **Noted so the first such need adds a
+ModuleInstall/@OnStop rather than misusing a hook.**
+
+### 36. FileTreePanel remains a raw JTree over java.io.File
+A Nodes/BeanTreeView/ExplorerManager tree would give file-type icons, the
+platform file actions, and editor-synced CRUD for free. The v1.39.0 review
+took the correctness half (CRUD now routes through DataObject so open editors
+follow deletes/renames; hyperlink paths normalized); the UI half stays custom.
+Also here: kit wizards still raw-write possibly-open `index.html` (bounded —
+wire-in flows on files rarely open at that moment), and three mtime pollers
+(FileWatcher/ArtifactPulse/WorkspaceFilePulse) share a shape a `StampPoller`
+seam could unify. **Deferred**: the tree is careful (off-EDT, lazy, TCC-safe)
+and the rewrite is real work with visual-regression risk.
+
 ## Open — deferred deliberately, with reasons (added v1.38.1)
 
 ### 27. The Breakpoints window never lists DAP breakpoints

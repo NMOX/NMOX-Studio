@@ -81,6 +81,21 @@ class GraphIORoundTripTest {
     }
 
     @Test
+    @DisplayName("save swaps atomically: repeated saves leave only the design file, no temp siblings")
+    void saveLeavesNoTempSiblings(@TempDir Path dir) throws Exception {
+        // a torn or leftover temp file would be seen by external-edit
+        // watchers as a foreign write — the directory must stay clean
+        File file = dir.resolve(GraphIO.DEFAULT_FILENAME).toFile();
+        GraphIO.save(deployedDesign(), file);
+        GraphIO.save(deployedDesign(), file);
+
+        try (var files = java.nio.file.Files.list(dir)) {
+            assertThat(files.map(p -> p.getFileName().toString()))
+                    .containsExactly(GraphIO.DEFAULT_FILENAME);
+        }
+    }
+
+    @Test
     @DisplayName("A corrupt design file is copied to .bak BEFORE the empty fallback")
     void corruptFileIsBackedUpBeforeEmptyFallback(@TempDir Path dir) throws Exception {
         File file = dir.resolve(GraphIO.DEFAULT_FILENAME).toFile();

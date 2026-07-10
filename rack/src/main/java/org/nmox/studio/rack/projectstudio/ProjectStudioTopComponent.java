@@ -138,8 +138,11 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 + " diff and search light up in the Projects view");
         asProject.addActionListener(e -> {
             try {
+                // toFileObject requires a normalized file; a project dir picked
+                // via dialog or persisted state may carry '..' or a symlink
                 org.openide.filesystems.FileObject dir = org.openide.filesystems.FileUtil
-                        .toFileObject(rack.getProjectDir());
+                        .toFileObject(org.openide.filesystems.FileUtil
+                                .normalizeFile(rack.getProjectDir()));
                 org.netbeans.api.project.Project project =
                         org.netbeans.api.project.ProjectManager.getDefault().findProject(dir);
                 if (project != null) {

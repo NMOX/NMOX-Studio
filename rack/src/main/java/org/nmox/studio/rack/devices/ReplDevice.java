@@ -302,8 +302,7 @@ public class ReplDevice extends RackDevice {
 
     /** {@link #installArgv(String, boolean)} for the OS this JVM runs on. */
     static List<String> installArgv(String command) {
-        return installArgv(command, System.getProperty("os.name", "")
-                .toLowerCase(Locale.ROOT).contains("win"));
+        return installArgv(command, org.openide.util.Utilities.isWindows());
     }
 
     /**

@@ -15,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.json.JSONObject;
 import org.nmox.studio.core.process.ToolLocator;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * The engine room: an asynchronous wrapper over the real docker CLI.
@@ -27,9 +29,8 @@ import org.nmox.studio.core.process.ToolLocator;
  * output; the parsers are pure static functions, tested on canned
  * output without a daemon.
  */
+@ServiceProvider(service = DockerClient.class)
 public final class DockerClient {
-
-    private static final DockerClient INSTANCE = new DockerClient();
 
     private final ExecutorService pool = Executors.newFixedThreadPool(4, r -> {
         Thread t = new Thread(r, "nmox-docker");
@@ -40,7 +41,7 @@ public final class DockerClient {
     /** The CLI to invoke — "docker" in production, overridable for tests. */
     private final String executable;
 
-    private DockerClient() {
+    public DockerClient() {
         this("docker");
     }
 
@@ -50,7 +51,13 @@ public final class DockerClient {
     }
 
     public static DockerClient getDefault() {
-        return INSTANCE;
+        DockerClient client = Lookup.getDefault().lookup(DockerClient.class);
+        return client != null ? client : Holder.FALLBACK;
+    }
+
+    /** Outside the platform (plain unit tests) Lookup may be empty. */
+    private static final class Holder {
+        static final DockerClient FALLBACK = new DockerClient();
     }
 
     // ---- raw execution ----
