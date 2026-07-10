@@ -11,4 +11,18 @@
             <file name="org-nmox-studio-apiclient-search-ApiRequestSearchProvider.instance"/>
         </folder>
     </folder>
+    <!-- Menu accelerators come from Keymaps-profile shadows, not from
+         Shortcuts/ registrations (the v1.38.1 finding, debt #28): without
+         this the Window menu shows "API Studio" with no ⌥⌘8 beside it.
+         Same action as the Shortcuts/DA-8 binding on the TopComponent —
+         behavior is unchanged, the chord just becomes discoverable. The
+         chord is audited free of platform claims by WindowShortcutsTest,
+         which also pins this shadow against the registration. -->
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <file name="DA-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

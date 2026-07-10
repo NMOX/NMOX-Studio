@@ -36,6 +36,21 @@ jobs:
         run: |
           mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom \
             -DoutputFormat=json -DoutputName=bom
+          # The vendored js-debug adapter has no Maven coordinate, so the
+          # aggregate BOM cannot see it (ledger 26). Append it by hand from
+          # the facts pinned in editor/src/main/release/jsdebug/NOTICE so
+          # the SBOM stops having a blind spot. Bump BOTH on upgrades.
+          jq '.components += [{
+                "type": "library",
+                "name": "vscode-js-debug",
+                "version": "1.117.0",
+                "purl": "pkg:github/microsoft/vscode-js-debug@v1.117.0",
+                "licenses": [{"license": {"id": "MIT"}}],
+                "hashes": [{"alg": "SHA-256",
+                  "content": "ad8d04ede9d4b75cc290fd5438a65047a06f786d04f604b6112485b36f090772"}],
+                "description": "Vendored DAP server (editor/src/main/release/jsdebug); not resolved by Maven, bumped manually per NOTICE"
+              }]' target/bom.json > target/bom-full.json
+          mv target/bom-full.json target/bom.json
           cp target/bom.json "NMOX-Studio-${{ needs.version.outputs.version }}-sbom.json"
       - name: Portable zip
         run: |

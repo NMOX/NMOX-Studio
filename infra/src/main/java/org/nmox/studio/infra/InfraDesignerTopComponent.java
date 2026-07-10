@@ -83,12 +83,23 @@ public final class InfraDesignerTopComponent extends TopComponent {
     /** Once-per-open attach/detach of our graph + rack listeners (tested core). */
     private final ListenerLifecycle listenerLifecycle =
             new ListenerLifecycle(this::attachListeners, this::detachListeners);
-    /** Warn-once guard for autosave failures — reset by the next success. */
+    /**
+     * Warn-once guard for autosave failures — reset by the next
+     * success. Save-lane-thread confined: only writeSnapshot touches it.
+     */
     private boolean saveFailureNotified;
 
     /** Off-EDT file stats for the external-edit check. */
     private static final org.openide.util.RequestProcessor RP =
             new org.openide.util.RequestProcessor("Infra Designer", 1);
+    /**
+     * Design writes ride their own single-throughput lane, NOT
+     * {@link #RP} — RP carries multi-second cloud syncs, and a close
+     * flush must never queue behind one (debt #16; the careful parts
+     * are documented on the lane class).
+     */
+    private static final org.nmox.studio.infra.model.SaveLane SAVES =
+            new org.nmox.studio.infra.model.SaveLane("Infra Designer saves");
     /** Discriminates our own .nmoxinfra.json writes from foreign edits. */
     private final org.nmox.studio.infra.model.DesignSync designSync =
             new org.nmox.studio.infra.model.DesignSync();
@@ -398,9 +409,27 @@ public final class InfraDesignerTopComponent extends TopComponent {
             return;
         }
         runExclusive(syncButton, () -> {
-            var outcomes = client.syncAll(syncing, graph, provider ->
+            // a three-provider sync can run many seconds: a real
+            // ProgressHandle in the status line, ticking per provider
+            // (debt #34). No Cancellable — syncAll has no interrupt seam.
+            org.netbeans.api.progress.ProgressHandle progress =
+                    org.netbeans.api.progress.ProgressHandle.createHandle("Syncing "
+                            + syncing.stream()
+                                    .map(org.nmox.studio.infra.api.CloudProvider::displayName)
+                                    .collect(java.util.stream.Collectors.joining("/"))
+                            + "…");
+            progress.start();
+            java.util.Map<org.nmox.studio.infra.api.CloudProvider,
+                    org.nmox.studio.infra.api.DigitalOceanClient.SyncOutcome> outcomes;
+            try {
+                outcomes = client.syncAll(syncing, graph, provider -> {
+                    progress.progress("Syncing from " + provider.displayName() + "…");
                     SwingUtilities.invokeLater(() -> org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Syncing from " + provider.displayName() + "…")));
+                            .setStatusText("Syncing from " + provider.displayName() + "…"));
+                });
+            } finally {
+                progress.finish();
+            }
             SwingUtilities.invokeLater(() -> {
                 canvas.fit();
                 save();
@@ -576,6 +605,10 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     private void load() {
+        // the read below must see every queued write — an A→B→A re-aim
+        // bounce could otherwise read A's file before A's last save lands
+        // (bounded ms drain; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         loading = true;
         try {
             File file = designFile();
@@ -605,10 +638,27 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * EDT: the graph is EDT-confined, so the JSON snapshot is taken here
+     * and only the disk write rides the save lane (debt #16). The design
+     * file binds NOW — a project re-aim between the debounce fire and
+     * the write must not retarget the edits.
+     */
     private void save() {
+        File file = designFile();
+        String json = GraphIO.toJson(graph).toString(2);
+        SAVES.save(() -> writeSnapshot(file, json));
+    }
+
+    /**
+     * Save lane only: the write and its self-stamp are ONE task (the
+     * same atomic-rename write GraphIO.save performs), so a lane-ordered
+     * external-edit stat can never see the write without the stamp.
+     */
+    private void writeSnapshot(File file, String json) {
         try {
-            GraphIO.save(graph, designFile());
-            designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
+            org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
+            designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(file));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed autosave never interrupts editing — but a chronically
@@ -634,9 +684,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     /**
      * The 2-second foreign-change check, EDT-side but I/O-free: the
-     * stat runs on {@link #RP}, the verdict lands back on the EDT.
-     * Checks never overlap; a closed tab never checks (the timer only
-     * runs between componentOpened and componentClosed).
+     * stat rides the SAVE lane (not {@link #RP}), so it queues behind
+     * any write+stamp pair it may have raced — our own save mid-landing
+     * can never stat as a foreign version (debt #16). The verdict lands
+     * back on the EDT. Checks never overlap; a closed tab never checks
+     * (the timer only runs between componentOpened and componentClosed).
      */
     private void checkExternalEdit() {
         if (externalStatInFlight) {
@@ -644,7 +696,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
         externalStatInFlight = true;
         File file = designFile();
-        RP.post(() -> {
+        SAVES.classify(() -> {
             org.nmox.studio.infra.model.DesignSync.Stamp stamp =
                     org.nmox.studio.infra.model.DesignSync.Stamp.of(file);
             SwingUtilities.invokeLater(() -> {
@@ -772,6 +824,10 @@ public final class InfraDesignerTopComponent extends TopComponent {
             saveDebounce.stop();
             save();
         }
+        // a write may sit queued on the lane even when the timer isn't
+        // running (a debounce that fired moments ago) — drain it before
+        // the designer is torn down (bounded; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         listenerLifecycle.close();
     }
 }

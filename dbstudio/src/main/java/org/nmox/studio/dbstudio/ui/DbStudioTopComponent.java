@@ -131,6 +131,15 @@ public final class DbStudioTopComponent extends TopComponent {
     /** The module's worker pool — all engine calls run here, never on the EDT. */
     static final RequestProcessor RP = new RequestProcessor("DB Studio", 3);
 
+    /**
+     * Workspace writes ride their own single-throughput lane, NOT
+     * {@link #RP} — RP's throughput 3 could interleave two writes, and
+     * a close flush must never queue behind a long query (debt #16; the
+     * careful parts are documented on the lane class).
+     */
+    private static final org.nmox.studio.dbstudio.io.SaveLane SAVES =
+            new org.nmox.studio.dbstudio.io.SaveLane("DB Studio workspace saves");
+
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
     private static final Color ACCENT = new Color(0x1D, 0x9E, 0x75);
@@ -1103,9 +1112,15 @@ public final class DbStudioTopComponent extends TopComponent {
                         if (!batch.contains(workspaceFile.toPath())) {
                             return;
                         }
-                        org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
-                                org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
-                        SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
+                        // the stat rides the save lane, so it queues behind
+                        // any write+stamp pair this report may have raced —
+                        // our own save mid-landing never stats as a foreign
+                        // version (debt #16)
+                        SAVES.classify(() -> {
+                            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
+                                    org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
+                            SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
+                        });
                     });
         } catch (RuntimeException | LinkageError rackUnavailable) {
             return; // no rack (tests, stripped platform): no watcher
@@ -1161,7 +1176,10 @@ public final class DbStudioTopComponent extends TopComponent {
         deferredExternalStamp = null;
         File workspaceFile = new File(projectDir(),
                 org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
-        RP.post(() -> {
+        // same lane as the watcher's stat: ordered behind our own writes,
+        // so the just-completed save this re-check anticipates has landed
+        // WITH its stamp by the time the stat runs (debt #16)
+        SAVES.classify(() -> {
             org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
                     org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
             SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
@@ -1267,15 +1285,29 @@ public final class DbStudioTopComponent extends TopComponent {
         }
         status("Connecting to " + spec.name() + "…", Color.GRAY);
         RP.post(() -> {
-            DbBackend backend = backendFor(spec);
+            // a remote engine can take seconds to answer: a real
+            // ProgressHandle in the status line, not just label text
+            // (debt #34). No Cancellable — backend.cancel() aborts a
+            // running statement, not a connect in flight, so a cancel
+            // button here would be a lie.
+            org.netbeans.api.progress.ProgressHandle progress =
+                    org.netbeans.api.progress.ProgressHandle.createHandle(
+                            "Connecting to " + spec.name() + "…");
+            progress.start();
+            DbBackend backend;
             String error;
             List<TableInfo> containers;
-            if (backend == null) { // a Services connection that just left the explorer
-                error = "Connection no longer exists in the Services window";
-                containers = List.of();
-            } else {
-                error = backend.open();
-                containers = error == null ? backend.listContainers() : List.of();
+            try {
+                backend = backendFor(spec);
+                if (backend == null) { // a Services connection that just left the explorer
+                    error = "Connection no longer exists in the Services window";
+                    containers = List.of();
+                } else {
+                    error = backend.open();
+                    containers = error == null ? backend.listContainers() : List.of();
+                }
+            } finally {
+                progress.finish();
             }
             SwingUtilities.invokeLater(() -> {
                 connecting.remove(spec.id());
@@ -1765,6 +1797,10 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private void reloadWorkspace() {
+        // the read below must see every queued write — an A→B→A re-aim
+        // bounce could otherwise read A's file before A's last save lands
+        // (bounded ms drain; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         closeAllBackends();
         containerCache.clear();
         connecting.clear();
@@ -1817,15 +1853,33 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
+    /**
+     * EDT: the connection/history/saved lists are EDT-confined, so the
+     * JSON snapshot is taken here and only the disk write rides the
+     * save lane — the EDT never touches the disk (debt #16). There is
+     * no debounce in DB Studio (every change saves the moment it is
+     * made), but the write half gets the same off-EDT care.
+     */
     private void saveWorkspace() {
+        File file = new File(projectDir(), DbWorkspaceIO.FILENAME);
+        String json = DbWorkspaceIO.toJson(new DbWorkspaceIO.Workspace(
+                specs, persistedHistory, savedQueries));
+        SAVES.save(() -> writeSnapshot(file, json));
+    }
+
+    /**
+     * Save lane only: the write and its self-stamp are ONE task, so a
+     * lane-ordered watcher verdict can never see the write without the
+     * stamp.
+     */
+    private void writeSnapshot(File file, String json) {
         try {
-            File dir = projectDir();
-            DbWorkspaceIO.save(dir, new DbWorkspaceIO.Workspace(
-                    specs, persistedHistory, savedQueries));
-            externalEdits.recordOwn(org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(
-                    new File(dir, DbWorkspaceIO.FILENAME)));
+            org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
+            externalEdits.recordOwn(
+                    org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(file));
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed save never interrupts editing — but never lose work silently
@@ -1916,6 +1970,10 @@ public final class DbStudioTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
+        // a write may sit queued on the save lane (every edit saves the
+        // moment it is made) — drain it before the studio is torn down
+        // (bounded; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         // a closed tab reacts to nothing: watcher and manifest listener go
         stopWorkspaceWatcher();
         detachManifestListener();

@@ -96,6 +96,76 @@ public final class Rack {
         LIVE.add(this);
     }
 
+    // ---- interactive stop: Stop All and the project-switch guard ----
+
+    /**
+     * Bounded workers for the interactive stop paths. {@link RackDevice#panic()}
+     * escalates TERM → 1.5s grace → KILL and can block ~2.5s per stubborn
+     * process, which is exactly why the EDT must never run it directly
+     * (ledger item 15); four workers keep a rack full of stubborn servers
+     * from dying strictly serially. The JVM shutdown reaper above
+     * deliberately does NOT use this pool: hooks are the last code that
+     * runs, so its panics must stay synchronous — pool threads would never
+     * get their turn.
+     */
+    private static final org.openide.util.RequestProcessor STOP_RP =
+            new org.openide.util.RequestProcessor("Rack Stop", 4, true);
+
+    /** Double-fire guard: one Stop All pass at a time. */
+    private final java.util.concurrent.atomic.AtomicBoolean stopAllInFlight =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Stops every device without blocking the caller: each panic runs on
+     * a bounded worker, and {@code onAllStopped} (may be null) runs on the
+     * EDT once every device is dead. Returns false — and stops nothing —
+     * while a previous pass is still in flight, so a mashed Stop All
+     * button cannot pile up redundant kill passes.
+     */
+    public boolean stopAllAsync(Runnable onAllStopped) {
+        if (!stopAllInFlight.compareAndSet(false, true)) {
+            return false; // a pass is already killing everything
+        }
+        stopAsync(getDevices(), () -> {
+            stopAllInFlight.set(false);
+            if (onAllStopped != null) {
+                onAllStopped.run();
+            }
+        });
+        return true;
+    }
+
+    /**
+     * Stops the given devices on background workers; {@code onDone} (may
+     * be null) runs on the EDT only after every one of them is dead — the
+     * ordering the project-switch guard needs so the patch swap never
+     * races a dying dev server. An empty list still runs the callback.
+     */
+    public void stopAsync(List<RackDevice> toStop, Runnable onDone) {
+        List<RackDevice> doomed = List.copyOf(toStop);
+        if (doomed.isEmpty()) {
+            if (onDone != null) {
+                javax.swing.SwingUtilities.invokeLater(onDone);
+            }
+            return;
+        }
+        java.util.concurrent.atomic.AtomicInteger remaining =
+                new java.util.concurrent.atomic.AtomicInteger(doomed.size());
+        for (RackDevice d : doomed) {
+            STOP_RP.post(() -> {
+                try {
+                    d.panic();
+                } catch (RuntimeException ignored) {
+                    // best effort, like the reaper: one failing device must
+                    // not leave the rest unstopped or the callback unrun
+                }
+                if (remaining.decrementAndGet() == 0 && onDone != null) {
+                    javax.swing.SwingUtilities.invokeLater(onDone);
+                }
+            });
+        }
+    }
+
     /** Test seam: whether the shutdown reaper still tracks this rack. */
     static boolean reaperTracks(Rack rack) {
         return LIVE.contains(rack);

@@ -80,6 +80,13 @@ public final class ApiClientTopComponent extends TopComponent {
     // sends, rebind reads, and registry pokes are short bounded jobs: they
     // share one small pool instead of a raw thread per click
     private static final RequestProcessor RP = new RequestProcessor("API Studio", 2);
+    /**
+     * Workspace writes ride their own single-throughput lane, NOT
+     * {@link #RP} — RP's throughput 2 could interleave two writes
+     * (debt #16; the careful parts are documented on the lane class).
+     */
+    private static final org.nmox.studio.apiclient.api.SaveLane SAVES =
+            new org.nmox.studio.apiclient.api.SaveLane("API Studio workspace saves");
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
@@ -639,6 +646,10 @@ public final class ApiClientTopComponent extends TopComponent {
 
     /** (Re)loads the bound project's workspace in place — EDT. */
     private void loadWorkspace() {
+        // the read must see every queued write — a reload racing a save
+        // still in flight on the lane must not resurrect the older file
+        // (bounded ms drain; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         applyWorkspace(readWorkspace(boundDir()), boundDir());
     }
 
@@ -669,14 +680,31 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
+    /**
+     * EDT: snapshots the workspace to JSON here (the model is
+     * EDT-confined) and hands the write to the save lane — the EDT never
+     * touches the disk (debt #16). The target binds NOW to the bound
+     * dir, not the live rack aim: during a re-aim the debounced edits
+     * still belong to the project they were made in.
+     */
     private void save() {
+        File target = new File(boundDir(), WorkspaceIO.FILENAME);
+        String json = WorkspaceIO.toJson(workspace);
+        SAVES.save(() -> writeSnapshot(target, json));
+    }
+
+    /**
+     * Save lane only: the write and its self-stamp are ONE task, so a
+     * pulse verdict (also lane-ordered — see SaveLane.classify) can
+     * never observe the write without the stamp.
+     */
+    private void writeSnapshot(File target, String json) {
         try {
-            // the bound dir, not the live rack aim: during a re-aim the
-            // debounced edits still belong to the project they were made in
-            WorkspaceIO.save(boundDir(), workspace);
-            selfWrites.noteSync(new File(boundDir(), WorkspaceIO.FILENAME));
+            org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), json);
+            selfWrites.noteSync(target);
             saveFailureNotified = false;
         } catch (Exception ex) {
             // a failed autosave never interrupts editing — but a chronically
@@ -761,6 +789,10 @@ public final class ApiClientTopComponent extends TopComponent {
         }
         saveDebounce.stop();
         save();
+        // the queued write must land before the window system forgets us —
+        // a bounded synchronous drain is the simplest correct close flush
+        // (the lane only carries ms-scale local writes; see SaveLane.flush)
+        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
     }
 
     // ---- following the rack's aim ----
@@ -789,6 +821,9 @@ public final class ApiClientTopComponent extends TopComponent {
         if (saveDebounce.isRunning()) {
             saveDebounce.stop();
             save(); // boundDir() is still the old project's — see save()
+            // an A→B→A bounce reads A's file below: the read must see the
+            // write we just queued, so drain the lane before dispatching it
+            SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         }
         RP.post(() -> {
             Workspace loaded = readWorkspace(aimed);
@@ -883,31 +918,43 @@ public final class ApiClientTopComponent extends TopComponent {
 
     /**
      * Pulse thread: the workspace file's stamp moved. Our own saves are
-     * filtered by the tracker (re-checked on the EDT so a save racing
-     * the tick never counts). Edits pending in the save debounce are
-     * never clobbered silently — those get the Reload? balloon instead.
+     * filtered by the tracker, and the authoritative re-check rides the
+     * save lane — it queues BEHIND any write+stamp pair the tick may
+     * have raced, so a save mid-landing never counts as foreign (writes
+     * used to run on the EDT, where the EDT re-check alone sufficed;
+     * off-EDT writes need the lane ordering — debt #16). Edits pending
+     * in the save debounce are never clobbered silently — those get the
+     * Reload? balloon instead.
      */
     private void onWorkspaceFileChanged(long mtime, long size) {
         if (!selfWrites.isForeign(mtime, size)) {
             return;
         }
-        SwingUtilities.invokeLater(() -> {
+        SAVES.classify(() -> {
             if (!selfWrites.isForeign(mtime, size)) {
-                return; // our save landed between the tick and this dispatch
+                return; // our own save, caught mid-landing by the tick
             }
-            if (saveDebounce.isRunning()) {
-                balloon(WorkspaceIO.FILENAME + " changed on disk — Reload?",
-                        "You have unsaved edits; click to reload from disk and discard them",
-                        false, e -> {
-                            saveDebounce.stop();
-                            loadWorkspace();
-                        });
-            } else {
-                loadWorkspace();
-                balloon("Reloaded " + WorkspaceIO.FILENAME,
-                        "Picked up changes made outside the studio", true, null);
-            }
+            SwingUtilities.invokeLater(() -> onForeignWorkspaceEdit(mtime, size));
         });
+    }
+
+    /** EDT, after the lane-ordered verdict said "foreign": react once. */
+    private void onForeignWorkspaceEdit(long mtime, long size) {
+        if (!selfWrites.isForeign(mtime, size)) {
+            return; // our save landed between the verdict and this dispatch
+        }
+        if (saveDebounce.isRunning()) {
+            balloon(WorkspaceIO.FILENAME + " changed on disk — Reload?",
+                    "You have unsaved edits; click to reload from disk and discard them",
+                    false, e -> {
+                        saveDebounce.stop();
+                        loadWorkspace();
+                    });
+        } else {
+            loadWorkspace();
+            balloon("Reloaded " + WorkspaceIO.FILENAME,
+                    "Picked up changes made outside the studio", true, null);
+        }
     }
 
     /** Balloons, the Contract Studio shape — plus an optional click action. */

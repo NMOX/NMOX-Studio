@@ -329,12 +329,11 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
-        if (!stopLiveForSwitch(dir)) {
-            return; // user chose to stay
-        }
-        aimed = true;
-        addRecentProject(dir);
-        getRack().setProjectDir(dir);
+        guardedSwitch(dir, () -> {
+            aimed = true;
+            addRecentProject(dir);
+            getRack().setProjectDir(dir);
+        });
     }
 
     /**
@@ -346,11 +345,10 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
-        if (!stopLiveForSwitch(dir)) {
-            return;
-        }
-        aimed = true;
-        getRack().setProjectDir(dir);
+        guardedSwitch(dir, () -> {
+            aimed = true;
+            getRack().setProjectDir(dir);
+        });
     }
 
     /**
@@ -365,11 +363,19 @@ public class RackService {
      * mounts (and lingers half-aimed when there is no patch). Name what
      * is running and ask; on consent, stop it cleanly BEFORE the swap so
      * both the patch and the no-patch paths end in the same state.
+     *
+     * <p>The confirm dialog stays where it always was, but the stops run
+     * on background workers — panic() can block ~2.5s per stubborn device
+     * and this path is an EDT path (ledger item 15) — and {@code proceed}
+     * runs on the EDT only in the completion callback, so the swap still
+     * never races a dying dev server. With nothing live (or re-aiming the
+     * same project) the switch completes synchronously, exactly as before.
      */
-    private boolean stopLiveForSwitch(File newDir) {
+    private void guardedSwitch(File newDir, Runnable proceed) {
         Rack r = getRack();
         if (newDir.equals(r.getProjectDir())) {
-            return true; // re-aiming the same project threatens nothing
+            proceed.run(); // re-aiming the same project threatens nothing
+            return;
         }
         List<org.nmox.studio.rack.model.RackDevice> live = new ArrayList<>();
         for (org.nmox.studio.rack.model.RackDevice d : r.getDevices()) {
@@ -378,7 +384,8 @@ public class RackService {
             }
         }
         if (live.isEmpty()) {
-            return true;
+            proceed.run();
+            return;
         }
         StringBuilder names = new StringBuilder();
         for (org.nmox.studio.rack.model.RackDevice d : live) {
@@ -391,12 +398,19 @@ public class RackService {
         String message = names + (live.size() == 1 ? " is" : " are") + " still running in "
                 + oldName + ".\nStop and switch to " + newDir.getName() + "?";
         if (!switchConfirmer.test(message)) {
-            return false;
+            return; // user chose to stay
         }
-        for (org.nmox.studio.rack.model.RackDevice d : live) {
-            d.panic();
+        status("Stopping " + live.size() + (live.size() == 1 ? " tool…" : " tools…"));
+        r.stopAsync(live, proceed);
+    }
+
+    /** Best-effort status line; unavailable in plain unit tests. */
+    private static void status(String text) {
+        try {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(text);
+        } catch (RuntimeException | LinkageError ignored) {
+            // status line unavailable (tests, stripped platform)
         }
-        return true;
     }
 
     private boolean askStopLive(String message) {

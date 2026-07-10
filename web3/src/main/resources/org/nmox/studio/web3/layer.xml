@@ -14,4 +14,18 @@
             <file name="org-nmox-studio-web3-search-Web3SearchProvider.instance"/>
         </folder>
     </folder>
+    <!-- Menu accelerators come from Keymaps-profile shadows, not from
+         Shortcuts/ registrations (the v1.38.1 finding, debt #28): without
+         this the Window menu shows "Contract Studio" with no ⌥⌘6 beside
+         it. Same action as the Shortcuts/DA-6 binding on the TopComponent
+         — behavior is unchanged, the chord just becomes discoverable. The
+         chord is audited free of platform claims by WindowShortcutsTest,
+         which also pins this shadow against the registration. -->
+    <folder name="Keymaps">
+        <folder name="NetBeans">
+            <file name="DA-6.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-web3-ui-Web3StudioTopComponent.instance"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

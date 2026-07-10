@@ -121,6 +121,10 @@
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <!-- the Workbench ⌥⌘0 accelerator shadow (debt #28) -->
+                            <OpenIDE-Module-Layer>org/nmox/studio/project/layer.xml</OpenIDE-Module-Layer>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
