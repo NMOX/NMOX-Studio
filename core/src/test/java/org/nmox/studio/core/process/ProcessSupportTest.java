@@ -56,20 +56,58 @@ class ProcessSupportTest {
 
     @Test
     @DisplayName("timeout kills grandchildren holding the pipe, not just the shell")
-    @Timeout(15)
+    @Timeout(25)
     void shouldKillGrandchildHoldingPipeOnTimeout() throws Exception {
         // The Linux CI failure mode: a shell that SPAWNS its command (dash;
         // any `cmd &`) dies on destroyForcibly while the grandchild keeps the
         // pipe's write end open — the drains never see EOF. `sleep 60 & wait`
         // forces that shape on every OS; the descendant sweep must clear it.
+        //
+        // On Windows the shell is Git Bash, whose fork emulation takes most
+        // of a second on a cold runner: with a 500ms deadline the kill fires
+        // BEFORE the grandchild exists — a different shape than this test
+        // means to pin (grandchild alive and holding the pipe at kill time).
+        // A longer deadline there lets the tree finish being born first; the
+        // elapsed bound still catches a broken sweep (blocked drains cost
+        // 2×5s on top of the deadline).
+        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+        long deadlineMs = windows ? 3_000 : 500;
+        java.util.Set<Long> sleepsBefore = livingSleepPids();
+
         long start = System.nanoTime();
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                List.of("sh", "-c", "sleep 60 & wait"), null, Duration.ofMillis(500));
+                List.of("sh", "-c", "sleep 60 & wait"), null, Duration.ofMillis(deadlineMs));
         long elapsedMs = (System.nanoTime() - start) / 1_000_000;
 
         assertThat(r.timedOut()).isTrue();
         assertThat(r.exitCode()).isEqualTo(-1);
-        assertThat(elapsedMs).isLessThan(10_000);
+        assertThat(elapsedMs).isLessThan(deadlineMs + 9_500);
+
+        // The orphan guarantee, asserted directly: no sleep grandchild may
+        // outlive the sweep. destroyForcibly is asynchronous, so poll briefly.
+        java.util.Set<Long> orphans = livingSleepPids();
+        orphans.removeAll(sleepsBefore);
+        long grace = System.nanoTime();
+        while (!orphans.isEmpty() && (System.nanoTime() - grace) < 3_000_000_000L) {
+            Thread.sleep(100);
+            orphans = livingSleepPids();
+            orphans.removeAll(sleepsBefore);
+        }
+        assertThat(orphans)
+                .as("sleep grandchildren still alive after killTree")
+                .isEmpty();
+    }
+
+    /** PIDs of live processes whose command names them "sleep". */
+    private static java.util.Set<Long> livingSleepPids() {
+        return ProcessHandle.allProcesses()
+                .filter(ph -> ph.info().command()
+                        .map(c -> c.replace('\\', '/'))
+                        .map(c -> c.substring(c.lastIndexOf('/') + 1))
+                        .map(name -> name.equals("sleep") || name.equals("sleep.exe"))
+                        .orElse(false))
+                .map(ProcessHandle::pid)
+                .collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new));
     }
 
     @Test
@@ -91,12 +129,16 @@ class ProcessSupportTest {
     @Test
     @DisplayName("workingDir is honored")
     void shouldRunInWorkingDir(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
+        // Comparing the shell's pwd output to the Java path breaks on two
+        // OSes for the same reason — the shell's spelling of the directory is
+        // not Java's: macOS prints /var for /private/var, and Git Bash on
+        // Windows prints its virtual /tmp mount for %TEMP%. Touching a marker
+        // file in the cwd proves workingDir was honored without ever
+        // comparing path strings.
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                List.of("sh", "-c", "pwd"), dir, Duration.ofSeconds(20));
+                List.of("sh", "-c", ": > cwd-marker"), dir, Duration.ofSeconds(20));
 
         assertThat(r.ok()).isTrue();
-        // /var vs /private/var on macOS — compare canonical paths
-        assertThat(new java.io.File(r.stdout().trim()).getCanonicalPath())
-                .isEqualTo(dir.getCanonicalPath());
+        assertThat(new java.io.File(dir, "cwd-marker")).exists();
     }
 }
