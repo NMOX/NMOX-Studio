@@ -156,9 +156,17 @@ class ReplDeviceTest {
             repl.applyState(Map.of("engine", "solidity"));
             String seeded = repl.getState().get("install");
             assertThat(seeded).contains("|");
+            // installCommand() wraps a compound seed in the CURRENT OS's
+            // shell (that's the feature), so the expected wrapper is decided
+            // here by an independent os.name probe, not the product's own
+            // Utilities.isWindows() — the raw seeded string must ride
+            // through either shell untouched.
+            boolean windows = System.getProperty("os.name", "")
+                    .toLowerCase(java.util.Locale.ROOT).contains("win");
             assertThat(repl.installCommand())
-                    .as("CI runs the mac/linux path; the shell gets the raw seeded string")
-                    .containsExactly("/bin/sh", "-lc", seeded);
+                    .as("the shell gets the raw seeded string")
+                    .containsExactly(windows ? "cmd" : "/bin/sh",
+                            windows ? "/c" : "-lc", seeded);
         } finally {
             repl.dispose();
         }
