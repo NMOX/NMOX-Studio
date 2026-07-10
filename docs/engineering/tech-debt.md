@@ -210,6 +210,23 @@ accelerators from Keymaps-profile shadows. Cosmetic, and fixing it means
 duplicating each registration into a keymap profile — deferred until someone
 actually reports missing them.
 
+## Open — deferred deliberately, with reasons (added v1.43.0)
+
+### 39. Browser debugging: a page's Web Workers sit paused, not undebugged
+Recon-proven (v1.43.0 transcripts): for `pwa-chrome` the page target's
+`startDebugging` arrives on the parent link and `DapProxy` splices it —
+but Web Worker targets arrive as further `startDebugging` reverse
+requests on the CHILD link, and a worker whose request is answered but
+never attached **never starts running** (verified live: zero worker
+messages in 8s, whether the proxy answers success or failure — there is
+no browser-side equivalent of `autoAttachChildProcesses: false` to
+suppress the target). Node children at least run undebugged (item 25);
+browser workers stall. Consequence: a page whose core logic lives in a
+worker will appear hung under "Debug in Chrome (breakpoints)". Same root
+cause as item 25 — the platform's single-session DAP client — and the
+same fix: the N-session client/multiplexer sprint. Recorded so the first
+"my page hangs in the debugger" report finds its reason.
+
 ## Open — deferred deliberately, with reasons (added v1.42.0)
 
 ### 37. Windows runs the tests, not the assembled-app probes
@@ -251,8 +268,9 @@ accepts N sessions) or the proxy synthesizing multiple pseudo-clients
 and multiplexing their UIs — the second is a sprint, not a patch.
 **Deferred**: single-target debugging is the overwhelmingly common case,
 and the current behaviour is "children don't break" rather than "the
-session hangs." Browser/Chrome debugging (same adapter, different launch
-type) hits the same ceiling and waits on the same fix.
+session hangs." Browser/Chrome debugging shipped in v1.43.0 on the same
+one-child splice; it hits the same ceiling, with the harsher worker
+consequence recorded as item 39.
 
 ### 26. Vendored js-debug is invisible to Dependabot and the SBOM
 `editor/src/main/release/jsdebug/` carries js-debug v1.117.0 (MIT, 2.5MB)

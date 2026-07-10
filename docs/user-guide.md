@@ -225,6 +225,31 @@ One limit worth knowing: a debug session follows one process. Child
 processes your program spawns keep running, undebugged, rather than
 pausing for an attach that never comes.
 
+### Debugging in the browser
+
+Browser-side JavaScript debugs the same way: right-click an `.html`,
+`.js`, or `.ts` file → **Debug in Chrome (breakpoints)** and the IDE
+launches Chrome (or Edge/Chromium — whichever is installed) at your
+page. Breakpoints set in the editor stop the code running *in the
+browser*, with the same stack, variables, and stepping.
+
+![A debug session running against Chrome: breakpoints set on both app.js lines, the debugger toolbar live, Output and Breakpoints panes open](images/debug-chrome.png)
+
+Where the browser goes, most-live source first: if a rack serve device
+(IGNITION, NPM dev server, …) is already announcing a URL for the
+project, that page is what opens — breakpoints bind inside the site you
+are actually running, dev-server transforms and all. With no live
+server, an `.html` file opens directly from disk; a bare script with no
+server has no page to load it, and the status line says so instead of
+guessing. The browser runs with a fresh throwaway profile — your real
+Chrome stays untouched — and stopping the session closes it completely.
+
+One browser-specific limit: a page's **Web Workers pause** under the
+debugger rather than running undebugged (the session can follow only
+the page itself). A page whose core logic lives in a worker will appear
+stuck while debugging; debug it with the worker code inlined or via
+INSPECTOR + chrome://inspect instead.
+
 ## 6. The studios
 
 ### Keyboard and screen-reader access

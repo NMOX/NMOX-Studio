@@ -44,6 +44,27 @@ class DebugTrustGateTest {
     }
 
     @Test
+    @DisplayName("the browser debug action gates on WorkspaceTrust before locating or spawning anything")
+    void shouldGateBrowserDebugOnWorkspaceTrust() throws Exception {
+        String source = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/editor/debug/BrowserDebugAction.java"),
+                StandardCharsets.UTF_8);
+
+        int trustCheck = source.indexOf("WorkspaceTrust.requestTrust");
+        assertThat(trustCheck)
+                .as("browser debug runs project code in a browser we spawned — it must ask")
+                .isGreaterThan(0);
+
+        // the gate comes before the browser probe AND before the launch;
+        // even BrowserLocator.find() must not run for an untrusted folder
+        for (String later : new String[] {"BrowserLocator.find()", "debugChrome(file"}) {
+            assertThat(source.indexOf(later))
+                    .as(later + " must come after the trust gate")
+                    .isGreaterThan(trustCheck);
+        }
+    }
+
+    @Test
     @DisplayName("the trusted root is the project root, not the file's folder")
     void shouldTrustAtProjectRoot(@TempDir Path dir) throws Exception {
         // a manifest at the root, the source nested below it

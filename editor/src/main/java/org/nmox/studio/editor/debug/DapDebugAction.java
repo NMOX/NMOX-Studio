@@ -199,7 +199,7 @@ public class DapDebugAction extends BaseAction {
      * without its console is debugging blind. Open Output and let it take the
      * tab it just created; the session's own selection wins from there.
      */
-    private static void showOutput() {
+    static void showOutput() {   // shared with BrowserDebugAction: same session, same blindness
         java.awt.EventQueue.invokeLater(() -> {
             org.openide.windows.TopComponent output =
                     org.openide.windows.WindowManager.getDefault()
@@ -213,7 +213,7 @@ public class DapDebugAction extends BaseAction {
 
     /** cwd = nearest ancestor holding a project manifest, so requires and
      *  node_modules resolve the way a terminal run from the root would. */
-    private static File projectRoot(File file) {
+    static File projectRoot(File file) {   // shared with BrowserDebugAction: webRoot = same root
         File root = file.getParentFile();
         for (File d = root; d != null; d = d.getParentFile()) {
             if (org.nmox.studio.rack.devices.ProjectInspector.hasProjectManifest(d)) {
@@ -244,7 +244,7 @@ public class DapDebugAction extends BaseAction {
         }
     }
 
-    private static FileObject fileOf(Document doc) {
+    static FileObject fileOf(Document doc) {   // shared with BrowserDebugAction
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
         if (sdp instanceof DataObject dataObject) {
             return dataObject.getPrimaryFile();

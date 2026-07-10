@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.43.0] — 2026-07-10
+
+Browser debugging. The v1.37.0 machinery — the vendored js-debug adapter
+behind the DapProxy multiplexer — learns the `pwa-chrome` launch, so
+breakpoints set in the IDE now stop JavaScript running in a real Chrome.
+Recon first, the v1.37.0 method: a scratch harness drove the real adapter
+against headless Chrome before any product code, and its transcript pinned
+the shape (one page-target `startDebugging` on the parent link, worker
+targets on the child link, the browser spawned as the adapter's direct
+child at `configurationDone`, a client disconnect alone killing every
+browser process — js-debug's `cleanUp: wholeBrowser` default, verified at
+zero processes 3s after disconnect).
+
+### Added
+- **"Debug in Chrome (breakpoints)"** on .html, .js, and .ts editor
+  context menus. URL selection, most-live first: a rack serve device
+  already announcing a URL for the project wins (exact project dir, then
+  containing dir for monorepo lanes); with no live server an .html file
+  opens as `file://` (js-debug maps file URLs against webRoot —
+  recon-verified); a bare script with no server gets an honest status
+  message instead of a guess. Chrome runs headed — the user watches the
+  page — with a fresh throwaway profile under the userdir cache (never
+  the real Chrome profile; deleted after the tree is confirmed dead).
+- **BrowserLocator** — the ToolLocator idiom for Chromium-family browsers:
+  Chrome, then Edge, then Chromium, per-OS install paths (mac
+  /Applications, Windows install roots from the env, Linux via the
+  augmented-PATH scan). None found → a status message naming what to
+  install, and nothing is ever spawned.
+- **RealChromeIntegrationTest** — the recon transcript as a permanent
+  regression test: real adapter + real `--headless=new` Chrome against an
+  in-JVM HTTP fixture; breakpoint hit, stack mapped back through webRoot
+  to the real file, and disconnect-kills-the-whole-browser asserted on
+  live ProcessHandles. Skips with a message where no browser is
+  installed; mutation-proven (removing the code that trips the breakpoint
+  fails it).
+- **DapProxy pins for the browser shape**: the pwa-chrome child dance
+  replayed frame-for-frame from the recon transcript, and a worker
+  target's `startDebugging` arriving on the CHILD link answered there —
+  never surfacing to the client, never dialing a third connection.
+
+### Security
+- Browser debugging gates on **Workspace Trust** before anything spawns —
+  the same record the rack and the v1.37.0 debug paths use; "Keep Safe"
+  stops the launch before the browser probe even runs (source-gate
+  tested).
+
+### Ledger
+- **39 (new)**: a page's Web Workers sit paused under browser debugging,
+  not undebugged — recon-proven both ways (success and failure answers);
+  same single-session root cause as ledger 25, same future fix.
+
 ## [1.42.0] — 2026-07-10
 
 The Windows lane. Every release since v1.4.1 shipped a real Windows
