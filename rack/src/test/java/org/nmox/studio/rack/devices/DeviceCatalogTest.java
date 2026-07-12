@@ -16,11 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DeviceCatalogTest {
 
     @Test
-    @DisplayName("the catalog mirrors the enum: same members, same shelf order")
+    @DisplayName("the catalog's built-in prefix mirrors the enum: same members, same shelf order")
     void catalogMirrorsTheEnum() {
         List<DeviceCatalog.Entry> all = DeviceCatalog.all();
         DeviceType[] types = DeviceType.values();
-        assertThat(all).hasSize(types.length);
+        // extensions (here: the SPI test fixtures) append AFTER the fleet
+        assertThat(all.size()).isGreaterThanOrEqualTo(types.length);
         for (int i = 0; i < types.length; i++) {
             DeviceCatalog.Entry e = all.get(i);
             DeviceType t = types[i];

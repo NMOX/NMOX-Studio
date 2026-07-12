@@ -298,10 +298,11 @@ up without direction:
    call. This is the top item precisely because it's the one thing a user
    answer would unblock immediately.
 
-2. **The public device SPI: direction chosen (2026-07-12).** Shape B (the
-   declarative contract in core.spi, host-enforced laws) with pre-work first —
-   both user-blessed. v1.54.0 delivered the pre-work; building the SPI itself
-   is the standing next feature.
+2. **The public device SPI: SHIPPED (v1.55.0).** Shape B built and live-
+   verified — an out-of-tree NBM installed through Tools ▸ Plugins put a
+   working third-party device on the shelf with the trust gate enforced by
+   the host. Deliberate v1 scope (grow additively on real demand): no CI
+   export for extensions, no custom painting, no session resurrection.
 
 3. **Settled won't-fixes and bounded residue** (ledger 1–7, 33, 36, 24, and
    the Windows Job-Objects pair 38/40): revisit only when a premise changes or

@@ -110,6 +110,8 @@ environment.
 
 ## 4. The Task Rack
 
+The rack is extensible: third-party plugins can add devices (install their NBM via Tools ▸ Plugins). To write one, see [device-spi.md](device-spi.md).
+
 The rack is the heart of the product. Every tool in your workflow — npm,
 bundler, test runner, dev server, linter, git, deploy — is a hardware
 device in a rack: knobs choose the task, GO runs it, LEDs show state, and

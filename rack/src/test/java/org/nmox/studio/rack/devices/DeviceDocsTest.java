@@ -53,7 +53,11 @@ class DeviceDocsTest {
             byCategory.put(cat, new java.util.ArrayList<>());
         }
         for (DeviceCatalog.Entry type : DeviceCatalog.all()) {
-            byCategory.get(type.category()).add(type);
+            // the reference documents the shipped fleet; installed
+            // extensions (and the test fixtures) are not our docs to write
+            if (type.builtIn()) {
+                byCategory.get(type.category()).add(type);
+            }
         }
         for (var entry : byCategory.entrySet()) {
             if (entry.getValue().isEmpty()) {
