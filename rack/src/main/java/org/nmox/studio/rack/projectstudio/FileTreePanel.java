@@ -63,6 +63,16 @@ public class FileTreePanel extends JPanel {
             new org.openide.util.RequestProcessor("nmox-filetree-scan", 1, true);
     private File root;
     private FileWatcher watcher;
+    /**
+     * Notified on the EDT with the selected File — or null when nothing
+     * (or a placeholder row) is selected. Ledger 29 remainder (v1.48.0):
+     * the owning studio publishes this as the platform selection. The
+     * callback itself reads only the in-memory tree model — no disk —
+     * so firing it per keystroke of a held arrow key is free; the
+     * downstream AimNodePublisher carries the equality guard and the
+     * single resolve lane.
+     */
+    private java.util.function.Consumer<File> selectionListener;
 
     public FileTreePanel() {
         this(REAL_LISTER);
@@ -76,6 +86,12 @@ public class FileTreePanel extends JPanel {
         tree.setRootVisible(true);
         tree.setShowsRootHandles(true);
         tree.setCellRenderer(new Renderer());
+
+        tree.addTreeSelectionListener(e -> {
+            if (selectionListener != null) {
+                selectionListener.accept(selectedFile());
+            }
+        });
 
         tree.addTreeWillExpandListener(new javax.swing.event.TreeWillExpandListener() {
             @Override
@@ -123,6 +139,25 @@ public class FileTreePanel extends JPanel {
 
     public File getRootDirectory() {
         return root;
+    }
+
+    /** One listener is the whole contract; a second call replaces the first. */
+    public void setSelectionListener(java.util.function.Consumer<File> listener) {
+        this.selectionListener = listener;
+    }
+
+    /**
+     * The selected File, or null when nothing (or a placeholder row) is
+     * selected. EDT-only, and EDT-cheap: reads the in-memory model,
+     * never the disk.
+     */
+    public File selectedFile() {
+        TreePath path = tree.getSelectionPath();
+        if (path == null) {
+            return null;
+        }
+        Object user = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
+        return user instanceof File f ? f : null;
     }
 
     private void restartWatcher() {

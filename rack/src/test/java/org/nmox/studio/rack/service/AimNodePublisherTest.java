@@ -130,7 +130,7 @@ class AimNodePublisherTest {
     @Test
     @DisplayName("the real resolver yields a DataFolder node carrying the dir's DataObject")
     void realResolverYieldsFolderNode(@TempDir Path dir) {
-        Node node = AimNodePublisher.resolveFolderNode(dir.toFile());
+        Node node = AimNodePublisher.resolveNode(dir.toFile());
 
         assertThat(node).isNotNull();
         DataObject dob = node.getLookup().lookup(DataObject.class);
@@ -138,5 +138,73 @@ class AimNodePublisherTest {
                 .isNotNull();
         assertThat(FileUtil.toFile(dob.getPrimaryFile()))
                 .isEqualTo(FileUtil.normalizeFile(dir.toFile()));
+    }
+
+    @Test
+    @DisplayName("a plain file resolves too — the v1.48.0 tree-selection generalization")
+    void realResolverYieldsFileNode(@TempDir Path dir) throws Exception {
+        File file = dir.resolve("index.js").toFile();
+        assertThat(file.createNewFile()).isTrue();
+
+        Node node = AimNodePublisher.resolveNode(file);
+
+        assertThat(node).isNotNull();
+        DataObject dob = node.getLookup().lookup(DataObject.class);
+        assertThat(dob).as("per-file context actions (Annotate) need the file's DataObject")
+                .isNotNull();
+        assertThat(FileUtil.toFile(dob.getPrimaryFile()))
+                .isEqualTo(FileUtil.normalizeFile(file));
+    }
+
+    @Test
+    @DisplayName("a distinct-target storm on a busy lane resolves twice, not N times")
+    void distinctTargetStormCoalesces(@TempDir Path dir) throws Exception {
+        // Arrow-key held down a file tree: many DIFFERENT targets arrive
+        // faster than resolution. The single lane plus the supersede check
+        // must skip every intermediate — resolve the first (already
+        // running) and the last (the only one still current), nothing else.
+        java.util.concurrent.CountDownLatch firstResolveStarted =
+                new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch releaseFirstResolve =
+                new java.util.concurrent.CountDownLatch(1);
+        AtomicInteger resolved = new AtomicInteger();
+        List<Node> delivered = new CopyOnWriteArrayList<>();
+        AimNodePublisher publisher = new AimNodePublisher(delivered::add);
+        publisher.resolver = d -> {
+            if (resolved.incrementAndGet() == 1) {
+                firstResolveStarted.countDown();
+                try {
+                    releaseFirstResolve.await(5, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            AbstractNode n = new AbstractNode(Children.LEAF);
+            n.setValue("dir", d);
+            return n;
+        };
+
+        File first = dir.resolve("f0").toFile();
+        publisher.publish(first);
+        assertThat(firstResolveStarted.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                .as("the first resolution is underway, blocking the lane").isTrue();
+        File last = null;
+        for (int i = 1; i < 100; i++) {
+            last = dir.resolve("f" + i).toFile();
+            publisher.publish(last); // queues behind the blocked resolve
+        }
+        releaseFirstResolve.countDown();
+        File expected = last;
+        await(() -> delivered.stream().anyMatch(n -> expected.equals(n.getValue("dir"))));
+        settle();
+
+        assertThat(resolved.get())
+                .as("only the in-flight and the final target resolve; 98 superseded "
+                        + "requests never touch the resolver")
+                .isEqualTo(2);
+        assertThat(delivered)
+                .as("nothing but the final target is delivered — the first was "
+                        + "superseded before its EDT hop")
+                .hasSize(1);
     }
 }

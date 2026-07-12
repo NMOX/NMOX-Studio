@@ -1257,7 +1257,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         status("Scanning artifacts…", Color.GRAY);
         RP.post(() -> {
-            List<ContractArtifact> found = ArtifactScanner.scan(dir.toPath());
+            List<ContractArtifact> found = scanWithProgress(dir);
             EventMatcher matcher = EventMatcher.build(found);
             SwingUtilities.invokeLater(() -> {
                 applyArtifacts(found, matcher);
@@ -1285,7 +1285,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             return;
         }
         RP.post(() -> {
-            List<ContractArtifact> found = ArtifactScanner.scan(dir.toPath());
+            List<ContractArtifact> found = scanWithProgress(dir);
             EventMatcher matcher = EventMatcher.build(found);
             SwingUtilities.invokeLater(() -> {
                 if (found.equals(artifacts)) {
@@ -1294,6 +1294,27 @@ public final class Web3StudioTopComponent extends TopComponent {
                 applyArtifacts(found, matcher);
             });
         });
+    }
+
+    /**
+     * Off-EDT: the artifact walk under a finally-guarded ProgressHandle —
+     * the last sliver of ledger 34, closed v1.48.0. Indeterminate and with
+     * no Cancellable: {@code ArtifactScanner.scan} is one uninterruptible
+     * {@code Files.walk} with no seam to abort mid-walk, so a cancel
+     * button would be a lie (the v1.44.0 DB-connect / cloud-sync idiom).
+     * The walk is usually fast; the handle exists so a huge out/ tree
+     * still shows honest activity in the status line instead of silence.
+     */
+    private static List<ContractArtifact> scanWithProgress(File dir) {
+        org.netbeans.api.progress.ProgressHandle progress =
+                org.netbeans.api.progress.ProgressHandle.createHandle(
+                        "Scanning contract artifacts…");
+        progress.start();
+        try {
+            return ArtifactScanner.scan(dir.toPath());
+        } finally {
+            progress.finish();
+        }
     }
 
     /** EDT: installs a scan result into the tree, models, and search index. */

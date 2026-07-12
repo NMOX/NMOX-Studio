@@ -114,12 +114,20 @@ directory's DataFolder node via `setActivatedNodes` (AimNodePublisher:
 off-EDT resolve, EDT delivery, equality-guarded, componentShowing-gated so
 hidden boot tabs resolve nothing); and the git chip's Show Changes / Diff /
 Annotate returned as `createContextAwareInstance` invocations against that
-same node, with an honest Team-menu fallback. **Still open, deliberately**:
-context-sensitive action registrations (PWA Kit, Standards Kit, Classic Kit
-still always-enabled and scolding at runtime) and per-TC lookups for the
-seven studio/tool windows that don't own the aim (NpmExplorer still reads
-the registry by hand) — each is now an incremental follow-on with the
-pattern established, not a coordinated big-bang.
+same node, with an honest Team-menu fallback. **v1.48.0 took two more
+remainders**: Project Studio's file tree publishes the selected FILE's
+DataObject node (AimNodePublisher generalized to files; selection refines
+the aim node, cleared selection falls back to it, distinct-target storms
+coalesce on the single lane — never an emptied-out selection), and
+NpmExplorer publishes the found Node project's node (null opinion when no
+project, so the registry keeps the last real selection; its hand-read
+registry fallback stays — it serves aims with no Node project, a case the
+publish can't cover — now skipping our own published node so a re-aim
+away from a project can't echo it back). **Still open, deliberately —
+Kit actions only**: context-sensitive action registrations (PWA Kit,
+Standards Kit, Classic Kit still always-enabled and scolding at runtime),
+because focus-keyed enablement would disable them while the editor is
+focused — a UX regression masquerading as idiom.
 
 ### 32. DiagnosticsBus duplicates the platform's editor-hints/task-list plumbing
 Rack tools push diagnostics over a bespoke bus and editor draws its own
@@ -139,13 +147,16 @@ suite-tabs-first layout IS the discovery design (v1.29.0), and moving modes
 churns every user's persisted layout — do it deliberately, with migration,
 or not at all.
 
-### 34. ProgressHandle gaps — MOSTLY CLOSED (v1.44.0)
+### 34. ProgressHandle gaps — CLOSED (v1.44.0, last sliver v1.48.0)
 DB Studio connect and infra cloud sync run under finally-guarded
-ProgressHandles (per-provider ticks on sync); no cancel wiring —
-neither op has an interrupt seam (DB cancel aborts statements, not
-connects; commented in code). The debounce half closed with #16.
-Remaining sliver: web3 artifact scan (a fast Files.walk) is still
-status-text-only — lowest value, deferred.
+ProgressHandles (per-provider ticks on sync) since v1.44.0; the last
+sliver — the web3 artifact walk — closed in v1.48.0 (scanWithProgress:
+one indeterminate finally-guarded handle both rescan paths route
+through, source-gate-tested so a bare scan call can't sneak back). No
+cancel wiring anywhere, deliberately — none of the three ops has an
+interrupt seam (DB cancel aborts statements, not connects; the artifact
+walk is one uninterruptible Files.walk; commented at each site). The
+debounce half closed with #16.
 
 ### 35. No @OnStop seam — all shutdown work rides JVM hooks
 Blessed for what we use it for: process reaping must survive System.exit and
