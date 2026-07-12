@@ -46,6 +46,7 @@ public final class ExtensionDevice extends RackDevice {
     private static final Color DEFAULT_ACCENT = new Color(120, 150, 170);
 
     private final DeviceLogic logic;
+    private final Services services;
     private volatile boolean serving;
 
     public ExtensionDevice(DeviceExtension extension) {
@@ -66,8 +67,21 @@ public final class ExtensionDevice extends RackDevice {
             }
         }
         Face face = new Face();
-        this.logic = extension.build(face, new Services());
+        this.services = new Services();
+        this.logic = extension.build(face, services);
         face.assertFits(d);
+    }
+
+    @Override
+    protected void onAttached() {
+        // fires on first mount AND on undo re-attach of the same instance;
+        // lets the plugin re-arm a poll/clock/serving a removal tore down —
+        // the hook built-ins use (v1.50 TAIL/TEMPO), now on the SPI too
+        try {
+            logic.onAttached(services);
+        } catch (RuntimeException ex) {
+            // a plugin's re-arm failure must not break the rack's re-attach
+        }
     }
 
     @Override
@@ -89,12 +103,15 @@ public final class ExtensionDevice extends RackDevice {
 
     @Override
     public void dispose() {
+        // stop the process FIRST so onDispose()'s contract holds — the
+        // javadoc promises the process is already stopped when it runs
+        stopProcess();
+        deregisterServing();
         try {
             logic.onDispose();
         } catch (RuntimeException ex) {
             // a plugin's cleanup failure must not block the rack's
         }
-        deregisterServing();
         super.dispose();
     }
 

@@ -14,6 +14,15 @@
  * components. Plugins declare a dependency on the core module and are
  * refused by the module loader on an install too old for them.
  *
+ * <p><b>Note on adding kinds:</b> {@link PortSpec.Signal} and
+ * {@link DeviceCategory} are the SPI's names for the rack's internal
+ * signal types and palette shelves; the host maps them by name. Adding a
+ * new signal kind or category to this package therefore also requires
+ * host work (a matching internal constant and switch arm) in the same
+ * release — the two are frozen in lockstep, unlike a new control method
+ * on {@link DeviceFace} or a new callback on {@link DeviceLogic}, which
+ * are purely additive.
+ *
  * @since 1.55
  */
 package org.nmox.studio.core.spi.device;

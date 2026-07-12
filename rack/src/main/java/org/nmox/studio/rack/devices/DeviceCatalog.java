@@ -27,6 +27,9 @@ public final class DeviceCatalog {
 
     private static final Logger LOG = Logger.getLogger(DeviceCatalog.class.getName());
 
+    /** Jacks the back panel holds per direction before they paint off-plate. */
+    static final int MAX_PORTS_PER_SIDE = 8;
+
     /** Everything a consumer may know about a rackable device kind. */
     public interface Entry {
 
@@ -126,6 +129,8 @@ public final class DeviceCatalog {
         }
         Set<String> portKeys = new HashSet<>();
         Set<String> inIds = new HashSet<>();
+        int ins = 0;
+        int outs = 0;
         for (PortSpec p : d.ports()) {
             if (p == null || p.id() == null || p.id().isBlank()
                     || p.label() == null || p.label().isBlank()
@@ -137,12 +142,23 @@ public final class DeviceCatalog {
             }
             if (p.direction() == PortSpec.Direction.IN) {
                 inIds.add(p.id());
+                ins++;
+            } else {
+                outs++;
             }
             if (p.direction() == PortSpec.Direction.OUT && p.signal() == PortSpec.Signal.GATE
                     && !List.of("RUNNING", "SERVING", "ENABLE").contains(p.label())) {
                 return "GATE out \"" + p.id() + "\" must be labeled RUNNING, SERVING, "
                         + "or ENABLE (gate outputs speak one vocabulary)";
             }
+        }
+        // jacks auto-position at EAR+52+n*82 across the 920px back panel, so
+        // beyond ~11 per side they paint off-plate and fail the contract law
+        // (#2, jacks inside the panel). Cap with margin — no real device
+        // needs this many, and a huge port count is a design smell anyway.
+        if (ins > MAX_PORTS_PER_SIDE || outs > MAX_PORTS_PER_SIDE) {
+            return "at most " + MAX_PORTS_PER_SIDE + " ports per side — more jacks than the "
+                    + "back panel can hold without painting off-plate";
         }
         if ((inIds.contains("serve") || inIds.contains("start")) && !inIds.contains("stop")) {
             return "a device you can start by cable needs a \"stop\" IN "

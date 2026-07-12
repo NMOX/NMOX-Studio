@@ -121,7 +121,16 @@ public class PalettePanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     if (list.getSelectedValue() instanceof DeviceCatalog.Entry t) {
-                        rack.addDevice(t.create());
+                        // a third-party device's build() (or a stale entry whose
+                        // module was just uninstalled) can throw — one bad
+                        // plugin must not blow up the palette, matching the
+                        // drop path's guard
+                        try {
+                            rack.addDevice(t.create());
+                        } catch (Exception | LinkageError ex) {
+                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                    "Could not add " + t.title() + ": " + ex);
+                        }
                     }
                 }
             }

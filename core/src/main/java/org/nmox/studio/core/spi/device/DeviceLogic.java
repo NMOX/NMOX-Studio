@@ -17,6 +17,21 @@ import java.io.File;
  */
 public interface DeviceLogic {
 
+    /**
+     * The device is now mounted in a rack — the project directory is
+     * available and signals can flow. Called once when first added, and
+     * <b>again after undo (⌘Z) of a removal re-mounts the same
+     * instance</b>. Re-arm anything a removal tore down here: re-announce
+     * a serving URL via {@link DeviceServices#announceServing}, restart a
+     * poll or clock that a persisted toggle says should be running. A
+     * fresh mount with nothing to restore should make this a no-op — do
+     * not fire control-change side effects a user did not cause.
+     *
+     * @since 1.55.1
+     */
+    default void onAttached(DeviceServices services) {
+    }
+
     /** A TRIGGER arrived on an IN port ({@code ok} carries pass/fail). */
     default void onTrigger(String portId, boolean ok) {
     }

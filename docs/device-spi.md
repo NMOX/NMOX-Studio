@@ -46,7 +46,7 @@ rather than failing at call time.
 
 ## A complete device
 
-`pom.xml` (packaging `nbm`; note `-proc:full` — on JDK 21+ the
+`pom.xml` (packaging `nbm`; note `-proc:full` — on JDK 23+ the
 `@ServiceProvider` registration silently vanishes without it):
 
 ```xml

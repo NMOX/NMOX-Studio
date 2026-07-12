@@ -18,6 +18,58 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.56.0, the third senior review)
+
+### 41. `RackDevice.exec` forks + reads dotenv on the EDT
+The systemic threading item the v1.56 review's concurrency lens flagged as
+"the only one with real teeth" — and pre-existing, older than the review
+window. Every built-in command device wires its RUN button straight to
+`launch()` on the EDT; the path reaches `RackDevice.exec` (`rack/.../model/RackDevice.java`),
+which calls `EnvFiles.load` (file reads) then `CommandExecutor.run` →
+`ProcessBuilder.start()` — the fork itself — synchronously on the caller.
+On a wedged or network-mounted project dir that stalls the EDT, the same
+class the boot law guards against, just on the button path. The v1.55 SPI
+host (`ExtensionDevice.Services.exec`) faithfully inherits the shape and
+adds nothing worse; the trust dialog on the EDT is fine (it pumps a nested
+loop). **Deferred, not dismissed:** the fix (hop `EnvFiles.load` +
+`CommandExecutor.run` off the EDT inside `RackDevice.exec`, keeping only
+the modal trust dialog on the EDT) clears it for all 46 devices at once,
+but it changes the threading contract of the hottest path in the rack —
+callers that read `isProcessRunning()` right after `exec` would need
+auditing — and that is exactly the kind of change the v1.33.x storms
+taught us to give its own focused release with live verification, not a
+rider on a review sprint. Mount-conditional; safe to leave until then.
+
+### 42. Third-party `descriptor()`/`build()` can run at session restore
+The security lens noted the zero-boot-cost law is not enforced *by
+construction* for the SPI: if the rack window was open last session and the
+aimed project's patch references an installed extension, that plugin's
+`descriptor()` (via the palette's `DeviceCatalog.all()`) and `build()` (via
+`RackIO` autoload) run during startup, on the EDT, with no user gesture.
+**Accepted:** restoring a saved patch legitimately instantiates its
+devices — that is what restore *is* — and the security boundary holds
+because `exec` stays trust-gated, so a boot-time plugin `exec` prompts
+rather than silently spawning. The cost is startup latency proportional to
+what the user themselves put in the patch, not an attacker. Revisit only if
+a plugin-heavy patch measurably hurts boot.
+
+### 43. `GitFacts` follows an attacker-controlled `gitdir:` pointer
+A crafted `.git` *file* in an opened project can carry `gitdir: /abs/path`,
+and `GitFacts.branch()` reads `<that>/HEAD`'s first line into the chip. The
+disclosure is a narrow oracle (surfaces text only when the first line is
+`ref: refs/heads/…` or a hex SHA), no process is spawned on that path, and
+opening a hostile repo already runs its hooks under the platform's own git.
+Low; a canonicalize/confinement pass is the fix if worktree support ever
+needs the indirection widened.
+
+### 44. `MissingDevice` can produce a dead-click "Resume last session?" balloon
+If a plugin device was live at a crash and its plugin is uninstalled before
+restart, `SessionState.matchAgainst` matches the `MissingDevice` now at
+that index by typeId and offers to resume it; the click calls the
+placeholder's no-op `resume()`. Capture is correctly gated (a placeholder
+is never itself captured), so this is only the reverse edge sequence —
+cosmetic, low priority.
+
 ## Open — deferred deliberately, with reasons
 
 ### 1. Rack faceplate boilerplate (~250–300 LOC across 25+ devices)
@@ -600,12 +652,15 @@ parameter; the entry rides maven-jar-plugin `manifestEntries`, the
 same mechanism as the layer entry, and was byte-verified in the built
 jar's manifest alongside the unchanged Public-Packages. The module
 system now refuses any non-listed dependent, so no external plugin can
-grow a claim on rack internals before a real SDK story ships.
-`rack.model` stays exported: the friends list makes narrowing it
-non-urgent, and Rack/RackDevice types appear in `rack.service`
-signatures anyway. Core deliberately stays friend-less — its minimal
-exports (process/util/http, now + spi) ARE the intended public utility
-surface, blessed by the v1.36 audit.
+grow a claim on rack internals. **The SDK story shipped in v1.55.0**
+(the Device SPI, `core.spi.device`): it validated exactly this design —
+plugins extend through a small frozen contract in *core*, never through
+rack internals, and rack stays friend-locked. `rack.model` stays
+exported: the friends list makes narrowing it non-urgent, and
+Rack/RackDevice types appear in `rack.service` signatures anyway. Core
+deliberately stays friend-less — its exports (process/util/http, the
+`spi` soft-dependency facades, and now the `spi.device` Device SPI) ARE
+the intended public surface, blessed by the v1.36 and v1.56 audits.
 
 ## Closed by v1.44.0 (the debt sweep)
 
