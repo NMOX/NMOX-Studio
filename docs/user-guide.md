@@ -275,13 +275,16 @@ seconds while visible.
 
 ![The platform's Show History window opened from the git chip, with the branch and dirty count in the status line](images/git-history.png)
 
-Click the chip for **History** — the full search-and-diff history browser
-(message/author/date filters, per-commit diffs) — or **Refresh**. The rest
-of the git surface lives where NetBeans puts it: select a file (or open it
-in the editor) and the **Team** menu offers Show Changes, Diff, blame
-(*Annotate*), branch operations, and shelving, all against the repository
-the file belongs to. In-editor change stripes appear in the gutter as you
-edit a tracked file.
+Click the chip and the git verbs are right there: **Show Changes** and
+**Diff Project** against the aimed project, blame (**Annotate**) on the
+file open in the editor — or the file selected in Project Studio's tree —
+**History** (the full search-and-diff history browser: message/author/date
+filters, per-commit diffs), and **Refresh**. The **Team** menu carries the
+same suite plus branch operations and shelving, fully enabled the moment a
+project is aimed — aiming opens the project for the whole platform (it
+shows up in the Projects and Files windows too), so every project-sensitive
+verb has real context without selecting anything first. In-editor change
+stripes appear in the gutter as you edit a tracked file.
 
 ### API Studio (⌥⌘8)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
