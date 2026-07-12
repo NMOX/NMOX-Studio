@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.51.0] — 2026-07-12
+
+The update center: in-app updates fed from GitHub releases (tech-debt
+#21). The platform's Plugins infrastructure (autoupdate services/ui/cli)
+always shipped in our cluster; now it has something to read.
+
+### Added
+- **"NMOX Studio Updates" update center**, registered in `ui/layer.xml`
+  (the classic `Services/AutoupdateType` + `AutoupdateCatalogFactory`
+  shape, attribute names verified against the shipped
+  autoupdate-services jar). Tools ▸ Plugins now lists the product
+  modules and offers updates whenever a newer release is published;
+  Help ▸ Check for Updates works too. The catalog URL rides GitHub's
+  stable `releases/latest/download/updates.xml` redirect, so shipped
+  apps follow every future release with no code change.
+- **Release assets: `updates.xml`(+`.gz`) and the 11 module NBMs.** The
+  linux release lane runs the new `scripts/build-update-site.sh`
+  (`nbm:autoupdate`), which pins every NBM inside the catalog to its
+  own release tag by ABSOLUTE URL — the platform resolves relative
+  distribution URLs against the pre-redirect `/latest/` catalog URL, so
+  relative ones would let a cached older catalog download newer NBM
+  bytes and fail its own SHA-512 digests. The script gates the module
+  set (exactly the 11 product modules; the never-shipped sample
+  template is pruned — the aggregator ignores `-pl` and its include
+  filter only applies to nbm-application projects, both verified
+  against the 14.5 mojo). The six existing asset names are untouched.
+- **NBMs now embed the MIT license** (root pom `licenseName`/
+  `licenseFile`), so the Plugin Manager's install dialog shows real
+  terms instead of "License terms: Unknown".
+- `UpdateCenterTest` (ui, 5 tests): registration shape + exact catalog
+  URL, Bundle display name, workflow ships the catalog + NBMs
+  (line-anchored after a mutation showed `updates.xml.gz` masks a
+  substring check), script pins absolute URLs + gates the module set,
+  and a catalog-shape check (11 modules, sample absent, spec versions
+  match the root pom) that runs whenever a local site exists. URL and
+  workflow mutations proven to fail.
+
+### Notes
+- No fetch at boot: the registration is inert layer XML. The platform
+  checks on user action or its own schedule — default EVERY_WEEK,
+  first evaluated ~500 ms after the UI is ready (decompiled
+  AutoupdateCheckScheduler; tunable in Plugins ▸ Settings). The
+  zero-boot-spawns law is untouched.
+- Dev builds carry real spec versions (root `<spec.version>`, bumped to
+  1.51.0 for this sprint), so a same-version catalog offers nothing.
+- NBMs remain unsigned (the UC is marked trusted — our own HTTPS
+  channel); a signing keystore is a separate story. Installers remain
+  the path for fresh installs; the update center updates the modules of
+  an existing install.
+
 ## [1.50.0] — 2026-07-12
 
 The housekeeping release: two long-deferred ledger items closed, each

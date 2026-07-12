@@ -29,7 +29,7 @@ brew install --cask nmox-studio
 
 The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install). The app is ad-hoc signed but not yet notarized, so the first launch needs one extra step: right-click the app → *Open* once and confirm, or `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
-Update later with `brew update && brew upgrade --cask nmox-studio`; remove cleanly with `brew uninstall --cask --zap nmox-studio`.
+Update later with `brew update && brew upgrade --cask nmox-studio`; remove cleanly with `brew uninstall --cask --zap nmox-studio`. Since v1.51.0 the IDE also updates itself in-app: **Tools ▸ Plugins ▸ Updates** offers the product modules of any newer release (fed from the latest GitHub release's update catalog).
 
 ## Screenshots
 

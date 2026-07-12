@@ -56,6 +56,14 @@ jobs:
               }]' target/bom.json > target/bom-full.json
           mv target/bom-full.json target/bom.json
           cp target/bom.json "NMOX-Studio-${{ needs.version.outputs.version }}-sbom.json"
+      - name: Update-center catalog (updates.xml + module NBMs)
+        # In-app updates (ledger 21): the app's registered update center
+        # fetches releases/latest/download/updates.xml, so every release
+        # must ship the catalog + the 11 module NBMs it points at. The
+        # script pins each NBM URL to THIS release tag (absolute URLs —
+        # a cached older catalog must never download newer NBM bytes and
+        # trip its own SHA-512 digests) and gates the module set.
+        run: ./scripts/build-update-site.sh "${{ needs.version.outputs.version }}"
       - name: Portable zip
         run: |
           cp application/target/NMOX-Studio-app-*.zip \
@@ -70,6 +78,9 @@ jobs:
             NMOX-Studio-*-sbom.json
             application/target/dist/NMOX-Studio-*-linux.tar.gz
             application/target/dist/nmox-studio_*.deb
+            target/netbeans_site/updates.xml
+            target/netbeans_site/updates.xml.gz
+            target/netbeans_site/*.nbm
 
   macos:
     needs: version
@@ -173,6 +184,9 @@ jobs:
             artifacts/**/nmox-studio_*.deb
             artifacts/**/NMOX-Studio-*-macos.dmg
             artifacts/**/NMOX-Studio-*-windows-setup.exe
+            artifacts/**/updates.xml
+            artifacts/**/updates.xml.gz
+            artifacts/**/*.nbm
 
   homebrew:
     needs: [version, release]

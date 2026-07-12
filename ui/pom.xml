@@ -94,6 +94,15 @@
             <artifactId>org-netbeans-modules-options-api</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- The update-center registration in layer.xml instantiates
+             AutoupdateCatalogFactory from this module (methodvalue);
+             declaring the edge makes the module system guarantee it is
+             enabled before our layer entry can be touched. -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-autoupdate-services</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-swing-tabcontrol</artifactId>
