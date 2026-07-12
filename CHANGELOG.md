@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.49.0] — 2026-07-12
+
+Ledger 32 closed: rack tool findings reach the standard Action Items
+window — and the squiggle half turned out to already be platform plumbing.
+
+### Added
+- **Rack tool findings in the Action Items window** (tech-debt #32). What
+  PURITY (eslint) and TYPEGUARD (tsc/phpstan) publish on the
+  DiagnosticsBus now also lands in the platform Task List: one
+  `PushTaskScanner` ("Rack tool findings"), severity mapped onto the
+  window's own error/warning groups, the tool name in the task text
+  (matching the squiggle hover exactly), click-to-navigate for free —
+  and, the piece squiggles can never show, findings in files no editor
+  has open. Layer-registered so the framework instantiates it lazily on
+  first scan: zero boot cost (the boot law holds), and the bus's
+  late-subscriber replay catches a late-born scanner up. Replace-per-run
+  semantics carried through exactly — a fresh run clears the files it no
+  longer names (all-clear runs clear everything), and one tool going
+  clean never erases another tool's rows on the same file
+  (mutation-proven: deleting the old-batch union fails 3 tests).
+
+### Changed
+- Nothing in the squiggle path — the v1.49.0 recon found `RackSquiggler`
+  already rendered via `HintsController` (the ledger item's "draws its
+  own squiggles" overstated); it stays byte-identical, and a new
+  source-gate pins both halves to the platform APIs so a bespoke
+  renderer can't sneak back in. DiagnosticsBus stays: it is the
+  transport, not the debt.
+
 ## [1.48.0] — 2026-07-11
 
 The remainder sprint: the small honest remainders of ledger 34 (now fully

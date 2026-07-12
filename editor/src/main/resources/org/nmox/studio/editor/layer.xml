@@ -15,6 +15,21 @@
          attribute merges and collide with the annotation positions —
          keep loader wiring on the annotations only. -->
 
+    <!-- Rack tool findings in the Action Items window (tech-debt #32).
+         The Task List framework instantiates this scanner LAZILY, when the
+         Action Items window first scans — zero boot cost, which is why this
+         is a layer registration and not an @OnStart. Severity rides the
+         platform's own error/warning task groups; the tool name rides the
+         task text, matching the squiggle hover text exactly. -->
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="RackFindingsScanner.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.PushTaskScanner"/>
+                <attr name="instanceCreate" methodvalue="org.nmox.studio.editor.diagnostics.RackFindingsTaskScanner.create"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <!-- The IDE always runs the FlatLaf Dark look and feel (forced in
              nmoxstudio.conf), but the editor's color profile is a separate
