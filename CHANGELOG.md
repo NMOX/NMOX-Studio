@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.54.0] — 2026-07-12
+
+The SPI pre-work release. The Device SPI decision is made — a small
+declarative contract, hosted by the rack, laws enforced by construction
+(Option B; the design dossier chose it over freezing the organically
+grown RackDevice class). Before that door opens, this release fixes
+everything that silently assumed the device catalog was a closed world.
+Each fix is a real bug today, plugin or no plugin.
+
+### Fixed
+- **Unknown devices no longer corrupt patches.** `.nmoxrack.json` stores
+  cables by device index, and a type id nothing answers (a plugin device
+  not installed here, or a newer built-in opened in an older Studio) was
+  silently dropped on load — shifting every later index so cables
+  re-attached to the *wrong devices*. Unknown types now keep their slot
+  as an honest `MISSING` placeholder that preserves the stranger's type
+  id, saved state, and cables verbatim: the patch round-trips losslessly
+  and the harness stays on the right devices. Mutation-proven (the old
+  drop-the-stranger behavior fails the new tests).
+- **Two same-title devices no longer merge into one phantom.** The
+  Output tab, monitor bus, and flight recorder all keyed a run on the
+  device's *title*, so two SOLDERs corrupted each other's launch/exit
+  pairing, duration statistics, BLACKBOX slow-creep alarm, and ORACLE's
+  failure context. Devices now carry a unique bus name — the first
+  instance keeps the bare title (existing journals stay continuous),
+  later same-title instances get " ·2", " ·3"…, assigned once at first
+  attach so undo re-attach never renames a running lane.
+
+### Changed
+- **One device registry.** New `DeviceCatalog` — the palette, patch
+  persistence, Quick Search, the how-to card, and CI export all consult
+  it instead of reaching into the `DeviceType` enum (whose three
+  `byId()` call sites each handled a miss differently). Today it mirrors
+  the enum exactly (test-pinned, member for member); when the device SPI
+  ships, extension devices merge in here and every consumer learns about
+  them for free.
+- **CI-step capability lives in the catalog.** The workflow exporter
+  carried its own hardcoded set of 14 type-id strings deciding which
+  devices export as CI steps; that knowledge moved to the catalog
+  (`DeviceType.isCiStep()`), pinned by an exact-set test.
+- **The device contract tests run over the catalog, not the enum** — a
+  registry-contributed device is held to the same eight laws (unique
+  labeled ports, state round-trip, faceplate fit, port lexicon,
+  accessible names, shelf guidance) as a built-in.
+
 ## [1.53.0] — 2026-07-12
 
 Community Learning Spaces. The 52 built-in tutorials have always been

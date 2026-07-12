@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Documentation that cannot lie: docs/devices.md is generated from the
- * DeviceType catalog itself - titles, descriptions, usage recipes, and
+ * device catalog itself - titles, descriptions, usage recipes, and
  * the real jacks on every back panel. This test fails when the
  * committed file drifts from the catalog; regenerate with
  *
@@ -44,27 +44,27 @@ class DeviceDocsTest {
         StringBuilder md = new StringBuilder();
         md.append("# The Device Reference\n\n");
         md.append("Every unit in the rack, straight from the catalog — this file is\n");
-        md.append("generated from `DeviceType` by `DeviceDocsTest` and CI fails if it\n");
+        md.append("generated from `DeviceCatalog` by `DeviceDocsTest` and CI fails if it\n");
         md.append("drifts. Do not edit by hand; regenerate with:\n\n");
         md.append("```\nmvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true\n```\n");
 
-        Map<DeviceType.PaletteCategory, List<DeviceType>> byCategory = new LinkedHashMap<>();
+        Map<DeviceType.PaletteCategory, List<DeviceCatalog.Entry>> byCategory = new LinkedHashMap<>();
         for (DeviceType.PaletteCategory cat : DeviceType.PaletteCategory.values()) {
             byCategory.put(cat, new java.util.ArrayList<>());
         }
-        for (DeviceType type : DeviceType.values()) {
-            byCategory.get(type.getPaletteCategory()).add(type);
+        for (DeviceCatalog.Entry type : DeviceCatalog.all()) {
+            byCategory.get(type.category()).add(type);
         }
         for (var entry : byCategory.entrySet()) {
             if (entry.getValue().isEmpty()) {
                 continue;
             }
             md.append("\n## ").append(entry.getKey()).append("\n");
-            for (DeviceType type : entry.getValue()) {
+            for (DeviceCatalog.Entry type : entry.getValue()) {
                 RackDevice device = type.create();
-                md.append("\n### ").append(type.getTitle())
-                        .append(" — ").append(type.getDescription()).append("\n\n");
-                for (String line : type.getUsage().split("\n")) {
+                md.append("\n### ").append(type.title())
+                        .append(" — ").append(type.description()).append("\n\n");
+                for (String line : type.usage().split("\n")) {
                     md.append("> ").append(line).append("\n");
                 }
                 StringBuilder ins = new StringBuilder();

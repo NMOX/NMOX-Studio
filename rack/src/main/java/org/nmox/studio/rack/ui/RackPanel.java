@@ -21,7 +21,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.TransferHandler;
-import org.nmox.studio.rack.devices.DeviceType;
+import org.nmox.studio.rack.devices.DeviceCatalog;
 import org.nmox.studio.rack.model.Cable;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Rack;
@@ -319,18 +319,16 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     menu.addSeparator();
                 }
             }
-            org.nmox.studio.rack.devices.DeviceType type =
-                    org.nmox.studio.rack.devices.DeviceType.byId(device.getTypeId());
-            if (type != null) {
+            DeviceCatalog.byId(device.getTypeId()).ifPresent(entry -> {
                 JMenuItem howTo = new JMenuItem("How to use " + device.getTitle() + "…");
                 howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                                type.getTitle() + " — " + type.getDescription() + "\n\n"
-                                        + type.getUsage().replace("\n", "\n\n"),
+                                entry.title() + " — " + entry.description() + "\n\n"
+                                        + entry.usage().replace("\n", "\n\n"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
                 menu.add(howTo);
                 menu.addSeparator();
-            }
+            });
             // manifest-backed devices open their configuration file straight
             // from the faceplate: NPM-9000 → package.json, DYNAMO → its
             // taskfile, ARTISAN → composer.json, GOVERNOR → .gas-snapshot
@@ -672,7 +670,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
             repaint();
             try {
                 String id = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-                DeviceType type = DeviceType.byId(id);
+                DeviceCatalog.Entry type = DeviceCatalog.byId(id).orElse(null);
                 if (type == null) {
                     return false;
                 }

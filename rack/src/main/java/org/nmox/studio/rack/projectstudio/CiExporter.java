@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.nmox.studio.rack.devices.CommandDevice;
+import org.nmox.studio.rack.devices.DeviceCatalog;
 import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.model.Cable;
 import org.nmox.studio.rack.model.Rack;
@@ -23,15 +24,10 @@ import org.nmox.studio.rack.model.RackDevice;
  */
 public final class CiExporter {
 
-    /** Device kinds that translate into CI steps. */
-    // SOLDER (cmd) exports its custom command as a run step — a user's
-    // bespoke pipeline step belongs in CI too. PREFLIGHT stays out on
-    // purpose: it's a local ship-gate that re-runs test/build/lint/audit,
-    // which the individual VERITAS/FORGE/PURITY/SENTRY steps already export;
-    // in CI, the pipeline itself IS the gate.
-    private static final Set<String> STEP_KINDS = Set.of(
-            "package-manager", "build", "test", "typecheck", "lint", "format",
-            "npm-script", "run", "angular", "nextjs", "phoenix", "audit", "database", "cmd");
+    // Which kinds translate into CI steps is the catalog's knowledge, not
+    // this exporter's: DeviceType.isCiStep() carries the list (and the
+    // reasoning about SOLDER-in/PREFLIGHT-out) so a new device declares
+    // its exportability where it is defined.
 
     private CiExporter() {
     }
@@ -75,7 +71,8 @@ public final class CiExporter {
     static List<RackDevice> orderedStepDevices(Rack rack) {
         List<RackDevice> candidates = new ArrayList<>();
         for (RackDevice d : rack.getDevices()) {
-            if (d instanceof CommandDevice && STEP_KINDS.contains(d.getTypeId())) {
+            if (d instanceof CommandDevice && DeviceCatalog.byId(d.getTypeId())
+                    .map(DeviceCatalog.Entry::ciStep).orElse(false)) {
                 candidates.add(d);
             }
         }

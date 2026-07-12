@@ -10,7 +10,7 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.AtomicFiles;
-import org.nmox.studio.rack.devices.DeviceType;
+import org.nmox.studio.rack.devices.DeviceCatalog;
 
 /**
  * Saves and restores a rack patch - the device stack, every control
@@ -62,11 +62,14 @@ public final class RackIO {
         }
         for (int i = 0; i < deviceArr.length(); i++) {
             JSONObject dj = deviceArr.getJSONObject(i);
-            DeviceType type = DeviceType.byId(dj.getString("type"));
-            if (type == null) {
-                continue;
-            }
-            RackDevice device = type.create();
+            String typeId = dj.getString("type");
+            // an unknown type id (a plugin device not installed here) keeps
+            // its slot as a MissingDevice: cables are index-based, so
+            // dropping it would silently re-route every cable saved after
+            // it, and its state must survive the next save untouched
+            RackDevice device = DeviceCatalog.byId(typeId)
+                    .map(DeviceCatalog.Entry::create)
+                    .orElseGet(() -> new MissingDevice(typeId));
             rack.addDevice(device);
             JSONObject state = dj.optJSONObject("state");
             if (state != null) {
@@ -86,8 +89,20 @@ public final class RackIO {
                 if (fi < 0 || fi >= devices.size() || ti < 0 || ti >= devices.size()) {
                     continue;
                 }
-                Port from = devices.get(fi).getPort(cj.getString("fromPort"));
-                Port to = devices.get(ti).getPort(cj.getString("toPort"));
+                RackDevice fd = devices.get(fi);
+                RackDevice td = devices.get(ti);
+                Port from = fd.getPort(cj.getString("fromPort"));
+                Port to = td.getPort(cj.getString("toPort"));
+                // a missing device adopts the ports its saved cables name,
+                // typed like the live peer so canConnectTo accepts the patch
+                if (from == null && fd instanceof MissingDevice m) {
+                    from = m.adoptPort(cj.getString("fromPort"), Port.Direction.OUT,
+                            to != null ? to.getType() : SignalType.DATA);
+                }
+                if (to == null && td instanceof MissingDevice m) {
+                    to = m.adoptPort(cj.getString("toPort"), Port.Direction.IN,
+                            from != null ? from.getType() : SignalType.DATA);
+                }
                 if (from != null && to != null) {
                     rack.connect(from, to);
                 }

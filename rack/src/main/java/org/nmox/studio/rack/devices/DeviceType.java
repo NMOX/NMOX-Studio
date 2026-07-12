@@ -167,6 +167,23 @@ public enum DeviceType {
         };
     }
 
+    /**
+     * Devices whose primary action translates into a CI step when the
+     * patch exports to a workflow. SOLDER (cmd) exports its custom
+     * command — a user's bespoke pipeline step belongs in CI too.
+     * PREFLIGHT stays out on purpose: it's a local ship-gate that
+     * re-runs test/build/lint/audit, which the individual
+     * VERITAS/FORGE/PURITY/SENTRY steps already export; in CI, the
+     * pipeline itself IS the gate.
+     */
+    public boolean isCiStep() {
+        return switch (this) {
+            case PACKAGE_MANAGER, BUILD, TEST, TYPECHECK, LINT, FORMAT,
+                 NPM_SCRIPT, RUN, ANGULAR, NEXTJS, PHOENIX, AUDIT, DATABASE, CMD -> true;
+            default -> false;
+        };
+    }
+
     public RackDevice create() {
         return factory.get();
     }
