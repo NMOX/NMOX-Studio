@@ -155,7 +155,8 @@ public class GitStatusLine implements StatusLineElementProvider {
             javax.swing.SwingUtilities.invokeLater(() -> {
                 chipLabel.setText(label == null ? "" : label);
                 chipLabel.setToolTipText(label == null ? null
-                        : "<html>git — " + root + "<br>click for History / Refresh</html>");
+                        : "<html>git — " + root
+                        + "<br>click for Show Changes / Diff / Annotate / History</html>");
                 if (label != null && isDisplayable()) {
                     if (!poll.isRunning()) {
                         poll.start();
@@ -166,18 +167,44 @@ public class GitStatusLine implements StatusLineElementProvider {
             });
         }
 
+        // The git module's layer registers exactly these .instance files
+        // (pinned from git-layer.xml); resolved via FileUtil.getConfigFile
+        // so a missing git module degrades to the Team-menu message.
+        private static final String STATUS_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-status-StatusAction.instance";
+        private static final String DIFF_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-diff-DiffAction.instance";
+        private static final String ANNOTATE_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance";
+
         /** Click → the platform git module's own windows, plus a manual Refresh. */
         private void showChipMenu() {
             if (!chip.visible()) {
                 return;
             }
             JPopupMenu menu = new JPopupMenu();
-            // Only context-free entries live here. The platform's git
-            // actions (Show Changes, Diff, Annotate) are NodeActions that
-            // read the GLOBAL selection, and no NMOX window publishes one
-            // (ledger 29) — verified live: even Team > Git is disabled from
-            // this surface. Shipping those buttons here means shipping dead
-            // buttons; the Team menu provides them once a file is open.
+            // Context-aware verbs (v1.45.0, ledger 29): with the studios now
+            // publishing the aimed DataFolder node as the global selection,
+            // the git NodeActions finally have real context — the chip hands
+            // them the SAME node explicitly via createContextAwareInstance,
+            // so they work even when a non-publishing window is active.
+            JMenuItem changes = new JMenuItem("Show Changes");
+            changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, "Show Changes", null));
+            menu.add(changes);
+            JMenuItem diff = new JMenuItem("Diff Project");
+            diff.addActionListener(e -> runGitAction(DIFF_INSTANCE, "Diff Project", null));
+            menu.add(diff);
+            JMenuItem annotate = new JMenuItem("Annotate");
+            annotate.addActionListener(e -> {
+                // registry read must happen on the EDT, before RP work
+                File editorFile = currentEditorFile();
+                if (editorFile == null) {
+                    teamMenuFallback("Annotate", "no file is open in the editor");
+                    return;
+                }
+                runGitAction(ANNOTATE_INSTANCE, "Annotate", editorFile);
+            });
+            menu.add(annotate);
             JMenuItem history = new JMenuItem("History");
             history.addActionListener(e -> openHistory());
             menu.add(history);
@@ -186,6 +213,81 @@ public class GitStatusLine implements StatusLineElementProvider {
             refresh.addActionListener(e -> RP.post(this::refreshCount));
             menu.add(refresh);
             menu.show(chipLabel, 0, -menu.getPreferredSize().height);
+        }
+
+        /**
+         * Runs one of the git module's registered actions against an explicit
+         * context: the aimed project's DataFolder node (the same node the
+         * studios publish) or, for Annotate, the current editor file's node.
+         * File/DataObject resolution runs on RP (disk IO); the action itself
+         * is created, enablement-checked and performed on the EDT. A context
+         * the action refuses falls back to an honest status message naming
+         * the Team menu — never a silent no-op.
+         */
+        private void runGitAction(String instancePath, String verb, File focusFile) {
+            RP.post(() -> {
+                Lookup context = contextFor(focusFile);
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (context == null) {
+                        teamMenuFallback(verb, "the project folder did not resolve");
+                        return;
+                    }
+                    Action action = resolveGitAction(instancePath, context);
+                    if (action == null || !action.isEnabled()) {
+                        teamMenuFallback(verb, action == null
+                                ? "the git module is not installed"
+                                : "git rejected this context");
+                        return;
+                    }
+                    action.actionPerformed(new ActionEvent(chipLabel,
+                            ActionEvent.ACTION_PERFORMED, verb));
+                });
+            });
+        }
+
+        /**
+         * Node + DataObject + FileObject for {@code focusFile} (or the aimed
+         * project dir when null) — every lookup shape the git actions' vcs
+         * context extraction accepts. Runs on RP: DataObject.find touches disk.
+         */
+        private static Lookup contextFor(File focusFile) {
+            try {
+                FileObject fo = focusFile != null
+                        ? FileUtil.toFileObject(FileUtil.normalizeFile(focusFile))
+                        : projectContext();
+                if (fo == null) {
+                    return null;
+                }
+                DataObject dob = DataObject.find(fo);
+                return Lookups.fixed(dob.getNodeDelegate(), dob, fo);
+            } catch (IOException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /** The registered action, context-bound; null when the git module is absent. */
+        private static Action resolveGitAction(String instancePath, Lookup context) {
+            try {
+                FileObject cfg = FileUtil.getConfigFile(instancePath);
+                if (cfg == null) {
+                    return null;
+                }
+                InstanceCookie cookie = DataObject.find(cfg).getLookup()
+                        .lookup(InstanceCookie.class);
+                Object instance = cookie != null ? cookie.instanceCreate() : null;
+                if (instance instanceof ContextAwareAction caa) {
+                    return caa.createContextAwareInstance(context);
+                }
+                return instance instanceof Action action ? action : null;
+            } catch (IOException | ClassNotFoundException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /** The honest refusal: name where the verb still works, never a dead click. */
+        private static void teamMenuFallback(String verb, String why) {
+            StatusDisplayer.getDefault().setStatusText(
+                    verb + " unavailable (" + why + ") — use the Team menu");
         }
 
         /**
@@ -215,12 +317,44 @@ public class GitStatusLine implements StatusLineElementProvider {
             }
         }
 
-        /** The aimed project dir as a FileObject — Team actions read their root from it. */
+        /** The aimed project dir as a FileObject — the git actions read their root from it. */
         private static FileObject projectContext() {
             File dir = RackService.getDefault().getRack().getProjectDir();
             return FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         }
+    }
 
+    /**
+     * The file the user is editing right now — Annotate needs a concrete
+     * file, not a folder. The status line is main-window chrome, not a
+     * TopComponent, so clicking the chip does NOT deactivate the editor:
+     * the activated TC is usually still it. Falls back to any showing
+     * editor tab; null when nothing qualifies. EDT only (registry reads).
+     */
+    static File currentEditorFile() {
+        File activated = fileOf(TopComponent.getRegistry().getActivated());
+        if (activated != null) {
+            return activated;
+        }
+        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (tc.isShowing()
+                    && org.openide.windows.WindowManager.getDefault()
+                            .isOpenedEditorTopComponent(tc)) {
+                File f = fileOf(tc);
+                if (f != null) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
 
+    /** The TC's file on disk, or null (welcome tabs, studios, unsaved buffers). */
+    static File fileOf(TopComponent tc) {
+        if (tc == null) {
+            return null;
+        }
+        DataObject dob = tc.getLookup().lookup(DataObject.class);
+        return dob == null ? null : FileUtil.toFile(dob.getPrimaryFile());
     }
 }

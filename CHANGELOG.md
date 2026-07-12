@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.45.0] — 2026-07-11
+
+The context release: ledger 29, the one big architectural arc, worked as
+its own release. The rack's aimed project is now a first-class platform
+citizen.
+
+### Added
+- **Aiming publishes to the platform.** A real aim opens the project in
+  OpenProjects and makes it the main project (background lane; re-entrancy
+  flag so WebProjectOpenedHook's echo terminates on our guard; passive
+  aims — the fresh-boot ~/NMOX default, persisted window state, quiet
+  experiment opens — provably never resolve platform projects, keeping the
+  boot laws; nothing is ever closed on re-aim).
+- **The aim-owning windows publish a real selection.** Task Rack, Project
+  Studio and Workbench expose the aimed directory's node via
+  setActivatedNodes (off-EDT resolve, equality-guarded, showing-gated) —
+  so Utilities.actionsGlobalContext() finally sees NMOX's context.
+- **The payoff, live-verified**: the Team menu is the full enabled git
+  suite with just a project aimed (in v1.40.0 it was one disabled stub —
+  three invocation strategies failed); the git chip's Show Changes / Diff
+  / Annotate verbs are back, opening the platform's real windows.
+
+### Notes
+- Still open by design (ledger 29 remainder): context-sensitive Kit-action
+  registrations (focus-keyed enablement would disable them while the
+  editor is focused — a UX regression masquerading as idiom) and lookups
+  for the seven non-aim windows. Both are incremental now; the pattern is
+  established. 19 new tests, guards mutation-proven.
+
 ## [1.44.0] — 2026-07-10
 
 The debt sweep. No new features: seven ledger items worked with the

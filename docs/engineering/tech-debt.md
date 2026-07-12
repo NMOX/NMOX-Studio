@@ -102,17 +102,24 @@ follows is what the review *deliberately did not fix*.
 ### 29. The rack IS the context system — not OpenProjects/actionsGlobalContext
 The platform models "the current project" as `OpenProjects` plus selection via
 `Utilities.actionsGlobalContext()`; NMOX models it as ONE globally aimed rack
-(`RackService.getRack().getProjectDir()`), read directly by every module. Two
-consequences the audit named: project actions (PWA Kit, Standards Kit, Classic
-Kit, Switch Project…) are always-enabled and scold at runtime instead of
-auto-disabling via context, and our TopComponents are Lookup-opaque (none call
-`associateLookup`, so Navigator/Save/context actions can't see their
-selection — NpmExplorer even documents reading the registry by hand because
-its own lookup is empty). **Deferred as identity, not accident**: one aimed
-rack shared by every tool is the product's core metaphor, and the migration
-(publish the aim as a `Project` in a global Lookup, context-sensitive action
-registrations, per-TC lookups) is a coordinated sprint across all ten
-TopComponents, not a cleanup. Do it as its own release or not at all.
+(`RackService.getRack().getProjectDir()`), read directly by every module.
+**Worked as its own release in v1.45.0** — the core of the migration shipped:
+a real aim now publishes to `OpenProjects` (the bridge in RackService:
+findProject → open + setMainProject on a background lane, with a re-entrancy
+flag so WebProjectOpenedHook's echo terminates on OUR guard, passive aims —
+fresh-boot ~/NMOX, persisted window state, the follower — provably never
+resolving platform projects, and a never-close law source-gated); the three
+aim-owning windows (Task Rack, Project Studio, Workbench) publish the aimed
+directory's DataFolder node via `setActivatedNodes` (AimNodePublisher:
+off-EDT resolve, EDT delivery, equality-guarded, componentShowing-gated so
+hidden boot tabs resolve nothing); and the git chip's Show Changes / Diff /
+Annotate returned as `createContextAwareInstance` invocations against that
+same node, with an honest Team-menu fallback. **Still open, deliberately**:
+context-sensitive action registrations (PWA Kit, Standards Kit, Classic Kit
+still always-enabled and scolding at runtime) and per-TC lookups for the
+seven studio/tool windows that don't own the aim (NpmExplorer still reads
+the registry by hand) — each is now an incremental follow-on with the
+pattern established, not a coordinated big-bang.
 
 ### 30. `catch (LinkageError)` as the soft-dependency mechanism (~40 sites)
 project/infra/apiclient/web3/dbstudio/ui treat rack as optional by importing
