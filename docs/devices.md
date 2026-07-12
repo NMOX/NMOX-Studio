@@ -1,7 +1,7 @@
 # The Device Reference
 
 Every unit in the rack, straight from the catalog — this file is
-generated from `DeviceType` by `DeviceDocsTest` and CI fails if it
+generated from `DeviceCatalog` by `DeviceDocsTest` and CI fails if it
 drifts. Do not edit by hand; regenerate with:
 
 ```

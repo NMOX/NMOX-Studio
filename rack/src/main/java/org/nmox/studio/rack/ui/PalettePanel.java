@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.TransferHandler;
+import org.nmox.studio.rack.devices.DeviceCatalog;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.ui.controls.RackStyle;
@@ -60,13 +61,14 @@ public class PalettePanel extends JPanel {
         Runnable refilter = () -> {
             String query = search.getText().trim().toLowerCase();
             model.clear();
+            java.util.List<DeviceCatalog.Entry> catalog = DeviceCatalog.all();
             for (DeviceType.PaletteCategory category : DeviceType.PaletteCategory.values()) {
-                java.util.List<DeviceType> matches = new java.util.ArrayList<>();
-                for (DeviceType t : DeviceType.values()) {
-                    if (t.getPaletteCategory() == category
+                java.util.List<DeviceCatalog.Entry> matches = new java.util.ArrayList<>();
+                for (DeviceCatalog.Entry t : catalog) {
+                    if (t.category() == category
                             && (query.isEmpty()
-                            || t.getTitle().toLowerCase().contains(query)
-                            || t.getDescription().toLowerCase().contains(query)
+                            || t.title().toLowerCase().contains(query)
+                            || t.description().toLowerCase().contains(query)
                             || category.label.toLowerCase().contains(query))) {
                         matches.add(t);
                     }
@@ -110,15 +112,15 @@ public class PalettePanel extends JPanel {
 
             @Override
             protected Transferable createTransferable(JComponent c) {
-                return list.getSelectedValue() instanceof DeviceType t
-                        ? new StringSelection(t.getId()) : null;
+                return list.getSelectedValue() instanceof DeviceCatalog.Entry t
+                        ? new StringSelection(t.id()) : null;
             }
         });
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    if (list.getSelectedValue() instanceof DeviceType t) {
+                    if (list.getSelectedValue() instanceof DeviceCatalog.Entry t) {
                         rack.addDevice(t.create());
                     }
                 }
@@ -141,21 +143,21 @@ public class PalettePanel extends JPanel {
 
     private static final class DeviceRenderer extends JPanel implements ListCellRenderer<Object> {
 
-        private DeviceType type;
+        private DeviceCatalog.Entry type;
         private String headerText;
         private boolean selected;
 
         @Override
         public Component getListCellRendererComponent(JList<? extends Object> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof DeviceType t) {
+            if (value instanceof DeviceCatalog.Entry t) {
                 this.type = t;
                 this.headerText = null;
                 this.selected = isSelected;
                 setPreferredSize(new Dimension(210, 52));
-                String firstRecipeLine = t.getUsage().split("\\n")[0];
-                setToolTipText("<html><b>" + t.getTitle() + "</b> — "
-                        + t.getDescription() + "<br><i>" + firstRecipeLine
+                String firstRecipeLine = t.usage().split("\\n")[0];
+                setToolTipText("<html><b>" + t.title() + "</b> — "
+                        + t.description() + "<br><i>" + firstRecipeLine
                         + "</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>");
             } else {
                 this.type = null;
@@ -189,17 +191,17 @@ public class PalettePanel extends JPanel {
             // mini faceplate card
             g.setColor(RackStyle.FACE_BOTTOM);
             g.fillRoundRect(6, 4, w - 12, h - 8, 8, 8);
-            g.setColor(type.getAccent());
+            g.setColor(type.accent());
             g.fillRoundRect(6, 4, 5, h - 8, 4, 4);
             g.setColor(new Color(0, 0, 0, 120));
             g.drawRoundRect(6, 4, w - 12, h - 8, 8, 8);
 
             g.setFont(RackStyle.LABEL_FONT);
             g.setColor(RackStyle.SILKSCREEN);
-            g.drawString(type.getTitle(), 20, 22);
+            g.drawString(type.title(), 20, 22);
             g.setFont(RackStyle.TINY_FONT);
             g.setColor(RackStyle.SILKSCREEN_DIM);
-            String desc = type.getDescription();
+            String desc = type.description();
             int dash = desc.indexOf("—");
             g.drawString(dash > 0 ? desc.substring(dash + 1).trim() : desc, 20, 38);
             g.dispose();

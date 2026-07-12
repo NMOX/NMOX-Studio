@@ -125,8 +125,40 @@ public abstract class RackDevice extends JPanel {
         // re-attach (undo of a remove) brings the same instance back to life
         disposed = false;
         this.rack = rack;
+        if (busName == null) {
+            busName = uniqueBusName();
+        }
         rack.addListener(bayListener);
         onAttached();
+    }
+
+    /**
+     * The name this device's output travels under — the Output tab, the
+     * monitor bus, and the flight recorder all key on it. The bare title
+     * collided: two SOLDERs merged their timelines and duration stats
+     * into one phantom device. The first instance keeps the plain title
+     * (existing journals stay continuous); later same-title instances
+     * get " ·2", " ·3"… Assigned once at first attach and kept for the
+     * instance's life, so undo re-attach never renames a running lane.
+     */
+    protected final String busName() {
+        return busName != null ? busName : title;
+    }
+
+    private String busName;
+
+    private String uniqueBusName() {
+        java.util.Set<String> taken = new java.util.HashSet<>();
+        for (RackDevice d : rack.getDevices()) {
+            if (d != this && d.busName != null) {
+                taken.add(d.busName);
+            }
+        }
+        String candidate = title;
+        for (int n = 2; taken.contains(candidate); n++) {
+            candidate = title + " ·" + n;
+        }
+        return candidate;
     }
 
     /** Called once the device is in a rack; project dir is available now. */
@@ -303,7 +335,7 @@ public abstract class RackDevice extends JPanel {
         // it — that would orphan a live process (isLive()/panic() would see
         // nothing to kill).
         CommandExecutor.Handle[] self = new CommandExecutor.Handle[1];
-        self[0] = CommandExecutor.run(title, workingDir, env,
+        self[0] = CommandExecutor.run(busName(), workingDir, env,
                 command, onLine, code -> {
                     if (running == self[0]) {
                         running = null;

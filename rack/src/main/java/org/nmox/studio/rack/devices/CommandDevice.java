@@ -329,7 +329,7 @@ public abstract class CommandDevice extends RackDevice {
                         getTitle() + " failed (exit " + code + ")",
                         javax.swing.UIManager.getIcon("OptionPane.errorIcon"),
                         "Project: " + projectDir().getName() + " — click to open the output",
-                        e -> org.nmox.studio.rack.engine.CommandExecutor.showOutput(getTitle()));
+                        e -> org.nmox.studio.rack.engine.CommandExecutor.showOutput(busName()));
             } catch (RuntimeException | LinkageError ignored) {
                 // notification service unavailable (tests, stripped platform)
             }

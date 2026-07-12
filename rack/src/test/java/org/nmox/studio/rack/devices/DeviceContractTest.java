@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.ui.controls.Knob;
@@ -15,15 +15,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The control-surface contract, enforced for every cataloged device:
  * ports are unique and labeled, state survives a save/load round trip,
- * and the faceplate fits the rack. New devices inherit these checks
- * for free by being in the DeviceType catalog.
+ * and the faceplate fits the rack. New devices inherit these checks for
+ * free by being in the DeviceCatalog — parameterization runs over the
+ * catalog, not the enum, so a registry-contributed device (the future
+ * device SPI) is held to the same laws as a built-in.
  */
 class DeviceContractTest {
 
+    static java.util.List<DeviceCatalog.Entry> catalog() {
+        return DeviceCatalog.all();
+    }
+
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Port ids must be unique and labeled within a device")
-    void portIdsUniqueAndLabeled(DeviceType type) {
+    void portIdsUniqueAndLabeled(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         Set<String> seen = new HashSet<>();
         for (Port p : device.getPorts()) {
@@ -36,9 +42,9 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Jacks must sit inside the back panel")
-    void portsInsideThePanel(DeviceType type) {
+    void portsInsideThePanel(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         int w = device.getPreferredSize().width;
         int h = device.getPreferredSize().height;
@@ -49,9 +55,9 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Control state must survive a save/load round trip")
-    void stateRoundTrips(DeviceType type) {
+    void stateRoundTrips(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         Map<String, String> state = device.getState();
 
@@ -64,9 +70,9 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Controls must stay inside the faceplate, clear of the ears")
-    void controlsInsideTheFaceplate(DeviceType type) {
+    void controlsInsideTheFaceplate(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         int w = device.getPreferredSize().width;
         int h = device.getPreferredSize().height;
@@ -81,9 +87,9 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("The port lexicon: long-runners pair START with STOP; gates read RUNNING/SERVING")
-    void portLexicon(DeviceType type) {
+    void portLexicon(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         java.util.Set<String> inIds = new HashSet<>();
         java.util.Set<String> gateLabels = new HashSet<>();
@@ -108,9 +114,9 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Every placed control exposes a non-blank accessible name")
-    void controlsExposeAccessibleNames(DeviceType type) {
+    void controlsExposeAccessibleNames(DeviceCatalog.Entry type) {
         RackDevice device = type.create();
         java.util.List<String> nameless = new java.util.ArrayList<>();
         for (java.awt.Component c : device.getComponents()) {
@@ -126,14 +132,14 @@ class DeviceContractTest {
     }
 
     @ParameterizedTest
-    @EnumSource(DeviceType.class)
+    @MethodSource("catalog")
     @DisplayName("Every device has a palette category and a usage recipe")
-    void shelfGuidance(DeviceType type) {
-        assertThat(type.getPaletteCategory()).isNotNull();
-        assertThat(type.getUsage()).as(type + " usage").isNotBlank();
+    void shelfGuidance(DeviceCatalog.Entry type) {
+        assertThat(type.category()).isNotNull();
+        assertThat(type.usage()).as(type + " usage").isNotBlank();
         // two lines minimum: what it does, and a concrete recipe
-        assertThat(type.getUsage()).as(type + " usage has a recipe line").contains("\n");
-        assertThat(type.getUsage().length()).as(type + " usage substance").isGreaterThan(60);
+        assertThat(type.usage()).as(type + " usage has a recipe line").contains("\n");
+        assertThat(type.usage().length()).as(type + " usage substance").isGreaterThan(60);
     }
 
     @org.junit.jupiter.api.Test

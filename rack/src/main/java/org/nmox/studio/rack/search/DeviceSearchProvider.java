@@ -4,7 +4,7 @@ import java.util.Locale;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
-import org.nmox.studio.rack.devices.DeviceType;
+import org.nmox.studio.rack.devices.DeviceCatalog;
 import org.nmox.studio.rack.service.RackService;
 
 /**
@@ -21,9 +21,9 @@ public class DeviceSearchProvider implements SearchProvider {
         if (needle.isBlank()) {
             return;
         }
-        for (DeviceType type : DeviceType.values()) {
-            if (type.getTitle().toLowerCase(Locale.ROOT).contains(needle)
-                    || type.getDescription().toLowerCase(Locale.ROOT).contains(needle)) {
+        for (DeviceCatalog.Entry type : DeviceCatalog.all()) {
+            if (type.title().toLowerCase(Locale.ROOT).contains(needle)
+                    || type.description().toLowerCase(Locale.ROOT).contains(needle)) {
                 boolean more = response.addResult(() -> javax.swing.SwingUtilities.invokeLater(() -> {
                     RackService.getDefault().getRack().addDevice(type.create());
                     org.openide.windows.TopComponent rack = org.openide.windows.WindowManager
@@ -32,7 +32,7 @@ public class DeviceSearchProvider implements SearchProvider {
                         rack.open();
                         rack.requestActive();
                     }
-                }), type.getTitle() + "  —  " + type.getDescription());
+                }), type.title() + "  —  " + type.description());
                 if (!more) {
                     return;
                 }
