@@ -5,7 +5,9 @@ sprint, extended by the v1.23.0 completeness sprint, worked through
 end-to-end by the v1.26.0 complete-system sprint (2026-07-03), and
 re-audited whole by the v1.36.0 senior-review sprint (2026-07-05: a
 six-lens read-only architecture audit, then fixes for everything it
-proved). Every entry is either open with a reason it was deferred, or
+proved), and again by the v1.56.0 third senior review (2026-07-12:
+five lenses over the v1.40–v1.55 surface; fixes for the proven, items
+41–44 added with reasons). Every entry is either open with a reason it was deferred, or
 closed with the version that closed it. The v0.x-era debt documents in
 `docs/hack/` are archaeology; this file is the truth.
 

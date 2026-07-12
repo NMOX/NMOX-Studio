@@ -1,7 +1,10 @@
 # The Plan
 
 *Rewritten 2026-07-12, at v1.50.0, as a fresh senior-eyes capstone by the
-assistant that built v1.8→v1.50 with David. The prior capstone was written
+assistant that built v1.8→v1.50 with David; currency pass the same day at
+v1.56.0 after the roadmap sprint shipped six more releases (update center,
+ORACLE, community Learning Spaces, the SPI pre-work, the Device SPI, the
+third senior review). The prior capstone was written
 at v1.36.0; seven releases (v1.44.0→v1.50.0) ran overnight and drained the
 high-value debt queue, so this is a from-scratch pass, not a patch. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
@@ -11,11 +14,13 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.50.0, ~2,370+ tests, six
-release assets per tag, Homebrew cask, a windows-latest CI lane that runs
-the full verify) whose identity is the **Reason-style task rack**: 44
+NMOX Studio is a shipping NetBeans RCP IDE (v1.56.0, ~2,480 tests, 19
+release assets per tag — six installers/SBOM plus the update-center catalog
+and the 11 module NBMs — Homebrew cask, a windows-latest CI lane that runs
+the full verify) whose identity is the **Reason-style task rack**: 45
 hardware-styled devices wired with patch cables, backed by real process
-execution, session resurrection, and CI export. Around it: a 48-grammar
+execution, session resurrection, CI export, and since v1.55.0 a **frozen
+public Device SPI** third parties extend it through. Around it: a 48-grammar
 polyglot editor with LSP, four studios (API, DB, Contract/Web3, Infra), the
 classic-web-first-class layer, Learning Spaces, and the v1.35 "connections"
 spine (ServingRegistry + ManifestPulse) that keeps every surface live-synced.
@@ -49,7 +54,7 @@ Since the v1.36.0 senior-review capstone, five things graduated from
 - **It's usable without a mouse or a screen.** The widget library speaks
   Swing accessibility (v1.41.0): SLIDER knobs with keyboard arrows and focus
   rings, Space/Enter buttons, state-announcing LEDs/LCDs/VU meters; every
-  control on all 44 devices exposes an accessible name, CI-gated by
+  control on all 45 devices exposes an accessible name, CI-gated by
   DeviceContractTest's name law (59 controls fixed to get there).
 - **Its module system tells the truth.** Spec versions track the product
   version with real inter-module dependency ranges (v1.47.0, ledger 20), so a
@@ -75,15 +80,13 @@ What remains, ranked by how much it would matter to a daily driver — and the
 honest headline is that **the high-value queue is drained**. Most of what's
 left is either a settled won't-fix or a call that needs a product decision.
 
-1. **The update-center policy decision** (ledger 21) — *needs a product
-   call, not code.* The platform autoupdate modules ship in the cluster with
-   no update center: dead weight in the download, harmless at runtime. The
-   two options are "remove them from the cluster (Plugins-menu implications)"
-   or "build a real UC fed by the release workflow." The version scheme a UC
-   would need now EXISTS (spec versions closed in v1.47.0), so the technical
-   blocker is gone — this is purely "do we want an in-app plugin story?"
-   Highest-ranked because it's the one open item that a user decision could
-   move today.
+1. **The update-center policy decision — DECIDED AND SHIPPED (v1.51.0,
+   ledger 21 closed).** The user chose "build the real update center": Tools ▸
+   Plugins now offers every newer release's product modules from a catalog the
+   release workflow publishes (`releases/latest/download/updates.xml`, every
+   NBM pinned by absolute per-tag URL). The v1.56.0 review then unified the
+   channels: the daily release heads-up opens the same in-app Plugin Manager
+   the platform's weekly check uses.
 
 2. **The ledger-29 remainder: Kit-action context registration** (deferred
    with a real UX reason). The context migration is done except that the PWA
@@ -169,11 +172,16 @@ docs + live verify), never as a checkbox:
   behavior; rack's friends line and internals stay free to change; B-now does
   not preclude A-later, while A-now precludes ever narrowing. v1.54.0 shipped
   the pre-work (DeviceCatalog seam, MissingDevice lossless placeholders,
-  bus-name identity, catalog-driven contract tests, CI-step capability); the
-  SPI itself is the next release on that foundation.
-- **Learning Spaces as a community catalog.** 52 built-in spaces; the catalog
-  is already data-driven JSON. A `~/.nmox/learn-catalog.d/` drop-in dir plus a
-  documented schema is a small change with outsized reach.
+  bus-name identity, catalog-driven contract tests, CI-step capability);
+  **v1.55.0 shipped the SPI itself** (core.spi.device, ExtensionDevice host,
+  Lookup merge, live NBM install E2E) and **v1.56.0 review-hardened it** the
+  day after (onAttached revival hook, guarded mount paths, dispose ordering,
+  port-count cap) while it had zero external consumers.
+- **Learning Spaces as a community catalog — SHIPPED (v1.53.0).** Every
+  `*.json` in `~/.nmox/learn-catalog.d/` joins the picker (same schema as the
+  built-ins, documented in docs/learning-spaces.md); slug-match overrides a
+  built-in, malformed files skip-with-note, read lazily on picker-open behind
+  a path+mtime+size cache. Live-verified with a planted community space.
 - **AI assistance through the rack's metaphor — SHIPPED (v1.52.0).** The
   ORACLE device (45th) explains the error currently on the MONITOR bus:
   EXPLAIN (QUERY-blue) reads the last failed run off the FlightRecorder and
@@ -291,12 +299,9 @@ cluster all shipped. What remains is not "more debt to grind"; it splits
 cleanly into three buckets, and only one of them is a coding task I can pick
 up without direction:
 
-1. **A product decision, not code: the update-center policy (ledger 21).**
-   The technical blocker (a version scheme) is gone as of v1.47.0. The
-   remaining question — remove the autoupdate modules from the cluster, or
-   build a real update center fed by the release workflow — is a direction
-   call. This is the top item precisely because it's the one thing a user
-   answer would unblock immediately.
+1. **The update-center policy: RESOLVED (v1.51.0).** Built, shipped,
+   live-verified against real GitHub-hosted assets, and (v1.56.0) unified
+   with the daily notifier onto one in-app updater.
 
 2. **The public device SPI: SHIPPED (v1.55.0).** Shape B built and live-
    verified — an out-of-tree NBM installed through Tools ▸ Plugins put a
@@ -309,11 +314,28 @@ up without direction:
    a real triggering path appears. Do NOT reopen them on a remembered reason —
    each has its written verdict in tech-debt.md.
 
-So: **autonomous shipping should pause here pending direction.** The next move
-is either a product decision (the update center) or a net-new feature that
-needs the user to choose a direction (the device SPI, a community learning
-catalog, or the ORACLE idea). Grinding further into the ledger would mean
-churning settled won't-fixes or spending a sprint on i18n/wsmode-migration
-work with no user pulling for it — lower value than a short conversation about
-what to build next. Resist, as always: new studios, new languages, and any
-feature that can't be drawn as a device with an honest control surface.
+So, as of v1.56.0: **every direction call named above got its answer and
+shipped** — the update center (v1.51.0), ORACLE (v1.52.0), the community
+learning catalog (v1.53.0), and the Device SPI (v1.54.0 pre-work, v1.55.0
+build, v1.56.0 review-hardening). The roadmap the user set is complete and
+the third senior review found the house laws holding. What genuinely remains,
+in order of value:
+
+1. **Ledger 41 — the systemic `RackDevice.exec` EDT fork** (dotenv reads +
+   `ProcessBuilder.start()` on the button path, all 46 devices). Pre-existing
+   and mount-conditional, deliberately deferred to its own focused release
+   with live verification because it changes the threading contract of the
+   rack's hottest path.
+2. **The Windows `JsDebugServerTest` @TempDir flake** (ledger 37/38 class:
+   Windows holds file locks until the js-debug Node process dies; bit the
+   v1.56.0 main gate once, passed on rerun). Small, evidenced, worth killing.
+3. **Watching the SPI in the wild** — the deliberate v1 scope items (CI
+   export for extensions, custom painting, resurrection, `DeviceLogic`
+   additions) grow additively when a real plugin author asks.
+4. **Settled won't-fixes and bounded residue** (ledger 1–7, 33, 36, 24,
+   38/40, 42–44): revisit only when a premise changes.
+
+Grinding further into the ledger would mean churning settled won't-fixes or
+spending a sprint on i18n/wsmode-migration work with no user pulling for it.
+Resist, as always: new studios, new languages, and any feature that can't be
+drawn as a device with an honest control surface.
