@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  A complete, buildable third-party rack device — the worked example from
+  docs/device-spi.md. It is NOT part of the NMOX Studio reactor: a plugin is
+  an independent project that compiles against the published core module and
+  packages as an NBM you install through Tools > Plugins.
+
+  Build:  (once) install the core module from the repo root:
+              mvn -q -pl core -am install -DskipTests
+          then here:
+              mvn -q package
+          -> target/uptime-device-1.0.0.nbm
+
+  Install: Tools > Plugins > Downloaded > Add Plugins... > pick the .nbm.
+  NBMs are unsigned unless you sign them; the platform shows its
+  unsigned-plugin dialog. See docs/device-spi.md for the full walkthrough.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>uptime-device</artifactId>
+    <version>1.0.0</version>
+    <packaging>nbm</packaging>
+    <name>Uptime Device (NMOX Studio SPI example)</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+        <netbeans.version>RELEASE300</netbeans.version>
+    </properties>
+
+    <dependencies>
+        <!-- The frozen Device SPI lives in the core module. -->
+        <dependency>
+            <groupId>org.nmox</groupId>
+            <artifactId>NMOX-Studio-core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!-- @ServiceProvider -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.netbeans.utilities</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+                <version>14.5</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <codeNameBase>com.example.uptime</codeNameBase>
+                    <author>Example Third Party</author>
+                    <licenseName>MIT</licenseName>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <!-- JDK 23+ defaults to -proc:none; @ServiceProvider
+                         registration silently vanishes without processing. -->
+                    <proc>full</proc>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

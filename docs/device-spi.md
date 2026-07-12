@@ -44,6 +44,10 @@ rather than failing at call time.
 - **Fit**: a face that overflows its declared units (of 66px) fails at
   mount naming the control. Knobs and toggles need 2 units.
 
+>**A ready-to-build copy of everything below lives in
+[`examples/uptime-device/`](../examples/uptime-device/)** — the exact plugin
+installed live to validate the SPI in v1.55.0. Clone it as your starting point.
+
 ## A complete device
 
 `pom.xml` (packaging `nbm`; note `-proc:full` — on JDK 23+ the
