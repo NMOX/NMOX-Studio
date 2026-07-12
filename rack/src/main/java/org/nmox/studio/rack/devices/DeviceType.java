@@ -53,7 +53,8 @@ public enum DeviceType {
     BUNDLE_SIZE("bundle-size", "PRISM", "Bundle-Size Gate — weigh the build, hold the line", new Color(150, 120, 220), BundleSizeDevice::new),
     LOCAL_CHAIN("anvil", "ANVIL", "Local EVM chain — anvil devnet with unlocked accounts", new Color(0x8A, 0x9B, 0xA8), AnvilDevice::new),
     GAS_BUDGET("gas-budget", "GOVERNOR", "Gas budget gate — forge snapshot --check", new Color(0xC9, 0xA2, 0x27), GovernorDevice::new),
-    TASK_RUNNER("task-runner", "DYNAMO", "Grunt/Gulp task runner — dial a task, GO", new Color(210, 150, 50), DynamoDevice::new);
+    TASK_RUNNER("task-runner", "DYNAMO", "Grunt/Gulp task runner — dial a task, GO", new Color(210, 150, 50), DynamoDevice::new),
+    ORACLE("oracle", "ORACLE", "Error Explainer — AI explains the last failed run, on a button press", new Color(120, 90, 220), OracleDevice::new);
 
     private final String id;
     private final String title;
@@ -109,7 +110,7 @@ public enum DeviceType {
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE, LOCAL_CHAIN -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS, ARTISAN -> PaletteCategory.FRAMEWORKS;
-            case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON -> PaletteCategory.OBSERVE;
+            case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON, ORACLE -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA -> PaletteCategory.UTILITY;
         };
@@ -162,6 +163,7 @@ public enum DeviceType {
             case LOCAL_CHAIN -> "START boots anvil on the dialed PORT: a local EVM chain, ten unlocked funded accounts, instant mining.\nPatch URL → Contract Studio's network and SERVING → a gate; FORK-URL forks any live network's state.";
             case GAS_BUDGET -> "CHECK runs forge snapshot --check against the committed .gas-snapshot; TOLERANCE allows dialed drift.\nPatch VERITAS OK → CHECK and OK → LAUNCHPAD: gas regressions physically cannot ship.";
             case TASK_RUNNER -> "The Grunt/Gulp era as a device: TASK lists what the Gruntfile or gulpfile declares (static parse, instant).\nDial a task, GO runs npx grunt/gulp <task>; RUNNER settles grunt-vs-gulp when a repo carries both. Patch OK onward to chain.";
+            case ORACLE -> "EXPLAIN reads the last failed run off the flight recorder and asks the Anthropic API what went wrong and how to fix it — QUERY-blue, no project mutation.\nSet the key with KEY… (OS keychain, or ANTHROPIC_API_KEY/CLAUDE_API_KEY); first press asks a one-time consent naming exactly what's sent; MODEL dials HAIKU or SONNET; VIEW opens the full answer.";
         };
     }
 

@@ -111,6 +111,14 @@
             <version>${orgjson.version}</version>
         </dependency>
 
+        <!-- OS keychain for the ORACLE API key: the RpcSecrets/Passwords
+             idiom — the key never touches prefs or the workspace file. -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+
         <!-- Quick Search providers (toolbar Cmd+I) -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
