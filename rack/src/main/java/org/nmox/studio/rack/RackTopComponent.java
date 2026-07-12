@@ -64,6 +64,10 @@ public final class RackTopComponent extends TopComponent {
     private final JLabel projectLabel = new JLabel();
     private JToggleButton flipToggle;
 
+    /** Single-throughput writer lane for the interactive patch save. */
+    private static final org.openide.util.RequestProcessor SAVE_RP =
+            new org.openide.util.RequestProcessor("nmox-rack-patch-save", 1);
+
     /**
      * Flips the rack on Tab whenever this window is active. Swing's focus
      * traversal normally consumes Tab before key bindings ever see it, so
@@ -227,17 +231,29 @@ public final class RackTopComponent extends TopComponent {
         JButton save = new JButton("Save Patch");
         save.addActionListener(e -> {
             File target = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
-            try {
-                RackIO.save(rack, target);
-                // momentary confirmation, then back to the plain name -
-                // never appended onto itself across repeated saves
-                projectLabel.setText(rack.getProjectDir().getName() + "  [saved]");
-                javax.swing.Timer revert = new javax.swing.Timer(2000, ev -> updateProjectLabel());
-                revert.setRepeats(false);
-                revert.start();
-            } catch (IOException ex) {
-                error("Could not save the patch: " + ex.getMessage());
-            }
+            // the JSON snapshot is taken here (synchronous, model-consistent);
+            // only the disk write rides the lane — the one workspace writer
+            // the v1.44 SaveLane sweep left on the EDT (v1.56 review, F3)
+            org.json.JSONObject snapshot = RackIO.toJson(rack);
+            String projectName = rack.getProjectDir().getName();
+            SAVE_RP.post(() -> {
+                try {
+                    org.nmox.studio.core.util.AtomicFiles.writeString(
+                            target.toPath(), snapshot.toString(2));
+                    java.awt.EventQueue.invokeLater(() -> {
+                        // momentary confirmation, then back to the plain name -
+                        // never appended onto itself across repeated saves
+                        projectLabel.setText(projectName + "  [saved]");
+                        javax.swing.Timer revert = new javax.swing.Timer(2000,
+                                ev -> updateProjectLabel());
+                        revert.setRepeats(false);
+                        revert.start();
+                    });
+                } catch (IOException ex) {
+                    java.awt.EventQueue.invokeLater(() ->
+                            error("Could not save the patch: " + ex.getMessage()));
+                }
+            });
         });
         bar.add(save);
 
