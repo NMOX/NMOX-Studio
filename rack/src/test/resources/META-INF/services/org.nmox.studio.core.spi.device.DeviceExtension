@@ -1,0 +1,4 @@
+org.nmox.studio.rack.devices.SpiFixtures$Good
+org.nmox.studio.rack.devices.SpiFixtures$UndottedId
+org.nmox.studio.rack.devices.SpiFixtures$CollidingId
+org.nmox.studio.rack.devices.SpiFixtures$ThinUsage

@@ -109,6 +109,11 @@
                              publishes ProjectAim/LiveServings providers,
                              studios look them up and branch on null -->
                         <publicPackage>org.nmox.studio.core.spi</publicPackage>
+                        <!-- the Device SPI (v1.55.0): frozen, additive-only.
+                             Third-party modules compile against this and the
+                             rack hosts their devices — rack internals stay
+                             friend-locked and free to change. -->
+                        <publicPackage>org.nmox.studio.core.spi.device</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>
