@@ -83,6 +83,12 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
   (move + git init), discard the rest.
 - **`.env` respected everywhere**: every command the rack launches reads
   the project's `.env`/`.env.local` automatically; rack settings win.
+- **Git on the status line**: aim inside a repo and a **⎇ branch chip**
+  appears (`⎇ main ±3` — HEAD read straight from disk, no git process
+  until you interact). Click it for **Show Changes, Diff, Annotate,
+  History, Refresh** — and because aiming opens the project for the
+  whole platform, the **Team** menu is the full enabled git suite with
+  just a project aimed, nothing selected.
 
 ### 🧠 The rack remembers, sees, and survives
 - **BLACKBOX** records every launch, exit, duration, and error on a session
