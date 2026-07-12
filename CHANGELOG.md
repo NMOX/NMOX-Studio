@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.53.0] — 2026-07-12
+
+Community Learning Spaces. The 52 built-in tutorials have always been
+data-driven JSON; now anyone can add their own.
+
+### Added
+- **`~/.nmox/learn-catalog.d/` drop-in catalog.** Every `*.json` file in
+  that directory contributes learning spaces to the New Learning Space
+  picker, merged with the built-ins. A drop-in space with the same `slug`
+  as a built-in **overrides** it (improve a shipped tutorial without
+  forking); new slugs append. Schema is exactly the built-in catalog's,
+  documented with a worked example in `docs/learning-spaces.md`.
+- Malformed files are skipped whole with a logged warning and a
+  status-line note naming the file — one bad drop-in never blocks the
+  picker or its neighbours. The directory is read lazily when the picker
+  opens (never at boot), cached against a path+mtime+size fingerprint so
+  an edit shows on the next open without a restart while an unchanged dir
+  costs one listing.
+
 ## [1.52.0] — 2026-07-12
 
 ORACLE — AI assistance through the rack's metaphor. The 45th device
