@@ -158,15 +158,19 @@ startup was measured and closed (v1.38.0). What's genuinely left as
 mature. Each earns its place only as a full vertical slice (device + tests +
 docs + live verify), never as a checkbox:
 
-- **A public device SPI — now unblocked.** Third parties writing rack devices
-  was deferred (v1.35 ledger) on one hard prerequisite: without real spec
-  versions, every plugin breaks on every release. That prerequisite **shipped
-  in v1.47.0** (spec versions with enforced ranges), and v1.46.0's friend
-  declarations already draw the line between first-party and outside consumers.
-  So the blocker is gone; what remains is the deliberate act of *freezing* the
-  `RackDevice` contract (it is stable and storm-law-tested) and documenting it.
-  This is the single largest net-new lever, and it is now a decision rather
-  than a dependency.
+- **A public device SPI — DECIDED, pre-work shipped (v1.54.0).** The user
+  chose shape B from the design dossier: a small *declarative* contract in
+  core.spi (descriptor + faceplate builder + logic callbacks, pure-JDK types),
+  hosted by the rack through an internal adapter — NOT freezing the
+  organically-grown `RackDevice` class. Rationale: the freeze surface designed
+  for freezing is ~8 small types instead of ~19 grown ones; every house law
+  (trust gate, color law via a Role enum, mandatory accessible names,
+  transport columns) is enforced by the HOST rather than by plugin good
+  behavior; rack's friends line and internals stay free to change; B-now does
+  not preclude A-later, while A-now precludes ever narrowing. v1.54.0 shipped
+  the pre-work (DeviceCatalog seam, MissingDevice lossless placeholders,
+  bus-name identity, catalog-driven contract tests, CI-step capability); the
+  SPI itself is the next release on that foundation.
 - **Learning Spaces as a community catalog.** 52 built-in spaces; the catalog
   is already data-driven JSON. A `~/.nmox/learn-catalog.d/` drop-in dir plus a
   documented schema is a small change with outsized reach.
@@ -294,11 +298,10 @@ up without direction:
    call. This is the top item precisely because it's the one thing a user
    answer would unblock immediately.
 
-2. **A net-new feature that needs a direction: the public device SPI.** Now
-   genuinely unblocked (spec versions exist, friends are declared). But
-   opening the `RackDevice` contract means *freezing* it, which is a
-   one-way door — worth doing only if third-party devices are actually a goal.
-   Ask before building.
+2. **The public device SPI: direction chosen (2026-07-12).** Shape B (the
+   declarative contract in core.spi, host-enforced laws) with pre-work first —
+   both user-blessed. v1.54.0 delivered the pre-work; building the SPI itself
+   is the standing next feature.
 
 3. **Settled won't-fixes and bounded residue** (ledger 1–7, 33, 36, 24, and
    the Windows Job-Objects pair 38/40): revisit only when a premise changes or
