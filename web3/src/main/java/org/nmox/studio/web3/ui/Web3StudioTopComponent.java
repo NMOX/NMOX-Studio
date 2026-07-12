@@ -222,7 +222,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private final JTextArea logArea = new JTextArea(5, 40);
 
-    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
     /** An artifact walk is owed but the tab is hidden; served on componentShowing. */
     boolean rescanPending;
@@ -262,7 +262,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         center.setDividerLocation(260);
         add(center, BorderLayout.CENTER);
 
-        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+        rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(Web3StudioTopComponent.this::reloadWorkspace);
@@ -1483,14 +1483,15 @@ public final class Web3StudioTopComponent extends TopComponent {
     // ---- persistence (.nmoxweb3.json, the RackService idiom) ---------------------
 
     private File projectDirOrNull() {
-        try {
-            File dir = org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().getProjectDir();
+        // soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests, stripped platform) — no aim to read
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            File dir = aim.projectDir();
             if (dir != null && dir.isDirectory()) {
                 return dir;
             }
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform)
         }
         return null;
     }
@@ -1627,13 +1628,13 @@ public final class Web3StudioTopComponent extends TopComponent {
     // ---- lifecycle -----------------------------------------------------------------
 
     private void attachRackListener() {
-        try {
-            org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().addListener(rackListener);
-            rackListenerAttached = true;
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no project switches to follow
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim == null) {
+            return; // rack absent (plain tests): no project switches to follow
         }
+        aim.addListener(rackListener);
+        rackListenerAttached = true;
     }
 
     @Override
@@ -1659,19 +1660,22 @@ public final class Web3StudioTopComponent extends TopComponent {
             loadedOnce = true;
             reloadWorkspace();
         }
-        try {
-            if (chainAutoConnect == null) {
+        if (chainAutoConnect == null) {
+            org.nmox.studio.core.spi.LiveServings servings =
+                    org.nmox.studio.core.spi.LiveServings.find();
+            if (servings != null) {
                 chainAutoConnect = new org.nmox.studio.web3.engine.ChainAutoConnect(
-                        org.nmox.studio.rack.service.ServingRegistry.getDefault(),
-                        new ChainSeam());
+                        servings, new ChainSeam());
             }
+            // null: rack absent (plain tests, stripped platform) — the
+            // manual network combo still works
+        }
+        if (chainAutoConnect != null) {
             chainAutoConnect.attach();
             // a chain that started while the tab was closed still connects;
             // the snapshot read belongs off the EDT
             org.nmox.studio.web3.engine.ChainAutoConnect poker = chainAutoConnect;
             RP.post(poker::refresh);
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): manual combo still works
         }
         restartPulseIfOpen();
     }
@@ -1685,18 +1689,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         stopWatch();
         stopPulse();
         if (chainAutoConnect != null) {
-            try {
-                chainAutoConnect.detach();
-            } catch (RuntimeException | LinkageError ignored) {
-                // already unavailable — nothing to detach from
-            }
+            chainAutoConnect.detach();
         }
         if (rackListenerAttached) {
-            try {
-                org.nmox.studio.rack.service.RackService.getDefault()
-                        .getRack().removeListener(rackListener);
-            } catch (RuntimeException | LinkageError ignored) {
-                // already unavailable — nothing to detach from
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            if (aim != null) {
+                aim.removeListener(rackListener);
             }
             rackListenerAttached = false;
         }

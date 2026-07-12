@@ -62,8 +62,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
     private DefaultMutableTreeNode rootNode;
     private JButton installButton;
     private NpmService npmService;
-    private org.nmox.studio.rack.model.Rack rackRef;
-    private org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private org.nmox.studio.core.spi.ProjectAim rackRef;
+    private org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private File currentProjectDir;
     /** A refresh is owed but the tab is hidden; served on componentShowing. */
     boolean refreshPending;
@@ -81,10 +81,12 @@ public final class NpmExplorerTopComponent extends TopComponent {
         // follow the aimed project: when the rack re-aims, this explorer
         // re-reads the new project's package.json automatically (the
         // listener is subscribed in componentOpened, unsubscribed in
-        // componentClosed, so close/reopen cycles never stack copies)
-        try {
-            rackRef = org.nmox.studio.rack.service.RackService.getDefault().getRack();
-            rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+        // componentClosed, so close/reopen cycles never stack copies).
+        // Soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests) — manual Refresh still works.
+        rackRef = org.nmox.studio.core.spi.ProjectAim.find();
+        if (rackRef != null) {
+            rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
                 @Override
                 public void projectChanged() {
                     javax.swing.SwingUtilities.invokeLater(() -> {
@@ -100,8 +102,6 @@ public final class NpmExplorerTopComponent extends TopComponent {
                     });
                 }
             };
-        } catch (RuntimeException | LinkageError ex) {
-            // rack unavailable; manual Refresh still works
         }
     }
 
@@ -280,17 +280,18 @@ public final class NpmExplorerTopComponent extends TopComponent {
 
     private FileObject findProjectDirectory() {
         // First choice: the project the IDE is aimed at (rack/workbench),
-        // using the Node manifest directory in mixed monorepos
-        try {
+        // using the Node manifest directory in mixed monorepos. Soft aim
+        // lookup (ledger 30): no provider (plain tests) falls through to
+        // context detection.
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
             File aimed = org.nmox.studio.rack.devices.ProjectInspector.kindDir(
-                    org.nmox.studio.rack.service.RackService.getDefault()
-                            .getRack().getProjectDir(),
+                    aim.projectDir(),
                     org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.NODE);
             if (aimed != null && new File(aimed, "package.json").isFile()) {
                 return FileUtil.toFileObject(aimed);
             }
-        } catch (RuntimeException | LinkageError ex) {
-            // rack unavailable; fall through to context detection
         }
 
         // Fall back to the window system's current selection. The registry

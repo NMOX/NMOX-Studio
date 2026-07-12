@@ -9,7 +9,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
 import org.nmox.studio.rack.engine.CommandExecutor;
-import org.nmox.studio.rack.service.RackService;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -54,10 +53,12 @@ final class WebProjectActionProvider implements ActionProvider {
 
         // the action and the rack are one mechanism: aim the rack so the
         // monitor, explorer and recent list all follow the same project.
-        try {
-            RackService.getDefault().openProject(dir);
-        } catch (RuntimeException | LinkageError ignore) {
-            // rack unavailable; the command still runs and shows output
+        // Soft aim lookup (ledger 30): no provider (plain tests) — the
+        // command still runs and shows output.
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.aim(dir);
         }
 
         String label = labelFor(command) + " — " + project.getName();

@@ -22,7 +22,6 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.nmox.studio.rack.devices.ProjectInspector;
-import org.nmox.studio.rack.service.RackService;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileUtil;
@@ -117,7 +116,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * Created lazily inside the rack-availability guard, kept for reuse so
      * add and remove always see the same instance.
      */
-    private org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
 
     /**
      * Guards double-attach: the rack's listener list is a
@@ -148,11 +147,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         if (aimPublisher == null || !aimNodeShowing) {
             return;
         }
-        try {
-            aimPublisher.publish(RackService.getDefault().getRack().getProjectDir());
-        } catch (RuntimeException | LinkageError ex) {
-            // rack unavailable: no aim to publish
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aimPublisher.publish(aim.projectDir());
         }
+        // null: rack absent — no aim to publish
     }
 
     public ProjectExplorerTopComponent() {
@@ -184,9 +184,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     public void componentOpened() {
         TopComponent.getRegistry().addPropertyChangeListener(registryListener);
         if (!rackListenerAttached) {
-            try {
+            // soft aim lookup (ledger 30): a null provider (plain tests,
+            // stripped platform) leaves a static workbench, same as before
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            if (aim != null) {
                 if (rackListener == null) {
-                    rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+                    rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
                         @Override
                         public void projectChanged() {
                             // through the coalescer: an aim that lands amid the
@@ -202,10 +206,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     aimPublisher = new org.nmox.studio.rack.service.AimNodePublisher(node ->
                             setActivatedNodes(new org.openide.nodes.Node[]{node}));
                 }
-                RackService.getDefault().getRack().addListener(rackListener);
+                aim.addListener(rackListener);
                 rackListenerAttached = true;
-            } catch (RuntimeException | LinkageError ex) {
-                // rack unavailable (tests, stripped platform): static workbench
             }
         }
         // one explicit re-sync: aims that happened while closed (listener
@@ -229,10 +231,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     public void componentClosed() {
         TopComponent.getRegistry().removePropertyChangeListener(registryListener);
         if (rackListenerAttached) {
-            try {
-                RackService.getDefault().getRack().removeListener(rackListener);
-            } catch (RuntimeException | LinkageError ex) {
-                // rack unavailable; nothing was attached to remove
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            if (aim != null) {
+                aim.removeListener(rackListener);
             }
             rackListenerAttached = false;
         }
@@ -258,11 +260,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private File projectDir() {
-        try {
-            return RackService.getDefault().getRack().getProjectDir();
-        } catch (RuntimeException | LinkageError ex) {
-            return new File(System.getProperty("user.home"));
-        }
+        // soft aim lookup (ledger 30): no provider (plain tests) → home
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        return aim != null ? aim.projectDir()
+                : new File(System.getProperty("user.home"));
     }
 
     /** Current project: name, toolchain chips, path, New/Open actions. */
@@ -329,7 +331,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 names.add(library.label());
             }
         } catch (RuntimeException | LinkageError ex) {
-            // detection is decoration; the workbench works without it
+            // KEPT (ledger 30): guards rack's scan classes on stripped test
+            // platforms — detection is decoration; the workbench works
+            // without it
         }
         return names;
     }
@@ -417,12 +421,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private void addProjects() {
         section("PROJECTS");
         File current = projectDir();
-        List<File> recents;
-        try {
-            recents = RackService.getDefault().getRecentProjects();
-        } catch (RuntimeException | LinkageError ex) {
-            recents = List.of();
-        }
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        List<File> recents = aim != null ? aim.recentProjects() : List.of();
         if (!recents.contains(current)) {
             recents = new ArrayList<>(recents);
             recents.add(0, current);
@@ -467,7 +468,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     try {
                         org.nmox.studio.rack.docker.DockerPanelTopComponent.openPanel();
                     } catch (RuntimeException | LinkageError ex) {
-                        // rack module unavailable; nothing to open
+                        // KEPT (ledger 30): guards a rack window class whose
+                        // init needs the window system; nothing to open
                     }
                 });
         row("Terminal", "phosphor shell in the project directory",
@@ -486,7 +488,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 openWindow("ProjectStudioTopComponent");
             }
         } catch (RuntimeException | LinkageError ex) {
-            // dialog unavailable; the studio's own New button still works
+            // KEPT (ledger 30): guards a rack dialog class whose init needs
+            // the window system; the studio's own New button still works
             openWindow("ProjectStudioTopComponent");
         }
     }
@@ -501,11 +504,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private void aimAt(File dir) {
-        try {
-            RackService.getDefault().openProject(dir);
-        } catch (RuntimeException | LinkageError ex) {
-            // nothing to aim without the rack
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.aim(dir);
         }
+        // null: nothing to aim without the rack
         refresh();
     }
 
@@ -514,7 +518,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             org.nmox.studio.rack.engine.FileLink.open(
                     new org.nmox.studio.rack.engine.FileLink.Location(file, 1));
         } catch (RuntimeException | LinkageError ex) {
-            // file may have vanished; next refresh prunes it
+            // KEPT (ledger 30): guards rack's editor-jump surface on
+            // stripped test platforms; file may have vanished anyway —
+            // next refresh prunes it
         }
     }
 

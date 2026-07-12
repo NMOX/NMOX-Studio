@@ -108,7 +108,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
             new org.nmox.studio.core.util.SelfWriteTracker();
     /** Follows the rack's mid-session re-aims; see onProjectReaimed. */
-    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
     /** The storm-law core deciding which re-aims load and which loads bind. */
     private final org.nmox.studio.apiclient.api.ProjectRebind rebind;
@@ -149,7 +149,7 @@ public final class ApiClientTopComponent extends TopComponent {
         add(center, BorderLayout.CENTER);
 
         rebind = new org.nmox.studio.apiclient.api.ProjectRebind(projectDir());
-        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+        rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(ApiClientTopComponent.this::onProjectReaimed);
@@ -603,14 +603,15 @@ public final class ApiClientTopComponent extends TopComponent {
     // ---- persistence ----
 
     private File projectDirOrNull() {
-        try {
-            File dir = org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().getProjectDir();
+        // soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests, stripped platform) — no aim to read
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            File dir = aim.projectDir();
             if (dir != null && dir.isDirectory()) {
                 return dir;
             }
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform)
         }
         return null;
     }
@@ -723,13 +724,13 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     private void attachRackListener() {
-        try {
-            org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().addListener(rackListener);
-            rackListenerAttached = true;
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no project switches to follow
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim == null) {
+            return; // rack absent (plain tests): no project switches to follow
         }
+        aim.addListener(rackListener);
+        rackListenerAttached = true;
     }
 
     /** The initial load happened; re-opens rely on onProjectReaimed instead. */
@@ -749,15 +750,18 @@ public final class ApiClientTopComponent extends TopComponent {
         if (!rackListenerAttached) {
             attachRackListener();
         }
-        try {
-            if (servingBridge == null) {
+        if (servingBridge == null) {
+            org.nmox.studio.core.spi.LiveServings servings =
+                    org.nmox.studio.core.spi.LiveServings.find();
+            if (servings != null) {
                 servingBridge = new org.nmox.studio.apiclient.api.ServingBridge(
-                        org.nmox.studio.rack.service.ServingRegistry.getDefault(),
-                        this::onServings);
+                        servings, this::onServings);
             }
+            // null: rack absent (plain tests, stripped platform) — no
+            // offers, no loss
+        }
+        if (servingBridge != null) {
             servingBridge.attach();
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no offers, no loss
         }
         // a server already running when the tab opens is seen too
         pokeServingBridge();
@@ -768,18 +772,13 @@ public final class ApiClientTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         if (servingBridge != null) {
-            try {
-                servingBridge.detach();
-            } catch (RuntimeException | LinkageError ignored) {
-                // already unavailable — nothing to detach from
-            }
+            servingBridge.detach();
         }
         if (rackListenerAttached) {
-            try {
-                org.nmox.studio.rack.service.RackService.getDefault()
-                        .getRack().removeListener(rackListener);
-            } catch (RuntimeException | LinkageError ignored) {
-                // already unavailable — nothing to detach from
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            if (aim != null) {
+                aim.removeListener(rackListener);
             }
             rackListenerAttached = false;
         }
@@ -866,7 +865,7 @@ public final class ApiClientTopComponent extends TopComponent {
     // ---- the {{baseUrl}} offer ----
 
     /** EDT, with a fresh registry snapshot: at most one balloon per (url+project). */
-    private void onServings(java.util.List<org.nmox.studio.rack.service.ServingRegistry.Serving> servings) {
+    private void onServings(java.util.List<org.nmox.studio.core.spi.LiveServings.Serving> servings) {
         org.nmox.studio.apiclient.api.BaseUrlOffer.Offer offer =
                 org.nmox.studio.apiclient.api.BaseUrlOffer.shouldOffer(
                         servings, projectDirOrNull(), workspace, offeredBaseUrls);

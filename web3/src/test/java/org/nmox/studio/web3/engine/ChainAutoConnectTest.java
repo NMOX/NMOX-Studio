@@ -5,7 +5,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -160,18 +160,18 @@ class ChainAutoConnectTest {
         }
     }
 
-    private static ServingRegistry.Serving chain(String id, String url) {
-        return new ServingRegistry.Serving(id, "ANVIL", url,
-                ServingRegistry.Kind.CHAIN, new File("proj"));
+    private static LiveServings.Serving chain(String id, String url) {
+        return new LiveServings.Serving(id, "ANVIL", url,
+                LiveServings.Kind.CHAIN, new File("proj"));
     }
 
-    private static ServingRegistry.Serving web(String id, String url) {
-        return new ServingRegistry.Serving(id, "DEV-SERVER", url,
-                ServingRegistry.Kind.WEB, new File("proj"));
+    private static LiveServings.Serving web(String id, String url) {
+        return new LiveServings.Serving(id, "DEV-SERVER", url,
+                LiveServings.Kind.WEB, new File("proj"));
     }
 
     /** Drains the registry notifier, then the EDT — the two async hops. */
-    private static void settle(ServingRegistry registry) throws Exception {
+    private static void settle(FakeLiveServings registry) throws Exception {
         registry.awaitIdle();
         SwingUtilities.invokeAndWait(() -> {
         });
@@ -180,7 +180,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("N flaps: exactly one connect per appearance, one disconnect per loss")
     void flapsAreBounded() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         FakeChain studio = new FakeChain();
         ChainAutoConnect auto = new ChainAutoConnect(registry, studio);
         auto.attach();
@@ -201,7 +201,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("unrelated registry churn while connected causes no chip traffic")
     void unrelatedChurnIsIgnored() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         FakeChain studio = new FakeChain();
         ChainAutoConnect auto = new ChainAutoConnect(registry, studio);
         auto.attach();
@@ -227,7 +227,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("a connect that keeps failing is retried once per appearance, not per event")
     void failingConnectDoesNotStorm() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         FakeChain studio = new FakeChain();
         studio.connectSucceeds = false; // the probe never lands
         ChainAutoConnect auto = new ChainAutoConnect(registry, studio);
@@ -256,7 +256,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("never attached or detached (tab closed): flaps reach nothing")
     void closedStudioReactsToNothing() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         FakeChain studio = new FakeChain();
         ChainAutoConnect auto = new ChainAutoConnect(registry, studio);
 
@@ -278,7 +278,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("refresh() connects to a chain that was already up at tab-open")
     void refreshCatchesExistingServing() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         registry.register(chain("anvil", ANVIL));
         registry.awaitIdle();
 
@@ -301,7 +301,7 @@ class ChainAutoConnectTest {
     @Test
     @DisplayName("attach twice, detach once: no duplicate listener survives")
     void attachIsIdempotent() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         FakeChain studio = new FakeChain();
         ChainAutoConnect auto = new ChainAutoConnect(registry, studio);
         auto.attach();

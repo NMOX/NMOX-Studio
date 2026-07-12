@@ -186,6 +186,19 @@
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                         <manifestEntries>
                             <OpenIDE-Module-Layer>org/nmox/studio/rack/layer.xml</OpenIDE-Module-Layer>
+                            <!-- Ledger 31: rack's public packages are for
+                                 first-party siblings only — the module system
+                                 refuses any other dependent, so nothing
+                                 outside this list can grow a compile-time
+                                 claim on rack internals. Everyone else rides
+                                 the core.spi facades (ProjectAim/LiveServings,
+                                 ledger 30). nbm-maven-plugin has no friends
+                                 parameter; this entry merges into the module
+                                 manifest exactly like the layer above.
+                                 (core stays friend-less on purpose: its
+                                 minimal exports ARE the public utility
+                                 surface, blessed by the v1.36 audit.) -->
+                            <OpenIDE-Module-Friends>org.nmox.NMOX.Studio.editor, org.nmox.NMOX.Studio.tools, org.nmox.NMOX.Studio.project, org.nmox.NMOX.Studio.ui, org.nmox.NMOX.Studio.dbstudio</OpenIDE-Module-Friends>
                         </manifestEntries>
                     </archive>
                 </configuration>

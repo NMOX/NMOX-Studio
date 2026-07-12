@@ -223,7 +223,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private final DefaultListModel<ConsoleHistory.Entry> historyModel = new DefaultListModel<>();
     private final JList<ConsoleHistory.Entry> historyList = new JList<>(historyModel);
 
-    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
     /** Follows the Services window's connection list while the tab is open. */
     private final org.netbeans.api.db.explorer.ConnectionListener servicesListener =
@@ -249,7 +249,7 @@ public final class DbStudioTopComponent extends TopComponent {
         center.setDividerLocation(280);
         add(center, BorderLayout.CENTER);
 
-        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+        rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(DbStudioTopComponent.this::reloadWorkspace);
@@ -994,7 +994,10 @@ public final class DbStudioTopComponent extends TopComponent {
         try {
             probe = org.nmox.studio.rack.docker.DockerClient.getDefault().containers();
         } catch (RuntimeException | LinkageError rackUnavailable) {
-            return; // no rack (tests, stripped platform) — silence
+            // KEPT (ledger 30): DockerClient is rack UI-cluster surface with
+            // no core facade; dbstudio hard-depends on rack for it, and this
+            // guard covers stripped test platforms where its init can fail
+            return;
         }
         dockerProbeInFlight = true;
         probe.whenComplete((containers, error) -> SwingUtilities.invokeLater(() -> {
@@ -1070,11 +1073,13 @@ public final class DbStudioTopComponent extends TopComponent {
                 SwingUtilities.invokeLater(this::envChangedOnDisk);
             }
         };
-        try {
-            org.nmox.studio.rack.service.RackService.getDefault().addManifestListener(listener);
+        // soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests) — no manifest events
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.addManifestListener(listener);
             manifestListener = listener;
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no manifest events
         }
     }
 
@@ -1082,11 +1087,10 @@ public final class DbStudioTopComponent extends TopComponent {
         if (manifestListener == null) {
             return;
         }
-        try {
-            org.nmox.studio.rack.service.RackService.getDefault()
-                    .removeManifestListener(manifestListener);
-        } catch (RuntimeException | LinkageError ignored) {
-            // already unavailable — nothing to detach from
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.removeManifestListener(manifestListener);
         }
         manifestListener = null;
     }
@@ -1123,7 +1127,10 @@ public final class DbStudioTopComponent extends TopComponent {
                         });
                     });
         } catch (RuntimeException | LinkageError rackUnavailable) {
-            return; // no rack (tests, stripped platform): no watcher
+            // KEPT (ledger 30): FileWatcher is a rack utility with no core
+            // facade; dbstudio hard-depends on rack for it, and this guard
+            // covers stripped test platforms
+            return;
         }
         watcher.start();
         workspaceWatcher = watcher;
@@ -1784,14 +1791,15 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- persistence (RackService idiom, same as apiclient/infra) ----
 
     private File projectDir() {
-        try {
-            File dir = org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().getProjectDir();
+        // soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests) and home is the honest fallback
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            File dir = aim.projectDir();
             if (dir != null && dir.isDirectory()) {
                 return dir;
             }
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform)
         }
         return new File(System.getProperty("user.home"));
     }
@@ -1905,13 +1913,13 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- lifecycle ----
 
     private void attachRackListener() {
-        try {
-            org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().addListener(rackListener);
-            rackListenerAttached = true;
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no project switches to follow
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim == null) {
+            return; // rack absent (plain tests): no project switches to follow
         }
+        aim.addListener(rackListener);
+        rackListenerAttached = true;
     }
 
     private void attachServicesListener() {
@@ -1991,11 +1999,10 @@ public final class DbStudioTopComponent extends TopComponent {
             servicesListenerAttached = false;
         }
         if (rackListenerAttached) {
-            try {
-                org.nmox.studio.rack.service.RackService.getDefault()
-                        .getRack().removeListener(rackListener);
-            } catch (RuntimeException | LinkageError ignored) {
-                // already unavailable — nothing to detach from
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            if (aim != null) {
+                aim.removeListener(rackListener);
             }
             rackListenerAttached = false;
         }

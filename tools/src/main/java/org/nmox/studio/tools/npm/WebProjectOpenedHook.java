@@ -2,7 +2,6 @@ package org.nmox.studio.tools.npm;
 
 import java.io.File;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.nmox.studio.rack.service.RackService;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -26,10 +25,12 @@ final class WebProjectOpenedHook extends ProjectOpenedHook {
         if (dir == null) {
             return;
         }
-        try {
-            RackService.getDefault().openProject(dir);
-        } catch (RuntimeException | LinkageError ignore) {
-            // rack unavailable; the project still opens normally
+        // soft aim lookup (ledger 30): no provider (plain tests) — the
+        // project still opens normally
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.aim(dir);
         }
     }
 

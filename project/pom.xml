@@ -21,6 +21,11 @@
             <artifactId>NMOX-Studio-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- KEPT (ledger 30): the aim seam moved to core's ProjectAim
+             lookup, but the Workbench's shelf is real rack UI/scan surface
+             (AimNodePublisher, NewProjectDialog, DockerPanel, FileLink,
+             ProjectInspector, LegacyWeb) — project is a rack friend
+             (ledger 31). -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-rack</artifactId>
