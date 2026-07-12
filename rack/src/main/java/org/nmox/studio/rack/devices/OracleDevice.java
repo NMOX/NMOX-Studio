@@ -143,35 +143,39 @@ public class OracleDevice extends RackDevice {
      * adds the interactive prompt, the thinking LED, and the threading.
      */
     private void onExplain() {
+        // The failure lookup is an in-memory FlightRecorder read — cheap and
+        // safe on the EDT, and lets the button refuse instantly with nothing
+        // to explain. Everything past it (the keychain peek, the consent
+        // prompt, the network call) runs off the EDT: reading the OS keychain
+        // can block on an unlock prompt (v1.56 review F4).
         Optional<FailureContext> maybe = failureSource.get();
         if (maybe.isEmpty()) {
             setVerdict(IDLE_NOTHING, RackStyle.LCD_TEXT);
             return;
         }
-        // Peek whether a key exists so we can refuse before spinning a thread
-        // or prompting for consent — wipe the peek immediately.
-        char[] peek = keySource.get();
-        boolean haveKey = peek != null && peek.length > 0;
-        if (peek != null) {
-            Arrays.fill(peek, '\0');
-        }
-        if (!haveKey) {
-            setVerdict(NO_KEY, RackStyle.LCD_AMBER);
-            return;
-        }
-        boolean consent = consentCheck.getAsBoolean();
-        if (!consent) {
-            consent = OracleConsent.requestConsent(maybe.get());
-            if (!consent) {
-                setVerdict(NO_CONSENT, RackStyle.LCD_AMBER);
-                return;
-            }
-        }
-        final boolean granted = consent;
         thinking(true);
         offEdt(() -> {
             try {
-                consult(granted);
+                // Peek whether a key exists so we refuse before prompting for
+                // consent or hitting the network — wipe the peek immediately.
+                char[] peek = keySource.get();
+                boolean haveKey = peek != null && peek.length > 0;
+                if (peek != null) {
+                    Arrays.fill(peek, '\0');
+                }
+                if (!haveKey) {
+                    setVerdict(NO_KEY, RackStyle.LCD_AMBER);
+                    return;
+                }
+                boolean consent = consentCheck.getAsBoolean();
+                if (!consent) {
+                    consent = OracleConsent.requestConsent(maybe.get());
+                    if (!consent) {
+                        setVerdict(NO_CONSENT, RackStyle.LCD_AMBER);
+                        return;
+                    }
+                }
+                consult(consent);
             } finally {
                 onEdt(() -> thinking(false));
             }

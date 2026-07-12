@@ -312,37 +312,173 @@ public abstract class RackDevice extends JPanel {
         exec(command, extraEnv, projectDir(), onLine, onExit);
     }
 
+    /**
+     * Off-EDT lane pool for dotenv loads and the fork itself (ledger 41,
+     * closed v1.57.0): every device's RUN button used to read .env files
+     * and call ProcessBuilder.start() on the EDT — a wedged or
+     * network-mounted project dir froze the UI on the exact gesture the
+     * rack exists for. Wide enough that one stuck mount can't starve the
+     * other devices' launches; interruptible daemons so it never pins
+     * shutdown.
+     */
+    private static final org.openide.util.RequestProcessor EXEC_RP =
+            new org.openide.util.RequestProcessor("nmox-device-exec", 8, true);
+
+    /**
+     * Test seam for the exec lane. Production posts to {@link #EXEC_RP};
+     * tests swap in a capturing executor to prove the spawn never runs on
+     * the caller's thread and to step the pending lifecycle
+     * deterministically.
+     */
+    static java.util.function.Consumer<Runnable> execLane = EXEC_RP::post;
+
     /** Full control: extra env and an explicit working directory. */
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
         if (disposed) {
-            return; // a queued trigger must not launch into a deleted device
+            // a queued trigger must not launch into a deleted device — and
+            // a caller awaiting completion must still hear about it
+            onExit.accept(-1);
+            return;
         }
         stopProcess();
-        // dotenv first (project root, then the lane's own dir in a
-        // monorepo), rack-wide overrides above it, per-launch extras on
-        // top - the same file the dev's own tooling reads, no re-typing
+        // Everything observable happens NOW, synchronously: the pending
+        // handle is this run's identity, so isProcessRunning()/isLive()
+        // answer true immediately (enableGate cannot double-launch),
+        // stopProcess()/panic() on it work before, during, and after the
+        // spawn, and a second exec cancels this one exactly like it used
+        // to kill the live process. Only the expensive part — dotenv file
+        // reads and the fork — rides the lane.
+        PendingHandle pending = new PendingHandle();
+        IntConsumer exitOnce = code -> {
+            if (running == pending) {
+                running = null;
+            }
+            onExit.accept(code);
+        };
+        running = pending;
+        // capture rack state on the calling thread; only file IO + spawn defer
         File root = rack != null ? rack.getProjectDir() : null;
-        Map<String, String> env = new LinkedHashMap<>(
-                org.nmox.studio.rack.engine.EnvFiles.load(root));
-        if (workingDir != null && !workingDir.equals(root)) {
-            env.putAll(org.nmox.studio.rack.engine.EnvFiles.load(workingDir));
+        Map<String, String> overrides = rack != null ? rack.getEnvOverrides() : Map.of();
+        execLane.accept(() -> {
+            // dotenv first (project root, then the lane's own dir in a
+            // monorepo), rack-wide overrides above it, per-launch extras
+            // on top - the same file the dev's own tooling reads
+            Map<String, String> env = new LinkedHashMap<>(
+                    org.nmox.studio.rack.engine.EnvFiles.load(root));
+            if (workingDir != null && !workingDir.equals(root)) {
+                env.putAll(org.nmox.studio.rack.engine.EnvFiles.load(workingDir));
+            }
+            env.putAll(overrides);
+            env.putAll(extraEnv);
+            if (pending.isCancelled()) {
+                // stopped (or replaced, or disposed) before the spawn: no
+                // process ever exists, but the exit contract still holds
+                pending.markSkipped();
+                exitOnce.accept(-1);
+                return;
+            }
+            CommandExecutor.Handle real = CommandExecutor.run(busName(), workingDir, env,
+                    command, onLine, exitOnce);
+            if (!pending.resolve(real)) {
+                // cancelled during the spawn window: the kill fires the
+                // pump's exitOnce, exactly like killing a live run
+                real.kill();
+            }
+        });
+    }
+
+    /**
+     * A run that has been requested but whose process may not exist yet.
+     * Alive until cancelled or its real process dies; kill/killAndWait
+     * work in every phase (before, during, after the spawn) so the
+     * one-process-per-device and orphan guarantees hold unchanged.
+     */
+    private static final class PendingHandle implements CommandExecutor.Handle {
+
+        private final Object lock = new Object();
+        private CommandExecutor.Handle real;
+        private boolean cancelled;
+        private boolean skipped;
+
+        boolean isCancelled() {
+            synchronized (lock) {
+                return cancelled;
+            }
         }
-        env.putAll(rack != null ? rack.getEnvOverrides() : Map.of());
-        env.putAll(extraEnv);
-        // identity-guarded swap: a previous run's onExit, arriving late on a
-        // worker thread, must not null out the handle of the run that replaced
-        // it — that would orphan a live process (isLive()/panic() would see
-        // nothing to kill).
-        CommandExecutor.Handle[] self = new CommandExecutor.Handle[1];
-        self[0] = CommandExecutor.run(busName(), workingDir, env,
-                command, onLine, code -> {
-                    if (running == self[0]) {
-                        running = null;
+
+        /** The spawn is being abandoned; unblocks bounded waiters. */
+        void markSkipped() {
+            synchronized (lock) {
+                skipped = true;
+                lock.notifyAll();
+            }
+        }
+
+        /** Attaches the live process; false when cancelled meanwhile. */
+        boolean resolve(CommandExecutor.Handle h) {
+            synchronized (lock) {
+                if (cancelled) {
+                    return false;
+                }
+                real = h;
+                lock.notifyAll();
+                return true;
+            }
+        }
+
+        @Override
+        public void kill() {
+            CommandExecutor.Handle h;
+            synchronized (lock) {
+                cancelled = true;
+                h = real;
+                lock.notifyAll();
+            }
+            if (h != null) {
+                h.kill();
+            }
+        }
+
+        @Override
+        public void killAndWait(long graceMillis) {
+            CommandExecutor.Handle h;
+            long deadline = System.currentTimeMillis() + graceMillis;
+            synchronized (lock) {
+                cancelled = true;
+                lock.notifyAll();
+                // wait (bounded) for the lane to settle the spawn either
+                // way; a fork stuck on a wedged mount can't be unblocked,
+                // so shutdown gets the same bounded promise it had when
+                // the fork ran on the caller
+                while (real == null && !skipped) {
+                    long left = deadline - System.currentTimeMillis();
+                    if (left <= 0) {
+                        break;
                     }
-                    onExit.accept(code);
-                });
-        running = self[0];
+                    try {
+                        lock.wait(left);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                h = real;
+            }
+            if (h != null) {
+                h.killAndWait(graceMillis);
+            }
+        }
+
+        @Override
+        public boolean isAlive() {
+            synchronized (lock) {
+                if (cancelled || skipped) {
+                    return false;
+                }
+                return real == null || real.isAlive();
+            }
+        }
     }
 
     protected boolean isProcessRunning() {

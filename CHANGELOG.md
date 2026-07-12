@@ -4,7 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [1.56.0] — 2026-07-12
+## [1.57.0] — 2026-07-12
+
+The threading tail. The last gap in the "never freezes" promise, closed
+with its own focused release and live verification — plus the small EDT
+touches and CI flake the v1.56.0 review deferred.
+
+### Fixed
+- **Every device's RUN button now launches off the EDT (ledger 41).**
+  `RackDevice.exec` read `.env` files and called `ProcessBuilder.start()`
+  synchronously on the caller — so on a wedged or network-mounted project
+  dir the fork froze the UI on the exact gesture the rack exists for.
+  Now the dotenv loads and the fork ride a RequestProcessor lane while a
+  synchronous `PendingHandle` keeps the entire observable contract
+  unchanged: `isProcessRunning()`/`isLive()` answer true the instant
+  `exec` returns (so a readiness gate can't double-launch), a second
+  `exec` cancels the first, stop-before-spawn means no process is ever
+  created, `panic()` stays bounded on an unspawned run, and the exit
+  callback fires exactly once in every phase. All 46 devices and the SPI
+  host inherit it. Live-verified: a real SOLDER `echo` ran to a green OK
+  with the UI responsive and the trust prompt firing correctly.
+- **Three small EDT touches from the v1.56 review:** the New Learning
+  Space picker scans `~/.nmox/learn-catalog.d` off the EDT; the rack's
+  Save Patch write moved to a lane (the last workspace writer the v1.44
+  SaveLane sweep left on the EDT); ORACLE's keychain peek moved off the
+  EDT so an unlock prompt can't stall the button.
+- **The Windows `JsDebugServerTest` `@TempDir` flake** (ledger 37/38
+  class): the test now manages its own temp dir with a best-effort
+  retry-delete, so a still-releasing Windows file handle after the
+  js-debug node process dies is waited out, not fatal.
+
+
 
 The third senior review. Five read-only lenses over everything shipped
 since the v1.39.0 idiom pass (sixteen releases: the git chip, the a11y

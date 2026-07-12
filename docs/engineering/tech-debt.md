@@ -22,7 +22,7 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.56.0, the third senior review)
 
-### 41. `RackDevice.exec` forks + reads dotenv on the EDT
+### 41. `RackDevice.exec` forks + reads dotenv on the EDT — CLOSED (v1.57.0)
 The systemic threading item the v1.56 review's concurrency lens flagged as
 "the only one with real teeth" — and pre-existing, older than the review
 window. Every built-in command device wires its RUN button straight to
@@ -40,7 +40,19 @@ but it changes the threading contract of the hottest path in the rack —
 callers that read `isProcessRunning()` right after `exec` would need
 auditing — and that is exactly the kind of change the v1.33.x storms
 taught us to give its own focused release with live verification, not a
-rider on a review sprint. Mount-conditional; safe to leave until then.
+rider on a review sprint. **Closed v1.57.0** its own way: dotenv loads
+and the fork ride a RequestProcessor lane, while a synchronous
+`PendingHandle` keeps the whole observable contract unchanged —
+isProcessRunning()/isLive() answer true the instant exec returns (so
+enableGate can't double-launch), a second exec cancels the first,
+stop-before-spawn means no process is ever created, panic() stays
+bounded on an unspawned run, and the exit callback fires exactly once in
+every phase. AsyncExecTest (7, lane-seam stepped) pins each phase;
+live-verified a real SOLDER echo ran to OK with the UI responsive and
+the trust gate firing on the EDT before the deferred spawn. The three
+small sibling EDT touches went with it: the learning-space picker's
+drop-in scan, the rack's Save Patch write (the last workspace writer off
+the SaveLane), and ORACLE's keychain peek.
 
 ### 42. Third-party `descriptor()`/`build()` can run at session restore
 The security lens noted the zero-boot-cost law is not enforced *by

@@ -58,9 +58,22 @@ public final class NewLearningSpaceAction implements ActionListener {
     private static final Color TOOL_MISSING = new Color(214, 143, 60);
     private static final Color TOOL_PROBING = new Color(128, 128, 128);
 
+    /** Catalog reads touch ~/.nmox/learn-catalog.d — disk IO off the EDT. */
+    private static final org.openide.util.RequestProcessor CATALOG_RP =
+            new org.openide.util.RequestProcessor("nmox-learn-catalog", 1);
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        List<LearningCatalog.Space> all = LearningCatalog.all();
+        // the drop-in scan lists and parses ~/.nmox/learn-catalog.d — local
+        // and shallow, but still file IO the v1.33.1 lesson says to keep off
+        // the EDT (a network-mounted home must not freeze the menu click)
+        CATALOG_RP.post(() -> {
+            List<LearningCatalog.Space> all = LearningCatalog.all();
+            java.awt.EventQueue.invokeLater(() -> showPicker(all));
+        });
+    }
+
+    private void showPicker(List<LearningCatalog.Space> all) {
         if (all.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "The learning catalog is empty or unreadable."));
