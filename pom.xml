@@ -49,6 +49,22 @@
                              instead of throwing LinkageError at call time
                              (ledger 30). Pinned by SpecVersionGateTest. -->
                         <sourceManifestFile>${project.build.directory}/nbm-manifest/manifest.mf</sourceManifestFile>
+                        <!-- Every NBM embeds the license so the Plugin
+                             Manager's install dialog shows real terms
+                             instead of "License terms: Unknown" (each
+                             module sits one level below the repo root). -->
+                        <licenseName>MIT License</licenseName>
+                        <licenseFile>../LICENSE</licenseFile>
+                        <!-- The update-center catalog is built by
+                             scripts/build-update-site.sh (nbm:autoupdate).
+                             Note for future readers: the mojo's
+                             updateSiteIncludes filter only applies when the
+                             goal runs on an nbm-application project; the
+                             root-aggregator path walks
+                             session.getAllProjects() unfiltered (and ignores
+                             -pl exclusions - verified live), so the script
+                             prunes the never-shipped NMOX-Studio-sample from
+                             the generated catalog itself. -->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -273,7 +289,7 @@
              stamps the tag's version over it (alongside branding's
              currentVersion, same step). Bump it when opening a new release
              sprint. -->
-        <spec.version>1.47.0</spec.version>
+        <spec.version>1.51.0</spec.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

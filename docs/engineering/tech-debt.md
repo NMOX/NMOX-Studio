@@ -313,14 +313,8 @@ Queued behind a reproduction or the next engine sprint.
 ### 19. Rack polish cluster: undo across presets, trigger bookkeeping — CLOSED (v1.50.0)
 See "Closed by v1.50.0" below.
 
-### 21. Platform autoupdate modules ship with no update center
-The Plugins infrastructure is in the cluster but no UC is configured —
-dead weight in the download, ~harmless at runtime. Trimming the
-autoupdate modules changes the Plugins menu and needs a release-size
-check on all three OS packages; the unused build-side update-site
-generation (a dead `deployment` profile) was already removed in
-v1.36.0. Revisit if an update-center story ever lands — the version
-scheme it would need shipped when 20 closed (v1.47.0).
+### 21. Platform autoupdate modules ship with no update center — CLOSED (v1.51.0)
+See "Closed by v1.51.0" below.
 
 ### 23. org.json rides in 8 module copies (~710 KB total) — CLOSED (v1.50.0)
 See "Closed by v1.50.0" below.
@@ -411,6 +405,61 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.51.0 (the update center)
+
+### 21. Platform autoupdate modules ship with no update center — CLOSED
+The autoupdate stack (services/ui/cli) always shipped in our platform
+cluster; what was missing was a provider for it to read. v1.51.0 wires
+both ends:
+
+- **App side** (`ui/layer.xml`): a classic
+  `Services/AutoupdateType/*.instance` registration
+  (`AutoupdateCatalogFactory.createUpdateProvider` — attribute names
+  `url`/`enabled`/`category`/`trusted` verified against the shipped
+  autoupdate-services jar, not folklore). "NMOX Studio Updates" is
+  enabled, STANDARD, and points at
+  `https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml`.
+- **The /latest/ redirect trick**: GitHub 302s
+  `releases/latest/download/<asset>` to the newest release's asset
+  (curl-verified, survives the factory's appended query params), so a
+  shipped app follows every future release with no code change. Inside
+  the catalog, though, each NBM URL is ABSOLUTE and pinned to its own
+  tag (`releases/download/v<version>/<module>.nbm`): the platform
+  resolves relative distribution URLs against the *pre-redirect*
+  catalog URI (AutoupdateCatalogParser bytecode — it never sees the 302
+  target), so relative URLs would let a cached older catalog download
+  newer "latest" NBM bytes and fail its own SHA-512 digests.
+- **Release side**: the linux lane runs `scripts/build-update-site.sh`
+  (`nbm:autoupdate` + gates: exactly the 11 product modules, the
+  never-shipped sample template pruned — the aggregator walks
+  `session.getAllProjects()`, which ignores `-pl`, and its
+  `updateSiteIncludes` filter only applies to nbm-application projects,
+  both verified against the 14.5 mojo) and uploads `updates.xml`(+.gz)
+  and the 11 NBMs as ADDITIONAL release assets; the six existing asset
+  names are untouched. NBM spec versions ride the ledger-20 scheme
+  (root `<spec.version>`, stamped from the tag), which is what makes an
+  update *offer* meaningful at all.
+- **No boot fetch**: the registration is inert layer XML; the platform
+  checks on user action (Tools ▸ Plugins, Help ▸ Check for Updates) or
+  its own schedule — default `EVERY_WEEK`, evaluated ~500 ms after the
+  UI is ready and re-evaluated daily (decompiled
+  AutoupdateCheckScheduler/AutoupdateSettings; user-tunable in Plugins ▸
+  Settings). Zero-boot-spawns law untouched. Dev builds carry real spec
+  versions, so a same-version catalog offers nothing — no special-casing.
+- Gated by `UpdateCenterTest` (ui, 5 tests: registration shape + exact
+  URL, Bundle display name, workflow ships catalog + NBMs
+  (line-anchored — `updates.xml.gz` masks a substring check, found by
+  mutation), script pins absolute URLs, catalog-shape when a local site
+  exists) — URL and workflow mutations proven to fail it — plus the
+  script's own runtime gates on every release.
+
+**What stays manual**: NBM signing (installs show the platform's
+unsigned-plugin dialog; the UC is marked `trusted` — our own HTTPS
+channel — but a signing keystore is a separate story), and the vendored
+js-debug adapter still rides full-app releases only (ledger 26). The
+Plugins UI can now also install third-party NBMs, which is new surface
+we deliberately do not gate.
 
 ## Closed by v1.50.0 (the housekeeping release)
 

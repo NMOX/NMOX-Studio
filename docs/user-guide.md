@@ -35,6 +35,21 @@ first. The `-portable.zip` is the one bring-your-own-Java artifact
 > `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Either
 > clears it for good.
 
+### Updating
+
+Since v1.51.0 the IDE updates itself: **Tools ▸ Plugins ▸ Updates**
+(or **Help ▸ Check for Updates**) offers the product modules of any
+newer release, fed from the "NMOX Studio Updates" center that points at
+the latest GitHub release. Install, restart when prompted, done — no
+re-download of the full app. The platform also checks quietly on its
+own (weekly by default; change or disable it under **Tools ▸ Plugins ▸
+Settings**), separate from the daily one-line version check in
+Options ▸ General. Two honest caveats: the modules are unsigned, so the
+installer dialog notes that (the update center itself is trusted — it
+is our own release channel over HTTPS), and the bundled Java runtime
+and launcher only change with a full installer, so a fresh install from
+a release asset is still right for major platform jumps.
+
 ## 2. First launch
 
 The IDE opens with the full suite of tabs along the editor area:

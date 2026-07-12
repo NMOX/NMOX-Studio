@@ -35,6 +35,42 @@
             </file>
         </folder>
     </folder>
+    <!-- The update center (ledger 21): the platform's autoupdate stack
+         (services/ui/cli) ships in our cluster but had no provider to
+         read, so Tools > Plugins showed an empty Available tab. This
+         entry feeds it from GitHub releases. The shape is the classic
+         AutoupdateCatalogFactory registration (attribute names verified
+         against the shipped autoupdate-services jar: url, enabled,
+         category, trusted).
+         - The catalog URL rides /releases/latest/download/, GitHub's
+           stable redirect to the newest release's asset - the app never
+           needs a code change to see the next version.
+         - Inside the catalog every NBM URL is ABSOLUTE, pinned to its
+           own release tag (scripts/build-update-site.sh): the platform
+           resolves relative URLs against the pre-redirect catalog URL,
+           so relative ones would let a cached old catalog download
+           newer "latest" NBMs and fail their SHA-512 digests.
+         - trusted: our own release channel over HTTPS; the NBMs are
+           unsigned (signing stays manual, see the debt ledger), so
+           without this every install shows a scare dialog.
+         - No fetch happens at boot: the factory only stores these
+           attributes; the platform checks the URL on user action or on
+           its own schedule (default EVERY_WEEK, first check 500ms after
+           the UI is ready - decompiled AutoupdateCheckScheduler).
+         Pinned by UpdateCenterTest. -->
+    <folder name="Services">
+        <folder name="AutoupdateType">
+            <file name="org-nmox-studio-update-center.instance">
+                <attr name="url" stringvalue="https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml"/>
+                <attr name="displayName" bundlevalue="org.nmox.studio.ui.resources.Bundle#Services/AutoupdateType/org-nmox-studio-update-center.instance"/>
+                <attr name="enabled" boolvalue="true"/>
+                <attr name="trusted" boolvalue="true"/>
+                <attr name="category" stringvalue="STANDARD"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.autoupdate.UpdateProvider"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Keymaps">
         <folder name="NetBeans">
             <!-- jumpto's keymap profile grabs Cmd+O for "Go to Type" (a
