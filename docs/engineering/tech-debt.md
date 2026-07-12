@@ -310,12 +310,8 @@ the run that replaced it. Both are engine-core changes under the
 device-contract tests; neither has a reproduced failure in the wild.
 Queued behind a reproduction or the next engine sprint.
 
-### 19. Rack polish cluster: undo across presets, trigger bookkeeping
-Loading a preset/patch doesn't clear undo history (⌘Z can "undo" into
-the previous patch's structure), `lastTriggerAt` entries survive device
-removal, and TAIL/TEMPO don't re-sync their displays on undo re-attach.
-All small, none data-loss, all in one undo/presets neighborhood — one
-housekeeping slice when the rack is next open.
+### 19. Rack polish cluster: undo across presets, trigger bookkeeping — CLOSED (v1.50.0)
+See "Closed by v1.50.0" below.
 
 ### 21. Platform autoupdate modules ship with no update center
 The Plugins infrastructure is in the cluster but no UC is configured —
@@ -326,12 +322,8 @@ generation (a dead `deployment` profile) was already removed in
 v1.36.0. Revisit if an update-center story ever lands — the version
 scheme it would need shipped when 20 closed (v1.47.0).
 
-### 23. org.json rides in 8 module copies (~710 KB total)
-Re-confirmed as the correct architecture (module classloaders make a
-shared wrapper ClassCastException territory — see ledger item 3). The
-one real improvement is a single `<orgjson.version>` root property so
-Dependabot bumps all eight in one PR. Trivial, but touches all module
-poms — batched with the next dependency sweep.
+### 23. org.json rides in 8 module copies (~710 KB total) — CLOSED (v1.50.0)
+See "Closed by v1.50.0" below.
 
 ### 24. i18n: ~450 user-visible strings are hardcoded
 The house style is deliberate English-only UI (Bundle.properties exists
@@ -419,6 +411,60 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.50.0 (the housekeeping release)
+
+### 19. Rack polish cluster: undo across presets, trigger bookkeeping — CLOSED
+The three sub-bugs in the one undo/presets neighborhood, each with a test
+that fails on the pre-fix code:
+
+- **Undo bled across a preset/patch load** (the load-bearing one).
+  Loading a preset or patch replaced the rack's contents while undo
+  capture was ON, so the pre-load removals and additions stayed on the
+  stack — ⌘Z after a load peeled the just-loaded patch apart device by
+  device and, past that, resurrected the PREVIOUS patch's structure (undo
+  edits that predate the current patch). Fixed at THE single choke point
+  every load routes through: `RackIO.fromJson` clears the undo history
+  after replacing the contents, so the Presets menu
+  (`RackTopComponent` → `fromJson`), the Load Patch button and
+  RackService's project-switch autoload (both via `RackIO.load` →
+  `fromJson`) are all covered. RackService keeps its own
+  `clearUndoHistory()` after a project switch with no patch file — that
+  path never reaches `fromJson`. Test: load patch A, edit, load preset B,
+  assert ⌘Z cannot cross B's load (`RackUndoTest.presetLoadClearsUndoHistory`;
+  mutation-proven — removing the clear fails it).
+- **`lastTriggerAt` entries survived device removal.** `disconnect()` and
+  `removeCable()` dropped a severed cable's trigger-cooldown entry, but
+  `removeDevice` severed cables in bulk and left their entries in the map
+  for the life of the rack. `removeDevice` now drops each dead cable's
+  entry; undo re-adds the same cable objects verbatim (no stale
+  cooldown). Test: trigger a cable, remove its source device, assert the
+  map no longer tracks it (`RackUndoTest.removeDeviceDropsTriggerBookkeeping`;
+  mutation-proven via a `tracksTrigger` test seam).
+- **TAIL/TEMPO showed stale displays on undo re-attach.** Undo of a
+  removal re-attaches the SAME instance, but `dispose()` had stopped the
+  follow poll / transport clock while leaving the FOLLOW switch, EYE led,
+  CLOCK switch and tick LCD untouched — the faceplate read "armed" while
+  nothing ran. Both devices now re-run their existing display/timer sync
+  (`sync()` / `syncTimer()`) from an `onAttached()` override, which fires
+  on every (re-)attach and is a no-op on a fresh switch-off add. Test:
+  arm, remove, undo — the timer must be running again
+  (`RackReattachSyncTest`; mutation-proven). All fixes stayed rack-local
+  and did not regress the v1.44.0 listener-symmetry / async-panic tests.
+
+### 23. org.json rides in 8 module copies (~710 KB total) — CLOSED
+The eight module copies STAY — module classloaders make a shared org.json
+wrapper ClassCastException territory (ledger item 3, re-confirmed). What
+centralized is only the VERSION STRING: a single `<orgjson.version>` in
+the root pom, referenced by all eight module poms (`core`, `rack`,
+`tools`, `editor`, `apiclient`, `dbstudio`, `web3`, `infra`), so
+Dependabot bumps every copy in one PR. Byte-verified after the build: all
+eight resolve to `org.json:json:20260522`. `OrgJsonVersionGateTest`
+(application) fails if any module declares a hardcoded org.json version
+instead of the property, or if the root property goes missing. What did
+NOT change: the number of copies, the actual version, and the per-module
+`RackIO`/`GraphIO`/`WorkspaceIO` glue (ledger 3 — per-module by
+necessity).
 
 ## Closed by v1.47.0 (spec versions)
 

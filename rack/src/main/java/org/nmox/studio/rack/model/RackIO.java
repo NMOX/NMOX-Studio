@@ -93,6 +93,16 @@ public final class RackIO {
                 }
             }
         }
+        // A patch/preset load REPLACES the rack's contents, so the device
+        // removals and additions above must not be reachable by ⌘Z: undoing
+        // past a load would peel the just-loaded patch apart device by device
+        // and eventually resurrect the PREVIOUS patch's structure (a real
+        // correctness bug — the undo edits predate the current patch). This is
+        // THE single choke point every load routes through — the Presets menu,
+        // the Load Patch button, and RackService's project-switch autoload —
+        // so clearing here covers them all. RackService also clears after a
+        // project switch with no patch file, a case that never reaches here.
+        rack.clearUndoHistory();
     }
 
     public static void save(Rack rack, File file) throws IOException {

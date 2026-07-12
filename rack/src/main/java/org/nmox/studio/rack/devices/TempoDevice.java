@@ -59,6 +59,24 @@ public class TempoDevice extends RackDevice {
         param("running", runSwitch);
     }
 
+    /**
+     * Undo of a device removal re-attaches this same instance, but
+     * {@link #dispose()} stopped the transport clock while leaving the CLOCK
+     * switch and the tick-count LCD untouched — so without a re-sync the
+     * faceplate reads "running" (and shows a stale count) while nothing ticks.
+     * Re-run the timer/display sync on every (re-)attach; on a fresh add the
+     * switch is off, so this stops a null timer and clears to zero (a no-op).
+     */
+    @Override
+    protected void onAttached() {
+        syncTimer();
+    }
+
+    /** Test seam: is the transport clock actually ticking? */
+    boolean isClockRunning() {
+        return timer != null && timer.isRunning();
+    }
+
     @Override
     public boolean isResumable() {
         return runSwitch.isOn();

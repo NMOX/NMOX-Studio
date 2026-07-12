@@ -4,6 +4,50 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.50.0] — 2026-07-12
+
+The housekeeping release: two long-deferred ledger items closed, each
+sub-fix mutation-proven (a test that fails on today's code).
+
+### Fixed
+- **Rack undo bleeds across a preset/patch load** (tech-debt #19, the
+  load-bearing sub-bug). Loading a preset or patch left the pre-load
+  device removals and additions on the undo stack, so ⌘Z after a load
+  could peel the just-loaded patch apart device by device and eventually
+  resurrect the PREVIOUS patch's structure — undo edits that predate the
+  current patch. Fixed at the single choke point every load routes
+  through: `RackIO.fromJson` now clears the undo history after replacing
+  the rack's contents, covering the Presets menu, the Load Patch button,
+  and RackService's project-switch autoload alike (the project-switch
+  no-patch case keeps its own clear in RackService). Proven by loading
+  patch A, editing, loading preset B, and asserting ⌘Z can't cross B
+  (removing the clear fails the test).
+- **`lastTriggerAt` entries survive device removal** (tech-debt #19).
+  Removing a device severed its cables in bulk but left their
+  trigger-cooldown bookkeeping in the map for the life of the rack — a
+  leak `disconnect()`/`removeCable()` avoided per cable. `removeDevice`
+  now drops each dead cable's entry; undo re-adds the cable objects
+  verbatim (no stale cooldown), so it's safe against re-attach. Proven
+  by triggering a cable, removing its source device, and asserting the
+  map no longer tracks it.
+- **TAIL/TEMPO show stale displays after an undo re-attach** (tech-debt
+  #19). Undo of a device removal re-attaches the SAME instance, but
+  `dispose()` had stopped the follow poll / transport clock while leaving
+  the FOLLOW switch, EYE led, CLOCK switch and tick LCD untouched — so
+  the faceplate read "armed" while nothing ran. Both devices now re-run
+  their display/timer sync from `onAttached()`, which fires on every
+  (re-)attach (a no-op on a fresh, switch-off add). Proven by arming,
+  removing, and undoing — the timer must be running again.
+
+### Changed
+- **org.json's version is one root property** (tech-debt #23). The eight
+  module copies STAY — module classloaders make a shared wrapper
+  ClassCastException territory (ledger 3) — but their version literal is
+  now a single `<orgjson.version>` in the root pom that every module
+  references, so Dependabot bumps all eight in one PR. Byte-verified: all
+  eight still resolve to `org.json:json:20260522`. A new
+  `OrgJsonVersionGateTest` fails if any module re-hardcodes a literal.
+
 ## [1.49.0] — 2026-07-12
 
 Ledger 32 closed: rack tool findings reach the standard Action Items
