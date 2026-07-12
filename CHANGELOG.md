@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.55.0] — 2026-07-12
+
+The Device SPI. Third parties can now write rack devices — the single
+largest net-new lever in the plan, shipped as the declarative contract
+the design dossier chose: plugins describe, the Studio hosts, and the
+house laws are enforced by construction.
+
+### Added
+- **`org.nmox.studio.core.spi.device`** — frozen public API (additive-only
+  evolution): `DeviceExtension` (register with `@ServiceProvider`),
+  `DeviceDescriptor` (reverse-DNS id, shelf category, how-to card, typed
+  ports), `DeviceFace` (the faceplate builder: knob/button/toggle/led/
+  lcd/vu — buttons declare GO/STOP/MUTATE/QUERY roles so the color law
+  is unviolatable, labels are mandatory so the accessibility law is too,
+  the first GO/STOP take the shared transport columns, and a face that
+  overflows its units fails at mount naming the control), `DeviceLogic`
+  (signal/project/dispose callbacks), and `DeviceServices` (trust-gated
+  `exec` riding the monitor bus + flight recorder + orphan guarantee,
+  `emit*` onto declared jacks only, the Serving Registry).
+- **The rack hosts extensions** as first-class devices: palette shelf,
+  Quick Search, patch persistence, undo, Stop All, panic — identical to
+  the built-in 45. Law-breaking descriptors are skipped with a logged
+  note naming the offender (the learn-catalog.d idiom); an uninstalled
+  plugin's devices survive in patches as MISSING placeholders (v1.54.0)
+  until the plugin returns.
+- **`docs/device-spi.md`** — the laws, the threading contract, and a
+  complete worked plugin (pom + device).
+
+### Verified live, end to end
+An out-of-tree Maven project compiled against the SPI, packaged as an
+NBM (generated dependency `core > 1.55.0` — refused by the loader on
+older installs), installed through Tools ▸ Plugins with no restart,
+appeared on the shelf, mounted, and its CHECK press hit the HOST's
+Workspace Trust prompt before `uptime` ran onto its LCD. The trust
+gate, descriptor validation, and Lookup merge are each mutation-proven;
+the contract tests parameterize over the catalog, so a fixture extension
+is held to all eight device laws in every build.
+
 ## [1.54.0] — 2026-07-12
 
 The SPI pre-work release. The Device SPI decision is made — a small
