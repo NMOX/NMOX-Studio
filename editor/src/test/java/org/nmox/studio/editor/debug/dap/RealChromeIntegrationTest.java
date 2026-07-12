@@ -155,6 +155,19 @@ class RealChromeIntegrationTest {
                 // headless in CI only; the product launches headed — the
                 // user watches the page they are debugging
                 .put("runtimeArgs", new JSONArray().put("--headless=new"))
+                // js-debug's own give-up ceiling for attaching to the browser
+                // it just spawned (default 10000ms). Two loaded ubuntu runners
+                // blew through the default — Chrome cold-started slower than
+                // 10s and js-debug failed the launch with "Could not attach to
+                // main target" (actions/runs/29180149462 attempt 1,
+                // actions/runs/29177513763 attempt 1; both post-mortems named
+                // it via the transcript + adapter tap). Repro is mechanical:
+                // shrink this below Chrome's startup and the identical failure
+                // fires locally. NOT a sleep — attach completes the instant the
+                // target appears (~1.5s green) — so the ceiling matches the
+                // 120s cold-start window the 'stopped' await below already
+                // grants for exactly this reason.
+                .put("timeout", 120_000)
                 .put("userDataDir", profile.toString()));
 
         nb.awaitEvent("initialized");
