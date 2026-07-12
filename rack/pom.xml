@@ -145,6 +145,21 @@
             <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- projectapi-nb registers the ProjectManagerImplementation that
+             ProjectManager.<clinit> requires. Without it, the first real
+             OpenProjects-bridge publication poisons the ProjectManager class
+             for the whole test JVM ("Could not initialize class"), and
+             openide-nodes' ProjectManagerDeadlockDetector then throws from
+             EVERY later DataObject.getNodeDelegate — an order-dependent
+             failure (green on macOS, red on ubuntu, purely by surefire's
+             filesystem run order). Pinned by OpenProjectsBridgeTest (e);
+             at runtime the platform cluster provides it -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-projectapi-nb</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
