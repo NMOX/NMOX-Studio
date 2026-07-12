@@ -64,6 +64,16 @@ the API is a day old and has no external consumers.
   input" comment corrected for community drop-ins; the SPI's
   frozen-in-lockstep enum constraint documented in package-info.
 
+### Build/CI robustness
+- The test JVM now gets the product's own `java.base` `--add-opens`
+  (nmoxstudio.conf ships them): platform code (NbPreferences/IOProvider)
+  reflects into `java.base` to install URL stream handlers, and on JDK 21
+  a fork that reached that init first threw `InaccessibleObjectException`.
+- De-flaked `ProcessSupportTest.shouldKillGrandchildHoldingPipeOnTimeout`:
+  the orphan-reap poll now waits 15s (was 3s) — `destroyForcibly` is
+  async and the guarantee is eventual, so the window must outlast
+  full-reactor CPU contention, not measure it.
+
 ### Deferred with reasons (ledger 41–44)
 The systemic EDT `exec`/dotenv fork (pre-existing, all 46 devices, its own
 release), third-party code at session restore (accepted — restore

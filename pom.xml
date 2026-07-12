@@ -99,6 +99,21 @@
                 <version>3.5.6</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                    <!-- The tests exercise the NetBeans platform (NbPreferences,
+                         IOProvider, the filesystems URL machinery), which reflects
+                         into java.base to install stream handlers — the same reason
+                         the shipped IDE opens these in nmoxstudio.conf. Without a
+                         matching test-JVM open, a JDK-21 fork that happens to reach
+                         that init first throws InaccessibleObjectException; give the
+                         test JVM the product's own java.base opens so it never can.
+                         @{argLine} keeps JaCoCo's agent (it sets that property). -->
+                    <argLine>@{argLine}
+                        --add-opens=java.base/java.net=ALL-UNNAMED
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
+                        --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+                        --add-opens=java.base/java.io=ALL-UNNAMED
+                        --add-opens=java.base/java.security=ALL-UNNAMED
+                        --add-opens=java.base/java.util=ALL-UNNAMED</argLine>
                     <!-- Run the unit suite headless so it matches CI and never
                          pops a real Swing dialog (e.g. a workspace-trust prompt)
                          onto the developer's screen mid-build. -->
@@ -282,6 +297,10 @@
     <properties>
         <netbeans.version>RELEASE300</netbeans.version>
         <brandingToken>nmoxstudio</brandingToken>
+        <!-- Empty default so surefire's @{argLine} resolves even when JaCoCo's
+             prepare-agent is skipped (e.g. -Djacoco.skip=true); when JaCoCo
+             runs it overrides this with its -javaagent line. -->
+        <argLine></argLine>
         <!-- The product version the module manifests carry as their
              OpenIDE-Module-Specification-Version (see the nbm-maven-plugin
              pluginManagement entry for the mechanism). Committed value = the
@@ -289,7 +308,7 @@
              stamps the tag's version over it (alongside branding's
              currentVersion, same step). Bump it when opening a new release
              sprint. -->
-        <spec.version>1.55.0</spec.version>
+        <spec.version>1.56.0</spec.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
