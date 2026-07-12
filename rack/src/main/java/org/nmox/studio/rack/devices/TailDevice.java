@@ -63,6 +63,28 @@ public class TailDevice extends RackDevice {
         eyeLed.setOn(followSwitch.isOn());
     }
 
+    /**
+     * Undo of a device removal re-attaches this same instance, but
+     * {@link #dispose()} stopped the poll while leaving the FOLLOW switch and
+     * EYE led untouched — so without a re-sync the faceplate reads "following"
+     * while nothing is actually tailed. Re-run the display/timer sync on every
+     * (re-)attach; on a fresh add the switch is off, so this is a no-op.
+     */
+    @Override
+    protected void onAttached() {
+        sync();
+    }
+
+    /** Test seam: is the follow poll actually running? */
+    boolean isPolling() {
+        return poll.isRunning();
+    }
+
+    /** Test seam: does the EYE led match the FOLLOW switch (display in sync)? */
+    boolean displayInSync() {
+        return eyeLed.isOn() == followSwitch.isOn();
+    }
+
     @Override
     public boolean isResumable() {
         return followSwitch.isOn();

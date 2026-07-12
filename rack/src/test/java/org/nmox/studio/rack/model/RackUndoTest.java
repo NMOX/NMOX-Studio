@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.rack.devices.DeviceType;
+import org.nmox.studio.rack.projectstudio.RackPresets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -95,6 +96,52 @@ class RackUndoTest {
         assertThat(rack.canRedo()).isTrue();
         rack.addDevice(DeviceType.RUN.create());
         assertThat(rack.canRedo()).as("a fresh edit drops the redo branch").isFalse();
+    }
+
+    @Test
+    @DisplayName("Loading a preset clears undo history — ⌘Z cannot cross into the previous patch")
+    void presetLoadClearsUndoHistory() {
+        // patch A: a ready-made pipeline wired in through the real load path
+        RackIO.fromJson(rack, RackPresets.WEB_PIPELINE.buildPatch());
+        // an interactive edit stacked on top of A
+        rack.addDevice(DeviceType.CONSOLE.create());
+        assertThat(rack.canUndo()).as("the post-A edit is undoable").isTrue();
+
+        // load a DIFFERENT preset — this REPLACES the rack's contents
+        RackIO.fromJson(rack, RackPresets.CI_LANE.buildPatch());
+        assertThat(rack.canUndo())
+                .as("a fresh patch load wipes undo history so ⌘Z can't reach A")
+                .isFalse();
+
+        // an edit after B is undoable, but undoing it lands exactly at B's
+        // load and no further — never peeling B apart or resurrecting A
+        rack.addDevice(DeviceType.CONSOLE.create());
+        assertThat(rack.canUndo()).isTrue();
+        rack.undo();
+        assertThat(rack.canUndo())
+                .as("undo reaches the post-B edit and stops — B's structure is the floor")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("Removing a device drops its cables' trigger-cooldown bookkeeping")
+    void removeDeviceDropsTriggerBookkeeping() {
+        RackDevice master = DeviceType.MASTER.create();
+        RackDevice join = DeviceType.JOIN.create();
+        rack.addDevice(master);
+        rack.addDevice(join);
+        Cable cable = rack.connect(master.getPort("trig1"), join.getPort("in1"));
+        assertThat(cable).isNotNull();
+
+        // a trigger down the cable records its cooldown timestamp
+        rack.emit(master.getPort("trig1"), Signal.trigger());
+        rack.awaitRouterIdle();
+        assertThat(rack.tracksTrigger(cable)).as("the trigger recorded a cooldown").isTrue();
+
+        rack.removeDevice(master);
+        assertThat(rack.tracksTrigger(cable))
+                .as("removing the source device drops the severed cable's bookkeeping")
+                .isFalse();
     }
 
     @Test

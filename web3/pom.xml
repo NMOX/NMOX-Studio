@@ -89,7 +89,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20260522</version>
+            <version>${orgjson.version}</version>
         </dependency>
 
         <!-- Quick Search provider (Cmd+I) — wired in W2 -->

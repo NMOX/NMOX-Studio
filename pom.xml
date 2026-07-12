@@ -280,5 +280,11 @@
         <junit.version>6.1.1</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <assertj.version>3.27.7</assertj.version>
+        <!-- org.json rides in 8 separate module copies on purpose (module
+             classloaders make a shared wrapper ClassCastException territory —
+             ledger items 3 and 23); the copies STAY. This single property only
+             centralizes the VERSION STRING so Dependabot bumps all eight in one
+             PR. Every module pom references ${orgjson.version}. -->
+        <orgjson.version>20260522</orgjson.version>
     </properties>
 </project>

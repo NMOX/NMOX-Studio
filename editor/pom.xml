@@ -70,7 +70,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20260522</version>
+            <version>${orgjson.version}</version>
         </dependency>
 
         <!-- Testing dependencies -->

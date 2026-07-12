@@ -166,6 +166,11 @@ public final class Rack {
         }
     }
 
+    /** Test seam: whether a cable still carries trigger-cooldown bookkeeping. */
+    boolean tracksTrigger(Cable c) {
+        return lastTriggerAt.containsKey(c);
+    }
+
     /** Test seam: whether the shutdown reaper still tracks this rack. */
     static boolean reaperTracks(Rack rack) {
         return LIVE.contains(rack);
@@ -215,6 +220,14 @@ public final class Rack {
                 }
             }
             cables.removeAll(dead);
+            // drop the severed cables' cooldown bookkeeping too — disconnect()
+            // and removeCable() do this per cable, but removing a DEVICE severed
+            // them in bulk here, leaking a lastTriggerAt entry per dead cable
+            // for the life of the rack. Undo re-adds the cable objects verbatim
+            // (with no stale cooldown), so this is safe against re-attach.
+            for (Cable c : dead) {
+                lastTriggerAt.remove(c);
+            }
             d.dispose();
             fireStructure();
             if (!dead.isEmpty()) {
