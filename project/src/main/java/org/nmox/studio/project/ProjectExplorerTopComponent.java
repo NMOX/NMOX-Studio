@@ -126,6 +126,35 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      */
     private boolean rackListenerAttached;
 
+    /**
+     * Ledger 29 (v1.45.0): the aimed directory's DataFolder node becomes
+     * this window's activated nodes, so the global selection (and the
+     * platform's context actions — Team menu, git verbs) sees the aim
+     * whenever the workbench is active. Created lazily beside rackListener,
+     * inside the rack-availability guard: the publisher is a rack class,
+     * and this module treats rack as optional.
+     */
+    private org.nmox.studio.rack.service.AimNodePublisher aimPublisher;
+
+    /**
+     * True between componentShowing and componentHidden/Closed: a hidden
+     * default-open tab must resolve nothing at boot (the v1.38.0 law).
+     * Volatile — the rack listener fires off-EDT on async switches.
+     */
+    private volatile boolean aimNodeShowing;
+
+    /** Publishes the current aim's node — only while showing, never at hidden boot. */
+    private void publishAimNode() {
+        if (aimPublisher == null || !aimNodeShowing) {
+            return;
+        }
+        try {
+            aimPublisher.publish(RackService.getDefault().getRack().getProjectDir());
+        } catch (RuntimeException | LinkageError ex) {
+            // rack unavailable: no aim to publish
+        }
+    }
+
     public ProjectExplorerTopComponent() {
         setName(NbBundle.getMessage(ProjectExplorerTopComponent.class, "CTL_ProjectExplorerTopComponent"));
         setToolTipText(NbBundle.getMessage(ProjectExplorerTopComponent.class, "HINT_ProjectExplorerTopComponent"));
@@ -163,8 +192,15 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                             // through the coalescer: an aim that lands amid the
                             // startup registry burst folds into one queued refresh
                             refreshCoalescer.request();
+                            // selection follows the aim only while showing;
+                            // componentShowing catches up after re-show (ledger 29)
+                            publishAimNode();
                         }
                     };
+                }
+                if (aimPublisher == null) {
+                    aimPublisher = new org.nmox.studio.rack.service.AimNodePublisher(node ->
+                            setActivatedNodes(new org.openide.nodes.Node[]{node}));
                 }
                 RackService.getDefault().getRack().addListener(rackListener);
                 rackListenerAttached = true;
@@ -178,6 +214,18 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     @Override
+    protected void componentShowing() {
+        aimNodeShowing = true;
+        // equality-guarded: re-shows of an unchanged aim cost one compare
+        publishAimNode();
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimNodeShowing = false;
+    }
+
+    @Override
     public void componentClosed() {
         TopComponent.getRegistry().removePropertyChangeListener(registryListener);
         if (rackListenerAttached) {
@@ -188,6 +236,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             rackListenerAttached = false;
         }
+        aimNodeShowing = false;
+        if (aimPublisher != null) {
+            aimPublisher.reset(); // reopen re-resolves even for the same aim
+        }
+        setActivatedNodes(new org.openide.nodes.Node[0]); // don't pin the DataObject
     }
 
     // ---- assembly ----

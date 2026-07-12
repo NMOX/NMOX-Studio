@@ -329,10 +329,19 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
+        if (dir.equals(bridgePublishing)) {
+            // the platform echoing our own publication back: OpenProjects.open
+            // fires WebProjectOpenedHook, whose job is to aim the rack when the
+            // PLATFORM opened a project — but this open originated here, and
+            // re-running proceed (addRecent + another publish) would recurse
+            // until only OpenProjects' idempotence stopped it (ledger 29)
+            return;
+        }
         guardedSwitch(dir, () -> {
             aimed = true;
             addRecentProject(dir);
             getRack().setProjectDir(dir);
+            publishToOpenProjects(dir);
         });
     }
 
@@ -348,7 +357,106 @@ public class RackService {
         guardedSwitch(dir, () -> {
             aimed = true;
             getRack().setProjectDir(dir);
+            // deliberately NOT bridged to OpenProjects: experiments are
+            // throwaway, and the platform persists its open-projects list —
+            // a bridged experiment would resurrect at next boot (and resolve
+            // projects during startup, against the v1.38.0 law)
         });
+    }
+
+    // ---- the OpenProjects bridge (ledger 29, v1.45.0) ----
+    //
+    // The rack is the context system, but the platform's context actions
+    // (Team menu, project-sensitive verbs) read OpenProjects. After a real
+    // aim, publish the aimed directory there too — when the platform
+    // recognizes it as a project — so both worlds agree on "the current
+    // project". Passive aims (fresh-boot ~/NMOX, persisted window state,
+    // the open-projects follower itself) must NEVER reach this: the
+    // v1.38.0 boot law forbids eager FileObject/ProjectManager resolution
+    // at startup, and the follower feeding itself would loop.
+
+    /**
+     * Test seam: production resolves via ProjectManager/OpenProjects; tests
+     * inject a recorder. Always invoked on {@link #BRIDGE_RP}, never the EDT.
+     */
+    interface BridgeHook {
+        void publish(File dir);
+    }
+
+    BridgeHook bridgeHook = RackService::publishToPlatform;
+
+    /**
+     * One background lane: ProjectManager.findProject scans the directory for
+     * manifests (disk IO) and OpenProjects.open touches platform persistence —
+     * neither may run on the EDT, and publications must not interleave.
+     */
+    private static final org.openide.util.RequestProcessor BRIDGE_RP =
+            new org.openide.util.RequestProcessor("nmox-project-bridge", 1, true);
+
+    /**
+     * The directory currently being published, visible to the re-entrancy
+     * check in {@link #openProject}: OpenProjects.open synchronously (in
+     * tests, and sometimes in the platform) fires ProjectOpenedHooks, and
+     * ours calls openProject right back.
+     */
+    private volatile File bridgePublishing;
+
+    /** Fires only from an explicit aim's completion callback — never a passive path. */
+    private void publishToOpenProjects(File dir) {
+        BRIDGE_RP.post(() -> {
+            bridgePublishing = dir;
+            try {
+                bridgeHook.publish(dir);
+            } catch (RuntimeException | LinkageError ex) {
+                // project APIs unavailable (plain tests, stripped platform):
+                // the rack aim stands on its own, exactly as before v1.45
+            } finally {
+                bridgePublishing = null;
+            }
+        });
+    }
+
+    /**
+     * The real bridge. A directory without any recognized manifest (no
+     * package.json … and no index.html) yields findProject == null — the rack
+     * happily aims anywhere, the platform only at projects, so we no-op
+     * silently. NEVER closes the previously open project: closing is the
+     * user's call, and a rack aim is not a statement about other projects
+     * (source-gated by OpenProjectsBridgeTest).
+     */
+    private static void publishToPlatform(File dir) {
+        org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil
+                .toFileObject(org.openide.filesystems.FileUtil.normalizeFile(dir));
+        if (fo == null) {
+            return; // vanished between the aim and the publish
+        }
+        try {
+            org.netbeans.api.project.Project project =
+                    org.netbeans.api.project.ProjectManager.getDefault().findProject(fo);
+            if (project == null) {
+                return; // not a project the platform recognizes; the aim stands alone
+            }
+            org.netbeans.api.project.ui.OpenProjects open =
+                    org.netbeans.api.project.ui.OpenProjects.getDefault();
+            if (!open.isProjectOpen(project)) {
+                open.open(new org.netbeans.api.project.Project[]{project}, false);
+            }
+            open.setMainProject(project);
+        } catch (java.io.IOException | IllegalArgumentException ex) {
+            // a project the platform refuses to load is not our failure to
+            // surface: the rack aim already succeeded
+            java.util.logging.Logger.getLogger(RackService.class.getName())
+                    .fine("OpenProjects bridge skipped " + dir + ": " + ex);
+        }
+    }
+
+    /** Test seam: blocks until every queued publication has completed. */
+    void awaitBridgeIdle() {
+        try {
+            BRIDGE_RP.post(() -> { }).waitFinished(10_000);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

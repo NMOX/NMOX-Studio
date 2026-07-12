@@ -163,9 +163,34 @@ public final class RackTopComponent extends TopComponent {
         @Override
         public void projectChanged() {
             javax.swing.SwingUtilities.invokeLater(RackTopComponent.this::updateProjectLabel);
+            // selection follows the aim only while this tab is showing —
+            // componentShowing catches up on whatever moved while hidden
+            if (aimNodeShowing) {
+                aimPublisher.publish(rack.getProjectDir());
+            }
         }
     };
     private boolean projectListenerAttached;
+
+    /**
+     * Ledger 29 (v1.45.0): the aimed directory's DataFolder node becomes
+     * this window's activated nodes, so the GLOBAL selection — and every
+     * platform context action reading it (Team menu, git verbs) — sees
+     * the aim whenever the rack is the active window. The default
+     * TopComponent lookup proxies activated nodes, so getLookup() carries
+     * the DataObject/FileObject too.
+     */
+    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
+            new org.nmox.studio.rack.service.AimNodePublisher(node ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{node}));
+
+    /**
+     * True between componentShowing and componentHidden/Closed. Gates all
+     * selection publication: a hidden default-open tab must do zero
+     * filesystem resolution at boot (the v1.38.0 law). Volatile — the
+     * rack listener fires off-EDT on async project switches.
+     */
+    private volatile boolean aimNodeShowing;
 
     private JToolBar buildToolbar() {
         JToolBar bar = new JToolBar();
@@ -341,6 +366,20 @@ public final class RackTopComponent extends TopComponent {
     }
 
     @Override
+    protected void componentShowing() {
+        aimNodeShowing = true;
+        // the publisher's equality guard makes re-shows of an unchanged aim
+        // free; a fresh boot pays one ~/NMOX folder-node resolve on first
+        // show (never while hidden), which touches no TCC-protected path
+        aimPublisher.publish(rack.getProjectDir());
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimNodeShowing = false;
+    }
+
+    @Override
     public void componentClosed() {
         // keep processes alive when the window merely closes; the rack
         // survives until the module is unloaded
@@ -350,6 +389,9 @@ public final class RackTopComponent extends TopComponent {
             rack.removeListener(projectListener);
             projectListenerAttached = false;
         }
+        aimNodeShowing = false;
+        aimPublisher.reset(); // reopen re-resolves even for the same aim
+        setActivatedNodes(new org.openide.nodes.Node[0]); // don't pin the DataObject
     }
 
     void writeProperties(java.util.Properties p) {

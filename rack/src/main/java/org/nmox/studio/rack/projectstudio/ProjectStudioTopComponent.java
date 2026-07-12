@@ -56,8 +56,30 @@ public final class ProjectStudioTopComponent extends TopComponent {
         @Override
         public void projectChanged() {
             SwingUtilities.invokeLater(ProjectStudioTopComponent.this::syncToRack);
+            // selection follows the aim only while showing; componentShowing
+            // catches up on whatever moved while hidden (ledger 29)
+            if (aimNodeShowing) {
+                aimPublisher.publish(rack.getProjectDir());
+            }
         }
     };
+
+    /**
+     * Ledger 29 (v1.45.0): the aimed directory's DataFolder node becomes
+     * this window's activated nodes, so the global selection (and the
+     * platform's context actions) sees the aim whenever the studio is
+     * active. The default TopComponent lookup proxies activated nodes.
+     */
+    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
+            new org.nmox.studio.rack.service.AimNodePublisher(node ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{node}));
+
+    /**
+     * True between componentShowing and componentHidden/Closed: a hidden
+     * default-open tab must resolve nothing at boot (the v1.38.0 law).
+     * Volatile — the rack listener fires off-EDT on async switches.
+     */
+    private volatile boolean aimNodeShowing;
 
     public ProjectStudioTopComponent() {
         setName(org.openide.util.NbBundle.getMessage(ProjectStudioTopComponent.class, "CTL_ProjectStudioTopComponent"));
@@ -180,9 +202,24 @@ public final class ProjectStudioTopComponent extends TopComponent {
     }
 
     @Override
+    protected void componentShowing() {
+        aimNodeShowing = true;
+        // equality-guarded: re-shows of an unchanged aim cost one compare
+        aimPublisher.publish(rack.getProjectDir());
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimNodeShowing = false;
+    }
+
+    @Override
     public void componentClosed() {
         rack.removeListener(rackListener);
         treePanel.dispose();
+        aimNodeShowing = false;
+        aimPublisher.reset(); // reopen re-resolves even for the same aim
+        setActivatedNodes(new org.openide.nodes.Node[0]); // don't pin the DataObject
     }
 
     void writeProperties(java.util.Properties p) {
