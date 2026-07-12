@@ -4,6 +4,58 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.46.0] — 2026-07-11
+
+The soft-dependency release: ledger 30 and 31 — the same surgery, both
+halves. Optionality is now a lookup, not a caught classloader failure;
+rack's exports are now first-party-only.
+
+### Changed
+- **Interface-in-Lookup replaces catch(LinkageError)** (ledger 30). Core
+  exports `org.nmox.studio.core.spi` with two small facades — `ProjectAim`
+  (projectDir / aim / recentProjects, projectChanged listeners, manifest
+  listeners) and `LiveServings` (snapshot + coarse listeners) — and rack
+  publishes thin @ServiceProvider adapters (RackProjectAim,
+  RackLiveServings; pure delegation, listener wrappers mapped so
+  add/remove stay symmetric and a double-add never double-delivers). 31
+  catch sites across apiclient/web3/dbstudio/project/tools/infra/ui
+  converted to find()-and-branch-on-null; absence = feature quietly off,
+  behavior unchanged. ServingBridge, BaseUrlOffer and ChainAutoConnect are
+  retyped to the facade — their storm tests ride a fake with the real
+  registry's threading contract, still green.
+- **apiclient, web3 and infra no longer depend on rack at all** — the
+  Maven module dependency is gone; each pins that with a
+  RackSoftDependencyTest (facade lookups null in the module's own test
+  environment, rack classes not even loadable). dbstudio keeps the dep
+  for FileWatcher/DockerClient, project for the Workbench's rack UI
+  surface, tools for CommandExecutor/ProjectInspector — each kept catch
+  now carries a KEPT/why comment. Catches guarding genuinely-optional
+  PLATFORM modules (Keyring, NotificationDisplayer, editor kits,
+  ConnectionManager, the terminal-emulator probe) stay: that's what the
+  idiom is FOR.
+- **Rack's exports are friend-declared** (ledger 31).
+  `OpenIDE-Module-Friends` lists exactly the five first-party modules
+  that still compile against rack (editor, tools, project, ui, dbstudio)
+  — byte-verified in the built jar's manifest; the module system now
+  refuses any other dependent, so the world-exported-API risk is closed
+  before any plugin story ships. Core stays friend-less on purpose: its
+  minimal exports are the intended public surface.
+
+### Added
+- `SoftDependencyGateTest` (core): pins per-file catch(LinkageError)
+  counts — zero at every converted site, exact counts at the mixed files
+  — and walks apiclient/web3/infra asserting no main source names a rack
+  package. Mutation-proven: re-adding a catch fails it.
+- Facade contract tests: RackProjectAimTest / RackLiveServingsTest (rack;
+  lookup finds the providers, delegation, listener lifecycle incl. the
+  never-double-deliver law), RackSoftDependencyTest ×3 (the absent
+  branch), FakeLiveServings test doubles in apiclient and web3.
+
+### Notes
+- TrustGate was deliberately not facaded: editor's rack dependency must
+  stay for CommandExecutor/DiagnosticsBus regardless, so a trust facade
+  would remove neither the idiom nor a dependency (honest scope).
+
 ## [1.45.0] — 2026-07-11
 
 The context release: ledger 29, the one big architectural arc, worked as

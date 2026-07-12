@@ -20,6 +20,10 @@
             <artifactId>NMOX-Studio-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- KEPT (ledger 30): the aim/manifest seam moved to core's
+             ProjectAim lookup, but FileWatcher (.nmoxdb.json watcher) and
+             DockerClient (connection offers) have no core facade — DB Studio
+             is a rack friend (ledger 31). -->
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>NMOX-Studio-rack</artifactId>

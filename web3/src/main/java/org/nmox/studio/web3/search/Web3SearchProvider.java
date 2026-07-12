@@ -86,18 +86,17 @@ public class Web3SearchProvider implements SearchProvider {
     /**
      * The aimed project's directory, resolved the same way Contract
      * Studio does: the rack's target if it's up, else the user's home.
-     * Guarded so tests and a stripped platform (no rack) fall back
-     * cleanly.
+     * Soft dependency by lookup (ledger 30): a null provider means the
+     * rack is absent (tests, stripped platform).
      */
     private static File projectDir() {
-        try {
-            File dir = org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().getProjectDir();
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            File dir = aim.projectDir();
             if (dir != null && dir.isDirectory()) {
                 return dir;
             }
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform)
         }
         return new File(System.getProperty("user.home"));
     }

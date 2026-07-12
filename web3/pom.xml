@@ -22,14 +22,9 @@
         </dependency>
         <!-- The aimed-project seam: Contract Studio scans the rack's target
              for artifacts and persists .nmoxweb3.json beside it, exactly like
-             DB Studio / API Studio / the infra designer. Every touch is
-             guarded (RuntimeException|LinkageError) so tests and a stripped
-             platform fall back cleanly. -->
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>NMOX-Studio-rack</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+             DB Studio / API Studio / the infra designer. Since v1.46.0 that
+             seam is core's ProjectAim/LiveServings lookup (ledger 30) — no
+             rack dependency; a null provider means the features are off. -->
 
         <dependency>
             <groupId>org.netbeans.api</groupId>

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.apiclient.model.ApiModel.Environment;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,14 +22,14 @@ class BaseUrlOfferTest {
     private static final File OTHER = new File("/tmp/blog").getAbsoluteFile();
     private static final String URL = "http://localhost:5173";
 
-    private static ServingRegistry.Serving web(String url, File dir) {
-        return new ServingRegistry.Serving("dev-1", "DEV-SERVER", url,
-                ServingRegistry.Kind.WEB, dir);
+    private static LiveServings.Serving web(String url, File dir) {
+        return new LiveServings.Serving("dev-1", "DEV-SERVER", url,
+                LiveServings.Kind.WEB, dir);
     }
 
-    private static ServingRegistry.Serving chain(String url, File dir) {
-        return new ServingRegistry.Serving("anvil-1", "ANVIL", url,
-                ServingRegistry.Kind.CHAIN, dir);
+    private static LiveServings.Serving chain(String url, File dir) {
+        return new LiveServings.Serving("anvil-1", "ANVIL", url,
+                LiveServings.Kind.CHAIN, dir);
     }
 
     private static Workspace workspaceWithEnv(String envName, String key, String value) {

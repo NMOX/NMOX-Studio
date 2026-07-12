@@ -60,11 +60,13 @@ public final class OpenFolderAction implements ActionListener {
     }
 
     private void openFolder(File folder) {
-        try {
-            // aim the whole IDE - rack, studio, workbench - at the folder
-            org.nmox.studio.rack.service.RackService.getDefault().openProject(folder);
-        } catch (RuntimeException | LinkageError ex) {
-            // rack unavailable; still surface the workbench below
+        // aim the whole IDE - rack, studio, workbench - at the folder.
+        // Soft aim lookup (ledger 30): no provider (plain tests, stripped
+        // platform) — still surface the workbench below.
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.aim(folder);
         }
         TopComponent workbench = WindowManager.getDefault()
                 .findTopComponent("ProjectExplorerTopComponent");

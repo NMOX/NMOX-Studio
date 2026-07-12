@@ -3,10 +3,10 @@ package org.nmox.studio.apiclient.api;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.SwingUtilities;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 /**
- * The one hop between the rack's {@link ServingRegistry} and API
+ * The one hop between the rack's {@link LiveServings} and API
  * Studio's EDT: registry notifications arrive on the registry's own
  * background thread, the snapshot is taken THERE (never on the EDT),
  * and only the plain list crosses to the EDT consumer.
@@ -15,14 +15,14 @@ import org.nmox.studio.rack.service.ServingRegistry;
  * componentOpened, detach in componentClosed — both idempotent, so
  * open/close cycles never stack listeners.
  */
-public final class ServingBridge implements ServingRegistry.Listener {
+public final class ServingBridge implements LiveServings.Listener {
 
-    private final ServingRegistry registry;
-    private final Consumer<List<ServingRegistry.Serving>> onEdt;
+    private final LiveServings registry;
+    private final Consumer<List<LiveServings.Serving>> onEdt;
     private boolean attached;
 
-    public ServingBridge(ServingRegistry registry,
-            Consumer<List<ServingRegistry.Serving>> onEdt) {
+    public ServingBridge(LiveServings registry,
+            Consumer<List<LiveServings.Serving>> onEdt) {
         this.registry = registry;
         this.onEdt = onEdt;
     }
@@ -52,7 +52,7 @@ public final class ServingBridge implements ServingRegistry.Listener {
     /** Registry thread: snapshot here, marshal the result. */
     @Override
     public void servingChanged() {
-        List<ServingRegistry.Serving> snapshot = registry.snapshot();
+        List<LiveServings.Serving> snapshot = registry.snapshot();
         SwingUtilities.invokeLater(() -> onEdt.accept(snapshot));
     }
 }

@@ -121,29 +121,6 @@ seven studio/tool windows that don't own the aim (NpmExplorer still reads
 the registry by hand) — each is now an incremental follow-on with the
 pattern established, not a coordinated big-bang.
 
-### 30. `catch (LinkageError)` as the soft-dependency mechanism (~40 sites)
-project/infra/apiclient/web3/dbstudio/ui treat rack as optional by importing
-its concrete classes and catching `RuntimeException | LinkageError` around
-every call. It works and it is defensive — but the idiomatic shape is an
-interface published via `@ServiceProvider`, looked up with
-`Lookup.getDefault().lookup(...)`, branching on null. Catching classloader
-failures for control flow hides real breakage (a genuinely mismatched rack
-surfaces as a silently skipped feature). **Deferred**: converting means
-designing a rack facade interface and touching six modules; batch it with #29
-— they are the same surgery. Related hardening: suite-internal deps are
-spec-version only, so a mismatched rack *loads* and fails at call time;
-implementation-version dependencies would make the module loader refuse it
-up front (batch with ledger #20's version scheme).
-
-### 31. rack's six public packages have no OpenIDE-Module-Friends
-`model, devices, service, engine, projectstudio, docker` are world-exported;
-every actual consumer is a first-party sibling. Today that's harmless. The day
-an external plugin SDK ships, those packages become a public API we must
-version-support forever — and `rack.model` has zero external production
-importers at all (one test), so it may not need exporting once transitive
-signatures are checked. **Deferred with a tripwire**: MUST be narrowed to a
-friends list (and model possibly unexported) before any plugin story ships.
-
 ### 32. DiagnosticsBus duplicates the platform's editor-hints/task-list plumbing
 Rack tools push diagnostics over a bespoke bus and editor draws its own
 squiggles (`RackSquiggler`); the platform's `HintsController`/TaskList would
@@ -419,6 +396,55 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.46.0 (the soft-dependency release)
+
+### 30. `catch (LinkageError)` as the soft-dependency mechanism — CLOSED
+The idiomatic shape shipped: core exports `org.nmox.studio.core.spi`
+with two small facades — `ProjectAim` (projectDir/aim/recentProjects,
+projectChanged listeners, manifest listeners) and `LiveServings`
+(snapshot + coarse listeners, the Serving record) — and rack publishes
+thin `@ServiceProvider` adapters (`RackProjectAim`, `RackLiveServings`;
+no logic moved, listener wrappers mapped so add/remove stay symmetric
+and a double-add never double-delivers). 31 of the ~55 catch sites
+converted to `find()`-and-branch-on-null (apiclient 6, web3 6,
+dbstudio 5, project 6, tools 4, infra 2, ui 1 — plus ServingBridge/
+BaseUrlOffer/ChainAutoConnect retyped to the facade); **apiclient,
+web3 and infra dropped their rack Maven dependency entirely** (pinned
+by RackSoftDependencyTest in each: lookups null, rack classes not even
+loadable). What stayed, with reasons at each site: dbstudio keeps the
+rack dep for `FileWatcher` and `DockerClient` (no core facade — their
+two guards are marked KEPT), project keeps it for the Workbench's rack
+UI surface (AimNodePublisher/NewProjectDialog/DockerPanel/FileLink/
+LegacyWeb; 4 KEPT guards on window-system-touching classes), tools for
+CommandExecutor/ProjectInspector, editor/ui hard-depend as before; and
+every catch guarding genuinely-optional PLATFORM modules (Keyring in
+CloudTokens/Passwords/RpcSecrets, NotificationDisplayer, editor kits,
+ConnectionManager, core's terminal-emulator probe, rack's own platform
+guards) is legitimate and untouched. `SoftDependencyGateTest` (core)
+pins per-file catch counts — zero at converted sites, exact counts at
+mixed files — and walks apiclient/web3/infra asserting no main source
+names a rack package; mutation-proven (re-adding a catch fails it).
+TrustGate was deliberately NOT facaded: editor's rack dependency must
+stay for CommandExecutor/DiagnosticsBus regardless, so a trust facade
+would remove neither the idiom nor a dependency. The spec-vs-
+implementation-version hardening rides with ledger #20 as before.
+
+### 31. rack's public packages have no OpenIDE-Module-Friends — CLOSED
+`OpenIDE-Module-Friends: org.nmox.NMOX.Studio.editor, …tools,
+…project, …ui, …dbstudio` — exactly the five first-party modules that
+still compile against rack after #30 (apiclient/web3/infra no longer
+do, so they're not friends). nbm-maven-plugin has no friends
+parameter; the entry rides maven-jar-plugin `manifestEntries`, the
+same mechanism as the layer entry, and was byte-verified in the built
+jar's manifest alongside the unchanged Public-Packages. The module
+system now refuses any non-listed dependent, so no external plugin can
+grow a claim on rack internals before a real SDK story ships.
+`rack.model` stays exported: the friends list makes narrowing it
+non-urgent, and Rack/RackDevice types appear in `rack.service`
+signatures anyway. Core deliberately stays friend-less — its minimal
+exports (process/util/http, now + spi) ARE the intended public utility
+surface, blessed by the v1.36 audit.
 
 ## Closed by v1.44.0 (the debt sweep)
 

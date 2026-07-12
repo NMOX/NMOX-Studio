@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import org.nmox.studio.apiclient.model.ApiModel.Environment;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 /**
  * The {{baseUrl}} offer, decided purely: when the rack serves a WEB URL
@@ -44,14 +44,14 @@ public final class BaseUrlOffer {
      * serving, the environment already has a base URL, or this
      * (url + project) was already offered this session.
      */
-    public static Offer shouldOffer(List<ServingRegistry.Serving> servings,
+    public static Offer shouldOffer(List<LiveServings.Serving> servings,
             File projectDir, Workspace workspace, Set<String> alreadyOffered) {
         if (servings == null || projectDir == null || workspace == null
                 || alreadyOffered == null) {
             return null;
         }
-        for (ServingRegistry.Serving serving : servings) {
-            if (serving.kind() != ServingRegistry.Kind.WEB) {
+        for (LiveServings.Serving serving : servings) {
+            if (serving.kind() != LiveServings.Kind.WEB) {
                 continue;
             }
             if (serving.url() == null || serving.url().isBlank()) {

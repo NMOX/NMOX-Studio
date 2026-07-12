@@ -10,7 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.apiclient.model.ApiModel.Environment;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,13 +24,13 @@ class ServingBridgeTest {
 
     private static final File PROJECT = new File("/tmp/shop").getAbsoluteFile();
 
-    private static ServingRegistry.Serving web(String id, String url) {
-        return new ServingRegistry.Serving(id, "DEV-SERVER", url,
-                ServingRegistry.Kind.WEB, PROJECT);
+    private static LiveServings.Serving web(String id, String url) {
+        return new LiveServings.Serving(id, "DEV-SERVER", url,
+                LiveServings.Kind.WEB, PROJECT);
     }
 
     /** Drains the registry notifier, then the EDT — the two async hops. */
-    private static void settle(ServingRegistry registry) throws Exception {
+    private static void settle(FakeLiveServings registry) throws Exception {
         registry.awaitIdle();
         SwingUtilities.invokeAndWait(() -> {
         });
@@ -39,8 +39,8 @@ class ServingBridgeTest {
     @Test
     @DisplayName("attached: every registry change delivers a fresh snapshot on the EDT")
     void deliversSnapshots() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
-        List<List<ServingRegistry.Serving>> seen = new ArrayList<>();
+        FakeLiveServings registry = new FakeLiveServings();
+        List<List<LiveServings.Serving>> seen = new ArrayList<>();
         List<Boolean> onEdt = new ArrayList<>();
         ServingBridge bridge = new ServingBridge(registry, snapshot -> {
             seen.add(snapshot);
@@ -54,7 +54,7 @@ class ServingBridgeTest {
             settle(registry);
 
             assertThat(seen).hasSize(2);
-            assertThat(seen.get(0)).extracting(ServingRegistry.Serving::url)
+            assertThat(seen.get(0)).extracting(LiveServings.Serving::url)
                     .containsExactly("http://localhost:5173");
             assertThat(seen.get(1)).isEmpty();
             assertThat(onEdt).containsOnly(true);
@@ -66,8 +66,8 @@ class ServingBridgeTest {
     @Test
     @DisplayName("never attached or detached: registry flaps reach nothing")
     void closedStudioHearsNothing() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
-        List<List<ServingRegistry.Serving>> seen = new ArrayList<>();
+        FakeLiveServings registry = new FakeLiveServings();
+        List<List<LiveServings.Serving>> seen = new ArrayList<>();
         ServingBridge bridge = new ServingBridge(registry, seen::add);
 
         registry.register(web("dev", "http://localhost:5173"));
@@ -86,11 +86,11 @@ class ServingBridgeTest {
     @Test
     @DisplayName("refresh() delivers the current snapshot without a registry event")
     void refreshDelivers() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         registry.register(web("dev", "http://localhost:5173"));
         registry.awaitIdle();
 
-        List<List<ServingRegistry.Serving>> seen = new ArrayList<>();
+        List<List<LiveServings.Serving>> seen = new ArrayList<>();
         ServingBridge bridge = new ServingBridge(registry, seen::add);
         bridge.attach();
         try {
@@ -107,7 +107,7 @@ class ServingBridgeTest {
     @Test
     @DisplayName("storm law: N register/deregister flaps still yield exactly one offer")
     void flapsYieldOneOffer() throws Exception {
-        ServingRegistry registry = new ServingRegistry();
+        FakeLiveServings registry = new FakeLiveServings();
         Workspace workspace = new Workspace();
         Environment env = new Environment();
         env.name = "Dev";

@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.SwingUtilities;
-import org.nmox.studio.rack.service.ServingRegistry;
+import org.nmox.studio.core.spi.LiveServings;
 
 /**
  * Auto-connects the Contract Studio chip to a local chain the rack is
@@ -23,11 +23,11 @@ import org.nmox.studio.rack.service.ServingRegistry;
  * that was already there — is {@link Action#NONE}. Bounded by
  * construction: at most one UI reaction per actual state change.
  *
- * <p>Threading: {@link ServingRegistry} notifies on its own background
+ * <p>Threading: {@link LiveServings} notifies on its own background
  * thread; the listener snapshots there (never on the EDT) and marshals
  * the extracted CHAIN URLs to the EDT, where the studio's state lives.
  */
-public final class ChainAutoConnect implements ServingRegistry.Listener {
+public final class ChainAutoConnect implements LiveServings.Listener {
 
     /** What one registry change asks of the studio. */
     public enum Action { CONNECT, DISCONNECT, NONE }
@@ -56,13 +56,13 @@ public final class ChainAutoConnect implements ServingRegistry.Listener {
         void disconnect();
     }
 
-    private final ServingRegistry registry;
+    private final LiveServings registry;
     private final Chain chain;
     /** EDT-only: the matched URL carried between decisions. */
     private String matchedUrl;
     private boolean attached;
 
-    public ChainAutoConnect(ServingRegistry registry, Chain chain) {
+    public ChainAutoConnect(LiveServings registry, Chain chain) {
         this.registry = registry;
         this.chain = chain;
     }
@@ -96,8 +96,8 @@ public final class ChainAutoConnect implements ServingRegistry.Listener {
     @Override
     public void servingChanged() {
         List<String> chainUrls = new ArrayList<>();
-        for (ServingRegistry.Serving serving : registry.snapshot()) {
-            if (serving.kind() == ServingRegistry.Kind.CHAIN) {
+        for (LiveServings.Serving serving : registry.snapshot()) {
+            if (serving.kind() == LiveServings.Kind.CHAIN) {
                 chainUrls.add(serving.url());
             }
         }

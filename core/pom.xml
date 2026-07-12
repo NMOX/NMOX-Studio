@@ -105,6 +105,10 @@
                         <publicPackage>org.nmox.studio.core.process</publicPackage>
                         <publicPackage>org.nmox.studio.core.util</publicPackage>
                         <publicPackage>org.nmox.studio.core.http</publicPackage>
+                        <!-- the soft-dependency seams (ledger 30): rack
+                             publishes ProjectAim/LiveServings providers,
+                             studios look them up and branch on null -->
+                        <publicPackage>org.nmox.studio.core.spi</publicPackage>
                     </publicPackages>
                 </configuration>
             </plugin>

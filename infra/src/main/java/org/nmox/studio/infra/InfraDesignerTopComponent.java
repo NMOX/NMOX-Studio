@@ -30,7 +30,6 @@ import org.nmox.studio.infra.model.InfraGraph.InfraNode;
 import org.nmox.studio.infra.ui.FlowCanvas;
 import org.nmox.studio.infra.ui.InfraPalette;
 import org.nmox.studio.infra.ui.PropertyPanel;
-import org.nmox.studio.rack.service.RackService;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle.Messages;
@@ -78,7 +77,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final JButton deployButton = new JButton("DEPLOY");
     private final Timer saveDebounce;
     private final InfraGraph.Listener graphListener;
-    private final org.nmox.studio.rack.model.Rack.Listener rackListener;
+    private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean loading;
     /** Once-per-open attach/detach of our graph + rack listeners (tested core). */
     private final ListenerLifecycle listenerLifecycle =
@@ -157,7 +156,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 });
             }
         };
-        rackListener = new org.nmox.studio.rack.model.Rack.Listener() {
+        rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
             public void projectChanged() {
                 SwingUtilities.invokeLater(InfraDesignerTopComponent.this::load);
@@ -175,20 +174,22 @@ public final class InfraDesignerTopComponent extends TopComponent {
     /** The attach action {@link #listenerLifecycle} runs once per open. */
     private void attachListeners() {
         graph.addListener(graphListener);
-        try {
-            RackService.getDefault().getRack().addListener(rackListener);
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack unavailable (tests, stripped platform): no project switches to follow
+        // soft dependency by lookup (ledger 30): a null provider means the
+        // rack is absent (plain tests) — no project switches to follow
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.addListener(rackListener);
         }
     }
 
     /** The detach action {@link #listenerLifecycle} runs once per close. */
     private void detachListeners() {
         graph.removeListener(graphListener);
-        try {
-            RackService.getDefault().getRack().removeListener(rackListener);
-        } catch (RuntimeException | LinkageError ignored) {
-            // rack already gone; nothing left to detach
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.removeListener(rackListener);
         }
     }
 
@@ -535,8 +536,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     /** Appends a deploy run to .nmox/deploy-log beside the aimed project. */
     private void writeDeployLog(String entry) {
         try {
-            java.io.File root = org.nmox.studio.rack.service.RackService.getDefault()
-                    .getRack().getProjectDir();
+            java.io.File root = aimedDir();
             if (root == null) {
                 return;
             }
@@ -601,7 +601,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
     // ---- persistence & labels ----
 
     private File designFile() {
-        return new File(RackService.getDefault().getRack().getProjectDir(), GraphIO.DEFAULT_FILENAME);
+        File root = aimedDir();
+        return new File(root != null ? root : new File(System.getProperty("user.home")),
+                GraphIO.DEFAULT_FILENAME);
+    }
+
+    /**
+     * The aimed project via core's {@link org.nmox.studio.core.spi.ProjectAim}
+     * lookup (ledger 30); null when the rack is absent (plain tests,
+     * stripped platform).
+     */
+    private static File aimedDir() {
+        org.nmox.studio.core.spi.ProjectAim aim =
+                org.nmox.studio.core.spi.ProjectAim.find();
+        return aim != null ? aim.projectDir() : null;
     }
 
     private void load() {
