@@ -135,6 +135,16 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- masterfs registers the disk URLMapper, so FileUtil.toFileObject
+             resolves real files in headless tests (the NpmExplorer selection
+             tests resolve DataObject nodes); at runtime the platform cluster
+             provides it — same rationale as rack's test-scope entry -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

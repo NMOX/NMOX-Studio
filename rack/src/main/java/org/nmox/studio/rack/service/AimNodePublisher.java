@@ -11,21 +11,27 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 
 /**
- * Publishes the aimed project directory as a platform selection (ledger
- * 29, v1.45.0): resolves the directory's DataFolder node OFF the EDT
- * (FileObject/DataObject resolution touches disk) and hands it to the
- * owning TopComponent ON the EDT, where {@code setActivatedNodes} makes
- * the global selection — and with it the platform's context-sensitive
- * actions (Team menu, git verbs) — finally see what NMOX is aimed at.
+ * Publishes a file or directory as a platform selection (ledger 29,
+ * v1.45.0; generalized from directories to any file in v1.48.0 for the
+ * Project Studio tree selection): resolves the target's DataObject node
+ * OFF the EDT (FileObject/DataObject resolution touches disk) and hands
+ * it to the owning TopComponent ON the EDT, where {@code setActivatedNodes}
+ * makes the global selection — and with it the platform's context-sensitive
+ * actions (Team menu, git verbs, per-file Annotate) — finally see what
+ * NMOX is aimed at or has selected.
  *
- * <p>A DataFolder node works for every aim, including STATIC and
- * wholly unrecognized directories — no project manifest required.
+ * <p>A DataObject node works for every target: directories resolve to
+ * their DataFolder node (no project manifest required, STATIC included),
+ * plain files to their file-type node.
  *
- * <p>Equality-guarded: re-publishing the same directory costs one
+ * <p>Equality-guarded: re-publishing the same target costs one
  * compare, so listener storms (100 projectChanged events for one aim)
- * resolve exactly once. Callers gate on their own visibility flag —
- * a hidden tab publishes nothing, keeping the v1.38.0 boot law (zero
- * filesystem resolution behind hidden default-open tabs) intact.
+ * resolve exactly once; distinct-target storms (arrow-key held down a
+ * file tree) coalesce on the single lane — a request superseded before
+ * it resolves delivers nothing and skips its disk touch. Callers gate
+ * on their own visibility flag — a hidden tab publishes nothing, keeping
+ * the v1.38.0 boot law (zero filesystem resolution behind hidden
+ * default-open tabs) intact.
  */
 public final class AimNodePublisher {
 
@@ -35,8 +41,8 @@ public final class AimNodePublisher {
     /** Receives the resolved node, always on the EDT. */
     private final Consumer<Node> sink;
 
-    /** Test seam: production resolves the real DataFolder node. */
-    Function<File, Node> resolver = AimNodePublisher::resolveFolderNode;
+    /** Test seam: production resolves the real DataObject node. */
+    Function<File, Node> resolver = AimNodePublisher::resolveNode;
 
     /**
      * The last directory a publish was requested for — the equality guard.
@@ -88,8 +94,8 @@ public final class AimNodePublisher {
         requested = null;
     }
 
-    /** The production resolver: the directory's DataFolder node delegate. */
-    static Node resolveFolderNode(File dir) {
+    /** The production resolver: the file or directory's DataObject node delegate. */
+    static Node resolveNode(File dir) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         if (fo == null) {
             return null;

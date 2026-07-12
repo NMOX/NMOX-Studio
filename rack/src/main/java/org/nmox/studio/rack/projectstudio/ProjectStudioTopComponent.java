@@ -65,10 +65,12 @@ public final class ProjectStudioTopComponent extends TopComponent {
     };
 
     /**
-     * Ledger 29 (v1.45.0): the aimed directory's DataFolder node becomes
-     * this window's activated nodes, so the global selection (and the
-     * platform's context actions) sees the aim whenever the studio is
-     * active. The default TopComponent lookup proxies activated nodes.
+     * Ledger 29 (v1.45.0, file-selection remainder v1.48.0): the tree's
+     * selected file — or the aimed directory when nothing is selected —
+     * becomes this window's activated nodes, so the global selection
+     * (and the platform's context actions: Team menu, git Annotate on
+     * a FILE) sees what the studio is showing whenever it is active.
+     * The default TopComponent lookup proxies activated nodes.
      */
     private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
             new org.nmox.studio.rack.service.AimNodePublisher(node ->
@@ -90,6 +92,11 @@ public final class ProjectStudioTopComponent extends TopComponent {
         add(treePanel, BorderLayout.CENTER);
         statusLabel.setBorder(BorderFactory.createEmptyBorder(3, 8, 3, 8));
         add(statusLabel, BorderLayout.SOUTH);
+        // Ledger 29 remainder (v1.48.0): tree selection drives the published
+        // context. Fires on the EDT with the in-memory File only; the
+        // publisher resolves the DataObject node off-EDT and equality-guards,
+        // so a held arrow key is a stream of cheap compares, not disk walks.
+        treePanel.setSelectionListener(this::selectionChanged);
         // No syncToRack here: this tab is open-at-startup, so componentOpened
         // always follows construction and runs its own sync — a constructor
         // sync lists the project directory and spins up a FileWatcher twice
@@ -204,8 +211,23 @@ public final class ProjectStudioTopComponent extends TopComponent {
     @Override
     protected void componentShowing() {
         aimNodeShowing = true;
-        // equality-guarded: re-shows of an unchanged aim cost one compare
-        aimPublisher.publish(rack.getProjectDir());
+        // equality-guarded: re-shows of an unchanged selection cost one
+        // compare. A selection that moved while hidden catches up here.
+        selectionChanged(treePanel.selectedFile());
+    }
+
+    /**
+     * EDT (tree selection events and componentShowing both are): publishes
+     * the selected file, falling back to the aim directory when nothing is
+     * selected — the selection refines the v1.45.0 aim node, it never
+     * empties it out. Hidden tabs publish nothing (the v1.38.0 boot law);
+     * componentShowing replays the current selection on first show.
+     */
+    void selectionChanged(File selected) {
+        if (!aimNodeShowing) {
+            return;
+        }
+        aimPublisher.publish(selected != null ? selected : rack.getProjectDir());
     }
 
     @Override

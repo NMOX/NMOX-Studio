@@ -68,6 +68,30 @@ public final class NpmExplorerTopComponent extends TopComponent {
     /** A refresh is owed but the tab is hidden; served on componentShowing. */
     boolean refreshPending;
 
+    /**
+     * Ledger 29 remainder (v1.48.0): when a Node project is found, its
+     * directory's DataObject node becomes this window's activated nodes,
+     * so the global selection keeps meaning the project while this tab is
+     * active (script/dependency rows are package.json fields, not files —
+     * the project node is the honest file-level context for all of them).
+     * With NO project we set a {@code null} opinion instead of an empty
+     * array, so the registry keeps the last real selection alive — the
+     * hand-read fallback in {@link #findProjectDirectory()} depends on it.
+     */
+    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
+            new org.nmox.studio.rack.service.AimNodePublisher(node -> {
+                lastPublished = node;
+                setActivatedNodes(new Node[]{node});
+            });
+
+    /**
+     * The node this explorer itself published, if any. The registry
+     * fallback must skip it — reading our own output back would echo a
+     * stale project after the aim moved somewhere without one. EDT-written
+     * (the publisher delivers on the EDT), read on the EDT (refresh paths).
+     */
+    private Node lastPublished;
+
     public NpmExplorerTopComponent() {
         initComponents();
         setName(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "CTL_NpmExplorerTopComponent"));
@@ -177,6 +201,12 @@ public final class NpmExplorerTopComponent extends TopComponent {
         }
         installButton.setEnabled(true);
         installButton.setToolTipText("npm install in the project");
+        // publish the project as this window's selection (ledger 29). The
+        // publisher resolves the DataObject node off-EDT and equality-guards,
+        // so re-aim storms cost compares, not disk walks. Refresh only runs
+        // while showing (listener gate + componentShowing), so the v1.38.0
+        // boot law — hidden tabs resolve nothing — holds by construction.
+        aimPublisher.publish(dir);
 
         try {
             String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
@@ -244,6 +274,14 @@ public final class NpmExplorerTopComponent extends TopComponent {
      */
     private void showGlobalPackages() {
         currentProjectDir = null;
+        // no project → withdraw any published node. null on purpose, not an
+        // empty array: null means "no selection opinion", so the registry
+        // keeps the last real selection (an editor file, say) — which the
+        // fallback in findProjectDirectory still reads. reset() so re-finding
+        // the same project later re-publishes past the equality guard.
+        aimPublisher.reset();
+        lastPublished = null;
+        setActivatedNodes(null);
         installButton.setEnabled(false);
         installButton.setToolTipText("Open a project to install its dependencies");
         rootNode.removeAllChildren();
@@ -294,12 +332,42 @@ public final class NpmExplorerTopComponent extends TopComponent {
             }
         }
 
-        // Fall back to the window system's current selection. The registry
-        // keeps the last real selection even while this explorer itself is
-        // the activated component (it never sets activated nodes of its
-        // own) — actionsGlobalContext() would read THIS component's empty
-        // lookup the moment the user clicks Refresh here.
-        for (Node n : TopComponent.getRegistry().getActivatedNodes()) {
+        // Fall back to the window system's current selection. Kept even now
+        // this explorer publishes a node of its own (v1.48.0): the fallback
+        // exists for aims with NO Node project, and in exactly that case
+        // this window publishes nothing (a null opinion), so the registry
+        // still holds the last real selection — e.g. the editor file whose
+        // parent chain carries a package.json. actionsGlobalContext() would
+        // read THIS component's lookup the moment the user clicks Refresh
+        // here, which is why the registry (not the context) is read. Our
+        // own published node is skipped: consuming our own output would
+        // echo a stale project after the aim moved on.
+        FileObject fromSelection = projectFromNodes(
+                TopComponent.getRegistry().getActivatedNodes(), lastPublished);
+        if (fromSelection != null) {
+            return fromSelection;
+        }
+
+        // Fallback: look in user.dir
+        File userDir = new File(System.getProperty("user.dir"));
+        if (new File(userDir, "package.json").exists()) {
+            return FileUtil.toFileObject(userDir);
+        }
+
+        return null;
+    }
+
+    /**
+     * The walk-up half of the selection fallback, extracted for tests:
+     * the first node whose DataObject sits under a package.json-bearing
+     * directory, skipping {@code ignore} — the node this explorer itself
+     * published, whose consumption would feed our output back to us.
+     */
+    static FileObject projectFromNodes(Node[] nodes, Node ignore) {
+        for (Node n : nodes) {
+            if (n == ignore) {
+                continue;
+            }
             DataObject dobj = n.getLookup().lookup(DataObject.class);
             if (dobj == null) {
                 continue;
@@ -313,13 +381,6 @@ public final class NpmExplorerTopComponent extends TopComponent {
                 file = file.getParent();
             }
         }
-        
-        // Fallback: look in user.dir
-        File userDir = new File(System.getProperty("user.dir"));
-        if (new File(userDir, "package.json").exists()) {
-            return FileUtil.toFileObject(userDir);
-        }
-        
         return null;
     }
 
@@ -372,6 +433,12 @@ public final class NpmExplorerTopComponent extends TopComponent {
         if (rackRef != null && rackListener != null) {
             rackRef.removeListener(rackListener);
         }
+        // symmetric with the publish in refreshProjectView: a closed
+        // explorer neither publishes nor pins the project's DataObject,
+        // and a reopen re-resolves past the equality guard
+        aimPublisher.reset();
+        lastPublished = null;
+        setActivatedNodes(null);
     }
 
     void writeProperties(java.util.Properties p) {

@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.48.0] — 2026-07-11
+
+The remainder sprint: the small honest remainders of ledger 34 (now fully
+closed) and ledger 29 (now Kit actions only).
+
+### Added
+- **Project Studio's file tree publishes its selection** (ledger 29
+  remainder, the highest-payoff piece). Selecting a file makes that
+  file's DataObject node the window's activated node — per-file context
+  (git Annotate via the chip, the platform's file verbs) finally sees a
+  real file selection instead of just the aim directory. Clearing the
+  selection falls back to the aim node — the v1.45.0 selection is
+  refined, never emptied out. AimNodePublisher generalized from
+  directories to any file: same off-EDT resolve, same equality guard,
+  and a new pinned law — a distinct-target storm (arrow key held down
+  the tree) on the busy lane resolves twice (in-flight + final), not N
+  times. Hidden tabs still publish nothing (the v1.38.0 boot law,
+  test-pinned).
+- **NPM Explorer publishes the found project's node** (ledger 29
+  remainder). The last studio window with an empty lookup now sets the
+  Node project directory's node as its activated node while a project is
+  found, and withdraws to a null opinion — deliberately not an empty
+  array — when there is none, so the registry keeps the last real
+  selection alive. Its hand-read registry fallback stays, with the why
+  written in place: it serves aims with NO Node project (an editor file
+  whose parent chain carries a package.json), a case our own publish
+  cannot cover — and it now skips the node this window itself published,
+  because consuming our own output would echo a stale project after a
+  re-aim away from it (guard extracted as projectFromNodes, test-pinned
+  both ways).
+- **Contract Studio's artifact walk runs under a real ProgressHandle**
+  (ledger 34, last sliver — the item is now fully closed). Both rescan
+  paths route through one finally-guarded, indeterminate handle
+  ("Scanning contract artifacts…"); no Cancellable on purpose — the walk
+  is one uninterruptible Files.walk with no seam to abort, so a cancel
+  button would be a lie (the v1.44.0 DB-connect/cloud-sync idiom,
+  commented at the site). Source-gate-tested: a bare ArtifactScanner.scan
+  call in the window fails the build.
+
+### Notes
+- Ledger: 34 closed fully; 29 reduced to context-sensitive Kit-action
+  registrations only (deferred because focus-keyed enablement would
+  disable them while the editor is focused — a UX regression
+  masquerading as idiom).
+
 ## [1.47.0] — 2026-07-11
 
 The spec-versions release: ledger 20 — module manifests say which release
