@@ -286,22 +286,14 @@ removal, and TAIL/TEMPO don't re-sync their displays on undo re-attach.
 All small, none data-loss, all in one undo/presets neighborhood — one
 housekeeping slice when the rack is next open.
 
-### 20. Module spec versions are frozen at 1.0
-Every NBM ships OpenIDE-Module-Specification-Version 1.0 because the
-reactor POM version is `1.0-SNAPSHOT` and nbm-maven-plugin derives from
-it. Nothing consumes the spec versions today (no update center, no
-inter-module version ranges). The clean fix is a coordinated reactor
-version scheme (all 13 poms tracking the release train); hardcoding
-1.36 per manifest would just re-freeze one release later. Do it as part
-of any future update-center story (see 21).
-
 ### 21. Platform autoupdate modules ship with no update center
 The Plugins infrastructure is in the cluster but no UC is configured —
 dead weight in the download, ~harmless at runtime. Trimming the
 autoupdate modules changes the Plugins menu and needs a release-size
 check on all three OS packages; the unused build-side update-site
 generation (a dead `deployment` profile) was already removed in
-v1.36.0. Revisit with 20 if an update-center story ever lands.
+v1.36.0. Revisit if an update-center story ever lands — the version
+scheme it would need shipped when 20 closed (v1.47.0).
 
 ### 23. org.json rides in 8 module copies (~710 KB total)
 Re-confirmed as the correct architecture (module classloaders make a
@@ -396,6 +388,49 @@ the zero-setup type-in-and-learn model. The SQLite space already teaches
 SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
+
+## Closed by v1.47.0 (spec versions)
+
+### 20. Module spec versions are frozen at 1.0 — CLOSED
+Every module manifest now carries the product version (1.47.0, not the
+pom-derived 1.0) as its `OpenIDE-Module-Specification-Version`, and it
+tracks a single root property. Design chosen — and the two rejected
+candidates, with evidence: **(a) reactor version bump** (all 13 poms or
+`${revision}` CI-friendly versions) was rejected because the release
+flow is deliberately `versions:set`-free — the tag is the only version
+source, stamped at build time, and the gated pipeline's local `mvn
+install` steps would hit `${revision}`-in-parent resolution edge cases
+for zero extra benefit; **(b) jar-plugin `manifestEntries`** was tried
+first and *does not work*: maven-archiver lets the `<manifestFile>`
+(the nbm-generated manifest, which always contains the pom-derived
+spec version) win over configured entries on conflicting keys — tested
+on a real build, the jar stayed 1.0. (Rack's ledger-31 Friends entry
+still rides `manifestEntries` fine because nbm:manifest never emits
+that key — merge vs. override.) What shipped is **(c) the plugin's own
+seam**: `nbm:manifest` keeps source-manifest entries verbatim
+(`conditionallyAddAttribute`), so every module's
+`src/main/nbm/manifest.mf` declares
+`OpenIDE-Module-Specification-Version: ${spec.version}`, a root
+`filter-nbm-source-manifest` resources execution interpolates it into
+`target/nbm-manifest/manifest.mf`, and the root pluginManagement points
+`<sourceManifestFile>` there. One property (`<spec.version>` in the
+root pom) moves all 12 manifests; the release workflow stamps the
+tag's version over it in the same three per-OS steps that stamp
+branding's `currentVersion` (branding's committed "NMOX Studio 1.0"
+stays — `Versions.extract` treats 1.0 as a dev build and that gate
+keeps dev launches out of the update check). The payoff beyond
+cosmetics: because the reactor packages each module before its
+dependents' `nbm:manifest` runs, the generated
+`OpenIDE-Module-Module-Dependencies` now read the real version off the
+dependency jar — `org.nmox.NMOX.Studio.core > 1.47.0` — so a module
+jar dropped into an older install is **refused by the module loader**
+instead of surfacing as LinkageError at call time (the ledger-30
+hardening this item was always waiting on). Byte-verified in all 11
+shipped module jars; `SpecVersionGateTest` (application) pins the
+mechanism both ways — every module manifest on the app's classpath
+equals the injected `${spec.version}`, and every source manifest
+carries the literal placeholder (never a hardcoded number) — so a
+future release cannot half-bump.
 
 ## Closed by v1.46.0 (the soft-dependency release)
 

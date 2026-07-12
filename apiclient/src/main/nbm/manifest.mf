@@ -1,4 +1,2 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: org/nmox/nmox/studio/Bundle.properties
 OpenIDE-Module-Specification-Version: ${spec.version}
-
