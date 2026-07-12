@@ -312,7 +312,7 @@ The rack is fully operable without a mouse: **Tab** moves between a
 device's controls (a focus ring shows where you are), **arrow keys**
 turn the focused knob (Home/End jump to the rails), and **Space/Enter**
 press buttons and flip toggles. Every knob, button, LED, LCD and meter
-on all 44 devices reports its name, role, value and state to assistive
+on all 45 devices reports its name, role, value and state to assistive
 technology, so screen readers announce the rack the way they announce
 native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.)

@@ -240,13 +240,22 @@ public class ReplDevice extends RackDevice {
     }
 
     /**
-     * INSTALL: runs the seeded install command — curated catalog data,
-     * not user input — through the same CommandExecutor path every
-     * one-shot device uses, streaming its output onto the REPL screen.
-     * Plain commands run as argv; the catalog's compound commands
-     * ("curl … | bash && foundryup") go through the shell so their
-     * operators keep their meaning ({@link #installArgv}). Never
-     * auto-starts the REPL afterwards: the user presses START.
+     * INSTALL: runs the seeded install command through the same
+     * CommandExecutor path every one-shot device uses, streaming its
+     * output onto the REPL screen. Plain commands run as argv; the
+     * catalog's compound commands ("curl … | bash && foundryup") go
+     * through the shell so their operators keep their meaning
+     * ({@link #installArgv}). Never auto-starts the REPL afterwards: the
+     * user presses START.
+     *
+     * <p><b>Provenance:</b> the command comes from the learning catalog —
+     * the bundled built-ins are curated, but since v1.53 it may also come
+     * from a user-installed drop-in under {@code ~/.nmox/learn-catalog.d/}.
+     * That is the same trust posture as installing any local plugin: the
+     * file is one the user placed, the exact command is echoed to the
+     * screen before it runs ({@code append("$ " + …)}), and INSTALL is an
+     * explicit press — not silent, not remote-sourced. See
+     * {@code docs/learning-spaces.md}.
      */
     private void runInstall() {
         if (!installActionAvailable()) {
@@ -284,7 +293,9 @@ public class ReplDevice extends RackDevice {
      * bash && foundryup") silently misfire without a shell. {@code |}
      * also covers {@code ||}; {@code #} is here because several catalog
      * entries carry a trailing comment the shell must strip. Substring
-     * checks suffice for curated catalog data.
+     * checks suffice: the command is user-visible catalog data (built-in
+     * or user-installed drop-in), echoed before it runs, on an explicit
+     * press — not adversarial remote input.
      */
     private static final String[] SHELL_OPERATORS =
             {"&&", "|", ";", ">", "<", "`", "$(", "#"};

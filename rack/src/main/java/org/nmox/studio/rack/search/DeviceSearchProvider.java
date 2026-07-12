@@ -25,7 +25,16 @@ public class DeviceSearchProvider implements SearchProvider {
             if (type.title().toLowerCase(Locale.ROOT).contains(needle)
                     || type.description().toLowerCase(Locale.ROOT).contains(needle)) {
                 boolean more = response.addResult(() -> javax.swing.SwingUtilities.invokeLater(() -> {
-                    RackService.getDefault().getRack().addDevice(type.create());
+                    // a third-party device's build() can throw — never let it
+                    // escape onto the EDT from Quick Search (matches the drop
+                    // and double-click guards)
+                    try {
+                        RackService.getDefault().getRack().addDevice(type.create());
+                    } catch (Exception | LinkageError ex) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                "Could not add " + type.title() + ": " + ex);
+                        return;
+                    }
                     org.openide.windows.TopComponent rack = org.openide.windows.WindowManager
                             .getDefault().findTopComponent("RackTopComponent");
                     if (rack != null) {

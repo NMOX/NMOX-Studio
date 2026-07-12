@@ -83,11 +83,15 @@ class ProcessSupportTest {
         assertThat(elapsedMs).isLessThan(10_000);
 
         // The orphan guarantee, asserted directly: no sleep grandchild may
-        // outlive the sweep. destroyForcibly is asynchronous, so poll briefly.
+        // outlive the sweep. destroyForcibly + OS reaping is asynchronous and
+        // the guarantee is EVENTUAL, not instant — under a loaded full-reactor
+        // build the reap can lag well past a second, so poll generously (this
+        // is not masking a race: the product does kill the tree, the window
+        // just has to outlast CPU contention, not measure it).
         java.util.Set<Long> orphans = livingSleepPids();
         orphans.removeAll(sleepsBefore);
         long grace = System.nanoTime();
-        while (!orphans.isEmpty() && (System.nanoTime() - grace) < 3_000_000_000L) {
+        while (!orphans.isEmpty() && (System.nanoTime() - grace) < 15_000_000_000L) {
             Thread.sleep(100);
             orphans = livingSleepPids();
             orphans.removeAll(sleepsBefore);

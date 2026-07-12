@@ -56,16 +56,46 @@ public class RackOptionsPanelController extends OptionsPanelController {
     public void applyChanges() {
         NbPreferences.forModule(org.nmox.studio.rack.devices.ReflexDevice.class)
                 .putInt("reflexIntervalMs", (Integer) reflexInterval.getValue());
-        storeIfSet(doToken, "doToken");
-        storeIfSet(hetznerToken, "hetznerToken");
-        storeIfSet(cloudflareToken, "cloudflareToken");
+        // Keychain writes may block on an OS unlock prompt — off the EDT,
+        // like every other keyring user in the suite.
+        char[] doTok = doToken.getPassword();
+        char[] hetznerTok = hetznerToken.getPassword();
+        char[] cloudflareTok = cloudflareToken.getPassword();
+        TOKEN_RP.post(() -> {
+            storeIfSet(doTok, "doToken");
+            storeIfSet(hetznerTok, "hetznerToken");
+            storeIfSet(cloudflareTok, "cloudflareToken");
+        });
     }
 
-    private void storeIfSet(JPasswordField field, String key) {
-        String value = new String(field.getPassword()).trim();
-        if (!value.isEmpty()) {
-            // the explicit node the infra designer's CloudProvider reads
-            NbPreferences.root().node("nmox/cloud").put(key, value);
+    /** Off-EDT lane for the blocking keychain writes. */
+    private static final org.openide.util.RequestProcessor TOKEN_RP =
+            new org.openide.util.RequestProcessor("nmox-cloud-token-save", 1);
+
+    /**
+     * Cloud API tokens are secrets: they go to the OS keychain under the
+     * SAME key scheme the infra designer's CloudTokens reads
+     * ({@code "nmox.cloud." + key}), never to plaintext preferences. This
+     * panel writing them to NbPreferences was the one keyring bypass the
+     * v1.36 sweep left — a token in cleartext in
+     * {@code config/Preferences/nmox/cloud.properties}.
+     */
+    private void storeIfSet(char[] password, String key) {
+        try {
+            String value = new String(password).trim();
+            if (!value.isEmpty()) {
+                org.netbeans.api.keyring.Keyring.save("nmox.cloud." + key,
+                        value.toCharArray(),
+                        "NMOX Studio cloud API token (" + key + ")");
+            }
+        } catch (Throwable keyringUnavailable) {
+            // a missing/broken keyring backend must not lose the setting
+            // silently to plaintext — surface it, like CloudTokens does
+            java.util.logging.Logger.getLogger(getClass().getName()).log(
+                    java.util.logging.Level.WARNING,
+                    "cloud token not saved: keychain unavailable", keyringUnavailable);
+        } finally {
+            java.util.Arrays.fill(password, '\0');
         }
     }
 

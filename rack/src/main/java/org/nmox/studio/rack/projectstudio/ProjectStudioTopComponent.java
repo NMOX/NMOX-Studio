@@ -83,6 +83,10 @@ public final class ProjectStudioTopComponent extends TopComponent {
      */
     private volatile boolean aimNodeShowing;
 
+    /** Off-EDT lane for the "Open as project" manifest scan (disk IO). */
+    private static final org.openide.util.RequestProcessor OPEN_AS_RP =
+            new org.openide.util.RequestProcessor("nmox-open-as-project", 1);
+
     public ProjectStudioTopComponent() {
         setName(org.openide.util.NbBundle.getMessage(ProjectStudioTopComponent.class, "CTL_ProjectStudioTopComponent"));
         setToolTipText(org.openide.util.NbBundle.getMessage(ProjectStudioTopComponent.class, "HINT_ProjectStudioTopComponent"));
@@ -166,25 +170,31 @@ public final class ProjectStudioTopComponent extends TopComponent {
         asProject.setToolTipText("Open this folder as a platform project: git colors, history,"
                 + " diff and search light up in the Projects view");
         asProject.addActionListener(e -> {
-            try {
-                // toFileObject requires a normalized file; a project dir picked
-                // via dialog or persisted state may carry '..' or a symlink
-                org.openide.filesystems.FileObject dir = org.openide.filesystems.FileUtil
-                        .toFileObject(org.openide.filesystems.FileUtil
-                                .normalizeFile(rack.getProjectDir()));
-                org.netbeans.api.project.Project project =
-                        org.netbeans.api.project.ProjectManager.getDefault().findProject(dir);
-                if (project != null) {
-                    org.netbeans.api.project.ui.OpenProjects.getDefault()
-                            .open(new org.netbeans.api.project.Project[]{project}, false, true);
-                } else {
+            java.io.File projectDir = rack.getProjectDir();
+            // findProject scans the folder for a manifest (disk IO) — off the
+            // EDT, the same rule RackService's bridge follows; a cold cache or
+            // network mount must not freeze the UI on this click
+            OPEN_AS_RP.post(() -> {
+                try {
+                    // toFileObject requires a normalized file; a project dir
+                    // picked via dialog or persisted state may carry '..' or a symlink
+                    org.openide.filesystems.FileObject dir = org.openide.filesystems.FileUtil
+                            .toFileObject(org.openide.filesystems.FileUtil
+                                    .normalizeFile(projectDir));
+                    org.netbeans.api.project.Project project = dir == null ? null
+                            : org.netbeans.api.project.ProjectManager.getDefault().findProject(dir);
+                    if (project != null) {
+                        org.netbeans.api.project.ui.OpenProjects.getDefault()
+                                .open(new org.netbeans.api.project.Project[]{project}, false, true);
+                    } else {
+                        org.openide.awt.StatusDisplayer.getDefault()
+                                .setStatusText("No recognized project manifest in this folder");
+                    }
+                } catch (Exception ex) {
                     org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("No recognized project manifest in this folder");
+                            .setStatusText("Open as project failed: " + ex.getMessage());
                 }
-            } catch (Exception ex) {
-                org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Open as project failed: " + ex.getMessage());
-            }
+            });
         });
         bar.add(asProject);
 

@@ -4,6 +4,82 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.56.0] — 2026-07-12
+
+The third senior review. Five read-only lenses over everything shipped
+since the v1.39.0 idiom pass (sixteen releases: the git chip, the a11y
+widget layer, browser debugging, async-stop/SaveLane, the OpenProjects
+bridge, soft-dependency facades, spec versions, the update center,
+ORACLE, the drop-in catalog, and the frozen Device SPI). The house laws
+held — concurrency, the keyring idiom, update-center pinning, ORACLE
+secret handling, SPI exec/port/serving isolation all traced clean — and
+what the lenses proved got fixed, with the SPI corrections landing while
+the API is a day old and has no external consumers.
+
+### Fixed — security
+- **Cloud API tokens no longer touch plaintext preferences.** The Tools ▸
+  Options "Rack & Cloud" panel — the primary token-entry UI — wrote
+  DigitalOcean/Hetzner/Cloudflare tokens to `NbPreferences` node
+  `nmox/cloud`, the one keyring bypass the v1.36 sweep missed. They now
+  go to the OS keychain (off the EDT) under the same `nmox.cloud.*`
+  scheme the infra designer reads, and the password buffer is zeroed
+  after use. Source-gate-pinned against any plaintext path.
+
+### Fixed — the Device SPI (additive corrections to the frozen contract)
+- **Undo now revives a plugin.** `DeviceLogic` gained `onAttached(services)`
+  (a `default`, so additive to the frozen API), which the host calls on
+  first mount and on undo re-attach of the same instance — so a plugin can
+  restart a poll/clock or re-announce a serving URL a removal tore down.
+  This closes the v1.50 TAIL/TEMPO re-attach bug class for third parties;
+  mutation-proven.
+- **A throwing plugin can no longer break the shelf.** `build()` exceptions
+  were unguarded on the palette double-click and Quick Search mount paths
+  (the drag-drop path was already guarded) — a lawful-descriptor plugin
+  whose `build()` threw, or a stale entry whose module was just
+  uninstalled, put an uncaught exception on the EDT. All three mount paths
+  now degrade to a status message.
+- **`onDispose()`'s contract is now true.** The host stops the device's
+  process before calling `onDispose()`, matching the javadoc (was: after);
+  mutation-proven with a live process.
+- **Port count is capped at validation.** A descriptor with more jacks than
+  the back panel holds (~8/side) is refused with a named reason instead of
+  passing validation and then painting jacks off-plate (contract law #2).
+
+### Fixed — coherence & idioms
+- **The two update notifications converge.** The daily release heads-up now
+  opens the in-app Plugin Manager — the same destination the platform's
+  weekly autoupdate check uses — instead of a web download page, so a user
+  never gets two contradictory update procedures for one release. Web page
+  survives as the fallback when the action can't be resolved.
+- **"Open as project" scans off the EDT.** Project Studio's Projects-tab
+  button ran `ProjectManager.findProject` (a manifest disk scan) on the
+  EDT, contradicting the codebase's own bridge rule; now on a
+  RequestProcessor.
+
+### Fixed — documentation truth
+- Three stale device counts corrected to 45 (README ×2, user-guide); the
+  `-proc:full` note in device-spi.md corrected to JDK 23+ (matches the
+  pom); CLAUDE.md's core row now names the Device SPI; ledger 31 refreshed
+  now that the SDK story shipped; the REPL INSTALL "curated data, not user
+  input" comment corrected for community drop-ins; the SPI's
+  frozen-in-lockstep enum constraint documented in package-info.
+
+### Build/CI robustness
+- The test JVM now gets the product's own `java.base` `--add-opens`
+  (nmoxstudio.conf ships them): platform code (NbPreferences/IOProvider)
+  reflects into `java.base` to install URL stream handlers, and on JDK 21
+  a fork that reached that init first threw `InaccessibleObjectException`.
+- De-flaked `ProcessSupportTest.shouldKillGrandchildHoldingPipeOnTimeout`:
+  the orphan-reap poll now waits 15s (was 3s) — `destroyForcibly` is
+  async and the guarantee is eventual, so the window must outlast
+  full-reactor CPU contention, not measure it.
+
+### Deferred with reasons (ledger 41–44)
+The systemic EDT `exec`/dotenv fork (pre-existing, all 46 devices, its own
+release), third-party code at session restore (accepted — restore
+instantiates its patch; exec stays trust-gated), the bounded `gitdir:`
+disclosure, and a MissingDevice resume dead-click edge.
+
 ## [1.55.0] — 2026-07-12
 
 The Device SPI. Third parties can now write rack devices — the single

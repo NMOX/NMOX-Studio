@@ -51,4 +51,24 @@ class UpdateCheckTest {
         // as unstamped and never compares against a release
         assertThat(org.nmox.studio.core.util.Versions.extract(raw)).isNull();
     }
+
+    @Test
+    @DisplayName("the notification targets the in-app Plugin Manager, converging with the platform's own update channel")
+    void notificationTargetsThePluginManager() throws Exception {
+        // v1.56: the daily heads-up and the platform's weekly autoupdate must
+        // land on the SAME updater, not two contradictory procedures. Pin the
+        // action id the click resolves — Actions.forID looks it up at
+        // Actions/System/<id dots→dashes>.instance.
+        assertThat(UpdateCheck.PLUGIN_MANAGER_CATEGORY).isEqualTo("System");
+        assertThat(UpdateCheck.PLUGIN_MANAGER_ID)
+                .isEqualTo("org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction");
+        // the web releases page survives only as the fallback when the action
+        // can't be resolved (a stripped platform) — not the primary path
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/ui/UpdateCheck.java"));
+        assertThat(src).contains("openUpdater()");
+        assertThat(src)
+                .as("web browse must be the fallback inside openUpdater, not the notification's direct action")
+                .doesNotContain("e -> openReleases()");
+    }
 }

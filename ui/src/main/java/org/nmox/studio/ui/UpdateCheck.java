@@ -14,9 +14,16 @@ import org.openide.util.NbPreferences;
  * A daily driver should mention when a newer release exists. Once per
  * day, well after startup and entirely off the EDT, this asks GitHub
  * for the latest release tag and — only if it outranks the stamped
- * version this build carries — shows one quiet notification linking to
- * the release page. Dev builds (unstamped "1.0") never check; offline
- * failures never nag; the {@code updateCheck} preference turns it off.
+ * version this build carries — shows one quiet notification. Dev builds
+ * (unstamped "1.0") never check; offline failures never nag; the
+ * {@code updateCheck} preference turns it off.
+ *
+ * <p>Clicking the notification opens the <b>in-app Plugin Manager</b> —
+ * the same destination the platform's own (weekly) autoupdate check
+ * uses, so the two channels never send the user to two contradictory
+ * update procedures (the daily heads-up is the earlier signal; both
+ * land on the one in-app updater). Only if the Plugin Manager action
+ * can't be resolved does it fall back to opening the releases page.
  */
 @OnStart
 public class UpdateCheck implements Runnable {
@@ -78,8 +85,8 @@ public class UpdateCheck implements Runnable {
                     org.openide.awt.NotificationDisplayer.getDefault().notify(
                             "NMOX Studio " + latest + " is available",
                             javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                            "You're on " + running + ". Click to open the releases page.",
-                            e -> openReleases()));
+                            "You're on " + running + ". Click to open the Plugin Manager.",
+                            e -> openUpdater()));
         } catch (Exception offline) {
             // no network, rate-limited, whatever — a check must never nag
         }
@@ -101,6 +108,28 @@ public class UpdateCheck implements Runnable {
         } catch (RuntimeException missing) {
             return null;
         }
+    }
+
+    /** The platform's Plugin Manager action — the in-app update UI. */
+    static final String PLUGIN_MANAGER_CATEGORY = "System";
+    static final String PLUGIN_MANAGER_ID =
+            "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction";
+
+    /**
+     * Opens the in-app Plugin Manager (where the update center offers the
+     * new NBMs), so this daily notice and the platform's weekly autoupdate
+     * balloon converge on one updater. Falls back to the releases web page
+     * only if the action can't be resolved (a stripped platform).
+     */
+    private static void openUpdater() {
+        javax.swing.Action pluginManager = org.openide.awt.Actions.forID(
+                PLUGIN_MANAGER_CATEGORY, PLUGIN_MANAGER_ID);
+        if (pluginManager != null) {
+            pluginManager.actionPerformed(
+                    new java.awt.event.ActionEvent(pluginManager, 0, "open"));
+            return;
+        }
+        openReleases();
     }
 
     private static void openReleases() {
