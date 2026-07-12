@@ -170,11 +170,18 @@ docs + live verify), never as a checkbox:
 - **Learning Spaces as a community catalog.** 52 built-in spaces; the catalog
   is already data-driven JSON. A `~/.nmox/learn-catalog.d/` drop-in dir plus a
   documented schema is a small change with outsized reach.
-- **AI assistance, if ever, through the rack's metaphor.** An "ORACLE" device
-  that explains the error currently on the MONITOR bus would fit the identity;
-  a chat sidebar would not. The product's differentiation is tactile honesty —
-  anything added must be visible, wired, and unpluggable. This is a direction
-  to be *chosen*, not a gap to be filled.
+- **AI assistance through the rack's metaphor — SHIPPED (v1.52.0).** The
+  ORACLE device (45th) explains the error currently on the MONITOR bus:
+  EXPLAIN (QUERY-blue) reads the last failed run off the FlightRecorder and
+  asks the Anthropic Messages API what went wrong and how to fix it —
+  visible, wired, unpluggable, exactly as the identity demanded. It is not a
+  chat sidebar. Zero boot cost; no network without the button press; its own
+  one-time consent for the outward data flow (WorkspaceTrust is an inward
+  execution guard and does not cover it); the API key Keyring-only (or
+  `ANTHROPIC_API_KEY`/`CLAUDE_API_KEY`); honest degradation for every failure
+  state. The remaining AI surface (streaming, conversation, auto-explain,
+  REFLEX wiring) stays deferred — each is a direction to be *chosen*, not a
+  gap.
 
 That's the whole honest list. New studios (six tabs is the discovery
 ceiling), new languages (48 grammars is past diminishing returns), and any

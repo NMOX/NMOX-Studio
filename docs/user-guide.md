@@ -169,6 +169,43 @@ script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its
 tasks. Add a dependency and CRATE's display refreshes. No re-aiming, no
 refresh buttons.
 
+### ORACLE — explain the last failure
+
+![ORACLE explaining a real failed run: the consent-gated diagnosis on the faceplate and the full fix steps in the viewer](images/oracle-explain.png)
+
+**ORACLE** is AI assistance the rack way: a device that explains the error
+currently on the MONITOR bus, not a chat sidebar. When a run fails, press
+**EXPLAIN** and ORACLE asks Anthropic's API what went wrong and the
+concrete next step to fix it. A short verdict lands on the display; **VIEW**
+opens the full answer. **MODEL** dials **HAIKU** (cheap, fast — the default)
+or **SONNET** (stronger). EXPLAIN is blue: it reads and asks, it never
+touches your project.
+
+**Set your key** with **KEY…** — it is stored in your OS keychain (macOS
+Keychain, GNOME Keyring, Windows Credential Vault), never on disk and never
+in any project file. Alternatively, ORACLE reads the environment variable
+**`ANTHROPIC_API_KEY`**, or **`CLAUDE_API_KEY`** if the first is unset (a
+stored key wins over both). No key, no call — ORACLE just says so.
+
+**What ORACLE sends, and the whole of it.** The first time you press
+EXPLAIN, ORACLE asks for a one-time consent, because sending your build
+output to an external service is a choice only you can make. It sends
+**only**:
+
+- the failing command (e.g. `npm test`);
+- its exit code;
+- up to five sampled lines of error output;
+- the device (task lane) that ran it (e.g. `VERITAS`);
+- the project's name.
+
+It does **not** send your source files, your environment variables, your
+`.env`, or any secret. Your API key authenticates the request and is never
+part of the message. The consent is remembered; everything is off until you
+press the button.
+
+If the network is down, the key is wrong, or the model declines, ORACLE
+says so plainly on its display — it never fails silently and never crashes.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)

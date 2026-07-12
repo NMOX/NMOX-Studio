@@ -4,6 +4,72 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.52.0] — 2026-07-12
+
+ORACLE — AI assistance through the rack's metaphor. The 45th device
+explains the error currently on the MONITOR bus: visible, wired,
+unpluggable, not a chat sidebar (plan.md's one remaining AI direction,
+now chosen). It is the BLACKBOX shape — a FlightRecorder consumer with a
+QUERY-blue button and a modeless popup viewer — not a command device.
+
+### Added
+- **ORACLE device** (`rack`, OBSERVE category). **EXPLAIN** (QUERY-blue,
+  read-only per the color law) reads the last failed run off
+  `FlightRecorder.last()` where `kind == EXIT_FAIL` — the command, exit
+  code, up to five sampled error lines, the device and project name — and
+  asks the Anthropic Messages API (`POST /v1/messages`, `claude-haiku-4-5`
+  default, `claude-sonnet-5` on the **MODEL** knob) what went wrong and
+  how to fix it. A short **verdict** lands on a multi-line LCD; **VIEW**
+  opens the full answer in a scrollable window; a **THINK** LED blinks
+  while it consults. Nothing in the project is mutated.
+- **`OracleClient`** — plain HTTPS+JSON over the shared `HttpClientFactory`
+  behind a `Transport` seam (the `JsonRpcClient` idiom): prompt assembly is
+  a pure `FailureContext → String` function and response parsing is
+  socket-free unit-tested. The API key travels only in the `x-api-key`
+  header — never the URL (a fixed HTTPS constant) or the body — and is
+  never logged, thrown, or echoed.
+- **`OracleKeys`** — the API key in the OS keychain only (the
+  `RpcSecrets`/`Passwords` idiom, `nmox.oracle.apikey`), with a `keyringUsable`
+  test seam, an in-memory fallback, a warn-once balloon, and an environment
+  fallback chain: keychain → `ANTHROPIC_API_KEY` → `CLAUDE_API_KEY` (first
+  non-blank wins). A faceplate **KEY…** button sets it via a `JPasswordField`
+  dialog (never the plaintext-echoing LCD editor).
+- **`OracleConsent`** — ORACLE's own one-time consent for the outward data
+  flow. WorkspaceTrust is an *inward* execution guard; sending a failed
+  run's output to an external API is an *outward* flow it does not cover.
+  The first EXPLAIN asks once, spelling out exactly what is sent (command,
+  exit code, ≤5 error lines, device, project name) and what is not (no
+  source, no environment, no secrets); the grant is a preference
+  (`java.util.prefs`, the WorkspaceTrust mechanism), headless auto-allow
+  with no persistence.
+
+### Laws held
+- **Zero boot cost** — attach registers only a FlightRecorder change-listener;
+  no keyring read, no network, no HTTP warm-up until the first EXPLAIN.
+- **No network without a button press** — `consult` is the single path to
+  the API; the key gate and consent gate are both mutation-proven (removing
+  either lets a spy transport catch the attempt).
+- **Secrets Keyring-only**, **DialogDisplayer never JOptionPane**, listeners
+  symmetric (change-listener added in `onAttached`, removed in `dispose`).
+- Honest degradation for every failure state — no key, no consent, nothing
+  to explain, offline, refusal — each an honest LCD line, never a throw.
+
+### Tests
+- `OracleClientTest` (14): prompt assembly asserted verbatim, request
+  envelope, response parse (text/refusal/error/empty/non-JSON), the whole
+  call over a canned transport, `FailureContext.fromRecorder` reconstruction.
+- `OracleKeysTest` (9): in-memory round-trip, the env fallback chain and its
+  order, stored-wins-over-env, blank-env-ignored — all through the `env` seam,
+  never the real environment.
+- `OracleConsentTest` (4): default-ungranted, grant/revoke, headless
+  auto-allow-without-persist.
+- `OracleDeviceTest` (6): the key and consent gates (mutation-proven),
+  nothing-to-explain, happy path, offline degradation, SONNET model selection.
+- `DeviceContractTest`/`DeviceDocsTest` auto-cover ORACLE (ports,
+  state round-trip, accessible names, usage recipe); `docs/devices.md`
+  regenerated. rack 902 tests; SpotBugs/find-sec-bugs clean on the new
+  HTTP/secret code; coverage floor met.
+
 ## [1.51.0] — 2026-07-12
 
 The update center: in-app updates fed from GitHub releases (tech-debt
