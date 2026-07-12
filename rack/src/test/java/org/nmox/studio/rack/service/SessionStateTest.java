@@ -80,4 +80,21 @@ class SessionStateTest {
         assertThat(new SessionState("/p", System.currentTimeMillis() - 8L * 24 * 3600 * 1000,
                 List.of()).fresh()).isFalse();
     }
+
+    @Test
+    @DisplayName("a MissingDevice never matches for resume — no dead-click balloon (ledger 44)")
+    void missingDeviceIsNeverResumed() {
+        Rack rack = new Rack();
+        // a patch whose device at index 0 is an uninstalled plugin: RackIO
+        // mounts a MissingDevice carrying the plugin's type id
+        rack.addDevice(new org.nmox.studio.rack.model.MissingDevice("com.acme.gone"));
+        rack.addDevice(DeviceType.CONSOLE.create());
+
+        // the session recorded that plugin device as live at the crash
+        SessionState state = new SessionState(rack.getProjectDir().getAbsolutePath(), 1,
+                List.of(new SessionState.Entry(0, "com.acme.gone", "WIDGET")));
+        assertThat(state.matchAgainst(rack))
+                .as("a placeholder can never resume anything, so it must not be offered")
+                .isEmpty();
+    }
 }

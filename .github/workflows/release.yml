@@ -34,8 +34,33 @@ jobs:
           # manifest interpolates the root <spec.version> property.
           sed -i "s|<spec.version>.*</spec.version>|<spec.version>${{ needs.version.outputs.version }}</spec.version>|" \
             pom.xml
+      - name: Decode NBM signing keystore (optional)
+        # Off unless the NBM_SIGNING_KEYSTORE_BASE64 secret is set. When it
+        # is, the base64 secret becomes a keystore file and the -Dnbm.keystore
+        # property activates the root pom's `sign-nbms` profile, so every
+        # module NBM (and thus the update-center catalog) ships signed. Absent
+        # the secret, NBMs ship unsigned exactly as before — no regression.
+        # See docs/engineering/nbm-signing.md for keystore + secret setup.
+        env:
+          KEYSTORE_B64: ${{ secrets.NBM_SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/nmox-signing.jks"
+            echo "NBM_SIGN=1" >> "$GITHUB_ENV"
+            echo "::notice::NBM signing enabled — module NBMs will be signed."
+          else
+            echo "::notice::NBM signing skipped (NBM_SIGNING_KEYSTORE_BASE64 not set); NBMs ship unsigned."
+          fi
       - name: Build application
-        run: mvn -B clean package -DskipTests
+        env:
+          NBM_ALIAS: ${{ secrets.NBM_SIGNING_ALIAS }}
+          NBM_PASS: ${{ secrets.NBM_SIGNING_PASSWORD }}
+        run: |
+          SIGN_ARGS=""
+          if [ "${NBM_SIGN:-}" = "1" ]; then
+            SIGN_ARGS="-Dnbm.keystore=$RUNNER_TEMP/nmox-signing.jks -Dnbm.keystorealias=$NBM_ALIAS -Dnbm.keystorepass=$NBM_PASS"
+          fi
+          mvn -B clean package -DskipTests $SIGN_ARGS
       - name: Software Bill of Materials (CycloneDX)
         run: |
           mvn -B org.cyclonedx:cyclonedx-maven-plugin:2.9.1:makeAggregateBom \

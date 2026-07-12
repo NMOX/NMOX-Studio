@@ -44,6 +44,10 @@ rather than failing at call time.
 - **Fit**: a face that overflows its declared units (of 66px) fails at
   mount naming the control. Knobs and toggles need 2 units.
 
+>**A ready-to-build copy of everything below lives in
+[`examples/uptime-device/`](../examples/uptime-device/)** — the exact plugin
+installed live to validate the SPI in v1.55.0. Clone it as your starting point.
+
 ## A complete device
 
 `pom.xml` (packaging `nbm`; note `-proc:full` — on JDK 23+ the
@@ -132,7 +136,9 @@ public class UptimeDeviceExtension implements DeviceExtension {
 
 `mvn package` produces `target/*.nbm`. Install it via **Tools ▸ Plugins ▸
 Downloaded ▸ Add Plugins…** (NBMs are unsigned unless you sign them; the
-platform shows its unsigned-plugin warning) — the module turns on live,
+platform shows its unsigned-plugin warning; to sign your own plugin's
+NBM, the same nbm-maven-plugin keystore config applies — see
+docs/engineering/nbm-signing.md) — the module turns on live,
 and your device appears on the shelf, in Quick Search (⌘I), persists in
 patches, and answers the same contract laws as the built-in 45. You can
 also host your own update center: **Tools ▸ Plugins ▸ Settings** accepts

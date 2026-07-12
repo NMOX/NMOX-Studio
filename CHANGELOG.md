@@ -4,7 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [1.57.0] — 2026-07-12
+## [1.58.0] — 2026-07-12
+
+Plugin ecosystem groundwork plus two bounded security/UX fixes.
+
+### Added
+- **NBM signing pipeline** (the credibility gap in the plugin story). A
+  `sign-nbms` profile in the root pom activates on `-Dnbm.keystore=<path>`
+  and hands the keystore to the nbm-maven-plugin; the release workflow
+  decodes a base64 keystore secret and signs every module NBM. **Off by
+  default** — no secret means unsigned NBMs exactly as before — turned on
+  by adding three repository secrets. The mechanism is jarsigner-verified
+  (a throwaway keystore produces a `jar verified.` NBM). Setup in
+  [docs/engineering/nbm-signing.md](docs/engineering/nbm-signing.md).
+- **`examples/uptime-device/`** — the worked Device SPI plugin from the
+  docs, now a committed, buildable Maven project (the exact device
+  installed live to validate the SPI in v1.55.0) instead of an inline-only
+  snippet. `docs/device-spi.md` points at it as a starting point.
+
+### Fixed
+- **ledger 43 — `gitdir:` pointer confinement.** A crafted `.git` *file*
+  could aim `GitFacts` at any directory and turn the branch chip into a
+  narrow "does this dir's HEAD look like a ref" oracle. The resolved gitdir
+  is now canonicalized (killing `../` and symlink games) and required to
+  live inside a `.git` directory — worktrees and submodules still resolve,
+  arbitrary paths are refused.
+- **ledger 44 — no dead-click resume for a missing device.** If a plugin
+  device was live at a crash and its plugin was uninstalled before restart,
+  its slot's `MissingDevice` matched by type id and "Resume last session?"
+  offered a no-op. A placeholder can never resume anything, so it no longer
+  matches.
+
+
 
 The threading tail. The last gap in the "never freezes" promise, closed
 with its own focused release and live verification — plus the small EDT

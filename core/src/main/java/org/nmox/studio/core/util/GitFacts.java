@@ -112,7 +112,30 @@ public final class GitFacts {
         if (!target.isAbsolute()) {
             target = new File(dotGit.getParentFile(), path);
         }
-        return target.isDirectory() ? target : null;
+        if (!target.isDirectory()) {
+            return null;
+        }
+        // Confinement (ledger 43): a legitimate `gitdir:` pointer always lands
+        // inside a real .git directory — a linked worktree points into
+        // <main>/.git/worktrees/<name>, a submodule into
+        // <super>/.git/modules/<name>. A crafted .git FILE could otherwise
+        // aim this at any directory (/etc, ~/.ssh) and turn the branch chip
+        // into a narrow "does this dir's HEAD start with ref: refs/heads/"
+        // oracle. Canonicalize (killing ../ and symlink games), then require
+        // a ".git" element on the resolved path; anything else is not a git
+        // dir and is refused.
+        File canonical;
+        try {
+            canonical = target.getCanonicalFile();
+        } catch (IOException unresolved) {
+            return null;
+        }
+        for (File p = canonical; p != null; p = p.getParentFile()) {
+            if (".git".equals(p.getName())) {
+                return canonical;
+            }
+        }
+        return null;
     }
 
     private static String readFirstLine(File file) {

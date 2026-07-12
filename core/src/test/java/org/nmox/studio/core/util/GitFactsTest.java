@@ -132,4 +132,36 @@ class GitFactsTest {
         assertThat(GitFacts.changeCount(null)).isZero();
         assertThat(GitFacts.changeCount("\n\n")).isZero();
     }
+
+    @Test
+    @DisplayName("a gitdir: pointer aimed OUTSIDE a .git directory is refused (ledger 43 confinement)")
+    void branchRefusesGitdirOutsideDotGit() throws Exception {
+        // a crafted .git FILE aiming at an arbitrary dir whose HEAD-shaped
+        // first line would otherwise leak through the branch chip
+        Path secret = dir.resolve("not-a-git-dir");
+        Files.createDirectories(secret);
+        Files.writeString(secret.resolve("HEAD"),
+                "ref: refs/heads/leaked\n", StandardCharsets.UTF_8);
+        Path victim = dir.resolve("victim");
+        Files.createDirectories(victim);
+        Files.writeString(victim.resolve(".git"),
+                "gitdir: " + secret.toAbsolutePath() + "\n", StandardCharsets.UTF_8);
+        assertThat(GitFacts.branch(victim.toFile()))
+                .as("a gitdir pointer must land inside a .git dir or be refused")
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("a gitdir: pointer using ../ to escape is canonicalized and refused")
+    void branchRefusesTraversalGitdir() throws Exception {
+        Path secret = dir.resolve("escape");
+        Files.createDirectories(secret);
+        Files.writeString(secret.resolve("HEAD"),
+                "ref: refs/heads/escaped\n", StandardCharsets.UTF_8);
+        Path victim = dir.resolve("nested/victim");
+        Files.createDirectories(victim);
+        Files.writeString(victim.resolve(".git"),
+                "gitdir: ../../escape\n", StandardCharsets.UTF_8);
+        assertThat(GitFacts.branch(victim.toFile())).isNull();
+    }
 }

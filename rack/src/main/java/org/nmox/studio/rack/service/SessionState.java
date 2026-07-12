@@ -77,9 +77,18 @@ public record SessionState(String project, long at, List<Entry> running) {
         List<RackDevice> matches = new ArrayList<>();
         List<RackDevice> devices = rack.getDevices();
         for (Entry e : running) {
-            if (e.index() < devices.size()
-                    && devices.get(e.index()).getTypeId().equals(e.typeId())) {
-                matches.add(devices.get(e.index()));
+            if (e.index() >= devices.size()) {
+                continue;
+            }
+            RackDevice d = devices.get(e.index());
+            // ledger 44: if the device that was live at the crash belonged to
+            // a plugin that has since been uninstalled, its slot now holds a
+            // MissingDevice with the same type id — it matches, but its
+            // resume() is a no-op, so "Resume last session?" would be a
+            // dead-click balloon. A placeholder can never resume anything.
+            if (d.getTypeId().equals(e.typeId())
+                    && !(d instanceof org.nmox.studio.rack.model.MissingDevice)) {
+                matches.add(d);
             }
         }
         return matches;
