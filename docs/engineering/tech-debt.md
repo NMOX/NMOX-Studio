@@ -129,13 +129,33 @@ Standards Kit, Classic Kit still always-enabled and scolding at runtime),
 because focus-keyed enablement would disable them while the editor is
 focused — a UX regression masquerading as idiom.
 
-### 32. DiagnosticsBus duplicates the platform's editor-hints/task-list plumbing
-Rack tools push diagnostics over a bespoke bus and editor draws its own
-squiggles (`RackSquiggler`); the platform's `HintsController`/TaskList would
-put the same findings in the standard Action Items window with standard
-navigation. **Deferred**: the bus works, is storm-law-tested, and the payoff
-is integration polish, not correctness. Candidate for an editor-intelligence
-sprint (pairs with the JS/TS lexer item #5).
+### 32. DiagnosticsBus duplicates the platform's editor-hints/task-list plumbing — CLOSED (v1.49.0)
+The v1.49.0 recon corrected the item's premise before a line was written:
+`RackSquiggler` never drew its own squiggles — it has rendered via
+`HintsController.setErrors` (Document overload, ERROR/WARNING severities,
+"[tool] " hover prefix) since it shipped, so the editor-hints half was
+already platform plumbing and stays byte-identical (its subscription
+lifecycle was audited clean in v1.36.0). The REAL gap was the Task List
+half: findings for files no editor had open were invisible, and nothing
+was listable. Closed by `RackFindingsTaskScanner` (editor/diagnostics), a
+`PushTaskScanner` layer-registered under `TaskList/Scanners` so the Task
+List framework instantiates it lazily on first scan — zero boot cost, and
+the bus's late-subscriber replay catches it up. Severity rides the
+platform's own `nb-tasklist-error`/`nb-tasklist-warning` groups (a custom
+group would erase the window's severity axis); the tool name rides the
+task text, matching the squiggle hover exactly; `File`→`FileObject` via
+the house `FileUtil.toFileObject(FileUtil.normalizeFile(f))`. The
+replace-per-run semantics live in a pure core (`RackFindings`: a fresh
+batch returns every file the OLD batch touched, empty list = clear, and
+one tool going clean never erases another tool's rows on the same file) —
+extracted because the SPI's `Callback` is final with a package-private
+constructor, so the clear logic had to live where a plain test can reach
+it. DiagnosticsBus itself STAYS: it is the transport, storm-law-tested,
+and both renderers are subscribers. Evidence: `RackFindingsTest` (8,
+clear-on-rerun mutation-proven — deleting the old-batch union fails 3
+tests) + `RackDiagnosticsWiringTest` (4 source-gates: HintsController
+pinned with no Annotation path, layer registration pinned, no-EDT pinned,
+headless factory + null-scope deactivation contract).
 
 ### 33. All seven studios live in the `editor` mode
 Documents opened later interleave with seven permanently-open tool tabs in one
