@@ -520,9 +520,12 @@ both ends:
   exists) — URL and workflow mutations proven to fail it — plus the
   script's own runtime gates on every release.
 
-**What stays manual**: NBM signing (installs show the platform's
-unsigned-plugin dialog; the UC is marked `trusted` — our own HTTPS
-channel — but a signing keystore is a separate story), and the vendored
+**NBM signing** (v1.58.0): a `sign-nbms` root-pom profile activates on
+`-Dnbm.keystore`, and the release workflow decodes a base64 keystore secret
+to sign every module NBM — OFF by default (no secret → unsigned, the
+historical behavior), turned on by adding three repo secrets
+(docs/engineering/nbm-signing.md); the signing mechanism is
+jarsigner-verified with a throwaway keystore. Still manual: the vendored
 js-debug adapter still rides full-app releases only (ledger 26). The
 Plugins UI can now also install third-party NBMs, which is new surface
 we deliberately do not gate.

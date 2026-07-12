@@ -322,4 +322,43 @@
              PR. Every module pom references ${orgjson.version}. -->
         <orgjson.version>20260522</orgjson.version>
     </properties>
+
+    <profiles>
+        <!--
+          NBM signing (ledger 21 tail). Off by default: no keystore, no
+          signing, and the Plugin Manager shows its unsigned-plugin dialog on
+          install — the historical behavior, so a normal build is unchanged.
+
+          Activated only when -Dnbm.keystore=<path> is passed, which the
+          release workflow does exactly when the NBM_SIGNING_* secrets are
+          present (it decodes the keystore from a base64 secret first). Then
+          every module's `nbm` goal signs its jar, and the update-center
+          catalog carries signed NBMs. The property is set for the whole
+          reactor, so this profile activates in every module.
+
+          Generate a keystore and wire the three GitHub secrets per
+          docs/engineering/nbm-signing.md.
+        -->
+        <profile>
+            <id>sign-nbms</id>
+            <activation>
+                <property>
+                    <name>nbm.keystore</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.netbeans.utilities</groupId>
+                        <artifactId>nbm-maven-plugin</artifactId>
+                        <configuration>
+                            <keystore>${nbm.keystore}</keystore>
+                            <keystorealias>${nbm.keystorealias}</keystorealias>
+                            <keystorepassword>${nbm.keystorepass}</keystorepassword>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
