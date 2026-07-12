@@ -122,6 +122,29 @@ class OpenProjectsBridgeTest {
     }
 
     @Test
+    @DisplayName("(e) the real bridge never poisons ProjectManager for the rest of the JVM")
+    void realBridgeLeavesProjectManagerUsable(@TempDir Path plain) {
+        // the ubuntu-order failure of v1.45.0: ProjectManager.<clinit> ran
+        // inside the real bridge hook, found no ProjectManagerImplementation
+        // on the test classpath, and left the class poisoned — after which
+        // openide-nodes' ProjectManagerDeadlockDetector threw from EVERY
+        // DataObject.getNodeDelegate in the JVM (AimNodePublisherTest and
+        // all three aim-selection window tests died 30 seconds later, but
+        // only when surefire's filesystem order ran this class first).
+        RackService service = new RackService();
+        service.switchConfirmer = message -> true;
+        service.openProject(plain.toFile());
+        service.awaitBridgeIdle(); // the real hook has now touched ProjectManager
+
+        assertThat(AimNodePublisher.resolveFolderNode(plain.toFile()))
+                .as("getNodeDelegate must survive a real bridge publication — "
+                        + "if this is null, ProjectManager failed to initialize "
+                        + "(projectapi-nb missing from the test classpath?)")
+                .isNotNull();
+        service.getRack().shutdown();
+    }
+
+    @Test
     @DisplayName("(d) source gate: the bridge (and all of rack) never calls OpenProjects.close")
     void bridgeNeverClosesProjects() throws Exception {
         // closing is the user's call: a rack aim is not a statement about
