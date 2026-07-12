@@ -29,6 +29,26 @@
                     <configuration>
                         <brandingToken>${brandingToken}</brandingToken>
                         <cluster>${brandingToken}</cluster>
+                        <!-- Module spec versions track the product release train
+                             (ledger 20). nbm:manifest derives the spec version
+                             from the pom version (1.0-SNAPSHOT -> 1.0, frozen
+                             since v0.1) UNLESS the source manifest already
+                             carries the entry (conditionallyAddAttribute) — so
+                             each module's src/main/nbm/manifest.mf declares
+                             OpenIDE-Module-Specification-Version: ${spec.version}
+                             and the filter-nbm-source-manifest execution below
+                             interpolates it into target/nbm-manifest/manifest.mf,
+                             which this points at. (The jar-plugin manifestEntries
+                             route does NOT work: maven-archiver lets the
+                             <manifestFile> win over configured entries — tested.)
+                             Because the reactor packages each module before its
+                             dependents' nbm:manifest runs, downstream modules
+                             pick the version up into their generated
+                             Module-Dependencies ("core > 1.47.0"), so a module
+                             jar dropped into an older install refuses to load
+                             instead of throwing LinkageError at call time
+                             (ledger 30). Pinned by SpecVersionGateTest. -->
+                        <sourceManifestFile>${project.build.directory}/nbm-manifest/manifest.mf</sourceManifestFile>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -78,6 +98,36 @@
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
                 <extensions>true</extensions>
+            </plugin>
+            <!-- Interpolates ${spec.version} into each module's
+                 src/main/nbm/manifest.mf (see the nbm-maven-plugin
+                 pluginManagement comment). Runs in every child module;
+                 modules without a src/main/nbm dir (application, the root)
+                 skip with a warning — harmless. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>filter-nbm-source-manifest</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/nbm-manifest</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/nbm</directory>
+                                    <includes>
+                                        <include>manifest.mf</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -216,6 +266,14 @@
     <properties>
         <netbeans.version>RELEASE300</netbeans.version>
         <brandingToken>nmoxstudio</brandingToken>
+        <!-- The product version the module manifests carry as their
+             OpenIDE-Module-Specification-Version (see the nbm-maven-plugin
+             pluginManagement entry for the mechanism). Committed value = the
+             release train this tree is heading toward; the release workflow
+             stamps the tag's version over it (alongside branding's
+             currentVersion, same step). Bump it when opening a new release
+             sprint. -->
+        <spec.version>1.47.0</spec.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

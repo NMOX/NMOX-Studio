@@ -45,10 +45,14 @@ by how much they'd matter to a daily driver:
    dbstudio, small local writes). Wrapping them in RP interacts with
    SelfWriteTracker self-write stamps and the close-flush ordering — needs
    one careful pass, not five scattered ones.
-4. **Module spec versions are frozen at 1.0** because the reactor POM is
-   `1.0-SNAPSHOT`; app versioning lives in branding + tags. The clean fix
-   is a coordinated reactor version scheme (13 poms). Cosmetic until
-   there's an update center (see below) — then it becomes load-bearing.
+4. ~~**Module spec versions are frozen at 1.0**~~ **Closed in v1.47.0** —
+   manifests carry the product version via one root `<spec.version>`
+   property (filtered source manifests + nbm's `sourceManifestFile` seam;
+   the reactor-version scheme was rejected to keep the tag the only
+   version source), inter-module deps carry real ranges so mismatched
+   modules refuse to load, and the release workflow stamps the property
+   alongside branding. Gate: SpecVersionGateTest. Ledger 20 has the
+   full design record.
 5. **The autoupdate modules ship with no update center.** Either remove
    them from the cluster (Plugins menu implications) or build a real UC
    fed by the release workflow. Decide when there's a reason; the current

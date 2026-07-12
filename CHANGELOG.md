@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.47.0] — 2026-07-11
+
+The spec-versions release: ledger 20 — module manifests say which release
+they came from, and the module loader enforces it.
+
+### Changed
+- **Module spec versions track the product version** (ledger 20). Every
+  module jar's `OpenIDE-Module-Specification-Version` is now the release
+  version (1.47.0) instead of the pom-derived `1.0` frozen since v0.1.
+  Mechanism: each module's `src/main/nbm/manifest.mf` declares
+  `${spec.version}`, a root-pom resources execution interpolates the
+  single `<spec.version>` property into `target/nbm-manifest/manifest.mf`,
+  and nbm-maven-plugin's `<sourceManifestFile>` keeps that entry verbatim
+  (its documented conditionally-add seam; the jar-plugin `manifestEntries`
+  route was tried first and loses to the generated `<manifestFile>` on
+  conflicting keys — tested). The reactor packages each module before its
+  dependents' manifests generate, so inter-module dependencies now carry
+  real ranges (`org.nmox.NMOX.Studio.core > 1.47.0`): a module jar dropped
+  into an older install is refused by the module loader instead of
+  throwing LinkageError at call time (the ledger-30 hardening).
+- **The release workflow stamps `<spec.version>` from the tag** in the
+  same three per-OS steps that stamp branding's `currentVersion` — the
+  tag stays the single version source, no `versions:set`, asset names
+  unchanged. Branding's committed dev value ("NMOX Studio 1.0") is
+  untouched: `Versions.extract` reads 1.0 as a dev build and that keeps
+  dev launches out of the update check.
+
+### Added
+- `SpecVersionGateTest` (application, 3 tests): all 11 shipped module
+  manifests on the app's classpath equal the injected `${spec.version}`;
+  every source manifest carries the literal placeholder, exactly once,
+  never a hardcoded number — a future release cannot half-bump.
+
 ## [1.46.0] — 2026-07-11
 
 The soft-dependency release: ledger 30 and 31 — the same surgery, both

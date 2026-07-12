@@ -30,6 +30,10 @@ jobs:
         run: |
           sed -i "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
             branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
+          # Module spec versions ride the same tag (ledger 20): every module
+          # manifest interpolates the root <spec.version> property.
+          sed -i "s|<spec.version>.*</spec.version>|<spec.version>${{ needs.version.outputs.version }}</spec.version>|" \
+            pom.xml
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Software Bill of Materials (CycloneDX)
@@ -81,6 +85,9 @@ jobs:
         run: |
           sed -i '' "s/currentVersion=NMOX Studio .*/currentVersion=NMOX Studio ${{ needs.version.outputs.version }}/" \
             branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties
+          # Module spec versions ride the same tag (ledger 20).
+          sed -i '' "s|<spec.version>.*</spec.version>|<spec.version>${{ needs.version.outputs.version }}</spec.version>|" \
+            pom.xml
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Build DMG
@@ -105,6 +112,9 @@ jobs:
         run: |
           $f = "branding/src/main/nbm-branding/core/core.jar/org/netbeans/core/startup/Bundle.properties"
           (Get-Content $f) -replace 'currentVersion=NMOX Studio .*', 'currentVersion=NMOX Studio ${{ needs.version.outputs.version }}' | Set-Content $f
+          # Module spec versions ride the same tag (ledger 20).
+          $p = "pom.xml"
+          (Get-Content $p) -replace '<spec\.version>.*</spec\.version>', '<spec.version>${{ needs.version.outputs.version }}</spec.version>' | Set-Content $p
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Bundle Java runtime
