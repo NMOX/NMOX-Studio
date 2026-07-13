@@ -100,7 +100,7 @@ public class LintDevice extends CommandDevice {
                 f = f.isAbsolute() ? f : new java.io.File(commandDir(), b.group(1));
                 if (f.isFile()) {
                     collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
-                            f, Integer.parseInt(b.group(2)), b.group(4), true));
+                            f, Numbers.intOrZero(b.group(2)), b.group(4), true));
                 }
             }
             java.util.regex.Matcher found = BIOME_FOUND.matcher(line);
@@ -127,7 +127,7 @@ public class LintDevice extends CommandDevice {
         java.io.File file = currentFile;
         if (loc.find() && file != null && file.isFile()) {
             collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
-                    file, Integer.parseInt(loc.group(1)), loc.group(4).trim(),
+                    file, Numbers.intOrZero(loc.group(1)), loc.group(4).trim(),
                     "error".equals(loc.group(3))));
         }
         Matcher m = SUMMARY.matcher(line);

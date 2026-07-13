@@ -329,11 +329,11 @@ public class TestDevice extends CommandDevice {
     protected void onLine(String line) {
         Matcher m = PASSED.matcher(line);
         if (m.find()) {
-            passed = Integer.parseInt(m.group(1));
+            passed = Numbers.intOrZero(m.group(1));
         }
         m = FAILED.matcher(line);
         if (m.find()) {
-            failed = Integer.parseInt(m.group(1));
+            failed = Numbers.intOrZero(m.group(1));
         }
         String failure = failedTestName(line);
         if (failure != null && failures.size() < 500) {
