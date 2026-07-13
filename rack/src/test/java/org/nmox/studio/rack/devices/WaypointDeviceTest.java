@@ -177,6 +177,32 @@ class WaypointDeviceTest {
     }
 
     @Test
+    @DisplayName("CI export composes: a steered lane exports its working-directory honestly")
+    void ciExportCarriesWorkspaceDir() throws Exception {
+        monorepo();
+        Rack rack = new Rack();
+        rack.setProjectDir(dir.toFile());
+        try {
+            WaypointDevice waypoint = new WaypointDevice();
+            rack.addDevice(waypoint);
+            NpmScriptDevice scripts = new NpmScriptDevice();
+            rack.addDevice(scripts);
+            awaitOptions(waypoint, 3);
+            waypoint.applyState(Map.of("workspace", "@mono/web"));
+            drain();
+            scripts.reloadScripts();
+            drain();
+            scripts.applyState(Map.of("script", "dev"));
+
+            String yaml = org.nmox.studio.rack.projectstudio.CiExporter.toWorkflowYaml(rack);
+            assertThat(yaml).contains("working-directory: packages/web");
+            assertThat(yaml).contains("npm run dev");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("removing WAYPOINT stops the steering — the ROSETTA dispose law")
     void disposeClearsOverride() throws Exception {
         monorepo();
