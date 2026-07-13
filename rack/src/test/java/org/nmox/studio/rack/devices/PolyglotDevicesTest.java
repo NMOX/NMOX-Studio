@@ -139,14 +139,29 @@ class PolyglotDevicesTest {
                 .isEqualTo(api.toFile());
     }
 
-    @org.junit.jupiter.api.Test
-    @org.junit.jupiter.api.DisplayName("Gleam: every AUTO lane speaks gleam (v1.59.0 expansion)")
-    void gleamLanes(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
-        java.nio.file.Files.writeString(dir.resolve("gleam.toml"), "name = \"x\"");
-        org.assertj.core.api.Assertions.assertThat(ProjectInspector.detectKind(dir.toFile()))
+    @Test
+    @DisplayName("Gleam: every AUTO lane speaks gleam (v1.59.0 expansion)")
+    void gleamLanes() throws IOException {
+        Rack rack = rackAimedAt("gleam.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
                 .isEqualTo(ProjectInspector.ProjectKind.GLEAM);
-        // the WebProject action commands — the same argv the rack lanes run
-        org.assertj.core.api.Assertions.assertThat(
-                org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.GLEAM.name()).isEqualTo("GLEAM");
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("gleam", "run");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("gleam", "build");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("gleam", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("gleam", "deps", "download");
+
+        rack.shutdown();
     }
 }
