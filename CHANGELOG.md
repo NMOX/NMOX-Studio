@@ -19,6 +19,12 @@ across the panel's lifetime (the RP idles to zero threads; the relay
 listens on the panel's own ExplorerManager — no external leak). Reopen
 regression test, mutation-proven against the old `scanner.stop()`.
 
+Also caught in the same review: VELOCITY (v1.65.0) had no `onFinished`,
+so stopping the Vite dev server left a phantom serving-registry entry (⇄
+chip, ⌘I Live Servers, VITALS/BEACON auto-target) and the SERVING gate
+stuck high. Added the deregister/gate-drop/re-announce-reset that NEXUS
+already had.
+
 ## [1.65.0] - 2026-07-13
 
 ### VELOCITY — the Vite console (47th device)
