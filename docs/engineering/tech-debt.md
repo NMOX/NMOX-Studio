@@ -251,16 +251,21 @@ teardown that needs platform APIs still alive (flushing through NetBeans IO,
 keyring handles) has no home today. **Noted so the first such need adds a
 ModuleInstall/@OnStop rather than misusing a hook.**
 
-### 36. FileTreePanel remains a raw JTree over java.io.File
-A Nodes/BeanTreeView/ExplorerManager tree would give file-type icons, the
-platform file actions, and editor-synced CRUD for free. The v1.39.0 review
-took the correctness half (CRUD now routes through DataObject so open editors
-follow deletes/renames; hyperlink paths normalized); the UI half stays custom.
-Also here: kit wizards still raw-write possibly-open `index.html` (bounded —
-wire-in flows on files rarely open at that moment), and three mtime pollers
-(FileWatcher/ArtifactPulse/WorkspaceFilePulse) share a shape a `StampPoller`
-seam could unify. **Deferred**: the tree is careful (off-EDT, lazy, TCC-safe)
-and the rewrite is real work with visual-regression risk.
+### 36. FileTreePanel remains a raw JTree over java.io.File — CLOSED v1.64.0
+The tree half is done: `FileTreePanel` is now an `ExplorerManager.Provider`
+over a `BeanTreeView` on the root's `DataFolder` node delegate. It gained
+what the ledger asked for — real DataObject file-type icons, the full
+platform node menu (Open/Cut/Copy/Delete/Rename/Tools/Properties, a superset
+of the old custom menu), git branch annotation, and lazy off-EDT children —
+at ~230 fewer lines, live-verified end to end. The visual-regression risk the
+deferral cited was retired by the click-through, not assumed away. Laws kept
+with their incidents: root resolve OFF the EDT with newer-aim-wins (the
+v1.33.1 TCC storm, `RootResolver` seam test-pinned); heavy dirs childless (no
+100k-file misclick storm); external edits via `FileUtil.refreshFor`.
+**Still open here** (smaller, unrelated): kit wizards still raw-write
+possibly-open `index.html` (bounded — wire-in flows on files rarely open at
+that moment), and three mtime pollers (FileWatcher/ArtifactPulse/
+WorkspaceFilePulse) share a shape a `StampPoller` seam could unify.
 
 ## Open — deferred deliberately, with reasons (added v1.38.1)
 

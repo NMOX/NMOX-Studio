@@ -1,140 +1,132 @@
 package org.nmox.studio.rack.projectstudio;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 import org.nmox.studio.rack.engine.FileWatcher;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.OpenCookie;
+import javax.swing.SwingUtilities;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 /**
- * The project's file tree: lazy-loading, full CRUD via the context
- * menu, double-click opens files in the editor, and a FileWatcher
- * keeps the tree honest while builds and saves change the disk.
+ * The project file tree, as a platform citizen (ledger 36 closed): a
+ * {@link BeanTreeView} over the root folder's real {@link DataFolder}
+ * node. What the platform gives for free — and the old hand-rolled
+ * JTree could not — is file-type icons from the DataObject loaders,
+ * the node context menu (templates-aware New…, Cut/Copy/Paste/Rename/
+ * Delete, the git-annotated verbs), lazy off-EDT child computation
+ * with a "Please wait…" row, and expansion state that survives
+ * refreshes because node identity is stable.
+ *
+ * <p>Laws preserved from the old tree, each with its original reason:
+ * <ul>
+ * <li><b>No filesystem I/O on the EDT</b> (the v1.33.1 TCC storm):
+ * {@code setRootDirectory} resolves the root FileObject on the scanner
+ * lane and only hands the finished node to the EDT; child listing is
+ * the platform's own lazy machinery, off the EDT by design.</li>
+ * <li><b>Heavy directories stay dark</b>: node_modules/.git/dist/build/
+ * coverage render greyed and childless — expanding a 100k-file tree by
+ * misclick was the original incident.</li>
+ * <li><b>External edits arrive</b>: the {@link FileWatcher} that used
+ * to drive a full rebuild now drives {@link FileUtil#refreshFor}, so
+ * files written by builds appear without an expansion dance.</li>
+ * </ul>
  */
-public class FileTreePanel extends JPanel {
+public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
-    /** Directories shown but never auto-expanded or watched into. */
-    private static final Set<String> HEAVY_DIRS = Set.of("node_modules", ".git", "dist", "build", "coverage");
-    private static final String PLACEHOLDER = "…";
+    /** Directories that stay dark: huge, generated, or plumbing. */
+    private static final java.util.Set<String> HEAVY_DIRS =
+            java.util.Set.of("node_modules", ".git", "dist", "build", "coverage");
 
     /**
-     * Directory-listing seam. Production lists the real filesystem; a test can
-     * inject a slow lister to prove {@link #setRootDirectory} never blocks the
-     * caller (the EDT) while a directory is walked.
+     * Test seam for the off-EDT law: resolves a directory to the node
+     * the tree shows. The real resolver touches the filesystem
+     * (FileUtil.toFileObject stats the disk), which is exactly the work
+     * that must never run on the EDT — a wedged network mount or a
+     * TCC-gated folder would freeze first paint.
      */
-    interface DirLister {
-        /** Children of {@code dir}, or null when it cannot be listed. */
-        File[] list(File dir);
+    interface RootResolver {
+        /** The display node for {@code dir}, or null when unresolvable. */
+        Node resolve(File dir);
     }
 
-    private static final DirLister REAL_LISTER = File::listFiles;
+    private static final RootResolver REAL_RESOLVER = dir -> {
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
+        if (fo == null || !fo.isFolder()) {
+            return null;
+        }
+        return new HeavyAwareFilterNode(DataFolder.findFolder(fo).getNodeDelegate());
+    };
 
-    private final JTree tree;
-    private final DefaultTreeModel model;
-    private final DirLister lister;
-    /** Every filesystem walk runs here, never on the EDT. */
+    private final ExplorerManager manager = new ExplorerManager();
+    private final BeanTreeView view = new BeanTreeView();
+    private final RootResolver resolver;
+    /** Every filesystem walk we initiate runs here, never on the EDT. */
     private final org.openide.util.RequestProcessor scanner =
             new org.openide.util.RequestProcessor("nmox-filetree-scan", 1, true);
+    private final PropertyChangeListener selectionRelay = this::relaySelection;
+
     private File root;
     private FileWatcher watcher;
     /**
      * Notified on the EDT with the selected File — or null when nothing
-     * (or a placeholder row) is selected. Ledger 29 remainder (v1.48.0):
-     * the owning studio publishes this as the platform selection. The
-     * callback itself reads only the in-memory tree model — no disk —
-     * so firing it per keystroke of a held arrow key is free; the
-     * downstream AimNodePublisher carries the equality guard and the
-     * single resolve lane.
+     * is selected. Ledger 29 remainder (v1.48.0): the owning studio
+     * publishes this as the platform selection. The callback reads only
+     * the already-resolved node lookup — no disk — so firing it per
+     * keystroke of a held arrow key is free; the downstream
+     * AimNodePublisher carries the equality guard and the resolve lane.
      */
     private java.util.function.Consumer<File> selectionListener;
 
     public FileTreePanel() {
-        this(REAL_LISTER);
+        this(REAL_RESOLVER);
     }
 
-    FileTreePanel(DirLister lister) {
+    FileTreePanel(RootResolver resolver) {
         super(new BorderLayout());
-        this.lister = lister;
-        model = new DefaultTreeModel(new DefaultMutableTreeNode("No project"));
-        tree = new JTree(model);
-        tree.setRootVisible(true);
-        tree.setShowsRootHandles(true);
-        tree.setCellRenderer(new Renderer());
+        this.resolver = resolver;
+        view.setRootVisible(true);
+        manager.setRootContext(placeholder("No project"));
+        manager.addPropertyChangeListener(selectionRelay);
+        add(view, BorderLayout.CENTER);
+    }
 
-        tree.addTreeSelectionListener(e -> {
-            if (selectionListener != null) {
-                selectionListener.accept(selectedFile());
-            }
-        });
-
-        tree.addTreeWillExpandListener(new javax.swing.event.TreeWillExpandListener() {
-            @Override
-            public void treeWillExpand(javax.swing.event.TreeExpansionEvent event) {
-                loadChildrenAsync((DefaultMutableTreeNode) event.getPath().getLastPathComponent());
-            }
-
-            @Override
-            public void treeWillCollapse(javax.swing.event.TreeExpansionEvent event) {
-            }
-        });
-
-        tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    File f = fileAt(e.getPoint());
-                    if (f != null && f.isFile()) {
-                        openInEditor(f);
-                    }
-                }
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                maybePopup(e);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                maybePopup(e);
-            }
-        });
-
-        add(new JScrollPane(tree), BorderLayout.CENTER);
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
 
     // ---- root management ----
 
     public void setRootDirectory(File dir) {
         this.root = dir;
-        rebuild();       // posts the filesystem walk to a background thread
         restartWatcher();
+        if (dir == null) {
+            onEdt(() -> manager.setRootContext(placeholder("No project")));
+            return;
+        }
+        // resolve off the EDT: a fresh launch aiming at a slow or
+        // permission-gated directory must still draw its window promptly
+        scanner.post(() -> {
+            Node node = resolver.resolve(dir);
+            onEdt(() -> {
+                if (!java.util.Objects.equals(root, dir)) {
+                    return; // aim changed while we resolved; the newer scan owns the tree
+                }
+                manager.setRootContext(node != null ? node
+                        : placeholder(dir.getName() + " (unreadable)"));
+            });
+        });
     }
 
     public File getRootDirectory() {
@@ -148,17 +140,26 @@ public class FileTreePanel extends JPanel {
 
     /**
      * The selected File, or null when nothing (or a placeholder row) is
-     * selected. EDT-only, and EDT-cheap: reads the in-memory model,
-     * never the disk.
+     * selected. EDT-only, and EDT-cheap: reads the node's already-resolved
+     * lookup, never the disk.
      */
     public File selectedFile() {
-        TreePath path = tree.getSelectionPath();
-        if (path == null) {
+        Node[] selected = manager.getSelectedNodes();
+        if (selected.length == 0) {
             return null;
         }
-        Object user = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-        return user instanceof File f ? f : null;
+        DataObject dob = selected[0].getLookup().lookup(DataObject.class);
+        return dob == null ? null : FileUtil.toFile(dob.getPrimaryFile());
     }
+
+    private void relaySelection(PropertyChangeEvent e) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(e.getPropertyName())
+                && selectionListener != null) {
+            selectionListener.accept(selectedFile());
+        }
+    }
+
+    // ---- external-change refresh ----
 
     private void restartWatcher() {
         if (watcher != null) {
@@ -166,8 +167,12 @@ public class FileTreePanel extends JPanel {
             watcher = null;
         }
         if (root != null && root.isDirectory()) {
-            watcher = new FileWatcher(root, 1500, null,
-                    changed -> SwingUtilities.invokeLater(this::rebuild));
+            File watched = root;
+            // builds and generators write behind the platform's back;
+            // refreshFor re-syncs the FileObject tree and the view keeps
+            // its own expansion state — no rebuild, no re-expand dance
+            watcher = new FileWatcher(watched, 1500, null,
+                    changed -> scanner.post(() -> FileUtil.refreshFor(watched)));
             watcher.start();
         }
     }
@@ -178,334 +183,127 @@ public class FileTreePanel extends JPanel {
             watcher.stop();
             watcher = null;
         }
+        manager.removePropertyChangeListener(selectionRelay);
     }
 
-    // ---- tree building ----
+    // ---- helpers ----
 
-    /**
-     * Rebuilds the whole tree. The filesystem walk of the root directory runs
-     * on a background thread — never the EDT — so a fresh launch that aims at a
-     * slow or permission-gated directory still draws its window promptly. The
-     * model swap and re-expansion happen back on the EDT.
-     */
-    private void rebuild() {
-        File current = root;
-        if (current == null || !isDirectorySafe(current)) {
-            SwingUtilities.invokeLater(() -> model.setRoot(new DefaultMutableTreeNode("No project")));
-            return;
-        }
-        Set<String> expanded = expandedPaths();
-        scanner.post(() -> {
-            DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(current);
-            // resolve the root and every previously-expanded subtree here, on
-            // the background thread, so the EDT only swaps a finished model
-            addChildrenDeep(rootNode, current, expanded);
-            SwingUtilities.invokeLater(() -> {
-                if (current != root) {
-                    return; // aim changed while we were listing; a newer scan owns the tree
-                }
-                model.setRoot(rootNode);
-                tree.expandPath(new TreePath(rootNode.getPath()));
-                reExpand(rootNode, expanded);
-            });
-        });
+    private static Node placeholder(String label) {
+        AbstractNode n = new AbstractNode(Children.LEAF);
+        n.setDisplayName(label);
+        return n;
     }
 
-    /**
-     * Off-EDT: fills a node's children and recurses into any child that was
-     * expanded before the rebuild, so the whole visible subtree is resolved on
-     * the background scanner rather than a synchronous walk on the EDT.
-     */
-    private void addChildrenDeep(DefaultMutableTreeNode node, File dir, Set<String> expanded) {
-        addChildren(node, dir);
-        for (int i = 0; i < node.getChildCount(); i++) {
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
-            if (child.getUserObject() instanceof File f && f.isDirectory()
-                    && expanded.contains(f.getAbsolutePath())) {
-                child.removeAllChildren(); // drop the lazy placeholder
-                addChildrenDeep(child, f, expanded);
-            }
+    private static void onEdt(Runnable r) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
         }
     }
 
     /**
-     * Fills in real children for a node when the user expands it. The listing
-     * runs on the background scanner; the model update returns to the EDT.
+     * The real folder node, with heavy directories kept dark: a child
+     * named node_modules (or .git, dist, build, coverage) renders greyed
+     * and childless. Expanding a 100k-file tree by misclick was the
+     * incident that created the rule; the raw platform node would
+     * happily enumerate it.
      */
-    private void loadChildrenAsync(DefaultMutableTreeNode node) {
-        if (node.getChildCount() != 1
-                || !PLACEHOLDER.equals(((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject())
-                || !(node.getUserObject() instanceof File dir)) {
-            return;
-        }
-        // the placeholder still present at apply-time is what guards against a
-        // double-post racing two model updates for the same node
-        scanner.post(() -> {
-            DefaultMutableTreeNode filled = new DefaultMutableTreeNode(dir);
-            addChildren(filled, dir);
-            SwingUtilities.invokeLater(() -> {
-                if (node.getChildCount() == 1
-                        && PLACEHOLDER.equals(((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject())) {
-                    node.removeAllChildren();
-                    // snapshot first: node.add() detaches from filled, so
-                    // iterating filled while adding would skip every other child
-                    List<DefaultMutableTreeNode> kids = new ArrayList<>();
-                    for (int i = 0; i < filled.getChildCount(); i++) {
-                        kids.add((DefaultMutableTreeNode) filled.getChildAt(i));
-                    }
-                    for (DefaultMutableTreeNode kid : kids) {
-                        node.add(kid);
-                    }
-                    model.nodeStructureChanged(node);
-                }
-            });
-        });
-    }
+    static final class HeavyAwareFilterNode extends FilterNode {
 
-    /**
-     * Fills a node's children synchronously (already off the EDT — callers run
-     * on the scanner). A directory gets a lazy placeholder rather than being
-     * probed here, so building one level never recurses into a protected or
-     * slow child directory.
-     */
-    private void addChildren(DefaultMutableTreeNode node, File dir) {
-        File[] files = lister.list(dir);
-        if (files == null) {
-            return;
-        }
-        Arrays.sort(files, Comparator
-                .comparing((File f) -> !f.isDirectory())
-                .thenComparing(f -> f.getName().toLowerCase()));
-        for (File f : files) {
-            DefaultMutableTreeNode child = new DefaultMutableTreeNode(f);
-            if (f.isDirectory()) {
-                // lazy and cheap: assume every directory is expandable and show
-                // a placeholder. Resolving real emptiness would mean a File.list
-                // per child, which on ~ would touch the TCC-protected folders —
-                // the whole bug. An empty dir that expands to nothing is a
-                // trivial, self-correcting cost.
-                child.add(new DefaultMutableTreeNode(PLACEHOLDER));
-            }
-            node.add(child);
-        }
-    }
-
-    /** isDirectory() can itself stat a protected path; keep it off the EDT-blocking hot path. */
-    private static boolean isDirectorySafe(File dir) {
-        try {
-            return dir.isDirectory();
-        } catch (SecurityException ex) {
-            return false;
-        }
-    }
-
-    private Set<String> expandedPaths() {
-        Set<String> result = new HashSet<>();
-        if (!(model.getRoot() instanceof DefaultMutableTreeNode rootNode)
-                || !(rootNode.getUserObject() instanceof File)) {
-            return result;
-        }
-        Enumeration<TreePath> en = tree.getExpandedDescendants(new TreePath(rootNode.getPath()));
-        if (en != null) {
-            while (en.hasMoreElements()) {
-                Object last = en.nextElement().getLastPathComponent();
-                Object user = ((DefaultMutableTreeNode) last).getUserObject();
-                if (user instanceof File f) {
-                    result.add(f.getAbsolutePath());
-                }
-            }
-        }
-        return result;
-    }
-
-    private void reExpand(DefaultMutableTreeNode node, Set<String> expanded) {
-        // EDT-only: the subtree is already resolved off-EDT (addChildrenDeep),
-        // so here we only re-open the tree paths — no filesystem access.
-        Object user = node.getUserObject();
-        if (user instanceof File f && expanded.contains(f.getAbsolutePath())) {
-            tree.expandPath(new TreePath(node.getPath()));
-            List<DefaultMutableTreeNode> children = new ArrayList<>();
-            for (int i = 0; i < node.getChildCount(); i++) {
-                children.add((DefaultMutableTreeNode) node.getChildAt(i));
-            }
-            for (DefaultMutableTreeNode child : children) {
-                reExpand(child, expanded);
-            }
-        }
-    }
-
-    // ---- interaction ----
-
-    private File fileAt(java.awt.Point p) {
-        TreePath path = tree.getPathForLocation(p.x, p.y);
-        if (path == null) {
-            return null;
-        }
-        Object user = ((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject();
-        return user instanceof File f ? f : null;
-    }
-
-    private void maybePopup(MouseEvent e) {
-        if (!e.isPopupTrigger()) {
-            return;
-        }
-        TreePath path = tree.getPathForLocation(e.getX(), e.getY());
-        if (path != null) {
-            tree.setSelectionPath(path);
-        }
-        File f = path == null ? root
-                : (((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof File file
-                        ? file : root);
-        if (f == null) {
-            return;
-        }
-        showMenu(f, e);
-    }
-
-    private void showMenu(File target, MouseEvent e) {
-        File dirContext = target.isDirectory() ? target : target.getParentFile();
-        JPopupMenu menu = new JPopupMenu();
-
-        JMenuItem newFile = new JMenuItem("New File…");
-        newFile.addActionListener(a -> promptCreate(dirContext, false));
-        menu.add(newFile);
-
-        JMenuItem newDir = new JMenuItem("New Folder…");
-        newDir.addActionListener(a -> promptCreate(dirContext, true));
-        menu.add(newDir);
-
-        if (!target.equals(root)) {
-            menu.addSeparator();
-            JMenuItem rename = new JMenuItem("Rename…");
-            rename.addActionListener(a -> {
-                NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine("New name:", "Rename");
-                line.setInputText(target.getName());
-                if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION
-                        && !line.getInputText().isBlank()) {
-                    String newName = line.getInputText().trim();
-                    runFileOp(() -> FileOps.rename(target, newName), null);
-                }
-            });
-            menu.add(rename);
-
-            // honest label: FileOps.delete prefers the system Trash but falls
-            // back to a hard recursive delete when Trash is unavailable
-            JMenuItem delete = new JMenuItem("Delete…");
-            delete.addActionListener(a -> {
-                if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                        "Delete \"" + target.getName()
-                        + "\"?\n(Moved to the system Trash when supported; "
-                        + "deleted permanently otherwise.)", "Project Studio",
-                        NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
-                    runFileOp(() -> {
-                        FileOps.delete(target); // node_modules-sized trees take minutes
-                        return null;
-                    }, null);
-                }
-            });
-            menu.add(delete);
+        HeavyAwareFilterNode(Node original) {
+            super(original, original.isLeaf() ? Children.LEAF : new HeavyChildren(original));
         }
 
-        if (target.isFile()) {
-            menu.addSeparator();
-            JMenuItem open = new JMenuItem("Open");
-            open.addActionListener(a -> openInEditor(target));
-            menu.add(open);
-        }
-
-        menu.addSeparator();
-        JMenuItem reveal = new JMenuItem("Reveal in File Manager");
-        reveal.addActionListener(a -> {
-            try {
-                Desktop.getDesktop().open(dirContext);
-            } catch (IOException | RuntimeException ex) {
-                error(ex);
-            }
-        });
-        menu.add(reveal);
-
-        menu.show(tree, e.getX(), e.getY());
-    }
-
-    private void promptCreate(File parent, boolean directory) {
-        NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine(
-                directory ? "Folder name:" : "File name:", directory ? "New Folder" : "New File");
-        line.setInputText(directory ? "" : "untitled.js");
-        if (DialogDisplayer.getDefault().notify(line) != NotifyDescriptor.OK_OPTION
-                || line.getInputText().isBlank()) {
-            return;
-        }
-        String name = line.getInputText().trim();
-        runFileOp(() -> directory
-                ? FileOps.createDirectory(parent, name)
-                : FileOps.createFile(parent, name),
-                created -> {
-                    if (created != null && created.isFile()) {
-                        openInEditor(created);
-                    }
-                });
-    }
-
-    /** A file CRUD operation that can fail — and can be slow. */
-    private interface FileOp {
-        File run() throws IOException;
-    }
-
-    /**
-     * Runs a CRUD operation on the background scanner — never the EDT, where
-     * a recursive node_modules delete is a minutes-long beachball — then
-     * rebuilds the tree and hands the result to {@code onDone} back on the
-     * EDT. Errors surface as the usual dialog, also on the EDT.
-     */
-    private void runFileOp(FileOp op, java.util.function.Consumer<File> onDone) {
-        scanner.post(() -> {
-            try {
-                File result = op.run();
-                SwingUtilities.invokeLater(() -> {
-                    rebuild();
-                    if (onDone != null) {
-                        onDone.accept(result);
-                    }
-                });
-            } catch (IOException ex) {
-                SwingUtilities.invokeLater(() -> error(ex));
-            }
-        });
-    }
-
-    private void openInEditor(File file) {
-        try {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-            if (fo != null) {
-                DataObject dataObject = DataObject.find(fo);
-                OpenCookie open = dataObject.getLookup().lookup(OpenCookie.class);
-                if (open != null) {
-                    open.open();
-                }
-            }
-        } catch (IOException | RuntimeException ex) {
-            error(ex);
-        }
-    }
-
-    private void error(Exception ex) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                "File operation failed: " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
-    }
-
-    /** Folders bold-ish, heavy dirs dimmed, root shows the full name. */
-    private static final class Renderer extends DefaultTreeCellRenderer {
-
+        /**
+         * Folders (and the root) get the full platform node menu — New
+         * (templates-aware), Find, Cut/Copy/Paste, Delete, Rename, Tools,
+         * Properties — driven by the underlying DataNode's cookies. The
+         * old hand-rolled tree offered only New/Rename/Delete/Open/Reveal;
+         * this is a superset (Cut/Copy/Paste are new).
+         */
         @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-            Object user = ((DefaultMutableTreeNode) value).getUserObject();
-            if (user instanceof File f) {
-                setText(f.getName().isEmpty() ? f.getPath() : f.getName());
-                setEnabled(!HEAVY_DIRS.contains(f.getName()));
+        public javax.swing.Action[] getActions(boolean context) {
+            return new javax.swing.Action[]{
+                org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.CopyAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+            };
+        }
+
+        private static final class HeavyChildren extends FilterNode.Children {
+
+            HeavyChildren(Node owner) {
+                super(owner);
             }
-            return this;
+
+            @Override
+            protected Node copyNode(Node original) {
+                boolean folder = original.getLookup().lookup(DataFolder.class) != null;
+                if (folder && HEAVY_DIRS.contains(original.getName())) {
+                    return new DarkNode(original);
+                }
+                return folder ? new HeavyAwareFilterNode(original)
+                        : new FileLeafNode(original);
+            }
+        }
+
+        /**
+         * A file: the full platform file menu — Open, Cut/Copy, Delete,
+         * Rename, Tools, Properties — driven by the DataObject's cookies.
+         */
+        private static final class FileLeafNode extends FilterNode {
+
+            FileLeafNode(Node original) {
+                super(original, Children.LEAF);
+            }
+
+            @Override
+            public javax.swing.Action[] getActions(boolean context) {
+                return new javax.swing.Action[]{
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.OpenAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.CopyAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+                };
+            }
+        }
+
+        /**
+         * A heavy directory (node_modules, .git, …): present but inert.
+         * Children.LEAF means no disclosure triangle — a stronger "you
+         * cannot enter" signal than the old grey text, and the guarantee
+         * that a 100k-file generated tree is never enumerated by misclick.
+         */
+        private static final class DarkNode extends FilterNode {
+
+            DarkNode(Node original) {
+                super(original, Children.LEAF);
+            }
+
+            @Override
+            public javax.swing.Action[] getActions(boolean context) {
+                // no New/Paste into a directory we refuse to descend into;
+                // Reveal-in-files and Properties are the honest verbs
+                return new javax.swing.Action[]{
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+                };
+            }
         }
     }
 }
