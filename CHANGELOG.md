@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.68.0] - 2026-07-13
+
+### Framework learning spaces — Astro, SvelteKit, Nuxt (56 spaces)
+
+The consoles that shipped today get their tutorials: three new FRAMEWORK
+learning spaces, each generating a real minimal app (filesystem routes,
+the framework's signature idea in working code) with a tutorial that
+teaches the core concept and points at the matching rack console —
+COSMOS for Astro, KINETIC for SvelteKit, NIMBUS for Nuxt. Same run-driver
+shape as the Next.js space (`npm run dev` serves the sample), same honest
+install hints. The catalog grows 53 → 56; community drop-ins unchanged.
+
 ## [1.67.1] - 2026-07-13
 
 ### Modern Web preset

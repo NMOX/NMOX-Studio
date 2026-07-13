@@ -1815,6 +1815,129 @@
     }
    ],
    "tutorial": "# Gleam\n\nGleam is a statically typed language for the Erlang VM: Rust-flavored syntax, a friendly compiler that explains its errors, and the BEAM's legendary concurrency underneath. Everything compiles to plain Erlang, so the whole OTP ecosystem is yours.\n\n## Your REPL\n\nGleam has no REPL of its own — click **START** and the studio runs `gleam shell`, which compiles this project and drops you into the *Erlang* shell with your Gleam modules loaded. Call them Erlang-style: `hello:main().` (note the trailing dot!). The stdlib compiles to modules like `gleam@list`.\n\n## The sample\n\n`src/hello.gleam` shows the pipe operator `|>` threading a list through map and print — the idiom Gleam shares with Elixir and F#. Run the whole program from the rack: aim at this folder and IGNITION's `gleam run` lane is already wired, as are FORGE (`gleam build`), VERITAS (`gleam test`), and CRATE (`gleam deps download`).\n\n## Try\n\n1. Add a function `pub fn double(x: Int) -> Int { x * 2 }` to `hello.gleam`, press START again, and call `hello:double(21).`\n2. Break the types on purpose — change `x * 2` to `x <> \"!\"` — and read the compiler's error. Gleam's error messages teach the language.\n3. `gleam add gleam_http` in SOLDER, then explore an HTTP client from the shell.\n"
+  },
+  {
+   "slug": "astro",
+   "name": "Astro",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "The content-first framework: pages are files, HTML ships by default, islands add interactivity only where you ask.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"astro-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"astro dev\",\n    \"build\": \"astro build\",\n    \"preview\": \"astro preview\"\n  },\n  \"dependencies\": {\n    \"astro\": \"^4.0.0\"\n  }\n}\n"
+    },
+    {
+     "path": "src/pages/index.astro",
+     "content": "---\nconst who = \"Astro\";\nconst facts = [\"Pages are files\", \"Zero JS by default\", \"Islands opt in\"];\n---\n<html>\n  <body style=\"font-family: system-ui; padding: 40px\">\n    <h1>Hello, {who}</h1>\n    <ul>{facts.map((f) => <li>{f}</li>)}</ul>\n    <p><a href=\"/about\">Go to /about</a></p>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "src/pages/about.astro",
+     "content": "---\n---\n<html>\n  <body style=\"font-family: system-ui; padding: 40px\">\n    <h1>About</h1>\n    <p>This file lives at src/pages/about.astro, so its URL is /about.</p>\n    <p><a href=\"/\">Back home</a></p>\n  </body>\n</html>\n"
+    }
+   ],
+   "tutorial": "# Astro\n\nAstro is the **content-first** framework: every file in `src/pages/` becomes a route, the frontmatter between `---` fences runs at build time, and the page ships as plain HTML — **zero JavaScript by default**. Interactivity is opt-in per component (“islands”).\n\n## Your dev server\n\nPress **START** and the rack runs `npm run dev` (astro dev). Open the URL that appears — or rack the **COSMOS** device, the Astro console, whose DEV button does the same with the URL wired to SCOPE and the version cluster watching the registry.\n\n## The sample\n\n`src/pages/index.astro` shows frontmatter feeding the template: `who` and `facts` are computed server-side and rendered to static HTML — view source in the browser and there is no framework runtime.\n\n## Try\n\n1. Add `src/pages/blog.astro` — it is instantly `/blog`, no router config.\n2. Move a fact into the frontmatter as a computed value (`new Date().getFullYear()`); watch the dev server hot-reload.\n3. `npm run build` then `preview` — the dist/ is pure static files, ready for any host.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install node\n```\n"
+  },
+  {
+   "slug": "sveltekit",
+   "name": "SvelteKit",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "Svelte with a filesystem router and server rendering, riding Vite — +page.svelte files become routes.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"sveltekit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite dev\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"devDependencies\": {\n    \"@sveltejs/adapter-auto\": \"^3.0.0\",\n    \"@sveltejs/kit\": \"^2.0.0\",\n    \"@sveltejs/vite-plugin-svelte\": \"^3.0.0\",\n    \"svelte\": \"^4.2.0\",\n    \"vite\": \"^5.0.0\"\n  }\n}\n"
+    },
+    {
+     "path": "svelte.config.js",
+     "content": "import adapter from \"@sveltejs/adapter-auto\";\n\nexport default {\n  kit: { adapter: adapter() }\n};\n"
+    },
+    {
+     "path": "vite.config.js",
+     "content": "import { sveltekit } from \"@sveltejs/kit/vite\";\n\nexport default {\n  plugins: [sveltekit()]\n};\n"
+    },
+    {
+     "path": "src/routes/+page.svelte",
+     "content": "<script>\n  let count = 0;\n</script>\n\n<h1>Hello, SvelteKit</h1>\n<p>This route lives at src/routes/+page.svelte.</p>\n<button on:click={() => count++}>Clicked {count} times</button>\n<p><a href=\"/about\">Go to /about</a></p>\n\n<style>\n  h1 { font-family: system-ui; }\n</style>\n"
+    },
+    {
+     "path": "src/routes/about/+page.svelte",
+     "content": "<h1>About</h1>\n<p>src/routes/about/+page.svelte → the URL /about.</p>\n<p><a href=\"/\">Back home</a></p>\n"
+    }
+   ],
+   "tutorial": "# SvelteKit\n\nSvelteKit is Svelte plus the app plumbing: a **filesystem router** (`src/routes/**/+page.svelte`), server rendering, and a build — all riding **Vite**, which is why `npm run dev` is `vite dev`.\n\n## Your dev server\n\nPress **START** for `vite dev` — or rack **KINETIC**, the SvelteKit console: DEV/BUILD/PREVIEW speak vite while DIAG runs svelte-check, and the version cluster tracks @sveltejs/kit.\n\n## The sample\n\n`+page.svelte` is a Svelte component: reactive `count` updates the DOM with no virtual DOM and no hooks — assignment IS reactivity.\n\n## Try\n\n1. Add `src/routes/blog/+page.svelte` — instantly `/blog`.\n2. Add a `+page.js` beside a page exporting `load()` — its return value arrives as `data` in the page. That's the whole data story.\n3. Break the types on purpose and run **DIAG** (svelte-check) on KINETIC.\n\n---\n\n## Install\n\n```sh\nbrew install node\n```\n"
+  },
+  {
+   "slug": "nuxt",
+   "name": "Nuxt",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "Vue with a filesystem router, server rendering, and auto-imports — pages/ becomes your routes.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"nuxt-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"dev\": \"nuxi dev\",\n    \"build\": \"nuxi build\",\n    \"preview\": \"nuxi preview\"\n  },\n  \"dependencies\": {\n    \"nuxt\": \"^3.11.0\"\n  }\n}\n"
+    },
+    {
+     "path": "app.vue",
+     "content": "<template>\n  <div style=\"font-family: system-ui; padding: 40px\">\n    <NuxtPage />\n  </div>\n</template>\n"
+    },
+    {
+     "path": "pages/index.vue",
+     "content": "<script setup>\nconst count = ref(0);\n</script>\n\n<template>\n  <main>\n    <h1>Hello, Nuxt</h1>\n    <p>This route lives at pages/index.vue.</p>\n    <button @click=\"count++\">Clicked {{ count }} times</button>\n    <p><NuxtLink to=\"/about\">Go to /about</NuxtLink></p>\n  </main>\n</template>\n"
+    },
+    {
+     "path": "pages/about.vue",
+     "content": "<template>\n  <main>\n    <h1>About</h1>\n    <p>pages/about.vue → the URL /about.</p>\n    <p><NuxtLink to=\"/\">Back home</NuxtLink></p>\n  </main>\n</template>\n"
+    }
+   ],
+   "tutorial": "# Nuxt\n\nNuxt is Vue plus the plumbing: a **filesystem router** (`pages/*.vue`), server rendering, and **auto-imports** — note the sample never imports `ref` or `NuxtLink`; Nuxt wires them.\n\n## Your dev server\n\nPress **START** for `nuxi dev` — or rack **NIMBUS**, the Nuxt console: DEV/BUILD/PREVIEW through nuxi, DIAG runs `nuxi typecheck`, and the version cluster tracks nuxt against the registry.\n\n## The sample\n\n`pages/index.vue` uses `<script setup>` with a reactive `ref` — Vue's composition API with none of the boilerplate.\n\n## Try\n\n1. Add `pages/blog.vue` — instantly `/blog`.\n2. Add `server/api/hello.js` exporting `defineEventHandler(() => ({ hi: true }))` — that's a live API at `/api/hello`.\n3. Run **DIAG** on NIMBUS to typecheck the whole app.\n\n---\n\n## Install\n\n```sh\nbrew install node\n```\n"
   }
  ]
 }
