@@ -508,6 +508,11 @@ restored verbatim.
   with the pre-trust blessing written in place.
 - Item 45 (Tailwind LSP, waits-on-platform) was OPENED by this run with
   live evidence and a restore path — see above.
+- **Workspaces vertical (v1.63.0–v1.63.2, same night)**: WAYPOINT (46th
+  device) + Workspaces core + Rack.workspaceOverride; the Knob
+  pendingSelection fix (saved dynamic selections survive reload — latent
+  since v1.0); CI export forward-slash portability (found by the review
+  pass's composition pin on the windows lane).
 
 ## Closed by v1.51.0 (the update center)
 
