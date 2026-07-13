@@ -129,6 +129,45 @@ class FrameworkDeviceTest {
         }
     }
 
+    // ---------------- VELOCITY / ViteDevice ----------------
+
+    @Test
+    @DisplayName("VELOCITY build command is the production bundle")
+    void viteBuild() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            ViteDevice vite = new ViteDevice();
+            rack.addDevice(vite);
+            assertThat(vite.buildCommand()).containsExactly("npx", "vite", "build");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("VELOCITY onLine broadcasts the local URL once and fires READY once")
+    void viteOnLineUrl() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            ViteDevice vite = new ViteDevice();
+            Probe probe = new Probe();
+            rack.addDevice(vite);
+            rack.addDevice(probe);
+            rack.connect(vite.getPort("url"), probe.getPort("data"));
+            rack.connect(vite.getPort("ready"), probe.getPort("trig"));
+
+            vite.onLine("  ➜  Local:   http://localhost:5173/");
+            vite.onLine("  ➜  press h to show help http://localhost:5173/"); // same URL: no re-emit
+            settle(rack);
+
+            assertThat(probe.data).extracting(Signal::payload)
+                    .containsExactly("http://localhost:5173/");
+            assertThat(probe.trig).as("READY fires exactly once").hasSize(1);
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     // ---------------- PHOENIX ----------------
 
     @Test
