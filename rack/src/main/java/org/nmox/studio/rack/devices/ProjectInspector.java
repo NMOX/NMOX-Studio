@@ -217,6 +217,36 @@ public final class ProjectInspector {
         }
     }
 
+    /**
+     * The Node package manager this project actually uses. The corepack
+     * {@code "packageManager"} pin in package.json wins (it is the
+     * project's explicit contract), then the lockfile on disk, then npm.
+     * AUTO lanes must never run the wrong manager: npm in a pnpm/yarn
+     * repo writes a second lockfile and a broken node_modules.
+     */
+    public static String nodePackageManager(File projectDir) {
+        JSONObject json = read(projectDir);
+        if (json != null) {
+            String pin = json.optString("packageManager", "");
+            int at = pin.indexOf('@');
+            String name = at > 0 ? pin.substring(0, at) : pin;
+            switch (name) {
+                case "npm": case "yarn": case "pnpm":
+                    return name;
+                default:
+                    // unknown or absent pin: fall through to the lockfile
+            }
+        }
+        File dir = kindDir(projectDir, ProjectKind.NODE);
+        if (new File(dir, "pnpm-lock.yaml").isFile()) {
+            return "pnpm";
+        }
+        if (new File(dir, "yarn.lock").isFile()) {
+            return "yarn";
+        }
+        return "npm";
+    }
+
     private static JSONObject read(File projectDir) {
         File pkg = new File(kindDir(projectDir, ProjectKind.NODE), "package.json");
         if (!pkg.isFile()) {

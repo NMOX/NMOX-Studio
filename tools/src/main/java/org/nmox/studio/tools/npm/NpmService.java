@@ -111,14 +111,16 @@ public class NpmService {
     }
 
     public PackageManager detectPackageManager(File projectDir) {
-        if (new File(projectDir, "yarn.lock").exists()) {
-            return PackageManager.YARN;
-        } else if (new File(projectDir, "pnpm-lock.yaml").exists()) {
-            return PackageManager.PNPM;
-        } else if (new File(projectDir, "package-lock.json").exists()) {
-            return PackageManager.NPM;
+        // one canonical detection (corepack pin, then lockfile) shared
+        // with the rack's AUTO lanes — see ProjectInspector
+        switch (org.nmox.studio.rack.devices.ProjectInspector.nodePackageManager(projectDir)) {
+            case "yarn":
+                return PackageManager.YARN;
+            case "pnpm":
+                return PackageManager.PNPM;
+            default:
+                return PackageManager.NPM;
         }
-        return PackageManager.NPM;
     }
 
     public String getCommand(PackageManager manager) {
