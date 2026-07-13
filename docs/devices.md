@@ -230,6 +230,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
+### COSMOS — Astro Console — dev/build/preview/check, registry currency
+
+> DEV serves with the URL out feeding SCOPE; BUILD compiles the static site, PREVIEW serves it, DIAG runs astro check.
+> Version cluster tracks astro against the registry.
+
+- **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
 ### ARTISAN — Laravel Console — artisan serve/test/migrate, Packagist currency
 
 > SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials

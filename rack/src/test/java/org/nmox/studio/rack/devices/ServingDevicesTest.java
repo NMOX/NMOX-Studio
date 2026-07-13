@@ -80,6 +80,25 @@ class ServingDevicesTest {
     }
 
     @Test
+    @DisplayName("COSMOS registers on its Astro URL; stop (onFinished) deregisters")
+    void cosmosRegistersAndStopDeregisters() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            AstroDevice astro = new AstroDevice();
+            rack.addDevice(astro);
+            astro.onLine("  \u2503 Local    http://localhost:4321/");
+            assertThat(mine()).extracting(Serving::url, Serving::kind)
+                    .containsExactly(org.assertj.core.groups.Tuple.tuple(
+                            "http://localhost:4321/", Kind.WEB));
+
+            astro.onFinished(143);
+            assertThat(mine()).as("stop deregisters").isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("SURGE registers its knob URL on first output, then replaces it with the printed one")
     void surgeReplacesKnobUrlWithPrinted() throws IOException {
         Rack rack = aimedRack();
