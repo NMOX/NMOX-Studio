@@ -4,7 +4,9 @@
 assistant that built v1.8→v1.50 with David; currency pass the same day at
 v1.56.0 after the roadmap sprint shipped six more releases (update center,
 ORACLE, community Learning Spaces, the SPI pre-work, the Device SPI, the
-third senior review). The prior capstone was written
+third senior review); currency pass 2026-07-13 at v1.62.0 after the
+overnight web-toolchain run (v1.59–v1.62: the Gleam vertical, package-manager
+truth, Biome lanes, the journey polish, ledger 45). The prior capstone was written
 at v1.36.0; seven releases (v1.44.0→v1.50.0) ran overnight and drained the
 high-value debt queue, so this is a from-scratch pass, not a patch. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
@@ -14,7 +16,7 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.56.0, ~2,480 tests, 19
+NMOX Studio is a shipping NetBeans RCP IDE (v1.62.0, ~5,030 tests, 19
 release assets per tag — six installers/SBOM plus the update-center catalog
 and the 11 module NBMs — Homebrew cask, a windows-latest CI lane that runs
 the full verify) whose identity is the **Reason-style task rack**: 45
@@ -56,6 +58,12 @@ Since the v1.36.0 senior-review capstone, five things graduated from
   rings, Space/Enter buttons, state-announcing LEDs/LCDs/VU meters; every
   control on all 45 devices exposes an accessible name, CI-gated by
   DeviceContractTest's name law (59 controls fixed to get there).
+- **It respects the project's own toolchain.** The corepack pin or
+  lockfile decides npm/yarn/pnpm in every Node AUTO lane (v1.60.0); a
+  biome.json flips PURITY/GLOSS to biome with honest fix spelling,
+  diagnostics, and LCD counts (v1.61.0); the wizard installs with the
+  detected manager and first-run defaults join the ~/NMOX workspace
+  (v1.62.0). Mutation-proven at every consumer.
 - **Its module system tells the truth.** Spec versions track the product
   version with real inter-module dependency ranges (v1.47.0, ledger 20), so a
   module jar dropped into an older install is refused by the loader instead of
@@ -138,7 +146,14 @@ left is either a settled won't-fix or a call that needs a product decision.
    is a dedicated @Messages-migration sprint. Do it only if a non-English
    audience actually materializes.
 
-8. **The small, deliberately-bounded residue.** Contract Studio never signs
+8. **The Tailwind LSP waits on the platform client (ledger 45).** Built
+   and live-tested in the v1.62.0 sprint: multi-server-per-mime works
+   (bytecode-verified) and the server detects Tailwind v4 projects, but
+   the platform's LanguageClientImpl throws on client/registerCapability
+   and the server's init dies. Restore path recorded in the ledger;
+   re-test each platform bump.
+
+9. **The small, deliberately-bounded residue.** Contract Studio never signs
    (by design — no private keys, ever; tuple/struct ABI encode, eth_subscribe
    WS, Vyper/non-EVM, a slither lane, and a `forge init` wizard are the noted
    deferrals, ledger 12); the classic-web "second shelf" (YUI/Dojo/ExtJS
@@ -251,6 +266,14 @@ through DataObject/FileObject so open editors follow; **optionality is a Lookup
 of a core.spi facade, not `catch(LinkageError)`** (v1.46.0); **a real aim
 publishes to OpenProjects/setMainProject and the aim node to
 actionsGlobalContext, passive aims never resolving a platform project** (v1.45.0).
+
+Two pipeline laws earned overnight (2026-07-13): **anchor every CI wait
+to the SHA or tag, never "latest run"** — the v1.60.0 tag was cut against
+the previous merge's green because the new run didn't exist yet (the real
+run failed on a test flake minutes later), and the release-workflow wait
+hit the same trap the same night; and **the EDT-drain law applies at
+writing time** — any test that calls an async-reload then dials/asserts
+drains the EDT in between, even when green everywhere you ran it.
 
 **Failure patterns to grep for in new code** — every bug class that actually
 shipped, once: constructor-attached listeners on TopComponents (remove-half

@@ -492,6 +492,23 @@ Re-test on each NetBeans platform bump: the working detection gate +
 tests lived at editor/lsp (v1.62.0 sprint branch history) and can be
 restored verbatim.
 
+## Closed by the v1.59.0–v1.62.0 overnight run (the web-toolchain sweep)
+
+- **Node package-manager truth (v1.60.0)**: every AUTO lane (CRATE,
+  NPM-9000, IDE Run/Build/Test/Clean, NPM Explorer, the New Project
+  wizard's install) resolves npm/yarn/pnpm from the corepack
+  `packageManager` pin, then the lockfile — never npm-in-a-pnpm-repo.
+  pnpm-lock.yaml/yarn.lock joined ManifestPulse (18 names).
+- **Biome lanes (v1.61.0)**: biome.json flips PURITY (appended `auto`
+  LINTER default) and GLOSS to biome with honest `--write` fix spelling,
+  `[biome]` diagnostics, and LCD counts; PREFLIGHT counts it as a lint
+  config.
+- **Gleam vertical + Doctor backfill + docs truth (v1.59.0)**; **journey
+  polish (v1.62.0)**: one ~/NMOX workspace, manager-aware wizard install
+  with the pre-trust blessing written in place.
+- Item 45 (Tailwind LSP, waits-on-platform) was OPENED by this run with
+  live evidence and a restore path — see above.
+
 ## Closed by v1.51.0 (the update center)
 
 ### 21. Platform autoupdate modules ship with no update center — CLOSED
