@@ -61,6 +61,25 @@ class ServingDevicesTest {
     }
 
     @Test
+    @DisplayName("VELOCITY registers on its Vite URL; stop (onFinished) deregisters")
+    void velocityRegistersAndStopDeregisters() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            ViteDevice vite = new ViteDevice();
+            rack.addDevice(vite);
+            vite.onLine("  \u279c  Local:   http://localhost:5173/");
+            assertThat(mine()).extracting(Serving::url, Serving::kind)
+                    .containsExactly(org.assertj.core.groups.Tuple.tuple(
+                            "http://localhost:5173/", Kind.WEB));
+
+            vite.onFinished(143); // the STOP button's SIGTERM exit
+            assertThat(mine()).as("stop deregisters").isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("SURGE registers its knob URL on first output, then replaces it with the printed one")
     void surgeReplacesKnobUrlWithPrinted() throws IOException {
         Rack rack = aimedRack();
