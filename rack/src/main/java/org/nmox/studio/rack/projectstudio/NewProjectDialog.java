@@ -170,11 +170,23 @@ public class NewProjectDialog extends JDialog {
     }
 
     private static File defaultLocation() {
-        File recent = RackService.getDefault().getRecentProjects().stream()
-                .findFirst().map(File::getParentFile).orElse(null);
+        return defaultLocationFrom(RackService.getDefault().getRecentProjects());
+    }
+
+    /** Package-private: the pure default-location choice, for tests. */
+    static File defaultLocationFrom(java.util.List<File> recentProjects) {
+        // internal homes (learning spaces, experiments) are recent PROJECTS
+        // but never where a user keeps new work — a fresh gleam tutorial
+        // must not make the wizard default to ~/.nmox/learn (found live)
+        File internal = new File(System.getProperty("user.home"), ".nmox");
+        File recent = recentProjects.stream()
+                .map(File::getParentFile)
+                .filter(java.util.Objects::nonNull)
+                .filter(dir -> !dir.toPath().startsWith(internal.toPath()))
+                .findFirst().orElse(null);
         // the one workspace: fresh launches aim at ~/NMOX (v1.33.1) and Open
         // Folder starts there — the wizard must not invent a second home.
-        // Existing users keep their most-recent location.
+        // Existing users keep their most-recent (real) location.
         return recent != null ? recent : new File(System.getProperty("user.home"), "NMOX");
     }
 
