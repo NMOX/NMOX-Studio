@@ -109,6 +109,29 @@ class WaypointDeviceTest {
     }
 
     @Test
+    @DisplayName("the base lanes re-root too — PURITY lints the chosen package, not the root")
+    void steersBaseCommandDevices() throws Exception {
+        monorepo();
+        Rack rack = new Rack();
+        rack.setProjectDir(dir.toFile());
+        try {
+            WaypointDevice waypoint = new WaypointDevice();
+            rack.addDevice(waypoint);
+            LintDevice lint = new LintDevice();
+            rack.addDevice(lint);
+            awaitOptions(waypoint, 3);
+            waypoint.applyState(Map.of("workspace", "@mono/api"));
+            drain();
+            // LintDevice does NOT override commandDir — this exercises the
+            // CommandDevice base consult that NPM-9000's own override hides
+            assertThat(lint.commandDir())
+                    .isEqualTo(dir.resolve("packages/api").toFile());
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("only NODE lanes re-root — a ROSETTA-dialed cargo lane keeps its Cargo.toml dir")
     void nonNodeLanesUnaffected() throws Exception {
         monorepo();

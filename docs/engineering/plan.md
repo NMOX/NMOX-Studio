@@ -19,7 +19,7 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 NMOX Studio is a shipping NetBeans RCP IDE (v1.62.0, ~5,030 tests, 19
 release assets per tag — six installers/SBOM plus the update-center catalog
 and the 11 module NBMs — Homebrew cask, a windows-latest CI lane that runs
-the full verify) whose identity is the **Reason-style task rack**: 45
+the full verify) whose identity is the **Reason-style task rack**: 46
 hardware-styled devices wired with patch cables, backed by real process
 execution, session resurrection, CI export, and since v1.55.0 a **frozen
 public Device SPI** third parties extend it through. Around it: a 48-grammar
@@ -56,7 +56,7 @@ Since the v1.36.0 senior-review capstone, five things graduated from
 - **It's usable without a mouse or a screen.** The widget library speaks
   Swing accessibility (v1.41.0): SLIDER knobs with keyboard arrows and focus
   rings, Space/Enter buttons, state-announcing LEDs/LCDs/VU meters; every
-  control on all 45 devices exposes an accessible name, CI-gated by
+  control on all 46 devices exposes an accessible name, CI-gated by
   DeviceContractTest's name law (59 controls fixed to get there).
 - **It respects the project's own toolchain.** The corepack pin or
   lockfile decides npm/yarn/pnpm in every Node AUTO lane (v1.60.0); a
