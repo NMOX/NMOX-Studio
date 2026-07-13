@@ -115,6 +115,57 @@ public final class LanguageServers {
         return project == null ? null : FileUtil.toFile(project.getProjectDirectory());
     }
 
+    /**
+     * Tailwind CSS class completion in stylesheets and markup — spawned
+     * ONLY when the project actually uses Tailwind (a tailwind.config.*
+     * file, or the tailwindcss dependency for the v4 CSS-first setup);
+     * every other project pays nothing. The platform binds every
+     * provider a mime resolves (LSPBindings keys servers per provider),
+     * so this runs ALONGSIDE the CSS language server, not instead of it.
+     */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/html", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class)
+    })
+    public static final class TailwindServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            File dir = projectDir(lookup);
+            if (dir == null || !usesTailwind(dir)) {
+                return null;
+            }
+            return launchNpm(lookup, "tailwindcss-language-server", "--stdio");
+        }
+    }
+
+    /** Tailwind opt-in: a config file, or the dependency (v4 has no config). */
+    static boolean usesTailwind(File dir) {
+        for (String name : new String[]{"tailwind.config.js", "tailwind.config.ts",
+            "tailwind.config.cjs", "tailwind.config.mjs"}) {
+            if (new File(dir, name).isFile()) {
+                return true;
+            }
+        }
+        File pkg = new File(dir, "package.json");
+        if (pkg.isFile()) {
+            try {
+                String json = java.nio.file.Files.readString(pkg.toPath(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+                org.json.JSONObject o = new org.json.JSONObject(json);
+                for (String block : new String[]{"dependencies", "devDependencies"}) {
+                    org.json.JSONObject deps = o.optJSONObject(block);
+                    if (deps != null && deps.has("tailwindcss")) {
+                        return true;
+                    }
+                }
+            } catch (java.io.IOException | org.json.JSONException ex) {
+                // unreadable manifest = no opt-in; the CSS server still runs
+            }
+        }
+        return false;
+    }
+
     /** TypeScript + JavaScript via typescript-language-server. */
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),

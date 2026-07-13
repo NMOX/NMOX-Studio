@@ -172,7 +172,10 @@ public class NewProjectDialog extends JDialog {
     private static File defaultLocation() {
         File recent = RackService.getDefault().getRecentProjects().stream()
                 .findFirst().map(File::getParentFile).orElse(null);
-        return recent != null ? recent : new File(System.getProperty("user.home"), "NMOXProjects");
+        // the one workspace: fresh launches aim at ~/NMOX (v1.33.1) and Open
+        // Folder starts there — the wizard must not invent a second home.
+        // Existing users keep their most-recent location.
+        return recent != null ? recent : new File(System.getProperty("user.home"), "NMOX");
     }
 
     private File targetDir() {
@@ -220,8 +223,15 @@ public class NewProjectDialog extends JDialog {
                 // aim the rack: the template's patch mounts automatically
                 RackService.getDefault().openProject(dir);
                 if (installBox.isSelected()) {
+                    // Deliberately NOT trust-gated: this runs code the product
+                    // itself just wrote from its own template, at the user's
+                    // explicit request — WorkspaceTrust guards OTHER people's
+                    // code. Manager resolved via the v1.60.0 detection so a
+                    // future manager-pinning template installs with its own tool.
+                    String pm = org.nmox.studio.rack.devices.ProjectInspector
+                            .nodePackageManager(dir);
                     CommandExecutor.run("Project Setup", dir, Map.of(),
-                            List.of("npm", "install"), line -> {
+                            List.of(pm, "install"), line -> {
                             }, code -> {
                             });
                 }
