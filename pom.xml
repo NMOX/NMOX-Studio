@@ -308,7 +308,7 @@
              stamps the tag's version over it (alongside branding's
              currentVersion, same step). Bump it when opening a new release
              sprint. -->
-        <spec.version>1.60.0</spec.version>
+        <spec.version>1.61.0</spec.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

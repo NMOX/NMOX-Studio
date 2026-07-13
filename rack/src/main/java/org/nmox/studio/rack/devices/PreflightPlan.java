@@ -79,9 +79,11 @@ public final class PreflightPlan {
         return checks;
     }
 
-    private static boolean hasLintConfig(File dir) {
+    /** Package-private: the config-presence seam tests drive directly. */
+    static boolean hasLintConfig(File dir) {
         for (String f : new String[]{"eslint.config.js", "eslint.config.mjs", ".eslintrc",
-            ".eslintrc.json", ".eslintrc.js", ".eslintrc.cjs"}) {
+            ".eslintrc.json", ".eslintrc.js", ".eslintrc.cjs",
+            "biome.json", "biome.jsonc"}) {
             if (new File(dir, f).isFile()) {
                 return true;
             }

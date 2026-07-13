@@ -98,7 +98,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
-### PURITY — Lint Filter — eslint/stylelint
+### PURITY — Lint Filter — biome/eslint/stylelint
 
 > Static analysis; E/W counts land on the LCD, CLEAN lights when spotless.
 > FIX rewrites violations in place (amber = it mutates your files).
@@ -106,7 +106,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
-### GLOSS — Code Formatter — prettier; pint on PHP lanes
+### GLOSS — Code Formatter — biome/prettier; pint on PHP lanes
 
 > Prettier over the project (Laravel Pint on PHP lanes). WRITE rewrites; CHECK only verifies.
 > Patch REFLEX CHANGED → RUN for format-on-save.

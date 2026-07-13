@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.61.0] - 2026-07-13
+
+### Biome speaks for the project
+
+The v1.60.0 rule — run the project's own toolchain — applied to lint and
+format. A `biome.json`/`biome.jsonc` opts the project into Biome, and the
+rack listens:
+
+- **PURITY** gains a `auto` LINTER position (appended per the knob-index
+  law; new devices default to it): auto lints with
+  `npx @biomejs/biome lint .` when the project carries a biome config,
+  eslint otherwise. FIX honestly spells `--write` for biome, `--fix` for
+  the others. Biome's block headers land on the DiagnosticsBus (squiggles
+  + Action Items rows labeled `[biome]`) and its `Found N errors/warnings`
+  summary drives the E:/W: LCD.
+- **GLOSS** formats with `biome format` (WRITE) / `biome format` check
+  mode when biome is present; prettier otherwise; PHP/Foundry lanes
+  untouched.
+- **PREFLIGHT** counts biome.json as a lint config.
+- **Environment Doctor** probes biome (60 tools).
+
+Mutation-proven: deleting the detection fails four tests; deleting the
+summary parse fails the output test.
+
 ## [1.60.0] - 2026-07-13
 
 ### The right package manager
