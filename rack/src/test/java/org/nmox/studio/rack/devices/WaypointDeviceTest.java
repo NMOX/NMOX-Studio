@@ -169,6 +169,13 @@ class WaypointDeviceTest {
             rack.removeDevice(waypoint);
             drain();
             assertThat(rack.getWorkspaceOverride()).isNull();
+            // the CI-caught resurrection: a stale projectChanged fan-out
+            // lands AFTER removal — its reload/apply must no-op, not
+            // re-steer (this deterministically replays the loaded-runner race)
+            waypoint.projectChanged(dir.toFile());
+            Thread.sleep(300);
+            drain();
+            assertThat(rack.getWorkspaceOverride()).isNull();
         } finally {
             rack.shutdown();
         }

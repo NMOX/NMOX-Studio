@@ -70,13 +70,21 @@ public class WaypointDevice extends RackDevice {
         apply();
     }
 
-    /** Removing the device must stop steering the rack (the ROSETTA law). */
+    /**
+     * Removing the device must stop steering the rack (the ROSETTA law) —
+     * and STAY stopped: an in-flight reload's apply() landing after
+     * removal resurrected the override on loaded CI runners. Order
+     * matters: super.dispose() raises the disposed flag FIRST so any
+     * late apply() no-ops, then the steering is cleared LAST so the
+     * final state is root regardless of interleaving.
+     */
     @Override
     public void dispose() {
-        if (getRack() != null) {
-            getRack().setWorkspaceOverride(null);
-        }
+        var rack = getRack();
         super.dispose();
+        if (rack != null) {
+            rack.setWorkspaceOverride(null);
+        }
     }
 
     /** Test seam: the WORKSPACE knob, so tests can await its options. */
@@ -106,7 +114,8 @@ public class WaypointDevice extends RackDevice {
     }
 
     private void apply() {
-        if (getRack() == null) {
+        // a half-disposed device must not steer (the ghost-device law)
+        if (isDisposed() || getRack() == null) {
             return;
         }
         String selected = workspaceKnob.getSelectedOption();
