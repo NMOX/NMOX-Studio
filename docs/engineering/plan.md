@@ -6,7 +6,9 @@ v1.56.0 after the roadmap sprint shipped six more releases (update center,
 ORACLE, community Learning Spaces, the SPI pre-work, the Device SPI, the
 third senior review); currency pass 2026-07-13 at v1.62.0 after the
 overnight web-toolchain run (v1.59–v1.62: the Gleam vertical, package-manager
-truth, Biome lanes, the journey polish, ledger 45). The prior capstone was written
+truth, Biome lanes, the journey polish, ledger 45); extended the same night
+at v1.63.2 (the workspaces vertical, the dynamic-knob restore fix, the
+review pass over the overnight surface). The prior capstone was written
 at v1.36.0; seven releases (v1.44.0→v1.50.0) ran overnight and drained the
 high-value debt queue, so this is a from-scratch pass, not a patch. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
@@ -16,7 +18,7 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.62.0, ~5,030 tests, 19
+NMOX Studio is a shipping NetBeans RCP IDE (v1.63.2, ~5,060 tests, 19
 release assets per tag — six installers/SBOM plus the update-center catalog
 and the 11 module NBMs — Homebrew cask, a windows-latest CI lane that runs
 the full verify) whose identity is the **Reason-style task rack**: 46
@@ -64,6 +66,14 @@ Since the v1.36.0 senior-review capstone, five things graduated from
   diagnostics, and LCD counts (v1.61.0); the wizard installs with the
   detected manager and first-run defaults join the ~/NMOX workspace
   (v1.62.0). Mutation-proven at every consumer.
+- **It conducts monorepos.** WAYPOINT (46th device, v1.63.0) is ROSETTA
+  one level down: package.json workspaces / pnpm-workspace.yaml resolve to
+  a per-package dial, and Node lanes re-root through the ONE
+  CommandDevice.commandDir choke point — NPM-9000's scripts, PURITY,
+  GLOSS, VERITAS, and the CI export's working-directory all follow
+  (composition test-pinned). Saved dynamic-knob selections survive reload
+  (v1.63.1 Knob.pendingSelection — healing an NPM-9000 latent since v1.0);
+  exported workflows use forward slashes on every OS (v1.63.2).
 - **Its module system tells the truth.** Spec versions track the product
   version with real inter-module dependency ranges (v1.47.0, ledger 20), so a
   module jar dropped into an older install is refused by the loader instead of
@@ -266,6 +276,12 @@ through DataObject/FileObject so open editors follow; **optionality is a Lookup
 of a core.spi facade, not `catch(LinkageError)`** (v1.46.0); **a real aim
 publishes to OpenProjects/setMainProject and the aim node to
 actionsGlobalContext, passive aims never resolving a platform project** (v1.45.0).
+
+The overnight run also re-proved the gate's worth twice in one night: the
+WAYPOINT ghost-steering race (an in-flight apply() after removeDevice —
+fix idiom: disposed-flag first, cleanup last, guard the continuation) and
+the CI export's backslash working-directory were both caught by lanes this
+machine cannot reproduce, each then pinned deterministically.
 
 Two pipeline laws earned overnight (2026-07-13): **anchor every CI wait
 to the SHA or tag, never "latest run"** — the v1.60.0 tag was cut against
