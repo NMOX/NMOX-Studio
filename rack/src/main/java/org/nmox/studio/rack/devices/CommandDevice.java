@@ -83,7 +83,22 @@ public abstract class CommandDevice extends RackDevice {
      * Cargo.toml directory, npm commands beside package.json.
      */
     protected java.io.File commandDir() {
+        java.io.File ws = workspaceDir();
+        if (ws != null && effectiveKind() == ProjectInspector.ProjectKind.NODE) {
+            return ws;
+        }
         return ProjectInspector.kindDir(projectDir(), effectiveKind());
+    }
+
+    /**
+     * The WAYPOINT-chosen package directory, or null when the rack
+     * steers at the repository root. Only Node lanes re-root: a
+     * ROSETTA-dialed cargo lane must keep running at its Cargo.toml.
+     */
+    protected final java.io.File workspaceDir() {
+        var rack = getRack();
+        String override = rack == null ? null : rack.getWorkspaceOverride();
+        return override == null ? null : new java.io.File(override);
     }
 
     /** The primary command, exposed for the CI exporter; null = no step. */

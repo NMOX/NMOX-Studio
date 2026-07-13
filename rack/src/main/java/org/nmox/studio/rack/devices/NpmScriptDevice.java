@@ -59,15 +59,40 @@ public class NpmScriptDevice extends CommandDevice {
     /** The faceplate context menu's "Open package.json". */
     @Override
     public java.util.Optional<File> primaryManifest() {
-        File pkg = new File(ProjectInspector.kindDir(projectDir(),
-                ProjectInspector.ProjectKind.NODE), "package.json");
+        File pkg = new File(commandDir(), "package.json");
         return pkg.isFile() ? java.util.Optional.of(pkg) : java.util.Optional.empty();
     }
 
+    /** A package dir's scripts, read directly (no root-cache indirection). */
+    private static java.util.Map<String, String> readScriptsAt(File dir) {
+        java.util.Map<String, String> result = new java.util.LinkedHashMap<>();
+        File pkg = new File(dir, "package.json");
+        if (!pkg.isFile()) {
+            return result;
+        }
+        try {
+            org.json.JSONObject json = new org.json.JSONObject(
+                    java.nio.file.Files.readString(pkg.toPath(),
+                            java.nio.charset.StandardCharsets.UTF_8));
+            org.json.JSONObject scripts = json.optJSONObject("scripts");
+            if (scripts != null) {
+                for (String key : scripts.keySet()) {
+                    result.put(key, scripts.optString(key, ""));
+                }
+            }
+        } catch (java.io.IOException | org.json.JSONException ex) {
+            // unreadable manifest = no scripts, same as the root reader
+        }
+        return result;
+    }
+
     void reloadScripts() {
-        File pkg = new File(ProjectInspector.kindDir(projectDir(),
-                ProjectInspector.ProjectKind.NODE), "package.json");
-        List<String> names = new ArrayList<>(ProjectInspector.scripts(projectDir()).keySet());
+        File pkg = new File(commandDir(), "package.json");
+        // WAYPOINT-steered: the SCRIPT knob lists the chosen package's
+        // scripts; at root it lists the root manifest's, as always
+        java.io.File ws = workspaceDir();
+        List<String> names = new ArrayList<>(
+                (ws != null ? readScriptsAt(ws) : ProjectInspector.scripts(projectDir())).keySet());
         if (names.isEmpty()) {
             names.add("—");
         }
@@ -92,7 +117,9 @@ public class NpmScriptDevice extends CommandDevice {
     /** npm speaks from the package.json directory, monorepo or not. */
     @Override
     protected java.io.File commandDir() {
-        return ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
+        java.io.File ws = workspaceDir();
+        return ws != null ? ws
+                : ProjectInspector.kindDir(projectDir(), ProjectInspector.ProjectKind.NODE);
     }
 
     @Override

@@ -98,11 +98,11 @@ class ManifestPulseTest {
     }
 
     @Test
-    @DisplayName("the manifest set is exactly the eighteen configured names")
+    @DisplayName("the manifest set is exactly the nineteen configured names")
     void manifestNameSet() {
         assertThat(ManifestPulse.MANIFEST_NAMES).containsExactlyInAnyOrder(
                 "package.json", "package-lock.json",
-                "pnpm-lock.yaml", "yarn.lock", "bower.json",
+                "pnpm-lock.yaml", "yarn.lock", "pnpm-workspace.yaml", "bower.json",
                 "composer.json", "composer.lock",
                 "foundry.toml", ".gas-snapshot", ".env",
                 "Gruntfile.js", "Gruntfile.coffee",
