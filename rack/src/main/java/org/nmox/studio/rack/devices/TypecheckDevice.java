@@ -93,7 +93,7 @@ public class TypecheckDevice extends CommandDevice {
         if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY) {
             java.util.regex.Matcher summary = SOLHINT_SUMMARY.matcher(line);
             if (summary.find()) {
-                int errors = Integer.parseInt(summary.group(1));
+                int errors = Numbers.intOrZero(summary.group(1));
                 onEdt(() -> {
                     errorLcd.setTextColor(errors == 0 ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
                     errorLcd.setText("E:" + errors);
@@ -111,7 +111,7 @@ public class TypecheckDevice extends CommandDevice {
                 }
                 if (f.isFile()) {
                     collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
-                            f, Integer.parseInt(raw.group(2)), raw.group(3).trim(), true));
+                            f, Numbers.intOrZero(raw.group(2)), raw.group(3).trim(), true));
                 }
             }
             return;
@@ -124,7 +124,7 @@ public class TypecheckDevice extends CommandDevice {
             }
             if (f.isFile()) {
                 collected.add(new org.nmox.studio.rack.engine.DiagnosticsBus.Problem(
-                        f, Integer.parseInt(loc.group(2)), loc.group(5),
+                        f, Numbers.intOrZero(loc.group(2)), loc.group(5),
                         "error".equals(loc.group(4))));
             }
         }
@@ -132,7 +132,7 @@ public class TypecheckDevice extends CommandDevice {
         if (!m.find()) {
             return;
         }
-        int errors = Integer.parseInt(m.group(1));
+        int errors = Numbers.intOrZero(m.group(1));
         onEdt(() -> {
             errorLcd.setTextColor(errors == 0 ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
             errorLcd.setText("E:" + errors);
