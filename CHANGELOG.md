@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.63.1] - 2026-07-13
+
+### Saved selections survive reload
+
+A WAYPOINT review question exposed a latent bug as old as NPM-9000:
+RackIO applies a patch's saved state immediately after addDevice, while
+dynamic knobs (SCRIPT, WORKSPACE) are still loading their options — so
+`selectOption` found nothing and every saved dynamic selection silently
+reset to position 0 on reload. The knob now remembers the by-name wish
+(`pendingSelection`) and honors it when the options arrive; an explicit
+user dial supersedes it. One fix in the widget heals NPM-9000, WAYPOINT,
+and every future dynamic knob. Patch-load-order regression test +
+mutation proof (forgetting the wish fails it).
+
 ## [1.63.0] - 2026-07-13
 
 ### Workspaces — ROSETTA one level down
