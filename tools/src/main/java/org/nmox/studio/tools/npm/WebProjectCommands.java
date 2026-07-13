@@ -89,24 +89,27 @@ final class WebProjectCommands {
 
     /** Node leans on package.json scripts, so the available commands vary per project. */
     private static List<String> node(File dir, String action) {
+        // npm/yarn/pnpm resolved from the project's own contract
+        // (corepack pin, then lockfile) — never npm-in-a-pnpm-repo
+        String pm = ProjectInspector.nodePackageManager(dir);
         switch (action) {
             case ActionProvider.COMMAND_RUN:
                 if (ProjectInspector.hasScript(dir, "dev")) {
-                    return List.of("npm", "run", "dev");
+                    return List.of(pm, "run", "dev");
                 }
                 if (ProjectInspector.hasScript(dir, "start")) {
-                    return List.of("npm", "start");
+                    return List.of(pm, "start");
                 }
                 if (ProjectInspector.hasScript(dir, "serve")) {
-                    return List.of("npm", "run", "serve");
+                    return List.of(pm, "run", "serve");
                 }
                 return null;
             case ActionProvider.COMMAND_BUILD:
-                return ProjectInspector.hasScript(dir, "build") ? List.of("npm", "run", "build") : null;
+                return ProjectInspector.hasScript(dir, "build") ? List.of(pm, "run", "build") : null;
             case ActionProvider.COMMAND_TEST:
-                return ProjectInspector.hasScript(dir, "test") ? List.of("npm", "test") : null;
+                return ProjectInspector.hasScript(dir, "test") ? List.of(pm, "test") : null;
             case ActionProvider.COMMAND_CLEAN:
-                return ProjectInspector.hasScript(dir, "clean") ? List.of("npm", "run", "clean") : null;
+                return ProjectInspector.hasScript(dir, "clean") ? List.of(pm, "run", "clean") : null;
             default:
                 return null;
         }

@@ -24,7 +24,7 @@ public final class ManifestPulse {
      * extension (an extension rule would sweep every .json in the tree).
      */
     static final Set<String> MANIFEST_NAMES = Set.of(
-            "package.json", "package-lock.json", "bower.json",
+            "package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bower.json",
             "composer.json", "composer.lock",
             "foundry.toml", ".gas-snapshot", ".env",
             "Gruntfile.js", "Gruntfile.coffee",

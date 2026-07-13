@@ -14,7 +14,9 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class NpmScriptDevice extends CommandDevice {
 
-    private static final String[] MANAGERS = {"npm", "yarn", "pnpm"};
+    // "auto" appended, not inserted: knob positions persist by index and
+    // saved patches that pinned an engine must keep it (v1.59.0 law)
+    private static final String[] MANAGERS = {"npm", "yarn", "pnpm", "auto"};
 
     private final Knob scriptKnob;
     private final Knob managerKnob;
@@ -26,7 +28,7 @@ public class NpmScriptDevice extends CommandDevice {
         runButton.setCommandPreview(this::commandPreview);
         RackButton stopButton = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
         scriptKnob = place(new Knob("SCRIPT", new String[]{"—"}, 0), 180, 40);
-        managerKnob = place(new Knob("ENGINE", MANAGERS, 0), 254, 40);
+        managerKnob = place(new Knob("ENGINE", MANAGERS, 3), 254, 40);
 
         runButton.addActionListener(e -> primaryAction());
         stopButton.addActionListener(e -> stopProcess());
@@ -99,6 +101,10 @@ public class NpmScriptDevice extends CommandDevice {
         if (script == null || "—".equals(script)) {
             return null;
         }
-        return List.of(MANAGERS[managerKnob.getSelectedIndex()], "run", script);
+        String engine = MANAGERS[managerKnob.getSelectedIndex()];
+        if ("auto".equals(engine)) {
+            engine = ProjectInspector.nodePackageManager(projectDir());
+        }
+        return List.of(engine, "run", script);
     }
 }

@@ -45,7 +45,9 @@ public class PackageManagerDevice extends CommandDevice {
 
     private String manager() {
         String selected = MANAGERS[managerKnob.getSelectedIndex()];
-        return "auto".equals(selected) ? "npm" : selected;
+        return "auto".equals(selected)
+                ? ProjectInspector.nodePackageManager(projectDir())
+                : selected;
     }
 
     private boolean isAuto() {
@@ -56,7 +58,8 @@ public class PackageManagerDevice extends CommandDevice {
      * In AUTO the verb maps onto whatever toolchain the project uses;
      * an explicit npm/yarn/pnpm selection always talks Node.
      */
-    private List<String> cmd(String verb) {
+    /** Package-private: the verb→argv seam device tests drive directly. */
+    List<String> cmd(String verb) {
         ProjectInspector.ProjectKind kind = isAuto()
                 ? effectiveKind()
                 : ProjectInspector.ProjectKind.NODE;
@@ -235,6 +238,7 @@ public class PackageManagerDevice extends CommandDevice {
     @Override
     public void manifestChanged(java.util.List<java.nio.file.Path> changed) {
         if (anyNamed(changed, "package.json", "package-lock.json",
+                "pnpm-lock.yaml", "yarn.lock",
                 "bower.json", "composer.json", "composer.lock")) {
             refreshDepsLcd();
         }

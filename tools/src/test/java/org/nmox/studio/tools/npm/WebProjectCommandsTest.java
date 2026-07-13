@@ -40,6 +40,25 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Node actions speak the project's own manager — yarn.lock and corepack pnpm pin (v1.60.0)")
+    void nodeManagerTruth() throws Exception {
+        File yarnRepo = Files.createDirectory(dir.resolve("yarn-repo")).toFile();
+        Files.writeString(yarnRepo.toPath().resolve("package.json"),
+                "{\"scripts\":{\"dev\":\"vite\",\"test\":\"vitest\"}}");
+        Files.writeString(yarnRepo.toPath().resolve("yarn.lock"), "# yarn lockfile v1");
+        assertThat(WebProjectCommands.commandFor(yarnRepo, ProjectKind.NODE, ActionProvider.COMMAND_RUN))
+                .containsExactly("yarn", "run", "dev");
+        assertThat(WebProjectCommands.commandFor(yarnRepo, ProjectKind.NODE, ActionProvider.COMMAND_TEST))
+                .containsExactly("yarn", "test");
+
+        File pnpmPinned = Files.createDirectory(dir.resolve("pnpm-pinned")).toFile();
+        Files.writeString(pnpmPinned.toPath().resolve("package.json"),
+                "{\"packageManager\":\"pnpm@9.1.0\",\"scripts\":{\"build\":\"tsc\"}}");
+        assertThat(WebProjectCommands.commandFor(pnpmPinned, ProjectKind.NODE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("pnpm", "run", "build");
+    }
+
+    @Test
     @DisplayName("Node RUN falls back start -> serve, and is null when none exist")
     void nodeRunFallback() throws Exception {
         // distinct dirs: ProjectInspector caches package.json per path, so
