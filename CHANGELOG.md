@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.63.2] - 2026-07-13
+
+### CI export speaks forward slashes on every OS
+
+The overnight review pass added a WAYPOINT × CI-export composition pin,
+and the windows lane promptly failed it — exposing a pre-existing bug:
+`relativize().toString()` is backslash-separated on Windows, so an
+exported workflow said `working-directory: packages\web`, broken on the
+ubuntu runners it targets. Exports now normalize to forward slashes.
+Also in this patch: the composition pin itself (a steered lane exports
+its working-directory honestly) and the review's written blessings for
+the rest of the overnight surface.
+
 ## [1.63.1] - 2026-07-13
 
 ### Saved selections survive reload
