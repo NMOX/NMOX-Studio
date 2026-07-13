@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.62.0] - 2026-07-13
+
+### The journey polish
+
+From tonight's senior-web-dev journey walk (create → install → serve →
+browser → stop, live on the real app):
+
+- **One workspace**: the New Project wizard's first-run default now
+  lands in `~/NMOX` — the same workspace fresh launches aim at and Open
+  Folder starts in — instead of inventing a second `~/NMOXProjects`
+  home. Existing users keep their most-recent location.
+- **Wizard install is manager-aware** (the v1.60.0 detection) and its
+  pre-trust execution carries its written blessing: it runs code the
+  product itself just wrote from its own template at the user's
+  explicit request — WorkspaceTrust guards other people's code.
+
+Also attempted, live-tested, and honestly pulled: the Tailwind CSS
+language server. The platform's LSP client binds multiple servers per
+mime (verified in bytecode) and the server started and detected the
+project — but it requires `client/registerCapability`, which the
+platform client does not implement (UnsupportedOperationException), so
+completions never arrive. Recorded as ledger 45 with the evidence and
+the restore path; re-test on each platform bump.
+
 ## [1.61.0] - 2026-07-13
 
 ### Biome speaks for the project

@@ -472,6 +472,26 @@ SQL against a real engine, and the Database Explorer (ships in the box)
 covers working with live MySQL. Revisit only if a self-contained embedded
 option (e.g. a bundled mariadb --no-defaults sandbox) proves practical.
 
+### 45. Tailwind CSS language server — blocked on the platform LSP client (v1.62.0 recon)
+
+Built, live-tested, and PULLED before ship. The platform binds multiple
+LanguageServerProviders per mime (verified in LSPBindings bytecode:
+project2MimeType2Server keys ServerDescriptions per provider), so the
+registration side works — the server started, detected the fixture's
+Tailwind v4 project ("Using bundled version of tailwindcss: v4.1.15"),
+and built its selectors. But tailwindcss-language-server then calls
+`client/registerCapability`, and the platform's LanguageClientImpl
+throws `java.lang.UnsupportedOperationException` at
+`org.eclipse.lsp4j.services.LanguageClient.registerCapability` — the
+server logs "Unhandled rejection ... Internal error" and never answers
+a completion request ("No suggestions" in a class attribute, two SEVERE
+stacks per session). A server that spawns but cannot answer is worse
+than none, so the feature waits on the platform client growing dynamic
+capability registration (same waits-on-platform family as ledger 25/39).
+Re-test on each NetBeans platform bump: the working detection gate +
+tests lived at editor/lsp (v1.62.0 sprint branch history) and can be
+restored verbatim.
+
 ## Closed by v1.51.0 (the update center)
 
 ### 21. Platform autoupdate modules ship with no update center — CLOSED
