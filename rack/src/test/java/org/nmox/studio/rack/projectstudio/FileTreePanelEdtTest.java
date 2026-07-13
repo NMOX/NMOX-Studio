@@ -120,6 +120,30 @@ class FileTreePanelEdtTest {
     }
 
     @Test
+    @DisplayName("after dispose (tab close) a reopen still resolves the root — the scanner survives")
+    void reopenAfterDisposeStillResolves() throws Exception {
+        FileTreePanel panel = new FileTreePanel(d -> stub(d.getName()));
+        panel.setRootDirectory(dir);
+        drain(500);
+        assertThat(panel.getExplorerManager().getRootContext().getDisplayName())
+                .isEqualTo(dir.getName());
+
+        // simulate the user closing the Project Studio tab...
+        panel.dispose();
+        // ...then reopening it: the SAME panel instance (PERSISTENCE_ALWAYS)
+        // gets a fresh setRootDirectory. A stopped scanner would drop this
+        // post and leave the tree stuck at "No project".
+        File reopened = new File(dir, "sub");
+        assertThat(reopened.mkdirs()).isTrue();
+        panel.setRootDirectory(reopened);
+        drain(1_000);
+        assertThat(panel.getExplorerManager().getRootContext().getDisplayName())
+                .as("reopen resolves through the surviving scanner")
+                .isEqualTo("sub");
+        panel.dispose();
+    }
+
+    @Test
     @DisplayName("a null root shows 'No project' without ever touching the resolver")
     void nullRootNeverResolves() throws Exception {
         AtomicBoolean touched = new AtomicBoolean(false);

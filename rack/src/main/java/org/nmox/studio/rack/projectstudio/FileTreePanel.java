@@ -177,13 +177,23 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         }
     }
 
+    /**
+     * Releases the filesystem watcher. Deliberately does NOT stop the
+     * scanner or drop the selection relay: Project Studio is
+     * PERSISTENCE_ALWAYS and reuses this one panel instance across
+     * close/reopen. A permanently stopped RequestProcessor would silently
+     * drop the root-resolve post on the next open (tree stuck at "No
+     * project"); dropping the self-owned selection relay would stop the
+     * reopened tree from publishing its selection to the aim (ledger 29).
+     * Both the RP (a named pool that idles to zero threads) and the relay
+     * (a listener on this panel's own ExplorerManager — no external leak)
+     * are safe to keep across the panel's whole lifetime.
+     */
     public void dispose() {
-        scanner.stop();
         if (watcher != null) {
             watcher.stop();
             watcher = null;
         }
-        manager.removePropertyChangeListener(selectionRelay);
     }
 
     // ---- helpers ----
