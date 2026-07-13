@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.65.0] - 2026-07-13
+
+### VELOCITY — the Vite console (47th device)
+
+Vite is the dev server and bundler under most modern React/Vue/Svelte/
+Solid SPAs — more widely used than any single meta-framework. It gets its
+own console now, mirroring NEXUS-for-Next.js and HALO-for-Angular:
+
+- **DEV** serves the app; the local URL out feeds SCOPE, with READY and a
+  SERVING gate.
+- **BUILD** compiles the production bundle; **PREVIEW** serves that built
+  `dist`.
+- **Version currency**: the installed `vite` is tracked against the npm
+  registry, and the cluster nags (amber, then blinking MAJOR!) when the
+  tool moves.
+
+Registered in the FRAMEWORKS palette, CI-step capable (its BUILD exports to
+a workflow step), auto-covered by DeviceContractTest and the generated
+devices.md. IGNITION still serves Vite generically for the un-opinionated
+case; VELOCITY is the version-aware console for a Vite-first project.
+
 ## [1.64.0] - 2026-07-13
 
 ### The file tree is a platform citizen (ledger 36 closed)
