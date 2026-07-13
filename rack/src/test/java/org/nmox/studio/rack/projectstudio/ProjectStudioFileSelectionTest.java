@@ -51,31 +51,16 @@ class ProjectStudioFileSelectionTest {
         assertThat(activatedFile(tc)).isEqualTo(expected);
     }
 
-    private static JTree findTree(java.awt.Container c) {
+    private static FileTreePanel findPanel(java.awt.Container c) {
         for (java.awt.Component comp : c.getComponents()) {
-            if (comp instanceof JTree t) {
+            if (comp instanceof FileTreePanel t) {
                 return t;
             }
             if (comp instanceof java.awt.Container cc) {
-                JTree r = findTree(cc);
+                FileTreePanel r = findPanel(cc);
                 if (r != null) {
                     return r;
                 }
-            }
-        }
-        return null;
-    }
-
-    /** The tree row for {@code file} once the async scan lands, else null. */
-    private static TreePath rowFor(JTree tree, File file) {
-        Object root = tree.getModel().getRoot();
-        if (!(root instanceof DefaultMutableTreeNode rootNode)) {
-            return null;
-        }
-        for (int i = 0; i < rootNode.getChildCount(); i++) {
-            DefaultMutableTreeNode child = (DefaultMutableTreeNode) rootNode.getChildAt(i);
-            if (file.equals(child.getUserObject())) {
-                return new TreePath(child.getPath());
             }
         }
         return null;
@@ -96,26 +81,48 @@ class ProjectStudioFileSelectionTest {
         rack.setProjectDir(aimed);
         awaitActivated(tc[0], aimed);
 
-        // drive the REAL tree: wait for the async scan to list the file,
-        // then select its row exactly as a keyboard/mouse selection would
-        AtomicReference<JTree> treeRef = new AtomicReference<>();
-        SwingUtilities.invokeAndWait(() -> treeRef.set(findTree(tc[0])));
-        assertThat(treeRef.get()).as("the studio embeds one JTree").isNotNull();
+        // drive the REAL explorer tree (the ledger-36 platform rewrite):
+        // wait for the root's lazy children to include the file's node,
+        // then select it exactly as a keyboard/mouse selection would
+        FileTreePanel panel = findPanel(tc[0]);
+        assertThat(panel).as("the studio embeds the file tree panel").isNotNull();
         long deadline = System.currentTimeMillis() + 10_000;
-        AtomicReference<TreePath> row = new AtomicReference<>();
-        while (System.currentTimeMillis() < deadline && row.get() == null) {
-            SwingUtilities.invokeAndWait(() -> row.set(rowFor(treeRef.get(), file)));
+        org.openide.nodes.Node fileNode = null;
+        while (System.currentTimeMillis() < deadline && fileNode == null) {
+            // getNodes(true) computes lazy children — deliberately OFF the EDT
+            for (org.openide.nodes.Node n
+                    : panel.getExplorerManager().getRootContext().getChildren().getNodes(true)) {
+                DataObject dob = n.getLookup().lookup(DataObject.class);
+                if (dob != null && file.equals(
+                        org.openide.filesystems.FileUtil.toFile(dob.getPrimaryFile()))) {
+                    fileNode = n;
+                    break;
+                }
+            }
             Thread.sleep(20);
         }
-        assertThat(row.get()).as("the background scan listed the file").isNotNull();
+        assertThat(fileNode).as("the platform children listed the file").isNotNull();
 
-        SwingUtilities.invokeAndWait(() -> treeRef.get().setSelectionPath(row.get()));
+        org.openide.nodes.Node target = fileNode;
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                panel.getExplorerManager().setSelectedNodes(new org.openide.nodes.Node[]{target});
+            } catch (java.beans.PropertyVetoException ex) {
+                throw new AssertionError(ex);
+            }
+        });
         awaitActivated(tc[0], file);
         assertThat(tc[0].getActivatedNodes()[0].getLookup().lookup(DataObject.class))
                 .as("per-file context actions read the file's DataObject off the node")
                 .isNotNull();
 
-        SwingUtilities.invokeAndWait(() -> treeRef.get().clearSelection());
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                panel.getExplorerManager().setSelectedNodes(new org.openide.nodes.Node[0]);
+            } catch (java.beans.PropertyVetoException ex) {
+                throw new AssertionError(ex);
+            }
+        });
         awaitActivated(tc[0], aimed); // the fallback — never an emptied-out selection
 
         SwingUtilities.invokeAndWait(tc[0]::componentClosed);

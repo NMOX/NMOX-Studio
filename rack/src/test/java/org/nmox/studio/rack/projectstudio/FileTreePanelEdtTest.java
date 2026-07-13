@@ -7,124 +7,133 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The startup-safety contract for the project file tree: listing a
- * directory must happen on a background thread, so {@code setRootDirectory}
- * returns to its caller (the EDT, during window restore) promptly even when
- * the directory is slow or permission-gated to enumerate.
+ * The startup-safety contract for the project file tree: resolving the
+ * root directory must happen on a background thread, so
+ * {@code setRootDirectory} returns to its caller (the EDT, during window
+ * restore) promptly even when the filesystem is slow or permission-gated
+ * (the v1.33.1 TCC storm). Child listing is the platform's own lazy
+ * machinery since the ledger-36 rewrite; the root resolve is the one
+ * filesystem touch this panel still owns, so it is the one under test.
  *
  * <p>{@code FileTreePanel} is pure-Swing and JaCoCo-excluded; this test
- * proves the load-bearing behavior — that the walk is off the EDT — by
- * injecting a deliberately slow directory-listing seam.
+ * proves the load-bearing law through the injected {@code RootResolver}
+ * seam.
  */
 class FileTreePanelEdtTest {
 
     @TempDir
     File dir;
 
+    private static Node stub(String name) {
+        AbstractNode n = new AbstractNode(Children.LEAF);
+        n.setDisplayName(name);
+        return n;
+    }
+
     @Test
-    @DisplayName("setRootDirectory returns before a slow directory listing finishes")
-    void setRootDirectoryDoesNotBlockOnListing() throws Exception {
+    @DisplayName("setRootDirectory returns before a slow root resolve finishes")
+    void setRootDirectoryDoesNotBlockOnResolve() throws Exception {
         assertThat(java.awt.GraphicsEnvironment.isHeadless())
                 .as("test runs headless; panel is constructed but never shown").isTrue();
 
-        CountDownLatch listingStarted = new CountDownLatch(1);
-        CountDownLatch releaseListing = new CountDownLatch(1);
-        AtomicBoolean listed = new AtomicBoolean(false);
+        CountDownLatch resolveStarted = new CountDownLatch(1);
+        CountDownLatch releaseResolve = new CountDownLatch(1);
+        AtomicBoolean resolved = new AtomicBoolean(false);
 
-        FileTreePanel.DirLister slow = d -> {
-            listingStarted.countDown();
+        FileTreePanel.RootResolver slow = d -> {
+            resolveStarted.countDown();
             try {
-                // block the listing until the test releases it — if this ran on
-                // the calling thread, setRootDirectory would hang here
-                releaseListing.await(5, TimeUnit.SECONDS);
+                // block the resolve until the test releases it — if this ran
+                // on the calling thread, setRootDirectory would hang here
+                releaseResolve.await(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            listed.set(true);
-            return d.listFiles();
+            resolved.set(true);
+            return stub(d.getName());
         };
 
         FileTreePanel panel = new FileTreePanel(slow);
 
         long start = System.nanoTime();
-        panel.setRootDirectory(dir);   // must NOT block on the slow lister
+        panel.setRootDirectory(dir);   // must NOT block on the slow resolver
         long elapsedMs = (System.nanoTime() - start) / 1_000_000;
 
         // setRootDirectory returned promptly...
-        assertThat(elapsedMs).as("setRootDirectory must not block on listing").isLessThan(2_000);
-        // ...even though the listing had not completed yet
-        assertThat(listed.get()).as("listing runs in the background, not inline").isFalse();
+        assertThat(elapsedMs).as("setRootDirectory must not block on resolve").isLessThan(2_000);
+        // ...even though the resolve had not completed yet
+        assertThat(resolved.get()).as("resolve runs in the background, not inline").isFalse();
 
-        // the listing did get scheduled on a background thread
-        assertThat(listingStarted.await(3, TimeUnit.SECONDS))
-                .as("the walk was posted to a background thread").isTrue();
+        // the resolve did get scheduled on a background thread
+        assertThat(resolveStarted.await(3, TimeUnit.SECONDS))
+                .as("the resolve was posted to a background thread").isTrue();
 
-        releaseListing.countDown();
+        releaseResolve.countDown();
         panel.dispose();
     }
 
     @Test
-    @DisplayName("re-expanding the tree after a rebuild never storms the directory lister")
-    void reExpandDoesNotStormTheLister() throws Exception {
-        // A nested tree so re-expansion has real depth to walk.
-        File a = new File(dir, "a");
-        File b = new File(a, "b");
-        File c = new File(b, "c");
-        assertThat(c.mkdirs()).isTrue();
-        assertThat(new File(c, "leaf.txt").createNewFile()).isTrue();
-        assertThat(new File(dir, "top.txt").createNewFile()).isTrue();
+    @DisplayName("a re-aim during a slow resolve is not clobbered by the stale result")
+    void staleResolveLosesToNewerAim() throws Exception {
+        File first = new File(dir, "first");
+        File second = new File(dir, "second");
+        assertThat(first.mkdirs()).isTrue();
+        assertThat(second.mkdirs()).isTrue();
 
-        java.util.concurrent.atomic.AtomicInteger listCalls =
-                new java.util.concurrent.atomic.AtomicInteger();
-        FileTreePanel.DirLister counting = d -> {
-            listCalls.incrementAndGet();
-            return d.listFiles();
-        };
-        FileTreePanel panel = new FileTreePanel(counting);
+        CountDownLatch firstResolveRunning = new CountDownLatch(1);
+        CountDownLatch releaseFirst = new CountDownLatch(1);
 
-        panel.setRootDirectory(dir);
-        drain(1500);
-
-        // expand every visible row twice, then rebuild the whole tree while it is
-        // expanded — the reExpand path. A re-entrant treeWillExpand -> scan ->
-        // model-swap -> treeWillExpand loop would drive the lister to thousands.
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            javax.swing.JTree tree = findTree(panel);
-            if (tree != null) {
-                for (int pass = 0; pass < 2; pass++) {
-                    for (int i = 0; i < tree.getRowCount(); i++) {
-                        tree.expandRow(i);
-                    }
+        FileTreePanel.RootResolver gated = d -> {
+            if (d.equals(first)) {
+                firstResolveRunning.countDown();
+                try {
+                    releaseFirst.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
             }
-        });
-        drain(2000);
-        panel.setRootDirectory(dir);
-        drain(2000);
+            return stub(d.getName());
+        };
 
-        assertThat(listCalls.get())
-                .as("the walk is bounded by tree depth, not a re-entrant storm")
-                .isLessThan(200);
+        FileTreePanel panel = new FileTreePanel(gated);
+        panel.setRootDirectory(first);
+        assertThat(firstResolveRunning.await(3, TimeUnit.SECONDS)).isTrue();
+
+        // the user re-aims while the first resolve is still stuck
+        panel.setRootDirectory(second);
+        releaseFirst.countDown();
+
+        // both resolves ride the single-lane scanner; wait then drain the EDT
+        drain(2_000);
+
+        assertThat(panel.getExplorerManager().getRootContext().getDisplayName())
+                .as("the newer aim owns the tree; the stale resolve must not clobber it")
+                .isEqualTo("second");
         panel.dispose();
     }
 
-    private static javax.swing.JTree findTree(java.awt.Container c) {
-        for (java.awt.Component comp : c.getComponents()) {
-            if (comp instanceof javax.swing.JTree t) {
-                return t;
-            }
-            if (comp instanceof java.awt.Container cc) {
-                javax.swing.JTree r = findTree(cc);
-                if (r != null) {
-                    return r;
-                }
-            }
-        }
-        return null;
+    @Test
+    @DisplayName("a null root shows 'No project' without ever touching the resolver")
+    void nullRootNeverResolves() throws Exception {
+        AtomicBoolean touched = new AtomicBoolean(false);
+        FileTreePanel.RootResolver tripwire = d -> {
+            touched.set(true);
+            return stub(d.getName());
+        };
+        FileTreePanel panel = new FileTreePanel(tripwire);
+        panel.setRootDirectory(null);
+        drain(500);
+        assertThat(panel.getExplorerManager().getRootContext().getDisplayName())
+                .isEqualTo("No project");
+        assertThat(touched.get()).as("no resolve for a null root").isFalse();
+        panel.dispose();
     }
 
     private static void drain(long ms) throws Exception {
@@ -133,28 +142,9 @@ class FileTreePanelEdtTest {
             try {
                 javax.swing.SwingUtilities.invokeAndWait(() -> { });
             } catch (Exception ignored) {
-                // interrupted — not relevant to the bound assertion
+                // interrupted — not relevant to the assertions
             }
             Thread.sleep(50);
         }
-    }
-
-    @Test
-    @DisplayName("a non-directory root shows 'No project' without any listing")
-    void nonDirectoryRootNeverLists() throws Exception {
-        AtomicBoolean listed = new AtomicBoolean(false);
-        FileTreePanel.DirLister tripwire = d -> {
-            listed.set(true);
-            return d.listFiles();
-        };
-        FileTreePanel panel = new FileTreePanel(tripwire);
-        File missing = new File(dir, "does-not-exist");
-
-        panel.setRootDirectory(missing);
-        Thread.sleep(200); // give any (wrongly) posted scan a chance to run
-
-        assertThat(listed.get()).as("a missing root never triggers a directory walk").isFalse();
-        assertThat(panel.getRootDirectory()).isEqualTo(missing);
-        panel.dispose();
     }
 }
