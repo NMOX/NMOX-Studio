@@ -497,6 +497,18 @@ Re-test on each NetBeans platform bump: the working detection gate +
 tests lived at editor/lsp (v1.62.0 sprint branch history) and can be
 restored verbatim.
 
+## Closed by the v1.63.0–v1.67.0 runs (workspaces + the platform tree + the console family)
+
+- **Ledger 36 tree half (v1.64.0)**: FileTreePanel rewritten as an
+  ExplorerManager.Provider over BeanTreeView on the real DataFolder node;
+  the deferral's visual-regression premise retired by live click-through.
+  Review-hardened in v1.65.1 (reopen survives; VELOCITY serving parity).
+- **WAYPOINT workspaces (v1.63.0)** + the knob pending-selection restore
+  (v1.63.1) + export portability (v1.63.2) + preset discoverability
+  (v1.63.3).
+- **The framework-console family completed (v1.65.0–v1.67.0)**: VELOCITY
+  (Vite), COSMOS (Astro), KINETIC (SvelteKit), NIMBUS (Nuxt) — 50 devices.
+
 ## Closed by the v1.59.0–v1.62.0 overnight run (the web-toolchain sweep)
 
 - **Node package-manager truth (v1.60.0)**: every AUTO lane (CRATE,

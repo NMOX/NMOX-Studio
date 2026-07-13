@@ -74,6 +74,14 @@ Since the v1.36.0 senior-review capstone, five things graduated from
   (composition test-pinned). Saved dynamic-knob selections survive reload
   (v1.63.1 Knob.pendingSelection — healing an NPM-9000 latent since v1.0);
   exported workflows use forward slashes on every OS (v1.63.2).
+- **Its file tree is a platform citizen and its framework consoles are
+  complete.** Ledger 36 closed (v1.64.0): Project Studio's tree is a
+  BeanTreeView over the real DataFolder node — file-type icons, git
+  annotation, the full node menu, ~230 lines lighter, its close/reopen
+  and dispose laws review-hardened in v1.65.1. Every dominant modern web
+  stack has a version-aware console (v1.65–v1.67): HALO/NEXUS/VELOCITY/
+  COSMOS/KINETIC/NIMBUS/PHOENIX/ARTISAN, each with the serving-registry
+  deregister-on-stop contract.
 - **Its module system tells the truth.** Spec versions track the product
   version with real inter-module dependency ranges (v1.47.0, ledger 20), so a
   module jar dropped into an older install is refused by the loader instead of
