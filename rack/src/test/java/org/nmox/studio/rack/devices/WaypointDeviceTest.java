@@ -154,6 +154,29 @@ class WaypointDeviceTest {
     }
 
     @Test
+    @DisplayName("patch-load order restores the dialed workspace — applyState BEFORE the async options land")
+    void patchLoadOrderRestoresSelection() throws Exception {
+        monorepo();
+        Rack rack = new Rack();
+        rack.setProjectDir(dir.toFile());
+        try {
+            WaypointDevice waypoint = new WaypointDevice();
+            rack.addDevice(waypoint);
+            // RackIO's exact order: state applied immediately, options
+            // still loading on the offEdt lane — the knob must remember
+            // the wish and honor it when the options arrive
+            waypoint.applyState(Map.of("workspace", "@mono/web"));
+            awaitOptions(waypoint, 3);
+            await(() -> "@mono/web".equals(
+                    waypoint.workspaceKnobForTest().getSelectedOption()));
+            await(() -> rack.getWorkspaceOverride() != null
+                    && rack.getWorkspaceOverride().endsWith("web"));
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("removing WAYPOINT stops the steering — the ROSETTA dispose law")
     void disposeClearsOverride() throws Exception {
         monorepo();
