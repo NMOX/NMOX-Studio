@@ -366,6 +366,13 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 - **Out:** `KIND` (data)
 
+### WAYPOINT — Workspace Selector — steer Node lanes at one package
+
+> JS monorepo? Dial a workspace package and NPM-9000, PURITY, GLOSS and VERITAS run there.
+> root = the repository root; DIR out reports the choice.
+
+- **Out:** `DIR` (data)
+
 ### ATMOS — Env Mixer — NODE_ENV/CI/custom vars
 
 > Sets NODE_ENV/CI/custom vars for every command the rack runs.

@@ -14,6 +14,7 @@ public enum DeviceType {
     REFLEX("reflex", "REFLEX", "File Watcher — fire pipelines on save", new Color(236, 106, 168), ReflexDevice::new),
     JOIN("join", "QUORUM", "Lane Join — barrier: fire OK when all lanes pass", new Color(90, 190, 210), JoinDevice::new),
     ROSETTA("rosetta", "ROSETTA", "Language Selector — steer AUTO knobs in mixed repos", new Color(64, 224, 178), RosettaDevice::new),
+    WAYPOINT("waypoint", "WAYPOINT", "Workspace Selector — steer Node lanes at one package", new Color(255, 179, 71), WaypointDevice::new),
     RUN("run", "IGNITION", "Polyglot Runtime — run anything: node/go/rust/py/rb/php", new Color(255, 94, 58), RunDevice::new),
     DEBUG("debug", "INSPECTOR", "Debug Launcher — debug servers with attach endpoints", new Color(186, 85, 255), DebugDevice::new),
     ANGULAR("angular", "HALO", "Angular Console — serve/generate/update, stays current", new Color(0xDD, 0x00, 0x31), AngularDevice::new),
@@ -112,7 +113,7 @@ public enum DeviceType {
             case ANGULAR, PHOENIX, NEXTJS, ARTISAN -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON, ORACLE -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
-            case ENV, ROSETTA -> PaletteCategory.UTILITY;
+            case ENV, ROSETTA, WAYPOINT -> PaletteCategory.UTILITY;
         };
     }
 
@@ -149,6 +150,7 @@ public enum DeviceType {
             case DEPLOY -> "Flip ARM, then LAUNCH deploys to the dialed target.\nUnarmed pads ignore even patched triggers - by design.";
             case ENV -> "Sets NODE_ENV/CI/custom vars for every command the rack runs.\nWhat the knob says is what every device gets.";
             case ROSETTA -> "Mixed repo? Pin every AUTO knob to one toolchain with the dial.\nAUTO follows detection; KIND out reports the choice.";
+            case WAYPOINT -> "JS monorepo? Dial a workspace package and NPM-9000, PURITY, GLOSS and VERITAS run there.\nroot = the repository root; DIR out reports the choice.";
             case DOCKER -> "The ENGINE LED tracks the daemon; LCDs show containers up, images held, disk reclaimable.\nPANEL opens the full control room — containers, images, volumes, networks, and one-click Dockerize.";
             case BLACKBOX -> "The rack's session memory: every launch, exit, duration, and error, timestamped.\nVIEW scrolls the timeline; the health line warns when a build quietly slows past its average.";
             case SONAR -> "SWEEP maps every listening port to its owning process — docker containers labeled.\nVIEW opens the field: BROWSE any port, KILL any squatter. EADDRINUSE, solved.";

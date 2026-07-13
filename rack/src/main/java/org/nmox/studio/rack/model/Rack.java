@@ -606,6 +606,27 @@ public final class Rack {
         }
     }
 
+    /**
+     * The workspace package directory Node lanes should operate on,
+     * set by the WAYPOINT selector for JS monorepos. Null = the root.
+     */
+    private volatile String workspaceOverride;
+
+    public String getWorkspaceOverride() {
+        return workspaceOverride;
+    }
+
+    public void setWorkspaceOverride(String packageDir) {
+        String normalized = packageDir == null || packageDir.isBlank() ? null : packageDir;
+        if (!java.util.Objects.equals(workspaceOverride, normalized)) {
+            workspaceOverride = normalized;
+            // devices re-resolve their labels exactly like a project switch
+            for (RackDevice d : getDevices()) {
+                d.projectChanged(projectDir);
+            }
+        }
+    }
+
     /** Environment applied to every command the rack runs. */
     public Map<String, String> getEnvOverrides() {
         return new LinkedHashMap<>(envOverrides);

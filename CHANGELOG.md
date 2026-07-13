@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.63.0] - 2026-07-13
+
+### Workspaces — ROSETTA one level down
+
+JS monorepos get their conductor: **WAYPOINT** (the 46th device,
+UTILITY shelf), the workspace selector.
+
+- **`Workspaces`** pure core: the union of package.json `"workspaces"`
+  globs (array or `{packages:[...]}` form) and pnpm-workspace.yaml's
+  `packages:` list, resolved to real package dirs — a deliberate glob
+  subset (`*` one segment, `**` bounded depth 3, exclusions skipped,
+  node_modules never entered, capped at 64) because the rack steers
+  lanes, it does not re-implement npm. Names come from each package's
+  own manifest; collisions disambiguate with the dir name.
+- **WAYPOINT** dials a package and the Node lanes follow: NPM-9000's
+  SCRIPT knob lists that package's scripts and runs there; PURITY,
+  GLOSS, VERITAS and every base lane re-root through ONE choke point
+  (`CommandDevice.commandDir`). `root` restores the old behavior
+  exactly. Non-Node lanes are untouched — a ROSETTA-dialed cargo lane
+  keeps its Cargo.toml directory (test-pinned).
+- The knob persists **by name** (package positions shift as monorepos
+  grow), the package set reloads on package.json/pnpm-workspace.yaml
+  saves (`pnpm-workspace.yaml` joined ManifestPulse — 19 names),
+  removing the device stops the steering (the ROSETTA dispose law),
+  and undo re-attach re-applies it (onAttached).
+
+Mutation-proven ×3: deleting the commandDir consult, the pnpm parse,
+or the dispose-clear each fails a named test. The base-lane proof
+exists because the first mutation run did NOT bite — NPM-9000's own
+override was hiding the untested base path.
+
 ## [1.62.0] - 2026-07-13
 
 ### The journey polish
