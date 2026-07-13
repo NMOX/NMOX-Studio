@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.64.0] - 2026-07-13
+
+### The file tree is a platform citizen (ledger 36 closed)
+
+Project Studio's file tree was the last hand-rolled JTree over
+`java.io.File` — the v1.39.0 review took the correctness half (CRUD
+through DataObject) but left the UI custom because a rewrite carried
+visual-regression risk against a careful tree. That risk is now retired
+by live verification.
+
+- **Real file-type icons** from the DataObject loaders — the JS badge on
+  `server.js`, the Markdown badge on `README.md`, distinct folder/file
+  glyphs — where the old renderer drew one generic icon for everything.
+- **Git branch annotation** on the folder node (`orders-api [main]`),
+  free from the platform.
+- **The full node context menu**: Open, Cut, Copy, Delete, Rename,
+  Tools, Properties — a *superset* of the old menu (Cut/Copy are new),
+  driven by the DataObject's cookies. Live-verified: Open opens the file
+  in the editor through the filter node.
+- **Lazy, off-EDT child loading** is the platform's own machinery now,
+  with a "Please wait…" row — no hand-written background walk.
+- **~230 fewer lines.**
+
+Every law the old tree earned is preserved, each with its incident:
+the root resolve runs OFF the EDT (the v1.33.1 TCC storm — a re-aim
+during a slow resolve never clobbers the newer aim, test-pinned);
+heavy directories (`node_modules`/`.git`/`dist`/`build`/`coverage`)
+render **childless** — no disclosure triangle, a stronger "you cannot
+enter" signal than the old grey text, and the guarantee a 100k-file
+generated tree is never enumerated by misclick; external edits arrive
+via `FileUtil.refreshFor` off the watcher, keeping expansion state.
+`FileTreePanel` is now an `ExplorerManager.Provider` over a
+`BeanTreeView`; the selection still feeds the aim publisher (ledger 29).
+
 ## [1.63.3] - 2026-07-13
 
 ### The night's last polish
