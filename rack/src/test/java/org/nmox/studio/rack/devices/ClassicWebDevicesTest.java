@@ -460,9 +460,13 @@ class ClassicWebDevicesTest {
                     .containsExactly("npx", "grunt", "default");
 
             dynamo.applyState(Map.of("runner", "2")); // RUNNERS = {auto, grunt, gulp}
+            settle(rack); // let the RUNNER knob apply on the EDT before the reload
+                          // reads effectiveRunner — else a loaded runner reparses
+                          // the stale (grunt) runner and keeps grunt's tasks
             dynamo.reloadTasksNow();
             settle(rack);
             dynamo.applyState(Map.of("task", "styles"));
+            settle(rack);
             assertThat(dynamo.buildCommand()).containsExactly("npx", "gulp", "styles");
         } finally {
             rack.shutdown();
