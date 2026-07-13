@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.63.3] - 2026-07-13
+
+### The night's last polish
+
+- **Monorepo Lanes racks WAYPOINT beside ROSETTA** — the workspaces
+  conductor is discoverable where monorepo users already look
+  (live-verified: both conductors mount, the package count reads true;
+  a no-op on non-workspace repos).
+- **The wizard's default location skips ~/.nmox internal homes**
+  (journey finding: creating a learning space made ~/.nmox/learn the
+  wizard default). Internal recents fall through to the next real
+  location or the ~/NMOX workspace. Seam-extracted, mutation-proven.
+
 ## [1.63.2] - 2026-07-13
 
 ### CI export speaks forward slashes on every OS
