@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.66.0] - 2026-07-13
+
+### COSMOS — the Astro console (48th device)
+
+Astro is the content-first framework for docs sites, blogs, and marketing
+pages — its own CLI, its own dev/build/preview loop. It joins VELOCITY
+(Vite) and NEXUS (Next.js) as a version-aware framework console:
+
+- **DEV** serves the site; the local URL out feeds SCOPE, with READY + a
+  SERVING gate. **BUILD** compiles the static site; **PREVIEW** serves the
+  build; **DIAG** runs `astro check` (the type/content diagnostics).
+- **Version currency**: installed `astro` tracked against the npm registry,
+  nagging (amber → blinking MAJOR!) when the framework moves.
+- FRAMEWORKS palette, CI-step capable, `onFinished` drops the serving
+  registration on stop (the parity VELOCITY gained in v1.65.1, built in
+  from the start here). FrameworkDeviceTest + ServingDevicesTest coverage;
+  devices.md regenerated (48 devices).
+
 ## [1.65.1] - 2026-07-13
 
 ### The file tree survives a tab close/reopen

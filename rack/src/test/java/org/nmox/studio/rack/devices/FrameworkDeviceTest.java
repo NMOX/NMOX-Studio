@@ -168,6 +168,45 @@ class FrameworkDeviceTest {
         }
     }
 
+    // ---------------- COSMOS / AstroDevice ----------------
+
+    @Test
+    @DisplayName("COSMOS build command is the static site build")
+    void astroBuild() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            AstroDevice astro = new AstroDevice();
+            rack.addDevice(astro);
+            assertThat(astro.buildCommand()).containsExactly("npx", "astro", "build");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("COSMOS onLine broadcasts the local URL once and fires READY once")
+    void astroOnLineUrl() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            AstroDevice astro = new AstroDevice();
+            Probe probe = new Probe();
+            rack.addDevice(astro);
+            rack.addDevice(probe);
+            rack.connect(astro.getPort("url"), probe.getPort("data"));
+            rack.connect(astro.getPort("ready"), probe.getPort("trig"));
+
+            astro.onLine("  \u2503 Local    http://localhost:4321/");
+            astro.onLine("  \u2503 Network  http://localhost:4321/ (same)"); // same URL: no re-emit
+            settle(rack);
+
+            assertThat(probe.data).extracting(Signal::payload)
+                    .containsExactly("http://localhost:4321/");
+            assertThat(probe.trig).as("READY fires exactly once").hasSize(1);
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     // ---------------- PHOENIX ----------------
 
     @Test
