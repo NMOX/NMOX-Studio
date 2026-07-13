@@ -40,6 +40,7 @@ public final class EnvironmentDoctor {
                 new String[]{"npm", "package manager — CRATE, NPM-9000", "ships with node"},
                 new String[]{"pnpm", "Node package manager — AUTO lanes honor pnpm-lock", "brew install pnpm"},
                 new String[]{"yarn", "Node package manager — AUTO lanes honor yarn.lock", "brew install yarn"},
+                new String[]{"biome", "one-toolchain lint+format — PURITY/GLOSS auto lanes", "brew install biome"},
                 new String[]{"docker", "containers — HARBOR, Docker panel", "Docker Desktop"},
                 new String[]{"java", "JVM — Maven lanes, jshell space", "brew install openjdk"},
                 new String[]{"mvn", "Maven builds", "brew install maven"},

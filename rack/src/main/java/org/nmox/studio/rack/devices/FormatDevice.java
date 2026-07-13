@@ -7,7 +7,8 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 
 /**
- * GLOSS Formatter: prettier over the whole project. WRITE mode
+ * GLOSS Formatter: the project's own formatter over the whole project
+ * — biome when biome.json opts in, prettier otherwise. WRITE mode
  * rewrites files; CHECK mode only verifies (fails when unformatted).
  * On PHP lanes it runs Laravel Pint instead, same two modes.
  */
@@ -39,6 +40,15 @@ public class FormatDevice extends CommandDevice {
             return writeSwitch.isOn()
                     ? List.of("forge", "fmt")
                     : List.of("forge", "fmt", "--check");
+        }
+        // Biome lane: a biome.json means the project formats with biome,
+        // not prettier — same respect-their-toolchain rule as v1.60.0's
+        // package managers. format without --write exits 1 when dirty,
+        // which is exactly CHECK mode's contract.
+        if (ProjectInspector.hasBiome(projectDir())) {
+            return writeSwitch.isOn()
+                    ? List.of("npx", "@biomejs/biome", "format", "--write", ".")
+                    : List.of("npx", "@biomejs/biome", "format", ".");
         }
         return List.of("npx", "prettier", writeSwitch.isOn() ? "--write" : "--check", ".");
     }

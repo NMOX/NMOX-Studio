@@ -218,6 +218,17 @@ public final class ProjectInspector {
     }
 
     /**
+     * True when the project (or its Node lane) opts into Biome — the
+     * one-toolchain lint+format successor to eslint+prettier. PURITY and
+     * GLOSS AUTO must run the project's own toolchain, not ours.
+     */
+    public static boolean hasBiome(File projectDir) {
+        File dir = kindDir(projectDir, ProjectKind.NODE);
+        return new File(dir, "biome.json").isFile()
+                || new File(dir, "biome.jsonc").isFile();
+    }
+
+    /**
      * The Node package manager this project actually uses. The corepack
      * {@code "packageManager"} pin in package.json wins (it is the
      * project's explicit contract), then the lockfile on disk, then npm.
