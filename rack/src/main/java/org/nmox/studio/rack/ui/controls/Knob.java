@@ -189,18 +189,30 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         return selectedIndex;
     }
 
+    /**
+     * A selection requested by name before the option existed — the
+     * patch-load order: RackIO applies saved state immediately after
+     * addDevice, while dynamic knobs (NPM-9000's SCRIPT, WAYPOINT's
+     * WORKSPACE) are still loading their options asynchronously. The
+     * knob remembers the wish and honors it when the options arrive;
+     * without this, every saved dynamic selection silently reset to
+     * position 0 on patch reload.
+     */
+    private String pendingSelection;
+
     /** Replaces the option list of a stepped knob (e.g. project scripts changed). */
     public void setOptions(String[] newOptions) {
         if (options == null || newOptions == null || newOptions.length == 0) {
             return;
         }
-        String current = options[selectedIndex];
+        String current = pendingSelection != null ? pendingSelection : options[selectedIndex];
         int old = selectedIndex;
         options = newOptions.clone();
         selectedIndex = 0;
         for (int i = 0; i < options.length; i++) {
             if (options[i].equals(current)) {
                 selectedIndex = i;
+                pendingSelection = null; // the wish is granted
                 break;
             }
         }
@@ -233,14 +245,18 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         }
         for (int i = 0; i < options.length; i++) {
             if (options[i].equals(value)) {
+                pendingSelection = null;
                 setSelectedIndex(i);
                 return;
             }
         }
         try {
             setSelectedIndex(Integer.parseInt(value));
+            pendingSelection = null;
         } catch (NumberFormatException ignored) {
-            // neither a known option nor an index; keep current
+            // not here YET: dynamic knobs load options asynchronously and
+            // patch restore runs first — remember the name for setOptions
+            pendingSelection = value;
         }
     }
 
@@ -252,6 +268,9 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         if (options == null) {
             return;
         }
+        // an explicit selection (user dial, arrow key, legacy index)
+        // supersedes any remembered by-name wish
+        pendingSelection = null;
         int clamped = Math.max(0, Math.min(idx, options.length - 1));
         if (clamped != selectedIndex) {
             int old = selectedIndex;
