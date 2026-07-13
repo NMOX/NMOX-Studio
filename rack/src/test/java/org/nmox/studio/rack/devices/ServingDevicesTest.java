@@ -99,6 +99,29 @@ class ServingDevicesTest {
     }
 
     @Test
+    @DisplayName("KINETIC and NIMBUS register on their URLs; stop deregisters")
+    void metaFrameworksRegisterAndDeregister() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            SvelteKitDevice kit = new SvelteKitDevice();
+            rack.addDevice(kit);
+            kit.onLine("  \u279c  Local:   http://localhost:5173/");
+            assertThat(mine()).hasSize(1);
+            kit.onFinished(143);
+            assertThat(mine()).isEmpty();
+
+            NuxtDevice nuxt = new NuxtDevice();
+            rack.addDevice(nuxt);
+            nuxt.onLine("  \u279c Local:    http://localhost:3000/");
+            assertThat(mine()).hasSize(1);
+            nuxt.onFinished(143);
+            assertThat(mine()).as("stop deregisters").isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("SURGE registers its knob URL on first output, then replaces it with the printed one")
     void surgeReplacesKnobUrlWithPrinted() throws IOException {
         Rack rack = aimedRack();

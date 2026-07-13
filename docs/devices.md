@@ -238,6 +238,22 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
+### KINETIC — SvelteKit Console — vite dev/build/preview + svelte-check, kit currency
+
+> SvelteKit rides Vite: DEV/BUILD/PREVIEW speak vite, DIAG runs svelte-check.
+> Version cluster tracks @sveltejs/kit against the registry.
+
+- **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
+### NIMBUS — Nuxt Console — nuxi dev/build/preview + typecheck, registry currency
+
+> DEV serves via nuxi with the URL out feeding SCOPE; BUILD compiles, PREVIEW serves it, DIAG runs nuxi typecheck.
+> Version cluster tracks nuxt against the registry.
+
+- **In:** `RUN` (trigger), `DEV` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
 ### ARTISAN — Laravel Console — artisan serve/test/migrate, Packagist currency
 
 > SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials

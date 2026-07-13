@@ -207,6 +207,25 @@ class FrameworkDeviceTest {
         }
     }
 
+    // ---------------- KINETIC / NIMBUS ----------------
+
+    @Test
+    @DisplayName("KINETIC speaks vite (SvelteKit's CLI) and NIMBUS speaks nuxi")
+    void metaFrameworkBuildCommands() throws IOException {
+        Rack rack = rackWith("package.json");
+        try {
+            SvelteKitDevice kit = new SvelteKitDevice();
+            rack.addDevice(kit);
+            assertThat(kit.buildCommand()).containsExactly("npx", "vite", "build");
+
+            NuxtDevice nuxt = new NuxtDevice();
+            rack.addDevice(nuxt);
+            assertThat(nuxt.buildCommand()).containsExactly("npx", "nuxi", "build");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     // ---------------- PHOENIX ----------------
 
     @Test

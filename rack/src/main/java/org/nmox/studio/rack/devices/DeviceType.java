@@ -22,6 +22,8 @@ public enum DeviceType {
     NEXTJS("nextjs", "NEXUS", "Next.js Console — dev/build/start, registry currency", new Color(0xED, 0xED, 0xED), NextDevice::new),
     VITE("vite", "VELOCITY", "Vite Console — dev/build/preview, registry currency", new Color(0x64, 0x6C, 0xFF), ViteDevice::new),
     ASTRO("astro", "COSMOS", "Astro Console — dev/build/preview/check, registry currency", new Color(0xFF, 0x5D, 0x01), AstroDevice::new),
+    SVELTEKIT("sveltekit", "KINETIC", "SvelteKit Console — vite dev/build/preview + svelte-check, kit currency", new Color(0xFF, 0x3E, 0x00), SvelteKitDevice::new),
+    NUXT("nuxt", "NIMBUS", "Nuxt Console — nuxi dev/build/preview + typecheck, registry currency", new Color(0x00, 0xDC, 0x82), NuxtDevice::new),
     ARTISAN("artisan", "ARTISAN", "Laravel Console — artisan serve/test/migrate, Packagist currency", new Color(0xFF, 0x2D, 0x20), ArtisanDevice::new),
     NPM_SCRIPT("npm-script", "NPM-9000", "Script Sequencer — run package.json scripts", new Color(203, 56, 55), NpmScriptDevice::new),
     PACKAGE_MANAGER("package-manager", "CRATE", "Package Manager — install & update deps", new Color(214, 121, 41), PackageManagerDevice::new),
@@ -112,7 +114,7 @@ public enum DeviceType {
             case SSH -> PaletteCategory.SHIP;
             case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE, LOCAL_CHAIN -> PaletteCategory.SERVE;
-            case ANGULAR, PHOENIX, NEXTJS, VITE, ASTRO, ARTISAN -> PaletteCategory.FRAMEWORKS;
+            case ANGULAR, PHOENIX, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, ARTISAN -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON, ORACLE -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA, WAYPOINT -> PaletteCategory.UTILITY;
@@ -143,6 +145,8 @@ public enum DeviceType {
             case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";
             case VITE -> "DEV serves with the URL out feeding SCOPE; BUILD compiles the bundle, PREVIEW serves it.\nVersion cluster tracks vite against the registry.";
             case ASTRO -> "DEV serves with the URL out feeding SCOPE; BUILD compiles the static site, PREVIEW serves it, DIAG runs astro check.\nVersion cluster tracks astro against the registry.";
+            case SVELTEKIT -> "SvelteKit rides Vite: DEV/BUILD/PREVIEW speak vite, DIAG runs svelte-check.\nVersion cluster tracks @sveltejs/kit against the registry.";
+            case NUXT -> "DEV serves via nuxi with the URL out feeding SCOPE; BUILD compiles, PREVIEW serves it, DIAG runs nuxi typecheck.\nVersion cluster tracks nuxt against the registry.";
             case ARTISAN -> "SERVE runs php artisan serve (URL out feeds SCOPE); the ACTION knob dials\ntest/migrate/fresh/queue/routes for RUN. Tinker is interactive — use the REPL device (php artisan tinker).";
             case CONSOLE -> "A glanceable 8-line screen. Patch any OUT (data) jack into IN,\nor dial TAP to stderr/all to hear every device unpatched — errors glow red.";
             case TERMINAL -> "5,000 lines of selectable scrollback. FOLLOW tails the output.\nPatch the OUT of anything chatty in here.";
@@ -185,7 +189,7 @@ public enum DeviceType {
     public boolean isCiStep() {
         return switch (this) {
             case PACKAGE_MANAGER, BUILD, TEST, TYPECHECK, LINT, FORMAT,
-                 NPM_SCRIPT, RUN, ANGULAR, NEXTJS, VITE, ASTRO, PHOENIX, AUDIT, DATABASE, CMD -> true;
+                 NPM_SCRIPT, RUN, ANGULAR, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, PHOENIX, AUDIT, DATABASE, CMD -> true;
             default -> false;
         };
     }
