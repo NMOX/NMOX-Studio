@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.67.1] - 2026-07-13
+
+### Modern Web preset
+
+One click to a wired Vite-era rack: VELOCITY serves (URL → SCOPE, READY
+pops the browser) while REFLEX fans saves into VERITAS tests and PURITY
+lint, both onto MONITOR. The discoverability capstone for the completed
+framework-console family — plus the family's first full E2E validation:
+COSMOS driven live against a real Astro 4 project (registry version
+currency flagging MAJOR!, trust gate, real `astro dev`, URL → ⇄ serving
+chip, STOP → honest duration + deregistration).
+
 ## [1.67.0] - 2026-07-13
 
 ### The meta-framework consoles — KINETIC (SvelteKit) + NIMBUS (Nuxt)
