@@ -45,6 +45,21 @@ class RackPresetsTest {
     }
 
     @Test
+    @DisplayName("Modern Web wires VELOCITY's URL into SCOPE and saves into test+lint lanes")
+    void modernWebWiring() {
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        try {
+            RackIO.fromJson(rack, RackPresets.MODERN_WEB.buildPatch());
+            assertThat(rack.getDevices()).extracting(d -> d.getTypeId())
+                    .contains("vite", "browser", "reflex", "test", "lint");
+            assertThat(rack.getCables()).hasSize(6);
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("Ship Gate chains build through every quality gate into the armed deploy")
     void shipGateChainsEveryGate() {
         Rack rack = new Rack();

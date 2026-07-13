@@ -104,6 +104,27 @@ public enum RackPresets {
         }
     },
 
+    MODERN_WEB("Modern Web",
+            "VELOCITY serves (SCOPE pops the browser on READY); saves fan out to VERITAS tests and PURITY lint") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice velocity = add(rack, DeviceType.VITE, null);
+            RackDevice browser = add(rack, DeviceType.BROWSER, null);
+            RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "true", "filter", "1"));
+            RackDevice test = add(rack, DeviceType.TEST, null);
+            RackDevice lint = add(rack, DeviceType.LINT, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // dev server → browser: the URL flows, READY pops the tab
+            rack.connect(velocity.getPort("url"), browser.getPort("url"));
+            rack.connect(velocity.getPort("ready"), browser.getPort("open"));
+            // save → test + lint lanes, both onto the console
+            rack.connect(reflex.getPort("changed"), test.getPort("run"));
+            rack.connect(reflex.getPort("changed"), lint.getPort("run"));
+            rack.connect(test.getPort("out"), console.getPort("in"));
+            rack.connect(lint.getPort("out"), console.getPort("in"));
+        }
+    },
+
     MONOREPO_LANES("Monorepo Lanes",
             "Mixed repo: ROSETTA shows the mix, WAYPOINT dials the package, saves fan out to node + cargo test lanes") {
         @Override
