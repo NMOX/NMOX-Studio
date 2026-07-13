@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.65.1] - 2026-07-13
+
+### The file tree survives a tab close/reopen
+
+A review of the v1.64.0 platform tree found a latent bug (present in the
+old hand-rolled tree too, now testable through the RootResolver seam):
+`dispose()` — called on Project Studio's `componentClosed` — stopped the
+panel's `RequestProcessor`. But the studio is `PERSISTENCE_ALWAYS` and
+reuses the one panel instance, so reopening the tab posted the root
+resolve to a permanently stopped RP: the tree stuck at "No project".
+Fixed by keeping the scanner and the self-owned selection relay alive
+across the panel's lifetime (the RP idles to zero threads; the relay
+listens on the panel's own ExplorerManager — no external leak). Reopen
+regression test, mutation-proven against the old `scanner.stop()`.
+
+Also caught in the same review: VELOCITY (v1.65.0) had no `onFinished`,
+so stopping the Vite dev server left a phantom serving-registry entry (⇄
+chip, ⌘I Live Servers, VITALS/BEACON auto-target) and the SERVING gate
+stuck high. Added the deregister/gate-drop/re-announce-reset that NEXUS
+already had.
+
 ## [1.65.0] - 2026-07-13
 
 ### VELOCITY — the Vite console (47th device)

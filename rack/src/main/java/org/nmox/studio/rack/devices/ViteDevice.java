@@ -142,4 +142,15 @@ public class ViteDevice extends CommandDevice {
             }
         }
     }
+
+    @Override
+    protected void onFinished(int exitCode) {
+        // the dev/preview server stopped: drop the serving registry entry
+        // (⇄ chip, ⌘I Live Servers, VITALS/BEACON auto-target) and the
+        // SERVING gate, and clear announcedUrl so a restart re-announces
+        // even on the same port
+        deregisterServing();
+        emit("serving", Signal.gate(false));
+        announcedUrl = null;
+    }
 }
