@@ -89,12 +89,14 @@ class ProjectStudioFileSelectionTest {
         long deadline = System.currentTimeMillis() + 10_000;
         org.openide.nodes.Node fileNode = null;
         while (System.currentTimeMillis() < deadline && fileNode == null) {
-            // getNodes(true) computes lazy children — deliberately OFF the EDT
+            // getNodes(true) computes lazy children — deliberately OFF the EDT.
+            // Match by FileObject name, not File.equals: on Windows the @TempDir
+            // path carries 8.3 short-name components while FileUtil normalizes to
+            // the long form, so File.equals never matched and the loop timed out.
             for (org.openide.nodes.Node n
                     : panel.getExplorerManager().getRootContext().getChildren().getNodes(true)) {
                 DataObject dob = n.getLookup().lookup(DataObject.class);
-                if (dob != null && file.equals(
-                        org.openide.filesystems.FileUtil.toFile(dob.getPrimaryFile()))) {
+                if (dob != null && file.getName().equals(dob.getPrimaryFile().getNameExt())) {
                     fileNode = n;
                     break;
                 }
