@@ -282,6 +282,15 @@ public final class LanguageServers {
         }
     }
 
+    /** Gleam via the compiler's built-in language server. */
+    @MimeRegistration(mimeType = "text/x-gleam", service = LanguageServerProvider.class)
+    public static final class GleamServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("gleam", "lsp"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

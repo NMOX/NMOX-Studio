@@ -237,4 +237,18 @@ class WebProjectCommandsTest {
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_TEST)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_CLEAN)).isNull();
     }
+
+    @Test
+    @DisplayName("Gleam speaks gleam on all four actions (v1.59.0 expansion)")
+    void gleamAllFourActions() {
+        java.io.File d = new java.io.File(".");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GLEAM, ActionProvider.COMMAND_RUN))
+                .containsExactly("gleam", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GLEAM, ActionProvider.COMMAND_BUILD))
+                .containsExactly("gleam", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GLEAM, ActionProvider.COMMAND_TEST))
+                .containsExactly("gleam", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.GLEAM, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("gleam", "clean");
+    }
 }

@@ -25,6 +25,7 @@ public final class ProjectInspector {
         GO("go.mod"),
         ELIXIR("mix.exs"),
         ERLANG("rebar.config"),
+        GLEAM("gleam.toml"),
         CLOJURE("deps.edn", "project.clj"),
         SWIFT("Package.swift"),
         DOTNET(), // *.csproj / *.fsproj / *.sln - glob-detected below

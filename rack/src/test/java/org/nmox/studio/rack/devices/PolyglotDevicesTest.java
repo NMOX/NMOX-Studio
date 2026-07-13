@@ -113,6 +113,7 @@ class PolyglotDevicesTest {
                 new Case("build.sbt", ProjectInspector.ProjectKind.SCALA),
                 new Case("stack.yaml", ProjectInspector.ProjectKind.HASKELL),
                 new Case("build.zig", ProjectInspector.ProjectKind.ZIG),
+                new Case("gleam.toml", ProjectInspector.ProjectKind.GLEAM),
                 new Case("dune-project", ProjectInspector.ProjectKind.OCAML),
                 new Case("shard.yml", ProjectInspector.ProjectKind.CRYSTAL));
         for (Case c : cases) {
@@ -136,5 +137,31 @@ class PolyglotDevicesTest {
         org.assertj.core.api.Assertions.assertThat(
                 ProjectInspector.kindDir(mono.toFile(), ProjectInspector.ProjectKind.DOTNET))
                 .isEqualTo(api.toFile());
+    }
+
+    @Test
+    @DisplayName("Gleam: every AUTO lane speaks gleam (v1.59.0 expansion)")
+    void gleamLanes() throws IOException {
+        Rack rack = rackAimedAt("gleam.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.GLEAM);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("gleam", "run");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("gleam", "build");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("gleam", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("gleam", "deps", "download");
+
+        rack.shutdown();
     }
 }

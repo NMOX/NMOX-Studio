@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.59.0] — 2026-07-12
+
+The expansion release: Gleam joins as a full first-class stack, the
+Environment Doctor learns every toolchain the IDE already drives, and
+the docs finally tell the truth about how much the polyglot layer
+covers.
+
+### Added
+- **Gleam, first-class end to end**: `gleam.toml` is a project manifest
+  (`ProjectKind.GLEAM`, BEAM family), the pinned TextMate grammar
+  (gleam-lang/vscode-gleam, sha256 in NOTICE-grammars.md) highlights
+  `.gleam` with comment toggling, keyword completion, and spellcheck
+  hygiene; `gleam lsp` (built into the compiler) wires as the language
+  server; every rack lane speaks it — IGNITION `gleam run`, FORGE
+  `gleam build`, VERITAS `gleam test`, CRATE `gleam deps download`/
+  `update` — and the IDE-native Run/Build/Test/Clean map to the same
+  argv. A 53rd learning space ships (the honest kind: `gleam shell`
+  compiles the generated sample and drops into the Erlang shell with
+  your modules loaded, and the tutorial says so).
+- **Environment Doctor probes 10 more toolchains** it could already
+  drive but never checked: gleam, dotnet, dart, zig, sbt, stack, dune,
+  crystal, swift, gradle — each with the right version dialect (zig
+  rejects `--version`) and an install hint.
+
+### Fixed — documentation truth
+The docs claimed "Bun/Deno/Rust/Go/BEAM+/PHP toolchains" while the
+product has quietly shipped detection, device lanes, grammars, and LSP
+entries for **.NET/C#, F#, Dart, Zig, Scala, Haskell, OCaml, and
+Crystal** for many releases. The stack lists now say what ships.
+
 ## [1.58.0] — 2026-07-12
 
 Plugin ecosystem groundwork plus two bounded security/UX fixes.

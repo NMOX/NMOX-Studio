@@ -46,6 +46,9 @@ final class WebProjectCommands {
             case SWIFT:
                 return fixed(action, List.of("swift", "run"), List.of("swift", "build"),
                         List.of("swift", "test"), null);
+            case GLEAM:
+                return fixed(action, List.of("gleam", "run"), List.of("gleam", "build"),
+                        List.of("gleam", "test"), List.of("gleam", "clean"));
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);

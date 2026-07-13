@@ -56,6 +56,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-scala", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-haskell", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-zig", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-gleam", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
@@ -217,6 +218,9 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "for if inline noalias noinline nosuspend opaque or orelse packed pub resume return "
                     + "struct suspend switch test threadlocal try union unreachable usingnamespace var "
                     + "volatile while u8 u16 u32 u64 i32 i64 f32 f64 bool void type null undefined true false")),
+            Map.entry("text/x-gleam", set("as assert auto case const echo else fn if implement import let "
+                    + "opaque panic pub todo type use "
+                    + "True False Nil Ok Error Int Float String Bool List Result")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "
