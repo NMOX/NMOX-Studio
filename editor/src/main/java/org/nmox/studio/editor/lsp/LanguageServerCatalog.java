@@ -73,6 +73,7 @@ public final class LanguageServerCatalog {
         add("Haskell", "haskell-language-server-wrapper", "ghcup install hls",
                 List.of("ghcup", "install", "hls"));
         add("Zig", "zls", "install zls from github.com/zigtools/zls", List.of());
+        add("Gleam", "gleam", "brew install gleam", List.of("brew", "install", "gleam"));
         add("Erlang", "erlang_ls", "install erlang_ls from github.com/erlang-ls/erlang_ls", List.of());
         add("Clojure", "clojure-lsp", "brew install clojure-lsp/brew/clojure-lsp-native",
                 List.of("brew", "install", "clojure-lsp/brew/clojure-lsp-native"));

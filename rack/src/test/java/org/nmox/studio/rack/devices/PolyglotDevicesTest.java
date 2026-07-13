@@ -113,6 +113,7 @@ class PolyglotDevicesTest {
                 new Case("build.sbt", ProjectInspector.ProjectKind.SCALA),
                 new Case("stack.yaml", ProjectInspector.ProjectKind.HASKELL),
                 new Case("build.zig", ProjectInspector.ProjectKind.ZIG),
+                new Case("gleam.toml", ProjectInspector.ProjectKind.GLEAM),
                 new Case("dune-project", ProjectInspector.ProjectKind.OCAML),
                 new Case("shard.yml", ProjectInspector.ProjectKind.CRYSTAL));
         for (Case c : cases) {
@@ -136,5 +137,16 @@ class PolyglotDevicesTest {
         org.assertj.core.api.Assertions.assertThat(
                 ProjectInspector.kindDir(mono.toFile(), ProjectInspector.ProjectKind.DOTNET))
                 .isEqualTo(api.toFile());
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("Gleam: every AUTO lane speaks gleam (v1.59.0 expansion)")
+    void gleamLanes(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        java.nio.file.Files.writeString(dir.resolve("gleam.toml"), "name = \"x\"");
+        org.assertj.core.api.Assertions.assertThat(ProjectInspector.detectKind(dir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.GLEAM);
+        // the WebProject action commands — the same argv the rack lanes run
+        org.assertj.core.api.Assertions.assertThat(
+                org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.GLEAM.name()).isEqualTo("GLEAM");
     }
 }

@@ -29,6 +29,7 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | scala.tmLanguage.json | — | scala/vscode-scala-syntax (MIT) |
 | haskell.tmLanguage.json | — | JustusAdam/language-haskell (BSD-3), converted YAML→JSON |
 | zig.tmLanguage.json | — | ziglang/vscode-zig (MIT) |
+| gleam.tmLanguage.json | sha256 837c3a234a4a8fd11e1b6942f0c15c323fefbbbaa7ed0ebdf4c8cc0c7a7d9388 | gleam-lang/vscode-gleam (Apache-2.0) |
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 

@@ -79,6 +79,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-scala", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-haskell", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-zig", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-gleam", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ocaml", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-crystal", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/css", service = TypedTextInterceptor.Factory.class),

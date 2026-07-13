@@ -53,6 +53,16 @@ public final class EnvironmentDoctor {
                 new String[]{"bun", "Bun runtime", "brew install oven-sh/bun/bun"},
                 new String[]{"deno", "Deno runtime", "brew install deno"},
                 new String[]{"mix", "Elixir/BEAM toolchain", "brew install elixir"},
+                new String[]{"gleam", "Gleam — BEAM language + built-in LSP", "brew install gleam"},
+                new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
+                new String[]{"dart", "Dart SDK", "brew install dart-sdk"},
+                new String[]{"zig", "Zig toolchain", "brew install zig"},
+                new String[]{"sbt", "Scala build tool", "brew install sbt"},
+                new String[]{"stack", "Haskell Stack", "brew install haskell-stack"},
+                new String[]{"dune", "OCaml build system", "brew install dune"},
+                new String[]{"crystal", "Crystal toolchain", "brew install crystal"},
+                new String[]{"swift", "Swift toolchain", "xcode-select --install"},
+                new String[]{"gradle", "Gradle build tool", "brew install gradle"},
                 new String[]{"forge", "Foundry — smart-contract build/test", "curl -L https://foundry.paradigm.xyz | bash"},
                 new String[]{"anvil", "local EVM devnet — ANVIL device", "curl -L https://foundry.paradigm.xyz | bash"},
                 new String[]{"cast", "Ethereum RPC/ABI multitool", "curl -L https://foundry.paradigm.xyz | bash"},
@@ -94,6 +104,7 @@ public final class EnvironmentDoctor {
             // most tools speak --version; the holdouts get their own dialect
             List<String> versionCmd = switch (tool) {
                 case "go" -> List.of("go", "version"); // rejects --version
+                case "zig" -> List.of("zig", "version"); // rejects --version
                 // nginx has no --version and prints `nginx -v` to STDERR —
                 // redirectErrorStream below folds it into the read stream
                 case "nginx" -> List.of("nginx", "-v");
