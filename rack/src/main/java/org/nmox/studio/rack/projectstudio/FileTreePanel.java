@@ -215,6 +215,31 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
             super(original, original.isLeaf() ? Children.LEAF : new HeavyChildren(original));
         }
 
+        /**
+         * Folders (and the root) get the full platform node menu — New
+         * (templates-aware), Find, Cut/Copy/Paste, Delete, Rename, Tools,
+         * Properties — driven by the underlying DataNode's cookies. The
+         * old hand-rolled tree offered only New/Rename/Delete/Open/Reveal;
+         * this is a superset (Cut/Copy/Paste are new).
+         */
+        @Override
+        public javax.swing.Action[] getActions(boolean context) {
+            return new javax.swing.Action[]{
+                org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.CopyAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.PasteAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
+                null,
+                org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+            };
+        }
+
         private static final class HeavyChildren extends FilterNode.Children {
 
             HeavyChildren(Node owner) {
@@ -228,11 +253,43 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                     return new DarkNode(original);
                 }
                 return folder ? new HeavyAwareFilterNode(original)
-                        : new FilterNode(original, Children.LEAF);
+                        : new FileLeafNode(original);
             }
         }
 
-        /** Present but inert: no children, greyed name. */
+        /**
+         * A file: the full platform file menu — Open, Cut/Copy, Delete,
+         * Rename, Tools, Properties — driven by the DataObject's cookies.
+         */
+        private static final class FileLeafNode extends FilterNode {
+
+            FileLeafNode(Node original) {
+                super(original, Children.LEAF);
+            }
+
+            @Override
+            public javax.swing.Action[] getActions(boolean context) {
+                return new javax.swing.Action[]{
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.OpenAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.CopyAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
+                    null,
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+                };
+            }
+        }
+
+        /**
+         * A heavy directory (node_modules, .git, …): present but inert.
+         * Children.LEAF means no disclosure triangle — a stronger "you
+         * cannot enter" signal than the old grey text, and the guarantee
+         * that a 100k-file generated tree is never enumerated by misclick.
+         */
         private static final class DarkNode extends FilterNode {
 
             DarkNode(Node original) {
@@ -240,8 +297,12 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
             }
 
             @Override
-            public String getHtmlDisplayName() {
-                return "<font color='!controlDkShadow'>" + getDisplayName() + "</font>";
+            public javax.swing.Action[] getActions(boolean context) {
+                // no New/Paste into a directory we refuse to descend into;
+                // Reveal-in-files and Properties are the honest verbs
+                return new javax.swing.Action[]{
+                    org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
+                };
             }
         }
     }
