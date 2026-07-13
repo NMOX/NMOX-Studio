@@ -60,7 +60,7 @@ class DeviceCatalogTest {
                 .toList();
         assertThat(ciSteps).containsExactlyInAnyOrder(
                 "package-manager", "build", "test", "typecheck", "lint", "format",
-                "npm-script", "run", "angular", "nextjs", "vite", "astro", "phoenix", "audit",
+                "npm-script", "run", "angular", "nextjs", "vite", "astro", "sveltekit", "nuxt", "phoenix", "audit",
                 "database", "cmd");
     }
 }

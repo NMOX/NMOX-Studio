@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.67.0] - 2026-07-13
+
+### The meta-framework consoles — KINETIC (SvelteKit) + NIMBUS (Nuxt)
+
+The framework family is complete: every dominant modern web stack now has
+a version-aware console. Angular (HALO), Next.js (NEXUS), Vite (VELOCITY),
+Astro (COSMOS), Phoenix, Laravel (ARTISAN) — and now:
+
+- **KINETIC — the SvelteKit console (49th device).** SvelteKit rides
+  Vite's CLI, so DEV/BUILD/PREVIEW speak `vite` from the kit project while
+  DIAG runs `svelte-check` (component type/a11y diagnostics). Version
+  currency tracks `@sveltejs/kit` against the registry.
+- **NIMBUS — the Nuxt console (50th device).** The Vue meta-framework
+  through its `nuxi` CLI: DEV (URL out → SCOPE, READY/SERVING), BUILD,
+  PREVIEW, and DIAG (`nuxi typecheck`). Version currency tracks `nuxt`.
+
+Both carry the serving-deregister-on-stop contract from the start
+(v1.65.1's lesson), FRAMEWORKS palette, CI-step capable, devices.md
+regenerated (50 devices).
+
 ## [1.66.0] - 2026-07-13
 
 ### COSMOS — the Astro console (48th device)
