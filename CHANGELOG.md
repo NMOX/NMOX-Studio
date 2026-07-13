@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.60.0] - 2026-07-13
+
+### The right package manager
+
+A senior web dev's project says which Node package manager it uses — and
+now every AUTO lane listens. Running npm in a pnpm or yarn repo writes a
+second lockfile and a broken node_modules; the IDE will never do that again.
+
+- **`ProjectInspector.nodePackageManager`** — the one canonical detection:
+  the corepack `"packageManager"` pin in package.json wins (it is the
+  project's explicit contract), then `pnpm-lock.yaml`, then `yarn.lock`,
+  then npm. Monorepo-aware (resolves the Node lane's directory), cached
+  behind the existing package.json mtime cache. An unknown pin (e.g. a
+  future manager) falls through to the lockfile instead of failing.
+- **CRATE (AUTO)** installs/updates/outdated with the detected manager —
+  including the `yarn upgrade` verb spelling. Re-syncs when
+  `pnpm-lock.yaml`/`yarn.lock` change (both joined the ManifestPulse set,
+  now 18 names).
+- **NPM-9000** gains an `auto` ENGINE position (appended, not inserted —
+  knob indices persist in saved patches, the v1.59.0 law) and new devices
+  default to it; a patch that pinned npm/yarn/pnpm keeps its engine.
+- **The IDE's native Run/Build/Test/Clean** (F6 and friends) speak the
+  detected manager: `yarn run dev`, `pnpm test`, …
+- **NPM Explorer / NpmService** delegate to the same detection (its old
+  lockfile-only version missed the corepack pin and was consulted only by
+  the Explorer's command path).
+- **Environment Doctor** probes pnpm and yarn (59 tools).
+
+All mutation-proven: hardcoding npm back into any consumer fails a named
+test; deleting the corepack branch fails two.
+
 ## [1.59.0] — 2026-07-12
 
 The expansion release: Gleam joins as a full first-class stack, the
