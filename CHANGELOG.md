@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.62.0] - 2026-07-13
+
+### Tailwind in the editor, one workspace on disk
+
+- **Tailwind CSS language server** — class completion and hovers in
+  CSS/SCSS/HTML, spawned ONLY for projects that use Tailwind (a
+  `tailwind.config.*` file, or the `tailwindcss` dependency — v4's
+  CSS-first setup ships no config). Runs ALONGSIDE the CSS language
+  server: the platform binds every provider a mime resolves
+  (`LSPBindings` keys servers per provider — verified in the shipped
+  bytecode before building). Missing-server hint + install command in
+  the Language Servers catalog; Doctor probes it (61 tools).
+- **One workspace** (journey finding): the New Project wizard's
+  first-run default now lands in `~/NMOX` — the same workspace fresh
+  launches aim at and Open Folder starts in — instead of inventing a
+  second `~/NMOXProjects` home. Existing users keep their most-recent
+  location.
+- **Wizard install is manager-aware** and its pre-trust execution now
+  carries its written blessing: it runs code the product itself just
+  wrote from its own template at the user's explicit request —
+  WorkspaceTrust guards other people's code.
+
+From tonight's senior-web-dev journey walk (create → install → serve →
+browser → stop, all live-verified green on the real app).
+
 ## [1.61.0] - 2026-07-13
 
 ### Biome speaks for the project
