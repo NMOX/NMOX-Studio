@@ -96,7 +96,7 @@ class NodePackageManagerTest {
 
     @Test
     @DisplayName("NPM-9000's ENGINE defaults to auto and resolves the detected manager")
-    void npm9000AutoEngine() throws IOException {
+    void npm9000AutoEngine() throws Exception {
         Files.writeString(dir.resolve("package.json"),
                 "{\"scripts\": {\"dev\": \"vite\"}}");
         Files.writeString(dir.resolve("yarn.lock"), "# yarn lockfile v1");
@@ -106,6 +106,9 @@ class NodePackageManagerTest {
             NpmScriptDevice scripts = new NpmScriptDevice();
             rack.addDevice(scripts);
             scripts.reloadScripts();
+            // the SCRIPT knob options land on the EDT; drain before dialing
+            // (this exact race false-failed on a loaded ubuntu runner)
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
             scripts.applyState(java.util.Map.of("script", "dev"));
             assertThat(scripts.buildCommand()).containsExactly("yarn", "run", "dev");
         } finally {
@@ -115,7 +118,7 @@ class NodePackageManagerTest {
 
     @Test
     @DisplayName("a saved patch that pinned npm keeps npm — auto was APPENDED, indices stable")
-    void savedPatchKeepsPinnedEngine() throws IOException {
+    void savedPatchKeepsPinnedEngine() throws Exception {
         Files.writeString(dir.resolve("package.json"),
                 "{\"scripts\": {\"dev\": \"vite\"}}");
         Files.writeString(dir.resolve("pnpm-lock.yaml"), "lockfileVersion: '9.0'");
@@ -125,6 +128,7 @@ class NodePackageManagerTest {
             NpmScriptDevice scripts = new NpmScriptDevice();
             rack.addDevice(scripts);
             scripts.reloadScripts();
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
             scripts.applyState(java.util.Map.of("manager", "0", "script", "dev")); // legacy index 0 = npm
             assertThat(scripts.buildCommand()).containsExactly("npm", "run", "dev");
         } finally {
