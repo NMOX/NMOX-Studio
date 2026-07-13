@@ -105,10 +105,13 @@ public enum RackPresets {
     },
 
     MONOREPO_LANES("Monorepo Lanes",
-            "Mixed repo: ROSETTA shows the mix, saves fan out to node + cargo test lanes") {
+            "Mixed repo: ROSETTA shows the mix, WAYPOINT dials the package, saves fan out to node + cargo test lanes") {
         @Override
         void wire(Rack rack) {
             RackDevice rosetta = add(rack, DeviceType.ROSETTA, null);
+            // JS-workspaces half of the monorepo story: dial a package and
+            // the Node lanes below run there (no-op on non-workspace repos)
+            RackDevice waypoint = add(rack, DeviceType.WAYPOINT, null);
             RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "true", "filter", "1"));
             RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
             RackDevice nodeTests = add(rack, DeviceType.TEST, Map.of("framework", "1"));
@@ -121,7 +124,7 @@ public enum RackPresets {
             rack.connect(cargoTests.getPort("out"), console.getPort("in"));
             // INSTALL on CRATE bootstraps every toolchain in sequence
             rack.connect(deps.getPort("out"), console.getPort("in"));
-            // ROSETTA needs no wiring in this preset — it works by being present
+            // ROSETTA and WAYPOINT need no wiring in this preset — they work by being present
         }
     },
 

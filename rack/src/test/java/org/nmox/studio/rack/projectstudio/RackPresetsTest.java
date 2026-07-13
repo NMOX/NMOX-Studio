@@ -31,6 +31,20 @@ class RackPresetsTest {
     }
 
     @Test
+    @DisplayName("Monorepo Lanes racks both conductors — ROSETTA for kinds, WAYPOINT for workspace packages")
+    void monorepoLanesHasBothConductors() {
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        try {
+            RackIO.fromJson(rack, RackPresets.MONOREPO_LANES.buildPatch());
+            assertThat(rack.getDevices()).extracting(d -> d.getTypeId())
+                    .contains("rosetta", "waypoint");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("Ship Gate chains build through every quality gate into the armed deploy")
     void shipGateChainsEveryGate() {
         Rack rack = new Rack();
