@@ -170,7 +170,10 @@ public final class CiExporter {
         if (dir == null || dir.equals(root)) {
             return "";
         }
-        String rel = root.toPath().relativize(dir.toPath()).toString();
+        // the workflow runs on GitHub's runners, not this OS: a Windows
+        // export must still say packages/web, never packages\web
+        String rel = root.toPath().relativize(dir.toPath()).toString()
+                .replace(java.io.File.separatorChar, '/');
         return rel.isEmpty() || rel.startsWith("..") ? "" : rel;
     }
 }
