@@ -497,6 +497,16 @@ Re-test on each NetBeans platform bump: the working detection gate +
 tests lived at editor/lsp (v1.62.0 sprint branch history) and can be
 restored verbatim.
 
+## Closed by v1.70.0 (the functional web)
+
+- **Elm/ReScript/PureScript verticals**; detection honesty (NODE outranks
+  them beside a package.json) test-pinned.
+- Two live-drive bugs fixed with tests: InteractiveProcess never stripped
+  ANSI (masked until a color-emitting REPL arrived); the Elm learning
+  space pinned the user's compiler version (a space must never).
+- js-debug readiness deadline 10s→30s — a real cold-machine fix a windows
+  docs-gate surfaced, not a CI-only widening.
+
 ## Closed by v1.69.0 (the indie stacks)
 
 - **Julia's half-support finished**: the grammar/outline/LSP/space half had
