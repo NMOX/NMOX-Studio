@@ -32,7 +32,10 @@ public final class JsDebugServer {
 
     private static final Logger LOG = Logger.getLogger(JsDebugServer.class.getName());
     private static final String READY_MARKER = "Debug server listening at";
-    private static final int READY_TIMEOUT_SECONDS = 10;
+    private static final int READY_TIMEOUT_SECONDS = 30; // until-ready wait, not a sleep: costs
+    // nothing when node starts fast. 10s false-failed on cold/loaded
+    // machines (antivirus-scanned windows runners; first-boot laptops)
+    // while the adapter itself was healthy.
 
     /** Live servers the JVM shutdown hook reaps; emptied by clean stop(). */
     private static final Set<JsDebugServer> LIVE = ConcurrentHashMap.newKeySet();
