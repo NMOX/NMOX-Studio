@@ -160,6 +160,13 @@ public class BuildDevice extends CommandDevice {
             case HASKELL -> List.of("stack", "build");
             case ZIG -> prod ? List.of("zig", "build", "-Doptimize=ReleaseFast") : List.of("zig", "build");
             case GLEAM -> List.of("gleam", "build");
+            case JULIA -> List.of("julia", "--project=.", "-e", "using Pkg; Pkg.precompile()");
+            case NIM -> List.of("nimble", "build");
+            case DLANG -> List.of("dub", "build");
+            case RACKET -> List.of("raco", "make", "main.rkt");
+            case ELM -> List.of("npx", "elm", "make", "src/Main.elm");
+            case RESCRIPT -> List.of("npx", "rescript", "build");
+            case PURESCRIPT -> List.of("spago", "build");
             case OCAML -> List.of("dune", "build");
             case CRYSTAL -> List.of("shards", "build");
             case MAVEN -> List.of("mvn", "-q", "package", "-DskipTests");

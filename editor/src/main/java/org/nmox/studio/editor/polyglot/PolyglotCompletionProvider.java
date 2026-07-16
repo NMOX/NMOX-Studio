@@ -57,6 +57,12 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-haskell", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-zig", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-gleam", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-nim", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-d", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-racket", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-elm", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-rescript", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-purescript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
@@ -221,6 +227,37 @@ public class PolyglotCompletionProvider implements CompletionProvider {
             Map.entry("text/x-gleam", set("as assert auto case const echo else fn if implement import let "
                     + "opaque panic pub todo type use "
                     + "True False Nil Ok Error Int Float String Bool List Result")),
+            Map.entry("text/x-nim", set("addr and as asm bind block break case cast concept const continue "
+                    + "converter defer discard distinct div do elif else end enum except export finally for "
+                    + "from func if import in include interface is isnot iterator let macro method mixin mod "
+                    + "nil not notin object of or out proc ptr raise ref return shl shr static template try "
+                    + "tuple type using var when while xor yield "
+                    + "int int8 int16 int32 int64 uint float float32 float64 bool char string seq array "
+                    + "openArray varargs set range true false echo len add newSeq")),
+            Map.entry("text/x-d", set("abstract alias align asm assert auto body bool break byte case cast "
+                    + "catch char class const continue dchar debug default delegate deprecated do double else "
+                    + "enum export extern false final finally float for foreach foreach_reverse function goto "
+                    + "if immutable import in inout int interface invariant is lazy long mixin module new "
+                    + "nothrow null out override package pragma private protected public pure real ref return "
+                    + "scope shared short static string struct super switch synchronized template this throw "
+                    + "true try typeof ubyte uint ulong union unittest ushort version void wchar while with "
+                    + "writeln writef import std")),
+            Map.entry("text/x-racket", set("define lambda let let* letrec if cond case when unless begin "
+                    + "set! quote quasiquote unquote and or not else require provide module module+ struct "
+                    + "define-struct define-syntax syntax-rules match for for/list for/fold map filter foldl "
+                    + "foldr apply values call/cc parameterize with-handlers displayln printf format list cons "
+                    + "car cdr null empty first rest length reverse append lang racket racket/base")),
+            Map.entry("text/x-elm", set("module exposing import as port type alias if then else case of "
+                    + "let in Bool Int Float String Char List Maybe Just Nothing Result Ok Err Cmd Sub Html "
+                    + "Program msg model init update view subscriptions main")),
+            Map.entry("text/x-rescript", set("let rec and as assert constraint downto else exception external "
+                    + "false for if in include lazy module mutable of open switch to true try type when while "
+                    + "with async await bool int float string option array list unit None Some Ok Error "
+                    + "Belt Js promise")),
+            Map.entry("text/x-purescript", set("module where import as hiding data type newtype class instance "
+                    + "derive if then else case of let in do ado forall infixl infixr foreign "
+                    + "Boolean Int Number String Char Array Maybe Just Nothing Either Left Right Effect Aff Unit "
+                    + "pure bind map discard")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "

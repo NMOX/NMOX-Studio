@@ -291,6 +291,60 @@ public final class LanguageServers {
         }
     }
 
+    /** Nim via nimlangserver (the official language server). */
+    @MimeRegistration(mimeType = "text/x-nim", service = LanguageServerProvider.class)
+    public static final class NimServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("nimlangserver"));
+        }
+    }
+
+    /** D via serve-d. */
+    @MimeRegistration(mimeType = "text/x-d", service = LanguageServerProvider.class)
+    public static final class DServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("serve-d"));
+        }
+    }
+
+    /** Elm via elm-language-server (npm: @elm-tooling/elm-language-server). */
+    @MimeRegistration(mimeType = "text/x-elm", service = LanguageServerProvider.class)
+    public static final class ElmServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "elm-language-server", "--stdio");
+        }
+    }
+
+    /** ReScript via the editor-support server shipped in rescript-vscode. */
+    @MimeRegistration(mimeType = "text/x-rescript", service = LanguageServerProvider.class)
+    public static final class ReScriptServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "rescript-language-server", "--stdio");
+        }
+    }
+
+    /** PureScript via purescript-language-server. */
+    @MimeRegistration(mimeType = "text/x-purescript", service = LanguageServerProvider.class)
+    public static final class PureScriptServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "purescript-language-server", "--stdio");
+        }
+    }
+
+    /** Racket via racket-langserver (launched through racket -l). */
+    @MimeRegistration(mimeType = "text/x-racket", service = LanguageServerProvider.class)
+    public static final class RacketServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("racket", "-l", "racket-langserver"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

@@ -82,6 +82,21 @@ Since the v1.36.0 senior-review capstone, five things graduated from
   stack has a version-aware console (v1.65–v1.67): HALO/NEXUS/VELOCITY/
   COSMOS/KINETIC/NIMBUS/PHOENIX/ARTISAN, each with the serving-registry
   deregister-on-stop contract.
+- **The functional web is first-class (v1.70.0).** Elm (elm.json,
+  reactor/make/elm-test, elm-repl space), ReScript (rescript.json +
+  bsconfig.json, build/clean), and PureScript (spago lanes) — with the
+  honest detection rule that NODE outranks all three beside a
+  package.json (test-pinned). The live drive found and fixed two bugs
+  (REPLs never stripped ANSI; a learning space must never pin the user's
+  compiler) and a windows-gate catch widened the js-debug readiness
+  deadline for cold machines. 55 grammars, 59 spaces.
+- **The indie stacks are first-class (v1.69.0).** Julia's half-shipped
+  support was finished (Project.toml kind, Pkg lanes, honest no-run), and
+  Nim, D, and Racket each got the full vertical: detection (the nimble
+  glob generalized from dotnet's), pinned grammars, LSP entries, every
+  AUTO lane, outlines, Doctor probes, and REPL learning spaces where a
+  real REPL exists (nim secret, racket -i; D's absence recorded, not
+  faked). 58 learning spaces, 52 grammars.
 - **Its module system tells the truth.** Spec versions track the product
   version with real inter-module dependency ranges (v1.47.0, ledger 20), so a
   module jar dropped into an older install is refused by the loader instead of

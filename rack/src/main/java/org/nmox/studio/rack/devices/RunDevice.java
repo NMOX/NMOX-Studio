@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -145,6 +145,13 @@ public class RunDevice extends CommandDevice {
             case ELIXIR -> "elixir";
             case ERLANG -> "erlang";
             case GLEAM -> "gleam";
+            case JULIA -> "julia";
+            case NIM -> "nim";
+            case DLANG -> "dlang";
+            case RACKET -> "racket";
+            case ELM -> "elm";
+            case PURESCRIPT -> "purescript";
+            case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
             case DOTNET -> "dotnet";
@@ -180,6 +187,13 @@ public class RunDevice extends CommandDevice {
             case "elixir" -> ProjectInspector.ProjectKind.ELIXIR;
             case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
             case "gleam" -> ProjectInspector.ProjectKind.GLEAM;
+            case "julia" -> ProjectInspector.ProjectKind.JULIA;
+            case "nim" -> ProjectInspector.ProjectKind.NIM;
+            case "dlang" -> ProjectInspector.ProjectKind.DLANG;
+            case "racket" -> ProjectInspector.ProjectKind.RACKET;
+            case "elm" -> ProjectInspector.ProjectKind.ELM;
+            case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
+            case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
@@ -220,7 +234,7 @@ public class RunDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
-        List<String> cmd = new ArrayList<>(switch (effectiveTarget()) {
+        List<String> base = switch (effectiveTarget()) {
             case "python" -> List.of("python3", entryPoint("main.py", "app.py", "src/main.py"));
             case "bun" -> List.of("bun", "run", "start");
             case "deno" -> List.of("deno", "task", "start");
@@ -229,6 +243,18 @@ public class RunDevice extends CommandDevice {
             case "elixir" -> List.of("mix", "run", "--no-halt");
             case "erlang" -> List.of("rebar3", "compile"); // BEAM apps run under mix/releases; compile is the honest floor
             case "gleam" -> List.of("gleam", "run");
+            // julia: main.jl is the script-project convention; entryPoint
+            // falls back honestly and the missing-file error names it
+            case "julia" -> List.of("julia", "--project=.",
+                    entryPoint("main.jl", "src/main.jl"));
+            case "nim" -> List.of("nimble", "run");
+            case "dlang" -> List.of("dub", "run");
+            case "racket" -> List.of("racket", entryPoint("main.rkt", "src/main.rkt"));
+            // elm reactor is the framework's own dev server (port 8000)
+            case "elm" -> List.of("npx", "elm", "reactor");
+            case "purescript" -> List.of("spago", "run");
+            // ReScript compiles but has no run entry point — grey IGNITION
+            case "rescript" -> null;
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention
             case "swift" -> List.of("swift", "run");
             case "dotnet" -> List.of("dotnet", "run");
@@ -262,7 +288,11 @@ public class RunDevice extends CommandDevice {
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")
                     : List.of("node", entryPoint("index.js", "main.js", "src/index.js"));
-        });
+        };
+        if (base == null) {
+            return null; // the toolchain has no run verb — IGNITION greys
+        }
+        List<String> cmd = new ArrayList<>(base);
         String args = argsLcd.getText().trim();
         if (!args.isEmpty()) {
             if ("rust".equals(effectiveTarget())) {

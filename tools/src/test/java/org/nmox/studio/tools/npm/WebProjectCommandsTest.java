@@ -258,6 +258,36 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Indie stacks speak their own toolchains on IDE actions (v1.69.0)")
+    void indieStackActions() {
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.JULIA, ActionProvider.COMMAND_TEST))
+                .containsExactly("julia", "--project=.", "-e", "using Pkg; Pkg.test()");
+        // julia has no standard run: the action greys out honestly
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.JULIA, ActionProvider.COMMAND_RUN))
+                .isNull();
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.NIM, ActionProvider.COMMAND_RUN))
+                .containsExactly("nimble", "run");
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.DLANG, ActionProvider.COMMAND_BUILD))
+                .containsExactly("dub", "build");
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.RACKET, ActionProvider.COMMAND_TEST))
+                .containsExactly("raco", "test", ".");
+    }
+
+    @Test
+    @DisplayName("Functional web IDE actions: elm reactor/make/test, rescript build, spago run (v1.70.0)")
+    void functionalWebActions() {
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.ELM, ActionProvider.COMMAND_RUN))
+                .containsExactly("npx", "elm", "reactor");
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.RESCRIPT, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npx", "rescript", "build");
+        // rescript has no standard test runner: greys out honestly
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.RESCRIPT, ActionProvider.COMMAND_TEST))
+                .isNull();
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.PURESCRIPT, ActionProvider.COMMAND_RUN))
+                .containsExactly("spago", "run");
+    }
+
+    @Test
     @DisplayName("Gleam speaks gleam on all four actions (v1.59.0 expansion)")
     void gleamAllFourActions() {
         java.io.File d = new java.io.File(".");

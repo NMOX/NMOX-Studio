@@ -4,6 +4,105 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.71.0] - 2026-07-16
+
+### Senior review of the v1.64–v1.70 surface
+
+A read-only two-lens audit (framework consoles + stack lanes) over the
+day's ~10 releases, then fixes for what it proved. The console lens came
+back clean — all 8 framework devices had correct serving-registry parity,
+readyFired resets, and version-package/LCD matching (no copy-adaptation
+slips). The stack-lane lens found three real issues, all fixed and
+mutation-proven:
+
+- **Racket build compiled the wrong file.** FORGE and the IDE's Build ran
+  `raco make info.rkt` — but info.rkt is Racket's package *metadata*, not
+  the program; it compiled nothing useful and failed on script-style
+  projects. Now `raco make main.rkt`, matching the run/test lanes.
+- **CRATE's CHECK silently mutated for five tools.** The outdated/CHECK
+  button fell through to the install/download default for Gleam, Nim, D,
+  Racket, and PureScript (none have an "outdated" query) — a "check for
+  updates" button that installed. Now returns null so CHECK greys, while
+  install/update stay live.
+- **ReScript fell through to node.** A ReScript project (build-only, no
+  run or test) resolved IGNITION to `npm start` and VERITAS to `npm test`
+  instead of greying — the rack devices lacked the RESCRIPT case the IDE
+  lane already had. Both now grey honestly; FORGE still builds.
+
+Blessed, not fixed (recorded): NextDevice's START button doesn't reset the
+ready/serving state the way the newer PREVIEW paths do (original reference
+behavior, minor); the same outdated-fallthrough exists for older
+single-command kinds (Scala/Gradle/Clojure/Zig/OCaml) — pre-existing,
+outside this review's surface.
+
+## [1.70.0] - 2026-07-16
+
+### The functional web — Elm, ReScript, PureScript
+
+The compile-to-JS functional languages, squarely on-mission for a web
+studio, each get the full vertical:
+
+- **Elm**: `elm.json` ProjectKind; IGNITION serves `elm reactor` (the
+  framework's own dev server), FORGE `elm make src/Main.elm`, VERITAS
+  `elm-test`; elm-language-server entry; module/type/annotation outline;
+  a learning space on `elm repl` (the REPL that prints types beside
+  values) with a real elm.json + Main.elm sample.
+- **ReScript**: `rescript.json` + legacy `bsconfig.json` kinds;
+  `rescript build`/`clean` lanes; rescript-language-server entry; rides
+  the generic brace outline. No standard test runner — the action greys
+  honestly.
+- **PureScript**: `spago.yaml`/`spago.dhall` kinds; spago
+  run/build/test/install lanes; purescript-language-server entry; rides
+  the Haskell-family outline.
+- **Detection honesty**: these projects almost always sit beside a
+  package.json, so NODE outranks them in primary detection (the
+  WEBPACK-family rule, test-pinned) while detectKinds still lists them
+  for ROSETTA and explicit targets speak their toolchains.
+- ELM/RESCRIPT dependencies live in package.json — CRATE's Node lane
+  (npm/yarn/pnpm detection) already covers them; PureScript gets real
+  `spago install`/`upgrade` verbs.
+- Doctor probes elm/spago/purs (68 tools); grammars pinned by sha256
+  (elm-tooling, rescript-lang, nwolverson — MIT). 55 grammars, 59 spaces.
+
+## [1.69.0] - 2026-07-13
+
+### The indie stacks — Julia completed, Nim, D, and Racket first-class
+
+The awesome-but-niche languages get the full-vertical treatment, and a
+half-shipped one gets finished:
+
+- **Julia, completed.** The grammar/outline/LSP/learning-space half shipped
+  long ago; now `Project.toml`/`JuliaProject.toml` is a ProjectKind, and
+  every AUTO lane speaks Pkg: CRATE `Pkg.instantiate()` (update →
+  `Pkg.update()`, outdated → `Pkg.status(outdated=true)`), FORGE
+  `Pkg.precompile()`, VERITAS `Pkg.test()`. Run greys out honestly — a Julia
+  package has no standard entry point (IGNITION's julia target runs
+  `main.jl` when the script convention is present).
+- **Nim.** `*.nimble` glob detection (root or one level down, the .NET
+  idiom); pinned grammar + CSL + `#` comment toggle + keywords + spellcheck;
+  `nimlangserver` LSP entry; nimble run/build/test/install lanes everywhere
+  (IGNITION/FORGE/VERITAS/CRATE, IDE actions, ROSETTA); an outline
+  (procs/funcs/types); and a learning space driven by `nim secret` — the
+  compiler's built-in interactive VM.
+- **D.** `dub.json`/`dub.sdl` ProjectKind; pinned grammar (D rides the
+  generic brace outline); `serve-d` LSP entry; dub run/build/test lanes,
+  install = `dub upgrade --missing-only` (fetches missing deps without
+  moving pins). No learning space: D has no standard REPL — recorded
+  honestly rather than faked.
+- **Racket.** `info.rkt` ProjectKind; pinned grammar + `;` comments +
+  keywords; `racket-langserver` entry; racket/raco lanes (run `main.rkt`,
+  build `raco make`, test `raco test .`, deps `raco pkg install --auto`);
+  a lisp-family outline (defines/structs/modules); and a learning space
+  on `racket -i` (the force-interactive law).
+- **Environment Doctor** probes julia/nim/nimble/dub/racket (65 tools).
+- Grammar provenance pinned by sha256 in NOTICE-grammars.md
+  (nim-lang/vscode-nim, Pure-D/code-d, Eugleo/magic-racket — all MIT).
+
+Detection, lane, and IDE-action coverage for all four stacks ride the
+parameterized suites; nim-glob and julia-lane mutations fail named tests.
+Odin was considered and skipped honestly: no manifest file exists to
+detect. 58 learning spaces; 52 grammars.
+
 ## [1.68.0] - 2026-07-13
 
 ### Framework learning spaces — Astro, SvelteKit, Nuxt (56 spaces)

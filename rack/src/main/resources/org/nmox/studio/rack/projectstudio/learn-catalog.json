@@ -696,6 +696,108 @@
    "tutorial": "# Julia\n\nJulia was designed to solve the \"two-language problem\": prototype in a high-level language, then rewrite the hot loops in C. Julia lets you do both at once — it reads like Python but its just-in-time compiler produces code that rivals C. It shines in numerical, scientific, and data-heavy work, with array math and broadcasting built in.\n\n## Your REPL\n\nClick **START** to launch `julia`. The prompt is `julia>`. Expressions evaluate and print their result immediately. Try these in order:\n\n```julia\n1 + 2\nsum(1:100)\n[x^2 for x in 1:5]\nuppercase(\"hello\")\nmap(x -> x * x, 1:5)\n```\n\nGotchas: arrays and ranges are **1-indexed**. `1:100` is an inclusive range, and math is *vectorized* — many functions like `sum` accept a range directly. The `[expr for x in ...]` form is a comprehension. The very first call in a session may pause briefly while Julia compiles; subsequent calls are fast.\n\n## The sample\n\nOpen `hello.jl`. It greets you with `println`, builds `squares` using a comprehension `[x^2 for x in 1:5]`, prints them, then sums `1:100` with the built-in `sum`.\n\n## Try this\n\n- Evaluate `filter(iseven, 1:10)`.\n- Try broadcasting: `(1:5) .^ 2` (note the dot).\n- Compute `prod(1:5)` (factorial of 5).\n\n## Going further\n\nThe official manual: https://docs.julialang.org/en/v1/manual/getting-started/\n"
   },
   {
+   "slug": "nim",
+   "name": "Nim",
+   "category": "LANGUAGE",
+   "family": "Systems",
+   "blurb": "Python's readability compiled to C's speed — metaprogramming so good the stdlib is built on it.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "nim",
+     "secret"
+    ],
+    "prompt": ">>>",
+    "snippets": [
+     "echo 2 + 3",
+     "let xs = @[1, 2, 3]",
+     "echo xs.len",
+     "for i in 1..3: echo i * i",
+     "import strutils; echo \"nim\".toUpperAscii()"
+    ]
+   },
+   "install": {
+    "mac": "brew install nim",
+    "linux": "sudo apt install nim",
+    "windows": "winget install nim-lang.nim"
+   },
+   "files": [
+    {
+     "path": "hello.nim",
+     "content": "# Compile and run me with IGNITION (nimble run) or:\n#   nim c -r hello.nim\nproc greet(name: string): string =\n  \"Hello, \" & name & \"!\"\n\necho greet(\"Nim\")\n\n# Uniform function call syntax: these are the same call\necho \"nim\".greet()\n"
+    }
+   ],
+   "tutorial": "# Nim\n\nNim compiles to C, so it runs at systems speed — but reads like a\nscripting language, and its macro system rewrites the AST at compile\ntime (much of the standard library is built with it).\n\n## Your REPL\n\nClick **START** and the studio runs `nim secret` — the compiler's\ninteractive VM. It executes Nim at the prompt (a hidden gem: it ships\nwith every Nim install).\n\n## The sample\n\n`hello.nim` shows procs and uniform function call syntax —\n`greet(\"Nim\")` and `\"Nim\".greet()` are the same call, which is how\nNim gets method-chaining without classes.\n\n## Try\n\n1. In the REPL: `echo 2 + 3`, then `for i in 1..3: echo i * i`.\n2. Compile the sample: rack IGNITION on a nimble project runs\n   `nimble run`; or in a terminal `nim c -r hello.nim`.\n3. Break it on purpose: change `& name` to `& 42` and read the\n   compile error — Nim's type errors name both sides.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install nim\n```\n"
+  },
+  {
+   "slug": "racket",
+   "name": "Racket",
+   "category": "LANGUAGE",
+   "family": "Lisp",
+   "blurb": "The language for making languages — a Scheme with batteries, #lang dialects, and a teaching soul.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "racket",
+     "-i"
+    ],
+    "prompt": ">",
+    "snippets": [
+     "(+ 1 2)",
+     "(map sqr '(1 2 3))",
+     "(define (double x) (* 2 x))",
+     "(double 21)",
+     "(for/list ([i (in-range 5)]) (* i i))"
+    ]
+   },
+   "install": {
+    "mac": "brew install minimal-racket",
+    "linux": "sudo apt install racket",
+    "windows": "winget install Racket.Racket"
+   },
+   "files": [
+    {
+     "path": "main.rkt",
+     "content": "#lang racket\n;; Run me with IGNITION (racket main.rkt) or the REPL\n\n(define (fizzbuzz n)\n  (for ([i (in-range 1 (add1 n))])\n    (displayln (cond [(zero? (modulo i 15)) \"FizzBuzz\"]\n                     [(zero? (modulo i 3)) \"Fizz\"]\n                     [(zero? (modulo i 5)) \"Buzz\"]\n                     [else i]))))\n\n(fizzbuzz 15)\n"
+    }
+   ],
+   "tutorial": "# Racket\n\nRacket is the language-oriented programming language: a modern Scheme\nwhose superpower is building *new* languages — every file declares its\ndialect with `#lang`, and the ecosystem ships dozens.\n\n## Your REPL\n\nClick **START** and the studio runs `racket -i` — the interactive\nread-eval-print loop (the `-i` matters: piped stdin needs it).\n\n## The sample\n\n`main.rkt` is classic Racket: `#lang racket`, a `define`, and a\n`for` comprehension driving `cond`.\n\n## Try\n\n1. `(+ 1 2)` then `(map sqr '(1 2 3))` in the REPL.\n2. Define and call: `(define (double x) (* 2 x))` then `(double 21)`.\n3. Run the file: IGNITION on a racket project runs `racket main.rkt`.\n4. Peek at the language-making soul: change `#lang racket` to\n   `#lang slideshow` in a new file and evaluate `(circle 30)`.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install minimal-racket\n```\n"
+  },
+  {
+   "slug": "elm",
+   "name": "Elm",
+   "category": "LANGUAGE",
+   "family": "Functional web",
+   "blurb": "The delightful language for reliable web apps — no runtime exceptions, and the friendliest compiler in the business.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "elm",
+     "repl"
+    ],
+    "prompt": ">",
+    "snippets": [
+     "1 + 2",
+     "String.toUpper \"hello\"",
+     "List.map (\\x -> x * x) [1, 2, 3]",
+     "type alias Point = { x : Float, y : Float }",
+     "{ x = 1.5, y = 2.5 }"
+    ]
+   },
+   "install": {
+    "mac": "brew install elm",
+    "linux": "npm i -g elm",
+    "windows": "npm i -g elm"
+   },
+   "files": [
+    {
+     "path": "src/Main.elm",
+     "content": "module Main exposing (main)\n\n-- Serve me with IGNITION (elm reactor), or build:\n--   elm make src/Main.elm\n\nimport Html exposing (Html, text)\n\ngreeting : String -> String\ngreeting name =\n    \"Hello, \" ++ name ++ \"!\"\n\nmain : Html msg\nmain =\n    text (greeting \"Elm\")\n"
+    }
+   ],
+   "tutorial": "# Elm\n\nElm compiles to JavaScript and famously has **no runtime exceptions** —\nif it compiles, it doesn't crash. Its compiler errors read like a\npatient teammate explaining what to fix.\n\n## Your REPL\n\nClick **START** and the studio runs `elm repl`. Try the snippets — the\nREPL prints the *type* of every result beside its value, which is half\nthe Elm experience.\n\n## The sample\n\n`src/Main.elm` is the smallest real Elm app: a typed `greeting`\nfunction rendered with `Html.text`.\n\n## Try\n\n1. `String.toUpper \"hello\"` — note the `: String` in the output.\n2. `List.map (\\x -> x * x) [1, 2, 3]`.\n3. Make it an app: run `elm init` once (it writes an elm.json matched\n   to YOUR elm version — a bundled one would pin the wrong version),\n   then rack IGNITION serves `elm reactor` — open the URL and click\n   into `src/Main.elm`.\n4. Break it on purpose: change `++ name` to `++ 42` in Main.elm and\n   rebuild — read the famously friendly error.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install elm\n```\n"
+  },
+  {
    "slug": "r",
    "name": "R",
    "category": "LANGUAGE",
