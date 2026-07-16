@@ -58,6 +58,8 @@ public final class OutlineModel {
             case "r" -> r(lines);
             case "perl" -> perl(lines);
             case "julia" -> julia(lines);
+            case "nim" -> nim(lines);
+            case "racket" -> racket(lines);
             case "fsharp" -> fsharp(lines);
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
@@ -95,6 +97,9 @@ public final class OutlineModel {
             case "text/x-r" -> "r";
             case "text/x-perl" -> "perl";
             case "text/x-julia" -> "julia";
+            case "text/x-nim" -> "nim";
+            case "text/x-d" -> "brace"; // D is a brace language; the generic extractor reads it
+            case "text/x-racket" -> "racket";
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";
             case "text/x-zig" -> "zig";
@@ -515,6 +520,51 @@ public final class OutlineModel {
 
     private static final Pattern CLOJURE = Pattern.compile(
             "^\\((ns|defprotocol|defrecord|deftype|defmacro|defn-?|def)\\s+([A-Za-z0-9_*+!?<>=.'/-]+)");
+
+    private static final Pattern NIM_ROUTINE = Pattern.compile(
+            "^\\s*(proc|func|method|iterator|template|macro|converter)\\s+([A-Za-z_][A-Za-z0-9_]*)");
+    private static final Pattern NIM_TYPE = Pattern.compile(
+            "^\\s{2,}([A-Z][A-Za-z0-9_]*)\\s*\\*?\\s*=\\s*(?:ref\\s+)?(object|enum|tuple|distinct)");
+
+    /** Nim: routines by keyword, types inside top-level {@code type} blocks. */
+    private static List<Item> nim(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher r = NIM_ROUTINE.matcher(lines[i]);
+            if (r.find()) {
+                out.add(new Item("macro".equals(r.group(1)) || "template".equals(r.group(1))
+                        ? OutlineKind.MODULE : OutlineKind.FUNCTION, r.group(2), null, i, 0));
+                continue;
+            }
+            Matcher t = NIM_TYPE.matcher(lines[i]);
+            if (t.find()) {
+                out.add(new Item(OutlineKind.TYPE, t.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern RACKET_DEF = Pattern.compile(
+            "^\\((define(?:-struct|-syntax|-values)?|struct|module\\+?)\\s+\\(?([A-Za-z0-9_*+!?<>=./-]+)");
+
+    /** Racket: top-level defines; the (define (name args) shape unwraps its paren. */
+    private static List<Item> racket(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher m = RACKET_DEF.matcher(lines[i]);
+            if (m.find()) {
+                OutlineKind kind = switch (m.group(1)) {
+                    case "struct", "define-struct" -> OutlineKind.TYPE;
+                    case "define-syntax" -> OutlineKind.MODULE;
+                    case "module", "module+" -> OutlineKind.MODULE;
+                    default -> lines[i].contains("(define (")
+                            ? OutlineKind.FUNCTION : OutlineKind.FIELD;
+                };
+                out.add(new Item(kind, m.group(2), null, i, 0));
+            }
+        }
+        return out;
+    }
 
     /** Top-level forms only; Lisp nesting by parens is not this outline's business. */
     private static List<Item> clojure(String[] lines) {

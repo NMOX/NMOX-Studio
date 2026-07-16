@@ -21,6 +21,7 @@ public class WebProjectFactory implements ProjectFactory {
         "build.gradle.kts", "pyproject.toml", "requirements.txt", "Gemfile",
         "composer.json", "angular.json", "bun.lock", "bunfig.toml", "deno.json", "deno.jsonc",
         "foundry.toml",
+        "Project.toml", "JuliaProject.toml", "dub.json", "dub.sdl", "info.rkt",
         // classic web (v1.34): manifest-only legacy repos open as projects
         "bower.json", "Gruntfile.js", "Gruntfile.coffee",
         "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",

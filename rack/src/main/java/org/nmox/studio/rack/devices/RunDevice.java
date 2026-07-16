@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -145,6 +145,10 @@ public class RunDevice extends CommandDevice {
             case ELIXIR -> "elixir";
             case ERLANG -> "erlang";
             case GLEAM -> "gleam";
+            case JULIA -> "julia";
+            case NIM -> "nim";
+            case DLANG -> "dlang";
+            case RACKET -> "racket";
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
             case DOTNET -> "dotnet";
@@ -180,6 +184,10 @@ public class RunDevice extends CommandDevice {
             case "elixir" -> ProjectInspector.ProjectKind.ELIXIR;
             case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
             case "gleam" -> ProjectInspector.ProjectKind.GLEAM;
+            case "julia" -> ProjectInspector.ProjectKind.JULIA;
+            case "nim" -> ProjectInspector.ProjectKind.NIM;
+            case "dlang" -> ProjectInspector.ProjectKind.DLANG;
+            case "racket" -> ProjectInspector.ProjectKind.RACKET;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
@@ -229,6 +237,13 @@ public class RunDevice extends CommandDevice {
             case "elixir" -> List.of("mix", "run", "--no-halt");
             case "erlang" -> List.of("rebar3", "compile"); // BEAM apps run under mix/releases; compile is the honest floor
             case "gleam" -> List.of("gleam", "run");
+            // julia: main.jl is the script-project convention; entryPoint
+            // falls back honestly and the missing-file error names it
+            case "julia" -> List.of("julia", "--project=.",
+                    entryPoint("main.jl", "src/main.jl"));
+            case "nim" -> List.of("nimble", "run");
+            case "dlang" -> List.of("dub", "run");
+            case "racket" -> List.of("racket", entryPoint("main.rkt", "src/main.rkt"));
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention
             case "swift" -> List.of("swift", "run");
             case "dotnet" -> List.of("dotnet", "run");

@@ -49,6 +49,20 @@ final class WebProjectCommands {
             case GLEAM:
                 return fixed(action, List.of("gleam", "run"), List.of("gleam", "build"),
                         List.of("gleam", "test"), List.of("gleam", "clean"));
+            case JULIA:
+                return fixed(action, null,
+                        List.of("julia", "--project=.", "-e", "using Pkg; Pkg.precompile()"),
+                        List.of("julia", "--project=.", "-e", "using Pkg; Pkg.test()"), null);
+            case NIM:
+                return fixed(action, List.of("nimble", "run"), List.of("nimble", "build"),
+                        List.of("nimble", "test"), null);
+            case DLANG:
+                return fixed(action, List.of("dub", "run"), List.of("dub", "build"),
+                        List.of("dub", "test"), List.of("dub", "clean"));
+            case RACKET:
+                return fixed(action, List.of("racket", "main.rkt"),
+                        List.of("raco", "make", "info.rkt"),
+                        List.of("raco", "test", "."), null);
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);
