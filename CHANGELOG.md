@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.71.0] - 2026-07-16
+
+### Senior review of the v1.64–v1.70 surface
+
+A read-only two-lens audit (framework consoles + stack lanes) over the
+day's ~10 releases, then fixes for what it proved. The console lens came
+back clean — all 8 framework devices had correct serving-registry parity,
+readyFired resets, and version-package/LCD matching (no copy-adaptation
+slips). The stack-lane lens found three real issues, all fixed and
+mutation-proven:
+
+- **Racket build compiled the wrong file.** FORGE and the IDE's Build ran
+  `raco make info.rkt` — but info.rkt is Racket's package *metadata*, not
+  the program; it compiled nothing useful and failed on script-style
+  projects. Now `raco make main.rkt`, matching the run/test lanes.
+- **CRATE's CHECK silently mutated for five tools.** The outdated/CHECK
+  button fell through to the install/download default for Gleam, Nim, D,
+  Racket, and PureScript (none have an "outdated" query) — a "check for
+  updates" button that installed. Now returns null so CHECK greys, while
+  install/update stay live.
+- **ReScript fell through to node.** A ReScript project (build-only, no
+  run or test) resolved IGNITION to `npm start` and VERITAS to `npm test`
+  instead of greying — the rack devices lacked the RESCRIPT case the IDE
+  lane already had. Both now grey honestly; FORGE still builds.
+
+Blessed, not fixed (recorded): NextDevice's START button doesn't reset the
+ready/serving state the way the newer PREVIEW paths do (original reference
+behavior, minor); the same outdated-fallthrough exists for older
+single-command kinds (Scala/Gradle/Clojure/Zig/OCaml) — pre-existing,
+outside this review's surface.
+
 ## [1.70.0] - 2026-07-16
 
 ### The functional web — Elm, ReScript, PureScript

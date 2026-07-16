@@ -93,6 +93,7 @@ public class PackageManagerDevice extends CommandDevice {
             };
             case GLEAM -> switch (verb) {
                 case "update" -> List.of("gleam", "deps", "update");
+                case "outdated" -> null; // gleam has no outdated query — CHECK greys
                 default -> List.of("gleam", "deps", "download");
             };
             case JULIA -> switch (verb) {
@@ -102,21 +103,25 @@ public class PackageManagerDevice extends CommandDevice {
             };
             case NIM -> switch (verb) {
                 case "update" -> List.of("nimble", "refresh");
+                case "outdated" -> null; // nimble has no outdated query — CHECK greys
                 default -> List.of("nimble", "install", "-d", "-y");
             };
             case DLANG -> switch (verb) {
                 case "update" -> List.of("dub", "upgrade");
+                case "outdated" -> null; // dub has no outdated query — CHECK greys
                 default -> List.of("dub", "upgrade", "--missing-only");
             };
             case RACKET -> switch (verb) {
                 case "update" -> List.of("raco", "pkg", "update", "--auto");
+                case "outdated" -> null; // raco has no outdated query — CHECK greys
                 default -> List.of("raco", "pkg", "install", "--auto", "--skip-installed");
             };
             case PURESCRIPT -> switch (verb) {
                 case "update" -> List.of("spago", "upgrade");
+                case "outdated" -> null; // spago has no outdated query — CHECK greys
                 default -> List.of("spago", "install");
             };
-            // ELM/RESCRIPT deps live in package.json beside their manifests
+            // ELM deps live in elm.json / RESCRIPT deps in package.json beside their manifests
             // — the NODE lane (npm/yarn/pnpm detection) already covers them
             case ELM, RESCRIPT -> null;
             case ERLANG -> switch (verb) {

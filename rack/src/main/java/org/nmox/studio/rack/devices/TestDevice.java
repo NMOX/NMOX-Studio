@@ -219,6 +219,7 @@ public class TestDevice extends CommandDevice {
             case RACKET: return "racket";
             case ELM: return "elm";
             case PURESCRIPT: return "purescript";
+            case RESCRIPT: return "rescript"; // build-only: no test runner
             case CLOJURE: return "clojure";
             case SWIFT: return "swift";
             case DOTNET: return "dotnet";
@@ -264,6 +265,7 @@ public class TestDevice extends CommandDevice {
             case "racket" -> ProjectInspector.ProjectKind.RACKET;
             case "elm" -> ProjectInspector.ProjectKind.ELM;
             case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
+            case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
@@ -307,6 +309,8 @@ public class TestDevice extends CommandDevice {
             case "racket" -> cmd.addAll(List.of("raco", "test", "."));
             case "elm" -> cmd.addAll(List.of("npx", "elm-test"));
             case "purescript" -> cmd.addAll(List.of("spago", "test"));
+            // ReScript has no standard test runner — leave cmd empty (VERITAS greys)
+            case "rescript" -> { }
             case "clojure" -> cmd.addAll(List.of("clojure", "-X:test"));
             case "swift" -> cmd.addAll(List.of("swift", "test"));
             case "dotnet" -> cmd.addAll(List.of("dotnet", "test"));

@@ -146,6 +146,45 @@ class PolyglotDevicesTest {
     }
 
     @Test
+    @DisplayName("Review fixes (v1.71.0): Racket build targets the program, CHECK greys where there's no outdated verb, ReScript greys run/test")
+    void reviewFixes(@TempDir Path root) throws IOException {
+        // Racket build compiles main.rkt (the program), not info.rkt (metadata)
+        Path rkt = Files.createDirectories(root.resolve("rkt"));
+        Files.writeString(rkt.resolve("info.rkt"), "#lang info");
+        Rack r1 = new Rack(); r1.setProjectDir(rkt.toFile());
+        try {
+            BuildDevice b = new BuildDevice(); r1.addDevice(b);
+            assertThat(b.buildCommand()).containsExactly("raco", "make", "main.rkt");
+        } finally { r1.shutdown(); }
+
+        // CRATE CHECK (outdated) greys for tools without an outdated query
+        for (String manifest : new String[]{"gleam.toml", "app.nimble", "dub.json", "info.rkt", "spago.yaml"}) {
+            Path d = Files.createDirectories(root.resolve("crate-" + manifest.replace('.', '_')));
+            Files.writeString(d.resolve(manifest), "# manifest");
+            Rack r = new Rack(); r.setProjectDir(d.toFile());
+            try {
+                PackageManagerDevice pm = new PackageManagerDevice(); r.addDevice(pm);
+                assertThat(pm.cmd("outdated")).as(manifest + " CHECK greys").isNull();
+                // but install still works (proves it's the outdated verb, not the kind)
+                assertThat(pm.cmd("install")).as(manifest + " install works").isNotNull();
+            } finally { r.shutdown(); }
+        }
+
+        // ReScript greys IGNITION and VERITAS (build-only, no run/test)
+        Path res = Files.createDirectories(root.resolve("res"));
+        Files.writeString(res.resolve("rescript.json"), "{}");
+        Rack r2 = new Rack(); r2.setProjectDir(res.toFile());
+        try {
+            RunDevice run = new RunDevice(); r2.addDevice(run);
+            assertThat(run.buildCommand()).as("ReScript IGNITION greys").isNull();
+            TestDevice test = new TestDevice(); r2.addDevice(test);
+            assertThat(test.buildCommand()).as("ReScript VERITAS greys").isEmpty();
+            BuildDevice build = new BuildDevice(); r2.addDevice(build);
+            assertThat(build.buildCommand()).as("ReScript FORGE builds").containsExactly("npx", "rescript", "build");
+        } finally { r2.shutdown(); }
+    }
+
+    @Test
     @DisplayName("Nim detects via the *.nimble glob, root or one level down")
     void nimGlobDetects(@TempDir Path dir) throws IOException {
         Files.writeString(dir.resolve("app.nimble"), "# nimble manifest");
@@ -177,7 +216,7 @@ class PolyglotDevicesTest {
                         new String[]{"dub", "test"},
                         new String[]{"dub", "upgrade", "--missing-only"}),
                 new Lane("info.rkt", new String[]{"racket", "main.rkt"},
-                        new String[]{"raco", "make", "info.rkt"},
+                        new String[]{"raco", "make", "main.rkt"},
                         new String[]{"raco", "test", "."},
                         new String[]{"raco", "pkg", "install", "--auto", "--skip-installed"}));
         for (Lane lane : lanes) {
