@@ -22,7 +22,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RosettaDevice extends RackDevice {
 
     private static final String[] TOOLCHAINS = {
-        "auto", "node", "rust", "go", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "python", "ruby", "php", "make", "julia", "nim", "dlang", "racket"};
+        "auto", "node", "rust", "go", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "python", "ruby", "php", "make", "julia", "nim", "dlang", "racket", "elm", "rescript", "purescript"};
 
     private final Knob toolchainKnob;
     private final LcdDisplay detectedLcd;

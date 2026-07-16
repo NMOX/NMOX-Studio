@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -149,6 +149,8 @@ public class RunDevice extends CommandDevice {
             case NIM -> "nim";
             case DLANG -> "dlang";
             case RACKET -> "racket";
+            case ELM -> "elm";
+            case PURESCRIPT -> "purescript";
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
             case DOTNET -> "dotnet";
@@ -188,6 +190,8 @@ public class RunDevice extends CommandDevice {
             case "nim" -> ProjectInspector.ProjectKind.NIM;
             case "dlang" -> ProjectInspector.ProjectKind.DLANG;
             case "racket" -> ProjectInspector.ProjectKind.RACKET;
+            case "elm" -> ProjectInspector.ProjectKind.ELM;
+            case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
             case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
@@ -244,6 +248,9 @@ public class RunDevice extends CommandDevice {
             case "nim" -> List.of("nimble", "run");
             case "dlang" -> List.of("dub", "run");
             case "racket" -> List.of("racket", entryPoint("main.rkt", "src/main.rkt"));
+            // elm reactor is the framework's own dev server (port 8000)
+            case "elm" -> List.of("npx", "elm", "reactor");
+            case "purescript" -> List.of("spago", "run");
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention
             case "swift" -> List.of("swift", "run");
             case "dotnet" -> List.of("dotnet", "run");

@@ -764,6 +764,40 @@
    "tutorial": "# Racket\n\nRacket is the language-oriented programming language: a modern Scheme\nwhose superpower is building *new* languages — every file declares its\ndialect with `#lang`, and the ecosystem ships dozens.\n\n## Your REPL\n\nClick **START** and the studio runs `racket -i` — the interactive\nread-eval-print loop (the `-i` matters: piped stdin needs it).\n\n## The sample\n\n`main.rkt` is classic Racket: `#lang racket`, a `define`, and a\n`for` comprehension driving `cond`.\n\n## Try\n\n1. `(+ 1 2)` then `(map sqr '(1 2 3))` in the REPL.\n2. Define and call: `(define (double x) (* 2 x))` then `(double 21)`.\n3. Run the file: IGNITION on a racket project runs `racket main.rkt`.\n4. Peek at the language-making soul: change `#lang racket` to\n   `#lang slideshow` in a new file and evaluate `(circle 30)`.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install minimal-racket\n```\n"
   },
   {
+   "slug": "elm",
+   "name": "Elm",
+   "category": "LANGUAGE",
+   "family": "Functional web",
+   "blurb": "The delightful language for reliable web apps — no runtime exceptions, and the friendliest compiler in the business.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "elm",
+     "repl"
+    ],
+    "prompt": ">",
+    "snippets": [
+     "1 + 2",
+     "String.toUpper \"hello\"",
+     "List.map (\\x -> x * x) [1, 2, 3]",
+     "type alias Point = { x : Float, y : Float }",
+     "{ x = 1.5, y = 2.5 }"
+    ]
+   },
+   "install": {
+    "mac": "brew install elm",
+    "linux": "npm i -g elm",
+    "windows": "npm i -g elm"
+   },
+   "files": [
+    {
+     "path": "src/Main.elm",
+     "content": "module Main exposing (main)\n\n-- Serve me with IGNITION (elm reactor), or build:\n--   elm make src/Main.elm\n\nimport Html exposing (Html, text)\n\ngreeting : String -> String\ngreeting name =\n    \"Hello, \" ++ name ++ \"!\"\n\nmain : Html msg\nmain =\n    text (greeting \"Elm\")\n"
+    }
+   ],
+   "tutorial": "# Elm\n\nElm compiles to JavaScript and famously has **no runtime exceptions** —\nif it compiles, it doesn't crash. Its compiler errors read like a\npatient teammate explaining what to fix.\n\n## Your REPL\n\nClick **START** and the studio runs `elm repl`. Try the snippets — the\nREPL prints the *type* of every result beside its value, which is half\nthe Elm experience.\n\n## The sample\n\n`src/Main.elm` is the smallest real Elm app: a typed `greeting`\nfunction rendered with `Html.text`.\n\n## Try\n\n1. `String.toUpper \"hello\"` — note the `: String` in the output.\n2. `List.map (\\x -> x * x) [1, 2, 3]`.\n3. Make it an app: run `elm init` once (it writes an elm.json matched\n   to YOUR elm version — a bundled one would pin the wrong version),\n   then rack IGNITION serves `elm reactor` — open the URL and click\n   into `src/Main.elm`.\n4. Break it on purpose: change `++ name` to `++ 42` in Main.elm and\n   rebuild — read the famously friendly error.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install elm\n```\n"
+  },
+  {
    "slug": "r",
    "name": "R",
    "category": "LANGUAGE",

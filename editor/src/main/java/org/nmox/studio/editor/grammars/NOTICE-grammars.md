@@ -33,6 +33,9 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | nim.tmLanguage.json | sha256 c13fd45c842aa738fdc003c9c6f09b3d64667e76e4ce3a17d5d9a0f24726e428 | nim-lang/vscode-nim syntaxes/nim.json (MIT) |
 | d.tmLanguage.json | sha256 66824108f51fadc7104619379116254d1c352cb306b654514af23a7b4b83df2a | Pure-D/code-d syntaxes/d.json (MIT) |
 | racket.tmLanguage.json | sha256 e57ecf8b2cd382c6286d3b2e82c5664fe3bf8683d300bd3875f1bc4a9bb818c7 | Eugleo/magic-racket syntaxes/racket.tmLanguage.json (MIT) |
+| elm.tmLanguage.json | sha256 0f027bc8fe13fab9051f0438848883f23f4f3ba6c28973b3811693805495b6b4 | elm-tooling/elm-language-client-vscode syntaxes/elm-syntax.json (MIT) |
+| rescript.tmLanguage.json | sha256 55230309058f73615085ff4493fe3e348f443159851d9f108730472345e7f662 | rescript-lang/rescript-vscode grammars/rescript.tmLanguage.json (MIT) |
+| purescript.tmLanguage.json | sha256 e99c6695bafa5585022f493ab69b0276997a918ee128079c0346ab166f3e7f97 | nwolverson/vscode-language-purescript syntaxes/purescript.json (MIT) |
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 

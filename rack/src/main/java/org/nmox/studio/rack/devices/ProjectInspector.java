@@ -39,6 +39,12 @@ public final class ProjectInspector {
         NIM(), // *.nimble - glob-detected below, like DOTNET
         DLANG("dub.json", "dub.sdl"),
         RACKET("info.rkt"),
+        // the functional web: these almost always sit beside a package.json,
+        // so NODE outranks them in detectKind — detectKinds still lists them
+        // and explicit knob targets speak their toolchains
+        ELM("elm.json"),
+        RESCRIPT("rescript.json", "bsconfig.json"),
+        PURESCRIPT("spago.yaml", "spago.dhall"),
         MAVEN("pom.xml"),
         GRADLE("build.gradle", "build.gradle.kts"),
         PYTHON("pyproject.toml", "requirements.txt", "setup.py"),

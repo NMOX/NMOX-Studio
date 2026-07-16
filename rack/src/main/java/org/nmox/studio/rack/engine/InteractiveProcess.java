@@ -80,7 +80,9 @@ public final class InteractiveProcess {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     try {
-                        onLine.accept(line);
+                        // REPLs color their banners (elm repl paints its
+                        // greeting) - same scrub the command lanes get
+                        onLine.accept(CommandExecutor.stripAnsi(line));
                     } catch (RuntimeException ex) {
                         // a throwing consumer must not kill the pump: with no
                         // reader the pipe fills, the interpreter blocks on

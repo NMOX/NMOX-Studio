@@ -164,6 +164,9 @@ public class BuildDevice extends CommandDevice {
             case NIM -> List.of("nimble", "build");
             case DLANG -> List.of("dub", "build");
             case RACKET -> List.of("raco", "make", "info.rkt");
+            case ELM -> List.of("npx", "elm", "make", "src/Main.elm");
+            case RESCRIPT -> List.of("npx", "rescript", "build");
+            case PURESCRIPT -> List.of("spago", "build");
             case OCAML -> List.of("dune", "build");
             case CRYSTAL -> List.of("shards", "build");
             case MAVEN -> List.of("mvn", "-q", "package", "-DskipTests");

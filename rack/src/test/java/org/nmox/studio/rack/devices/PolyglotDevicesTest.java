@@ -117,6 +117,9 @@ class PolyglotDevicesTest {
                 new Case("Project.toml", ProjectInspector.ProjectKind.JULIA),
                 new Case("dub.json", ProjectInspector.ProjectKind.DLANG),
                 new Case("info.rkt", ProjectInspector.ProjectKind.RACKET),
+                new Case("elm.json", ProjectInspector.ProjectKind.ELM),
+                new Case("rescript.json", ProjectInspector.ProjectKind.RESCRIPT),
+                new Case("spago.yaml", ProjectInspector.ProjectKind.PURESCRIPT),
                 new Case("dune-project", ProjectInspector.ProjectKind.OCAML),
                 new Case("shard.yml", ProjectInspector.ProjectKind.CRYSTAL));
         for (Case c : cases) {
@@ -205,6 +208,51 @@ class PolyglotDevicesTest {
                 rack.shutdown();
             }
         }
+    }
+
+    @Test
+    @DisplayName("Functional web: elm reactor serves, spago runs, rescript builds; NODE outranks them beside a package.json")
+    void functionalWebLanes(@TempDir Path root) throws IOException {
+        // elm-only project: the framework's own lanes
+        Path elm = Files.createDirectories(root.resolve("elm-app"));
+        Files.writeString(elm.resolve("elm.json"), "{}");
+        Rack rack = new Rack();
+        rack.setProjectDir(elm.toFile());
+        try {
+            RunDevice run = new RunDevice();
+            rack.addDevice(run);
+            assertThat(run.buildCommand()).containsExactly("npx", "elm", "reactor");
+            BuildDevice build = new BuildDevice();
+            rack.addDevice(build);
+            assertThat(build.buildCommand()).containsExactly("npx", "elm", "make", "src/Main.elm");
+            TestDevice test = new TestDevice();
+            rack.addDevice(test);
+            assertThat(test.buildCommand()).startsWith("npx", "elm-test");
+        } finally {
+            rack.shutdown();
+        }
+
+        // purescript: spago lanes including CRATE
+        Path ps = Files.createDirectories(root.resolve("ps-app"));
+        Files.writeString(ps.resolve("spago.yaml"), "# spago");
+        Rack rack2 = new Rack();
+        rack2.setProjectDir(ps.toFile());
+        try {
+            PackageManagerDevice deps = new PackageManagerDevice();
+            rack2.addDevice(deps);
+            assertThat(deps.buildCommand()).containsExactly("spago", "install");
+        } finally {
+            rack2.shutdown();
+        }
+
+        // beside a package.json, NODE wins detection (the WEBPACK-family rule)
+        Path mixed = Files.createDirectories(root.resolve("mixed"));
+        Files.writeString(mixed.resolve("elm.json"), "{}");
+        Files.writeString(mixed.resolve("package.json"), "{}");
+        assertThat(ProjectInspector.detectKind(mixed.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.NODE);
+        assertThat(ProjectInspector.detectKinds(mixed.toFile()).keySet())
+                .contains(ProjectInspector.ProjectKind.ELM);
     }
 
     @Test

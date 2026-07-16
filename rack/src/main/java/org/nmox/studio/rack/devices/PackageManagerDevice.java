@@ -112,6 +112,13 @@ public class PackageManagerDevice extends CommandDevice {
                 case "update" -> List.of("raco", "pkg", "update", "--auto");
                 default -> List.of("raco", "pkg", "install", "--auto", "--skip-installed");
             };
+            case PURESCRIPT -> switch (verb) {
+                case "update" -> List.of("spago", "upgrade");
+                default -> List.of("spago", "install");
+            };
+            // ELM/RESCRIPT deps live in package.json beside their manifests
+            // — the NODE lane (npm/yarn/pnpm detection) already covers them
+            case ELM, RESCRIPT -> null;
             case ERLANG -> switch (verb) {
                 case "update" -> List.of("rebar3", "upgrade", "--all");
                 default -> List.of("rebar3", "get-deps");
