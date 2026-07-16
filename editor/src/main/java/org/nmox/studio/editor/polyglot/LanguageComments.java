@@ -49,6 +49,7 @@ public final class LanguageComments {
             Map.entry("text/x-rescript", "//"),
             Map.entry("text/x-purescript", "--"),
             Map.entry("text/x-vlang", "//"),
+            Map.entry("text/x-fortran", "!"),
             Map.entry("text/x-crystal", "#"),
             Map.entry("text/x-solidity", "//"),
             Map.entry("text/coffeescript", "#"),

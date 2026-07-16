@@ -172,6 +172,19 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Fortran runs/builds/tests via fpm but has no clean action (v1.73.0)")
+    void fortranRunsBuildsTests() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FORTRAN, ActionProvider.COMMAND_RUN))
+                .containsExactly("fpm", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FORTRAN, ActionProvider.COMMAND_BUILD))
+                .containsExactly("fpm", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FORTRAN, ActionProvider.COMMAND_TEST))
+                .containsExactly("fpm", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.FORTRAN, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
     @DisplayName("Dart runs and tests but has neither a build nor a clean action")
     void dartRunsAndTestsOnly() {
         File d = dir.toFile();

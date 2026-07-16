@@ -66,6 +66,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-vlang", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-fortran", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
@@ -264,6 +265,13 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "return rlock select shared sizeof spawn static struct true type typeof union unsafe "
                     + "volatile pub bool string int i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 rune byte voidptr "
                     + "any map array none error println print eprintln panic dump")),
+            Map.entry("text/x-fortran", set("program end module subroutine function contains use implicit "
+                    + "none integer real complex logical character double precision parameter dimension "
+                    + "allocatable allocate deallocate pointer target intent in out inout optional "
+                    + "if then else elseif endif do while cycle exit select case default where forall "
+                    + "call return stop continue print write read open close format type class interface "
+                    + "public private pure elemental recursive result associate block "
+                    + "true false abstract extends procedure generic import kind len")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "

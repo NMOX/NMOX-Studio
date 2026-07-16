@@ -22,7 +22,7 @@ class GrammarBundleTest {
         // the config layer: what a web repo is actually full of
         "ini", "ignore", "graphql", "vue", "svelte", "astro", "pug",
         "handlebars", "liquid", "nginx", "apache", "makefile", "proto", "prisma",
-        "solidity", "coffeescript", "gleam", "nim", "d", "racket", "elm", "rescript", "purescript", "vlang"})
+        "solidity", "coffeescript", "gleam", "nim", "d", "racket", "elm", "rescript", "purescript", "vlang", "fortran"})
     @DisplayName("Grammar resource exists and parses with a scopeName")
     void grammarShipsAndParses(String language) throws IOException {
         String resource = language + ".tmLanguage.json";
@@ -41,7 +41,7 @@ class GrammarBundleTest {
         "text/x-nginx-conf", "text/x-apache-conf", "text/x-makefile",
         "text/x-protobuf", "text/x-prisma", "text/x-solidity", "text/coffeescript", "text/x-gleam",
         "text/x-nim", "text/x-d", "text/x-racket", "text/x-elm", "text/x-rescript", "text/x-purescript",
-        "text/x-vlang",
+        "text/x-vlang", "text/x-fortran",
         "text/x-yaml", "text/x-toml", "text/x-dockerfile", "text/x-sql"})
     @DisplayName("Every code language has comment-toggle syntax")
     void commentSyntaxCovered(String mime) {

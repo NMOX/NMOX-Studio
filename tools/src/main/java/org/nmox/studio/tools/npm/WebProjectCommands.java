@@ -76,6 +76,9 @@ final class WebProjectCommands {
             case VLANG:
                 return fixed(action, List.of("v", "run", "."), List.of("v", "."),
                         List.of("v", "test", "."), null);
+            case FORTRAN:
+                return fixed(action, List.of("fpm", "run"), List.of("fpm", "build"),
+                        List.of("fpm", "test"), null);
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);
