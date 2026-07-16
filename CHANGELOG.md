@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.70.0] - 2026-07-16
+
+### The functional web — Elm, ReScript, PureScript
+
+The compile-to-JS functional languages, squarely on-mission for a web
+studio, each get the full vertical:
+
+- **Elm**: `elm.json` ProjectKind; IGNITION serves `elm reactor` (the
+  framework's own dev server), FORGE `elm make src/Main.elm`, VERITAS
+  `elm-test`; elm-language-server entry; module/type/annotation outline;
+  a learning space on `elm repl` (the REPL that prints types beside
+  values) with a real elm.json + Main.elm sample.
+- **ReScript**: `rescript.json` + legacy `bsconfig.json` kinds;
+  `rescript build`/`clean` lanes; rescript-language-server entry; rides
+  the generic brace outline. No standard test runner — the action greys
+  honestly.
+- **PureScript**: `spago.yaml`/`spago.dhall` kinds; spago
+  run/build/test/install lanes; purescript-language-server entry; rides
+  the Haskell-family outline.
+- **Detection honesty**: these projects almost always sit beside a
+  package.json, so NODE outranks them in primary detection (the
+  WEBPACK-family rule, test-pinned) while detectKinds still lists them
+  for ROSETTA and explicit targets speak their toolchains.
+- ELM/RESCRIPT dependencies live in package.json — CRATE's Node lane
+  (npm/yarn/pnpm detection) already covers them; PureScript gets real
+  `spago install`/`upgrade` verbs.
+- Doctor probes elm/spago/purs (68 tools); grammars pinned by sha256
+  (elm-tooling, rescript-lang, nwolverson — MIT). 55 grammars, 59 spaces.
+
 ## [1.69.0] - 2026-07-13
 
 ### The indie stacks — Julia completed, Nim, D, and Racket first-class
