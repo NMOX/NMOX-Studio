@@ -61,7 +61,7 @@ final class WebProjectCommands {
                         List.of("dub", "test"), List.of("dub", "clean"));
             case RACKET:
                 return fixed(action, List.of("racket", "main.rkt"),
-                        List.of("raco", "make", "info.rkt"),
+                        List.of("raco", "make", "main.rkt"),
                         List.of("raco", "test", "."), null);
             case ELM:
                 return fixed(action, List.of("npx", "elm", "reactor"),
