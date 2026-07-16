@@ -95,6 +95,23 @@ public class PackageManagerDevice extends CommandDevice {
                 case "update" -> List.of("gleam", "deps", "update");
                 default -> List.of("gleam", "deps", "download");
             };
+            case JULIA -> switch (verb) {
+                case "update" -> List.of("julia", "--project=.", "-e", "using Pkg; Pkg.update()");
+                case "outdated" -> List.of("julia", "--project=.", "-e", "using Pkg; Pkg.status(outdated=true)");
+                default -> List.of("julia", "--project=.", "-e", "using Pkg; Pkg.instantiate()");
+            };
+            case NIM -> switch (verb) {
+                case "update" -> List.of("nimble", "refresh");
+                default -> List.of("nimble", "install", "-d", "-y");
+            };
+            case DLANG -> switch (verb) {
+                case "update" -> List.of("dub", "upgrade");
+                default -> List.of("dub", "upgrade", "--missing-only");
+            };
+            case RACKET -> switch (verb) {
+                case "update" -> List.of("raco", "pkg", "update", "--auto");
+                default -> List.of("raco", "pkg", "install", "--auto", "--skip-installed");
+            };
             case ERLANG -> switch (verb) {
                 case "update" -> List.of("rebar3", "upgrade", "--all");
                 default -> List.of("rebar3", "get-deps");

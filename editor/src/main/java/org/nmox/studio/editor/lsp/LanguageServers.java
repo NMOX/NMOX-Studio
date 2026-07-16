@@ -291,6 +291,33 @@ public final class LanguageServers {
         }
     }
 
+    /** Nim via nimlangserver (the official language server). */
+    @MimeRegistration(mimeType = "text/x-nim", service = LanguageServerProvider.class)
+    public static final class NimServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("nimlangserver"));
+        }
+    }
+
+    /** D via serve-d. */
+    @MimeRegistration(mimeType = "text/x-d", service = LanguageServerProvider.class)
+    public static final class DServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("serve-d"));
+        }
+    }
+
+    /** Racket via racket-langserver (launched through racket -l). */
+    @MimeRegistration(mimeType = "text/x-racket", service = LanguageServerProvider.class)
+    public static final class RacketServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("racket", "-l", "racket-langserver"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

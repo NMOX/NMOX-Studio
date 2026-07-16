@@ -35,6 +35,10 @@ public final class ProjectInspector {
         ZIG("build.zig"),
         OCAML("dune-project"),
         CRYSTAL("shard.yml"),
+        JULIA("Project.toml", "JuliaProject.toml"),
+        NIM(), // *.nimble - glob-detected below, like DOTNET
+        DLANG("dub.json", "dub.sdl"),
+        RACKET("info.rkt"),
         MAVEN("pom.xml"),
         GRADLE("build.gradle", "build.gradle.kts"),
         PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
@@ -122,6 +126,9 @@ public final class ProjectInspector {
         if (kind == ProjectKind.DOTNET) {
             return dotnetDir(root);
         }
+        if (kind == ProjectKind.NIM) {
+            return globDir(root, n -> n.endsWith(".nimble"));
+        }
         if (kind == ProjectKind.STATIC) {
             // STATIC never walks subdirectories: it means "serve THIS folder",
             // not "some docs/ dir happens to hold an index.html"
@@ -154,7 +161,13 @@ public final class ProjectInspector {
 
     /** .NET projects carry *.csproj/*.fsproj/*.sln - extension-detected. */
     private static File dotnetDir(File root) {
-        if (hasDotnetManifest(root)) {
+        return globDir(root, n -> n.endsWith(".csproj")
+                || n.endsWith(".fsproj") || n.endsWith(".sln"));
+    }
+
+    /** Extension-detected manifests (dotnet, nim): root first, then one level down. */
+    private static File globDir(File root, java.util.function.Predicate<String> manifest) {
+        if (hasGlobManifest(root, manifest)) {
             return root;
         }
         File[] children = root.listFiles(File::isDirectory);
@@ -168,16 +181,15 @@ public final class ProjectInspector {
             if (name.startsWith(".") || SKIP_DIRS.contains(name) || ++scanned > MAX_CHILD_SCAN) {
                 continue;
             }
-            if (hasDotnetManifest(child)) {
+            if (hasGlobManifest(child, manifest)) {
                 return child;
             }
         }
         return null;
     }
 
-    private static boolean hasDotnetManifest(File dir) {
-        String[] names = dir.list((d, name) -> name.endsWith(".csproj")
-                || name.endsWith(".fsproj") || name.endsWith(".sln"));
+    private static boolean hasGlobManifest(File dir, java.util.function.Predicate<String> manifest) {
+        String[] names = dir.list((d, name) -> manifest.test(name));
         return names != null && names.length > 0;
     }
 

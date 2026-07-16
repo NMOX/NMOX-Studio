@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.69.0] - 2026-07-13
+
+### The indie stacks — Julia completed, Nim, D, and Racket first-class
+
+The awesome-but-niche languages get the full-vertical treatment, and a
+half-shipped one gets finished:
+
+- **Julia, completed.** The grammar/outline/LSP/learning-space half shipped
+  long ago; now `Project.toml`/`JuliaProject.toml` is a ProjectKind, and
+  every AUTO lane speaks Pkg: CRATE `Pkg.instantiate()` (update →
+  `Pkg.update()`, outdated → `Pkg.status(outdated=true)`), FORGE
+  `Pkg.precompile()`, VERITAS `Pkg.test()`. Run greys out honestly — a Julia
+  package has no standard entry point (IGNITION's julia target runs
+  `main.jl` when the script convention is present).
+- **Nim.** `*.nimble` glob detection (root or one level down, the .NET
+  idiom); pinned grammar + CSL + `#` comment toggle + keywords + spellcheck;
+  `nimlangserver` LSP entry; nimble run/build/test/install lanes everywhere
+  (IGNITION/FORGE/VERITAS/CRATE, IDE actions, ROSETTA); an outline
+  (procs/funcs/types); and a learning space driven by `nim secret` — the
+  compiler's built-in interactive VM.
+- **D.** `dub.json`/`dub.sdl` ProjectKind; pinned grammar (D rides the
+  generic brace outline); `serve-d` LSP entry; dub run/build/test lanes,
+  install = `dub upgrade --missing-only` (fetches missing deps without
+  moving pins). No learning space: D has no standard REPL — recorded
+  honestly rather than faked.
+- **Racket.** `info.rkt` ProjectKind; pinned grammar + `;` comments +
+  keywords; `racket-langserver` entry; racket/raco lanes (run `main.rkt`,
+  build `raco make`, test `raco test .`, deps `raco pkg install --auto`);
+  a lisp-family outline (defines/structs/modules); and a learning space
+  on `racket -i` (the force-interactive law).
+- **Environment Doctor** probes julia/nim/nimble/dub/racket (65 tools).
+- Grammar provenance pinned by sha256 in NOTICE-grammars.md
+  (nim-lang/vscode-nim, Pure-D/code-d, Eugleo/magic-racket — all MIT).
+
+Detection, lane, and IDE-action coverage for all four stacks ride the
+parameterized suites; nim-glob and julia-lane mutations fail named tests.
+Odin was considered and skipped honestly: no manifest file exists to
+detect. 58 learning spaces; 52 grammars.
+
 ## [1.68.0] - 2026-07-13
 
 ### Framework learning spaces — Astro, SvelteKit, Nuxt (56 spaces)

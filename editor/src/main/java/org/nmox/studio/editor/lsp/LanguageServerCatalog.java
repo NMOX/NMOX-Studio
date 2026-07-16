@@ -74,6 +74,9 @@ public final class LanguageServerCatalog {
                 List.of("ghcup", "install", "hls"));
         add("Zig", "zls", "install zls from github.com/zigtools/zls", List.of());
         add("Gleam", "gleam", "brew install gleam", List.of("brew", "install", "gleam"));
+        add("Nim", "nimlangserver", "nimble install nimlangserver", List.of("nimble", "install", "nimlangserver"));
+        add("D", "serve-d", "dub fetch serve-d (or brew install dub first)", List.of("dub", "fetch", "serve-d"));
+        add("Racket", "racket", "raco pkg install racket-langserver", List.of("raco", "pkg", "install", "racket-langserver"));
         add("Erlang", "erlang_ls", "install erlang_ls from github.com/erlang-ls/erlang_ls", List.of());
         add("Clojure", "clojure-lsp", "brew install clojure-lsp/brew/clojure-lsp-native",
                 List.of("brew", "install", "clojure-lsp/brew/clojure-lsp-native"));
