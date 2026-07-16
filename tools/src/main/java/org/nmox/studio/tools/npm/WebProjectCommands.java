@@ -63,6 +63,16 @@ final class WebProjectCommands {
                 return fixed(action, List.of("racket", "main.rkt"),
                         List.of("raco", "make", "info.rkt"),
                         List.of("raco", "test", "."), null);
+            case ELM:
+                return fixed(action, List.of("npx", "elm", "reactor"),
+                        List.of("npx", "elm", "make", "src/Main.elm"),
+                        List.of("npx", "elm-test"), null);
+            case RESCRIPT:
+                return fixed(action, null, List.of("npx", "rescript", "build"), null,
+                        List.of("npx", "rescript", "clean"));
+            case PURESCRIPT:
+                return fixed(action, List.of("spago", "run"), List.of("spago", "build"),
+                        List.of("spago", "test"), null);
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);

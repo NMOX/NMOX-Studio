@@ -274,6 +274,20 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Functional web IDE actions: elm reactor/make/test, rescript build, spago run (v1.70.0)")
+    void functionalWebActions() {
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.ELM, ActionProvider.COMMAND_RUN))
+                .containsExactly("npx", "elm", "reactor");
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.RESCRIPT, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npx", "rescript", "build");
+        // rescript has no standard test runner: greys out honestly
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.RESCRIPT, ActionProvider.COMMAND_TEST))
+                .isNull();
+        assertThat(WebProjectCommands.commandFor(dir.toFile(), ProjectKind.PURESCRIPT, ActionProvider.COMMAND_RUN))
+                .containsExactly("spago", "run");
+    }
+
+    @Test
     @DisplayName("Gleam speaks gleam on all four actions (v1.59.0 expansion)")
     void gleamAllFourActions() {
         java.io.File d = new java.io.File(".");

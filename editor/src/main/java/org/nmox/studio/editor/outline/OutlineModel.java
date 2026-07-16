@@ -60,6 +60,7 @@ public final class OutlineModel {
             case "julia" -> julia(lines);
             case "nim" -> nim(lines);
             case "racket" -> racket(lines);
+            case "elm" -> elm(lines);
             case "fsharp" -> fsharp(lines);
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
@@ -100,6 +101,9 @@ public final class OutlineModel {
             case "text/x-nim" -> "nim";
             case "text/x-d" -> "brace"; // D is a brace language; the generic extractor reads it
             case "text/x-racket" -> "racket";
+            case "text/x-elm" -> "elm";
+            case "text/x-rescript" -> "brace"; // curly-brace syntax; the generic extractor reads it
+            case "text/x-purescript" -> "haskell"; // Haskell-family syntax shares the extractor
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";
             case "text/x-zig" -> "zig";
@@ -539,6 +543,32 @@ public final class OutlineModel {
             Matcher t = NIM_TYPE.matcher(lines[i]);
             if (t.find()) {
                 out.add(new Item(OutlineKind.TYPE, t.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern ELM_DECL = Pattern.compile(
+            "^(type alias|type|port module|module|port)\\s+([A-Za-z][A-Za-z0-9_]*)");
+    private static final Pattern ELM_FN = Pattern.compile(
+            "^([a-z][A-Za-z0-9_]*)\\s*:");
+
+    /** Elm: modules, types, and top-level annotated values. */
+    private static List<Item> elm(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher d = ELM_DECL.matcher(lines[i]);
+            if (d.find()) {
+                OutlineKind kind = switch (d.group(1)) {
+                    case "module", "port module" -> OutlineKind.MODULE;
+                    default -> OutlineKind.TYPE;
+                };
+                out.add(new Item(kind, d.group(2), null, i, 0));
+                continue;
+            }
+            Matcher f = ELM_FN.matcher(lines[i]);
+            if (f.find()) {
+                out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
             }
         }
         return out;

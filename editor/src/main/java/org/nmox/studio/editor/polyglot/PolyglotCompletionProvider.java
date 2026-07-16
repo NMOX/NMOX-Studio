@@ -60,6 +60,9 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-nim", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-d", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-racket", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-elm", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-rescript", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-purescript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
@@ -244,6 +247,17 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "define-struct define-syntax syntax-rules match for for/list for/fold map filter foldl "
                     + "foldr apply values call/cc parameterize with-handlers displayln printf format list cons "
                     + "car cdr null empty first rest length reverse append lang racket racket/base")),
+            Map.entry("text/x-elm", set("module exposing import as port type alias if then else case of "
+                    + "let in Bool Int Float String Char List Maybe Just Nothing Result Ok Err Cmd Sub Html "
+                    + "Program msg model init update view subscriptions main")),
+            Map.entry("text/x-rescript", set("let rec and as assert constraint downto else exception external "
+                    + "false for if in include lazy module mutable of open switch to true try type when while "
+                    + "with async await bool int float string option array list unit None Some Ok Error "
+                    + "Belt Js promise")),
+            Map.entry("text/x-purescript", set("module where import as hiding data type newtype class instance "
+                    + "derive if then else case of let in do ado forall infixl infixr foreign "
+                    + "Boolean Int Number String Char Array Maybe Just Nothing Either Left Right Effect Aff Unit "
+                    + "pure bind map discard")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "
