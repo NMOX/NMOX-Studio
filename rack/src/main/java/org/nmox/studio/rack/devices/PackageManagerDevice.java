@@ -121,6 +121,11 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> null; // spago has no outdated query — CHECK greys
                 default -> List.of("spago", "install");
             };
+            case VLANG -> switch (verb) {
+                case "update" -> List.of("v", "update");
+                case "outdated" -> null; // vpm has no outdated query — CHECK greys
+                default -> List.of("v", "install");
+            };
             // ELM deps live in elm.json / RESCRIPT deps in package.json beside their manifests
             // — the NODE lane (npm/yarn/pnpm detection) already covers them
             case ELM, RESCRIPT -> null;

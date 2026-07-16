@@ -159,6 +159,19 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("V runs/builds/tests via the v CLI but has no clean action (v1.72.0)")
+    void vlangRunsBuildsTests() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.VLANG, ActionProvider.COMMAND_RUN))
+                .containsExactly("v", "run", ".");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.VLANG, ActionProvider.COMMAND_BUILD))
+                .containsExactly("v", ".");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.VLANG, ActionProvider.COMMAND_TEST))
+                .containsExactly("v", "test", ".");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.VLANG, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
     @DisplayName("Dart runs and tests but has neither a build nor a clean action")
     void dartRunsAndTestsOnly() {
         File d = dir.toFile();

@@ -39,6 +39,7 @@ public final class ProjectInspector {
         NIM(), // *.nimble - glob-detected below, like DOTNET
         DLANG("dub.json", "dub.sdl"),
         RACKET("info.rkt"),
+        VLANG("v.mod"),
         // the functional web: these almost always sit beside a package.json,
         // so NODE outranks them in detectKind — detectKinds still lists them
         // and explicit knob targets speak their toolchains

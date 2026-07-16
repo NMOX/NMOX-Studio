@@ -18,7 +18,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 public class TestDevice extends CommandDevice {
 
     // append-only: persisted patches store the knob index, not the label
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     private static final String[] COVERAGE_MINIMUMS = {"off", "50", "60", "70", "80", "90"};
@@ -219,6 +219,7 @@ public class TestDevice extends CommandDevice {
             case RACKET: return "racket";
             case ELM: return "elm";
             case PURESCRIPT: return "purescript";
+            case VLANG: return "vlang";
             case RESCRIPT: return "rescript"; // build-only: no test runner
             case CLOJURE: return "clojure";
             case SWIFT: return "swift";
@@ -265,6 +266,7 @@ public class TestDevice extends CommandDevice {
             case "racket" -> ProjectInspector.ProjectKind.RACKET;
             case "elm" -> ProjectInspector.ProjectKind.ELM;
             case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
+            case "vlang" -> ProjectInspector.ProjectKind.VLANG;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
@@ -309,6 +311,7 @@ public class TestDevice extends CommandDevice {
             case "racket" -> cmd.addAll(List.of("raco", "test", "."));
             case "elm" -> cmd.addAll(List.of("npx", "elm-test"));
             case "purescript" -> cmd.addAll(List.of("spago", "test"));
+            case "vlang" -> cmd.addAll(List.of("v", "test", "."));
             // ReScript has no standard test runner — leave cmd empty (VERITAS greys)
             case "rescript" -> { }
             case "clojure" -> cmd.addAll(List.of("clojure", "-X:test"));

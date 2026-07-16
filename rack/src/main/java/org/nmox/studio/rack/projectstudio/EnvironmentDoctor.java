@@ -65,6 +65,7 @@ public final class EnvironmentDoctor {
                 new String[]{"elm", "Elm — no-runtime-exceptions web apps, reactor/make lanes", "brew install elm"},
                 new String[]{"spago", "PureScript build tool — spago run/build/test lanes", "npm i -g spago"},
                 new String[]{"purs", "PureScript compiler — powers spago + the REPL", "npm i -g purescript"},
+                new String[]{"v", "V — fast-compiling, memory-safe; v run/./test lanes + vweb", "brew install vlang"},
                 new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
                 new String[]{"dart", "Dart SDK", "brew install dart-sdk"},
                 new String[]{"zig", "Zig toolchain", "brew install zig"},

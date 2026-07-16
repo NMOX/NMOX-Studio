@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -151,6 +151,7 @@ public class RunDevice extends CommandDevice {
             case RACKET -> "racket";
             case ELM -> "elm";
             case PURESCRIPT -> "purescript";
+            case VLANG -> "vlang";
             case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
@@ -193,6 +194,7 @@ public class RunDevice extends CommandDevice {
             case "racket" -> ProjectInspector.ProjectKind.RACKET;
             case "elm" -> ProjectInspector.ProjectKind.ELM;
             case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
+            case "vlang" -> ProjectInspector.ProjectKind.VLANG;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
@@ -253,6 +255,7 @@ public class RunDevice extends CommandDevice {
             // elm reactor is the framework's own dev server (port 8000)
             case "elm" -> List.of("npx", "elm", "reactor");
             case "purescript" -> List.of("spago", "run");
+            case "vlang" -> List.of("v", "run", ".");
             // ReScript compiles but has no run entry point — grey IGNITION
             case "rescript" -> null;
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention

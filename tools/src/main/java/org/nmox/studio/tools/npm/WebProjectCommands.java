@@ -73,6 +73,9 @@ final class WebProjectCommands {
             case PURESCRIPT:
                 return fixed(action, List.of("spago", "run"), List.of("spago", "build"),
                         List.of("spago", "test"), null);
+            case VLANG:
+                return fixed(action, List.of("v", "run", "."), List.of("v", "."),
+                        List.of("v", "test", "."), null);
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);

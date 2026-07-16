@@ -36,6 +36,7 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | elm.tmLanguage.json | sha256 0f027bc8fe13fab9051f0438848883f23f4f3ba6c28973b3811693805495b6b4 | elm-tooling/elm-language-client-vscode syntaxes/elm-syntax.json (MIT) |
 | rescript.tmLanguage.json | sha256 55230309058f73615085ff4493fe3e348f443159851d9f108730472345e7f662 | rescript-lang/rescript-vscode grammars/rescript.tmLanguage.json (MIT) |
 | purescript.tmLanguage.json | sha256 e99c6695bafa5585022f493ab69b0276997a918ee128079c0346ab166f3e7f97 | nwolverson/vscode-language-purescript syntaxes/purescript.json (MIT) |
+| vlang.tmLanguage.json | sha256 b3b8a46ce457fca0f22dde2c256ad5237665b8e7725285d98f703db873bfa45a | vlang/vscode-vlang syntaxes/v.tmLanguage.json (MIT) |
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 

@@ -65,6 +65,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-purescript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-vlang", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
@@ -258,6 +259,11 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "derive if then else case of let in do ado forall infixl infixr foreign "
                     + "Boolean Int Number String Char Array Maybe Just Nothing Either Left Right Effect Aff Unit "
                     + "pure bind map discard")),
+            Map.entry("text/x-vlang", set("as asm assert atomic break const continue defer else enum false fn "
+                    + "for go goto if import in interface is isreftype lock match module mut none or "
+                    + "return rlock select shared sizeof spawn static struct true type typeof union unsafe "
+                    + "volatile pub bool string int i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 rune byte voidptr "
+                    + "any map array none error println print eprintln panic dump")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "

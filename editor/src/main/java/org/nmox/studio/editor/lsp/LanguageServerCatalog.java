@@ -80,6 +80,7 @@ public final class LanguageServerCatalog {
         add("Elm", "elm-language-server", "npm i -g @elm-tooling/elm-language-server", List.of("npm", "i", "-g", "@elm-tooling/elm-language-server"));
         add("ReScript", "rescript-language-server", "npm i -g @rescript/language-server", List.of("npm", "i", "-g", "@rescript/language-server"));
         add("PureScript", "purescript-language-server", "npm i -g purescript-language-server", List.of("npm", "i", "-g", "purescript-language-server"));
+        add("V", "v-analyzer", "v install v-analyzer (or see github.com/vlang/v-analyzer)", List.of());
         add("Erlang", "erlang_ls", "install erlang_ls from github.com/erlang-ls/erlang_ls", List.of());
         add("Clojure", "clojure-lsp", "brew install clojure-lsp/brew/clojure-lsp-native",
                 List.of("brew", "install", "clojure-lsp/brew/clojure-lsp-native"));

@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.72.0] - 2026-07-16
+
+### V (vlang) — a full stack vertical
+
+V joins the first-class languages, end to end. V compiles itself in
+under a second into small, dependency-free native binaries, reads like
+Go with the sharp edges filed off, and ships `vweb` — a web story that
+earns it a place in a web IDE.
+
+- **Editor citizenship.** Pinned `vlang` TextMate grammar
+  (vlang/vscode-vlang, MIT, sha256 in NOTICE-grammars.md) on
+  `text/x-vlang` for `.v`/`.vsh`/`.vv`; a CSL `VLanguage` (`//` comment
+  toggle); the mime threaded through typing pairs, deletion, spellcheck,
+  comment toggling, keyword completion (V keywords + builtin types), and
+  a brace-family Navigator outline.
+- **Toolchain lanes.** `ProjectKind.VLANG` detects `v.mod`; IGNITION runs
+  `v run .`, FORGE builds `v .`, VERITAS tests `v test .`, CRATE installs
+  `v install` (update `v update`; CHECK greys — vpm has no outdated
+  query); ROSETTA lists `vlang`; the IDE-native Run/Build/Test speak the
+  `v` CLI (no clean action). `v.mod` is a recognized project manifest.
+- **LSP + Doctor.** `v-analyzer` wired as the V language server and added
+  to the catalog + Environment Doctor probes.
+- **Learning Space.** A "V" space (`v repl` driver + a `hello.v` sample +
+  a walked tutorial pointing at IGNITION) — 60 built-in spaces.
+
+Full test coverage: detection + every AUTO lane + the IDE lanes proven
+(PolyglotDevicesTest.vlangLanes, WebProjectCommandsTest.vlangRunsBuildsTests),
+grammar/mime/comment/completion/LSP gates extended, learning-catalog
+launchability check. The TestDevice AUTO map's missing VLANG case was
+caught by the new lane test before ship.
+
 ## [1.71.0] - 2026-07-16
 
 ### Senior review of the v1.64–v1.70 surface

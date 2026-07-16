@@ -730,6 +730,40 @@
    "tutorial": "# Nim\n\nNim compiles to C, so it runs at systems speed — but reads like a\nscripting language, and its macro system rewrites the AST at compile\ntime (much of the standard library is built with it).\n\n## Your REPL\n\nClick **START** and the studio runs `nim secret` — the compiler's\ninteractive VM. It executes Nim at the prompt (a hidden gem: it ships\nwith every Nim install).\n\n## The sample\n\n`hello.nim` shows procs and uniform function call syntax —\n`greet(\"Nim\")` and `\"Nim\".greet()` are the same call, which is how\nNim gets method-chaining without classes.\n\n## Try\n\n1. In the REPL: `echo 2 + 3`, then `for i in 1..3: echo i * i`.\n2. Compile the sample: rack IGNITION on a nimble project runs\n   `nimble run`; or in a terminal `nim c -r hello.nim`.\n3. Break it on purpose: change `& name` to `& 42` and read the\n   compile error — Nim's type errors name both sides.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install nim\n```\n"
   },
   {
+   "slug": "vlang",
+   "name": "V",
+   "category": "LANGUAGE",
+   "family": "Systems",
+   "blurb": "Compiles itself in under a second into small, dependency-free native binaries — Go's ergonomics with a batteries-included web story (vweb).",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "v",
+     "repl"
+    ],
+    "prompt": ">>>",
+    "snippets": [
+     "println(2 + 3)",
+     "println('v'.to_upper())",
+     "mut xs := [1, 2, 3]",
+     "xs << 4",
+     "println(xs.map(it * it))"
+    ]
+   },
+   "install": {
+    "mac": "brew install vlang",
+    "linux": "see github.com/vlang/v (symlink v into PATH)",
+    "windows": "see github.com/vlang/v (make.bat)"
+   },
+   "files": [
+    {
+     "path": "hello.v",
+     "content": "// Run me with IGNITION (v run .) or:\n//   v run hello.v\nmodule main\n\nfn greet(name string) string {\n\treturn 'Hello, ${name}!'\n}\n\nfn main() {\n\tprintln(greet('V'))\n}\n"
+    }
+   ],
+   "tutorial": "# V\n\nV is a statically-typed language that compiles itself in under a\nsecond and produces small, dependency-free native binaries. Its syntax\nreads like Go with the sharp edges filed off, and `vweb` gives it a\nbatteries-included web story.\n\n## Your REPL\n\nClick **START** and the studio runs `v repl` — type an expression and\nV compiles-and-runs each line.\n\n## The sample\n\n`hello.v` is a whole V program: a `module main`, a typed `greet`\nfunction using string interpolation (`${name}`), and `main`.\n\n## Try\n\n1. In the REPL: `println(2 + 3)`, then `println('v'.to_upper())`.\n2. Run the sample: rack IGNITION runs `v run .`; or in a terminal\n   `v run hello.v`.\n3. Build a native binary: `v .` drops an executable beside the\n   source — no runtime, no dependencies.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install vlang\n```\n"
+  },
+  {
    "slug": "racket",
    "name": "Racket",
    "category": "LANGUAGE",

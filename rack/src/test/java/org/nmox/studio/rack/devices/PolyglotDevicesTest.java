@@ -319,4 +319,30 @@ class PolyglotDevicesTest {
 
         rack.shutdown();
     }
+
+    @Test
+    @DisplayName("V: v.mod detects and every AUTO lane speaks v (v1.72.0)")
+    void vlangLanes() throws IOException {
+        Rack rack = rackAimedAt("v.mod");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.VLANG);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("v", "run", ".");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("v", ".");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("v", "test", ".");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("v", "install");
+
+        rack.shutdown();
+    }
 }

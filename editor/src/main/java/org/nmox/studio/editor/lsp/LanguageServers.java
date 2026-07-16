@@ -345,6 +345,15 @@ public final class LanguageServers {
         }
     }
 
+    /** V via v-analyzer (the official V language server). */
+    @MimeRegistration(mimeType = "text/x-vlang", service = LanguageServerProvider.class)
+    public static final class VServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("v-analyzer"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {
