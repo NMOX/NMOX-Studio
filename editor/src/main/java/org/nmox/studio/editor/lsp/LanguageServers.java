@@ -354,6 +354,15 @@ public final class LanguageServers {
         }
     }
 
+    /** Fortran via fortls (the fortran-language-server). */
+    @MimeRegistration(mimeType = "text/x-fortran", service = LanguageServerProvider.class)
+    public static final class FortranServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("fortls"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

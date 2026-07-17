@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -152,6 +152,7 @@ public class RunDevice extends CommandDevice {
             case ELM -> "elm";
             case PURESCRIPT -> "purescript";
             case VLANG -> "vlang";
+            case FORTRAN -> "fortran";
             case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
             case CLOJURE -> "clojure";
             case SWIFT -> "swift";
@@ -195,6 +196,7 @@ public class RunDevice extends CommandDevice {
             case "elm" -> ProjectInspector.ProjectKind.ELM;
             case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
             case "vlang" -> ProjectInspector.ProjectKind.VLANG;
+            case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
             case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
             case "swift" -> ProjectInspector.ProjectKind.SWIFT;
@@ -256,6 +258,7 @@ public class RunDevice extends CommandDevice {
             case "elm" -> List.of("npx", "elm", "reactor");
             case "purescript" -> List.of("spago", "run");
             case "vlang" -> List.of("v", "run", ".");
+            case "fortran" -> List.of("fpm", "run");
             // ReScript compiles but has no run entry point — grey IGNITION
             case "rescript" -> null;
             case "clojure" -> List.of("clojure", "-M:run"); // deps.edn :run alias convention

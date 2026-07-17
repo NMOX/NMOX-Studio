@@ -345,4 +345,30 @@ class PolyglotDevicesTest {
 
         rack.shutdown();
     }
+
+    @Test
+    @DisplayName("Fortran: fpm.toml detects and every AUTO lane speaks fpm (v1.73.0)")
+    void fortranLanes() throws IOException {
+        Rack rack = rackAimedAt("fpm.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.FORTRAN);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("fpm", "run");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("fpm", "build");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("fpm", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("fpm", "build");
+
+        rack.shutdown();
+    }
 }

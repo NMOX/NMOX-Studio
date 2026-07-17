@@ -764,6 +764,38 @@
    "tutorial": "# V\n\nV is a statically-typed language that compiles itself in under a\nsecond and produces small, dependency-free native binaries. Its syntax\nreads like Go with the sharp edges filed off, and `vweb` gives it a\nbatteries-included web story.\n\n## Your REPL\n\nClick **START** and the studio runs `v repl` — type an expression and\nV compiles-and-runs each line.\n\n## The sample\n\n`hello.v` is a whole V program: a `module main`, a typed `greet`\nfunction using string interpolation (`${name}`), and `main`.\n\n## Try\n\n1. In the REPL: `println(2 + 3)`, then `println('v'.to_upper())`.\n2. Run the sample: rack IGNITION runs `v run .`; or in a terminal\n   `v run hello.v`.\n3. Build a native binary: `v .` drops an executable beside the\n   source — no runtime, no dependencies.\n\n---\n\n## Install\n\nIf the tool isn't found when you press START, install it:\n\n```sh\nbrew install vlang\n```\n"
   },
   {
+   "slug": "fortran",
+   "name": "Fortran",
+   "category": "LANGUAGE",
+   "family": "Scientific",
+   "blurb": "The original high-performance language — still the backbone of scientific and HPC computing, now with a modern package manager (fpm).",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "fpm",
+     "run"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install fpm gfortran",
+    "linux": "sudo apt install gfortran && see fpm.fortran-lang.org",
+    "windows": "see fpm.fortran-lang.org/install"
+   },
+   "files": [
+    {
+     "path": "fpm.toml",
+     "content": "name = \"hello\"\nversion = \"0.1.0\"\n"
+    },
+    {
+     "path": "app/main.f90",
+     "content": "program hello\n  implicit none\n  print *, greet(\"Fortran\")\n  print *, \"first five squares:\", squares(5)\ncontains\n  function greet(name) result(msg)\n    character(len=*), intent(in) :: name\n    character(len=:), allocatable :: msg\n    msg = \"Hello, \" // name // \"!\"\n  end function greet\n\n  function squares(n) result(out)\n    integer, intent(in) :: n\n    integer :: out(n), i\n    do i = 1, n\n      out(i) = i * i\n    end do\n  end function squares\nend program hello\n"
+    }
+   ],
+   "tutorial": "# Fortran\n\nFortran (Formula Translation) is the oldest high-level language still\nin wide use — and for good reason: it remains the fastest, most\ntrusted tool for numerical and high-performance computing, from\nweather models to linear-algebra libraries. Modern Fortran (2008/2018)\nis a clean, array-oriented language, and **fpm** (the Fortran Package\nManager) finally gives it a cargo-like build/run/test story.\n\n## Your REPL\n\nFortran has no standard REPL, so this space uses **run** mode. Click\n**RUN** to build and run the project with `fpm run`. Edit\n`app/main.f90`, click RUN again, and see your changes.\n\n## The sample\n\n`fpm.toml` is the whole manifest — a name and a version. `app/main.f90`\nis a `program` with two internal `function`s (after `contains`):\n`greet` shows character-string handling, `squares` shows Fortran's\nnative array returns.\n\n## Try\n\n1. Click RUN — fpm compiles and runs, printing the greeting and the\n   squares array.\n2. Change `squares(5)` to `squares(8)` and RUN again.\n3. Add a `real :: pi = 3.14159` and `print *, pi` to see Fortran's\n   numeric types.\n\n---\n\n## Install\n\nIf `fpm` isn't found when you press RUN, install it (you also need a\nFortran compiler like gfortran):\n\n```sh\nbrew install fpm gfortran\n```\n"
+  },
+  {
    "slug": "racket",
    "name": "Racket",
    "category": "LANGUAGE",

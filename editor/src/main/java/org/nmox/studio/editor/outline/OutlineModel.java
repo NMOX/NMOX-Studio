@@ -61,6 +61,7 @@ public final class OutlineModel {
             case "nim" -> nim(lines);
             case "racket" -> racket(lines);
             case "elm" -> elm(lines);
+            case "fortran" -> fortran(lines);
             case "fsharp" -> fsharp(lines);
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
@@ -104,6 +105,7 @@ public final class OutlineModel {
             case "text/x-elm" -> "elm";
             case "text/x-rescript" -> "brace"; // curly-brace syntax; the generic extractor reads it
             case "text/x-vlang" -> "brace"; // V is a brace language (fn/struct/{}); the generic extractor reads it
+            case "text/x-fortran" -> "fortran";
             case "text/x-purescript" -> "haskell"; // Haskell-family syntax shares the extractor
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";
@@ -570,6 +572,44 @@ public final class OutlineModel {
             Matcher f = ELM_FN.matcher(lines[i]);
             if (f.find()) {
                 out.add(new Item(OutlineKind.FUNCTION, f.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern FORTRAN_BLOCK = Pattern.compile(
+            "^\\s*(program|module|subroutine)\\s+([A-Za-z][A-Za-z0-9_]*)",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern FORTRAN_FN = Pattern.compile(
+            "\\bfunction\\s+([A-Za-z][A-Za-z0-9_]*)\\s*\\(",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern FORTRAN_TYPE = Pattern.compile(
+            "^\\s*type\\s*(?:,[^:]*)?::\\s*([A-Za-z][A-Za-z0-9_]*)",
+            Pattern.CASE_INSENSITIVE);
+
+    /** Fortran: program/module/subroutine/function blocks and derived types. */
+    private static List<Item> fortran(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            Matcher b = FORTRAN_BLOCK.matcher(line);
+            if (b.find()) {
+                OutlineKind kind = "module".equalsIgnoreCase(b.group(1))
+                        ? OutlineKind.MODULE : OutlineKind.FUNCTION;
+                out.add(new Item(kind, b.group(2), b.group(1).toLowerCase(), i, 0));
+                continue;
+            }
+            Matcher t = FORTRAN_TYPE.matcher(line);
+            if (t.find()) {
+                out.add(new Item(OutlineKind.TYPE, t.group(1), "type", i, 0));
+                continue;
+            }
+            // functions: skip end-statements ("end function foo")
+            if (!line.trim().toLowerCase().startsWith("end")) {
+                Matcher f = FORTRAN_FN.matcher(line);
+                if (f.find()) {
+                    out.add(new Item(OutlineKind.FUNCTION, f.group(1), "function", i, 0));
+                }
             }
         }
         return out;

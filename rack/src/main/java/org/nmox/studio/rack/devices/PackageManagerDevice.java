@@ -126,6 +126,11 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> null; // vpm has no outdated query — CHECK greys
                 default -> List.of("v", "install");
             };
+            case FORTRAN -> switch (verb) {
+                case "update" -> List.of("fpm", "update");
+                case "outdated" -> null; // fpm has no outdated query — CHECK greys
+                default -> List.of("fpm", "build"); // fpm fetches deps at build time
+            };
             // ELM deps live in elm.json / RESCRIPT deps in package.json beside their manifests
             // — the NODE lane (npm/yarn/pnpm detection) already covers them
             case ELM, RESCRIPT -> null;

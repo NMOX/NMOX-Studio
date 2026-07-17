@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.73.0] - 2026-07-16
+
+### Fortran — a full stack vertical (fpm)
+
+The original high-performance language joins as a first-class citizen —
+still the backbone of scientific and HPC computing, and now with a
+modern cargo-like build tool in **fpm** (the Fortran Package Manager).
+
+- **Editor citizenship.** Pinned `fortran` (free-form) TextMate grammar
+  (fortran-lang/vscode-fortran-support, MIT, sha256 in NOTICE) on
+  `text/x-fortran` for `.f90`/`.f95`/`.f03`/`.f08`/`.f18` (fixed-form
+  `.f`/`.for` deliberately unclaimed — the grammar is free-form); a CSL
+  `FortranLanguage` (`!` comment toggle); the mime threaded through
+  typing pairs, deletion, spellcheck, comment toggling, and Fortran
+  keyword completion. A dedicated Navigator outline extracts
+  program/module/subroutine/function blocks and derived types — and
+  correctly does NOT mistake a `type(point) :: p` variable declaration
+  for a type definition (test-pinned).
+- **Toolchain lanes.** `ProjectKind.FORTRAN` detects `fpm.toml`;
+  IGNITION runs `fpm run`, FORGE builds `fpm build`, VERITAS tests
+  `fpm test`, CRATE fetches deps via `fpm build` (update `fpm update`;
+  CHECK greys — fpm has no outdated query); ROSETTA lists `fortran`; the
+  IDE-native Run/Build/Test speak the `fpm` CLI (no clean). `fpm.toml`
+  is a recognized project manifest.
+- **LSP + Doctor.** `fortls` wired as the Fortran language server + added
+  to the catalog + Environment Doctor probes (`fpm` and `fortls`).
+- **Learning Space.** A "Fortran" space — a run-driver (`fpm run`) over a
+  minimal fpm project (fpm.toml + app/main.f90 showing `program`,
+  internal `function`s, array returns) with a walked tutorial. 61 spaces.
+
+Full test coverage: detection + every AUTO lane + the IDE lanes proven
+(PolyglotDevicesTest.fortranLanes, WebProjectCommandsTest.fortranRunsBuildsTests),
+grammar/mime/comment/completion/LSP/outline gates extended.
+
 ## [1.72.0] - 2026-07-16
 
 ### V (vlang) — a full stack vertical

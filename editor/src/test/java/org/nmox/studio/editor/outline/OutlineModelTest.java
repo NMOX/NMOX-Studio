@@ -762,6 +762,41 @@ class OutlineModelTest {
         assertThat(OutlineModel.netBraces("foo() { bar(); }")).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("Fortran: program/module/subroutine/function blocks and derived types")
+    void fortran() {
+        String src = """
+                module shapes
+                  implicit none
+                  type, public :: point
+                    real :: x, y
+                  end type point
+                contains
+                  function area(r) result(a)
+                    real, intent(in) :: r
+                    real :: a
+                    a = 3.14159 * r * r
+                  end function area
+                  subroutine reset(p)
+                    type(point), intent(out) :: p
+                  end subroutine reset
+                end module shapes
+
+                program demo
+                  use shapes
+                end program demo
+                """;
+        List<Item> items = outline("text/x-fortran", src);
+        assertThat(items).extracting(Item::kind, Item::name)
+                .contains(tuple(OutlineKind.MODULE, "shapes"),
+                        tuple(OutlineKind.TYPE, "point"),
+                        tuple(OutlineKind.FUNCTION, "area"),
+                        tuple(OutlineKind.FUNCTION, "reset"),
+                        tuple(OutlineKind.FUNCTION, "demo"));
+        // a variable declaration `type(point) :: p` must NOT become an outline entry
+        assertThat(items).extracting(Item::name).doesNotContain("p");
+    }
+
     private static org.assertj.core.groups.Tuple tuple(Object... values) {
         return org.assertj.core.api.Assertions.tuple(values);
     }

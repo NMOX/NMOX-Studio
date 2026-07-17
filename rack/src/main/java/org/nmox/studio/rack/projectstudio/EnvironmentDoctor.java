@@ -66,6 +66,8 @@ public final class EnvironmentDoctor {
                 new String[]{"spago", "PureScript build tool — spago run/build/test lanes", "npm i -g spago"},
                 new String[]{"purs", "PureScript compiler — powers spago + the REPL", "npm i -g purescript"},
                 new String[]{"v", "V — fast-compiling, memory-safe; v run/./test lanes + vweb", "brew install vlang"},
+                new String[]{"fpm", "Fortran Package Manager — fpm run/build/test lanes", "brew install fpm"},
+                new String[]{"fortls", "Fortran language server — completion/hover in the editor", "pip install fortls"},
                 new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
                 new String[]{"dart", "Dart SDK", "brew install dart-sdk"},
                 new String[]{"zig", "Zig toolchain", "brew install zig"},
