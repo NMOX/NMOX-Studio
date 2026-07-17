@@ -18,16 +18,30 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.63.2, ~5,060 tests, 19
-release assets per tag — six installers/SBOM plus the update-center catalog
-and the 11 module NBMs — Homebrew cask, a windows-latest CI lane that runs
-the full verify) whose identity is the **Reason-style task rack**: 46
-hardware-styled devices wired with patch cables, backed by real process
-execution, session resurrection, CI export, and since v1.55.0 a **frozen
-public Device SPI** third parties extend it through. Around it: a 48-grammar
-polyglot editor with LSP, four studios (API, DB, Contract/Web3, Infra), the
-classic-web-first-class layer, Learning Spaces, and the v1.35 "connections"
-spine (ServingRegistry + ManifestPulse) that keeps every surface live-synced.
+NMOX Studio is a shipping NetBeans RCP IDE (v1.77.2, 19 release assets per
+tag — six installers/SBOM plus the update-center catalog and the 11 module
+NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
+whose identity is the **Reason-style task rack**: 50 hardware-styled devices
+wired with patch cables, backed by real process execution, session
+resurrection, CI export, and since v1.55.0 a **frozen public Device SPI**
+third parties extend it through. Around it: a **67-grammar polyglot editor**
+(~72 language mimes — the 2026-07-16 run added V, Fortran, Smalltalk,
+Prolog, Tcl, Scheme, Ada, Pascal, Odin, COBOL, Haxe, Janet; every
+cleanly-licensed grammar is now vendored, the Raku/Forth-class skips
+documented in NOTICE) with LSP, four studios (API, DB, Contract/Web3,
+Infra), the classic-web-first-class layer, 71 Learning Spaces (the twelve
+newest live-verified against real installed toolchains in v1.77.2), and the
+v1.35 "connections" spine (ServingRegistry + ManifestPulse) that keeps every
+surface live-synced.
+
+**The language-compatibility mission is complete as of v1.77.2.** Full
+verticals where a real manifest/toolchain exists (V/fpm/Alire join
+cargo/go/mix/…), honest editor-citizenship scope where none does, two
+review releases (v1.71.0, v1.76.0) that caught real bugs in the expansion —
+including ten languages' Navigator outlines being built-but-unreachable,
+now drift-gated by OutlineNavigatorGateTest — and ledger 47 closed
+(INSPECTOR greys honestly). Open expansion residue: ledger 46 (CI-export
+setup steps for post-v1.59 toolchains, deferred until a user hits it).
 
 Since the v1.36.0 senior-review capstone, five things graduated from
 "opportunity" or "deferred" to "shipped and tested":
