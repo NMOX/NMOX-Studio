@@ -797,6 +797,19 @@ class OutlineModelTest {
         assertThat(items).extracting(Item::name).doesNotContain("p");
     }
 
+    @Test
+    @DisplayName("Scheme rides the Racket extractor: (define ...) forms outline")
+    void scheme() {
+        String src = """
+                (define (greet name)
+                  (string-append "Hello, " name "!"))
+
+                (define pi 3.14159)
+                """;
+        assertThat(outline("text/x-scheme", src)).extracting(Item::name)
+                .contains("greet", "pi");
+    }
+
     private static org.assertj.core.groups.Tuple tuple(Object... values) {
         return org.assertj.core.api.Assertions.tuple(values);
     }

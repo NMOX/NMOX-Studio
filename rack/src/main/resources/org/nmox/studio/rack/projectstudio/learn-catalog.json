@@ -796,6 +796,138 @@
    "tutorial": "# Fortran\n\nFortran (Formula Translation) is the oldest high-level language still\nin wide use — and for good reason: it remains the fastest, most\ntrusted tool for numerical and high-performance computing, from\nweather models to linear-algebra libraries. Modern Fortran (2008/2018)\nis a clean, array-oriented language, and **fpm** (the Fortran Package\nManager) finally gives it a cargo-like build/run/test story.\n\n## Your REPL\n\nFortran has no standard REPL, so this space uses **run** mode. Click\n**RUN** to build and run the project with `fpm run`. Edit\n`app/main.f90`, click RUN again, and see your changes.\n\n## The sample\n\n`fpm.toml` is the whole manifest — a name and a version. `app/main.f90`\nis a `program` with two internal `function`s (after `contains`):\n`greet` shows character-string handling, `squares` shows Fortran's\nnative array returns.\n\n## Try\n\n1. Click RUN — fpm compiles and runs, printing the greeting and the\n   squares array.\n2. Change `squares(5)` to `squares(8)` and RUN again.\n3. Add a `real :: pi = 3.14159` and `print *, pi` to see Fortran's\n   numeric types.\n\n---\n\n## Install\n\nIf `fpm` isn't found when you press RUN, install it (you also need a\nFortran compiler like gfortran):\n\n```sh\nbrew install fpm gfortran\n```\n"
   },
   {
+   "slug": "smalltalk-gst",
+   "name": "Smalltalk (GNU)",
+   "category": "LANGUAGE",
+   "family": "Objects",
+   "blurb": "The language where everything is an object and objects are alive — the original live-coding environment, in its GNU form.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "gst"
+    ],
+    "prompt": "st>",
+    "snippets": [
+     "(3 + 4) printNl.",
+     "'hello' asUppercase printNl.",
+     "#(1 2 3) collect: [:x | x * x].",
+     "(1 to: 5) inject: 0 into: [:a :b | a + b].",
+     "Transcript showCr: 'Smalltalk lives'."
+    ]
+   },
+   "install": {
+    "mac": "brew install gnu-smalltalk",
+    "linux": "sudo apt install gnu-smalltalk",
+    "windows": "see smalltalk.gnu.org (WSL recommended)"
+   },
+   "files": [
+    {
+     "path": "hello.st",
+     "content": "\"Run me with: gst hello.st\"\nObject subclass: Greeter [\n    greet: aName [\n        ^'Hello, ', aName, '!'\n    ]\n]\n\n| g |\ng := Greeter new.\nTranscript showCr: (g greet: 'Smalltalk').\n"
+    }
+   ],
+   "tutorial": "# GNU Smalltalk\n\nSmalltalk is where objects, classes, IDEs, and live coding were born —\neverything is an object, all computation is messages, and the system is\nalive while you shape it. `gst` is the GNU implementation: Smalltalk as\na scripting language, no image browser required.\n\n## Your REPL\n\nClick **START** and the studio runs `gst`. Every line you type is a\nmessage send — `(3 + 4) printNl.` sends `+` to `3`, then `printNl` to\nthe result.\n\n## The sample\n\n`hello.st` defines a class the gst way — `Object subclass: Greeter [...]`\nwith a `greet:` method — then instantiates and messages it.\n\n## Try\n\n1. `(3 + 4) printNl.` then `'hello' asUppercase printNl.`\n2. Blocks are objects too: `#(1 2 3) collect: [:x | x * x].`\n3. Everything is an object: `3 class printNl.` then `3 class class printNl.`\n\nNote: Smalltalk has no line comment — comments are \"double-quoted\" —\nso the editor's comment-toggle stays off in .st files on purpose.\n\n---\n\n## Install\n\n```sh\nbrew install gnu-smalltalk\n```\n"
+  },
+  {
+   "slug": "prolog",
+   "name": "Prolog",
+   "category": "LANGUAGE",
+   "family": "Logic",
+   "blurb": "Programming as logic: state facts and rules, ask questions, and let unification do the work — SWI-Prolog is the modern standard.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "swipl"
+    ],
+    "prompt": "?-",
+    "snippets": [
+     "X = hello.",
+     "member(X, [1,2,3]).",
+     "length(L, 3).",
+     "atom_codes(prolog, Cs).",
+     "between(1, 5, X), Y is X*X."
+    ]
+   },
+   "install": {
+    "mac": "brew install swi-prolog",
+    "linux": "sudo apt install swi-prolog",
+    "windows": "winget install SWI-Prolog.SWI-Prolog"
+   },
+   "files": [
+    {
+     "path": "family.pro",
+     "content": "% Load me in the REPL with:  ?- [family].\n% (or run: swipl -g main -t halt family.pro)\nparent(tom, bob).\nparent(tom, liz).\nparent(bob, ann).\nparent(bob, pat).\n\ngrandparent(X, Z) :- parent(X, Y), parent(Y, Z).\n\nmain :-\n    forall(grandparent(G, C),\n           format(\"~w is a grandparent of ~w~n\", [G, C])).\n"
+    }
+   ],
+   "tutorial": "# Prolog\n\nProlog turns programming inside out: you state *facts* and *rules*,\nthen ask *questions* — the engine searches for every way to make them\ntrue. It still powers scheduling, parsing, and knowledge systems, and\nSWI-Prolog is the batteries-included modern implementation.\n\n## Your REPL\n\nClick **START** and the studio runs `swipl`. Every query ends with a\nperiod. `member(X, [1,2,3]).` answers `X = 1` — type `;` for more\nsolutions.\n\n## The sample\n\n`family.pro` is the classic: `parent` facts and a `grandparent` rule\nthat *derives* new knowledge. Load it with `[family].` then ask\n`grandparent(tom, Who).`\n\n## Try\n\n1. `member(X, [1,2,3]).` — then `;` to enumerate.\n2. `length(L, 3).` — Prolog runs backwards: it *builds* a list.\n3. `between(1, 5, X), Y is X*X.` — generate and compute.\n\nNote: .pl belongs to Perl in this IDE — name Prolog files .pro or\n.prolog and they get full Prolog highlighting.\n\n---\n\n## Install\n\n```sh\nbrew install swi-prolog\n```\n"
+  },
+  {
+   "slug": "tcl",
+   "name": "Tcl",
+   "category": "LANGUAGE",
+   "family": "Scripting",
+   "blurb": "Everything is a string, every line is a command — the embeddable scripting classic behind Tk, expect, and countless EDA tools.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "tclsh"
+    ],
+    "prompt": "%",
+    "snippets": [
+     "puts [expr {2 + 3}]",
+     "set name \"Tcl\"; puts \"Hello, $name!\"",
+     "foreach x {1 2 3} { puts [expr {$x * $x}] }",
+     "set xs [list 5 3 1]; puts [lsort -integer $xs]",
+     "proc double {x} { return [expr {$x * 2}] }; puts [double 21]"
+    ]
+   },
+   "install": {
+    "mac": "ships with macOS (brew install tcl-tk for latest)",
+    "linux": "sudo apt install tcl",
+    "windows": "winget install Magicsplat.TclTk"
+   },
+   "files": [
+    {
+     "path": "hello.tcl",
+     "content": "# Run me with: tclsh hello.tcl\nproc greet {name} {\n    return \"Hello, $name!\"\n}\n\nputs [greet \"Tcl\"]\n\nset squares {}\nforeach i {1 2 3 4 5} {\n    lappend squares [expr {$i * $i}]\n}\nputs \"first five squares: $squares\"\n"
+    }
+   ],
+   "tutorial": "# Tcl\n\nTcl (\"tickle\") is radical minimalism: every line is a command, every\nvalue is a string, and the whole language fits in twelve rules. That\nsimplicity made it the embeddable scripting layer everywhere — Tk GUIs,\nexpect, network gear, and nearly every chip-design (EDA) tool.\n\n## Your REPL\n\nClick **START** and the studio runs `tclsh`. `puts [expr {2 + 3}]`\nprints 5 — square brackets substitute a command's result, `$name`\nsubstitutes a variable.\n\n## The sample\n\n`hello.tcl` shows a `proc`, string interpolation, and building a list\nwith `lappend` in a `foreach`.\n\n## Try\n\n1. `set name \"Tcl\"; puts \"Hello, $name!\"`\n2. `proc double {x} { return [expr {$x * 2}] }; puts [double 21]`\n3. `info commands l*` — the language can inspect itself.\n\n---\n\n## Install\n\nmacOS ships one; for the latest:\n\n```sh\nbrew install tcl-tk\n```\n"
+  },
+  {
+   "slug": "scheme-guile",
+   "name": "Scheme (Guile)",
+   "category": "LANGUAGE",
+   "family": "Lisp",
+   "blurb": "The minimalist Lisp of SICP — closures, recursion, and code-as-data distilled; Guile is GNU's extensible-everything implementation.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "guile"
+    ],
+    "prompt": ">",
+    "snippets": [
+     "(+ 1 2)",
+     "(define (square x) (* x x))",
+     "(map square '(1 2 3))",
+     "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1)))))",
+     "(fact 10)"
+    ]
+   },
+   "install": {
+    "mac": "brew install guile",
+    "linux": "sudo apt install guile-3.0",
+    "windows": "see gnu.org/software/guile (WSL recommended)"
+   },
+   "files": [
+    {
+     "path": "hello.scm",
+     "content": ";; Run me with: guile hello.scm\n(define (greet name)\n  (string-append \"Hello, \" name \"!\"))\n\n(display (greet \"Scheme\"))\n(newline)\n\n(define (squares n)\n  (map (lambda (x) (* x x)) (iota n 1)))\n\n(display \"first five squares: \")\n(display (squares 5))\n(newline)\n"
+    }
+   ],
+   "tutorial": "# Scheme (Guile)\n\nScheme is the minimalist Lisp — the language of SICP, where closures,\nrecursion, and code-as-data are taught in their purest form. GNU Guile\nis its workhorse implementation: the official extension language of the\nGNU project (GDB, Guix, and more embed it).\n\n## Your REPL\n\nClick **START** and the studio runs `guile`. Everything is an\nexpression: `(+ 1 2)` evaluates to 3.\n\n## The sample\n\n`hello.scm` defines `greet` with `string-append`, then maps a `lambda`\nover `(iota 5 1)` — Scheme's range.\n\n## Try\n\n1. `(define (square x) (* x x))` then `(map square '(1 2 3))`.\n2. Recursion is the loop: define `fact` and call `(fact 10)`.\n3. Code is data: `(car '(+ 1 2))` returns the symbol `+`.\n\nRacket fans: Racket has its own space — this one is R7RS/Guile Scheme,\nand `.scm`/`.ss` files get Scheme highlighting while `.rkt` stays Racket.\n\n---\n\n## Install\n\n```sh\nbrew install guile\n```\n"
+  },
+  {
    "slug": "racket",
    "name": "Racket",
    "category": "LANGUAGE",

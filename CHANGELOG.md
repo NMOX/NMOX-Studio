@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.74.0] - 2026-07-16
+
+### The classics release — GNU Smalltalk, Prolog, Tcl, Scheme
+
+Four foundational languages join the editor as first-class citizens,
+each with a real REPL learning space. None has a standard project
+manifest or maintained language server, so the honest scope is editor
+citizenship + REPL + Doctor — no invented build lanes.
+
+- **GNU Smalltalk** (`.st`, `text/x-smalltalk`): the leocamello
+  gnu-smalltalk grammar (MIT, converted YAML→JSON, sha256 in NOTICE),
+  CSL language, keyword/message completion (printNl, collect:, ifTrue:,
+  subclass: …), spellcheck + typing intelligence. Deliberately absent
+  from the comment-toggle map — Smalltalk has no line comment, only
+  "double-quoted" blocks (test-pinned). A `gst` REPL learning space.
+- **Prolog** (`.pro`/`.prolog`/`.plt`, `text/x-prolog`): the
+  arthwang/vsc-prolog SWI grammar (MIT), `%` comments, directive/builtin
+  completion. Deliberately does NOT claim `.pl` — Perl owns it here; a
+  wrong-language editor is worse than asking for the unambiguous
+  spelling (documented in the registration). A `swipl` REPL space with
+  the classic family-tree sample.
+- **Tcl** (`.tcl`/`.tk`, `text/x-tcl`): the bitwisecook grammar (MIT,
+  converted YAML→JSON), `#` comments, command completion (proc, foreach,
+  lappend, regexp …). A `tclsh` REPL space.
+- **Scheme** (`.scm`/`.ss`/`.sld`/`.sps`, `text/x-scheme`): the sjhuangx
+  grammar (MIT, converted plist→JSON), `;` comments, R7RS keyword
+  completion, and the Navigator outline rides the Racket extractor —
+  same `(define …)` shape (test-pinned). A `guile` REPL space; Racket
+  keeps its own `.rkt` grammar and space.
+
+Environment Doctor probes `gst`/`swipl`/`tclsh`/`guile`. 61 grammars,
+65 learning spaces. Grammar/comment/completion/outline gates extended;
+the comment gate pins Smalltalk's absence as deliberate.
+
 ## [1.73.0] - 2026-07-16
 
 ### Fortran — a full stack vertical (fpm)
