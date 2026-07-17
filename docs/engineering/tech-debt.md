@@ -22,7 +22,14 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.76.0, the fourth review)
 
-### 46. CiExporter emits no setup step for the post-v1.59 toolchains
+### 46. CiExporter emits no setup step for the post-v1.59 toolchains — CLOSED (v1.79.0)
+Closed in the v1.79.0 debt sprint: every kind an exported lane can speak
+now gets its ecosystem's setup action (setup-beam/gleam, setup-julia,
+setup-v, setup-fpm, setup-alire, setup-nim, setup-dlang, setup-racket,
+setup-zig, setup-dart, setup-dotnet, haskell setup, setup-ocaml,
+install-crystal; the npm-riding functional web dedupes to one
+setup-node) or an honest `# NOTE:` comment in the workflow (scala/swift).
+Test-pinned incl. the dedup. The paragraph below is the original record.
 
 `CiExporter.setupSteps()` provisions node/bun/deno/rust/go/python/
 maven/gradle/beam/ruby/php on the runner; gleam, julia, nim, dlang,
@@ -91,7 +98,10 @@ rather than silently spawning. The cost is startup latency proportional to
 what the user themselves put in the patch, not an attacker. Revisit only if
 a plugin-heavy patch measurably hurts boot.
 
-### 43. `GitFacts` follows an attacker-controlled `gitdir:` pointer
+### 43. `GitFacts` follows an attacker-controlled `gitdir:` pointer — CLOSED (v1.58.0)
+Closed by canonicalizing the `gitdir:` pointer and confining it to a
+`.git` directory (worktrees/submodules still resolve, arbitrary paths
+refused), mutation-proven. The paragraph below is the original record.
 A crafted `.git` *file* in an opened project can carry `gitdir: /abs/path`,
 and `GitFacts.branch()` reads `<that>/HEAD`'s first line into the chip. The
 disclosure is a narrow oracle (surfaces text only when the first line is
@@ -100,7 +110,10 @@ opening a hostile repo already runs its hooks under the platform's own git.
 Low; a canonicalize/confinement pass is the fix if worktree support ever
 needs the indirection widened.
 
-### 44. `MissingDevice` can produce a dead-click "Resume last session?" balloon
+### 44. `MissingDevice` can produce a dead-click "Resume last session?" balloon — CLOSED (v1.58.0)
+Closed: a `MissingDevice` never matches session-resume, killing the
+dead-click balloon; mutation-proven. The paragraph below is the
+original record.
 If a plugin device was live at a crash and its plugin is uninstalled before
 restart, `SessionState.matchAgainst` matches the `MissingDevice` now at
 that index by typeId and offers to resume it; the click calls the

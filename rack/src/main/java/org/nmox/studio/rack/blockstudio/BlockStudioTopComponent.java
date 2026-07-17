@@ -96,6 +96,10 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
     };
 
+    private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
+            new org.nmox.studio.core.util.SelfWriteTracker();
+    private BlockFilePulse pulse;
+
     private File projectDir;
     private BlockCodegen.Result lastResult;
     private boolean loading;
@@ -249,6 +253,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         RackService.getDefault().getRack().removeListener(rackListener);
+        stopPulse();
     }
 
     @Override
@@ -264,6 +269,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     private void loadForAim() {
         File dir = RackService.getDefault().getRack().getProjectDir();
         projectDir = dir;
+        restartPulse(dir);
         if (dir == null) {
             canvas.setDoc(null);
             codePane.setText("");
@@ -301,9 +307,53 @@ public final class BlockStudioTopComponent extends TopComponent {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(
                         BlockIO.workspaceFile(dir).toPath(), json.toString(2) + "\n");
+                // stamp our own write so the pulse can tell it from a
+                // foreign edit (the v1.35 self-write-discrimination law)
+                selfWrites.noteSync(BlockIO.workspaceFile(dir));
             } catch (IOException ex) {
                 SwingUtilities.invokeLater(() -> setStatus("Save failed: " + ex.getMessage()));
             }
+        });
+    }
+
+    // ---- external-edit pulse (the studio law v1 deferred) ----
+
+    private void restartPulse(File dir) {
+        stopPulse();
+        if (dir == null) {
+            return;
+        }
+        pulse = new BlockFilePulse(BlockIO.workspaceFile(dir), this::onWorkspaceFileChanged);
+        pulse.start(BlockFilePulse.DEFAULT_INTERVAL_MS);
+    }
+
+    private void stopPulse() {
+        if (pulse != null) {
+            pulse.stop();
+            pulse = null;
+        }
+    }
+
+    /**
+     * Pulse-thread callback for a {@code .nmoxblocks.json} stamp change.
+     * Our own atomic saves are stamped and ignored; a foreign edit
+     * reloads the canvas — unless a debounced in-studio save is still
+     * pending, in which case the studio's newer intent wins and the
+     * override is said out loud instead of silently clobbering either
+     * side. Package-private: tests drive it deterministically.
+     */
+    void onWorkspaceFileChanged(long mtime, long size) {
+        if (!selfWrites.isForeign(mtime, size)) {
+            return;
+        }
+        SwingUtilities.invokeLater(() -> {
+            if (saver.isRunning()) {
+                setStatus("External edit to " + BlockIO.WORKSPACE_FILE
+                        + " overridden by newer studio edits");
+                return;
+            }
+            loadForAim();
+            setStatus("Reloaded — " + BlockIO.WORKSPACE_FILE + " changed on disk");
         });
     }
 
@@ -349,6 +399,8 @@ public final class BlockStudioTopComponent extends TopComponent {
         codePane.setText(lastResult.code());
         codePane.setCaretPosition(0);
         setStatus(doc.preorder().size() + " pieces → " + doc.root().param("tag") + ".js");
+        org.nmox.studio.rack.blockstudio.search.BlockSearchProvider
+                .publish(doc.root().param("tag"), doc.preorder().size());
         highlight(canvas.selectedId() == null ? null : doc.find(canvas.selectedId()));
     }
 
