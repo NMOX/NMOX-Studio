@@ -82,6 +82,8 @@ public final class LanguageServerCatalog {
         add("PureScript", "purescript-language-server", "npm i -g purescript-language-server", List.of("npm", "i", "-g", "purescript-language-server"));
         add("V", "v-analyzer", "v install v-analyzer (or see github.com/vlang/v-analyzer)", List.of());
         add("Fortran", "fortls", "pip install fortls", List.of("pip", "install", "fortls"));
+        add("Ada", "ada_language_server", "ships with GNAT / alr install (Alire)", List.of());
+        add("Odin", "ols", "build from github.com/DanielGavin/ols", List.of());
         add("Erlang", "erlang_ls", "install erlang_ls from github.com/erlang-ls/erlang_ls", List.of());
         add("Clojure", "clojure-lsp", "brew install clojure-lsp/brew/clojure-lsp-native",
                 List.of("brew", "install", "clojure-lsp/brew/clojure-lsp-native"));

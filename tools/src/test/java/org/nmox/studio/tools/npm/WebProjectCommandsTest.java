@@ -185,6 +185,18 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Ada runs/builds via alr; test and clean are null (v1.75.0)")
+    void adaRunsAndBuilds() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ADA, ActionProvider.COMMAND_RUN))
+                .containsExactly("alr", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ADA, ActionProvider.COMMAND_BUILD))
+                .containsExactly("alr", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ADA, ActionProvider.COMMAND_TEST)).isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.ADA, ActionProvider.COMMAND_CLEAN)).isNull();
+    }
+
+    @Test
     @DisplayName("Dart runs and tests but has neither a build nor a clean action")
     void dartRunsAndTestsOnly() {
         File d = dir.toFile();

@@ -42,6 +42,10 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | prolog.tmLanguage.json | sha256 438a6fba654c2b46fb5edd585436519cab6bcf36e4186020ae1221efd52c4227 | arthwang/vsc-prolog syntaxes/prolog.swi.tmLanguage.json (MIT) |
 | tcl.tmLanguage.json | sha256 cd478026e11b2c3c43b7086f20ab356845178062f8445a05d65c10b67514ba65 | bitwisecook/vscode-tcl syntaxes/tcl.tmlanguage.yaml, converted YAML→JSON (MIT) |
 | scheme.tmLanguage.json | sha256 34fa0997ce66ee67c471feeef7655909cd46c3f5171f123bdee51f53fcc39c17 | sjhuangx/vscode-scheme syntaxes/scheme.tmLanguage, converted plist→JSON (MIT) |
+| ada.tmLanguage.json | sha256 e97e649d4369a18acc5a59259582d346eee5268bd91e24a17e963d5efcadb51f | textmate/ada.tmbundle Syntaxes/Ada.plist, converted plist→JSON (TextMate bundle license; AdaCore's grammar is GPL-3.0 and deliberately not used) |
+| pascal.tmLanguage.json | sha256 ca80c6f52a27783d280cd828542963955f2e5d6df0fa4c306dd19c96e4d3c06b | alefragnani/vscode-language-pascal syntaxes/pascal.tmLanguage, converted plist→JSON (MIT) |
+| odin.tmLanguage.json | sha256 d2a4331a0912a9bdf9b361596c6ce50f403eaa2ad686cdccc2f5d3516a85ca3d | DanielGavin/ols editors/vscode/syntaxes/odin.tmLanguage.json (MIT) |
+| cobol.tmLanguage.json | sha256 172a6c7688c478089e3976317757168eb241d1950846269c1fbde2dcfa77b5b6 | spgennard/vscode_cobol syntaxes/COBOL.tmLanguage.json (MIT) |
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 

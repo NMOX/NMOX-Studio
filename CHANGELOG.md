@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.75.0] - 2026-07-16
+
+### The systems-heritage release — Ada (full vertical), Pascal, Odin, COBOL
+
+- **Ada is a full vertical.** `alire.toml` → `ProjectKind.ADA`; IGNITION
+  `alr run`, FORGE `alr build`, CRATE fetches deps via `alr build`
+  (update `alr update`; CHECK greys — no outdated query); VERITAS greys
+  honestly — Ada has no universal test verb, and the lane test pins the
+  grey so the kind can never fall through to `npm test` (the
+  ReScript-bug class). ROSETTA lists `ada`; the IDE-native Run/Build
+  speak `alr`. Grammar from textmate/ada.tmbundle (permissive TextMate
+  bundle license — AdaCore's own grammar is GPL-3.0 and deliberately not
+  used, documented in NOTICE); `--` comments; keyword completion;
+  `ada_language_server` LSP entry; an `alr run` learning space over a
+  real Alire crate.
+- **Pascal** (`.pas`/`.pp`/`.lpr`): alefragnani grammar (MIT,
+  plist→JSON), `//` comments, keyword completion, an `instantfpc`
+  run-space (Free Pascal's compile-and-execute).
+- **Odin** (`.odin`): the official ols grammar (MIT), `//` comments,
+  keyword completion, brace-family outline, `ols` LSP entry, an
+  `odin run .` run-space. No manifest exists (the long-standing honest
+  skip) — editor + space + Doctor carry the experience.
+- **COBOL** (`.cob`/`.cbl`/`.cpy`): spgennard grammar (MIT), `*>`
+  comments, keyword completion, a `cobc -xj` run-space (GnuCOBOL
+  compile-and-run).
+
+Environment Doctor probes `alr`/`odin`/`instantfpc`/`cobc`. 65 grammars,
+69 learning spaces. Grammar/comment/completion gates extended; Ada lane
++ IDE-action tests added.
+
 ## [1.74.0] - 2026-07-16
 
 ### The classics release — GNU Smalltalk, Prolog, Tcl, Scheme

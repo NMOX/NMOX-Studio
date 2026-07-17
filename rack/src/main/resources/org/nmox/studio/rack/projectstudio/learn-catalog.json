@@ -928,6 +928,124 @@
    "tutorial": "# Scheme (Guile)\n\nScheme is the minimalist Lisp — the language of SICP, where closures,\nrecursion, and code-as-data are taught in their purest form. GNU Guile\nis its workhorse implementation: the official extension language of the\nGNU project (GDB, Guix, and more embed it).\n\n## Your REPL\n\nClick **START** and the studio runs `guile`. Everything is an\nexpression: `(+ 1 2)` evaluates to 3.\n\n## The sample\n\n`hello.scm` defines `greet` with `string-append`, then maps a `lambda`\nover `(iota 5 1)` — Scheme's range.\n\n## Try\n\n1. `(define (square x) (* x x))` then `(map square '(1 2 3))`.\n2. Recursion is the loop: define `fact` and call `(fact 10)`.\n3. Code is data: `(car '(+ 1 2))` returns the symbol `+`.\n\nRacket fans: Racket has its own space — this one is R7RS/Guile Scheme,\nand `.scm`/`.ss` files get Scheme highlighting while `.rkt` stays Racket.\n\n---\n\n## Install\n\n```sh\nbrew install guile\n```\n"
   },
   {
+   "slug": "ada",
+   "name": "Ada",
+   "category": "LANGUAGE",
+   "family": "Systems",
+   "blurb": "The language of avionics and rail signalling — safety through the type system, now with a modern package manager (Alire).",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "alr",
+     "run"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install alire (plus a GNAT toolchain: alr toolchain --select)",
+    "linux": "see alire.ada.dev",
+    "windows": "see alire.ada.dev"
+   },
+   "files": [
+    {
+     "path": "alire.toml",
+     "content": "name = \"hello\"\nversion = \"0.1.0\"\ndescription = \"Learning-space sample\"\nexecutables = [\"hello\"]\n"
+    },
+    {
+     "path": "src/hello.adb",
+     "content": "--  Run me with IGNITION (alr run) or:  alr run\nwith Ada.Text_IO; use Ada.Text_IO;\n\nprocedure Hello is\n   function Greet (Name : String) return String is\n   begin\n      return \"Hello, \" & Name & \"!\";\n   end Greet;\nbegin\n   Put_Line (Greet (\"Ada\"));\n   for I in 1 .. 5 loop\n      Put_Line (\"square of\" & Integer'Image (I) & \" is\" & Integer'Image (I * I));\n   end loop;\nend Hello;\n"
+    }
+   ],
+   "tutorial": "# Ada\n\nAda was designed for systems that must not fail — avionics, rail\nsignalling, spacecraft. Its superpower is the type system: ranges,\nconstraints, and contracts that turn runtime bugs into compile errors.\n**Alire** (`alr`) is its modern package manager — a cargo for Ada.\n\n## Your runner\n\nAda has no REPL, so this space uses **run** mode: click **RUN** and the\nstudio runs `alr run`, which fetches dependencies, builds with GNAT, and\nexecutes.\n\n## The sample\n\n`alire.toml` is the crate manifest; `src/hello.adb` is a `procedure`\nwith a nested `function` — note `&` for concatenation and\n`Integer'Image` (the *attribute* syntax) for numbers-to-strings.\n\n## Try\n\n1. RUN — the first run fetches the toolchain pieces, then prints.\n2. Change the loop to `1 .. 8` and RUN again.\n3. Declare `subtype Small is Integer range 1 .. 10;` and see what the\n   compiler does when a value strays.\n\n---\n\n## Install\n\n```sh\nbrew install alire\nalr toolchain --select   # pick a GNAT once\n```\n"
+  },
+  {
+   "slug": "pascal",
+   "name": "Pascal",
+   "category": "LANGUAGE",
+   "family": "Systems",
+   "blurb": "The language a generation learned programming on — structured, readable, and still fast today via Free Pascal and Lazarus.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "instantfpc",
+     "hello.pas"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install fpc",
+    "linux": "sudo apt install fpc",
+    "windows": "winget install FreePascal.Compiler"
+   },
+   "files": [
+    {
+     "path": "hello.pas",
+     "content": "{ Run me with: instantfpc hello.pas  (or fpc hello.pas && ./hello) }\nprogram Hello;\n\nfunction Greet(const Name: string): string;\nbegin\n  Greet := 'Hello, ' + Name + '!';\nend;\n\nvar\n  I: Integer;\nbegin\n  WriteLn(Greet('Pascal'));\n  for I := 1 to 5 do\n    WriteLn('square of ', I, ' is ', I * I);\nend.\n"
+    }
+   ],
+   "tutorial": "# Pascal\n\nPascal taught the world structured programming — a generation learned\nto code in Turbo Pascal, and Delphi carried it into industry. **Free\nPascal** keeps it alive and fast, with Lazarus as its RAD IDE.\n\n## Your runner\n\nPascal has no REPL, so this space uses **run** mode: click **RUN** and\nthe studio runs `instantfpc hello.pas` — Free Pascal's script runner\n(compile + execute in one step).\n\n## The sample\n\n`hello.pas` is classic Pascal: a `program`, a `function` returning via\nassignment to its own name, `var` declarations up front, and the\n`begin…end.` block with its famous final period.\n\n## Try\n\n1. RUN — compile and execute in one step.\n2. Add a `const Pi = 3.14159;` section and print it.\n3. Change `for I := 1 to 5` to `downto 1` — Pascal reads like English.\n\n---\n\n## Install\n\n```sh\nbrew install fpc\n```\n"
+  },
+  {
+   "slug": "odin",
+   "name": "Odin",
+   "category": "LANGUAGE",
+   "family": "Systems",
+   "blurb": "A data-oriented C alternative built for high-performance programming — the language behind EmberGen's real-time VFX.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "odin",
+     "run",
+     "."
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install odin",
+    "linux": "see odin-lang.org/docs/install",
+    "windows": "see odin-lang.org/docs/install"
+   },
+   "files": [
+    {
+     "path": "hello.odin",
+     "content": "// Run me with IGNITION-style: odin run .\npackage main\n\nimport \"core:fmt\"\n\ngreet :: proc(name: string) -> string {\n\treturn fmt.tprintf(\"Hello, %s!\", name)\n}\n\nmain :: proc() {\n\tfmt.println(greet(\"Odin\"))\n\tfor i in 1 ..= 5 {\n\t\tfmt.printfln(\"square of %d is %d\", i, i * i)\n\t}\n}\n"
+    }
+   ],
+   "tutorial": "# Odin\n\nOdin is a modern C alternative built around data-oriented design:\nsimple, explicit, fast to compile, with first-class support for the\narrays/SOA layouts high-performance code actually uses. It powers\nJangaFX's EmberGen (real-time VFX).\n\n## Your runner\n\nOdin has no REPL, so this space uses **run** mode: click **RUN** and the\nstudio runs `odin run .` — compile the package, run the binary.\n\n## The sample\n\n`hello.odin` shows Odin's signature `::` declaration syntax — `greet ::\nproc(...)` — plus `core:fmt` and the inclusive-range `for i in 1 ..= 5`.\n\n## Try\n\n1. RUN, then change the range to `1 ..< 10` (exclusive) and RUN again.\n2. Declare a struct: `Point :: struct { x, y: f32 }`.\n3. Odin has no exceptions — try returning two values:\n   `(string, bool)`.\n\nNote: Odin has no project manifest, so open the folder directly; the\neditor + this space carry the experience.\n\n---\n\n## Install\n\n```sh\nbrew install odin\n```\n"
+  },
+  {
+   "slug": "cobol",
+   "name": "COBOL",
+   "category": "LANGUAGE",
+   "family": "Business",
+   "blurb": "Still running the world's banks after 65 years — and GnuCOBOL makes it a free compiler on your laptop.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "cobc",
+     "-xj",
+     "hello.cob"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install gnucobol",
+    "linux": "sudo apt install gnucobol",
+    "windows": "see gnucobol.sourceforge.io"
+   },
+   "files": [
+    {
+     "path": "hello.cob",
+     "content": "       *> Run me with: cobc -xj hello.cob\n       IDENTIFICATION DIVISION.\n       PROGRAM-ID. HELLO.\n       DATA DIVISION.\n       WORKING-STORAGE SECTION.\n       01 I        PIC 9.\n       01 SQ       PIC 99.\n       PROCEDURE DIVISION.\n           DISPLAY \"Hello, COBOL!\".\n           PERFORM VARYING I FROM 1 BY 1 UNTIL I > 5\n               COMPUTE SQ = I * I\n               DISPLAY \"square of \" I \" is \" SQ\n           END-PERFORM.\n           STOP RUN.\n"
+    }
+   ],
+   "tutorial": "# COBOL\n\nCOBOL has processed the world's transactions since 1959 — an estimated\n95% of ATM swipes still touch it. **GnuCOBOL** compiles it to C, so the\nlanguage of mainframes runs free on your laptop.\n\n## Your runner\n\nCOBOL has no REPL, so this space uses **run** mode: click **RUN** and\nthe studio runs `cobc -xj hello.cob` — compile executable (+x) and run\n(+j) in one step.\n\n## The sample\n\n`hello.cob` is the full ceremony: the four DIVISIONs, `PIC` clauses\ndeclaring digit-shaped data, and a `PERFORM VARYING` loop — COBOL's\nfor-loop.\n\n## Try\n\n1. RUN — compile and execute.\n2. Change `PIC 99` to `PIC 999` and the loop to `UNTIL I > 9`.\n3. Add `01 NAME PIC X(10) VALUE \"WORLD\".` and DISPLAY it — X is\n   alphanumeric, 9 is numeric.\n\n---\n\n## Install\n\n```sh\nbrew install gnucobol\n```\n"
+  },
+  {
    "slug": "racket",
    "name": "Racket",
    "category": "LANGUAGE",
