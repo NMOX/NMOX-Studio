@@ -127,6 +127,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink("Task Rack  ⌘9", "RackTopComponent"));
             windows.add(windowLink("Workbench  ⌥⌘0", "ProjectExplorerTopComponent"));
             windows.add(windowLink("Project Studio", "ProjectStudioTopComponent"));
+            windows.add(windowLink("Block Studio  ⌥⌘5", "BlockStudioTopComponent"));
             windows.add(windowLink("DB Studio  ⌥⌘7", "DbStudioTopComponent"));
             windows.add(windowLink("Contract Studio  ⌥⌘6", "Web3StudioTopComponent"));
             windows.add(windowLink("API Studio  ⌥⌘8", "ApiClientTopComponent"));

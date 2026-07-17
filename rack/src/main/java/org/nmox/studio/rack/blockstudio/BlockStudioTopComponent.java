@@ -1,0 +1,445 @@
+package org.nmox.studio.rack.blockstudio;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.TransferHandler;
+import javax.swing.text.DefaultHighlighter;
+import org.json.JSONObject;
+import org.netbeans.api.settings.ConvertAsProperties;
+import org.nmox.studio.rack.model.Rack;
+import org.nmox.studio.rack.service.RackService;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+
+/**
+ * Block Studio: compose a web component from interlocking pieces, watch
+ * the real code appear beside them, and click either side to see the
+ * mapping — the canvas is the controller, the code pane the truthful
+ * projection ({@link BlockCodegen} keeps a per-block character range).
+ *
+ * <p>House laws held: nothing happens at boot (all work rides
+ * componentShowing), file IO on a named RequestProcessor, atomic writes
+ * ({@link BlockIO}), listener add/remove symmetric across open/close,
+ * the generated-file write is never-clobber, and every control carries
+ * an accessible name. ⌘Z undoes structural edits via JSON snapshots.
+ */
+@ConvertAsProperties(dtd = "-//org.nmox.studio.rack.blockstudio//BlockStudio//EN", autostore = false)
+@TopComponent.Description(
+        preferredID = "BlockStudioTopComponent",
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 76)
+@ActionID(category = "Window", id = "org.nmox.studio.rack.blockstudio.BlockStudioTopComponent")
+@org.openide.awt.ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 259),
+    // The chord rides Shortcuts/ for the binding; the Window-menu
+    // accelerator comes from the Keymaps shadow in ui/layer.xml (rack
+    // windows host their shadows there — the v1.38.1/debt-28 split).
+    // WindowShortcutsTest pins chord, label and shadow together.
+    @ActionReference(path = "Shortcuts", name = "DA-5")
+})
+@TopComponent.OpenActionRegistration(
+        displayName = "#CTL_BlockStudioAction",
+        preferredID = "BlockStudioTopComponent")
+@NbBundle.Messages({
+    "CTL_BlockStudioAction=Block Studio  ⌥⌘5",
+    "CTL_BlockStudioTopComponent=Block Studio",
+    "HINT_BlockStudioTopComponent=Compose web components from interlocking pieces"
+})
+public final class BlockStudioTopComponent extends TopComponent {
+
+    private static final RequestProcessor RP = new RequestProcessor("Block Studio", 1);
+    private static final int DEBOUNCE_MS = 150;
+    private static final int UNDO_CAP = 100;
+
+    private final BlockCanvas canvas;
+    private final JEditorPane codePane = new JEditorPane();
+    private final JLabel status = new JLabel(" ");
+    private final Deque<String> undo = new ArrayDeque<>();
+    private final Timer regen = new Timer(DEBOUNCE_MS, e -> regenerate());
+    private final Timer saver = new Timer(800, e -> persist());
+    private final Rack.Listener rackListener = new Rack.Listener() {
+        @Override
+        public void projectChanged() {
+            SwingUtilities.invokeLater(BlockStudioTopComponent.this::loadForAim);
+        }
+    };
+
+    private File projectDir;
+    private BlockCodegen.Result lastResult;
+    private boolean loading;
+    private boolean shownOnce;
+
+    public BlockStudioTopComponent() {
+        setName(Bundle.CTL_BlockStudioTopComponent());
+        setToolTipText(Bundle.HINT_BlockStudioTopComponent());
+        setLayout(new BorderLayout());
+        regen.setRepeats(false);
+        saver.setRepeats(false);
+
+        canvas = new BlockCanvas(new BlockCanvas.Host() {
+            @Override
+            public void aboutToChange() {
+                pushUndo();
+            }
+
+            @Override
+            public void changed() {
+                canvas.refresh();
+                regen.restart();
+                saver.restart();
+            }
+
+            @Override
+            public void selected(Block block) {
+                highlight(block);
+            }
+
+            @Override
+            public void editParams(Block block) {
+                editParamsDialog(block);
+            }
+        });
+
+        // palette: every kind but the root, draggable by name
+        JList<BlockKind> palette = new JList<>(java.util.Arrays.stream(BlockKind.values())
+                .filter(k -> k != BlockKind.COMPONENT).toArray(BlockKind[]::new));
+        palette.getAccessibleContext().setAccessibleName("Block palette");
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            // setDragEnabled needs a real toolkit; headless tests
+            // instantiate the studio without one (the house idiom)
+            palette.setDragEnabled(true);
+        }
+        palette.setTransferHandler(new TransferHandler() {
+            @Override
+            public int getSourceActions(javax.swing.JComponent c) {
+                return COPY;
+            }
+
+            @Override
+            protected java.awt.datatransfer.Transferable createTransferable(javax.swing.JComponent c) {
+                BlockKind kind = palette.getSelectedValue();
+                return kind == null ? null : new StringSelection(kind.name());
+            }
+        });
+        palette.setCellRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean selected, boolean focus) {
+                JLabel l = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, selected, focus);
+                BlockKind k = (BlockKind) value;
+                l.setText(k.display());
+                l.setIcon(new javax.swing.Icon() {
+                    @Override
+                    public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
+                        g.setColor(BlockCanvas.fill(k.category()));
+                        g.fillRoundRect(x, y, 12, 12, 4, 4);
+                    }
+
+                    @Override
+                    public int getIconWidth() {
+                        return 14;
+                    }
+
+                    @Override
+                    public int getIconHeight() {
+                        return 12;
+                    }
+                });
+                return l;
+            }
+        });
+
+        codePane.setEditable(false);
+        codePane.setEditorKit(CloneableEditorSupport.getEditorKit("text/javascript"));
+        codePane.getAccessibleContext().setAccessibleName("Generated component code");
+
+        JButton undoBtn = new JButton(new AbstractAction("Undo") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                popUndo();
+            }
+        });
+        undoBtn.getAccessibleContext().setAccessibleName("Undo block edit");
+        JButton saveBtn = new JButton(new AbstractAction("Save Component") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveComponent();
+            }
+        });
+        saveBtn.getAccessibleContext().setAccessibleName("Save component to project");
+        saveBtn.setToolTipText("Writes src/components/<tag>.js into the aimed project"
+                + " — refuses files Block Studio did not generate");
+
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        toolbar.add(undoBtn);
+        toolbar.add(saveBtn);
+        toolbar.add(status);
+        status.getAccessibleContext().setAccessibleName("Block Studio status");
+
+        JScrollPane paletteScroll = new JScrollPane(palette);
+        paletteScroll.setPreferredSize(new Dimension(150, 100));
+        paletteScroll.setBorder(BorderFactory.createTitledBorder("Pieces"));
+        JScrollPane canvasScroll = new JScrollPane(canvas);
+        canvasScroll.setBorder(BorderFactory.createTitledBorder("Canvas"));
+        JScrollPane codeScroll = new JScrollPane(codePane);
+        codeScroll.setBorder(BorderFactory.createTitledBorder("Generated code — click a piece to locate it"));
+
+        JSplitPane right = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvasScroll, codeScroll);
+        right.setResizeWeight(0.45);
+        JSplitPane main = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, paletteScroll, right);
+        main.setResizeWeight(0);
+        add(toolbar, BorderLayout.NORTH);
+        add(main, BorderLayout.CENTER);
+
+        // menu-shortcut mask needs a real toolkit; headless tests skip
+        // the binding (the button and popUndo() still cover the path)
+        int shortcutMask = java.awt.GraphicsEnvironment.isHeadless()
+                ? KeyEvent.CTRL_DOWN_MASK
+                : java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_Z, shortcutMask), "block-undo");
+        getActionMap().put("block-undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                popUndo();
+            }
+        });
+    }
+
+    // ---- lifecycle (symmetry: add in opened, remove in closed) ----
+
+    @Override
+    public void componentOpened() {
+        RackService.getDefault().getRack().addListener(rackListener);
+    }
+
+    @Override
+    public void componentClosed() {
+        RackService.getDefault().getRack().removeListener(rackListener);
+    }
+
+    @Override
+    protected void componentShowing() {
+        if (!shownOnce) {
+            shownOnce = true;
+            loadForAim();
+        }
+    }
+
+    // ---- load/save (IO on RP, apply on EDT) ----
+
+    private void loadForAim() {
+        File dir = RackService.getDefault().getRack().getProjectDir();
+        projectDir = dir;
+        if (dir == null) {
+            canvas.setDoc(null);
+            codePane.setText("");
+            setStatus("Aim a project to start composing");
+            return;
+        }
+        loading = true;
+        RP.post(() -> {
+            BlockDoc loaded;
+            try {
+                loaded = BlockIO.load(dir);
+            } catch (IOException | RuntimeException ex) {
+                loaded = null;
+                SwingUtilities.invokeLater(() -> setStatus(
+                        "Could not read " + BlockIO.WORKSPACE_FILE + ": " + ex.getMessage()));
+            }
+            BlockDoc doc = loaded != null ? loaded : new BlockDoc();
+            SwingUtilities.invokeLater(() -> {
+                undo.clear();
+                canvas.setDoc(doc);
+                loading = false;
+                regenerate();
+            });
+        });
+    }
+
+    private void persist() {
+        File dir = projectDir;
+        BlockDoc doc = canvas.doc();
+        if (dir == null || doc == null || loading) {
+            return;
+        }
+        JSONObject json = doc.toJson();
+        RP.post(() -> {
+            try {
+                org.nmox.studio.core.util.AtomicFiles.writeString(
+                        BlockIO.workspaceFile(dir).toPath(), json.toString(2) + "\n");
+            } catch (IOException ex) {
+                SwingUtilities.invokeLater(() -> setStatus("Save failed: " + ex.getMessage()));
+            }
+        });
+    }
+
+    // ---- undo (JSON snapshots) ----
+
+    private void pushUndo() {
+        BlockDoc doc = canvas.doc();
+        if (doc != null) {
+            if (undo.size() >= UNDO_CAP) {
+                undo.removeLast();
+            }
+            undo.push(doc.toJson().toString());
+        }
+    }
+
+    private void popUndo() {
+        if (undo.isEmpty()) {
+            setStatus("Nothing to undo");
+            return;
+        }
+        canvas.setDoc(BlockDoc.fromJson(new JSONObject(undo.pop())));
+        regen.restart();
+        saver.restart();
+    }
+
+    // ---- code pane: the projection + the mapping ----
+
+    private void regenerate() {
+        BlockDoc doc = canvas.doc();
+        if (doc == null) {
+            return;
+        }
+        List<String> problems = BlockCodegen.validate(doc);
+        if (!problems.isEmpty()) {
+            lastResult = null;
+            StringBuilder sb = new StringBuilder("// Fix these to generate:\n");
+            problems.forEach(p -> sb.append("//  - ").append(p).append('\n'));
+            codePane.setText(sb.toString());
+            setStatus(problems.get(0));
+            return;
+        }
+        lastResult = BlockCodegen.generate(doc);
+        codePane.setText(lastResult.code());
+        codePane.setCaretPosition(0);
+        setStatus(doc.preorder().size() + " pieces → " + doc.root().param("tag") + ".js");
+        highlight(canvas.selectedId() == null ? null : doc.find(canvas.selectedId()));
+    }
+
+    private void highlight(Block block) {
+        codePane.getHighlighter().removeAllHighlights();
+        if (block == null || lastResult == null) {
+            return;
+        }
+        int[] range = lastResult.ranges().get(block.id());
+        if (range == null) {
+            return;
+        }
+        try {
+            codePane.getHighlighter().addHighlight(range[0], Math.min(range[1],
+                    codePane.getDocument().getLength()),
+                    new DefaultHighlighter.DefaultHighlightPainter(new Color(90, 110, 160, 90)));
+            codePane.setCaretPosition(range[0]);
+        } catch (javax.swing.text.BadLocationException ex) {
+            // stale range during a rebuild tick: the next regenerate re-highlights
+        }
+    }
+
+    // ---- params ----
+
+    private void editParamsDialog(Block block) {
+        JPanel form = new JPanel(new java.awt.GridLayout(0, 2, 8, 4));
+        java.util.Map<String, JTextField> fields = new java.util.LinkedHashMap<>();
+        for (BlockKind.Param p : block.kind().params()) {
+            form.add(new JLabel(p.key()));
+            JTextField field = new JTextField(block.param(p.key()), 18);
+            field.getAccessibleContext().setAccessibleName(block.kind().display() + " " + p.key());
+            fields.put(p.key(), field);
+            form.add(field);
+        }
+        DialogDescriptor dd = new DialogDescriptor(form, block.kind().display());
+        if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
+            pushUndo();
+            fields.forEach((k, f) -> block.setParam(k, f.getText().trim()));
+            canvas.refresh();
+            regen.restart();
+            saver.restart();
+        }
+    }
+
+    // ---- save to project ----
+
+    private void saveComponent() {
+        BlockDoc doc = canvas.doc();
+        File dir = projectDir;
+        if (doc == null || dir == null) {
+            setStatus("Aim a project first");
+            return;
+        }
+        List<String> problems = BlockCodegen.validate(doc);
+        if (!problems.isEmpty()) {
+            setStatus(problems.get(0));
+            return;
+        }
+        String tag = doc.root().param("tag");
+        String code = BlockCodegen.generate(doc).code();
+        RP.post(() -> {
+            String message;
+            try {
+                boolean ok = BlockIO.writeComponent(dir, tag, code);
+                message = ok
+                        ? "Saved src/components/" + tag + ".js"
+                        : "Refused: src/components/" + tag + ".js was not generated by Block Studio";
+                if (!ok) {
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                            "src/components/" + tag + ".js exists but was not generated by "
+                            + "Block Studio — it will not be overwritten. Rename your component "
+                            + "or move the file.", NotifyDescriptor.WARNING_MESSAGE));
+                }
+            } catch (IOException ex) {
+                message = "Save failed: " + ex.getMessage();
+            }
+            String finalMessage = message;
+            SwingUtilities.invokeLater(() -> setStatus(finalMessage));
+        });
+    }
+
+    private void setStatus(String s) {
+        status.setText(s);
+    }
+
+    // ---- @ConvertAsProperties plumbing ----
+
+    void writeProperties(java.util.Properties p) {
+        p.setProperty("version", "1.0");
+    }
+
+    void readProperties(java.util.Properties p) {
+    }
+}

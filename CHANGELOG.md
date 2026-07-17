@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.78.0] - 2026-07-17
+
+### Block Studio — compose web components from interlocking pieces
+
+A new studio tab (⌥⌘5, Window ▸ Block Studio): a Scratch-like canvas
+where typed pieces snap together to compose a real Web Component, with
+the generated code beside it as a live, *mapped* projection — click a
+piece and its exact lines highlight, because the generator records a
+character range per block.
+
+- **Eleven piece kinds** across four hue families: Component, Element,
+  Text, Attribute, Style (structure/content), State (fields), On-event,
+  Set-state, Toggle-class, Log, If-state (logic). The interlock law
+  (which pieces snap inside which) is a pure, matrix-tested rule set —
+  illegal drops never light a slot, hand-edited workspace files that
+  smuggle an illegal nesting are refused wholesale on load.
+- **Real code out**: a self-contained ES module — class extending
+  HTMLElement, shadow DOM, private state fields, a render() that
+  rebuilds the template and re-wires listeners, customElements.define.
+  `{state}` interpolates declared fields; everything else is escaped so
+  a block parameter can never break out of the template literal. The
+  custom-element tag law (lowercase + hyphen) is validated with honest
+  messages in the code pane.
+- **Save Component** writes `src/components/<tag>.js` into the aimed
+  project — atomically, and never-clobber: a file without the
+  generated-by marker is refused with an explanation.
+- **House laws held**: zero boot cost (all work rides first show), IO on
+  a named RequestProcessor with atomic writes, the workspace persists to
+  `.nmoxblocks.json` per project and follows re-aims, ⌘Z undoes
+  structural edits (JSON snapshots, capped), rack listener symmetric
+  across open/close, every control accessibly named — the lifecycle test
+  caught the canvas lacking an AccessibleContext before ship.
+- **Deliberate v1 scope** (recorded): blocks→code is one-way (no parser
+  from hand-written code back to pieces), no external-edit reload pulse
+  on `.nmoxblocks.json`, no ⌘I provider yet.
+
 ## [1.77.2] - 2026-07-16
 
 ### Every new learning space live-verified
