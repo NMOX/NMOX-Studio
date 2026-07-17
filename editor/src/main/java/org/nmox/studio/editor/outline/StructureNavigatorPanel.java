@@ -101,7 +101,9 @@ import org.openide.util.RequestProcessor;
     @NavigatorPanel.Registration(mimeType = "text/x-vlang", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-fortran", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-scheme", position = 100, displayName = "#LBL_Structure"),
-    @NavigatorPanel.Registration(mimeType = "text/x-odin", position = 100, displayName = "#LBL_Structure")
+    @NavigatorPanel.Registration(mimeType = "text/x-odin", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-haxe", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-janet", position = 100, displayName = "#LBL_Structure")
 })
 public final class StructureNavigatorPanel implements NavigatorPanel {
 

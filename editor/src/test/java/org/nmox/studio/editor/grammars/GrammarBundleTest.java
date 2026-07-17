@@ -23,7 +23,7 @@ class GrammarBundleTest {
         "ini", "ignore", "graphql", "vue", "svelte", "astro", "pug",
         "handlebars", "liquid", "nginx", "apache", "makefile", "proto", "prisma",
         "solidity", "coffeescript", "gleam", "nim", "d", "racket", "elm", "rescript", "purescript", "vlang", "fortran",
-        "smalltalk", "prolog", "tcl", "scheme", "ada", "pascal", "odin", "cobol"})
+        "smalltalk", "prolog", "tcl", "scheme", "ada", "pascal", "odin", "cobol", "haxe", "janet"})
     @DisplayName("Grammar resource exists and parses with a scopeName")
     void grammarShipsAndParses(String language) throws IOException {
         String resource = language + ".tmLanguage.json";
@@ -46,6 +46,7 @@ class GrammarBundleTest {
         // text/x-smalltalk deliberately absent: no line comment exists
         "text/x-prolog", "text/x-tcl", "text/x-scheme",
         "text/x-ada", "text/x-pascal", "text/x-odin", "text/x-cobol",
+        "text/x-haxe", "text/x-janet",
         "text/x-yaml", "text/x-toml", "text/x-dockerfile", "text/x-sql"})
     @DisplayName("Every code language has comment-toggle syntax")
     void commentSyntaxCovered(String mime) {

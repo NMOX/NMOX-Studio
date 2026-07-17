@@ -46,6 +46,12 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | pascal.tmLanguage.json | sha256 ca80c6f52a27783d280cd828542963955f2e5d6df0fa4c306dd19c96e4d3c06b | alefragnani/vscode-language-pascal syntaxes/pascal.tmLanguage, converted plist→JSON (MIT) |
 | odin.tmLanguage.json | sha256 d2a4331a0912a9bdf9b361596c6ce50f403eaa2ad686cdccc2f5d3516a85ca3d | DanielGavin/ols editors/vscode/syntaxes/odin.tmLanguage.json (MIT) |
 | cobol.tmLanguage.json | sha256 172a6c7688c478089e3976317757168eb241d1950846269c1fbde2dcfa77b5b6 | spgennard/vscode_cobol syntaxes/COBOL.tmLanguage.json (MIT) |
+| haxe.tmLanguage.json | sha256 c70988b8b367e9c4ea8bf0a4ee8cfdb7a5043c5a630f0a86cbc63e3ad0b447e1 | vshaxe/haxe-TmLanguage haxe.tmLanguage, converted plist→JSON (MIT) |
+| janet.tmLanguage.json | sha256 fa3ec6a7b1b3bbbb7341e00ff8da484812b5ad221c759af2178028af7e1f684b | janet-lang/vscode-janet syntaxes/janet.tmLanguage, converted plist→JSON (MIT) |
+
+Raku and Forth are deliberately absent: no cleanly-licensed TextMate
+grammar exists for either (Raku's is NOASSERTION-licensed, Forth's
+candidates are unlicensed) — the honest skip, like Odin's manifest.
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 

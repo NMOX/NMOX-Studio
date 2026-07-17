@@ -78,6 +78,8 @@ public final class EnvironmentDoctor {
                 new String[]{"odin", "Odin — data-oriented systems language, run space", "brew install odin"},
                 new String[]{"instantfpc", "Free Pascal script runner — Pascal run space", "ships with fpc (brew install fpc)"},
                 new String[]{"cobc", "GnuCOBOL compiler — COBOL run space", "brew install gnucobol"},
+                new String[]{"haxe", "Haxe — one codebase, many targets; run space", "brew install haxe"},
+                new String[]{"janet", "Janet — the embeddable Lisp, REPL space", "brew install janet"},
                 new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
                 new String[]{"dart", "Dart SDK", "brew install dart-sdk"},
                 new String[]{"zig", "Zig toolchain", "brew install zig"},

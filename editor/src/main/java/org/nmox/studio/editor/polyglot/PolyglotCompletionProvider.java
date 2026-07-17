@@ -75,6 +75,8 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-pascal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-odin", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-cobol", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-haxe", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-janet", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
@@ -324,6 +326,16 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "CALL USING STOP RUN GOBACK OPEN CLOSE READ WRITE REWRITE FILE SELECT ASSIGN "
                     + "ORGANIZATION SEQUENTIAL INDEXED RELATIVE OCCURS REDEFINES FILLER SPACES ZEROS "
                     + "STRING UNSTRING INSPECT REPLACING INITIALIZE SET LEVEL COPY")),
+            Map.entry("text/x-haxe", set("abstract break case cast catch class continue default do dynamic "
+                    + "else enum extends extern false final for function if implements import in inline "
+                    + "interface macro new null operator overload override package private public return "
+                    + "static switch this throw true try typedef untyped using var while "
+                    + "Int Float Bool String Array Map Void Dynamic Null trace Std Math Sys Lambda")),
+            Map.entry("text/x-janet", set("def defn defn- defmacro defmacro- var varfn fn do if when unless "
+                    + "while for each loop seq generate let with with-syms try protect match cond case "
+                    + "and or not true false nil break splice quote quasiquote unquote upscope "
+                    + "print prin pp printf string keyword symbol tuple array table struct buffer "
+                    + "map filter reduce range length get put import require use error assert")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "
