@@ -371,4 +371,32 @@ class PolyglotDevicesTest {
 
         rack.shutdown();
     }
+
+    @Test
+    @DisplayName("Ada: alire.toml detects; alr run/build; VERITAS greys — no universal test verb (v1.75.0)")
+    void adaLanes() throws IOException {
+        Rack rack = rackAimedAt("alire.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.ADA);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("alr", "run");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("alr", "build");
+
+        // the ReScript-bug-class guard: an unmapped kind must NOT fall
+        // through to npm test — Ada greys VERITAS honestly
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).isEmpty();
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("alr", "build");
+
+        rack.shutdown();
+    }
 }

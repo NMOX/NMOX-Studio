@@ -41,6 +41,7 @@ public final class ProjectInspector {
         RACKET("info.rkt"),
         VLANG("v.mod"),
         FORTRAN("fpm.toml"),
+        ADA("alire.toml"),
         // the functional web: these almost always sit beside a package.json,
         // so NODE outranks them in detectKind — detectKinds still lists them
         // and explicit knob targets speak their toolchains

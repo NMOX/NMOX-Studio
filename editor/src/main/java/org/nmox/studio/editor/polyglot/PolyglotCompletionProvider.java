@@ -71,6 +71,10 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-prolog", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-tcl", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-scheme", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-ada", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-pascal", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-odin", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-cobol", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
@@ -296,6 +300,30 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "define-record-type car cdr cons list append length reverse map for-each filter "
                     + "fold-left fold-right vector string number boolean pair null eq? eqv? equal? "
                     + "display newline write call/cc call-with-current-continuation values apply error")),
+            Map.entry("text/x-ada", set("abort abs abstract accept access aliased all and array at begin "
+                    + "body case constant declare delay delta digits do else elsif end entry exception "
+                    + "exit for function generic goto if in interface is limited loop mod new not null "
+                    + "of or others out overriding package pragma private procedure protected raise "
+                    + "range record rem renames requeue return reverse select separate some subtype "
+                    + "synchronized tagged task terminate then type until use when while with xor "
+                    + "Integer Natural Positive Float Boolean Character String Put_Line Ada Text_IO")),
+            Map.entry("text/x-pascal", set("program unit uses interface implementation begin end var const "
+                    + "type procedure function record array of set file string integer real boolean char "
+                    + "if then else case while do for to downto repeat until with nil not and or xor div "
+                    + "mod in class object constructor destructor inherited property published private "
+                    + "protected public virtual override overload writeln readln new dispose exit break "
+                    + "continue try except finally raise")),
+            Map.entry("text/x-odin", set("package import proc struct enum union bit_set map dynamic "
+                    + "if else when switch case for in not_in defer return break continue fallthrough "
+                    + "using transmute cast auto_cast distinct context or_else or_return where do "
+                    + "true false nil int uint i8 i16 i32 i64 u8 u16 u32 u64 f16 f32 f64 rune string "
+                    + "cstring rawptr bool byte matrix quaternion typeid any fmt println printf len cap")),
+            Map.entry("text/x-cobol", set("IDENTIFICATION DIVISION PROGRAM-ID ENVIRONMENT DATA WORKING-STORAGE "
+                    + "PROCEDURE SECTION PIC PICTURE VALUE MOVE TO ADD SUBTRACT MULTIPLY DIVIDE COMPUTE "
+                    + "DISPLAY ACCEPT IF ELSE END-IF EVALUATE WHEN PERFORM UNTIL VARYING TIMES THRU "
+                    + "CALL USING STOP RUN GOBACK OPEN CLOSE READ WRITE REWRITE FILE SELECT ASSIGN "
+                    + "ORGANIZATION SEQUENTIAL INDEXED RELATIVE OCCURS REDEFINES FILLER SPACES ZEROS "
+                    + "STRING UNSTRING INSPECT REPLACING INITIALIZE SET LEVEL COPY")),
             Map.entry("text/x-ocaml", set("and as assert asr begin class constraint do done downto else end "
                     + "exception external false for fun function functor if in include inherit initializer "
                     + "land lazy let lor lsl lsr lxor match method mod module mutable new nonrec object of "

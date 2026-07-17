@@ -363,6 +363,24 @@ public final class LanguageServers {
         }
     }
 
+    /** Ada via the AdaCore ada_language_server (ships with GNAT/Alire). */
+    @MimeRegistration(mimeType = "text/x-ada", service = LanguageServerProvider.class)
+    public static final class AdaServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("ada_language_server"));
+        }
+    }
+
+    /** Odin via ols. */
+    @MimeRegistration(mimeType = "text/x-odin", service = LanguageServerProvider.class)
+    public static final class OdinServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("ols"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

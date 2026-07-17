@@ -79,6 +79,9 @@ final class WebProjectCommands {
             case FORTRAN:
                 return fixed(action, List.of("fpm", "run"), List.of("fpm", "build"),
                         List.of("fpm", "test"), null);
+            case ADA:
+                return fixed(action, List.of("alr", "run"), List.of("alr", "build"),
+                        null, null);
             case ZIG:
                 return fixed(action, List.of("zig", "build", "run"), List.of("zig", "build"),
                         List.of("zig", "build", "test"), null);
