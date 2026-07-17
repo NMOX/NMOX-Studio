@@ -96,6 +96,9 @@
             <file name="D-8.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
             </file>
+            <file name="DA-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-blockstudio-BlockStudioTopComponent.instance"/>
+            </file>
             <file name="DA-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
             </file>
