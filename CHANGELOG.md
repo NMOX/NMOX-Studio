@@ -4,6 +4,50 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.76.0] - 2026-07-16
+
+### Senior review of the v1.72–v1.75 surface
+
+Two read-only lenses (stack-lane consistency + editor registrations)
+over the four stack releases, then fixes for what they proved. The lane
+lens came back CLEAN on the new verticals — every reverse map,
+grey-not-mutate verb, precedence slot, and append-only knob array held,
+with the guard tests doing their job. The registration lens found the
+release's headline bug:
+
+- **The Navigator outline was dead code for ten languages.** The
+  Structure panel's registration list froze at its v1.34.0 shape while
+  OutlineModel kept gaining extractors — so the Fortran outline
+  (a v1.73.0 headline), the V/Odin brace outlines, Scheme, and the six
+  v1.69/v1.70 language outlines were built, unit-tested, and unreachable
+  in the product. Fixed: 11 registrations added (+ text/markdown), and a
+  new OutlineNavigatorGateTest parses both source files and fails when
+  family() gains a mime the panel doesn't register (mutation-proven —
+  it fails on the old panel naming text/x-fortran).
+- **File ▸ Open Project now recognizes eight more manifests.**
+  WebProjectFactory never learned gleam.toml, pubspec.yaml, build.sbt,
+  stack.yaml, cabal.project, build.zig, dune-project, or shard.yml —
+  pure Gleam/Dart/Scala/Haskell/Zig/OCaml/Crystal projects couldn't open
+  as platform projects (only the rack worked). Test-pinned.
+- **The Ada learning space can actually build now**: it was missing its
+  hello.gpr project file (alr requires one) and carried a nonexistent
+  `brew install alire` hint — a real GPR + complete manifest shipped,
+  hints corrected in both the space and Doctor (alr has no brew formula).
+- **The Prolog tutorial's load step works**: `[family].` only resolves
+  .pl files in SWI — now `['family.pro'].` (the file dodges Perl's .pl
+  on purpose). A bogus `succ_or_zero` keyword dropped.
+- **REPL snippets are self-printing** for guile/gst/swipl — piped stdin
+  suppresses interactive echo (the v1.25.1 bug class), so every snippet
+  now prints its own result (display/printNl/writeln).
+- **Doctor probes v-analyzer + ada_language_server** (the two catalogued
+  LSPs it didn't cover).
+
+Blessed to the ledger with reasons: CiExporter setup steps for the
+post-v1.59 toolchains (item 46) and INSPECTOR's node-lane default for
+undebuggable kinds (item 47) — both pre-existing classes the new kinds
+merely joined. Inherited grammar quirks (tcl's bare `regexp` include,
+cobol's `source.openesql`) noted, upstream-pinned, tolerable.
+
 ## [1.75.0] - 2026-07-16
 
 ### The systems-heritage release — Ada (full vertical), Pascal, Odin, COBOL

@@ -24,6 +24,8 @@ public class WebProjectFactory implements ProjectFactory {
         "Project.toml", "JuliaProject.toml", "dub.json", "dub.sdl", "info.rkt",
         "elm.json", "rescript.json", "bsconfig.json", "spago.yaml", "spago.dhall",
         "v.mod", "fpm.toml", "alire.toml",
+        "gleam.toml", "pubspec.yaml", "build.sbt", "stack.yaml", "cabal.project",
+        "build.zig", "dune-project", "shard.yml",
         // classic web (v1.34): manifest-only legacy repos open as projects
         "bower.json", "Gruntfile.js", "Gruntfile.coffee",
         "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",

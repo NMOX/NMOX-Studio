@@ -48,6 +48,20 @@ class WebProjectFactoryTest {
     }
 
     @Test
+    @DisplayName("Every rack-detectable named manifest opens as a project (v1.76.0 review fix)")
+    void allNamedManifestsMakeProjects(@TempDir Path root) throws IOException {
+        String[] manifests = {"gleam.toml", "pubspec.yaml", "build.sbt", "stack.yaml",
+            "cabal.project", "build.zig", "dune-project", "shard.yml",
+            "v.mod", "fpm.toml", "alire.toml"};
+        for (String manifest : manifests) {
+            Path dir = Files.createDirectories(root.resolve(manifest.replace('.', '_')));
+            Files.writeString(dir.resolve(manifest), "# manifest");
+            assertThat(factory.isProject(mount(dir)))
+                    .as(manifest + " opens as a project").isTrue();
+        }
+    }
+
+    @Test
     @DisplayName("package.json at the root is recognized as a project")
     void packageJsonMakesAProject(@TempDir Path dir) throws IOException {
         Files.writeString(dir.resolve("package.json"), "{\"name\":\"app\"}");
