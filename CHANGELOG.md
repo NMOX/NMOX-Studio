@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.77.0] - 2026-07-16
+
+### The polyglot tail — Haxe and Janet
+
+- **Haxe** (`.hx`, `text/x-haxe`): the official vshaxe grammar (MIT,
+  plist→JSON, sha256 in NOTICE), `//` comments, keyword completion,
+  brace-family Navigator outline, and a `haxe --main Main --interp`
+  run-space (compile + execute in Haxe's interpreter — no target
+  needed). `.hxml` build files deliberately unclaimed (they keep their
+  own upstream grammar).
+- **Janet** (`.janet`/`.jdn`, `text/x-janet`): the official janet-lang
+  grammar (MIT, plist→JSON), `#` comments, keyword completion, the
+  Navigator outline rides the Clojure extractor (same `(defn …)` shape),
+  a `janet-lsp` LSP entry, and a `janet` REPL space with self-printing
+  snippets from day one (the v1.76.0 piped-echo lesson applied).
+- **Raku and Forth honestly skipped**: no cleanly-licensed TextMate
+  grammar exists for either (documented in NOTICE) — the Odin-manifest
+  style of skip.
+
+The v1.76.0 OutlineNavigatorGateTest caught its first real regression
+during this very release — the new family() mappings landed without
+their Navigator registrations, and the gate failed the build until they
+did. Doctor probes `haxe`/`janet`. 67 grammars, 71 learning spaces.
+
 ## [1.76.0] - 2026-07-16
 
 ### Senior review of the v1.72–v1.75 surface

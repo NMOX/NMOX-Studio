@@ -108,6 +108,8 @@ public final class OutlineModel {
             case "text/x-fortran" -> "fortran";
             case "text/x-scheme" -> "racket"; // same (define ...) shape — the Racket extractor reads it
             case "text/x-odin" -> "brace"; // Odin is a brace language; the generic extractor reads it
+            case "text/x-haxe" -> "brace"; // Haxe is a brace language; the generic extractor reads it
+            case "text/x-janet" -> "clojure"; // same (defn ...) shape — the Clojure extractor reads it
             case "text/x-purescript" -> "haskell"; // Haskell-family syntax shares the extractor
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";

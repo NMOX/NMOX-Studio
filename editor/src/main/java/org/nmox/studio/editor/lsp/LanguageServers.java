@@ -381,6 +381,15 @@ public final class LanguageServers {
         }
     }
 
+    /** Janet via janet-lsp (jpm install janet-lsp). */
+    @MimeRegistration(mimeType = "text/x-janet", service = LanguageServerProvider.class)
+    public static final class JanetServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("janet-lsp"));
+        }
+    }
+
     /** Erlang via erlang_ls. */
     @MimeRegistration(mimeType = "text/x-erlang", service = LanguageServerProvider.class)
     public static final class ErlangServer implements LanguageServerProvider {

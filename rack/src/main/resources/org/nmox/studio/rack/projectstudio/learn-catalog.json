@@ -1050,6 +1050,69 @@
    "tutorial": "# COBOL\n\nCOBOL has processed the world's transactions since 1959 — an estimated\n95% of ATM swipes still touch it. **GnuCOBOL** compiles it to C, so the\nlanguage of mainframes runs free on your laptop.\n\n## Your runner\n\nCOBOL has no REPL, so this space uses **run** mode: click **RUN** and\nthe studio runs `cobc -xj hello.cob` — compile executable (+x) and run\n(+j) in one step.\n\n## The sample\n\n`hello.cob` is the full ceremony: the four DIVISIONs, `PIC` clauses\ndeclaring digit-shaped data, and a `PERFORM VARYING` loop — COBOL's\nfor-loop.\n\n## Try\n\n1. RUN — compile and execute.\n2. Change `PIC 99` to `PIC 999` and the loop to `UNTIL I > 9`.\n3. Add `01 NAME PIC X(10) VALUE \"WORLD\".` and DISPLAY it — X is\n   alphanumeric, 9 is numeric.\n\n---\n\n## Install\n\n```sh\nbrew install gnucobol\n```\n"
   },
   {
+   "slug": "haxe",
+   "name": "Haxe",
+   "category": "LANGUAGE",
+   "family": "Multi-target",
+   "blurb": "One codebase, many targets — Haxe compiles to JavaScript, C++, JVM, Python and more, and powers a generation of cross-platform games.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "haxe",
+     "--main",
+     "Main",
+     "--interp"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install haxe",
+    "linux": "sudo apt install haxe",
+    "windows": "winget install Haxe.Haxe"
+   },
+   "files": [
+    {
+     "path": "Main.hx",
+     "content": "// Run me with: haxe --main Main --interp\nclass Main {\n\tstatic function greet(name:String):String {\n\t\treturn 'Hello, $name!';\n\t}\n\n\tstatic function main() {\n\t\ttrace(greet(\"Haxe\"));\n\t\tfor (i in 1...6)\n\t\t\ttrace('square of $i is ${i * i}');\n\t}\n}\n"
+    }
+   ],
+   "tutorial": "# Haxe\n\nHaxe is the original write-once-target-anywhere language: one strictly\ntyped codebase compiles to JavaScript, C++, JVM, C#, Python, Lua, or\nits own interpreter — which is why it quietly powers cross-platform\ngames (Dead Cells' tooling, Northgard) and UI toolkits.\n\n## Your runner\n\nHaxe has no REPL, so this space uses **run** mode: click **RUN** and\nthe studio runs `haxe --main Main --interp` — compile and execute in\nHaxe's built-in interpreter, no target needed.\n\n## The sample\n\n`Main.hx` shows the shape: a class with a static `main`, string\ninterpolation with `'$name'`, and Haxe's `1...6` range loop. `trace`\nis the built-in print-with-position.\n\n## Try\n\n1. RUN — the interpreter executes instantly.\n2. Add a typed field: `static var version:Float = 1.0;` and trace it.\n3. Compile the SAME file to JavaScript: `haxe --main Main --js main.js`\n   — that's the whole pitch.\n\n---\n\n## Install\n\n```sh\nbrew install haxe\n```\n"
+  },
+  {
+   "slug": "janet",
+   "name": "Janet",
+   "category": "LANGUAGE",
+   "family": "Lisp",
+   "blurb": "A modern embeddable Lisp in one small C library — functional, imperative when you need it, with a real PEG engine built in.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "janet"
+    ],
+    "prompt": "repl:",
+    "snippets": [
+     "(print (+ 1 2))",
+     "(defn square [x] (* x x))",
+     "(pp (map square [1 2 3]))",
+     "(each x (range 1 6) (print (* x x)))",
+     "(pp (string/split \",\" \"a,b,c\"))"
+    ]
+   },
+   "install": {
+    "mac": "brew install janet",
+    "linux": "sudo apt install janet",
+    "windows": "winget install Janet.Janet"
+   },
+   "files": [
+    {
+     "path": "hello.janet",
+     "content": "# Run me with: janet hello.janet\n(defn greet [name]\n  (string \"Hello, \" name \"!\"))\n\n(print (greet \"Janet\"))\n\n(defn squares [n]\n  (map (fn [x] (* x x)) (range 1 (+ n 1))))\n\n(pp (squares 5))\n"
+    }
+   ],
+   "tutorial": "# Janet\n\nJanet is a modern Lisp that fits in one small C library — embed it in\nanything, script with it anywhere. It's functional first, happily\nimperative when needed, and ships a real PEG (parsing expression\ngrammar) engine instead of regexes.\n\n## Your REPL\n\nClick **START** and the studio runs `janet`. Every snippet prints its\nown result (`print`/`pp`) so output always lands on the screen.\n\n## The sample\n\n`hello.janet` defines `greet` with `string` concatenation and maps a\n`fn` lambda over a `range` — note `pp`, Janet's pretty-printer.\n\n## Try\n\n1. `(print (+ 1 2))` then define and map `square`.\n2. PEGs beat regexes: `(pp (peg/match ~(some :d) \"123abc\"))`.\n3. Tables are the workhorse: `(def t @{:a 1}) (put t :b 2) (pp t)`.\n\n---\n\n## Install\n\n```sh\nbrew install janet\n```\n"
+  },
+  {
    "slug": "racket",
    "name": "Racket",
    "category": "LANGUAGE",

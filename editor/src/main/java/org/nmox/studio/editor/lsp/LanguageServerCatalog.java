@@ -84,6 +84,7 @@ public final class LanguageServerCatalog {
         add("Fortran", "fortls", "pip install fortls", List.of("pip", "install", "fortls"));
         add("Ada", "ada_language_server", "ships with GNAT / alr install (Alire)", List.of());
         add("Odin", "ols", "build from github.com/DanielGavin/ols", List.of());
+        add("Janet", "janet-lsp", "jpm install janet-lsp", List.of("jpm", "install", "janet-lsp"));
         add("Erlang", "erlang_ls", "install erlang_ls from github.com/erlang-ls/erlang_ls", List.of());
         add("Clojure", "clojure-lsp", "brew install clojure-lsp/brew/clojure-lsp-native",
                 List.of("brew", "install", "clojure-lsp/brew/clojure-lsp-native"));
