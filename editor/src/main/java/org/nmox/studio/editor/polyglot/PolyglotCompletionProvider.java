@@ -287,7 +287,7 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "subclass: instanceVariableNames: classVariableNames: category:")),
             Map.entry("text/x-prolog", set("module use_module dynamic discontiguous multifile "
                     + "member append length reverse nth0 nth1 last msort sort findall bagof setof "
-                    + "assert asserta assertz retract between succ_or_zero is mod rem abs "
+                    + "assert asserta assertz retract between succ is mod rem abs "
                     + "atom number var nonvar atomic compound functor arg copy_term "
                     + "write writeln print read format halt true fail not catch throw")),
             Map.entry("text/x-tcl", set("proc set unset global variable upvar uplevel if elseif else "

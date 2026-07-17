@@ -810,8 +810,8 @@
     "snippets": [
      "(3 + 4) printNl.",
      "'hello' asUppercase printNl.",
-     "#(1 2 3) collect: [:x | x * x].",
-     "(1 to: 5) inject: 0 into: [:a :b | a + b].",
+     "(#(1 2 3) collect: [:x | x * x]) printNl.",
+     "((1 to: 5) inject: 0 into: [:a :b | a + b]) printNl.",
      "Transcript showCr: 'Smalltalk lives'."
     ]
    },
@@ -841,11 +841,11 @@
     ],
     "prompt": "?-",
     "snippets": [
-     "X = hello.",
-     "member(X, [1,2,3]).",
-     "length(L, 3).",
-     "atom_codes(prolog, Cs).",
-     "between(1, 5, X), Y is X*X."
+     "X = hello, writeln(X).",
+     "forall(member(X, [1,2,3]), writeln(X)).",
+     "length(L, 3), writeln(L).",
+     "atom_codes(prolog, Cs), writeln(Cs).",
+     "forall(between(1, 5, X), (Y is X*X, format(\"~w~n\", [Y])))."
     ]
    },
    "install": {
@@ -856,10 +856,10 @@
    "files": [
     {
      "path": "family.pro",
-     "content": "% Load me in the REPL with:  ?- [family].\n% (or run: swipl -g main -t halt family.pro)\nparent(tom, bob).\nparent(tom, liz).\nparent(bob, ann).\nparent(bob, pat).\n\ngrandparent(X, Z) :- parent(X, Y), parent(Y, Z).\n\nmain :-\n    forall(grandparent(G, C),\n           format(\"~w is a grandparent of ~w~n\", [G, C])).\n"
+     "content": "% Load me in the REPL with:  ?- ['family.pro'].\n% (or run: swipl -g main -t halt family.pro)\nparent(tom, bob).\nparent(tom, liz).\nparent(bob, ann).\nparent(bob, pat).\n\ngrandparent(X, Z) :- parent(X, Y), parent(Y, Z).\n\nmain :-\n    forall(grandparent(G, C),\n           format(\"~w is a grandparent of ~w~n\", [G, C])).\n"
     }
    ],
-   "tutorial": "# Prolog\n\nProlog turns programming inside out: you state *facts* and *rules*,\nthen ask *questions* — the engine searches for every way to make them\ntrue. It still powers scheduling, parsing, and knowledge systems, and\nSWI-Prolog is the batteries-included modern implementation.\n\n## Your REPL\n\nClick **START** and the studio runs `swipl`. Every query ends with a\nperiod. `member(X, [1,2,3]).` answers `X = 1` — type `;` for more\nsolutions.\n\n## The sample\n\n`family.pro` is the classic: `parent` facts and a `grandparent` rule\nthat *derives* new knowledge. Load it with `[family].` then ask\n`grandparent(tom, Who).`\n\n## Try\n\n1. `member(X, [1,2,3]).` — then `;` to enumerate.\n2. `length(L, 3).` — Prolog runs backwards: it *builds* a list.\n3. `between(1, 5, X), Y is X*X.` — generate and compute.\n\nNote: .pl belongs to Perl in this IDE — name Prolog files .pro or\n.prolog and they get full Prolog highlighting.\n\n---\n\n## Install\n\n```sh\nbrew install swi-prolog\n```\n"
+   "tutorial": "# Prolog\n\nProlog turns programming inside out: you state *facts* and *rules*,\nthen ask *questions* — the engine searches for every way to make them\ntrue. It still powers scheduling, parsing, and knowledge systems, and\nSWI-Prolog is the batteries-included modern implementation.\n\n## Your REPL\n\nClick **START** and the studio runs `swipl`. Every query ends with a\nperiod. `member(X, [1,2,3]).` answers `X = 1` — type `;` for more\nsolutions.\n\n## The sample\n\n`family.pro` is the classic: `parent` facts and a `grandparent` rule\nthat *derives* new knowledge. Load it with `['family.pro'].` then ask\n`grandparent(tom, Who).`\n\n## Try\n\n1. `member(X, [1,2,3]).` — then `;` to enumerate.\n2. `length(L, 3).` — Prolog runs backwards: it *builds* a list.\n3. `between(1, 5, X), Y is X*X.` — generate and compute.\n\nNote: .pl belongs to Perl in this IDE — name Prolog files .pro or\n.prolog and they get full Prolog highlighting.\n\n---\n\n## Install\n\n```sh\nbrew install swi-prolog\n```\n"
   },
   {
    "slug": "tcl",
@@ -907,11 +907,11 @@
     ],
     "prompt": ">",
     "snippets": [
-     "(+ 1 2)",
+     "(display (+ 1 2)) (newline)",
      "(define (square x) (* x x))",
-     "(map square '(1 2 3))",
+     "(display (map square '(1 2 3))) (newline)",
      "(define (fact n) (if (< n 2) 1 (* n (fact (- n 1)))))",
-     "(fact 10)"
+     "(display (fact 10)) (newline)"
     ]
    },
    "install": {
@@ -943,21 +943,25 @@
     "snippets": []
    },
    "install": {
-    "mac": "brew install alire (plus a GNAT toolchain: alr toolchain --select)",
+    "mac": "get alr from alire.ada.dev, then: alr toolchain --select",
     "linux": "see alire.ada.dev",
     "windows": "see alire.ada.dev"
    },
    "files": [
     {
      "path": "alire.toml",
-     "content": "name = \"hello\"\nversion = \"0.1.0\"\ndescription = \"Learning-space sample\"\nexecutables = [\"hello\"]\n"
+     "content": "name = \"hello\"\ndescription = \"Learning-space sample\"\nversion = \"0.1.0\"\n\nauthors = [\"NMOX Studio\"]\nmaintainers = [\"NMOX Studio <studio@nmox.org>\"]\nmaintainers-logins = [\"nmox\"]\nlicenses = \"MIT\"\n\nexecutables = [\"hello\"]\n"
+    },
+    {
+     "path": "hello.gpr",
+     "content": "with \"config/hello_config.gpr\";\nproject Hello is\n\n   for Source_Dirs use (\"src/\", \"config/\");\n   for Object_Dir use \"obj/\" & Hello_Config.Build_Profile;\n   for Create_Missing_Dirs use \"True\";\n   for Exec_Dir use \"bin\";\n   for Main use (\"hello.adb\");\n\n   package Compiler is\n      for Default_Switches (\"Ada\") use Hello_Config.Ada_Compiler_Switches;\n   end Compiler;\n\n   package Binder is\n      for Switches (\"Ada\") use (\"-Es\");\n   end Binder;\n\nend Hello;\n"
     },
     {
      "path": "src/hello.adb",
      "content": "--  Run me with IGNITION (alr run) or:  alr run\nwith Ada.Text_IO; use Ada.Text_IO;\n\nprocedure Hello is\n   function Greet (Name : String) return String is\n   begin\n      return \"Hello, \" & Name & \"!\";\n   end Greet;\nbegin\n   Put_Line (Greet (\"Ada\"));\n   for I in 1 .. 5 loop\n      Put_Line (\"square of\" & Integer'Image (I) & \" is\" & Integer'Image (I * I));\n   end loop;\nend Hello;\n"
     }
    ],
-   "tutorial": "# Ada\n\nAda was designed for systems that must not fail — avionics, rail\nsignalling, spacecraft. Its superpower is the type system: ranges,\nconstraints, and contracts that turn runtime bugs into compile errors.\n**Alire** (`alr`) is its modern package manager — a cargo for Ada.\n\n## Your runner\n\nAda has no REPL, so this space uses **run** mode: click **RUN** and the\nstudio runs `alr run`, which fetches dependencies, builds with GNAT, and\nexecutes.\n\n## The sample\n\n`alire.toml` is the crate manifest; `src/hello.adb` is a `procedure`\nwith a nested `function` — note `&` for concatenation and\n`Integer'Image` (the *attribute* syntax) for numbers-to-strings.\n\n## Try\n\n1. RUN — the first run fetches the toolchain pieces, then prints.\n2. Change the loop to `1 .. 8` and RUN again.\n3. Declare `subtype Small is Integer range 1 .. 10;` and see what the\n   compiler does when a value strays.\n\n---\n\n## Install\n\n```sh\nbrew install alire\nalr toolchain --select   # pick a GNAT once\n```\n"
+   "tutorial": "# Ada\n\nAda was designed for systems that must not fail — avionics, rail\nsignalling, spacecraft. Its superpower is the type system: ranges,\nconstraints, and contracts that turn runtime bugs into compile errors.\n**Alire** (`alr`) is its modern package manager — a cargo for Ada.\n\n## Your runner\n\nAda has no REPL, so this space uses **run** mode: click **RUN** and the\nstudio runs `alr run`, which fetches dependencies, builds with GNAT, and\nexecutes.\n\n## The sample\n\n`alire.toml` is the crate manifest; `src/hello.adb` is a `procedure`\nwith a nested `function` — note `&` for concatenation and\n`Integer'Image` (the *attribute* syntax) for numbers-to-strings.\n\n## Try\n\n1. RUN — the first run fetches the toolchain pieces, then prints.\n2. Change the loop to `1 .. 8` and RUN again.\n3. Declare `subtype Small is Integer range 1 .. 10;` and see what the\n   compiler does when a value strays.\n\n---\n\n## Install\n\nDownload `alr` from alire.ada.dev (no brew formula), put it on PATH, then:\n\n```sh\nalr toolchain --select   # pick a GNAT once\n```\n"
   },
   {
    "slug": "pascal",

@@ -20,6 +20,30 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.76.0, the fourth review)
+
+### 46. CiExporter emits no setup step for the post-v1.59 toolchains
+
+`CiExporter.setupSteps()` provisions node/bun/deno/rust/go/python/
+maven/gradle/beam/ruby/php on the runner; gleam, julia, nim, dlang,
+racket, elm, purescript, v, fpm, and alr get no setup-action, so an
+exported workflow with one of their lanes fails on command-not-found.
+Deferred: each needs its own setup-action research (several have none —
+a `run: |` install block per tool), and CI export is an advanced
+feature with a visible failure mode. Fix when a user hits it or when
+the next CI-export sprint runs.
+
+### 47. INSPECTOR's AUTO falls to the node lane for undebuggable kinds
+
+`DebugDevice`'s kind→target switch handles python/go/maven/gradle/
+ruby/php and defaults to node — so ATTACH on a pure Rust/Zig/V/Fortran/
+Ada project launches a doomed node debug command instead of greying.
+Pre-existing since the device shipped (v1.0-era); the honest-grey law
+arrived later. Fix shape: default to an honest "no debugger for this
+toolchain" grey, keeping the node default only for web-family kinds.
+Deferred as its own bounded fix — touching the debug launch path
+deserves live verification with each affected DAP adapter.
+
 ## Open — deferred deliberately, with reasons (added v1.56.0, the third senior review)
 
 ### 41. `RackDevice.exec` forks + reads dotenv on the EDT — CLOSED (v1.57.0)

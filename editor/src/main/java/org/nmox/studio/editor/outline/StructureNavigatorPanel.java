@@ -90,7 +90,18 @@ import org.openide.util.RequestProcessor;
     @NavigatorPanel.Registration(mimeType = "text/x-graphql", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-sql", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-makefile", position = 100, displayName = "#LBL_Structure"),
-    @NavigatorPanel.Registration(mimeType = "text/x-protobuf", position = 100, displayName = "#LBL_Structure")
+    @NavigatorPanel.Registration(mimeType = "text/x-protobuf", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/markdown", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-nim", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-d", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-racket", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-elm", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-rescript", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-purescript", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-vlang", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-fortran", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-scheme", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-odin", position = 100, displayName = "#LBL_Structure")
 })
 public final class StructureNavigatorPanel implements NavigatorPanel {
 
