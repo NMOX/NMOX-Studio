@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.77.1] - 2026-07-16
+
+### INSPECTOR greys honestly (ledger 47 closed)
+
+The debug launcher's AUTO no longer falls through to a doomed
+`node --inspect` command on toolchains with no wired debugger: the node
+default now applies only to the web family, the six wired debuggers
+(python/go/maven/gradle/ruby/php) map as before, and everything else —
+Rust, Zig, V, Fortran, Ada, and friends — shows "NO DEBUGGER FOR <KIND>
+— DIAL TARGET" on the LCD with no spawn and no gate. An explicit knob
+position still always resolves. DebugDeviceGreyTest pins all three
+behaviors, mutation-proven.
+
 ## [1.77.0] - 2026-07-16
 
 ### The polyglot tail — Haxe and Janet

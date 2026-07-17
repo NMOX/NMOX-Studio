@@ -56,6 +56,13 @@ public class DebugDevice extends CommandDevice {
         param("target", targetKnob);
     }
 
+    /**
+     * The AUTO resolution — null means "no debugger wired for this
+     * toolchain" and ATTACH greys honestly instead of launching a
+     * doomed node command (ledger 47, closed v1.77.1). An explicit
+     * knob position always wins: dialing "node" on a Rust project is
+     * the user's call.
+     */
     private String effectiveTarget() {
         String target = targetKnob.getSelectedOption();
         if (!"auto".equals(target)) {
@@ -67,7 +74,9 @@ public class DebugDevice extends CommandDevice {
             case MAVEN, GRADLE -> "maven";
             case RUBY -> "ruby";
             case PHP -> "php";
-            default -> "node";
+            // the web family really is node underneath
+            case NODE, BUN, DENO, WEBPACK, GRUNT, GULP, BOWER, STATIC, NONE -> "node";
+            default -> null; // rust/zig/v/fortran/ada/…: no wired debugger
         };
     }
 
@@ -89,7 +98,9 @@ public class DebugDevice extends CommandDevice {
     /** Commands run where the selected target's manifest lives. */
     @Override
     protected java.io.File commandDir() {
-        return ProjectInspector.kindDir(projectDir(), kindForTarget(effectiveTarget()));
+        String target = effectiveTarget();
+        return target == null ? projectDir()
+                : ProjectInspector.kindDir(projectDir(), kindForTarget(target));
     }
 
     /** First existing candidate file, else the first candidate. */
@@ -106,6 +117,14 @@ public class DebugDevice extends CommandDevice {
     protected void primaryAction() {
         announced = false;
         String target = effectiveTarget();
+        if (target == null) {
+            onEdt(() -> {
+                endpointLcd.setTextColor(RackStyle.LCD_AMBER);
+                endpointLcd.setText("NO DEBUGGER FOR " + effectiveKind().name() + " — DIAL TARGET");
+                armedLed.setBlinking(false);
+            });
+            return; // honest grey: no spawn, no live gate
+        }
         String endpoint = endpointFor(target);
         onEdt(() -> {
             endpointLcd.setTextColor(RackStyle.LCD_AMBER);
@@ -137,7 +156,11 @@ public class DebugDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
-        return switch (effectiveTarget()) {
+        String target = effectiveTarget();
+        if (target == null) {
+            return List.of(); // launch() guards empty — the grey path
+        }
+        return switch (target) {
             case "python" -> List.of("python3", "-m", "debugpy",
                     "--listen", "5678", "--wait-for-client",
                     entryPoint("main.py", "app.py"));

@@ -33,16 +33,16 @@ a `run: |` install block per tool), and CI export is an advanced
 feature with a visible failure mode. Fix when a user hits it or when
 the next CI-export sprint runs.
 
-### 47. INSPECTOR's AUTO falls to the node lane for undebuggable kinds
+### 47. INSPECTOR's AUTO falls to the node lane for undebuggable kinds — CLOSED (v1.77.1)
 
-`DebugDevice`'s kind→target switch handles python/go/maven/gradle/
-ruby/php and defaults to node — so ATTACH on a pure Rust/Zig/V/Fortran/
-Ada project launches a doomed node debug command instead of greying.
-Pre-existing since the device shipped (v1.0-era); the honest-grey law
-arrived later. Fix shape: default to an honest "no debugger for this
-toolchain" grey, keeping the node default only for web-family kinds.
-Deferred as its own bounded fix — touching the debug launch path
-deserves live verification with each affected DAP adapter.
+Closed exactly per the fix shape: AUTO keeps the node default only for
+the web family (NODE/BUN/DENO/WEBPACK/GRUNT/GULP/BOWER/STATIC/NONE),
+maps the six wired debuggers as before, and returns null for everything
+else — ATTACH shows "NO DEBUGGER FOR <KIND> — DIAL TARGET" on the LCD,
+spawns nothing, raises no gate. An explicit knob position still always
+resolves (dialing node on a Rust project is the user's call).
+DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
+the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.56.0, the third senior review)
 
