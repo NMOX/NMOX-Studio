@@ -106,6 +106,7 @@ public final class OutlineModel {
             case "text/x-rescript" -> "brace"; // curly-brace syntax; the generic extractor reads it
             case "text/x-vlang" -> "brace"; // V is a brace language (fn/struct/{}); the generic extractor reads it
             case "text/x-fortran" -> "fortran";
+            case "text/x-scheme" -> "racket"; // same (define ...) shape — the Racket extractor reads it
             case "text/x-purescript" -> "haskell"; // Haskell-family syntax shares the extractor
             case "text/x-fsharp" -> "fsharp";
             case "text/x-crystal" -> "crystal";

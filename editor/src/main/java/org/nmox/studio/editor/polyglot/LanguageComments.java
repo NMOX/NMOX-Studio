@@ -50,6 +50,10 @@ public final class LanguageComments {
             Map.entry("text/x-purescript", "--"),
             Map.entry("text/x-vlang", "//"),
             Map.entry("text/x-fortran", "!"),
+            // text/x-smalltalk deliberately absent: Smalltalk has no line comment
+            Map.entry("text/x-prolog", "%"),
+            Map.entry("text/x-tcl", "#"),
+            Map.entry("text/x-scheme", ";"),
             Map.entry("text/x-crystal", "#"),
             Map.entry("text/x-solidity", "//"),
             Map.entry("text/coffeescript", "#"),

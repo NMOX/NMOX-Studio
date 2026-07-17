@@ -38,6 +38,10 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | purescript.tmLanguage.json | sha256 e99c6695bafa5585022f493ab69b0276997a918ee128079c0346ab166f3e7f97 | nwolverson/vscode-language-purescript syntaxes/purescript.json (MIT) |
 | vlang.tmLanguage.json | sha256 b3b8a46ce457fca0f22dde2c256ad5237665b8e7725285d98f703db873bfa45a | vlang/vscode-vlang syntaxes/v.tmLanguage.json (MIT) |
 | fortran.tmLanguage.json | sha256 b8df797e51e65b45c54511a123e20297c6dd04f3a4745c3a15da7383c6596808 | fortran-lang/vscode-fortran-support syntaxes/fortran_free-form.tmLanguage.json (MIT) |
+| smalltalk.tmLanguage.json | sha256 8191beb90357837e13d8c07dcd7e613fcb7063b1b3bc5ecf3c6a21bd0d70cee0 | leocamello/vscode-smalltalk syntaxes/gnu-smalltalk.YAML-tmLanguage, converted YAML→JSON (MIT) |
+| prolog.tmLanguage.json | sha256 438a6fba654c2b46fb5edd585436519cab6bcf36e4186020ae1221efd52c4227 | arthwang/vsc-prolog syntaxes/prolog.swi.tmLanguage.json (MIT) |
+| tcl.tmLanguage.json | sha256 cd478026e11b2c3c43b7086f20ab356845178062f8445a05d65c10b67514ba65 | bitwisecook/vscode-tcl syntaxes/tcl.tmlanguage.yaml, converted YAML→JSON (MIT) |
+| scheme.tmLanguage.json | sha256 34fa0997ce66ee67c471feeef7655909cd46c3f5171f123bdee51f53fcc39c17 | sjhuangx/vscode-scheme syntaxes/scheme.tmLanguage, converted plist→JSON (MIT) |
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 
