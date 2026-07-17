@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.77.2] - 2026-07-16
+
+### Every new learning space live-verified
+
+Installed the real toolchains (brew: vlang, fpm, gnucobol, fpc, odin,
+haxe, janet, guile, swi-prolog, gnu-smalltalk) and drove all twelve
+v1.72–v1.77 spaces' actual driver commands against their generated
+files. **Eleven of twelve pass exactly as their tutorials claim**: the
+Fortran/Pascal/Odin/COBOL/Haxe run-spaces compile and print, and the
+Janet/Guile/Prolog/GNU-Smalltalk/Tcl REPLs echo every snippet — the
+v1.76.0 self-printing snippet fix doing precisely its job on piped
+stdin (Ada untestable here: alr has no brew formula, already documented).
+
+The one find: **Homebrew's V can't link libgc out of the box on this
+machine** (`ld: library 'gc' not found` from V's own cc invocation —
+`-L$(brew --prefix)/lib` fixes it). That's a V-packaging quirk, not an
+NMOX lane bug, but it hits the exact install path our space recommends —
+so the V tutorial now carries a Troubleshooting section with the
+one-line workaround.
+
 ## [1.77.1] - 2026-07-16
 
 ### INSPECTOR greys honestly (ledger 47 closed)
