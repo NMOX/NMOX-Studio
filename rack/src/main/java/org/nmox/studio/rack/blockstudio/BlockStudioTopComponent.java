@@ -99,6 +99,10 @@ public final class BlockStudioTopComponent extends TopComponent {
     private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
             new org.nmox.studio.core.util.SelfWriteTracker();
     private BlockFilePulse pulse;
+    private final BlockPreviewServer preview;
+    private javax.swing.JButton previewBtn;
+    /** Test seam: headless tests keep the platform browser shut. */
+    boolean openBrowser = true;
 
     private File projectDir;
     private BlockCodegen.Result lastResult;
@@ -207,9 +211,29 @@ public final class BlockStudioTopComponent extends TopComponent {
         saveBtn.setToolTipText("Writes src/components/<tag>.js into the aimed project"
                 + " — refuses files Block Studio did not generate");
 
+        preview = new BlockPreviewServer(
+                () -> {
+                    BlockDoc d = canvas.doc();
+                    return d == null ? "my-widget" : d.root().param("tag");
+                },
+                () -> {
+                    BlockCodegen.Result r = lastResult;
+                    return r == null ? "// fix the blocks first" : r.code();
+                });
+        previewBtn = new JButton(new AbstractAction("Preview") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                togglePreview();
+            }
+        });
+        previewBtn.getAccessibleContext().setAccessibleName("Toggle live preview");
+        previewBtn.setToolTipText("Serves the component on localhost (in-memory, refresh"
+                + " after edits) and opens the browser; Stop deregisters the serving");
+
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         toolbar.add(undoBtn);
         toolbar.add(saveBtn);
+        toolbar.add(previewBtn);
         toolbar.add(status);
         status.getAccessibleContext().setAccessibleName("Block Studio status");
 
@@ -254,6 +278,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     public void componentClosed() {
         RackService.getDefault().getRack().removeListener(rackListener);
         stopPulse();
+        stopPreview();
     }
 
     @Override
@@ -270,6 +295,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         File dir = RackService.getDefault().getRack().getProjectDir();
         projectDir = dir;
         restartPulse(dir);
+        stopPreview(); // a re-aim serves the OLD component — never lie
         if (dir == null) {
             canvas.setDoc(null);
             codePane.setText("");
@@ -355,6 +381,49 @@ public final class BlockStudioTopComponent extends TopComponent {
             loadForAim();
             setStatus("Reloaded — " + BlockIO.WORKSPACE_FILE + " changed on disk");
         });
+    }
+
+    // ---- live preview (v1.80.0): in-memory serve + registry truth ----
+
+    private void togglePreview() {
+        if (preview.running()) {
+            stopPreview();
+            return;
+        }
+        if (lastResult == null) {
+            setStatus("Fix the blocks first — nothing valid to preview");
+            return;
+        }
+        try {
+            String url = preview.start();
+            org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                    new org.nmox.studio.rack.service.ServingRegistry.Serving(
+                            "block-preview", "BLOCK PREVIEW", url,
+                            org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, projectDir));
+            previewBtn.setText("Stop Preview");
+            setStatus("Previewing at " + url + " — refresh the browser after edits");
+            if (openBrowser) {
+                try {
+                    org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()
+                            .showURL(java.net.URI.create(url).toURL());
+                } catch (RuntimeException | java.net.MalformedURLException browserless) {
+                    // headless / no browser configured: the URL is on the status line
+                }
+            }
+        } catch (IOException ex) {
+            setStatus("Preview failed to start: " + ex.getMessage());
+        }
+    }
+
+    void stopPreview() {
+        if (preview.running()) {
+            preview.stop();
+            org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister("block-preview");
+            if (previewBtn != null) {
+                previewBtn.setText("Preview");
+            }
+            setStatus("Preview stopped");
+        }
     }
 
     // ---- undo (JSON snapshots) ----

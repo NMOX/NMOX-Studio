@@ -70,6 +70,9 @@ public final class Block {
             case TOGGLE_CLASS -> "toggle ." + first;
             case LOG -> "log " + "“" + first + "”";
             case IF_STATE -> "if " + param("name") + " " + param("op") + " " + param("value");
+            case SLOT -> first.isEmpty() ? "<slot>" : "<slot name=\"" + first + "\">";
+            case TIMER -> "every " + first + " ms";
+            case DISPATCH -> "dispatch " + first;
         };
     }
 }

@@ -95,6 +95,24 @@ public final class BlockCodegen {
                         problems.add("Class \"" + b.param("class") + "\" is not a valid class name");
                     }
                 }
+                case SLOT -> {
+                    String slotName = b.param("name");
+                    if (!slotName.isEmpty() && !ATTR_NAME.matcher(slotName).matches()) {
+                        problems.add("Slot name \"" + slotName + "\" is not valid");
+                    }
+                }
+                case TIMER -> {
+                    if (!b.param("ms").matches("[0-9]+") || Long.parseLong(b.param("ms")) < 50) {
+                        problems.add("Timer interval \"" + b.param("ms")
+                                + "\" must be a whole number of milliseconds (min 50)");
+                    }
+                }
+                case DISPATCH -> {
+                    if (!TAG_CHARS.matcher(b.param("event")).matches()) {
+                        problems.add("Dispatch event \"" + b.param("event")
+                                + "\" must be lowercase (dashes allowed), e.g. count-changed");
+                    }
+                }
                 default -> { }
             }
         }
@@ -160,6 +178,33 @@ public final class BlockCodegen {
             }
         }
         e.line("  }");
+        List<Block> timers = doc.root().children().stream()
+                .filter(b -> b.kind() == BlockKind.TIMER).toList();
+        if (!timers.isEmpty()) {
+            e.line("");
+            e.line("  connectedCallback() {");
+            int i = 0;
+            for (Block t : timers) {
+                e.open(t);
+                e.line("    this._t" + i + " = setInterval(() => {");
+                // a timer has no listening element — TOGGLE_CLASS et al.
+                // act on the host component itself
+                boolean rerender = emitActions(e, t.children(), "this", states, "      ");
+                if (rerender) {
+                    e.line("      this.render();");
+                }
+                e.line("    }, " + t.param("ms") + ");");
+                e.close(t);
+                i++;
+            }
+            e.line("  }");
+            e.line("");
+            e.line("  disconnectedCallback() {");
+            for (int j = 0; j < timers.size(); j++) {
+                e.line("    clearInterval(this._t" + j + ");");
+            }
+            e.line("  }");
+        }
         e.line("}");
         e.line("");
         e.line("customElements.define('" + tag + "', " + cls + ");");
@@ -187,6 +232,13 @@ public final class BlockCodegen {
                 e.line(indent + interpolate(b.param("text"), states));
                 e.close(b);
             }
+            case SLOT -> {
+                e.open(b);
+                String slotName = b.param("name");
+                e.line(indent + (slotName.isEmpty() ? "<slot></slot>"
+                        : "<slot name=\"" + attr(slotName, states) + "\"></slot>"));
+                e.close(b);
+            }
             case ELEMENT -> {
                 e.open(b);
                 StringBuilder openTag = new StringBuilder(indent + "<" + b.param("tag"));
@@ -204,7 +256,8 @@ public final class BlockCodegen {
                 openTag.append(">");
                 e.line(openTag.toString());
                 for (Block c : b.children()) {
-                    if (c.kind() == BlockKind.ELEMENT || c.kind() == BlockKind.TEXT) {
+                    if (c.kind() == BlockKind.ELEMENT || c.kind() == BlockKind.TEXT
+                            || c.kind() == BlockKind.SLOT) {
                         emitNode(e, c, states, indent + "  ");
                     }
                 }
@@ -265,6 +318,13 @@ public final class BlockCodegen {
                             + literal(a.param("value")) + ") {");
                     rerender |= emitActions(e, a.children(), hostVar, states, indent + "  ");
                     e.line(indent + "}");
+                    e.close(a);
+                }
+                case DISPATCH -> {
+                    e.open(a);
+                    e.line(indent + "this.dispatchEvent(new CustomEvent('" + a.param("event")
+                            + "', { bubbles: true, composed: true, detail: `"
+                            + tpl(a.param("detail"), states) + "` }));");
                     e.close(a);
                 }
                 default -> { }

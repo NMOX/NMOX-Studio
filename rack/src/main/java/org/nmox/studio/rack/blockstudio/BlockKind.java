@@ -61,7 +61,22 @@ public enum BlockKind {
     IF_STATE("If state", Category.LOGIC, List.of(
             new Param("name", "count"),
             new Param("op", ">"),
-            new Param("value", "3")));
+            new Param("value", "3"))),
+
+    // ---- v2 (v1.80.0): appended — palette order is append-only ----
+
+    /** A shadow-DOM slot; light-DOM children project into it. */
+    SLOT("Slot", Category.STRUCTURE, List.of(
+            new Param("name", ""))),
+
+    /** Run child actions every N milliseconds while connected. */
+    TIMER("Timer", Category.LOGIC, List.of(
+            new Param("ms", "1000"))),
+
+    /** Dispatch a CustomEvent from the component (bubbles, composed). */
+    DISPATCH("Dispatch event", Category.LOGIC, List.of(
+            new Param("event", "notify"),
+            new Param("detail", "")));
 
     /** Palette families; each paints in its own hue. */
     public enum Category { STRUCTURE, CONTENT, STATE, LOGIC }
