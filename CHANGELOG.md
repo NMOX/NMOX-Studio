@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.80.0] - 2026-07-17
+
+### Block Studio v2 — the live loop
+
+The canvas now closes the loop to a real browser, and three new pieces
+teach the rest of the web-component lifecycle:
+
+- **Live preview.** A Preview button serves the component from an
+  in-memory loopback HTTP server (the JDK's own — zero processes, zero
+  temp files; the generator is read per request so a browser refresh
+  shows your latest blocks). The harness page mounts the component
+  twice — bare, and with slotted light-DOM content — and logs every
+  CustomEvent it dispatches, so the new pieces are visible without
+  devtools. The serving registers on the ⇄ chip and ⌘I Live Servers,
+  and Stop (or closing the tab, or re-aiming) deregisters it — the
+  serve-device law.
+- **Slot** (structure): `<slot>`/`<slot name="…">` — composition from
+  the light DOM.
+- **Timer** (logic): child actions run every N ms via a generated
+  `connectedCallback`/`disconnectedCallback` pair with honest
+  `clearInterval` cleanup — the lifecycle taught by example. A
+  toggle-class under a timer acts on the host element itself.
+- **Dispatch event** (logic): a bubbling, composed `CustomEvent` whose
+  detail interpolates state (`count is {count}`) with full
+  template-literal escaping.
+
+All three interlock lawfully (slots in structure, timers only on the
+component, dispatch wherever actions live), carry code ranges for the
+click-to-highlight mapping, and are validated with human sentences
+(interval floor, event-name shape, slot-name shape). The palette
+gained them by construction — it derives from the kind enum, and the
+exhaustive canvas-face switch forced honest faces at compile time.
+
 ## [1.79.0] - 2026-07-17
 
 ### The debt sprint — ledger 46 closed, Block Studio reaches studio-law parity

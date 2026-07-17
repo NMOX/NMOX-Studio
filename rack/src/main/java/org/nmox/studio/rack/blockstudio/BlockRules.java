@@ -23,14 +23,19 @@ import java.util.Set;
 public final class BlockRules {
 
     private static final Set<BlockKind> ACTIONS = EnumSet.of(
-            BlockKind.SET_STATE, BlockKind.TOGGLE_CLASS, BlockKind.LOG, BlockKind.IF_STATE);
+            BlockKind.SET_STATE, BlockKind.TOGGLE_CLASS, BlockKind.LOG, BlockKind.IF_STATE,
+            BlockKind.DISPATCH);
 
     private static final Map<BlockKind, Set<BlockKind>> ACCEPTS = Map.of(
-            BlockKind.COMPONENT, EnumSet.of(BlockKind.STATE, BlockKind.ELEMENT, BlockKind.TEXT),
+            BlockKind.COMPONENT, EnumSet.of(BlockKind.STATE, BlockKind.ELEMENT, BlockKind.TEXT,
+                    BlockKind.SLOT, BlockKind.TIMER),
             BlockKind.ELEMENT, EnumSet.of(BlockKind.ELEMENT, BlockKind.TEXT,
-                    BlockKind.SET_ATTR, BlockKind.STYLE, BlockKind.ON_EVENT),
+                    BlockKind.SET_ATTR, BlockKind.STYLE, BlockKind.ON_EVENT, BlockKind.SLOT),
             BlockKind.ON_EVENT, ACTIONS,
-            BlockKind.IF_STATE, ACTIONS);
+            BlockKind.IF_STATE, ACTIONS,
+            // a timer has no listening element; TOGGLE_CLASS under it (or an
+            // IF_STATE under it) toggles on the host component itself
+            BlockKind.TIMER, ACTIONS);
 
     private BlockRules() {
     }
