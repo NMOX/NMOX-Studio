@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.79.0] - 2026-07-17
+
+### The debt sprint — ledger 46 closed, Block Studio reaches studio-law parity
+
+- **CI export never fails silently again (ledger 46).** Every toolchain an
+  exported lane can speak now gets its ecosystem's setup action in the
+  generated workflow — erlef/setup-beam (+gleam-version), setup-julia,
+  vlang/setup-v, fortran-lang/setup-fpm, alire-project/setup-alire,
+  setup-nim, setup-dlang, setup-racket, setup-zig, setup-dart,
+  setup-dotnet, haskell-actions/setup, ocaml/setup-ocaml,
+  install-crystal — with the npm-riding functional web (Elm/ReScript/
+  PureScript) deduped to a single setup-node, and an honest `# NOTE:`
+  comment for the two kinds with no trustworthy action (scala/swift).
+  Test-pinned including the dedup.
+- **Block Studio honors the two studio laws its v1 deferred.**
+  `.nmoxblocks.json` now reloads on external edits (1.5 s stat pulse,
+  self-write-stamp discrimination via the v1.35 idiom; a foreign edit
+  landing while a debounced in-studio save is pending is overridden and
+  said out loud, never silently clobbered) — and ⌘I reaches the studio:
+  type "blocks", "component", or your component's tag and Enter opens
+  it, with a live "<tag> (N pieces)" label published on every
+  regeneration. Position 350, audited free.
+- **Docs truth**: ledger 43/44 finally marked CLOSED (v1.58.0 closed
+  them; the ledger lagged).
+- One collision found and fixed in passing: a hand-written
+  `Bundle.properties` in a package that also uses `@NbBundle.Messages`
+  clobbers the generated bundle (the studio's window title vanished) —
+  the ⌘I category bundle moved to a `search` subpackage, the layout the
+  other studios already use.
+
 ## [1.78.0] - 2026-07-17
 
 ### Block Studio — compose web components from interlocking pieces

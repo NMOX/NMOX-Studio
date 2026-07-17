@@ -13,6 +13,15 @@
         <folder name="Projects">
             <file name="org-nmox-studio-rack-search-RecentProjectSearchProvider.instance"/>
         </folder>
+        <!-- Block Studio (v1.79.0, the studio-law parity sprint): type
+             "blocks" or the component's tag, Enter opens the studio.
+             Position 350 audited free (310 rack, 320 infra, 330 db,
+             340 web3, 710 ui). -->
+        <folder name="BlockStudio">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.blockstudio.search.Bundle"/>
+            <attr name="position" intvalue="350"/>
+            <file name="org-nmox-studio-rack-blockstudio-search-BlockSearchProvider.instance"/>
+        </folder>
         <!-- 310, not 300: the platform's jumpto GoToType sits at 300. -->
         <folder name="Rack">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.search.Bundle"/>

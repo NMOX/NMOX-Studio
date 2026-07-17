@@ -158,12 +158,56 @@ public final class CiExporter {
                           - uses: shivammathur/setup-php@v2
                             with: { php-version: '8.3' }
                     """.stripTrailing() + "\n");
+                // ---- the post-v1.59 toolchains (ledger 46): every kind an
+                // exported lane can speak either gets its ecosystem's setup
+                // action, or an honest NOTE comment in the workflow — the
+                // export must never fail silently with command-not-found ----
+                case GLEAM -> steps.add("""
+                          - uses: erlef/setup-beam@v1
+                            with: { otp-version: '27', gleam-version: '1.5' }
+                    """.stripTrailing() + "\n");
+                case JULIA -> steps.add("""
+                          - uses: julia-actions/setup-julia@v2
+                            with: { version: '1' }
+                    """.stripTrailing() + "\n");
+                case DART -> steps.add("      - uses: dart-lang/setup-dart@v1\n");
+                case DOTNET -> steps.add("""
+                          - uses: actions/setup-dotnet@v4
+                            with: { dotnet-version: 8.x }
+                    """.stripTrailing() + "\n");
+                case HASKELL -> steps.add("      - uses: haskell-actions/setup@v2\n");
+                case ZIG -> steps.add("      - uses: mlugg/setup-zig@v2\n");
+                case CRYSTAL -> steps.add("      - uses: crystal-lang/install-crystal@v1\n");
+                case OCAML -> steps.add("""
+                          - uses: ocaml/setup-ocaml@v3
+                            with: { ocaml-compiler: '5' }
+                    """.stripTrailing() + "\n");
+                case NIM -> steps.add("      - uses: jiro4989/setup-nim-action@v2\n");
+                case DLANG -> steps.add("      - uses: dlang-community/setup-dlang@v2\n");
+                case RACKET -> steps.add("""
+                          - uses: Bogdanp/setup-racket@v1.11
+                            with: { version: stable }
+                    """.stripTrailing() + "\n");
+                case VLANG -> steps.add("      - uses: vlang/setup-v@v1.4\n");
+                case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v5\n");
+                case ADA -> steps.add("      - uses: alire-project/setup-alire@v4\n");
+                // the functional web rides npm — their lanes run npx/spago
+                case ELM, RESCRIPT, PURESCRIPT -> steps.add("""
+                          - uses: actions/setup-node@v4
+                            with: { node-version: 22 }
+                    """.stripTrailing() + "\n");
+                case SCALA -> steps.add(
+                        "      # NOTE: sbt must be present on the runner (ubuntu-latest ships it)\n");
+                case SWIFT -> steps.add(
+                        "      # NOTE: swift must be present on the runner (use a macOS runner or swift-actions/setup-swift)\n");
                 default -> {
-                    // make/cmake/swift ride on the runner image
+                    // make/cmake ride on the runner image
                 }
             }
         }
-        return steps;
+        // a monorepo detecting NODE beside ELM (etc.) must not emit the
+        // same setup step twice — first occurrence wins, order kept
+        return new ArrayList<>(new java.util.LinkedHashSet<>(steps));
     }
 
     private static String relative(File root, File dir) {
