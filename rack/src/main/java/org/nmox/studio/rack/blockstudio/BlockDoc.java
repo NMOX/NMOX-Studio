@@ -81,7 +81,11 @@ public final class BlockDoc {
     public boolean insert(Block parent, Block child, int index) {
         if (parent == null || child == null
                 || !BlockRules.accepts(parent.kind(), child.kind())
-                || find(child, parent.id()) != null) {
+                || find(child, parent.id()) != null
+                // aliasing guard (v1.82.0 review): a block already in the
+                // tree must be move()d, never re-insert()ed — two positions
+                // sharing one id would corrupt ranges and undo
+                || find(child.id()) != null) {
             return false;
         }
         int at = Math.max(0, Math.min(index, parent.children().size()));
@@ -114,6 +118,13 @@ public final class BlockDoc {
         }
         int oldIndex = oldParent.children().indexOf(child);
         oldParent.children().remove(child);
+        // the caller computed index against the tree WITH the child still
+        // in place — after removal, same-parent downward targets shift
+        // left by one (the v1.82.0 review's off-by-one: [A,B,C] moving A
+        // to the line between B and C must yield [B,A,C], not [B,C,A])
+        if (oldParent == newParent && index > oldIndex) {
+            index--;
+        }
         int at = Math.max(0, Math.min(index, newParent.children().size()));
         newParent.children().add(at, child);
         if (oldParent == newParent && at == oldIndex) {

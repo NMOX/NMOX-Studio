@@ -33,6 +33,11 @@ public class BlockSearchProvider implements SearchProvider {
         published = new Snapshot(tag, pieces);
     }
 
+    /** Re-aim / aim-null: the old project's tag must vanish from ⌘I. */
+    public static void clear() {
+        published = null;
+    }
+
     /** Test seam: forget the published snapshot. */
     static void reset() {
         published = null;

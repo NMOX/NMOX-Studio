@@ -28,7 +28,8 @@ class BlockRoundTripTest {
                 new NamedDoc("everyPiece", everyPiece()),
                 new NamedDoc("escaping", escaping()),
                 new NamedDoc("deepNesting", deepNesting()),
-                new NamedDoc("multiListenerMultiTimer", multiListenerMultiTimer()));
+                new NamedDoc("multiListenerMultiTimer", multiListenerMultiTimer()),
+                new NamedDoc("earlyListener", earlyListener()));
     }
 
     record NamedDoc(String name, BlockDoc doc) {
@@ -112,6 +113,25 @@ class BlockRoundTripTest {
         Block if1 = add(doc, on, BlockKind.IF_STATE, "name", "n", "op", "<", "value", "10");
         Block if2 = add(doc, if1, BlockKind.IF_STATE, "name", "n", "op", "!=", "value", "5");
         add(doc, if2, BlockKind.SET_STATE, "name", "n", "expr", "{n} * 2");
+        return doc;
+    }
+
+    /**
+     * The v1.82.0 review's reorder case: an ON_EVENT at an EARLIER child
+     * index than a descendant element carrying its own listener. Raw
+     * doc-preorder emission interleaved the two and the parser's
+     * rebuild (listeners re-appended last per host) changed the order —
+     * generate is now canonical (host-grouped), so this survives.
+     */
+    static BlockDoc earlyListener() {
+        BlockDoc doc = new BlockDoc();
+        doc.root().setParam("tag", "early-bird");
+        Block div = add(doc, doc.root(), BlockKind.ELEMENT, "tag", "div");
+        Block on = add(doc, div, BlockKind.ON_EVENT, "event", "click");
+        add(doc, on, BlockKind.LOG, "message", "outer");
+        Block span = add(doc, div, BlockKind.ELEMENT, "tag", "span");
+        Block on2 = add(doc, span, BlockKind.ON_EVENT, "event", "focus");
+        add(doc, on2, BlockKind.LOG, "message", "inner");
         return doc;
     }
 

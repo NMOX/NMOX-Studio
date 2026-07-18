@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.82.0] - 2026-07-17
+
+### The Block Studio review — two lenses over v1.78–v1.81, fourteen fixes
+
+The post-burst review discipline applied to four releases of brand-new
+surface; one lens even compiled the pure cores standalone and
+probe-proved every finding before reporting it. Everything proven got a
+fix with a test that fails on the old code:
+
+- **Reopening the tab reloads for the current aim.** Close removed the
+  rack listener, so a re-aim while closed was missed and the reopened
+  canvas kept editing — and auto-persisting — the OLD project's blocks
+  (the Infra-Designer inverted-lifecycle class). The pulse also stayed
+  permanently dead after a reopen.
+- **The round-trip law now truly holds.** Listener blocks are emitted in
+  canonical host-grouped order (each element's listeners together, hosts
+  in template order) — the one order the parser's rebuild preserves. An
+  ON_EVENT placed before a sibling with its own listener used to come
+  back reordered; the corpus gained exactly that case.
+- **validate() covers everything generate() would throw on.** A ternary
+  in a Set-state expression (or a 20-digit timer interval) crashed the
+  EDT past an empty validation; both are problem sentences now, plus new
+  refusals for reserved `data-b` attributes, newline-smuggling params
+  (invalid JS via hand-edited workspaces), and leading-zero literals
+  (a module SyntaxError the preview would serve).
+- **Corrupt workspaces are kept as `.nmoxblocks.json.bak`** before the
+  fresh-doc fallback can overwrite them (the house law; BlockIO's javadoc
+  had promised it all along).
+- **The self-write stamp race is closed** with the API Studio idiom: a
+  pulse tick landing between the atomic move and the stamp re-checks on
+  the IO lane, where any in-flight save has already stamped.
+- Re-aims inside the 800 ms save debounce force-save the old project
+  first; `lastResult` and the ⌘I snapshot clear on re-aim so Preview can
+  never serve the previous project; same-parent downward drags land on
+  the previewed slot (off-by-one); imports validate before touching the
+  canvas; clicking Set-attribute/Style pieces highlights the parent's
+  lines; the harness tag supplier degrades to the last valid tag; the
+  preview thread is daemon; aborted palette drags clear their drop line;
+  insert() refuses aliasing an attached block.
+
+Ledger 48 (keyboard-operable canvas — real work, own release) and 49
+(preview deregister-on-exit, blessed residue) record the rest. rack 1096.
+
 ## [1.81.0] - 2026-07-17
 
 ### Block Studio v3 — the round trip

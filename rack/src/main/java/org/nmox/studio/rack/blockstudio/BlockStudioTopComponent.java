@@ -80,10 +80,24 @@ import org.openide.windows.TopComponent;
 public final class BlockStudioTopComponent extends TopComponent {
 
     private static final RequestProcessor RP = new RequestProcessor("Block Studio", 1);
+
+    /** Test seam: block until every queued IO-lane task has run. */
+    static void drainIoLane() {
+        RP.post(() -> { }).waitFinished();
+    }
+
+    /** Test seam: the canvas's current doc (EDT-confined in production). */
+    BlockDoc currentDoc() {
+        return canvasDoc();
+    }
     private static final int DEBOUNCE_MS = 150;
     private static final int UNDO_CAP = 100;
 
     private final BlockCanvas canvas;
+
+    private BlockDoc canvasDoc() {
+        return canvas.doc();
+    }
     private final JEditorPane codePane = new JEditorPane();
     private final JLabel status = new JLabel(" ");
     private final Deque<String> undo = new ArrayDeque<>();
@@ -105,7 +119,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     boolean openBrowser = true;
 
     private File projectDir;
-    private BlockCodegen.Result lastResult;
+    private volatile BlockCodegen.Result lastResult;
     private boolean loading;
     private boolean shownOnce;
 
@@ -220,8 +234,16 @@ public final class BlockStudioTopComponent extends TopComponent {
 
         preview = new BlockPreviewServer(
                 () -> {
+                    // live tag, but never an unvalidated one: mid-edit an
+                    // illegal tag would land raw inside the harness's JS
+                    // string literal — degrade to the last generated tag
                     BlockDoc d = canvas.doc();
-                    return d == null ? "my-widget" : d.root().param("tag");
+                    String live = d == null ? "" : d.root().param("tag");
+                    if (BlockCodegen.validTag(live)) {
+                        return live;
+                    }
+                    BlockCodegen.Result r = lastResult;
+                    return r != null ? BlockParser.tagOf(r.code()) : "my-widget";
                 },
                 () -> {
                     BlockCodegen.Result r = lastResult;
@@ -287,6 +309,10 @@ public final class BlockStudioTopComponent extends TopComponent {
         RackService.getDefault().getRack().removeListener(rackListener);
         stopPulse();
         stopPreview();
+        // reopen must reload: while closed the rack listener is gone, so
+        // any re-aim was missed and the pulse is stopped — the inverted-
+        // lifecycle class the v1.36 review fixed in Infra Designer
+        shownOnce = false;
     }
 
     @Override
@@ -300,10 +326,20 @@ public final class BlockStudioTopComponent extends TopComponent {
     // ---- load/save (IO on RP, apply on EDT) ----
 
     private void loadForAim() {
+        // the OLD aim's debounced save must land before the doc is swapped
+        // (the v1.35.1 API Studio law: force-save old, then load new)
+        if (saver.isRunning()) {
+            saver.stop();
+            persist();
+        }
         File dir = RackService.getDefault().getRack().getProjectDir();
         projectDir = dir;
         restartPulse(dir);
         stopPreview(); // a re-aim serves the OLD component — never lie
+        // never let Preview or ⌘I serve the previous aim's snapshot while
+        // (or after) the new doc loads
+        lastResult = null;
+        org.nmox.studio.rack.blockstudio.search.BlockSearchProvider.clear();
         if (dir == null) {
             canvas.setDoc(null);
             codePane.setText("");
@@ -317,8 +353,23 @@ public final class BlockStudioTopComponent extends TopComponent {
                 loaded = BlockIO.load(dir);
             } catch (IOException | RuntimeException ex) {
                 loaded = null;
+                // keep the unreadable file as .bak BEFORE the fresh doc's
+                // first debounced save can overwrite it (the v1.39 house
+                // law, and this file's own javadoc promise)
+                String note = "";
+                try {
+                    File broken = BlockIO.workspaceFile(dir);
+                    java.nio.file.Files.copy(broken.toPath(),
+                            broken.toPath().resolveSibling(BlockIO.WORKSPACE_FILE + ".bak"),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    note = " (kept a copy at " + BlockIO.WORKSPACE_FILE + ".bak)";
+                } catch (IOException unbacked) {
+                    // best effort — the status still names the read failure
+                }
+                String suffix = note;
                 SwingUtilities.invokeLater(() -> setStatus(
-                        "Could not read " + BlockIO.WORKSPACE_FILE + ": " + ex.getMessage()));
+                        "Could not read " + BlockIO.WORKSPACE_FILE + ": "
+                        + ex.getMessage() + suffix));
             }
             BlockDoc doc = loaded != null ? loaded : new BlockDoc();
             SwingUtilities.invokeLater(() -> {
@@ -380,6 +431,23 @@ public final class BlockStudioTopComponent extends TopComponent {
         if (!selfWrites.isForeign(mtime, size)) {
             return;
         }
+        // lane-ordered re-check: our write+stamp pair rides RP, so a pulse
+        // tick that lands BETWEEN the atomic move and the stamp classifies
+        // our own save as foreign — by the time this posted task runs, any
+        // in-flight save has stamped, and a re-stat tells the truth
+        RP.post(() -> {
+            File dir = projectDir;
+            if (dir != null) {
+                File f = BlockIO.workspaceFile(dir);
+                if (f.isFile() && !selfWrites.isForeign(f.lastModified(), f.length())) {
+                    return;
+                }
+            }
+            onForeignEdit();
+        });
+    }
+
+    private void onForeignEdit() {
         SwingUtilities.invokeLater(() -> {
             if (saver.isRunning()) {
                 setStatus("External edit to " + BlockIO.WORKSPACE_FILE
@@ -487,6 +555,17 @@ public final class BlockStudioTopComponent extends TopComponent {
             return;
         }
         int[] range = lastResult.ranges().get(block.id());
+        // SET_ATTR/STYLE render inside their parent's open tag and record
+        // no range of their own — walk up to the nearest ranged ancestor
+        // so clicking them still lights the right lines
+        Block cursor = block;
+        while (range == null && cursor != null) {
+            BlockDoc doc = canvas.doc();
+            cursor = doc == null ? null : doc.parentOf(cursor.id());
+            if (cursor != null) {
+                range = lastResult.ranges().get(cursor.id());
+            }
+        }
         if (range == null) {
             return;
         }
@@ -587,6 +666,12 @@ public final class BlockStudioTopComponent extends TopComponent {
             try {
                 String code = java.nio.file.Files.readString(picked.toPath());
                 BlockDoc parsed = BlockParser.parse(code);
+                // a parseable file can still fail generation (hand-edited
+                // exprs); refuse BEFORE touching the canvas, not after
+                List<String> problems = BlockCodegen.validate(parsed);
+                if (!problems.isEmpty()) {
+                    throw new BlockParser.ParseException(problems.get(0));
+                }
                 SwingUtilities.invokeLater(() -> {
                     pushUndo();
                     canvas.setDoc(parsed);
