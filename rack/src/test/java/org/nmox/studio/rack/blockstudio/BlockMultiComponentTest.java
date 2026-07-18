@@ -57,6 +57,7 @@ class BlockMultiComponentTest {
             assertThat(onDisk.getJSONArray("components").length()).isEqualTo(1);
         } finally {
             SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
         }
     }
 
@@ -89,6 +90,7 @@ class BlockMultiComponentTest {
                     .isEqualTo(2);
         } finally {
             SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
         }
     }
 
@@ -117,8 +119,13 @@ class BlockMultiComponentTest {
                 assertThat(tc.currentWorkspace().active()).isZero();
                 assertThat(tc.currentDoc().preorder()).hasSize(2);
             });
+            // importParsed queues an async workspace write on the IO lane;
+            // on Windows an in-flight write holds the @TempDir locked when
+            // JUnit deletes it (the ledger-37/38 class — bit the CI gate)
+            drain();
         } finally {
             SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
         }
     }
 }

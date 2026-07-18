@@ -70,6 +70,7 @@ the Welcome tab):
 | **⌘I** | Quick Search — reaches everything (see §9) |
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
+| **⌥⌘5** | Block Studio |
 | **⌥⌘6** | Contract Studio (Web3) |
 | **⌥⌘7** | DB Studio |
 | **⌥⌘8** | API Studio |
@@ -81,7 +82,7 @@ the Welcome tab):
 
 ## 3. Projects
 
-**Opening:** any folder carrying one of 30 recognized manifests opens as a
+**Opening:** any folder carrying one of 51 recognized manifests opens as a
 real project — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`,
 `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`,
 `gulpfile.js`, `webpack.config.js`, and friends. A plain folder of HTML
@@ -212,7 +213,7 @@ says so plainly on its display — it never fails silently and never crashes.
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
 
-48 languages highlight properly — the modern stack, the classic stack
+70+ languages highlight properly — the modern stack, the classic stack
 (CoffeeScript included), and the whole config layer down to `.env`,
 `.editorconfig`, nginx and Apache configs, Dockerfiles, and lockfiles.
 
@@ -221,7 +222,7 @@ says so plainly on its display — it never fails silently and never crashes.
   Knockout (via npm deps *or* plain script tags), their APIs appear in
   completion. jQuery 1.x/2.x projects get an honest end-of-life chip, not
   a nag.
-- **Navigator outline (⌘7)** shows file structure for 45 file types;
+- **Navigator outline (⌘7)** shows file structure for 58 file types;
   click to jump.
 - **LSP**: open a file whose language server is installed (typescript,
   gopls, rust-analyzer, pyright, …) and you get diagnostics, hover, and
@@ -312,7 +313,7 @@ The rack is fully operable without a mouse: **Tab** moves between a
 device's controls (a focus ring shows where you are), **arrow keys**
 turn the focused knob (Home/End jump to the rails), and **Space/Enter**
 press buttons and flip toggles. Every knob, button, LED, LCD and meter
-on all 46 devices reports its name, role, value and state to assistive
+on all 50 devices reports its name, role, value and state to assistive
 technology, so screen readers announce the rack the way they announce
 native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.)
@@ -501,18 +502,18 @@ files, recent projects, and launchers for every tool surface.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
-*New Learning Space…* offers 53 built-in tutorials — languages (Python,
+*New Learning Space…* offers 71 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and
-a live interpreter answers. The REPL's ENGINE knob selects among 26
+a live interpreter answers. The REPL's ENGINE knob selects among 37
 interpreters; if one isn't installed, the INSTALL button installs it
 right there, streaming progress onto the REPL screen. Spaces live in
 `~/.nmox/learn`, apart from your real work.
 
 ## 12. When something's wrong
 
-- **Environment Doctor** (Tools menu) live-probes ~32 external tools —
+- **Environment Doctor** (Tools menu) live-probes 66 external tools —
   node, npm, docker, forge, composer, gopls, … — showing found versions
   and the install command for anything missing.
 - **Missing language server / missing tool**: the IDE tells you the

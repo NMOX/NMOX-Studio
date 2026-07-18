@@ -18,21 +18,32 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.77.2, 19 release assets per
+NMOX Studio is a shipping NetBeans RCP IDE (v1.85.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
 whose identity is the **Reason-style task rack**: 50 hardware-styled devices
 wired with patch cables, backed by real process execution, session
 resurrection, CI export, and since v1.55.0 a **frozen public Device SPI**
-third parties extend it through. Around it: a **67-grammar polyglot editor**
-(~72 language mimes — the 2026-07-16 run added V, Fortran, Smalltalk,
+third parties extend it through. Around it: a **72-grammar polyglot editor**
+(70+ language mimes — the 2026-07-16 run added V, Fortran, Smalltalk,
 Prolog, Tcl, Scheme, Ada, Pascal, Odin, COBOL, Haxe, Janet; every
 cleanly-licensed grammar is now vendored, the Raku/Forth-class skips
-documented in NOTICE) with LSP, four studios (API, DB, Contract/Web3,
-Infra), the classic-web-first-class layer, 71 Learning Spaces (the twelve
-newest live-verified against real installed toolchains in v1.77.2), and the
-v1.35 "connections" spine (ServingRegistry + ManifestPulse) that keeps every
-surface live-synced.
+documented in NOTICE) with LSP, five studios (Block, API, DB,
+Contract/Web3, Infra), the classic-web-first-class layer, 71 Learning
+Spaces (the twelve newest live-verified against real installed toolchains
+in v1.77.2), and the v1.35 "connections" spine (ServingRegistry +
+ManifestPulse) that keeps every surface live-synced.
+
+**Block Studio is the fifth studio (v1.78.0–v1.85.0, ⌥⌘5).** A
+Scratch-like composer whose interlocking pieces generate a real custom
+element beside the canvas with per-piece code ranges (click a piece,
+see its lines): a strict reverse parser makes the round trip byte-exact
+(generate(parse(code)) is law), a workspace holds any number of
+components with switch-as-patch-boundary undo, the in-memory preview
+serves the whole component library so components render composed, the
+canvas is fully keyboard-operable and screen-reader-visible (ledger 48
+closed), and the arc carried its own two-lens review release (v1.82.0,
+14 mutation-proven fixes).
 
 **The language-compatibility mission is complete as of v1.77.2.** Full
 verticals where a real manifest/toolchain exists (V/fpm/Alire join
@@ -72,8 +83,9 @@ Since the v1.36.0 senior-review capstone, five things graduated from
 - **It's usable without a mouse or a screen.** The widget library speaks
   Swing accessibility (v1.41.0): SLIDER knobs with keyboard arrows and focus
   rings, Space/Enter buttons, state-announcing LEDs/LCDs/VU meters; every
-  control on all 46 devices exposes an accessible name, CI-gated by
-  DeviceContractTest's name law (59 controls fixed to get there).
+  control on every device (46 then, 50 today) exposes an accessible name,
+  CI-gated by DeviceContractTest's name law (59 controls fixed to get
+  there); the Block Studio canvas joined the law in v1.83.0.
 - **It respects the project's own toolchain.** The corepack pin or
   lockfile decides npm/yarn/pnpm in every Node AUTO lane (v1.60.0); a
   biome.json flips PURITY/GLOSS to biome with honest fix spelling,
@@ -257,10 +269,11 @@ docs + live verify), never as a checkbox:
   REFLEX wiring) stays deferred — each is a direction to be *chosen*, not a
   gap.
 
-That's the whole honest list. New studios (six tabs is the discovery
-ceiling), new languages (48 grammars is past diminishing returns), and any
-feature that can't be drawn as a device with an honest control surface are
-all explicit non-goals.
+That's the whole honest list. The old "six tabs is the discovery ceiling"
+guidance has since been tested by Block Studio (a seventh studio that
+earns its tab); 72 grammars is well past diminishing returns for new
+languages, and any feature that can't be drawn as a device with an honest
+control surface (or a studio with an honest canvas) remains a non-goal.
 
 ## Planned (the method — keep doing this)
 
@@ -397,21 +410,24 @@ build, v1.56.0 review-hardening). The roadmap the user set is complete and
 the third senior review found the house laws holding. What genuinely remains,
 in order of value:
 
-1. **Ledger 41 — the systemic `RackDevice.exec` EDT fork** (dotenv reads +
-   `ProcessBuilder.start()` on the button path, all 46 devices). Pre-existing
-   and mount-conditional, deliberately deferred to its own focused release
-   with live verification because it changes the threading contract of the
-   rack's hottest path.
-2. **The Windows `JsDebugServerTest` @TempDir flake** (ledger 37/38 class:
-   Windows holds file locks until the js-debug Node process dies; bit the
-   v1.56.0 main gate once, passed on rerun). Small, evidenced, worth killing.
+1. **Ledger 41 — DONE (v1.57.0).** Every device's RUN now forks off the
+   EDT on a RequestProcessor lane with the observable contract identical.
+2. **The Windows `JsDebugServerTest` @TempDir flake — DONE (v1.57.0)**
+   (self-managed retry-delete temp dir).
 3. **Watching the SPI in the wild** — the deliberate v1 scope items (CI
    export for extensions, custom painting, resurrection, `DeviceLogic`
    additions) grow additively when a real plugin author asks.
-4. **Settled won't-fixes and bounded residue** (ledger 1–7, 33, 36, 24,
-   38/40, 42–44): revisit only when a premise changes.
+4. **Settled won't-fixes and bounded residue** (ledger 1–7, 33, 24,
+   38/40, 42, 49): revisit only when a premise changes.
 
-Grinding further into the ledger would mean churning settled won't-fixes or
-spending a sprint on i18n/wsmode-migration work with no user pulling for it.
-Resist, as always: new studios, new languages, and any feature that can't be
-drawn as a device with an honest control surface.
+**As of v1.85.0** the story since that list: the language-compatibility
+mission ran to completion (v1.59–v1.77: package-manager truth, Biome,
+workspaces, the eight framework consoles, and ~24 new language verticals
+through V/Fortran/Ada/COBOL/Haxe/Janet), ledger 36 closed with the
+platform-native file tree (v1.64.0), and Block Studio became the fifth
+studio across v1.78–v1.85 (composer → live preview → byte-exact round
+trip → review hardening → keyboard canvas → multi-component workspaces →
+composition). Two more review releases (v1.71.0, v1.76.0, v1.82.0) each
+caught real bugs. The debt queue is still drained; the standing guidance
+holds: new studios, new languages, new devices — anything that can't be
+drawn with an honest control surface stays out.
