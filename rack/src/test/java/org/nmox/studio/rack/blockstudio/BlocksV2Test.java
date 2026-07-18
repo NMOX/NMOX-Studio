@@ -143,7 +143,8 @@ class BlocksV2Test {
     @DisplayName("Preview server: harness mounts the tag, /component.js is live, stop kills it")
     void previewServer() throws Exception {
         AtomicReference<String> code = new AtomicReference<>("// v1");
-        BlockPreviewServer server = new BlockPreviewServer(() -> "my-widget", code::get);
+        BlockPreviewServer server = new BlockPreviewServer(() -> "my-widget", code::get,
+                java.util.Map::of);
         String url = server.start();
         assertThat(url).startsWith("http://127.0.0.1:");
         try {
@@ -178,12 +179,47 @@ class BlocksV2Test {
     @Test
     @DisplayName("Preview server: start is idempotent; harness escapes the tag in text positions")
     void previewServerIdempotentAndEscaped() throws Exception {
-        BlockPreviewServer server = new BlockPreviewServer(() -> "my-widget", () -> "//");
+        BlockPreviewServer server = new BlockPreviewServer(() -> "my-widget", () -> "//",
+                java.util.Map::of);
         try {
             String url = server.start();
             assertThat(server.start()).isEqualTo(url);
-            String harness = BlockPreviewServer.harness("my-widget");
+            String harness = BlockPreviewServer.harness("my-widget", java.util.List.of());
             assertThat(harness).contains("&lt;my-widget&gt;"); // heading escaped
+        } finally {
+            server.stop();
+        }
+    }
+
+    @Test
+    @DisplayName("Composition (v5): the harness imports every sibling module, /lib serves them")
+    void previewServesTheLibrary() throws Exception {
+        java.util.Map<String, String> lib = new java.util.LinkedHashMap<>();
+        lib.put("my-widget", "// active");
+        lib.put("my-badge", "// badge module");
+        BlockPreviewServer server = new BlockPreviewServer(
+                () -> "my-widget", () -> "// active", () -> lib);
+        try {
+            String url = server.start();
+            HttpClient http = HttpClient.newHttpClient();
+            String harness = http.send(HttpRequest.newBuilder(URI.create(url)).build(),
+                    HttpResponse.BodyHandlers.ofString()).body();
+            assertThat(harness)
+                    .as("sibling modules ride along so nested custom tags upgrade")
+                    .contains("src=\"/lib/my-badge.js\"")
+                    .as("the active component must not import twice — double define throws")
+                    .doesNotContain("/lib/my-widget.js");
+
+            String badge = http.send(
+                    HttpRequest.newBuilder(URI.create(url + "lib/my-badge.js")).build(),
+                    HttpResponse.BodyHandlers.ofString()).body();
+            assertThat(badge).isEqualTo("// badge module");
+
+            assertThat(http.send(
+                    HttpRequest.newBuilder(URI.create(url + "lib/absent-tag.js")).build(),
+                    HttpResponse.BodyHandlers.ofString()).statusCode())
+                    .as("an unknown library tag is an honest 404, not the harness")
+                    .isEqualTo(404);
         } finally {
             server.stop();
         }

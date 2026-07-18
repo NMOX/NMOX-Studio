@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.85.0] - 2026-07-18
+
+### Block Studio v5 — the composition loop
+
+Components can nest each other, and the preview shows it:
+
+- An Element piece whose tag names a **sibling component**
+  (`my-badge` inside `my-widget`) always generated honest markup —
+  now it renders: the preview harness imports every other valid
+  component's module from `/lib/<tag>.js` (read live per request,
+  like the active module), so nested custom tags upgrade instead of
+  sitting inert. The active component is excluded from the library
+  imports (a double `customElements.define` throws) — mutation-proven.
+- Broken components sit the pass out (only components that validate
+  join the library); an unknown `/lib` tag is an honest 404.
+- Docs: user guide + README now describe the composed preview.
+
+Tests: `BlocksV2Test.previewServesTheLibrary` (harness imports, /lib
+serving, active-exclusion, 404).
+
 ## [1.84.0] - 2026-07-18
 
 ### Block Studio v4 — multi-component workspaces

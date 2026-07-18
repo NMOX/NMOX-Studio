@@ -25,11 +25,21 @@ final class BlockPreviewServer {
 
     private final Supplier<String> tag;
     private final Supplier<String> code;
+    /**
+     * The whole workspace's valid components, tag→code (v5, the
+     * composition loop): the harness imports every OTHER component's
+     * module from {@code /lib/<tag>.js}, so a component nesting a
+     * sibling's custom tag renders it live instead of an inert unknown
+     * element. Read per request, like {@link #code}.
+     */
+    private final Supplier<java.util.Map<String, String>> library;
     private HttpServer server;
 
-    BlockPreviewServer(Supplier<String> tag, Supplier<String> code) {
+    BlockPreviewServer(Supplier<String> tag, Supplier<String> code,
+            Supplier<java.util.Map<String, String>> library) {
         this.tag = tag;
         this.code = code;
+        this.library = library;
     }
 
     /** Starts on an ephemeral loopback port; returns the URL. */
@@ -48,11 +58,28 @@ final class BlockPreviewServer {
         server.createContext("/", exchange -> {
             byte[] body;
             String type;
-            if ("/component.js".equals(exchange.getRequestURI().getPath())) {
+            String path = exchange.getRequestURI().getPath();
+            if ("/component.js".equals(path)) {
                 body = code.get().getBytes(StandardCharsets.UTF_8);
                 type = "text/javascript; charset=utf-8";
+            } else if (path.startsWith("/lib/") && path.endsWith(".js")) {
+                String wanted = path.substring("/lib/".length(), path.length() - ".js".length());
+                String libCode = library.get().get(wanted);
+                if (libCode == null) {
+                    exchange.sendResponseHeaders(404, -1);
+                    exchange.close();
+                    return;
+                }
+                body = libCode.getBytes(StandardCharsets.UTF_8);
+                type = "text/javascript; charset=utf-8";
             } else {
-                body = harness(tag.get()).getBytes(StandardCharsets.UTF_8);
+                String active = tag.get();
+                // every valid sibling component's module rides along, so
+                // nested custom tags upgrade — the active one is excluded
+                // (double customElements.define throws)
+                java.util.List<String> others = new java.util.ArrayList<>(library.get().keySet());
+                others.remove(active);
+                body = harness(active, others).getBytes(StandardCharsets.UTF_8);
                 type = "text/html; charset=utf-8";
             }
             exchange.getResponseHeaders().set("Content-Type", type);
@@ -88,8 +115,27 @@ final class BlockPreviewServer {
      * every CustomEvent the component dispatches — the DISPATCH piece's
      * output is visible without opening devtools.
      */
-    static String harness(String tag) {
+    static String harness(String tag, java.util.List<String> otherTags) {
         String safe = tag.replace("<", "&lt;").replace(">", "&gt;");
+        StringBuilder libs = new StringBuilder();
+        for (String other : otherTags) {
+            // whitelist sanitizer, not trust: rebuild the tag from the
+            // custom-element alphabet so nothing else can reach the page
+            // or the /lib URL — tags here already passed validTag, this
+            // makes it a structural guarantee (the find-sec-bugs idiom)
+            StringBuilder clean = new StringBuilder(other.length());
+            for (int i = 0; i < other.length(); i++) {
+                char c = other.charAt(i);
+                if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-') {
+                    clean.append(c);
+                }
+            }
+            if (clean.length() != other.length() || !BlockCodegen.validTag(other)) {
+                continue; // not tag-shaped — never ours, skip it
+            }
+            libs.append("<script type=\"module\" src=\"/lib/").append(clean)
+                    .append(".js\"></script>\n");
+        }
         return """
                 <!doctype html>
                 <html>
@@ -97,7 +143,7 @@ final class BlockPreviewServer {
                 <meta charset="utf-8">
                 <title>%s — NMOX Block Studio preview</title>
                 <script type="module" src="/component.js"></script>
-                <style>
+                %s<style>
                   body { font-family: system-ui, sans-serif; background: #14171c; color: #d8dee9;
                          margin: 0; padding: 2rem; }
                   h1 { font-size: 1rem; color: #7aa2f7; font-weight: 500; }
@@ -134,6 +180,6 @@ final class BlockPreviewServer {
                 </script>
                 </body>
                 </html>
-                """.formatted(safe, safe, "<" + tag + "></" + tag + ">", tag, tag, tag);
+                """.formatted(safe, libs, safe, "<" + tag + "></" + tag + ">", tag, tag, tag);
     }
 }
