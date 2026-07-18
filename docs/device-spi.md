@@ -140,7 +140,7 @@ platform shows its unsigned-plugin warning; to sign your own plugin's
 NBM, the same nbm-maven-plugin keystore config applies — see
 docs/engineering/nbm-signing.md) — the module turns on live,
 and your device appears on the shelf, in Quick Search (⌘I), persists in
-patches, and answers the same contract laws as the built-in 50. You can
+patches, and answers the same contract laws as the built-in 51. You can
 also host your own update center: **Tools ▸ Plugins ▸ Settings** accepts
 any catalog URL.
 
