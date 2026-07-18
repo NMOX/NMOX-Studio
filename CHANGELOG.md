@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.81.0] - 2026-07-17
+
+### Block Studio v3 — the round trip
+
+The stretch goal: generated code now parses BACK into blocks, making
+the code pane a genuinely two-way surface.
+
+- **BlockParser** — a strict parser for the Block Studio dialect (never
+  general JavaScript): the exact canonical shape the generator emits,
+  with line-numbered refusals for anything else and no half-imports.
+  Hand edits that stay inside the dialect import fine — the honest slice
+  of two-way editing. Identity survives: element ids ride the `data-b`
+  anchors and listener ids ride the `const` variables, so
+  **`generate(parse(code))` reproduces the file byte for byte** —
+  pinned by `BlockRoundTripTest` across a six-doc corpus covering every
+  piece, deep nesting, and hostile escaping (backticks, `${`,
+  backslashes, quotes). Consistency is verified, not assumed: a
+  re-render without a Set-state, a class/tag mismatch, or a tampered
+  skeleton line all refuse with the offending line.
+- **Open Component…** in the toolbar: pick any Block-Studio-generated
+  file (chooser starts at `src/components`) and it loads onto the
+  canvas — read+parse on the IO lane, undo snapshot, workspace persist;
+  an off-dialect file explains itself in a dialog.
+- **Prop piece** — observed HTML attributes as first-class blocks:
+  emits `static get observedAttributes()`, an `attributeChangedCallback`
+  re-render, and a private `#prop_name()` accessor carrying the default
+  (private methods can't collide with HTMLElement members the way public
+  getters would). `{@name}` interpolates props everywhere `{state}`
+  works — text, attributes, log/dispatch templates, and expressions —
+  and defaults round-trip through the accessor even when never
+  interpolated.
+
 ## [1.80.0] - 2026-07-17
 
 ### Block Studio v2 — the live loop

@@ -73,6 +73,7 @@ public final class Block {
             case SLOT -> first.isEmpty() ? "<slot>" : "<slot name=\"" + first + "\">";
             case TIMER -> "every " + first + " ms";
             case DISPATCH -> "dispatch " + first;
+            case PROP -> "@" + param("name") + (param("default").isEmpty() ? "" : " ?? \"" + param("default") + "\"");
         };
     }
 }

@@ -59,6 +59,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- FileChooserBuilder (Block Studio's Open Component picker)
+                 lives in the -nb half of filesystems -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems-nb</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-dialogs</artifactId>
             <version>${netbeans.version}</version>
