@@ -53,14 +53,17 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.82.0, the Block Studio review)
 
-### 48. The block canvas is not keyboard-operable
-Selection, insertion, and movement of pieces are mouse-only (Delete works,
-but only after a mouse click selects). The v1.41 law — every control
-operable without a mouse — holds for every widget-library control but not
-yet for Block Studio's primary surface, and pieces are not exposed as
-accessible children (assistive tech sees one named PANEL). The fix is real
-work (arrow-key traversal + Enter-to-insert on the slot model + accessible
-child nodes), sized as its own release, not a review patch.
+### 48. The block canvas is not keyboard-operable — CLOSED (v1.83.0)
+Shipped as its own release, as sized: Up/Down walk the pieces in layout
+order, Left/Right walk the tree, Alt+Up/Down reorder within the parent
+(riding the v1.82.0-corrected move semantics), Enter opens a legal-kinds
+menu inserting a child, Shift+Enter a sibling after, F2 edits params,
+Delete removes, Escape clears — all through the same doc paths as the
+mouse gestures, so undo/persist/regenerate see no difference. Pieces are
+accessible children now: LIST role on the canvas, one LIST_ITEM per row
+with kind + face summary, level, position, and live SELECTED state; the
+accessible description names every key. BlockCanvasKeyboardTest drives
+the handler with synthesized events (4 tests).
 
 ### 49. Preview server: no deregister on app exit (blessed residue)
 On app exit with the tab open, componentClosed never runs (window-system
