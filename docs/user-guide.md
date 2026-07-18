@@ -361,7 +361,10 @@ generated file (even one you hand-edited within its shapes) parses back
 into blocks, replacing the same-tag component or joining the workspace
 as a new one. **Preview** serves the current component live on
 localhost (it shows up in ⌘I and the ⇄ serving chip like any dev
-server), and ⌘Z undoes any structural edit. The block trees persist in
+server) — and it serves the *whole workspace*: every other valid
+component's module rides along, so a component that nests a sibling's
+tag (an Element piece whose tag is, say, `my-badge`) renders it live
+instead of an inert unknown element. ⌘Z undoes any structural edit. The block trees persist in
 `.nmoxblocks.json` beside your project — commit it and a teammate gets
 your canvas.
 

@@ -264,6 +264,22 @@ public final class BlockStudioTopComponent extends TopComponent {
                 () -> {
                     BlockCodegen.Result r = lastResult;
                     return r == null ? "// fix the blocks first" : r.code();
+                },
+                () -> {
+                    // the composition loop (v5): every VALID component in
+                    // the workspace, so nested sibling tags upgrade in the
+                    // harness; read live per request like the suppliers
+                    // above, broken components simply sit this pass out
+                    java.util.Map<String, String> lib = new java.util.LinkedHashMap<>();
+                    BlockWorkspace ws = workspace;
+                    if (ws != null) {
+                        for (BlockDoc d : ws.components()) {
+                            if (BlockCodegen.validate(d).isEmpty()) {
+                                lib.put(d.root().param("tag"), BlockCodegen.generate(d).code());
+                            }
+                        }
+                    }
+                    return lib;
                 });
         previewBtn = new JButton(new AbstractAction("Preview") {
             @Override

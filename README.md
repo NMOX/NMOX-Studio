@@ -227,7 +227,8 @@ screen-reader-visible. A workspace holds many components with a
 toolbar switcher; **Save Component** writes `src/components/<tag>.js`
 (never clobbering a file it didn't generate), **Open Component…**
 parses a generated file back into blocks, and **Preview** serves the
-component live on localhost.
+whole workspace live on localhost — components can nest each other's
+tags and render composed.
 
 ### 🧪 API Studio
 A Postman-style tab (Window → API Studio) for building, saving, sending,
