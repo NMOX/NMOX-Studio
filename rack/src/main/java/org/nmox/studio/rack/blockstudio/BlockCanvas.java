@@ -130,6 +130,12 @@ final class BlockCanvas extends JComponent {
                 BlockKind kind = kindOf(support);
                 if (kind == null || layout == null) {
                     paletteDrag = null;
+                    // a preview painted by an earlier legal position must
+                    // not linger once the drag leaves legal territory
+                    if (dropPreview != null) {
+                        dropPreview = null;
+                        repaint();
+                    }
                     return false;
                 }
                 Point p = support.getDropLocation().getDropPoint();

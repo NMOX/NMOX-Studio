@@ -365,4 +365,94 @@ class BlockCoreTest {
         assertThat(BlockIO.writeComponent(project, "my-counter", code)).isFalse();
         assertThat(Files.readString(out.toPath())).isEqualTo("// my precious hand edits\n");
     }
+
+    // ---- v1.82.0 review regressions (each failed on the pre-review code) ----
+
+    @Test
+    @DisplayName("Same-parent downward move lands AT the previewed slot, not one below")
+    void sameParentDownwardMove() {
+        BlockDoc doc = new BlockDoc();
+        Block a = doc.create(BlockKind.ELEMENT); a.setParam("tag", "a");
+        Block b = doc.create(BlockKind.ELEMENT); b.setParam("tag", "b");
+        Block c = doc.create(BlockKind.ELEMENT); c.setParam("tag", "c");
+        doc.insert(doc.root(), a, 0);
+        doc.insert(doc.root(), b, 1);
+        doc.insert(doc.root(), c, 2);
+        // the drop line between B and C is slot index 2 on the layout that
+        // still contains A — the result must be [B, A, C]
+        assertThat(doc.move(a.id(), doc.root(), 2)).isTrue();
+        assertThat(doc.root().children().stream().map(x -> x.param("tag")))
+                .containsExactly("b", "a", "c");
+    }
+
+    @Test
+    @DisplayName("insert refuses a block that is already attached (aliasing guard)")
+    void insertRefusesAttached() {
+        BlockDoc doc = new BlockDoc();
+        Block a = doc.create(BlockKind.ELEMENT); a.setParam("tag", "a");
+        assertThat(doc.insert(doc.root(), a, 0)).isTrue();
+        assertThat(doc.insert(doc.root(), a, 1)).isFalse();
+        assertThat(doc.preorder().stream().filter(x -> x.id().equals(a.id())).count())
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("validate() names every problem generate() would throw on — no EDT surprises")
+    void validateCoversGenerateThrows() {
+        // 1. an expression with characters expr() refuses
+        BlockDoc doc = new BlockDoc();
+        Block s = doc.create(BlockKind.STATE);
+        s.setParam("name", "count"); s.setParam("initial", "0");
+        doc.insert(doc.root(), s, 0);
+        Block div = doc.create(BlockKind.ELEMENT); div.setParam("tag", "div");
+        doc.insert(doc.root(), div, 1);
+        Block on = doc.create(BlockKind.ON_EVENT); on.setParam("event", "click");
+        doc.insert(div, on, 0);
+        Block set = doc.create(BlockKind.SET_STATE);
+        set.setParam("name", "count"); set.setParam("expr", "{count} > 3 ? 1 : 0");
+        doc.insert(on, set, 0);
+        assertThat(BlockCodegen.validate(doc))
+                .as("the ternary the review typed must be a problem sentence, not a crash")
+                .anyMatch(p -> p.contains("unsupported characters"));
+
+        // 2. a 20-digit timer interval must not NumberFormatException
+        BlockDoc t = new BlockDoc();
+        Block timer = t.create(BlockKind.TIMER);
+        timer.setParam("ms", "99999999999999999999");
+        t.insert(t.root(), timer, 0);
+        assertThat(BlockCodegen.validate(t)).anyMatch(p -> p.contains("Timer interval"));
+
+        // 3. data-b is reserved
+        BlockDoc d2 = new BlockDoc();
+        Block el = d2.create(BlockKind.ELEMENT); el.setParam("tag", "div");
+        d2.insert(d2.root(), el, 0);
+        Block attr = d2.create(BlockKind.SET_ATTR);
+        attr.setParam("name", "data-b"); attr.setParam("value", "x");
+        d2.insert(el, attr, 0);
+        assertThat(BlockCodegen.validate(d2)).anyMatch(p -> p.contains("reserved"));
+
+        // 4. a newline smuggled into any param (hand-edited workspace)
+        BlockDoc d3 = new BlockDoc();
+        Block s3 = d3.create(BlockKind.STATE);
+        s3.setParam("name", "label"); s3.setParam("initial", "two\nlines");
+        d3.insert(d3.root(), s3, 0);
+        assertThat(BlockCodegen.validate(d3)).anyMatch(p -> p.contains("single line"));
+
+        // 5. a leading-zero number is a module syntax error
+        BlockDoc d4 = new BlockDoc();
+        Block s4 = d4.create(BlockKind.STATE);
+        s4.setParam("name", "n"); s4.setParam("initial", "01");
+        d4.insert(d4.root(), s4, 0);
+        assertThat(BlockCodegen.validate(d4)).anyMatch(p -> p.contains("leading zero"));
+    }
+
+    @Test
+    @DisplayName("tagOf reads the define line; falls back for markerless code")
+    void tagOf() {
+        BlockDoc doc = new BlockDoc();
+        doc.root().setParam("tag", "neat-widget");
+        assertThat(BlockParser.tagOf(BlockCodegen.generate(doc).code()))
+                .isEqualTo("neat-widget");
+        assertThat(BlockParser.tagOf("// nothing here")).isEqualTo("my-widget");
+    }
 }

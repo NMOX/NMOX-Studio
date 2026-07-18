@@ -38,6 +38,13 @@ final class BlockPreviewServer {
             return url();
         }
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        // daemon threads: an in-process loopback preview must never be the
+        // thing keeping the JVM alive (the JDK default executor is non-daemon)
+        server.setExecutor(java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "Block Preview");
+            t.setDaemon(true);
+            return t;
+        }));
         server.createContext("/", exchange -> {
             byte[] body;
             String type;

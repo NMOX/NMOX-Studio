@@ -41,6 +41,11 @@ public final class BlockParser {
 
         private final int line;
 
+        /** A whole-file problem with no single offending line. */
+        public ParseException(String message) {
+            this(0, message);
+        }
+
         ParseException(int line, String message) {
             super("line " + line + ": " + message);
             this.line = line;
@@ -59,6 +64,21 @@ public final class BlockParser {
             "  static get observedAttributes\\(\\) \\{ return \\[(.*)]; }");
     private static final Pattern CLASS_LINE = Pattern.compile(
             "class ([A-Za-z0-9]+) extends HTMLElement \\{");
+    /**
+     * The custom-element tag of a generated file, or {@code "my-widget"}
+     * when the define line is absent — the preview harness's honest
+     * fallback when the live doc's tag is mid-edit and invalid.
+     */
+    public static String tagOf(String code) {
+        for (String line : code.split("\n", -1)) {
+            Matcher m = DEFINE_LINE.matcher(line.strip());
+            if (m.matches()) {
+                return m.group(1);
+            }
+        }
+        return "my-widget";
+    }
+
     private static final Pattern DEFINE_LINE = Pattern.compile(
             "customElements\\.define\\('([a-z0-9-]+)', ([A-Za-z0-9]+)\\);");
     /** Attr blob is one linear char-class (the ReDOS-gate idiom); its

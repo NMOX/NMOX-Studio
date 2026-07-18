@@ -62,10 +62,24 @@ public final class BlockCodegen {
         }
         List<String> states = stateNames(doc);
         for (Block b : doc.preorder()) {
+            for (Map.Entry<String, String> p : b.params().entrySet()) {
+                // params are one-line by construction in the UI; a hand-edited
+                // workspace can smuggle newlines that would split a generated
+                // line (invalid JS inside quoted literals, unparseable
+                // template lines) — refuse them all at the source
+                if (p.getValue().indexOf('\n') >= 0 || p.getValue().indexOf('\r') >= 0) {
+                    problems.add(b.kind().display() + " " + p.getKey()
+                            + " must be a single line");
+                }
+            }
             switch (b.kind()) {
                 case STATE -> {
                     if (!IDENT.matcher(b.param("name")).matches()) {
                         problems.add("State name \"" + b.param("name") + "\" is not a valid identifier");
+                    }
+                    if (leadingZero(b.param("initial"))) {
+                        problems.add("State initial \"" + b.param("initial")
+                                + "\" has a leading zero (a syntax error in JS modules)");
                     }
                 }
                 case PROP -> {
@@ -83,6 +97,10 @@ public final class BlockCodegen {
                 case SET_ATTR -> {
                     if (!ATTR_NAME.matcher(b.param("name")).matches()) {
                         problems.add("Attribute name \"" + b.param("name") + "\" is not valid");
+                    } else if (b.param("name").equals("data-b")) {
+                        // the generator's own anchor attribute — a user copy
+                        // would be hijacked as the element id on re-import
+                        problems.add("Attribute name \"data-b\" is reserved by Block Studio (it anchors listeners)");
                     }
                 }
                 case ON_EVENT -> {
@@ -91,6 +109,9 @@ public final class BlockCodegen {
                     }
                 }
                 case SET_STATE, IF_STATE -> {
+                    if (b.kind() == BlockKind.SET_STATE && exprProblem(b.param("expr")) != null) {
+                        problems.add(exprProblem(b.param("expr")));
+                    }
                     if (!states.contains(b.param("name"))) {
                         problems.add(b.kind().display() + " refers to undeclared state \""
                                 + b.param("name") + "\"");
@@ -111,9 +132,13 @@ public final class BlockCodegen {
                     }
                 }
                 case TIMER -> {
-                    if (!b.param("ms").matches("[0-9]+") || Long.parseLong(b.param("ms")) < 50) {
-                        problems.add("Timer interval \"" + b.param("ms")
-                                + "\" must be a whole number of milliseconds (min 50)");
+                    // length cap before parse: a 20-digit "number" passes the
+                    // regex but overflows Long.parseLong (the v1.82.0 review's
+                    // EDT crash from a plain text field)
+                    String ms = b.param("ms");
+                    if (!ms.matches("[0-9]+") || ms.length() > 9 || Long.parseLong(ms) < 50) {
+                        problems.add("Timer interval \"" + ms
+                                + "\" must be a whole number of milliseconds (min 50, max 9 digits)");
                     }
                 }
                 case DISPATCH -> {
@@ -126,6 +151,22 @@ public final class BlockCodegen {
             }
         }
         return problems;
+    }
+
+    /** The expr() residue rule as a validate()-time problem, or null when fine. */
+    static String exprProblem(String raw) {
+        String residue = PROP_REF.matcher(REF.matcher(raw).replaceAll("0")).replaceAll("0");
+        if (!residue.matches("[0-9+\\-*/%().'\\sA-Za-z\"_]*") || residue.contains("`")) {
+            return "Expression \"" + raw + "\" contains unsupported characters"
+                    + " (allowed: numbers, + - * / % ( ), quotes, {state} references)";
+        }
+        return null;
+    }
+
+    /** "01" / "-01" style number literals are module syntax errors. */
+    static boolean leadingZero(String raw) {
+        String n = raw.startsWith("-") ? raw.substring(1) : raw;
+        return n.matches("0[0-9]+") || n.matches("0[0-9]*\\.[0-9]+");
     }
 
     /** Custom-element tag law: lowercase, a hyphen, no empty segments. */
@@ -221,9 +262,19 @@ public final class BlockCodegen {
             }
         }
         e.line("    `;");
-        for (Block b : doc.preorder()) {
-            if (b.kind() == BlockKind.ON_EVENT) {
-                emitListener(e, b, doc, states, props);
+        // listener order is CANONICAL: for each host in template preorder,
+        // that host's ON_EVENT children in child order. The parser rebuilds
+        // listeners as trailing children per host in code order, so THIS
+        // order — unlike raw doc-preorder, which interleaves a host's
+        // later listeners with its descendants' — survives the round trip
+        // byte for byte (the v1.82.0 review's reorder finding).
+        for (Block host : doc.preorder()) {
+            if (host.kind() != BlockKind.ON_EVENT) {
+                for (Block b : host.children()) {
+                    if (b.kind() == BlockKind.ON_EVENT) {
+                        emitListener(e, b, doc, states, props);
+                    }
+                }
             }
         }
         e.line("  }");
@@ -406,10 +457,9 @@ public final class BlockCodegen {
     static String expr(String raw, List<String> states, List<String> props) {
         String replaced = propReplace(refReplace(raw, states, "this.#", ""),
                 props, "this.", "()");
-        // whatever remains outside references must be arithmetic-safe
-        String residue = PROP_REF.matcher(REF.matcher(raw).replaceAll("0")).replaceAll("0");
-        if (!residue.matches("[0-9+\\-*/%().'\\sA-Za-z\"_]*") || residue.contains("`")) {
-            throw new IllegalArgumentException("Expression \"" + raw + "\" contains unsupported characters");
+        String problem = exprProblem(raw);
+        if (problem != null) {
+            throw new IllegalArgumentException(problem);
         }
         return replaced;
     }

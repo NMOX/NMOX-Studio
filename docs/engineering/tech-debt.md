@@ -51,6 +51,29 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
+## Open — deferred deliberately, with reasons (added v1.82.0, the Block Studio review)
+
+### 48. The block canvas is not keyboard-operable
+Selection, insertion, and movement of pieces are mouse-only (Delete works,
+but only after a mouse click selects). The v1.41 law — every control
+operable without a mouse — holds for every widget-library control but not
+yet for Block Studio's primary surface, and pieces are not exposed as
+accessible children (assistive tech sees one named PANEL). The fix is real
+work (arrow-key traversal + Enter-to-insert on the slot model + accessible
+child nodes), sized as its own release, not a review patch.
+
+### 49. Preview server: no deregister on app exit (blessed residue)
+On app exit with the tab open, componentClosed never runs (window-system
+persistence keeps it "open"), so the serving-registry entry and the server
+die with the JVM instead of deregistering. The server's threads are daemon
+(v1.82.0) and loopback-only, the platform exits via System.exit, and the
+registry is in-process — so the entry cannot outlive anything. Revisit
+only if an @OnStop seam ever lands (ledger 35). Two behavior notes blessed
+with it: the workspace pulse reloads behind a hidden tab (post-show only,
+cheap, keeps the canvas honest for the next show), and a foreign
+same-project edit stops a running preview (conservative; the live
+suppliers would have served the reload, but a stop is never a lie).
+
 ## Open — deferred deliberately, with reasons (added v1.56.0, the third senior review)
 
 ### 41. `RackDevice.exec` forks + reads dotenv on the EDT — CLOSED (v1.57.0)
