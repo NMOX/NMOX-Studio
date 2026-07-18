@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.83.0] - 2026-07-17
+
+### Block Studio without a mouse (ledger 48 closed)
+
+The canvas — the studio's primary control — now honors the v1.41 law:
+
+- **Traversal**: Up/Down walk the pieces in canvas order, Left selects
+  the parent, Right the first child; selection scrolls into view and
+  Escape clears it.
+- **Editing**: Enter opens an "add piece" menu of exactly the kinds the
+  interlock law admits under the selected piece (Shift+Enter inserts a
+  sibling after it), Alt+Up/Down reorder within the parent, F2 opens the
+  param editor, Delete removes — every path the same doc operations as
+  the mouse gestures, so undo, persistence, and regeneration are
+  identical.
+- **Assistive tech sees the pieces**: the canvas reports a LIST of
+  LIST_ITEM children — kind, face summary, level, position, and live
+  SELECTED state — and its accessible description names every key.
+
+`BlockCanvasKeyboardTest` drives the real key handler with synthesized
+events: traversal, reorder, delete, F2, the legal-kinds seam against
+`BlockRules`, insert-and-select, and the accessible-children contract.
+
 ## [1.82.0] - 2026-07-17
 
 ### The Block Studio review — two lenses over v1.78–v1.81, fourteen fixes

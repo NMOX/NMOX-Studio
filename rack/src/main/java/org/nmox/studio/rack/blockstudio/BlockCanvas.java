@@ -6,12 +6,14 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
@@ -53,27 +55,16 @@ final class BlockCanvas extends JComponent {
     private BlockLayout.Slot dropPreview;
     private BlockKind paletteDrag;
 
-    @Override
-    public javax.accessibility.AccessibleContext getAccessibleContext() {
-        // a bare JComponent has none — without this the canvas is
-        // invisible to assistive tech (the widget-library name law)
-        if (accessibleContext == null) {
-            accessibleContext = new AccessibleJComponent() {
-                @Override
-                public javax.accessibility.AccessibleRole getAccessibleRole() {
-                    return javax.accessibility.AccessibleRole.PANEL;
-                }
-            };
-        }
-        return accessibleContext;
-    }
 
     BlockCanvas(Host host) {
         this.host = host;
         setFocusable(true);
         getAccessibleContext().setAccessibleName("Block canvas");
         getAccessibleContext().setAccessibleDescription(
-                "Interlocking web-component pieces; drag from the palette, Delete removes");
+                "Interlocking web-component pieces. Arrows traverse (Left parent,"
+                + " Right child), Alt+Up/Down reorder, Enter adds a child piece,"
+                + " Shift+Enter a sibling, F2 edits, Delete removes, Escape clears;"
+                + " or drag from the palette");
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -113,15 +104,7 @@ final class BlockCanvas extends JComponent {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if ((e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
-                        && selectedId != null && doc != null
-                        && !selectedId.equals(doc.root().id())) {
-                    host.aboutToChange();
-                    if (doc.detach(selectedId) != null) {
-                        select(null);
-                        host.changed();
-                    }
-                }
+                handleKey(e);
             }
         });
         setTransferHandler(new TransferHandler() {
@@ -166,6 +149,276 @@ final class BlockCanvas extends JComponent {
                 return ok;
             }
         });
+    }
+
+    /**
+     * The keyboard surface (ledger 48): the canvas is the studio's
+     * primary control, so every mouse gesture has a key equivalent —
+     * Up/Down walk the pieces, Left/Right walk the tree, Alt+Up/Down
+     * reorder within the parent, Enter adds a child piece, Shift+Enter
+     * a sibling after, F2 edits params, Delete removes, Escape clears.
+     * Package-private: tests drive it with synthesized events.
+     */
+    void handleKey(KeyEvent e) {
+        if (doc == null || layout == null) {
+            return;
+        }
+        Block sel = selectedId == null ? null : doc.find(selectedId);
+        boolean alt = (e.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) != 0;
+        boolean shift = (e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_DELETE, KeyEvent.VK_BACK_SPACE -> {
+                if (sel != null && !sel.id().equals(doc.root().id())) {
+                    host.aboutToChange();
+                    if (doc.detach(sel.id()) != null) {
+                        select(null);
+                        host.changed();
+                    }
+                }
+            }
+            case KeyEvent.VK_UP -> {
+                if (alt) {
+                    reorder(sel, -1);
+                } else {
+                    selectRow(rowIndexOf(sel) - 1);
+                }
+            }
+            case KeyEvent.VK_DOWN -> {
+                if (alt) {
+                    reorder(sel, +1);
+                } else {
+                    selectRow(sel == null ? 0 : rowIndexOf(sel) + 1);
+                }
+            }
+            case KeyEvent.VK_LEFT -> {
+                Block parent = sel == null ? null : doc.parentOf(sel.id());
+                if (parent != null) {
+                    select(parent);
+                    scrollToSelection();
+                }
+            }
+            case KeyEvent.VK_RIGHT -> {
+                if (sel != null && !sel.children().isEmpty()) {
+                    select(sel.children().get(0));
+                    scrollToSelection();
+                }
+            }
+            case KeyEvent.VK_ENTER -> {
+                if (sel == null) {
+                    return;
+                }
+                if (shift) {
+                    Block parent = doc.parentOf(sel.id());
+                    if (parent != null) {
+                        showAddMenu(parent, parent.children().indexOf(sel) + 1);
+                    }
+                } else {
+                    showAddMenu(sel, sel.children().size());
+                }
+            }
+            case KeyEvent.VK_F2 -> {
+                if (sel != null) {
+                    host.editParams(sel);
+                }
+            }
+            case KeyEvent.VK_ESCAPE -> {
+                select(null);
+                repaint();
+            }
+            default -> { }
+        }
+    }
+
+    /** Alt+Up/Down: move the piece within its parent by one slot. */
+    private void reorder(Block sel, int direction) {
+        if (sel == null) {
+            return;
+        }
+        Block parent = doc.parentOf(sel.id());
+        if (parent == null) {
+            return;
+        }
+        int at = parent.children().indexOf(sel);
+        // slot indices are computed against the tree WITH the child in
+        // place (BlockDoc.move adjusts same-parent downward targets):
+        // up = the slot before the previous sibling, down = the slot
+        // after the next one
+        int target = direction < 0 ? at - 1 : at + 2;
+        if (target < 0 || target > parent.children().size()) {
+            return;
+        }
+        host.aboutToChange();
+        if (doc.move(sel.id(), parent, target)) {
+            host.changed();
+            scrollToSelection();
+        }
+        repaint();
+    }
+
+    private int rowIndexOf(Block b) {
+        if (b == null) {
+            return -1;
+        }
+        List<BlockLayout.Row> rows = layout.rows();
+        for (int i = 0; i < rows.size(); i++) {
+            if (rows.get(i).block().id().equals(b.id())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void selectRow(int index) {
+        List<BlockLayout.Row> rows = layout.rows();
+        if (rows.isEmpty()) {
+            return;
+        }
+        int at = Math.max(0, Math.min(index, rows.size() - 1));
+        select(rows.get(at).block());
+        scrollToSelection();
+        repaint();
+    }
+
+    private void scrollToSelection() {
+        int i = selectedId == null ? -1 : rowIndexOf(doc.find(selectedId));
+        if (i >= 0) {
+            BlockLayout.Row r = layout.rows().get(i);
+            scrollRectToVisible(new Rectangle(0, r.y(), getWidth(), r.h()));
+        }
+    }
+
+    /** Kinds the interlock law admits under {@code parent} — menu order. */
+    List<BlockKind> legalChildren(Block parent) {
+        List<BlockKind> out = new java.util.ArrayList<>();
+        for (BlockKind k : BlockKind.values()) {
+            if (k != BlockKind.COMPONENT && BlockRules.accepts(parent.kind(), k)) {
+                out.add(k);
+            }
+        }
+        return out;
+    }
+
+    /** The keyboard insert: same doc path as a palette drop. */
+    boolean insertKind(BlockKind kind, Block parent, int index) {
+        host.aboutToChange();
+        Block fresh = doc.create(kind);
+        boolean ok = doc.insert(parent, fresh, index);
+        if (ok) {
+            select(fresh);
+            host.changed();
+            scrollToSelection();
+        }
+        repaint();
+        return ok;
+    }
+
+    private void showAddMenu(Block parent, int index) {
+        List<BlockKind> kinds = legalChildren(parent);
+        if (kinds.isEmpty()) {
+            return;
+        }
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu("Add piece");
+        for (BlockKind k : kinds) {
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(k.display());
+            item.getAccessibleContext().setAccessibleName("Add " + k.display());
+            item.addActionListener(ev -> insertKind(k, parent, index));
+            menu.add(item);
+        }
+        int row = rowIndexOf(parent);
+        int y = row >= 0 ? layout.rows().get(row).y() + BlockLayout.ROW_H : 0;
+        menu.show(this, BlockLayout.INDENT, y);
+    }
+
+    // ---- accessible children (ledger 48): pieces visible to AT ----
+
+    @Override
+    public javax.accessibility.AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleBlockCanvas();
+        }
+        return accessibleContext;
+    }
+
+    private final class AccessibleBlockCanvas extends AccessibleJComponent {
+
+        @Override
+        public javax.accessibility.AccessibleRole getAccessibleRole() {
+            return javax.accessibility.AccessibleRole.LIST;
+        }
+
+        @Override
+        public int getAccessibleChildrenCount() {
+            return layout == null ? 0 : layout.rows().size();
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleChild(int i) {
+            if (layout == null || i < 0 || i >= layout.rows().size()) {
+                return null;
+            }
+            return new AccessiblePiece(layout.rows().get(i), i);
+        }
+    }
+
+    /** One piece as assistive tech sees it: kind, summary, position, selection. */
+    private final class AccessiblePiece extends javax.accessibility.AccessibleContext
+            implements javax.accessibility.Accessible {
+
+        private final BlockLayout.Row row;
+        private final int index;
+
+        AccessiblePiece(BlockLayout.Row row, int index) {
+            this.row = row;
+            this.index = index;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleContext getAccessibleContext() {
+            return this;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            Block b = row.block();
+            return b.kind().display() + " " + b.face()
+                    + ", level " + (row.depth() + 1);
+        }
+
+        @Override
+        public javax.accessibility.AccessibleRole getAccessibleRole() {
+            return javax.accessibility.AccessibleRole.LIST_ITEM;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleStateSet getAccessibleStateSet() {
+            javax.accessibility.AccessibleStateSet set = new javax.accessibility.AccessibleStateSet();
+            set.add(javax.accessibility.AccessibleState.VISIBLE);
+            set.add(javax.accessibility.AccessibleState.SELECTABLE);
+            if (row.block().id().equals(selectedId)) {
+                set.add(javax.accessibility.AccessibleState.SELECTED);
+            }
+            return set;
+        }
+
+        @Override
+        public int getAccessibleIndexInParent() {
+            return index;
+        }
+
+        @Override
+        public int getAccessibleChildrenCount() {
+            return 0;
+        }
+
+        @Override
+        public javax.accessibility.Accessible getAccessibleChild(int i) {
+            return null;
+        }
+
+        @Override
+        public java.util.Locale getLocale() {
+            return BlockCanvas.this.getLocale();
+        }
     }
 
     private static BlockKind kindOf(TransferHandler.TransferSupport support) {
