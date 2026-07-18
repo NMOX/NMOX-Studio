@@ -9,7 +9,7 @@
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (45+ languages via TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 72 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
 
 ## Download
 
@@ -40,20 +40,22 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 | ![Welcome screen](docs/images/welcome.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
 | *Welcome screen* | *Flip the rack (Tab) and patch task pipelines by cable* |
 | ![Editor](docs/images/editor.png) | ![API Studio](docs/images/api-studio.png) |
-| *Phosphor-on-dark editing, 45+ languages* | *API Studio — a live response, graded on its security headers* |
+| *Phosphor-on-dark editing, 70+ languages* | *API Studio — a live response, graded on its security headers* |
 
 ## Features
 
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 47 devices:
+build → test, with output scrolling on a phosphor monitor. 50 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
 QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
 files), HELM (run commands on your servers over ssh), an in-rack REPL,
-the ANVIL local EVM chain, the DYNAMO Grunt/Gulp runner, framework consoles
-for Phoenix, Next, Angular, and Laravel (ARTISAN), and more. Patches
+the ANVIL local EVM chain, the DYNAMO Grunt/Gulp runner, the ORACLE AI
+error explainer, the WAYPOINT monorepo-workspace selector, and framework
+consoles for Angular, Phoenix, Next.js, Vite, Astro, SvelteKit, Nuxt,
+and Laravel (ARTISAN), and more. Patches
 persist per project, ship as presets, and export to GitHub Actions.
 **[The full device reference](docs/devices.md)** is generated from the
 catalog itself — CI fails if it drifts.
@@ -162,7 +164,7 @@ script-tag era, no build step, served as-is.
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export
 included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
-more. 45+ languages with syntax highlighting (TextMate grammars through NetBeans
+more. 70+ languages with syntax highlighting (72 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
@@ -190,7 +192,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **53 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **71 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
@@ -338,7 +340,7 @@ you its **ssh command** from the context menu.
 CI runs real `npm install`/build/test/serve through the actual rack devices
 on every commit. Quitting the IDE reaps every child process — no orphaned
 dev servers, guaranteed and tested. Every commit also clears SpotBugs,
-find-sec-bugs, and **per-module JaCoCo coverage floors** on all eight code
+find-sec-bugs, and **per-module JaCoCo coverage floors** on all ten code
 modules — coverage measured on the *testable surface* (pure-Swing windows
 and dialogs are excluded by name with a written reason, not chased with
 brittle tests), so the floors mean what they say.
@@ -387,13 +389,13 @@ NMOX-Studio/
 ├── ui/                     # Main windows, Workbench home base, actions
 ├── editor/                 # Polyglot editor: TextMate grammars, LSP,
 │   │                       #   completion, outline, spellcheck
-│   ├── polyglot/          # 45+ language registration
+│   ├── polyglot/          # 70+ language registration
 │   ├── grammars/          # TextMate grammar loading via NetBeans CSL
 │   ├── lsp/               # Language Server Protocol client
 │   ├── javascript/        # Regex-aware JavaScript lexer
 │   └── outline/           # Structure navigator (⌘7)
 ├── rack/                   # The Task Rack: hardware-styled task devices
-│   ├── devices/           # The 45 rack devices
+│   ├── devices/           # The 50 rack devices
 │   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
 │   ├── docker/            # HARBOR device + Docker panel
 │   └── projectstudio/     # Project Studio templates

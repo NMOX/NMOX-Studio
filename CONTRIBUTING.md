@@ -4,16 +4,16 @@
 
 ## 🎯 Project Vision
 
-NMOX Studio is a NetBeans-based IDE optimized for modern web development. We're building incrementally from a working v0.1 foundation toward a comprehensive web development platform.
+NMOX Studio is a NetBeans Platform IDE for web development built around the Task Rack — 50 hardware-styled task devices wired with patch cables — plus a 70+-language polyglot editor, five studios (Block, API, DB, Contract/Web3, Infra Designer), 71 Learning Spaces, and installers for all three OSes.
 
-**Current Status:** v0.1 shipped with basic JavaScript/TypeScript support, NPM integration, and project templates.
-**Next Goal:** v0.2 "Polish & Performance" - professional-grade user experience.
+**Current Status:** shipping (v1.85.x line); every merge to `main` goes through a three-OS CI gate and each tag publishes a full release (installers, SBOM, in-app update-center catalog).
+**Where the project is heading:** read [docs/engineering/plan.md](docs/engineering/plan.md) — the living plan with the honest gaps and ranked opportunities.
 
 ## 🚀 Quick Start for Contributors
 
 ### Prerequisites
-- Java 17+
-- Maven 3.8+
+- Java 21+ (the project targets Java 21 LTS)
+- Maven 3.6+
 - Git 2.30+
 - Basic familiarity with NetBeans Platform (helpful but not required)
 
@@ -49,8 +49,8 @@ git push origin feature/your-contribution
 - For complex bugs, comment on the issue before starting
 
 #### ✨ New Features
-- Review our [v0.2 roadmap](docs/engineering/v0.2-action-plan.md) for planned features
-- Check [GitHub issues](docs/engineering/github-issues-template.md) for ready-to-implement features
+- Review [docs/engineering/plan.md](docs/engineering/plan.md) for the current plan and ranked opportunities
+- Check the [deferred-debt ledger](docs/engineering/tech-debt.md) for well-scoped open items with written context
 - For new ideas, create an issue for discussion first
 
 #### 📚 Documentation
@@ -130,12 +130,15 @@ mvn verify
 
 ### Module Structure
 ```
-core/           # Platform services, shared utilities
-tools/          # NPM integration, build tools, project support
-editor/         # File types, syntax highlighting, completion
-ui/             # User interface components
-project/        # Project templates and scaffolding
-application/    # Final packaging and distribution
+core/           # Platform services, shared SPI (Device SPI, ProjectAim/LiveServings)
+editor/         # 72 TextMate grammars, LSP, completion, Navigator outline, DAP debugging
+tools/          # NPM integration, WebProject/manifest detection (51 manifests)
+rack/           # The Task Rack: 50 devices, Project Studio, Block Studio, Learning Spaces
+apiclient/      # API Studio        dbstudio/  # DB Studio (6 engines)
+web3/           # Contract Studio   infra/     # Multi-cloud infra designer
+project/        # Project explorer, Workbench
+ui/             # Main window, Welcome, actions, Options, update center
+branding/       # Splash, icons    application/ # Final packaging and distribution
 ```
 
 ### Design Principles
@@ -167,25 +170,17 @@ Preferences prefs = NbPreferences.forModule(MyClass.class);
 prefs.put("key", "value");
 ```
 
-## 📊 Priority Areas for v0.2
+## 📊 Priority Areas
 
-### High Impact (Great First Contributions)
-1. **JavaScript Syntax Highlighting** - Core developer experience
-2. **NPM Error Message Improvement** - User-friendly error handling
-3. **UI Performance** - Make operations non-blocking
-4. **Input Validation** - Prevent user errors in project creation
+### Great First Contributions
+1. **A new language vertical** — grammar + comment/completion registration + device lanes; the recipe is repeated ~70 times in-tree, so examples abound
+2. **A new Learning Space** — pure JSON in `learn-catalog.json` (or a drop-in file under `~/.nmox/learn-catalog.d/`); see [docs/learning-spaces.md](docs/learning-spaces.md)
+3. **A third-party rack device** — build against the frozen Device SPI without touching this repo; see [docs/device-spi.md](docs/device-spi.md)
 
-### Medium Impact (Good Follow-up Contributions)
-1. **Settings System** - User customization options
-2. **Custom File Icons** - Professional appearance
-3. **Template Improvements** - Better project scaffolding
-4. **Test Coverage** - Quality assurance
-
-### Documentation Needs
-1. **User Guide** - How to use NMOX Studio effectively
-2. **API Documentation** - For plugin developers
-3. **Troubleshooting Guide** - Common issues and solutions
-4. **Video Tutorials** - Getting started demos
+### Larger Contributions
+1. **Open ledger items** — [docs/engineering/tech-debt.md](docs/engineering/tech-debt.md) records every deliberately deferred item with its reasons
+2. **i18n** — ~450 user-visible strings are hardcoded (ledger 24), a well-scoped sweep for someone who wants breadth
+3. **Test coverage** — floors are gated per module; raising one is always welcome
 
 ## 🔍 Code Review Process
 
@@ -295,9 +290,9 @@ void shouldCreateReactProjectWithProperStructure() {
 ### Reporting Issues
 ```markdown
 **Environment**
-- NMOX Studio version: v0.1
-- Operating System: macOS 14.1
-- Java version: OpenJDK 17.0.2
+- NMOX Studio version: (Help ▸ About shows the stamped version)
+- Operating System: e.g. macOS 15
+- Java version: bundled runtime, or your JDK 21+ for source builds
 
 **Description**
 Clear description of the issue.
@@ -342,9 +337,9 @@ All contributors are recognized in:
 
 ### Essential Reading
 - [NetBeans Platform Developer Guide](https://netbeans.apache.org/kb/docs/platform/)
-- [v0.2 Action Plan](docs/engineering/v0.2-action-plan.md)
-- [Technical Debt Tracking](docs/hack/technical-debt.md)
-- [Development Setup](docs/engineering/development-setup.md)
+- [The current plan](docs/engineering/plan.md)
+- [The deferred-debt ledger](docs/engineering/tech-debt.md)
+- [The user guide](docs/user-guide.md)
 
 ### Code Examples
 - [NPM Service Implementation](tools/src/main/java/org/nmox/studio/tools/npm/NpmService.java)
