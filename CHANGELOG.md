@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.84.0] - 2026-07-18
+
+### Block Studio v4 — multi-component workspaces
+
+One `.nmoxblocks.json` now holds any number of components:
+
+- **`BlockWorkspace`** (pure core): an ordered component list with one
+  active slot. v1 single-doc files load verbatim as a one-component
+  workspace and the next save writes the v2 shape (`version: 2`,
+  `active`, `components: [...]`) — forward-only migration, the wrap
+  branch mutation-proven. Every doc still loads through
+  `BlockDoc.fromJson`, so the interlock law re-checks on load for free.
+  The workspace is never empty (removing the last component leaves a
+  fresh doc) and `add()` mints unique tags (`my-widget-2`, ...).
+- **Toolbar switcher**: a combo of the workspace's tags plus **+** /
+  **−** (remove confirms first and never touches a saved
+  `src/components` file). A rename via F2 renames the switcher row.
+- **A switch is a patch boundary** (the v1.50 law): pending edits
+  force-save first and the undo history starts fresh — ⌘Z can never
+  peel one component's edits onto another (mutation-proven). An undo
+  restore swaps the workspace's active slot too, so the next save
+  writes what you see.
+- **Open Component… lands in the workspace**: a parsed file replaces
+  the same-tag component in place (one undo step back to what it
+  replaced) or joins as a new component; either way it becomes active.
+- **Preview follows the active component**, and the status line says
+  where you are (`5 pieces → my-widget.js · component 2/3`).
+- Docs truth: Block Studio finally enters the user guide (§6, the
+  studio had been absent since v1.78.0) and the README feature list.
+
+Tests: `BlockWorkspaceTest` (6, pure core), `BlockMultiComponentTest`
+(3, live TC: v1-file migration + v2 persist, switch-clears-undo +
+whole-workspace save, import replace-vs-append). Three mutations
+proven fatal: the v1-wrap branch, the switch's `undo.clear()`, the
+unique-tag loop.
+
 ## [1.83.0] - 2026-07-17
 
 ### Block Studio without a mouse (ledger 48 closed)

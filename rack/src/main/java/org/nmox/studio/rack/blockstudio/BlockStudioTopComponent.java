@@ -90,6 +90,16 @@ public final class BlockStudioTopComponent extends TopComponent {
     BlockDoc currentDoc() {
         return canvasDoc();
     }
+
+    /** Test seam: the loaded workspace (EDT-confined in production). */
+    BlockWorkspace currentWorkspace() {
+        return workspace;
+    }
+
+    /** Test seam: the undo stack's depth (the patch-boundary law). */
+    int undoDepth() {
+        return undo.size();
+    }
     private static final int DEBOUNCE_MS = 150;
     private static final int UNDO_CAP = 100;
 
@@ -122,6 +132,12 @@ public final class BlockStudioTopComponent extends TopComponent {
     private volatile BlockCodegen.Result lastResult;
     private boolean loading;
     private boolean shownOnce;
+
+    // ---- multi-component workspace (v4) ----
+    private BlockWorkspace workspace;
+    private final javax.swing.JComboBox<String> componentCombo = new javax.swing.JComboBox<>();
+    /** True while code (not the user) is rebuilding the combo's items. */
+    private boolean comboRebuilding;
 
     public BlockStudioTopComponent() {
         setName(Bundle.CTL_BlockStudioTopComponent());
@@ -259,7 +275,39 @@ public final class BlockStudioTopComponent extends TopComponent {
         previewBtn.setToolTipText("Serves the component on localhost (in-memory, refresh"
                 + " after edits) and opens the browser; Stop deregisters the serving");
 
+        componentCombo.getAccessibleContext().setAccessibleName("Component switcher");
+        componentCombo.setToolTipText("The workspace's components — switching saves first"
+                + " and starts a fresh undo history");
+        componentCombo.addActionListener(e -> {
+            if (!comboRebuilding && workspace != null) {
+                int picked = componentCombo.getSelectedIndex();
+                if (picked >= 0 && picked != workspace.active()) {
+                    switchToComponent(picked);
+                }
+            }
+        });
+        JButton addComponentBtn = new JButton(new AbstractAction("+") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addComponent();
+            }
+        });
+        addComponentBtn.getAccessibleContext().setAccessibleName("New component");
+        addComponentBtn.setToolTipText("Adds a fresh component to this workspace");
+        JButton removeComponentBtn = new JButton(new AbstractAction("−") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeComponent();
+            }
+        });
+        removeComponentBtn.getAccessibleContext().setAccessibleName("Delete component");
+        removeComponentBtn.setToolTipText("Removes the current component from the workspace"
+                + " (asks first; a saved src/components file is untouched)");
+
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        toolbar.add(componentCombo);
+        toolbar.add(addComponentBtn);
+        toolbar.add(removeComponentBtn);
         toolbar.add(undoBtn);
         toolbar.add(openBtn);
         toolbar.add(saveBtn);
@@ -341,6 +389,8 @@ public final class BlockStudioTopComponent extends TopComponent {
         lastResult = null;
         org.nmox.studio.rack.blockstudio.search.BlockSearchProvider.clear();
         if (dir == null) {
+            workspace = null;
+            refreshComponentCombo();
             canvas.setDoc(null);
             codePane.setText("");
             setStatus("Aim a project to start composing");
@@ -348,7 +398,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
         loading = true;
         RP.post(() -> {
-            BlockDoc loaded;
+            BlockWorkspace loaded;
             try {
                 loaded = BlockIO.load(dir);
             } catch (IOException | RuntimeException ex) {
@@ -371,23 +421,25 @@ public final class BlockStudioTopComponent extends TopComponent {
                         "Could not read " + BlockIO.WORKSPACE_FILE + ": "
                         + ex.getMessage() + suffix));
             }
-            BlockDoc doc = loaded != null ? loaded : new BlockDoc();
+            BlockWorkspace ws = loaded != null ? loaded : new BlockWorkspace();
             SwingUtilities.invokeLater(() -> {
                 undo.clear();
-                canvas.setDoc(doc);
+                workspace = ws;
+                canvas.setDoc(ws.activeDoc());
+                refreshComponentCombo();
                 loading = false;
                 regenerate();
             });
         });
     }
 
-    private void persist() {
+    void persist() {
         File dir = projectDir;
-        BlockDoc doc = canvas.doc();
-        if (dir == null || doc == null || loading) {
+        BlockWorkspace ws = workspace;
+        if (dir == null || ws == null || loading) {
             return;
         }
-        JSONObject json = doc.toJson();
+        JSONObject json = ws.toJson();
         RP.post(() -> {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(
@@ -502,6 +554,79 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
     }
 
+    // ---- multi-component workspace (v4) ----
+
+    /**
+     * Switches the canvas to another component. A switch is a patch
+     * boundary (the v1.50 law): pending edits force-save first and the
+     * undo history starts fresh — ⌘Z must never peel a different
+     * component's edits onto this one.
+     */
+    void switchToComponent(int index) {
+        if (workspace == null || !workspace.setActive(index)) {
+            return;
+        }
+        if (saver.isRunning()) {
+            saver.stop();
+        }
+        persist();
+        undo.clear();
+        canvas.setDoc(workspace.activeDoc());
+        refreshComponentCombo();
+        regenerate();
+    }
+
+    void addComponent() {
+        if (workspace == null) {
+            setStatus("Aim a project first");
+            return;
+        }
+        BlockDoc fresh = workspace.add();
+        undo.clear();
+        canvas.setDoc(fresh);
+        refreshComponentCombo();
+        regenerate();
+        saver.restart();
+    }
+
+    private void removeComponent() {
+        if (workspace == null) {
+            setStatus("Aim a project first");
+            return;
+        }
+        String tag = workspace.activeDoc().root().param("tag");
+        NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(
+                "Remove component <" + tag + "> from this workspace? A saved "
+                + "src/components/" + tag + ".js file is not touched.",
+                "Delete Component", NotifyDescriptor.OK_CANCEL_OPTION);
+        if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        workspace.remove(workspace.active());
+        undo.clear();
+        canvas.setDoc(workspace.activeDoc());
+        refreshComponentCombo();
+        regenerate();
+        saver.restart();
+    }
+
+    /** Rebuilds the switcher's items from the workspace's tags. */
+    private void refreshComponentCombo() {
+        comboRebuilding = true;
+        try {
+            componentCombo.removeAllItems();
+            if (workspace != null) {
+                for (String tag : workspace.tags()) {
+                    componentCombo.addItem("<" + tag + ">");
+                }
+                componentCombo.setSelectedIndex(workspace.active());
+            }
+            componentCombo.setEnabled(workspace != null);
+        } finally {
+            comboRebuilding = false;
+        }
+    }
+
     // ---- undo (JSON snapshots) ----
 
     private void pushUndo() {
@@ -519,7 +644,14 @@ public final class BlockStudioTopComponent extends TopComponent {
             setStatus("Nothing to undo");
             return;
         }
-        canvas.setDoc(BlockDoc.fromJson(new JSONObject(undo.pop())));
+        BlockDoc restored = BlockDoc.fromJson(new JSONObject(undo.pop()));
+        if (workspace != null) {
+            // the workspace holds the doc the canvas edits — an undo
+            // restore must swap the active slot too, or the next persist
+            // would write the un-undone doc back to disk
+            workspace.replaceActive(restored);
+        }
+        canvas.setDoc(restored);
         regen.restart();
         saver.restart();
     }
@@ -543,7 +675,19 @@ public final class BlockStudioTopComponent extends TopComponent {
         lastResult = BlockCodegen.generate(doc);
         codePane.setText(lastResult.code());
         codePane.setCaretPosition(0);
-        setStatus(doc.preorder().size() + " pieces → " + doc.root().param("tag") + ".js");
+        String suffix = workspace != null && workspace.components().size() > 1
+                ? " · component " + (workspace.active() + 1) + "/" + workspace.components().size()
+                : "";
+        setStatus(doc.preorder().size() + " pieces → " + doc.root().param("tag") + ".js" + suffix);
+        // a tag rename (F2 on the root) must rename the switcher row too
+        if (workspace != null) {
+            String label = "<" + doc.root().param("tag") + ">";
+            int at = workspace.active();
+            if (at < componentCombo.getItemCount()
+                    && !label.equals(componentCombo.getItemAt(at))) {
+                refreshComponentCombo();
+            }
+        }
         org.nmox.studio.rack.blockstudio.search.BlockSearchProvider
                 .publish(doc.root().param("tag"), doc.preorder().size());
         highlight(canvas.selectedId() == null ? null : doc.find(canvas.selectedId()));
@@ -672,14 +816,7 @@ public final class BlockStudioTopComponent extends TopComponent {
                 if (!problems.isEmpty()) {
                     throw new BlockParser.ParseException(problems.get(0));
                 }
-                SwingUtilities.invokeLater(() -> {
-                    pushUndo();
-                    canvas.setDoc(parsed);
-                    regenerate();
-                    persist();
-                    setStatus("Opened " + picked.getName() + " — "
-                            + (parsed.preorder().size()) + " pieces");
-                });
+                SwingUtilities.invokeLater(() -> importParsed(parsed, picked.getName()));
             } catch (BlockParser.ParseException ex) {
                 SwingUtilities.invokeLater(() -> {
                     setStatus("Not a Block Studio component: " + ex.getMessage());
@@ -694,6 +831,47 @@ public final class BlockStudioTopComponent extends TopComponent {
                         setStatus("Open failed: " + ex.getMessage()));
             }
         });
+    }
+
+    /**
+     * Lands a parsed component in the workspace (v4): a component whose
+     * tag already exists is replaced in place (its undo snapshot taken
+     * first); a new tag joins as a new component. Either way the import
+     * becomes the active component. Package-private: tests drive it
+     * without the file chooser.
+     */
+    void importParsed(BlockDoc parsed, String sourceName) {
+        if (workspace == null) {
+            setStatus("Aim a project first");
+            return;
+        }
+        String tag = parsed.root().param("tag");
+        int existing = workspace.indexOfTag(tag);
+        if (existing >= 0) {
+            workspace.setActive(existing);
+            undo.clear();
+            pushUndoOf(workspace.activeDoc());
+            workspace.replaceActive(parsed);
+        } else {
+            workspace.add();
+            workspace.replaceActive(parsed);
+            undo.clear();
+        }
+        canvas.setDoc(parsed);
+        refreshComponentCombo();
+        regenerate();
+        persist();
+        setStatus("Opened " + sourceName + " — " + parsed.preorder().size() + " pieces"
+                + (existing >= 0 ? " (replaced <" + tag + ">)" : " (new component)"));
+    }
+
+    private void pushUndoOf(BlockDoc doc) {
+        if (doc != null) {
+            if (undo.size() >= UNDO_CAP) {
+                undo.removeLast();
+            }
+            undo.push(doc.toJson().toString());
+        }
     }
 
     private void setStatus(String s) {

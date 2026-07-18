@@ -340,6 +340,31 @@ shows up in the Projects and Files windows too), so every project-sensitive
 verb has real context without selecting anything first. In-editor change
 stripes appear in the gutter as you edit a tracked file.
 
+### Block Studio (⌥⌘5)
+
+A Scratch-like composer for real Web Components. Drag pieces from the
+palette — elements, text, state, props, slots, timers, event handlers,
+actions — and they snap together only where the interlock rules allow;
+the real, runnable custom-element code appears beside the canvas as you
+build, and clicking any piece highlights exactly the lines it produced.
+The whole canvas works without a mouse too: arrows traverse and re-order
+pieces, **Enter** offers exactly the legal pieces for the selection,
+**F2** edits parameters, and every piece announces itself to screen
+readers.
+
+A workspace holds **any number of components** — the toolbar switcher
+jumps between them, **+** adds one, **−** removes one (your saved file
+under `src/components/` is never touched). **Save Component** writes
+`src/components/<tag>.js` — and refuses to overwrite any file Block
+Studio didn't generate. **Open Component…** goes the other way: a
+generated file (even one you hand-edited within its shapes) parses back
+into blocks, replacing the same-tag component or joining the workspace
+as a new one. **Preview** serves the current component live on
+localhost (it shows up in ⌘I and the ⇄ serving chip like any dev
+server), and ⌘Z undoes any structural edit. The block trees persist in
+`.nmoxblocks.json` beside your project — commit it and a teammate gets
+your canvas.
+
 ### API Studio (⌥⌘8)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
 

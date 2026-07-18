@@ -77,7 +77,7 @@ public class BlockSearchProvider implements SearchProvider {
         try {
             File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir != null && BlockIO.workspaceFile(dir).isFile()) {
-                BlockDoc doc = BlockIO.load(dir);
+                BlockDoc doc = BlockIO.load(dir).activeDoc();
                 return new Snapshot(doc.root().param("tag"), doc.preorder().size());
             }
         } catch (Exception ignored) {
