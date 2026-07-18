@@ -76,7 +76,15 @@ public enum BlockKind {
     /** Dispatch a CustomEvent from the component (bubbles, composed). */
     DISPATCH("Dispatch event", Category.LOGIC, List.of(
             new Param("event", "notify"),
-            new Param("detail", "")));
+            new Param("detail", ""))),
+
+    // ---- v3 (v1.81.0): appended — palette order is append-only ----
+
+    /** An observed HTML attribute; {@name} interpolates it and the
+     *  component re-renders whenever the attribute changes. */
+    PROP("Prop", Category.STATE, List.of(
+            new Param("name", "label"),
+            new Param("default", "")));
 
     /** Palette families; each paints in its own hue. */
     public enum Category { STRUCTURE, CONTENT, STATE, LOGIC }

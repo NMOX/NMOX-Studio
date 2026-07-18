@@ -40,6 +40,8 @@ public final class BlockCodegen {
     private static final Pattern ATTR_NAME = Pattern.compile("[a-zA-Z-][a-zA-Z0-9-]*");
     private static final Pattern OP = Pattern.compile("==|!=|>|<|>=|<=");
     private static final Pattern REF = Pattern.compile("\\{([a-z_][A-Za-z0-9_]*)}");
+    private static final Pattern PROP_REF = Pattern.compile("\\{@([a-z][a-z0-9-]*)}");
+    private static final Pattern PROP_NAME = Pattern.compile("[a-z][a-z0-9-]*");
 
     /** Generated code + per-block [start,end) character ranges. */
     public record Result(String code, Map<String, int[]> ranges) { }
@@ -64,6 +66,13 @@ public final class BlockCodegen {
                 case STATE -> {
                     if (!IDENT.matcher(b.param("name")).matches()) {
                         problems.add("State name \"" + b.param("name") + "\" is not a valid identifier");
+                    }
+                }
+                case PROP -> {
+                    if (!PROP_NAME.matcher(b.param("name")).matches()
+                            || b.param("name").contains("--") || b.param("name").endsWith("-")) {
+                        problems.add("Prop name \"" + b.param("name")
+                                + "\" must be a lowercase attribute name (dashes allowed), e.g. label or data-role");
                     }
                 }
                 case ELEMENT -> {
@@ -125,6 +134,21 @@ public final class BlockCodegen {
                 && tag.contains("-") && !tag.contains("--") && !tag.endsWith("-");
     }
 
+    private static List<String> propNames(BlockDoc doc) {
+        List<String> names = new ArrayList<>();
+        for (Block b : doc.root().children()) {
+            if (b.kind() == BlockKind.PROP) {
+                names.add(b.param("name"));
+            }
+        }
+        return names;
+    }
+
+    /** label → #prop_label(); data-role → #prop_data_role(). */
+    static String propAccessor(String name) {
+        return "#prop_" + name.replace('-', '_');
+    }
+
     private static List<String> stateNames(BlockDoc doc) {
         List<String> names = new ArrayList<>();
         for (Block b : doc.root().children()) {
@@ -143,6 +167,7 @@ public final class BlockCodegen {
         }
         Emitter e = new Emitter();
         List<String> states = stateNames(doc);
+        List<String> props = propNames(doc);
         String tag = doc.root().param("tag");
         String cls = className(tag);
 
@@ -157,24 +182,48 @@ public final class BlockCodegen {
                 e.close(b);
             }
         }
+        for (Block b : doc.root().children()) {
+            if (b.kind() == BlockKind.PROP) {
+                e.open(b);
+                e.line("  " + propAccessor(b.param("name")) + "() { return this.getAttribute('"
+                        + b.param("name") + "') ?? " + literal(b.param("default")) + "; }");
+                e.close(b);
+            }
+        }
+        if (!props.isEmpty()) {
+            StringBuilder list = new StringBuilder();
+            for (String p : props) {
+                if (list.length() > 0) {
+                    list.append(", ");
+                }
+                list.append("'").append(p).append("'");
+            }
+            e.line("  static get observedAttributes() { return [" + list + "]; }");
+        }
         e.line("");
         e.line("  constructor() {");
         e.line("    super();");
         e.line("    this.attachShadow({ mode: 'open' });");
         e.line("    this.render();");
         e.line("  }");
+        if (!props.isEmpty()) {
+            e.line("");
+            e.line("  attributeChangedCallback() {");
+            e.line("    this.render();");
+            e.line("  }");
+        }
         e.line("");
         e.line("  render() {");
         e.line("    this.shadowRoot.innerHTML = `");
         for (Block b : doc.root().children()) {
             if (b.kind() != BlockKind.STATE) {
-                emitNode(e, b, states, "      ");
+                emitNode(e, b, states, props, "      ");
             }
         }
         e.line("    `;");
         for (Block b : doc.preorder()) {
             if (b.kind() == BlockKind.ON_EVENT) {
-                emitListener(e, b, doc, states);
+                emitListener(e, b, doc, states, props);
             }
         }
         e.line("  }");
@@ -189,7 +238,7 @@ public final class BlockCodegen {
                 e.line("    this._t" + i + " = setInterval(() => {");
                 // a timer has no listening element — TOGGLE_CLASS et al.
                 // act on the host component itself
-                boolean rerender = emitActions(e, t.children(), "this", states, "      ");
+                boolean rerender = emitActions(e, t.children(), "this", states, props, "      ");
                 if (rerender) {
                     e.line("      this.render();");
                 }
@@ -225,18 +274,18 @@ public final class BlockCodegen {
 
     // ---- template ----
 
-    private static void emitNode(Emitter e, Block b, List<String> states, String indent) {
+    private static void emitNode(Emitter e, Block b, List<String> states, List<String> props, String indent) {
         switch (b.kind()) {
             case TEXT -> {
                 e.open(b);
-                e.line(indent + interpolate(b.param("text"), states));
+                e.line(indent + interpolate(b.param("text"), states, props));
                 e.close(b);
             }
             case SLOT -> {
                 e.open(b);
                 String slotName = b.param("name");
                 e.line(indent + (slotName.isEmpty() ? "<slot></slot>"
-                        : "<slot name=\"" + attr(slotName, states) + "\"></slot>"));
+                        : "<slot name=\"" + attr(slotName, states, props) + "\"></slot>"));
                 e.close(b);
             }
             case ELEMENT -> {
@@ -248,9 +297,9 @@ public final class BlockCodegen {
                 for (Block c : b.children()) {
                     if (c.kind() == BlockKind.SET_ATTR) {
                         openTag.append(" ").append(c.param("name"))
-                                .append("=\"").append(attr(c.param("value"), states)).append("\"");
+                                .append("=\"").append(attr(c.param("value"), states, props)).append("\"");
                     } else if (c.kind() == BlockKind.STYLE) {
-                        openTag.append(" style=\"").append(attr(c.param("css"), states)).append("\"");
+                        openTag.append(" style=\"").append(attr(c.param("css"), states, props)).append("\"");
                     }
                 }
                 openTag.append(">");
@@ -258,7 +307,7 @@ public final class BlockCodegen {
                 for (Block c : b.children()) {
                     if (c.kind() == BlockKind.ELEMENT || c.kind() == BlockKind.TEXT
                             || c.kind() == BlockKind.SLOT) {
-                        emitNode(e, c, states, indent + "  ");
+                        emitNode(e, c, states, props, indent + "  ");
                     }
                 }
                 e.line(indent + "</" + b.param("tag") + ">");
@@ -274,14 +323,14 @@ public final class BlockCodegen {
 
     // ---- listeners ----
 
-    private static void emitListener(Emitter e, Block onEvent, BlockDoc doc, List<String> states) {
+    private static void emitListener(Emitter e, Block onEvent, BlockDoc doc, List<String> states, List<String> props) {
         Block host = doc.parentOf(onEvent.id());
         e.open(onEvent);
         String var = onEvent.id();
         e.line("    const " + var + " = this.shadowRoot.querySelector('[data-b=\""
                 + host.id() + "\"]');");
         e.line("    " + var + ".addEventListener('" + onEvent.param("event") + "', () => {");
-        boolean rerender = emitActions(e, onEvent.children(), var, states, "      ");
+        boolean rerender = emitActions(e, onEvent.children(), var, states, props, "      ");
         if (rerender) {
             e.line("      this.render();");
         }
@@ -291,14 +340,14 @@ public final class BlockCodegen {
 
     /** Emits actions; true when any SET_STATE ran (a re-render is due). */
     private static boolean emitActions(Emitter e, List<Block> actions, String hostVar,
-            List<String> states, String indent) {
+            List<String> states, List<String> props, String indent) {
         boolean rerender = false;
         for (Block a : actions) {
             switch (a.kind()) {
                 case SET_STATE -> {
                     e.open(a);
                     e.line(indent + "this.#" + a.param("name") + " = "
-                            + expr(a.param("expr"), states) + ";");
+                            + expr(a.param("expr"), states, props) + ";");
                     e.close(a);
                     rerender = true;
                 }
@@ -309,14 +358,14 @@ public final class BlockCodegen {
                 }
                 case LOG -> {
                     e.open(a);
-                    e.line(indent + "console.log(`" + tpl(a.param("message"), states) + "`);");
+                    e.line(indent + "console.log(`" + tpl(a.param("message"), states, props) + "`);");
                     e.close(a);
                 }
                 case IF_STATE -> {
                     e.open(a);
                     e.line(indent + "if (this.#" + a.param("name") + " " + a.param("op") + " "
                             + literal(a.param("value")) + ") {");
-                    rerender |= emitActions(e, a.children(), hostVar, states, indent + "  ");
+                    rerender |= emitActions(e, a.children(), hostVar, states, props, indent + "  ");
                     e.line(indent + "}");
                     e.close(a);
                 }
@@ -324,7 +373,7 @@ public final class BlockCodegen {
                     e.open(a);
                     e.line(indent + "this.dispatchEvent(new CustomEvent('" + a.param("event")
                             + "', { bubbles: true, composed: true, detail: `"
-                            + tpl(a.param("detail"), states) + "` }));");
+                            + tpl(a.param("detail"), states, props) + "` }));");
                     e.close(a);
                 }
                 default -> { }
@@ -335,30 +384,47 @@ public final class BlockCodegen {
 
     // ---- escaping & interpolation (parameters can never break out) ----
 
-    /** Template-literal body: escape, then {state} → ${this.#state}. */
-    static String interpolate(String text, List<String> states) {
-        return refReplace(tplEscape(text), states, "${this.#", "}");
+    /** Template-literal body: escape, then {state}/{@prop} interpolate. */
+    static String interpolate(String text, List<String> states, List<String> props) {
+        return propReplace(refReplace(tplEscape(text), states, "${this.#", "}"),
+                props, "${this.", "()}");
     }
 
     /** Attribute value inside the template literal: also quote-safe. */
-    static String attr(String text, List<String> states) {
-        return refReplace(tplEscape(text).replace("\"", "&quot;"), states, "${this.#", "}");
+    static String attr(String text, List<String> states, List<String> props) {
+        return propReplace(refReplace(tplEscape(text).replace("\"", "&quot;"),
+                states, "${this.#", "}"), props, "${this.", "()}");
     }
 
     /** console.log template body. */
-    static String tpl(String text, List<String> states) {
-        return refReplace(tplEscape(text), states, "${this.#", "}");
+    static String tpl(String text, List<String> states, List<String> props) {
+        return propReplace(refReplace(tplEscape(text), states, "${this.#", "}"),
+                props, "${this.", "()}");
     }
 
-    /** Right-hand expression: {state} → this.#state, rest validated. */
-    static String expr(String raw, List<String> states) {
-        String replaced = refReplace(raw, states, "this.#", "");
+    /** Right-hand expression: {state}/{@prop} read fields, rest validated. */
+    static String expr(String raw, List<String> states, List<String> props) {
+        String replaced = propReplace(refReplace(raw, states, "this.#", ""),
+                props, "this.", "()");
         // whatever remains outside references must be arithmetic-safe
-        String residue = REF.matcher(raw).replaceAll("0");
+        String residue = PROP_REF.matcher(REF.matcher(raw).replaceAll("0")).replaceAll("0");
         if (!residue.matches("[0-9+\\-*/%().'\\sA-Za-z\"_]*") || residue.contains("`")) {
             throw new IllegalArgumentException("Expression \"" + raw + "\" contains unsupported characters");
         }
         return replaced;
+    }
+
+    /** {@name} → pre + #prop_name + post for DECLARED props only. */
+    private static String propReplace(String s, List<String> props, String pre, String post) {
+        Matcher m = PROP_REF.matcher(s);
+        StringBuilder sb = new StringBuilder();
+        while (m.find()) {
+            String name = m.group(1);
+            m.appendReplacement(sb, Matcher.quoteReplacement(
+                    props.contains(name) ? pre + propAccessor(name) + post : m.group(0)));
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     /** Initial values / comparison literals: number or quoted string. */
