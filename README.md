@@ -217,6 +217,18 @@ What's-new link. And once a day the studio quietly checks GitHub for
 a newer release and mentions it exactly once — dev builds never
 check, offline never nags, one preference turns it off.
 
+### 🧩 Block Studio
+A Scratch-like composer (⌥⌘5) that builds **real Web Components** from
+interlocking pieces: state, props, slots, timers, event handlers — snap
+them together (illegal nestings simply refuse) and the runnable
+custom-element code appears live beside the canvas, each piece mapped to
+the exact lines it generates. Fully keyboard-operable and
+screen-reader-visible. A workspace holds many components with a
+toolbar switcher; **Save Component** writes `src/components/<tag>.js`
+(never clobbering a file it didn't generate), **Open Component…**
+parses a generated file back into blocks, and **Preview** serves the
+component live on localhost.
+
 ### 🧪 API Studio
 A Postman-style tab (Window → API Studio) for building, saving, sending,
 and **testing** HTTP requests: collections of requests, a builder with

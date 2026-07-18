@@ -27,17 +27,21 @@ public final class BlockIO {
         return new File(projectDir, WORKSPACE_FILE);
     }
 
-    /** Loads, or null when absent; a corrupt file throws (caller keeps .bak). */
-    public static BlockDoc load(File projectDir) throws IOException {
+    /**
+     * Loads the workspace (v1 single-doc files wrap as one component —
+     * see {@link BlockWorkspace#fromJson}), or null when absent; a
+     * corrupt file throws (caller keeps .bak).
+     */
+    public static BlockWorkspace load(File projectDir) throws IOException {
         File f = workspaceFile(projectDir);
         if (!f.isFile()) {
             return null;
         }
-        return BlockDoc.fromJson(new JSONObject(Files.readString(f.toPath())));
+        return BlockWorkspace.fromJson(new JSONObject(Files.readString(f.toPath())));
     }
 
-    public static void save(File projectDir, BlockDoc doc) throws IOException {
-        AtomicFiles.writeString(workspaceFile(projectDir).toPath(), doc.toJson().toString(2) + "\n");
+    public static void save(File projectDir, BlockWorkspace ws) throws IOException {
+        AtomicFiles.writeString(workspaceFile(projectDir).toPath(), ws.toJson().toString(2) + "\n");
     }
 
     /** Where the generated component goes: src/components/&lt;tag&gt;.js. */

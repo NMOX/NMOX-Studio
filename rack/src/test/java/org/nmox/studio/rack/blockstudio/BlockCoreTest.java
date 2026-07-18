@@ -346,8 +346,10 @@ class BlockCoreTest {
     void ioAndNeverClobber(@TempDir Path dir) throws Exception {
         File project = dir.toFile();
         BlockDoc doc = counter();
-        BlockIO.save(project, doc);
-        BlockDoc back = BlockIO.load(project);
+        BlockWorkspace ws = new BlockWorkspace();
+        ws.replaceActive(doc);
+        BlockIO.save(project, ws);
+        BlockDoc back = BlockIO.load(project).activeDoc();
         assertThat(back.toJson().toString()).isEqualTo(doc.toJson().toString());
         assertThat(BlockIO.load(Files.createDirectory(dir.resolve("empty")).toFile())).isNull();
 
