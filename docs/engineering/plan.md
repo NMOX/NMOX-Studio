@@ -21,7 +21,7 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 NMOX Studio is a shipping NetBeans RCP IDE (v1.85.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
-whose identity is the **Reason-style task rack**: 50 hardware-styled devices
+whose identity is the **Reason-style task rack**: 51 hardware-styled devices
 wired with patch cables, backed by real process execution, session
 resurrection, CI export, and since v1.55.0 a **frozen public Device SPI**
 third parties extend it through. Around it: a **72-grammar polyglot editor**
@@ -83,7 +83,7 @@ Since the v1.36.0 senior-review capstone, five things graduated from
 - **It's usable without a mouse or a screen.** The widget library speaks
   Swing accessibility (v1.41.0): SLIDER knobs with keyboard arrows and focus
   rings, Space/Enter buttons, state-announcing LEDs/LCDs/VU meters; every
-  control on every device (46 then, 50 today) exposes an accessible name,
+  control on every device (46 then, 51 today) exposes an accessible name,
   CI-gated by DeviceContractTest's name law (59 controls fixed to get
   there); the Block Studio canvas joined the law in v1.83.0.
 - **It respects the project's own toolchain.** The corepack pin or

@@ -52,14 +52,14 @@ class DeviceCatalogTest {
     }
 
     @Test
-    @DisplayName("exactly the fourteen step kinds export to CI — the exporter's old hardcoded set, now the catalog's knowledge")
+    @DisplayName("exactly the pinned step kinds export to CI — the exporter's old hardcoded set, now the catalog's knowledge")
     void ciStepCapabilityIsExact() {
         List<String> ciSteps = DeviceCatalog.all().stream()
                 .filter(DeviceCatalog.Entry::ciStep)
                 .map(DeviceCatalog.Entry::id)
                 .toList();
         assertThat(ciSteps).containsExactlyInAnyOrder(
-                "package-manager", "build", "test", "typecheck", "lint", "format",
+                "package-manager", "build", "test", "e2e", "typecheck", "lint", "format",
                 "npm-script", "run", "angular", "nextjs", "vite", "astro", "sveltekit", "nuxt", "phoenix", "audit",
                 "database", "cmd");
     }

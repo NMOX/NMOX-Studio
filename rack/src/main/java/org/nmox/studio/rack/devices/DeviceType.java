@@ -59,7 +59,8 @@ public enum DeviceType {
     LOCAL_CHAIN("anvil", "ANVIL", "Local EVM chain — anvil devnet with unlocked accounts", new Color(0x8A, 0x9B, 0xA8), AnvilDevice::new),
     GAS_BUDGET("gas-budget", "GOVERNOR", "Gas budget gate — forge snapshot --check", new Color(0xC9, 0xA2, 0x27), GovernorDevice::new),
     TASK_RUNNER("task-runner", "DYNAMO", "Grunt/Gulp task runner — dial a task, GO", new Color(210, 150, 50), DynamoDevice::new),
-    ORACLE("oracle", "ORACLE", "Error Explainer — AI explains the last failed run, on a button press", new Color(120, 90, 220), OracleDevice::new);
+    ORACLE("oracle", "ORACLE", "Error Explainer — AI explains the last failed run, on a button press", new Color(120, 90, 220), OracleDevice::new),
+    E2E("e2e", "SPECTER", "E2E Console — Playwright/Cypress run, served report, codegen recorder", new Color(0x2E, 0xAD, 0x33), SpecterDevice::new);
 
     private final String id;
     private final String title;
@@ -112,7 +113,7 @@ public enum DeviceType {
         return switch (this) {
             case MASTER, REFLEX, JOIN, TEMPO, RUN, NPM_SCRIPT, TASK_RUNNER, CMD -> PaletteCategory.AUTOMATE;
             case SSH -> PaletteCategory.SHIP;
-            case PACKAGE_MANAGER, BUILD, TEST, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
+            case PACKAGE_MANAGER, BUILD, TEST, E2E, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE, LOCAL_CHAIN -> PaletteCategory.SERVE;
             case ANGULAR, PHOENIX, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, ARTISAN -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON, ORACLE -> PaletteCategory.OBSERVE;
@@ -133,6 +134,7 @@ public enum DeviceType {
             case PACKAGE_MANAGER -> "INSTALL readies dependencies - in mixed repos it sequences every toolchain.\nUPDATE upgrades, CHECK reports outdated. OK fires when done.";
             case BUILD -> "BUILD compiles with the detected tool (vite/cargo/mix/swift…).\nWATCH mode fires OK on every rebuild - patch OK → VERITAS for build-then-test.";
             case TEST -> "Runs the suite; the tally LCD shows live pass/fail.\nRUNNER=auto picks jest/pytest/cargo/mix… Patch OUT → MONITOR to read output.";
+            case E2E -> "RUN drives the E2E suite (ENGINE=auto reads playwright/cypress config; HEADED shows the browser).\nREPORT serves the Playwright HTML report (URL out feeds SCOPE); RECORD aims codegen at your live dev server; BROWSERS installs runtimes.";
             case LINT -> "Static analysis; E/W counts land on the LCD, CLEAN lights when spotless.\nFIX rewrites violations in place (amber = it mutates your files).";
             case FORMAT -> "Prettier over the project (Laravel Pint on PHP lanes). WRITE rewrites; CHECK only verifies.\nPatch REFLEX CHANGED → RUN for format-on-save.";
             case TYPECHECK -> "tsc --noEmit (phpstan on PHP lanes). WATCH keeps the compiler resident and fires OK/FAIL per check.\nSTRICT adds --strict. E: count on the LCD.";
@@ -188,7 +190,7 @@ public enum DeviceType {
      */
     public boolean isCiStep() {
         return switch (this) {
-            case PACKAGE_MANAGER, BUILD, TEST, TYPECHECK, LINT, FORMAT,
+            case PACKAGE_MANAGER, BUILD, TEST, E2E, TYPECHECK, LINT, FORMAT,
                  NPM_SCRIPT, RUN, ANGULAR, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, PHOENIX, AUDIT, DATABASE, CMD -> true;
             default -> false;
         };

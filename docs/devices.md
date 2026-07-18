@@ -146,6 +146,14 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
+### SPECTER — E2E Console — Playwright/Cypress run, served report, codegen recorder
+
+> RUN drives the E2E suite (ENGINE=auto reads playwright/cypress config; HEADED shows the browser).
+> REPORT serves the Playwright HTML report (URL out feeds SCOPE); RECORD aims codegen at your live dev server; BROWSERS installs runtimes.
+
+- **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
 ## SERVE
 
 ### SURGE — Dev Server — start/stop local serving

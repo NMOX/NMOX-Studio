@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.86.0] - 2026-07-18
+
+### SPECTER — the E2E console (51st device)
+
+End-to-end suites become first-class rack citizens. VERITAS runs unit
+suites; SPECTER speaks the E2E workflow:
+
+- **ENGINE=auto** resolves Playwright vs Cypress from the project's own
+  config file (`playwright.config.*` / `cypress.config.*`, Playwright
+  first), then its dependencies; no E2E setup greys honestly
+  ("NO E2E CONFIG — ADD PLAYWRIGHT OR CYPRESS").
+- **RUN** drives the suite (`npx playwright test` / `npx cypress run`);
+  the **HEADED** toggle shows the browser (`--headed`, or
+  `cypress open` — Cypress's interactive runner).
+- **REPORT** serves the Playwright HTML report as a real serving —
+  URL/READY/SERVING jacks out, the ⇄ chip, ⌘I Live Servers, and
+  deregistration when it stops. Cypress has no report server: the verb
+  greys with the reason instead of running the wrong thing.
+- **RECORD** launches Playwright codegen aimed at the project's **live
+  dev server from the ServingRegistry** (the VITALS auto-target idea) —
+  serve with VELOCITY, press RECORD, click around, keep the generated
+  test. On Cypress it points you at HEADED (cypress open IS its
+  recorder).
+- **BROWSERS** installs the runtime browsers; the version cluster
+  tracks `@playwright/test`/`cypress` against the registry like every
+  console.
+- CI export: SPECTER's RUN is a step (`DeviceCatalog` pin updated);
+  both contract gates proved failing-first (faceplate fit, CI-step
+  exactness) before passing.
+
+Tests: `SpecterDeviceTest` (5 — engine precedence incl.
+config-beats-deps, both engines' verb shapes, honest greys, currency
+package); the 365-case contract suite and docs gate cover the rest.
+docs/devices.md regenerated (51 devices).
+
 ## [1.85.0] - 2026-07-18
 
 ### Block Studio v5 — the composition loop
