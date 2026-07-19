@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.95.2] - 2026-07-19
+
+### The seventh review — the gesture must die with its context
+
+Two read-only lenses over the v1.93.0–v1.95.1 surface (serving-gate
+guards, rear jack relayout, click-to-click glue, jump-to-component).
+The streak holds: real bugs, every fix mutation-proven.
+
+- **HIGH — an armed click-patch survived a rack flip invisibly.** The
+  preview only paints on the rear, so after flip-to-front the armed
+  state showed nothing; flipping back and clicking any compatible jack
+  silently patched a cable the user believed cancelled (with trigger
+  jacks: spontaneous device actions on the next signal). A flip now
+  cancels the gesture — exactly what `CablePatchGesture.escape()`'s
+  javadoc always promised.
+- **MED — the armed gesture survived structural rebuilds** (device
+  removal, preset/patch load, undo): connect could land on a Port of a
+  disposed, un-racked device, painting an undeletable ghost cable.
+  Every rebuild now drops the gesture. Both pinned by
+  RackPanelGestureCancelTest, each proven failing-first by mutation.
+- **MED — INSPECTOR kept the exact v1.93.0 bug shape on a DATA jack**:
+  it emitted its ENDPOINT attach address and armed the blinking WIRED
+  LED *before* `launch()`, so a Keep Safe answer advertised a debugger
+  nothing listens on and left the LED blinking forever. Endpoint, LED,
+  and LIVE gate now all wait for launched-for-real
+  (ServingTruthTest.inspectorRefusalEmitsNoEndpoint, mutation-proven).
+- **LOW — `launch()` could return true on a disposed device** (a
+  queued trigger after removal), raising a phantom gate in inverted
+  order with exec's synthetic exit. `launchWithEnv` now reports false
+  when disposed (mutation-proven).
+- Polish: an armed preview now follows the cursor over the rails and
+  empty rack, not just device bounds; WORMHOLE's safe-only-by-accident
+  pre-launch state got its blessing comment; **ledger 51** records the
+  Device SPI's missing launched-for-real signal (additive method when
+  a real plugin needs it).
+
 ## [1.95.1] - 2026-07-19
 
 ### Docs truth repair + the patching hint tells the whole story

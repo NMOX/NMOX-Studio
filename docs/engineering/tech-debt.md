@@ -51,6 +51,21 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
+## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
+
+### 51. Device SPI exec has no launched-for-real signal
+
+The frozen `core.spi.device` `DeviceServices.exec` refuses an untrusted
+workspace by firing `onExit.accept(-1)` — there is no boolean return
+like `CommandDevice.launch()` gained in v1.93.0, so a third-party
+device that raises a gate via `emitGate` before calling `exec` can
+still lie through the trust prompt (the exact bug class v1.93.0 killed
+for the built-ins). The exit(-1) contract lets a well-behaved plugin
+self-correct, and the SPI is frozen — the fix is an ADDITIVE overload
+(e.g. `boolean tryExec(...)` or an exec returning a handle), added the
+day a real plugin author needs it, not speculatively. Found by the
+v1.95.2 review's gate lens.
+
 ## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
 
 ### 50. Console in-jacks STOP/ENABLE are inert across the family — CLOSED (v1.90.0)
