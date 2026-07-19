@@ -130,6 +130,9 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private File projectDir;
     private volatile BlockCodegen.Result lastResult;
+    /** EDT-built snapshot of every valid component's code, tag → code;
+     *  the preview's HTTP thread reads this, never the live docs. */
+    private volatile java.util.Map<String, String> libraryCache = java.util.Map.of();
     private boolean loading;
     private boolean shownOnce;
 
@@ -274,22 +277,12 @@ public final class BlockStudioTopComponent extends TopComponent {
                     BlockCodegen.Result r = lastResult;
                     return r == null ? "// fix the blocks first" : r.code();
                 },
-                () -> {
-                    // the composition loop (v5): every VALID component in
-                    // the workspace, so nested sibling tags upgrade in the
-                    // harness; read live per request like the suppliers
-                    // above, broken components simply sit this pass out
-                    java.util.Map<String, String> lib = new java.util.LinkedHashMap<>();
-                    BlockWorkspace ws = workspace;
-                    if (ws != null) {
-                        for (BlockDoc d : ws.components()) {
-                            if (BlockCodegen.validate(d).isEmpty()) {
-                                lib.put(d.root().param("tag"), BlockCodegen.generate(d).code());
-                            }
-                        }
-                    }
-                    return lib;
-                });
+                // the composition loop (v5): the request thread must NOT
+                // walk the live EDT-mutable docs (CME / torn generation —
+                // the v1.89.0 review's find); it reads the volatile
+                // snapshot regenerate() rebuilds on the EDT after every
+                // debounced edit, same staleness contract as lastResult
+                () -> libraryCache);
         previewBtn = new JButton(new AbstractAction("Preview") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -689,9 +682,13 @@ public final class BlockStudioTopComponent extends TopComponent {
         if (doc == null) {
             return;
         }
+        rebuildLibraryCache();
         List<String> problems = BlockCodegen.validate(doc);
         if (!problems.isEmpty()) {
             lastResult = null;
+            // an invalid ACTIVE component must not keep advertising the
+            // previous component's tag in ⌘I (the v1.89.0 review's find)
+            org.nmox.studio.rack.blockstudio.search.BlockSearchProvider.clear();
             StringBuilder sb = new StringBuilder("// Fix these to generate:\n");
             problems.forEach(p -> sb.append("//  - ").append(p).append('\n'));
             codePane.setText(sb.toString());
@@ -717,6 +714,29 @@ public final class BlockStudioTopComponent extends TopComponent {
         org.nmox.studio.rack.blockstudio.search.BlockSearchProvider
                 .publish(doc.root().param("tag"), doc.preorder().size());
         highlight(canvas.selectedId() == null ? null : doc.find(canvas.selectedId()));
+    }
+
+    /**
+     * Rebuilds the preview's library snapshot from every valid
+     * component — EDT only, so the HTTP thread never touches live docs.
+     * Package-private: tests pin the snapshot identity contract.
+     */
+    void rebuildLibraryCache() {
+        java.util.Map<String, String> lib = new java.util.LinkedHashMap<>();
+        BlockWorkspace ws = workspace;
+        if (ws != null) {
+            for (BlockDoc d : ws.components()) {
+                if (BlockCodegen.validate(d).isEmpty()) {
+                    lib.put(d.root().param("tag"), BlockCodegen.generate(d).code());
+                }
+            }
+        }
+        libraryCache = java.util.Collections.unmodifiableMap(lib);
+    }
+
+    /** Test seam: what the preview's HTTP thread reads. */
+    java.util.Map<String, String> libraryCacheSnapshot() {
+        return libraryCache;
     }
 
     private void highlight(Block block) {

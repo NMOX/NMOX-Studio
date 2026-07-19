@@ -101,10 +101,20 @@ public abstract class CommandDevice extends RackDevice {
         return override == null ? null : new java.io.File(override);
     }
 
+    /**
+     * The command the CI exporter should emit; defaults to the primary
+     * command. Devices whose RUN reads live UI state that must not leak
+     * into a workflow (SPECTER's HEADED toggle — headless CI runners)
+     * override this with the CI-safe spelling.
+     */
+    protected List<String> ciCommand() {
+        return buildCommand();
+    }
+
     /** The primary command, exposed for the CI exporter; null = no step. */
     public final List<String> exportCommand() {
         try {
-            return buildCommand();
+            return ciCommand();
         } catch (RuntimeException ex) {
             java.util.logging.Logger.getLogger(CommandDevice.class.getName())
                     .log(java.util.logging.Level.WARNING,

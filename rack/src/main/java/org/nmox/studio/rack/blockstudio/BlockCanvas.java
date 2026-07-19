@@ -300,6 +300,11 @@ final class BlockCanvas extends JComponent {
 
     /** The keyboard insert: same doc path as a palette drop. */
     boolean insertKind(BlockKind kind, Block parent, int index) {
+        if (doc == null) {
+            // the add-menu popup outlives a re-aim: a menu item clicked
+            // after the doc was swapped away must be a no-op, not an NPE
+            return false;
+        }
         host.aboutToChange();
         Block fresh = doc.create(kind);
         boolean ok = doc.insert(parent, fresh, index);

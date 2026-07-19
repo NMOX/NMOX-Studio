@@ -95,6 +95,31 @@ class BlockMultiComponentTest {
     }
 
     @Test
+    @DisplayName("The preview library is an EDT-built snapshot, not the live docs (v1.89.0)")
+    void libraryIsASnapshot(@TempDir Path dir) throws Exception {
+        BlockStudioTopComponent tc = open(dir);
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                tc.addComponent(); // my-widget-2; addComponent regenerates
+                assertThat(tc.libraryCacheSnapshot().keySet())
+                        .containsExactly("my-widget", "my-widget-2");
+                java.util.Map<String, String> before = tc.libraryCacheSnapshot();
+                // an edit that has not regenerated yet must not be visible
+                tc.currentDoc().root().setParam("tag", "renamed-tag");
+                assertThat(tc.libraryCacheSnapshot())
+                        .as("the HTTP thread sees the snapshot, never live docs")
+                        .isSameAs(before);
+                tc.rebuildLibraryCache();
+                assertThat(tc.libraryCacheSnapshot().keySet())
+                        .containsExactly("my-widget", "renamed-tag");
+            });
+        } finally {
+            SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
+        }
+    }
+
+    @Test
     @DisplayName("Save All writes every valid component; invalid sit out, foreign refuse")
     void saveAllComponents(@TempDir Path dir) throws Exception {
         BlockStudioTopComponent tc = open(dir);

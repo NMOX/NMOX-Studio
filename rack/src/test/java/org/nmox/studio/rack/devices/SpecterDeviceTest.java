@@ -100,6 +100,63 @@ class SpecterDeviceTest {
     }
 
     @Test
+    @DisplayName("CI export is always headless even with the HEADED toggle on (v1.89.0 HIGH)")
+    void ciExportAlwaysHeadless() throws Exception {
+        Files.writeString(dir.resolve("playwright.config.ts"), "export default {}");
+        org.nmox.studio.rack.model.Rack rack = new org.nmox.studio.rack.model.Rack();
+        rack.setProjectDir(dir.toFile());
+        SpecterDevice specter = new SpecterDevice();
+        rack.addDevice(specter);
+        try {
+            specter.headed.setOn(true);
+            assertThat(specter.buildCommand())
+                    .as("the button honors the toggle").contains("--headed");
+            assertThat(specter.exportCommand())
+                    .as("CI runners are headless — the toggle must not leak")
+                    .containsExactly("npx", "playwright", "test");
+        } finally {
+            rack.removeDevice(specter);
+        }
+    }
+
+    @Test
+    @DisplayName("RECORD never aims codegen at SPECTER's own report serving (v1.89.0 MED)")
+    void recordSkipsOwnServing() throws Exception {
+        org.nmox.studio.rack.model.Rack rack = new org.nmox.studio.rack.model.Rack();
+        rack.setProjectDir(dir.toFile());
+        SpecterDevice specter = new SpecterDevice();
+        rack.addDevice(specter);
+        org.nmox.studio.rack.service.ServingRegistry reg =
+                org.nmox.studio.rack.service.ServingRegistry.getDefault();
+        try {
+            // SPECTER's own REPORT serving alone: RECORD must not target it
+            specter.onLine("Serving HTML report at http://127.0.0.1:9323");
+            assertThat(specter.liveServingUrl())
+                    .as("own report serving is invisible to RECORD").isNull();
+            // a real dev server joins: RECORD aims there
+            reg.register(new org.nmox.studio.rack.service.ServingRegistry.Serving(
+                    "test-velocity", "VELOCITY", "http://localhost:5173/",
+                    org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, dir.toFile()));
+            assertThat(specter.liveServingUrl()).isEqualTo("http://localhost:5173/");
+        } finally {
+            reg.deregister("test-velocity");
+            rack.removeDevice(specter);
+        }
+    }
+
+    @Test
+    @DisplayName("Monorepo: configs are read beside the NODE manifest, so config still beats deps (v1.89.0 MED)")
+    void monorepoConfigWins() throws Exception {
+        Path web = Files.createDirectories(dir.resolve("web"));
+        Files.writeString(web.resolve("package.json"),
+                "{\"devDependencies\": {\"@playwright/test\": \"^1.44.0\"}}");
+        Files.writeString(web.resolve("cypress.config.ts"), "export default {}");
+        assertThat(SpecterDevice.resolveEngine(dir.toFile(), "auto"))
+                .as("the cypress config beside the manifest beats the stale playwright dep")
+                .isEqualTo("cypress");
+    }
+
+    @Test
     @DisplayName("RUN with no E2E setup greys honestly: buildCommand null, status says why")
     void greysWithoutEngine(@TempDir Path bare) throws Exception {
         org.nmox.studio.rack.model.Rack rack = new org.nmox.studio.rack.model.Rack();
