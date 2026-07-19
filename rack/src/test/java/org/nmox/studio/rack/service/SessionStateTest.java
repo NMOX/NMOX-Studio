@@ -52,6 +52,54 @@ class SessionStateTest {
     }
 
     @Test
+    @DisplayName("unmatchedAgainst names what the rack lost — the unsaved-patch case (v1.96.0)")
+    void unmatchedAgainstFindsUnsavedPatchEntries() {
+        Rack rack = new Rack();
+        try {
+            RackDevice monitor = DeviceType.CONSOLE.create();
+            rack.addDevice(monitor);
+
+            // kill -9 before any Save Patch: the snapshot names a device
+            // the relaunched rack simply does not have
+            SessionState state = new SessionState(rack.getProjectDir().getAbsolutePath(), 1,
+                    List.of(new SessionState.Entry(0, "console", "MONITOR"),
+                            new SessionState.Entry(2, "run", "IGNITION")));
+            assertThat(state.matchAgainst(rack)).containsExactly(monitor);
+            assertThat(state.unmatchedAgainst(rack))
+                    .as("the lost IGNITION must be reported, not silently dropped")
+                    .containsExactly(new SessionState.Entry(2, "run", "IGNITION"));
+
+            // a fully matched snapshot reports nothing lost
+            SessionState allThere = new SessionState("x", 1,
+                    List.of(new SessionState.Entry(0, "console", "MONITOR")));
+            assertThat(allThere.unmatchedAgainst(rack)).isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("The resume click re-creates lost devices from the catalog and skips unknown types")
+    void resumeSessionRecreatesLostDevices(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) {
+        Rack rack = new Rack();
+        try {
+            rack.setProjectDir(dir.toFile()); // no manifest: resume() refuses to spawn
+            rack.addDevice(DeviceType.CONSOLE.create());
+
+            RackService.resumeSession(rack, List.of(), List.of(
+                    new SessionState.Entry(2, "run", "IGNITION"),
+                    new SessionState.Entry(1, "gone-plugin-type", "GHOST")));
+
+            assertThat(rack.getDevices())
+                    .as("IGNITION re-created (index clamped), the uninstalled type skipped")
+                    .hasSize(2);
+            assertThat(rack.getDevices().get(1).getTypeId()).isEqualTo("run");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("A snapshot is a fact: the running list cannot be mutated after capture")
     void runningListIsImmutable() {
         java.util.List<SessionState.Entry> mutable = new java.util.ArrayList<>();
