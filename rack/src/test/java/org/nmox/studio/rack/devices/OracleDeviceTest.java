@@ -136,4 +136,77 @@ class OracleDeviceTest {
 
         assertThat(seenModel[0]).isEqualTo(OracleClient.MODEL_SONNET);
     }
+
+    // ---- v1.91.0: auto-explain by cable ----
+
+    @Test
+    @DisplayName("CABLE: a FAIL trigger consults hands-free when key + consent are already in place")
+    void cableTriggerConsults() {
+        SpyTransport spy = new SpyTransport();
+        OracleDevice device = wired(spy);
+        device.consentCheck = () -> true;
+        device.autoRetryDelayMs = 0;
+        String text = device.autoConsultNow();
+        assertThat(spy.posts.get()).isEqualTo(1);
+        assertThat(text).contains("It failed because X");
+    }
+
+    @Test
+    @DisplayName("CABLE: no prior consent ⇒ no post and NO prompt — the LCD says press the button once")
+    void cableNeverPrompts() {
+        SpyTransport spy = new SpyTransport();
+        OracleDevice device = wired(spy);
+        device.consentCheck = () -> false;
+        device.autoRetryDelayMs = 0;
+        assertThat(device.autoConsultNow()).isNull();
+        assertThat(spy.posts.get()).as("a cable must never reach the API without prior consent").isZero();
+    }
+
+    @Test
+    @DisplayName("CABLE: consults are rate-limited — a flapping suite cannot hammer the API")
+    void cableCooldown() {
+        SpyTransport spy = new SpyTransport();
+        OracleDevice device = wired(spy);
+        device.consentCheck = () -> true;
+        device.autoRetryDelayMs = 0;
+        long[] now = {0L};
+        device.clock = () -> now[0];
+        device.autoConsultNow();
+        now[0] = OracleDevice.AUTO_COOLDOWN_MS - 1;
+        device.autoConsultNow(); // inside the window: refused
+        assertThat(spy.posts.get()).isEqualTo(1);
+        now[0] = OracleDevice.AUTO_COOLDOWN_MS + 1;
+        device.autoConsultNow(); // window passed: consults again
+        assertThat(spy.posts.get()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("OUT jack: a successful consult emits the full explanation as DATA")
+    void outJackCarriesExplanation() throws Exception {
+        SpyTransport spy = new SpyTransport();
+        OracleDevice device = wired(spy);
+        device.consentCheck = () -> true;
+        device.autoRetryDelayMs = 0;
+        org.nmox.studio.rack.model.Rack rack = new org.nmox.studio.rack.model.Rack();
+        var received = new java.util.concurrent.ConcurrentLinkedQueue<String>();
+        var probe = new org.nmox.studio.rack.model.RackDevice("probe", "PROBE", "PROBE", new java.awt.Color(0, 0, 0), 1) {
+            {
+                addInPort("data", "DATA", org.nmox.studio.rack.model.SignalType.DATA);
+            }
+
+            @Override
+            public void receive(org.nmox.studio.rack.model.Port in,
+                    org.nmox.studio.rack.model.Signal signal) {
+                received.add(signal.payload());
+            }
+        };
+        rack.addDevice(device);
+        rack.addDevice(probe);
+        rack.connect(device.getPort("out"), probe.getPort("data"));
+        device.autoConsultNow();
+        rack.awaitRouterIdle();
+        assertThat(received).hasSize(1);
+        assertThat(received.peek()).contains("It failed because X. Do Y.");
+        rack.shutdown();
+    }
 }

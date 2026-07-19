@@ -346,6 +346,8 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 > EXPLAIN reads the last failed run off the flight recorder and asks the Anthropic API what went wrong and how to fix it — QUERY-blue, no project mutation.
 > Set the key with KEY… (OS keychain, or ANTHROPIC_API_KEY/CLAUDE_API_KEY); first press asks a one-time consent naming exactly what's sent; MODEL dials HAIKU or SONNET; VIEW opens the full answer.
 
+- **In:** `EXPLAIN` (trigger)
+- **Out:** `OUT` (data)
 
 ## SHIP
 

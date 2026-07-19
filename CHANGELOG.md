@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.91.0] - 2026-07-19
+
+### ORACLE joins the patch bay — auto-explain by cable
+
+The AI error explainer becomes composable (the plan.md "REFLEX wiring"
+direction, chosen): ORACLE gains an **EXPLAIN trigger in-jack** and an
+**OUT data out-jack**. Patch VERITAS FAIL → ORACLE EXPLAIN and the
+explanation arrives hands-free the moment a suite fails; patch OUT →
+MONITOR/PHOSPHOR to read the full text in the rack.
+
+The cable path keeps every safety law and adds two of its own:
+- **A cable never prompts**: if the one-time consent hasn't been
+  granted by a human button press, the jack refuses honestly on the
+  LCD ("AUTO-EXPLAIN NEEDS CONSENT — PRESS EXPLAIN ONCE") — no dialog
+  storms from automation, no API call (mutation-proven: removing the
+  gate fails cableNeverPrompts).
+- **Consults are rate-limited** (30s cooldown): a flapping suite or a
+  REFLEX save loop cannot hammer a paid API.
+- The key gate and the no-network-without-signal law hold unchanged;
+  a bounded grace wait covers the FAIL-cable-vs-FlightRecorder-tap
+  ordering race.
+
+Tests: OracleDeviceTest +4 (cable consult, never-prompts, cooldown
+window arithmetic, OUT emission through a real rack router).
+
 ## [1.90.1] - 2026-07-19
 
 ### SPECTER faceplate polish
