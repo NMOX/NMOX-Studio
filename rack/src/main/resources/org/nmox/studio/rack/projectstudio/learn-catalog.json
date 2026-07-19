@@ -2460,6 +2460,230 @@
     }
    ],
    "tutorial": "# Playwright\n\nEnd-to-end tests drive a **real browser** — clicks, navigation, what the\nuser actually sees. Playwright is the modern standard: fast, parallel,\nand able to record tests for you.\n\n## 1. Install the pieces\n\nYou need Node (the rack told you if it's missing) and Playwright's\nbrowsers, one time:\n\n    npm install\n    npx playwright install\n\n## 2. First green run\n\nPress **START** on the run device (or run `npx playwright test`). The two\nstarter tests visit a self-contained page — no server needed — click a\nbutton, and assert what changed. You should see `2 passed`.\n\n## 3. Meet SPECTER, the E2E console\n\nOpen the Task Rack (⌘9) and rack **SPECTER** from the VERIFY shelf —\nthis project's `playwright.config.ts` makes its ENGINE=auto resolve to\nplaywright:\n\n- **RUN** runs the suite; flip **HEADED** to watch the browser work.\n- **REPORT** serves the HTML report — it lands on the ⇄ serving chip\n  and ⌘I like any dev server.\n- **RECORD** opens the codegen recorder: click around any page and\n  Playwright writes the test for you. If a dev server is running in the\n  rack, RECORD aims at it automatically.\n- **BROWSERS** re-runs `npx playwright install` when browsers are stale.\n\n## 4. Test a real app\n\nSet `baseURL` in `playwright.config.ts` to your dev server (VELOCITY's\nURL, say), then `await page.goto(\"/\")` — the **E2E Loop** preset wires\nVELOCITY's READY jack straight into SPECTER's RUN so the suite fires\nthe moment the server is up.\n\n## Troubleshooting\n\n- `browserType.launch: Executable doesn't exist` → run\n  `npx playwright install` (SPECTER's BROWSERS button does this).\n- Tests pass locally but not in CI → export the rack patch\n  (Project Studio ▸ Export CI) — SPECTER exports its RUN as a step.\n"
+  },
+  {
+   "slug": "solid",
+   "name": "Solid",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "You write JSX that compiles to fine-grained reactive updates - no virtual DOM, components run once.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"solid-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"solid-js\": \"^1.9.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\",\n    \"vite-plugin-solid\": \"^2.10.0\"\n  }\n}\n"
+    },
+    {
+     "path": "vite.config.js",
+     "content": "import { defineConfig } from \"vite\";\nimport solid from \"vite-plugin-solid\";\nexport default defineConfig({\n  plugins: [solid()]\n});\n"
+    },
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Solid space</title>\n  </head>\n  <body>\n    <div id=\"app\"></div>\n    <script type=\"module\" src=\"/src/index.jsx\"></script>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "src/index.jsx",
+     "content": "import { render } from \"solid-js/web\";\nimport { createSignal } from \"solid-js\";\n\nfunction Counter() {\n  const [count, setCount] = createSignal(0);\n  return (\n    <button onClick={() => setCount(count() + 1)}>\n      clicks: {count()}\n    </button>\n  );\n}\n\nrender(() => <Counter />, document.getElementById(\"app\"));\n"
+    }
+   ],
+   "tutorial": "# Solid\n\nSolid looks like React but works differently: components run ONCE, and\nonly the reactive expressions re-run when signals change - no virtual\nDOM diffing.\n\n1. Run the dev driver (or rack VELOCITY: this is a Vite app - DEV\n   serves it, the URL feeds SCOPE).\n2. Open src/index.jsx. createSignal(0) returns a getter and a setter;\n   note you CALL count() - that call is what subscribes the text node.\n3. Change the button label; Vite hot-reloads instantly.\n4. Try createEffect(() => console.log(count())) - it re-runs per click\n   while the component function itself never re-runs.\n\nThe rack angle: VELOCITY for DEV/BUILD/PREVIEW with version currency,\nand SPECTER runs a Playwright suite against the live URL.\n"
+  },
+  {
+   "slug": "preact",
+   "name": "Preact",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "A 3 kB React alternative with the same API - hooks and JSX included, compat alias optional.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"preact-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"preact\": \"^10.24.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\",\n    \"@preact/preset-vite\": \"^2.9.0\"\n  }\n}\n"
+    },
+    {
+     "path": "vite.config.js",
+     "content": "import { defineConfig } from \"vite\";\nimport preact from \"@preact/preset-vite\";\nexport default defineConfig({\n  plugins: [preact()]\n});\n"
+    },
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Preact space</title>\n  </head>\n  <body>\n    <div id=\"app\"></div>\n    <script type=\"module\" src=\"/src/index.jsx\"></script>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "src/index.jsx",
+     "content": "import { render } from \"preact\";\nimport { useState } from \"preact/hooks\";\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(count + 1)}>clicks: {count}</button>;\n}\n\nrender(<Counter />, document.getElementById(\"app\"));\n"
+    }
+   ],
+   "tutorial": "# Preact\n\nThe same mental model as React in 3 kB: hooks, JSX, components - and\nthe preact/compat alias runs most React libraries unchanged.\n\n1. Run the dev driver (this is a Vite app - VELOCITY drives it too).\n2. src/index.jsx uses useState from preact/hooks - identical to\n   React's. The difference is under the hood: real DOM diffing, no\n   synthetic event system.\n3. Add a second component and compose it; the bundle stays tiny -\n   rack PRISM and weigh a production build against a budget.\n"
+  },
+  {
+   "slug": "qwik",
+   "name": "Qwik",
+   "category": "FRAMEWORK",
+   "family": "JavaScript UI",
+   "blurb": "Resumability instead of hydration: state serializes and the client wakes only what you touch.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"qwik-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"@builder.io/qwik\": \"^1.9.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+    },
+    {
+     "path": "vite.config.js",
+     "content": "import { defineConfig } from \"vite\";\nimport { qwikVite } from \"@builder.io/qwik/optimizer\";\nexport default defineConfig({\n  plugins: [qwikVite({ csr: true })]\n});\n"
+    },
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Qwik space</title>\n  </head>\n  <body>\n    <div id=\"app\"></div>\n    <script type=\"module\" src=\"/src/main.tsx\"></script>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "src/main.tsx",
+     "content": "import { render } from \"@builder.io/qwik\";\nimport { component$, useSignal } from \"@builder.io/qwik\";\n\nconst Counter = component$(() => {\n  const count = useSignal(0);\n  return (\n    <button onClick$={() => count.value++}>clicks: {count.value}</button>\n  );\n});\n\nrender(document.getElementById(\"app\")!, <Counter />);\n"
+    }
+   ],
+   "tutorial": "# Qwik\n\nQwik's trick is resumability: instead of re-running your components in\nthe browser (hydration), it serializes state and lazily wakes only the\nevent handlers you actually use - the $ suffixes mark the lazy-load\nboundaries.\n\n1. Run the dev driver (Vite underneath - VELOCITY speaks it).\n2. src/main.tsx: component$ and onClick$ are code-split points; open\n   the network tab and notice the handler chunk loads on first click,\n   not on page load.\n3. This space runs client-side (csr) for simplicity; Qwik City adds\n   the server half.\n"
+  },
+  {
+   "slug": "lit",
+   "name": "Lit",
+   "category": "LIBRARY",
+   "family": "JavaScript UI",
+   "blurb": "Web components with reactive properties and tagged-template rendering - the standards-based way to ship UI.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npm",
+     "run",
+     "dev"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node",
+    "linux": "sudo apt-get install -y nodejs npm",
+    "windows": "winget install OpenJS.NodeJS.LTS"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"lit-space\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\",\n    \"preview\": \"vite preview\"\n  },\n  \"dependencies\": {\n    \"lit\": \"^3.2.0\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^5.4.0\"\n  }\n}\n"
+    },
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Lit space</title>\n  </head>\n  <body>\n    <count-button></count-button>\n    <script type=\"module\" src=\"/src/count-button.js\"></script>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "src/count-button.js",
+     "content": "import { LitElement, html, css } from \"lit\";\n\nclass CountButton extends LitElement {\n  static properties = { count: { type: Number } };\n  static styles = css`button { font-size: 1.2rem; padding: .5rem 1rem; }`;\n\n  constructor() {\n    super();\n    this.count = 0;\n  }\n\n  render() {\n    return html`<button @click=${() => this.count++}>clicks: ${this.count}</button>`;\n  }\n}\n\ncustomElements.define(\"count-button\", CountButton);\n"
+    }
+   ],
+   "tutorial": "# Lit\n\nLit is web components with the rough edges filed off: reactive\nproperties re-render automatically, and html tagged templates update\nonly the parts that changed.\n\n1. Run the dev driver (plain Vite, no plugin needed - VELOCITY too).\n2. src/count-button.js: static properties declares reactivity;\n   assigning this.count schedules a re-render. Shadow DOM scopes the\n   css styles.\n3. Compare with Block Studio (Alt+Cmd+5): the components it composes\n   are the same standard - customElements.define, shadow root, render\n   on state change. Open one of its generated files here and read it\n   with new eyes.\n"
+  },
+  {
+   "slug": "alpine",
+   "name": "Alpine.js",
+   "category": "LIBRARY",
+   "family": "Classic web",
+   "blurb": "Declarative behavior in your markup: x-data on a tag gives the page state and reactivity, no build step.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "python3",
+     "-m",
+     "http.server",
+     "8000"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install python3    # for the local web server; the library loads from a CDN in index.html",
+    "linux": "sudo apt-get install -y python3",
+    "windows": "winget install Python.Python.3.12"
+   },
+   "files": [
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Alpine space</title>\n    <script defer src=\"https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js\"></script>\n  </head>\n  <body>\n    <div x-data=\"{ count: 0, open: false }\">\n      <button @click=\"count++\">clicks: <span x-text=\"count\"></span></button>\n      <button @click=\"open = !open\">toggle</button>\n      <p x-show=\"open\" x-transition>Hello from Alpine - no build step.</p>\n    </div>\n  </body>\n</html>\n"
+    }
+   ],
+   "tutorial": "# Alpine.js\n\njQuery's spiritual successor: sprinkle x-data on any element and the\nmarkup becomes reactive - no bundler, no components, no build step.\n\n1. Run the driver (a plain static server; IGNITION serves this project\n   the same way - it is a STATIC project).\n2. index.html: x-data declares state, @click mutates it, x-text and\n   x-show react. That is the whole model.\n3. Add an x-init attribute that logs to the console to see the\n   lifecycle; try an x-for template over a list.\n\nThe Classic Kit wizard (Tools menu) can vendor Alpine into any project\npinned + hashed, and the editor completes the Alpine.* JS API when the\npage carries it.\n"
+  },
+  {
+   "slug": "htmx",
+   "name": "htmx",
+   "category": "LIBRARY",
+   "family": "Classic web",
+   "blurb": "HTML attributes that talk to your server: hx-get swaps fragments in place - hypermedia as the engine.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "python3",
+     "-m",
+     "http.server",
+     "8000"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install python3    # for the local web server; the library loads from a CDN in index.html",
+    "linux": "sudo apt-get install -y python3",
+    "windows": "winget install Python.Python.3.12"
+   },
+   "files": [
+    {
+     "path": "index.html",
+     "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>htmx space</title>\n    <script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js\"></script>\n  </head>\n  <body>\n    <h1>htmx</h1>\n    <button hx-get=\"/fragment.html\" hx-target=\"#panel\" hx-swap=\"innerHTML\">\n      load the fragment\n    </button>\n    <div id=\"panel\"><em>press the button - the server's HTML lands here</em></div>\n  </body>\n</html>\n"
+    },
+    {
+     "path": "fragment.html",
+     "content": "<p><strong>This HTML came from the server.</strong>\nNo JSON, no client render - the response body IS the UI.</p>\n"
+    }
+   ],
+   "tutorial": "# htmx\n\nhtmx extends HTML itself: any element can issue a request and swap the\nresponse into the page - the server returns HTML, not JSON.\n\n1. Run the driver (static server on :8000).\n2. index.html: hx-get says where, hx-target says what to replace,\n   hx-swap says how. Press the button and watch fragment.html land in\n   the panel - check the network tab: a plain GET, HTML back.\n3. Point hx-get at a real endpoint of your app (rack IGNITION or\n   VELOCITY serving it) and you have server-driven UI with zero client\n   code. The editor completes the htmx.* JS API when the page carries\n   the script.\n"
   }
  ]
 }

@@ -29,7 +29,9 @@ public class WebProjectFactory implements ProjectFactory {
         // classic web (v1.34): manifest-only legacy repos open as projects
         "bower.json", "Gruntfile.js", "Gruntfile.coffee",
         "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",
-        "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"};
+        "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs",
+        // Ember CLI + Remix/React Router framework mode (v1.92.0)
+        "ember-cli-build.js", "remix.config.js"};
 
     @Override
     public boolean isProject(FileObject projectDirectory) {

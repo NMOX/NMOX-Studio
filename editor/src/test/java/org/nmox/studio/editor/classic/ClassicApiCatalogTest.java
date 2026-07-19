@@ -24,7 +24,8 @@ class ClassicApiCatalogTest {
     void librariesPresent() {
         Map<String, Library> libs = ClassicApiCatalog.libraries();
         assertThat(libs.keySet()).containsExactlyInAnyOrder(
-                "jquery", "mootools", "prototype", "backbone", "underscore", "knockout");
+                "jquery", "mootools", "prototype", "backbone", "underscore", "knockout",
+                "alpine", "htmx");
     }
 
     @Test
@@ -36,6 +37,8 @@ class ClassicApiCatalogTest {
         assertThat(ClassicApiCatalog.library("backbone").entries()).hasSizeGreaterThanOrEqualTo(30);
         assertThat(ClassicApiCatalog.library("underscore").entries()).hasSizeGreaterThanOrEqualTo(50);
         assertThat(ClassicApiCatalog.library("knockout").entries()).hasSizeGreaterThanOrEqualTo(20);
+        assertThat(ClassicApiCatalog.library("alpine").entries()).hasSizeGreaterThanOrEqualTo(10);
+        assertThat(ClassicApiCatalog.library("htmx").entries()).hasSizeGreaterThanOrEqualTo(12);
     }
 
     @Test
