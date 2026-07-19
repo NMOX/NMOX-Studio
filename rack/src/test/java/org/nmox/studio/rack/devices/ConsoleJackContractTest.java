@@ -54,4 +54,33 @@ class ConsoleJackContractTest {
                 .as("devices declaring STOP/ENABLE jacks that no receive() handles")
                 .isEmpty();
     }
+
+    @Test
+    @DisplayName("Rear INPUTS and OUTPUTS never collide — jack-heavy devices compress their pitch")
+    void rearGroupsNeverOverlap() {
+        for (DeviceCatalog.Entry entry : DeviceCatalog.all()) {
+            RackDevice device = entry.create();
+            try {
+                int ins = 0, outs = 0, maxInX = Integer.MIN_VALUE, minOutX = Integer.MAX_VALUE;
+                for (Port p : device.getPorts()) {
+                    if (p.getDirection() == Port.Direction.IN) {
+                        ins++;
+                        maxInX = Math.max(maxInX, p.getX());
+                    } else {
+                        outs++;
+                        minOutX = Math.min(minOutX, p.getX());
+                    }
+                }
+                if (ins == 0 || outs == 0) {
+                    continue;
+                }
+                // half a label (~40px tiny font) each side plus breathing room
+                assertThat(minOutX - maxInX)
+                        .as(entry.id() + " (" + entry.title() + "): rear groups need clear air")
+                        .isGreaterThanOrEqualTo(44);
+            } finally {
+                device.dispose();
+            }
+        }
+    }
 }

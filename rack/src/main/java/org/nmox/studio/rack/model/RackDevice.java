@@ -214,20 +214,46 @@ public abstract class RackDevice extends JPanel {
 
     protected Port addInPort(String id, String label, SignalType type) {
         Port p = new Port(this, id, label, Port.Direction.IN, type);
-        int h = getPreferredSize().height;
-        p.setLocation(RackStyle.EAR_WIDTH + 52 + inPortCount * 82, h - 44);
         inPortCount++;
         ports.add(p);
+        relayoutJacks();
         return p;
     }
 
     protected Port addOutPort(String id, String label, SignalType type) {
         Port p = new Port(this, id, label, Port.Direction.OUT, type);
-        int h = getPreferredSize().height;
-        p.setLocation(RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 52 - outPortCount * 82, h - 44);
         outPortCount++;
         ports.add(p);
+        relayoutJacks();
         return p;
+    }
+
+    /**
+     * The rear jack pitch: 82px until a jack-heavy device (a console's
+     * base ports + serve family) would collide the INPUTS and OUTPUTS
+     * groups in the middle — then the pitch compresses uniformly so
+     * both groups and every label keep clear air (the v1.90.0 live
+     * drive's "ENABSERVING" crowding, fixed in v1.93.1).
+     */
+    int jackPitch() {
+        int usable = RackStyle.RACK_WIDTH - 2 * RackStyle.EAR_WIDTH - 104 - 24;
+        int total = Math.max(1, inPortCount + outPortCount);
+        return Math.min(82, usable / total);
+    }
+
+    /** Ports place incrementally, but the pitch depends on the final
+     *  count — every add re-lays the whole row. */
+    private void relayoutJacks() {
+        int h = getPreferredSize().height;
+        int pitch = jackPitch();
+        int in = 0, out = 0;
+        for (Port q : ports) {
+            if (q.getDirection() == Port.Direction.IN) {
+                q.setLocation(RackStyle.EAR_WIDTH + 52 + in++ * pitch, h - 44);
+            } else {
+                q.setLocation(RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 52 - out++ * pitch, h - 44);
+            }
+        }
     }
 
     public List<Port> getPorts() {
@@ -743,11 +769,11 @@ public abstract class RackDevice extends JPanel {
 
     private void paintJackGroups(Graphics2D g, int h) {
         if (inPortCount > 0) {
-            int wBox = inPortCount * 82 + 20;
+            int wBox = inPortCount * jackPitch() + 20;
             RackStyle.paintGroup(g, RackStyle.EAR_WIDTH + 10, h - 84, wBox, 74, "INPUTS");
         }
         if (outPortCount > 0) {
-            int wBox = outPortCount * 82 + 20;
+            int wBox = outPortCount * jackPitch() + 20;
             RackStyle.paintGroup(g, RackStyle.RACK_WIDTH - RackStyle.EAR_WIDTH - 10 - wBox, h - 84, wBox, 74, "OUTPUTS");
         }
     }
