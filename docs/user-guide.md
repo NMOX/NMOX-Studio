@@ -134,8 +134,8 @@ an LCD tells you what happened in words.
 - **Undo anything structural** with **⌘Z** — device adds, removes,
   rewires. Removing a running device stops its process first.
 - **Presets** give you a full wired rack in one click — Ship Gate, Dev
-  Intelligence, Monorepo Lanes, LAMP Bench, Web3 Bench, Uptime Watch.
-  Patches persist per project automatically.
+  Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench,
+  Uptime Watch. Patches persist per project automatically.
 
 ![Tab flips the rack — patch cables wire MAESTRO through CRATE, DYNAMO, and IGNITION into VITALS](images/rack-rear.png)
 
@@ -502,7 +502,7 @@ files, recent projects, and launchers for every tool surface.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
-*New Learning Space…* offers 71 built-in tutorials — languages (Python,
+*New Learning Space…* offers 72 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and

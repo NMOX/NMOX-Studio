@@ -313,6 +313,27 @@ public enum RackPresets {
             rack.connect(tasks.getPort("out"), console.getPort("in"));
             rack.connect(serve.getPort("out"), console.getPort("in"));
         }
+    },
+
+    E2E_LOOP("E2E Loop",
+            "VELOCITY serves and SPECTER runs the E2E suite the moment READY fires; REPORT re-aims SCOPE at the HTML report") {
+        @Override
+        void wire(Rack rack) {
+            RackDevice velocity = add(rack, DeviceType.VITE, null);
+            RackDevice specter = add(rack, DeviceType.E2E, null);
+            RackDevice browser = add(rack, DeviceType.BROWSER, null);
+            RackDevice console = add(rack, DeviceType.CONSOLE, null);
+            // serve → suite: the E2E run fires the moment the app is up,
+            // and SPECTER's RECORD auto-targets the same serving via the registry
+            rack.connect(velocity.getPort("ready"), specter.getPort("run"));
+            // SCOPE follows whatever is serving: the app first, and the
+            // Playwright HTML report when SPECTER's REPORT announces its URL
+            rack.connect(velocity.getPort("url"), browser.getPort("url"));
+            rack.connect(velocity.getPort("ready"), browser.getPort("open"));
+            rack.connect(specter.getPort("url"), browser.getPort("url"));
+            rack.connect(specter.getPort("ready"), browser.getPort("open"));
+            rack.connect(specter.getPort("out"), console.getPort("in"));
+        }
     };
 
     private final String displayName;

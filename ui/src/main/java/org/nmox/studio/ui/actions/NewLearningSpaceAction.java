@@ -48,7 +48,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.NewLearningSpaceAction")
 @ActionRegistration(displayName = "#CTL_NewLearningSpaceAction")
 @ActionReferences({
-    @ActionReference(path = "Menu/File", position = 119),
+    @ActionReference(path = "Menu/File", position = 112),
     @ActionReference(path = "Shortcuts", name = "DS-L")
 })
 @Messages("CTL_NewLearningSpaceAction=New Learning Space...")

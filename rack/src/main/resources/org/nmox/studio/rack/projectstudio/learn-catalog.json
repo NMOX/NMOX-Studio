@@ -2423,6 +2423,43 @@
     }
    ],
    "tutorial": "# Nuxt\n\nNuxt is Vue plus the plumbing: a **filesystem router** (`pages/*.vue`), server rendering, and **auto-imports** — note the sample never imports `ref` or `NuxtLink`; Nuxt wires them.\n\n## Your dev server\n\nPress **START** for `nuxi dev` — or rack **NIMBUS**, the Nuxt console: DEV/BUILD/PREVIEW through nuxi, DIAG runs `nuxi typecheck`, and the version cluster tracks nuxt against the registry.\n\n## The sample\n\n`pages/index.vue` uses `<script setup>` with a reactive `ref` — Vue's composition API with none of the boilerplate.\n\n## Try\n\n1. Add `pages/blog.vue` — instantly `/blog`.\n2. Add `server/api/hello.js` exporting `defineEventHandler(() => ({ hi: true }))` — that's a live API at `/api/hello`.\n3. Run **DIAG** on NIMBUS to typecheck the whole app.\n\n---\n\n## Install\n\n```sh\nbrew install node\n```\n"
+  },
+  {
+   "slug": "playwright",
+   "name": "Playwright",
+   "category": "LIBRARY",
+   "family": "JavaScript testing",
+   "blurb": "End-to-end tests that drive a real browser — and the SPECTER rack device speaks it natively.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npx",
+     "playwright",
+     "test"
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node && npx playwright install",
+    "linux": "sudo apt-get install -y nodejs npm && npx playwright install",
+    "windows": "winget install OpenJS.NodeJS.LTS && npx playwright install"
+   },
+   "files": [
+    {
+     "path": "package.json",
+     "content": "{\n  \"name\": \"playwright-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"test\": \"playwright test\"\n  },\n  \"devDependencies\": {\n    \"@playwright/test\": \"^1.45.0\"\n  }\n}\n"
+    },
+    {
+     "path": "playwright.config.ts",
+     "content": "import { defineConfig } from \"@playwright/test\";\n\nexport default defineConfig({\n  testDir: \"tests\",\n  use: {\n    // no baseURL: these starter tests visit a data: page, so they run\n    // with no server at all — point baseURL at your app when you have one\n    headless: true\n  }\n});\n"
+    },
+    {
+     "path": "tests/example.spec.ts",
+     "content": "import { test, expect } from \"@playwright/test\";\n\n// A self-contained page: no server needed for your first green run.\nconst PAGE = `data:text/html,<h1 id=\"title\">Hello, Playwright</h1>\n<button onclick=\"document.getElementById('title').textContent='Clicked!'\">Click me</button>`;\n\ntest(\"the page greets us\", async ({ page }) => {\n  await page.goto(PAGE);\n  await expect(page.locator(\"#title\")).toHaveText(\"Hello, Playwright\");\n});\n\ntest(\"clicking the button changes the heading\", async ({ page }) => {\n  await page.goto(PAGE);\n  await page.click(\"text=Click me\");\n  await expect(page.locator(\"#title\")).toHaveText(\"Clicked!\");\n});\n"
+    }
+   ],
+   "tutorial": "# Playwright\n\nEnd-to-end tests drive a **real browser** — clicks, navigation, what the\nuser actually sees. Playwright is the modern standard: fast, parallel,\nand able to record tests for you.\n\n## 1. Install the pieces\n\nYou need Node (the rack told you if it's missing) and Playwright's\nbrowsers, one time:\n\n    npm install\n    npx playwright install\n\n## 2. First green run\n\nPress **START** on the run device (or run `npx playwright test`). The two\nstarter tests visit a self-contained page — no server needed — click a\nbutton, and assert what changed. You should see `2 passed`.\n\n## 3. Meet SPECTER, the E2E console\n\nOpen the Task Rack (⌘9) and rack **SPECTER** from the VERIFY shelf —\nthis project's `playwright.config.ts` makes its ENGINE=auto resolve to\nplaywright:\n\n- **RUN** runs the suite; flip **HEADED** to watch the browser work.\n- **REPORT** serves the HTML report — it lands on the ⇄ serving chip\n  and ⌘I like any dev server.\n- **RECORD** opens the codegen recorder: click around any page and\n  Playwright writes the test for you. If a dev server is running in the\n  rack, RECORD aims at it automatically.\n- **BROWSERS** re-runs `npx playwright install` when browsers are stale.\n\n## 4. Test a real app\n\nSet `baseURL` in `playwright.config.ts` to your dev server (VELOCITY's\nURL, say), then `await page.goto(\"/\")` — the **E2E Loop** preset wires\nVELOCITY's READY jack straight into SPECTER's RUN so the suite fires\nthe moment the server is up.\n\n## Troubleshooting\n\n- `browserType.launch: Executable doesn't exist` → run\n  `npx playwright install` (SPECTER's BROWSERS button does this).\n- Tests pass locally but not in CI → export the rack patch\n  (Project Studio ▸ Export CI) — SPECTER exports its RUN as a step.\n"
   }
  ]
 }
