@@ -95,6 +95,39 @@ class BlockMultiComponentTest {
     }
 
     @Test
+    @DisplayName("Save All writes every valid component; invalid sit out, foreign refuse")
+    void saveAllComponents(@TempDir Path dir) throws Exception {
+        BlockStudioTopComponent tc = open(dir);
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                tc.addComponent(); // my-widget-2
+                tc.addComponent(); // my-widget-3 — then break it
+                tc.currentWorkspace().activeDoc().root().setParam("tag", "BAD TAG");
+                tc.saveAllComponents();
+            });
+            drain();
+            assertThat(dir.resolve("src/components/my-widget.js")).exists();
+            assertThat(dir.resolve("src/components/my-widget-2.js")).exists();
+            assertThat(java.nio.file.Files.list(dir.resolve("src/components")))
+                    .as("the invalid component wrote nothing")
+                    .hasSize(2);
+
+            // a foreign file with a claimed tag is refused, others still save
+            Files.writeString(dir.resolve("src/components/my-widget.js"),
+                    "// my precious hand edits\n");
+            SwingUtilities.invokeAndWait(tc::saveAllComponents);
+            drain();
+            assertThat(Files.readString(dir.resolve("src/components/my-widget.js")))
+                    .as("never-clobber holds through Save All")
+                    .startsWith("// my precious");
+            assertThat(dir.resolve("src/components/my-widget-2.js")).exists();
+        } finally {
+            SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
+        }
+    }
+
+    @Test
     @DisplayName("Import: same tag replaces that component, new tag joins the workspace")
     void importReplacesOrAppends(@TempDir Path dir) throws Exception {
         BlockStudioTopComponent tc = open(dir);

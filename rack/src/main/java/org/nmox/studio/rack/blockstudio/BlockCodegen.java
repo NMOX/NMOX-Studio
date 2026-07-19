@@ -329,7 +329,12 @@ public final class BlockCodegen {
         switch (b.kind()) {
             case TEXT -> {
                 e.open(b);
-                e.line(indent + interpolate(b.param("text"), states, props));
+                // a TEXT piece is literal text: & and < are HTML-escaped so
+                // the browser shows the characters (an Element piece is how
+                // you make markup) AND so the template line can never start
+                // with < — which the parser reads as markup (the old
+                // documented one-way limitation, closed in v1.88.0)
+                e.line(indent + interpolate(textEscape(b.param("text")), states, props));
                 e.close(b);
             }
             case SLOT -> {
@@ -487,6 +492,15 @@ public final class BlockCodegen {
 
     private static String tplEscape(String s) {
         return s.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${");
+    }
+
+    /**
+     * HTML-escapes a TEXT piece's content ({@code &} first, so the pair
+     * is reversible); {@link BlockParser} applies the exact inverse on
+     * TEXT template lines. Order matters on both sides.
+     */
+    static String textEscape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;");
     }
 
     private static String refReplace(String s, List<String> states, String pre, String post) {

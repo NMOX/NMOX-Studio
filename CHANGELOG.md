@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.88.0] - 2026-07-18
+
+### Block Studio v5 — the last dialect gap, and Save All
+
+- **TEXT starting with `<` round-trips** (the documented pre-v1.88.0
+  one-way limitation, closed): TEXT content is entity-escaped by the
+  generator (`&` then `<`, reversible order) and unescaped by the
+  parser at the TEXT call site only — LOG and attribute paths
+  untouched. This also makes TEXT honestly literal in the browser: a
+  text piece shows its characters; markup is what Element pieces are
+  for. Text that literally says `&lt;` survives the trip
+  (escape/unescape order proven). New round-trip corpus doc
+  `markupishText` pins all three shapes; the unescape mutation fails 18
+  checks.
+- **Save All**: one button writes every valid component in the
+  workspace through the same never-clobber path as Save Component —
+  invalid components sit out, foreign files refuse, and the status line
+  counts each outcome ("Saved 2 · refused 1 (foreign: my-widget) · 1
+  invalid skipped").
+
 ## [1.87.0] - 2026-07-18
 
 ### The E2E capstone
