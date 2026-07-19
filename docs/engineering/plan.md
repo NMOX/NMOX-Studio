@@ -8,7 +8,11 @@ third senior review); currency pass 2026-07-13 at v1.62.0 after the
 overnight web-toolchain run (v1.59–v1.62: the Gleam vertical, package-manager
 truth, Biome lanes, the journey polish, ledger 45); extended the same night
 at v1.63.2 (the workspaces vertical, the dynamic-knob restore fix, the
-review pass over the overnight surface). The prior capstone was written
+review pass over the overnight surface); currency pass 2026-07-19 at
+v1.95.1 after the two day-run marathons (v1.86–v1.95: SPECTER and the
+closed E2E loop, the console-jack and serving-gate truth work, ORACLE's
+cable path built AND live-proven against the real API, the modern
+lightweights, click-to-click patching). The prior capstone was written
 at v1.36.0; seven releases (v1.44.0→v1.50.0) ran overnight and drained the
 high-value debt queue, so this is a from-scratch pass, not a patch. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
@@ -18,7 +22,7 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.85.0, 19 release assets per
+NMOX Studio is a shipping NetBeans RCP IDE (v1.95.1, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
 whose identity is the **Reason-style task rack**: 51 hardware-styled devices
@@ -29,10 +33,17 @@ third parties extend it through. Around it: a **72-grammar polyglot editor**
 Prolog, Tcl, Scheme, Ada, Pascal, Odin, COBOL, Haxe, Janet; every
 cleanly-licensed grammar is now vendored, the Raku/Forth-class skips
 documented in NOTICE) with LSP, five studios (Block, API, DB,
-Contract/Web3, Infra), the classic-web-first-class layer, 71 Learning
-Spaces (the twelve newest live-verified against real installed toolchains
-in v1.77.2), and the v1.35 "connections" spine (ServingRegistry +
-ManifestPulse) that keeps every surface live-synced.
+Contract/Web3, Infra), the classic-web-first-class layer, 78 Learning
+Spaces (the twelve v1.72–v1.77 additions live-verified against real
+installed toolchains in v1.77.2, the six v1.92.0 lightweights the same
+way), and the v1.35 "connections" spine (ServingRegistry +
+ManifestPulse) that keeps every surface live-synced. Since v1.86.0 the
+E2E story closes end-to-end: SPECTER (the 51st device) runs
+Playwright/Cypress suites with ENGINE=auto, serves the HTML report,
+and the E2E Loop preset chains VELOCITY READY → SPECTER RUN — proven
+live with real Chromium, zero defects. Cables patch by click as well
+as drag (v1.95.0), because the real rack is wider than a default
+window.
 
 **Block Studio is the fifth studio (v1.78.0–v1.85.0, ⌥⌘5).** A
 Scratch-like composer whose interlocking pieces generate a real custom
@@ -265,9 +276,14 @@ docs + live verify), never as a checkbox:
   one-time consent for the outward data flow (WorkspaceTrust is an inward
   execution guard and does not cover it); the API key Keyring-only (or
   `ANTHROPIC_API_KEY`/`CLAUDE_API_KEY`); honest degradation for every failure
-  state. The remaining AI surface (streaming, conversation, auto-explain,
-  REFLEX wiring) stays deferred — each is a direction to be *chosen*, not a
-  gap.
+  state. **Auto-explain shipped too (v1.91.0)**: EXPLAIN trigger in-jack +
+  OUT data out-jack — a cable never prompts (consent stays a human button
+  press) and consults rate-limit at 30s. **Live-proven 2026-07-19**: both
+  paths ran against the real Anthropic API in the shipped app — the button
+  consult through the consent dialog, and a hands-free VERITAS FAIL →
+  EXPLAIN cable consult delivering a correct diagnosis with zero faceplate
+  interaction. The remaining AI surface (streaming, conversation) stays
+  deferred — each is a direction to be *chosen*, not a gap.
 
 That's the whole honest list. The old "six tabs is the discovery ceiling"
 guidance has since been tested by Block Studio (a seventh studio that
@@ -431,3 +447,20 @@ composition). Two more review releases (v1.71.0, v1.76.0, v1.82.0) each
 caught real bugs. The debt queue is still drained; the standing guidance
 holds: new studios, new languages, new devices — anything that can't be
 drawn with an honest control surface stays out.
+
+**As of v1.95.1** (the 2026-07-18/19 marathons, sixteen releases): SPECTER
+made E2E suites rack citizens and the E2E Loop preset closed the marquee
+journey live with real Playwright/Chromium (one DEV press → suite runs →
+report served → clean stop, zero defects); ledger 50 closed (every
+declared console jack routes, gated catalog-wide); the serving gate was
+made honest through the trust prompt (v1.93.0 — the one live-drive
+observation that turned out to be a real bug); rear jacks compress
+instead of colliding (v1.93.1); ORACLE became composable (v1.91.0) and
+then live-proven on both consult paths against the real API; the modern
+lightweights joined (v1.92.0, 78 spaces); Block Studio finished its idea
+backlog (v1.94.0 jump-to-component); and cables patch by click as well
+as drag (v1.95.0). Two more reviews ran (v1.89.0 fifth, v1.92.1 sixth).
+**Every backlog is empty** — the debt ledger's actionable items, this
+file's opportunity list, Block Studio's ideas, and the live-drive
+observation queue. The next unit comes from a premise change, a real
+user, or David — not from manufacturing work.
