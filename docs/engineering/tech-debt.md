@@ -53,17 +53,17 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
 
-### 50. Console in-jacks STOP/ENABLE are inert across the family
+### 50. Console in-jacks STOP/ENABLE are inert across the family — CLOSED (v1.90.0)
 
-Every console device (VELOCITY/COSMOS/KINETIC/NIMBUS/SPECTER…) declares
-STOP and ENABLE input jacks, but `CommandDevice.receive` handles only
-"run" — signals into those jacks do nothing (the STOP *button* works).
-Pre-existing since v1.65.0, surfaced by the v1.89.0 review. Fixing it is
-one `receive` override in the family base plus per-device gate semantics
-— a deliberate own-sweep unit so gate behavior lands consistently on all
-consoles at once, not piecemeal. The v1.89.0 review also blessed
-SPECTER's `serving=false` on non-serving verbs (a gate no-op for
-deduping consumers; symmetric-gate consumers should wire REPORT only).
+VELOCITY/COSMOS/NIMBUS/KINETIC/SPECTER now override receive() with the
+NEXUS shape (serve → dev, stop → stopProcess, enable → enableGate);
+SPECTER's gate runs the suite while high, so VELOCITY SERVING →
+SPECTER ENABLE kills the E2E run with the dev server.
+ConsoleJackContractTest pins the law catalog-wide (any declared
+stop/enable IN jack with a base-class receive fails the build by name;
+proven failing-first on VELOCITY and NIMBUS). The v1.89.0 review's
+blessing stands: SPECTER's serving=false on non-serving verbs is a
+deduping-consumer no-op; symmetric-gate consumers wire REPORT only.
 
 ## Open — deferred deliberately, with reasons (added v1.82.0, the Block Studio review)
 

@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Signal;
 import org.nmox.studio.rack.model.SignalType;
 import org.nmox.studio.rack.ui.controls.LcdDisplay;
@@ -152,5 +153,15 @@ public class ViteDevice extends CommandDevice {
         deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
+    }
+
+    @Override
+    public void receive(Port in, Signal signal) {
+        switch (in.getId()) {
+            case "serve" -> dev();
+            case "stop" -> stopProcess();
+            case "enable" -> enableGate(signal.high(), this::dev, this::stopProcess);
+            default -> super.receive(in, signal);
+        }
     }
 }

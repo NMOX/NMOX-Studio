@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.90.0] - 2026-07-19
+
+### The jacks tell the truth (ledger 50 closed)
+
+Five devices (VELOCITY, COSMOS, NIMBUS, KINETIC, SPECTER) declared
+STOP and ENABLE input jacks — VELOCITY's family also SERVE — that no
+receive() handled: cabled signals died at the faceplate while the
+buttons worked (inert since each console shipped, surfaced by the
+v1.89.0 review). All five now speak the NEXUS shape: serve → dev,
+stop → stop, enable → serve-while-high/stop-on-drop. Patch VELOCITY
+SERVING → SPECTER ENABLE and the E2E suite dies with the dev server.
+
+`ConsoleJackContractTest` pins the law catalog-wide: any device
+declaring a stop/enable IN jack whose receive() comes from the base
+class fails the build with its name — proven failing-first on the
+unwired VELOCITY and NIMBUS.
+
 ## [1.89.0] - 2026-07-18
 
 ### The fifth senior review (v1.83–v1.88 surface)

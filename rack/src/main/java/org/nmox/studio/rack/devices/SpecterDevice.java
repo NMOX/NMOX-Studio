@@ -86,6 +86,18 @@ public class SpecterDevice extends CommandDevice {
         return ProjectInspector.ProjectKind.NODE;
     }
 
+    @Override
+    public void receive(org.nmox.studio.rack.model.Port in, Signal signal) {
+        switch (in.getId()) {
+            case "stop" -> stopProcess();
+            // gate semantics: the suite runs while the gate is high and is
+            // killed when it drops — wire VELOCITY SERVING → ENABLE and
+            // the E2E run dies with the dev server instead of hanging
+            case "enable" -> enableGate(signal.high(), this::primaryAction, this::stopProcess);
+            default -> super.receive(in, signal);
+        }
+    }
+
     // ---- engine resolution (pure, test-pinned) ----
 
     /**
