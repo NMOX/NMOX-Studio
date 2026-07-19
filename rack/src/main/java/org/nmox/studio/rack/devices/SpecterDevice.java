@@ -37,7 +37,7 @@ public class SpecterDevice extends CommandDevice {
             "cypress.config.ts", "cypress.config.js", "cypress.config.mjs");
 
     private final Knob engineKnob;
-    private final ToggleSwitch headed;
+    final ToggleSwitch headed;
     private final LcdDisplay versionLcd;
     private final Led currentLed;
     private final Led outdatedLed;
@@ -101,13 +101,18 @@ public class SpecterDevice extends CommandDevice {
         if (dir == null) {
             return null;
         }
+        // config files live beside the NODE manifest — the same kindDir
+        // the dependency fallback (and the launched command) uses, so in
+        // a monorepo both halves of this method read one directory and
+        // "config beats dependencies" cannot invert
+        File nodeDir = ProjectInspector.kindDir(dir, ProjectInspector.ProjectKind.NODE);
         for (String name : PLAYWRIGHT_CONFIGS) {
-            if (new File(dir, name).isFile()) {
+            if (new File(nodeDir, name).isFile()) {
                 return "playwright";
             }
         }
         for (String name : CYPRESS_CONFIGS) {
-            if (new File(dir, name).isFile()) {
+            if (new File(nodeDir, name).isFile()) {
                 return "cypress";
             }
         }
@@ -184,6 +189,17 @@ public class SpecterDevice extends CommandDevice {
         return command(engine, "run", headed.isOn(), null);
     }
 
+    /**
+     * CI export is always headless: the HEADED toggle is a local
+     * convenience, and a leaked {@code --headed} (or {@code cypress
+     * open}) aborts on X-less runners (the v1.89.0 review's HIGH).
+     */
+    @Override
+    protected List<String> ciCommand() {
+        String engine = resolveEngine(projectDir(), engineKnob.getSelectedOption());
+        return engine == null ? null : command(engine, "run", false, null);
+    }
+
     private void report() {
         String engine = engine();
         if (greyIfNoEngine(engine)) {
@@ -225,9 +241,14 @@ public class SpecterDevice extends CommandDevice {
      * VITALS/BEACON auto-target idea: RECORD aims codegen at what the
      * rack is actually serving; absent a serving, codegen opens blank.
      */
-    private String liveServingUrl() {
+    String liveServingUrl() {
         File dir = projectDir();
         for (ServingRegistry.Serving s : ServingRegistry.getDefault().snapshot()) {
+            // never our own entry: with REPORT serving, RECORD would aim
+            // codegen at the static HTML report page instead of the app
+            if (s.deviceId().equals(servingId())) {
+                continue;
+            }
             if (s.kind() == ServingRegistry.Kind.WEB
                     && (dir == null || dir.equals(s.projectDir()))) {
                 return s.url();
@@ -322,9 +343,14 @@ public class SpecterDevice extends CommandDevice {
     @Override
     protected void onFinished(int exitCode) {
         // report server (or codegen) stopped: drop the registry entry and
-        // the SERVING gate; clear announcedUrl so a restart re-announces
+        // the SERVING gate; clear announcedUrl so a restart re-announces.
+        // readyFired resets here too — RUN can also serve (Playwright's
+        // report-on-failure), and a latched one-shot would let a later
+        // serving emit url without ever emitting ready (the v1.89.0
+        // review's lifecycle find)
         deregisterServing();
         emit("serving", Signal.gate(false));
         announcedUrl = null;
+        readyFired.set(false);
     }
 }

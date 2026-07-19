@@ -131,6 +131,15 @@ class BlockCanvasKeyboardTest {
         assertThat(ok[0]).isTrue();
         assertThat(doc.root().children().get(0).kind()).isEqualTo(BlockKind.STATE);
         assertThat(canvas.selectedId()).isEqualTo(doc.root().children().get(0).id());
+
+        // the popup path can outlive a re-aim: insertKind on a swapped-away
+        // doc must be a refused no-op, never an NPE (v1.89.0 review)
+        Block orphanParent = doc.root();
+        SwingUtilities.invokeAndWait(() -> canvas.setDoc(null));
+        boolean[] refused = new boolean[1];
+        SwingUtilities.invokeAndWait(() ->
+                refused[0] = canvas.insertKind(BlockKind.STATE, orphanParent, 0));
+        assertThat(refused[0]).isFalse();
     }
 
     @Test

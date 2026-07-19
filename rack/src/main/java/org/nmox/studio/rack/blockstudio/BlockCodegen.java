@@ -94,6 +94,16 @@ public final class BlockCodegen {
                         problems.add("Element tag \"" + b.param("tag") + "\" is not a valid HTML tag");
                     }
                 }
+                case TEXT -> {
+                    // a leading space survives entity-escaping verbatim and
+                    // the parser's TEXT branch refuses indented-looking
+                    // lines — generate would write a file Open Component
+                    // could never read back (the v1.89.0 review's find)
+                    if (b.param("text").startsWith(" ")) {
+                        problems.add("Text must not start with a space"
+                                + " (it would be invisible in HTML anyway)");
+                    }
+                }
                 case SET_ATTR -> {
                     if (!ATTR_NAME.matcher(b.param("name")).matches()) {
                         problems.add("Attribute name \"" + b.param("name") + "\" is not valid");

@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.89.0] - 2026-07-18
+
+### The fifth senior review (v1.83–v1.88 surface)
+
+Two read-only lenses (the E2E surface; the Block Studio tail), eight
+proven fixes, two blessings:
+
+- **CI export leaked `--headed`** (HIGH): SPECTER's CI step read the
+  live HEADED toggle — a headed export aborts on X-less runners. New
+  `ciCommand()` seam in CommandDevice; SPECTER exports always-headless
+  while the button still honors the toggle (test pins both).
+- **RECORD could aim codegen at SPECTER's own report server**: with the
+  HTML report as the only WEB serving, codegen opened the static report
+  page. liveServingUrl now skips the device's own registry entry.
+- **Monorepo engine resolution**: config files are now read beside the
+  NODE manifest (the same kindDir the dependency fallback and the
+  launched command use) — "config beats dependencies" can no longer
+  invert when e2e lives in packages/web.
+- **readyFired lifecycle**: reset in onFinished — RUN can also serve
+  (Playwright's report-on-failure), and a latched one-shot let a later
+  serving emit URL without ever firing READY.
+- **Preview library was walking live EDT-mutable docs on the HTTP
+  thread** (CME / torn generation on refresh-during-drag): the harness
+  and /lib now read a volatile snapshot rebuilt on the EDT by
+  regenerate() — the lastResult staleness contract, applied to the
+  whole library.
+- **Leading-space TEXT generated an unimportable file**: validate()
+  refuses it (the parser's TEXT branch reads indented-looking lines as
+  structure; reachable via hand-edited workspace files).
+- Stale ⌘I entry when the active component goes invalid (clear on the
+  invalid branch); insertKind NPE when the add-piece popup outlives a
+  re-aim (refused no-op).
+- Blessed to ledger 50: the console family's inert STOP/ENABLE in-jacks
+  (pre-existing since v1.65.0, own-sweep unit) and SPECTER's
+  serving-gate no-op on non-serving verbs.
+
 ## [1.88.0] - 2026-07-18
 
 ### Block Studio v5 — the last dialect gap, and Save All

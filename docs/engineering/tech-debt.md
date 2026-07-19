@@ -51,6 +51,20 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
+## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
+
+### 50. Console in-jacks STOP/ENABLE are inert across the family
+
+Every console device (VELOCITY/COSMOS/KINETIC/NIMBUS/SPECTER…) declares
+STOP and ENABLE input jacks, but `CommandDevice.receive` handles only
+"run" — signals into those jacks do nothing (the STOP *button* works).
+Pre-existing since v1.65.0, surfaced by the v1.89.0 review. Fixing it is
+one `receive` override in the family base plus per-device gate semantics
+— a deliberate own-sweep unit so gate behavior lands consistently on all
+consoles at once, not piecemeal. The v1.89.0 review also blessed
+SPECTER's `serving=false` on non-serving verbs (a gate no-op for
+deduping consumers; symmetric-gate consumers should wire REPORT only).
+
 ## Open — deferred deliberately, with reasons (added v1.82.0, the Block Studio review)
 
 ### 48. The block canvas is not keyboard-operable — CLOSED (v1.83.0)

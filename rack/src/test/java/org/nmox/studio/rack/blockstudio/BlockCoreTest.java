@@ -342,6 +342,23 @@ class BlockCoreTest {
     }
 
     @Test
+    @DisplayName("Leading-space TEXT refuses at validate — generate would write an unimportable file (v1.89.0)")
+    void leadingSpaceTextRefuses() {
+        BlockDoc doc = new BlockDoc();
+        Block div = doc.create(BlockKind.ELEMENT);
+        div.setParam("tag", "div");
+        doc.insert(doc.root(), div, 0);
+        Block text = doc.create(BlockKind.TEXT);
+        text.setParam("text", " leading space");
+        doc.insert(div, text, 0);
+        assertThat(BlockCodegen.validate(doc))
+                .as("the parser's TEXT branch refuses indented-looking lines")
+                .anyMatch(pr -> pr.contains("must not start with a space"));
+        text.setParam("text", "no leading space");
+        assertThat(BlockCodegen.validate(doc)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Workspace save/load round-trips; the component write never clobbers a foreign file")
     void ioAndNeverClobber(@TempDir Path dir) throws Exception {
         File project = dir.toFile();
