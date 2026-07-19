@@ -45,6 +45,16 @@ final class BlockCanvas extends JComponent {
         void selected(Block block);
 
         void editParams(Block block);
+
+        /**
+         * Navigation (v1.94.0): an ELEMENT piece whose tag names a
+         * SIBLING component jumps there on double-click/F3. Returns
+         * whether the tag was a sibling and the jump happened; false
+         * falls back to the usual gesture (edit params).
+         */
+        default boolean openComponentWithTag(String tag) {
+            return false;
+        }
     }
 
     private BlockDoc doc;
@@ -63,7 +73,8 @@ final class BlockCanvas extends JComponent {
         getAccessibleContext().setAccessibleDescription(
                 "Interlocking web-component pieces. Arrows traverse (Left parent,"
                 + " Right child), Alt+Up/Down reorder, Enter adds a child piece,"
-                + " Shift+Enter a sibling, F2 edits, Delete removes, Escape clears;"
+                + " Shift+Enter a sibling, F2 edits, F3 jumps to the named sibling component,"
+                + " Delete removes, Escape clears;"
                 + " or drag from the palette");
         MouseAdapter mouse = new MouseAdapter() {
             @Override
@@ -73,7 +84,9 @@ final class BlockCanvas extends JComponent {
                 select(row == null ? null : row.block());
                 dragId = row == null || row.block() == doc.root() ? null : row.block().id();
                 if (e.getClickCount() == 2 && row != null) {
-                    host.editParams(row.block());
+                    if (!jumpIfSiblingTag(row.block())) {
+                        host.editParams(row.block());
+                    }
                 }
             }
 
@@ -156,7 +169,8 @@ final class BlockCanvas extends JComponent {
      * primary control, so every mouse gesture has a key equivalent —
      * Up/Down walk the pieces, Left/Right walk the tree, Alt+Up/Down
      * reorder within the parent, Enter adds a child piece, Shift+Enter
-     * a sibling after, F2 edits params, Delete removes, Escape clears.
+     * a sibling after, F2 edits params, F3 jumps to a sibling component
+     * named by an Element piece, Delete removes, Escape clears.
      * Package-private: tests drive it with synthesized events.
      */
     void handleKey(KeyEvent e) {
@@ -219,6 +233,11 @@ final class BlockCanvas extends JComponent {
             case KeyEvent.VK_F2 -> {
                 if (sel != null) {
                     host.editParams(sel);
+                }
+            }
+            case KeyEvent.VK_F3 -> {
+                if (sel != null) {
+                    jumpIfSiblingTag(sel);
                 }
             }
             case KeyEvent.VK_ESCAPE -> {
@@ -285,6 +304,13 @@ final class BlockCanvas extends JComponent {
             BlockLayout.Row r = layout.rows().get(i);
             scrollRectToVisible(new Rectangle(0, r.y(), getWidth(), r.h()));
         }
+    }
+
+    /** Double-click/F3 navigation: an Element naming a sibling component
+     *  jumps to it; anything else reports false for the usual gesture. */
+    private boolean jumpIfSiblingTag(Block b) {
+        return b != null && b.kind() == BlockKind.ELEMENT
+                && host.openComponentWithTag(b.param("tag"));
     }
 
     /** Kinds the interlock law admits under {@code parent} — menu order. */

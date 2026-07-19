@@ -171,6 +171,11 @@ public final class BlockStudioTopComponent extends TopComponent {
             public void editParams(Block block) {
                 editParamsDialog(block);
             }
+
+            @Override
+            public boolean openComponentWithTag(String tag) {
+                return jumpToComponent(tag);
+            }
         });
 
         // palette: every kind but the root, draggable by name
@@ -627,6 +632,27 @@ public final class BlockStudioTopComponent extends TopComponent {
         refreshComponentCombo();
         regenerate();
         saver.restart();
+    }
+
+    /**
+     * Navigation (v1.94.0): jump to the sibling component whose root tag
+     * matches. A jump rides {@link #switchToComponent} so it is a patch
+     * boundary like any switch. The ACTIVE component's own tag is not a
+     * jump (double-click keeps meaning edit-params there), and an
+     * unknown tag reports false so the gesture falls through.
+     * Package-private: tests drive it directly.
+     */
+    boolean jumpToComponent(String tag) {
+        if (workspace == null || tag == null) {
+            return false;
+        }
+        int at = workspace.indexOfTag(tag);
+        if (at < 0 || at == workspace.active()) {
+            return false;
+        }
+        switchToComponent(at);
+        setStatus("Jumped to <" + tag + ">");
+        return true;
     }
 
     /** Rebuilds the switcher's items from the workspace's tags. */
