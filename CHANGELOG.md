@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.87.0] - 2026-07-18
+
+### The E2E capstone
+
+SPECTER gets its discoverability pieces, plus a startup polish:
+
+- **E2E Loop preset** (15th): VELOCITY serves and its READY jack fires
+  SPECTER's RUN — the suite runs the moment the app is up; SCOPE follows
+  whatever is serving (the app first, the Playwright HTML report when
+  REPORT announces its URL); MONITOR taps the output.
+- **Playwright learning space** (72nd): a self-contained starter (two
+  tests against a `data:` page — first green run with no server), a
+  config whose presence makes SPECTER's ENGINE=auto resolve to
+  playwright, and a tutorial that walks RUN/HEADED/REPORT/RECORD/
+  BROWSERS and the E2E Loop preset.
+- **Startup warnings fixed**: the two menu-position collisions the
+  v1.86.0 boot log showed — New Learning Space… shared `Menu/File` 119
+  with the Classic Kit (→ 112, beside New Project), and Block Studio
+  shared `Menu/Window` 259 with Contract Studio (→ 257) — verified
+  gone on a throwaway-userdir boot of the assembled app.
+
 ## [1.86.0] - 2026-07-18
 
 ### SPECTER — the E2E console (51st device)

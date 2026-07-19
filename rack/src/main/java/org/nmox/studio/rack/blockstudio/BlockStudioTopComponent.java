@@ -62,7 +62,7 @@ import org.openide.windows.TopComponent;
 @TopComponent.Registration(mode = "editor", openAtStartup = false, position = 76)
 @ActionID(category = "Window", id = "org.nmox.studio.rack.blockstudio.BlockStudioTopComponent")
 @org.openide.awt.ActionReferences({
-    @ActionReference(path = "Menu/Window", position = 259),
+    @ActionReference(path = "Menu/Window", position = 257),
     // The chord rides Shortcuts/ for the binding; the Window-menu
     // accelerator comes from the Keymaps shadow in ui/layer.xml (rack
     // windows host their shadows there — the v1.38.1/debt-28 split).
