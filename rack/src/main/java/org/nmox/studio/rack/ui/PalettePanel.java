@@ -142,7 +142,7 @@ public class PalettePanel extends JPanel {
         add(scroll, BorderLayout.CENTER);
 
         JLabel hint = new JLabel("<html>Drag a device onto the rack &middot; Tab flips the rack"
-                + " &middot; drag jacks to patch cables</html>");
+                + " &middot; drag or click jacks to patch cables</html>");
         hint.setForeground(RackStyle.SILKSCREEN_DIM);
         hint.setFont(RackStyle.TINY_FONT);
         hint.setBorder(BorderFactory.createEmptyBorder(6, 10, 8, 10));

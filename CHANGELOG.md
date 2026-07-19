@@ -4,6 +4,107 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.95.1] - 2026-07-19
+
+### Docs truth repair + the patching hint tells the whole story
+
+The v1.92.0–v1.95.0 run outpaced the per-ship docs law: six releases
+shipped with no changelog entry and a CLAUDE.md/plan.md status frozen
+at v1.91.0. This release backfills the record (the six entries below
+are written from the merged PRs and the shipped code) and brings every
+status surface current to v1.95.0, including the ORACLE live proof:
+on 2026-07-19 both consult paths ran against the real Anthropic API in
+the shipped app — the button path (one-time consent dialog naming
+exactly what is sent, correct diagnosis on the LCD) and the hands-free
+cable path (VERITAS FAIL → EXPLAIN auto-consulted with zero faceplate
+interaction; VIEW showed a correct 4-step fix for the planted bug).
+
+Product fix: the rack palette hint still read "drag jacks to patch
+cables" — it now advertises the v1.95.0 gesture too ("drag or click").
+
+## [1.95.0] - 2026-07-19
+
+### Click-to-click cable patching
+
+Found by real use during the ORACLE live drive: the rear rack is wider
+than a default window, so a press-drag-release between far-apart jacks
+is physically awkward — and out-jacks lay right-to-left from the
+device's right edge, putting OK/FAIL/DONE off-window at default width.
+Now a **click on a jack arms it** (the cable preview follows the
+cursor, surviving scrolls), a **click on a compatible jack connects**,
+empty space or Escape cancels, and clicking another same-side jack
+re-arms from there. The classic drag is unchanged — both gestures run
+through one pure state machine (`CablePatchGesture`), every transition
+unit-tested (CablePatchGestureTest, 5).
+
+## [1.94.0] - 2026-07-19
+
+### Block Studio jump-to-component
+
+Double-click (or F3) on an Element piece naming a **sibling
+component's tag** switches the studio to that component — riding
+`switchToComponent`, so the jump is a patch boundary (force-save,
+fresh undo). The active component's own tag and unknown tags fall
+through to the usual edit-params gesture. `Host.openComponentWithTag`
+is a default-false seam so the pure canvas stays headless-testable.
+With this, the Block Studio idea backlog is empty.
+
+## [1.93.1] - 2026-07-19
+
+### Rear jacks compress instead of colliding
+
+Jack-heavy consoles (base ports + the serve family) crowded their rear
+labels into collisions — the "ENABSERVING" observation from the
+v1.90.0 live drive. The jack pitch now compresses uniformly (82px down
+to fit) once a device's port count would collide the INPUTS/OUTPUTS
+groups; ports re-lay on every add because the pitch depends on the
+final count. A catalog-wide gate (ConsoleJackContractTest) asserts
+≥44px clear air between the groups on every device — proven
+failing-first (it named HALO on the old layout).
+
+## [1.93.0] - 2026-07-19
+
+### The gate never lies through the trust prompt
+
+Serve verbs raised SERVING/RUNNING/LIVE **before** `launch()`, whose
+Workspace Trust gate returns early on "Keep Safe" — so declining trust
+left a phantom high gate wired downstream forever (the v1.90.0
+live-drive observation, confirmed real). `launch()`/`launchWithEnv()`
+now return launched-for-real, and all 18 gate emitters across 14
+devices are guarded (`if (launch(...)) { emit … }`). A static
+`trustCheck` seam makes the Keep Safe path testable; ServingTruthTest
+proven failing-first, teardown via the v1.90.0 STOP jack.
+
+## [1.92.1] - 2026-07-19
+
+### Sixth review: the vendor tripwire covers all eight libraries
+
+One lens over the v1.90–v1.92 surface (clean on 10 of 11 questions).
+The find: VendorResourcesTest's marker scan never covered the two
+v1.92.0 additions and read only the first 2KB — Alpine's version
+property sits past 21KB. Now alpine (`version:"3.14.9"`) and htmx
+(`version:"2.0.4"`) markers gate the vendored bytes with a full-file
+scan; a wrong-version mutation fails 3 checks.
+
+## [1.92.0] - 2026-07-19
+
+### The modern lightweights — Solid, Preact, Qwik, Lit, Alpine, htmx, Ember, Remix
+
+The framework-coverage matrix answered ("cover the ones we don't"):
+- **Six new learning spaces** (72 → 78): Solid/Preact/Qwik as real
+  Vite counter apps teaching each framework's core idea, Lit pointing
+  at Block Studio's generated components, Alpine/htmx as honest
+  no-build classic-web pages. All six live-proven with real installs
+  and dev servers before ship.
+- **Vite + Solid project template** (14th).
+- **Classic Kit grows to 8 libraries**: Alpine.js 3.14.9 (MIT) and
+  htmx 2.0.4 (0BSD, LICENSE verified by hand) vendored sha256-pinned,
+  with detection and 22 API completion entries. The script-tag law
+  loosened to attributes-allowed (Alpine requires `defer`) while still
+  pinning loads-exactly-its-own-file.
+- **ember-cli-build.js and remix.config.js** join the manifest set (53
+  recognized).
+
 ## [1.91.0] - 2026-07-19
 
 ### ORACLE joins the patch bay — auto-explain by cable
