@@ -44,6 +44,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
     // cable dragging (back view)
     private Port dragFrom;
+    private final CablePatchGesture patchGesture = new CablePatchGesture();
     private Point dragPoint;
 
     // device reordering (front view)
@@ -96,6 +97,24 @@ public class RackPanel extends JPanel implements Rack.Listener {
             @Override
             public void mousePressed(MouseEvent e) {
                 setSelected(null);
+                if (patchGesture.press(null) == CablePatchGesture.Action.CANCEL) {
+                    dragFrom = null;
+                    dragPoint = null;
+                    repaint();
+                }
+            }
+        });
+        // Escape drops an armed click-to-click patch (v1.95.0)
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "cancel-patch");
+        getActionMap().put("cancel-patch", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (patchGesture.escape() == CablePatchGesture.Action.CANCEL) {
+                    dragFrom = null;
+                    dragPoint = null;
+                    repaint();
+                }
             }
         });
         rebuild();
@@ -246,10 +265,26 @@ public class RackPanel extends JPanel implements Rack.Listener {
             }
             if (!front) {
                 Port p = device.portAt(e.getPoint());
-                if (p != null) {
-                    dragFrom = p;
-                    dragPoint = SwingUtilities.convertPoint(device, e.getPoint(), RackPanel.this);
-                    repaint();
+                switch (patchGesture.press(p)) {
+                    case CONNECT -> {
+                        rack.connect(patchGesture.from(), p);
+                        patchGesture.reset();
+                        dragFrom = null;
+                        dragPoint = null;
+                        repaint();
+                    }
+                    case TRACK -> {
+                        dragFrom = patchGesture.from();
+                        dragPoint = SwingUtilities.convertPoint(device, e.getPoint(), RackPanel.this);
+                        repaint();
+                    }
+                    case CANCEL -> {
+                        dragFrom = null;
+                        dragPoint = null;
+                        repaint();
+                    }
+                    case NONE -> {
+                    }
                 }
             } else {
                 setSelected(device);
@@ -282,11 +317,26 @@ public class RackPanel extends JPanel implements Rack.Listener {
             if (dragFrom != null) {
                 Point inRack = SwingUtilities.convertPoint(device, e.getPoint(), RackPanel.this);
                 Port target = findSnapTarget(inRack);
-                if (target != null) {
-                    rack.connect(dragFrom, target);
+                boolean onSource = portLocation(dragFrom).distance(inRack) < 18;
+                switch (patchGesture.release(onSource, target)) {
+                    case CONNECT -> {
+                        rack.connect(dragFrom, target);
+                        patchGesture.reset();
+                        dragFrom = null;
+                        dragPoint = null;
+                    }
+                    case TRACK -> {
+                        // armed by a click: the preview persists and follows
+                        // the mouse until the second click (v1.95.0)
+                        dragPoint = inRack;
+                    }
+                    case CANCEL -> {
+                        dragFrom = null;
+                        dragPoint = null;
+                    }
+                    case NONE -> {
+                    }
                 }
-                dragFrom = null;
-                dragPoint = null;
                 repaint();
             }
             if (reordering != null) {
@@ -298,6 +348,10 @@ public class RackPanel extends JPanel implements Rack.Listener {
         @Override
         public void mouseMoved(MouseEvent e) {
             if (!front) {
+                if (patchGesture.isSticky()) {
+                    dragPoint = SwingUtilities.convertPoint(device, e.getPoint(), RackPanel.this);
+                    repaint();
+                }
                 device.setCursor(device.portAt(e.getPoint()) != null
                         ? java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
                         : java.awt.Cursor.getDefaultCursor());
