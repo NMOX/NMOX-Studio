@@ -113,14 +113,16 @@ public class ViteDevice extends CommandDevice {
 
     private void dev() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "vite"));
+        if (launch(List.of("npx", "vite"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     private void preview() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "vite", "preview"));
+        if (launch(List.of("npx", "vite", "preview"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

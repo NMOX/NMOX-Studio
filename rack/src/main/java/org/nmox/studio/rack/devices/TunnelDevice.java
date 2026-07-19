@@ -76,8 +76,9 @@ public class TunnelDevice extends CommandDevice {
             urlLcd.setText("DIALING…");
             liveLed.setBlinking(true);
         });
-        emit("live", Signal.gate(true));
-        launch(buildCommand());
+        if (launch(buildCommand())) {
+            emit("live", Signal.gate(true));
+        }
     }
 
     @Override

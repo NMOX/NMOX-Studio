@@ -131,15 +131,18 @@ public class DebugDevice extends CommandDevice {
             endpointLcd.setText(endpoint);
             armedLed.setBlinking(true);
         });
-        emit("live", Signal.gate(true));
         emit("endpoint", Signal.data(endpoint));
 
         // JDWP rides in on MAVEN_OPTS; everything else is plain argv
+        boolean launched;
         if ("maven".equals(target)) {
-            launchWithEnv(buildCommand(), Map.of("MAVEN_OPTS",
+            launched = launchWithEnv(buildCommand(), Map.of("MAVEN_OPTS",
                     "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"));
         } else {
-            launch(buildCommand());
+            launched = launch(buildCommand());
+        }
+        if (launched) {
+            emit("live", Signal.gate(true));
         }
     }
 

@@ -115,14 +115,16 @@ public class NuxtDevice extends CommandDevice {
 
     private void dev() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "nuxi", "dev"));
+        if (launch(List.of("npx", "nuxi", "dev"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     private void preview() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "nuxi", "preview"));
+        if (launch(List.of("npx", "nuxi", "preview"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

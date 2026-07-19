@@ -70,9 +70,10 @@ public class DevServerDevice extends CommandDevice {
     @Override
     protected void primaryAction() {
         readyFired.set(false);
-        emit("running", Signal.gate(true));
-        onEdt(() -> liveLed.setBlinking(true));
-        launch(buildCommand());
+        if (launch(buildCommand())) {
+            emit("running", Signal.gate(true));
+            onEdt(() -> liveLed.setBlinking(true));
+        }
     }
 
     private void shutdown() {
