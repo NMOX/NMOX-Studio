@@ -44,7 +44,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
     // cable dragging (back view)
     private Port dragFrom;
-    private final CablePatchGesture patchGesture = new CablePatchGesture();
+    final CablePatchGesture patchGesture = new CablePatchGesture(); // package-private: gesture-lifecycle tests arm it directly
     private Point dragPoint;
 
     // device reordering (front view)
@@ -93,7 +93,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
         setTransferHandler(new PaletteDropHandler());
 
         // clicking the rails or empty rack deselects
-        addMouseListener(new MouseAdapter() {
+        MouseAdapter background = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 setSelected(null);
@@ -103,7 +103,19 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     repaint();
                 }
             }
-        });
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                // an armed click-patch preview follows the cursor over the
+                // rails and empty rack too, not just over device bounds
+                if (patchGesture.isSticky()) {
+                    dragPoint = e.getPoint();
+                    repaint();
+                }
+            }
+        };
+        addMouseListener(background);
+        addMouseMotionListener(background);
         // Escape drops an armed click-to-click patch (v1.95.0)
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "cancel-patch");
@@ -188,7 +200,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
     public void setFront(boolean f) {
         if (front != f) {
             front = f;
-            dragFrom = null;
+            cancelPatchGesture();
             for (RackDevice d : rack.getDevices()) {
                 d.setFront(f);
             }
@@ -196,10 +208,25 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
     }
 
+    /**
+     * Drop any in-flight cable gesture — armed click-patch or live drag.
+     * Called on flip and on every structural rebuild: an armed gesture
+     * surviving a flip is invisible (the preview only paints on the
+     * rear), so the next rear jack click would silently patch a cable
+     * the user believed cancelled; surviving a rebuild it can hold a
+     * Port of a removed/replaced device and connect a ghost cable to a
+     * disposed device (the v1.95.1 review's HIGH + MED findings).
+     */
+    void cancelPatchGesture() {
+        patchGesture.escape();
+        dragFrom = null;
+    }
+
     // ---- model sync ----
 
     private void rebuild() {
         removeAll();
+        cancelPatchGesture();
         if (selected != null && !rack.getDevices().contains(selected)) {
             selected = null;
         }
