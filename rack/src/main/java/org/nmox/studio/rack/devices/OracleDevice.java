@@ -52,6 +52,12 @@ public class OracleDevice extends RackDevice {
     private static final String NO_CONSENT = "EXPLAIN NEEDS YOUR OK — PRESS AGAIN";
     private static final String THINKING = "CONSULTING ORACLE…";
     private static final String OFFLINE = "OFFLINE — COULD NOT REACH ORACLE";
+    static final String COOLING = "AUTO-EXPLAIN COOLING DOWN — 30s BETWEEN CONSULTS";
+    static final String AUTO_NO_CONSENT = "AUTO-EXPLAIN NEEDS CONSENT — PRESS EXPLAIN ONCE";
+
+    /** Cable-triggered consults are rate-limited: a REFLEX save loop or a
+     *  flapping suite must never hammer a paid API. */
+    static final long AUTO_COOLDOWN_MS = 30_000;
 
     private final RackButton explain;
     private final RackButton view;
@@ -69,9 +75,15 @@ public class OracleDevice extends RackDevice {
     Supplier<char[]> keySource = OracleKeys::read;
     /** Whether consent is already granted (no prompt). Tests inject. */
     BooleanSupplier consentCheck = OracleConsent::isGranted;
+    /** Clock for the auto-explain cooldown. Tests inject. */
+    java.util.function.LongSupplier clock = System::currentTimeMillis;
+    /** Recorder-vs-signal race grace on the cable path (ms). Tests set 0. */
+    long autoRetryDelayMs = 400;
 
     /** The last explanation, shown in full by the VIEW popup. */
     private volatile String lastExplanation;
+    private volatile boolean consulting;
+    private volatile long lastAutoConsultAt = Long.MIN_VALUE / 2;
 
     public OracleDevice() {
         super("oracle", "ORACLE", "ERROR EXPLAINER", new Color(120, 90, 220), 2);
@@ -99,6 +111,87 @@ public class OracleDevice extends RackDevice {
         modelKnob = place(new Knob("MODEL", new String[]{"HAIKU", "SONNET"}, 0), 760, 26);
         modelKnob.setToolTipText("Which model answers: HAIKU (cheap, fast) or SONNET (stronger)");
         param("model", modelKnob);
+
+        // v1.91.0: auto-explain by cable — patch VERITAS FAIL → EXPLAIN and
+        // the verdict arrives hands-free; OUT carries the full text onward
+        addInPort("explain", "EXPLAIN", org.nmox.studio.rack.model.SignalType.TRIGGER);
+        addOutPort("out", "OUT", org.nmox.studio.rack.model.SignalType.DATA);
+    }
+
+    @Override
+    public void receive(org.nmox.studio.rack.model.Port in,
+            org.nmox.studio.rack.model.Signal signal) {
+        if ("explain".equals(in.getId())
+                && signal.type() == org.nmox.studio.rack.model.SignalType.TRIGGER) {
+            onAutoExplain();
+        }
+    }
+
+    /**
+     * The cable path (signal-router thread). A cable must NEVER prompt —
+     * no consent dialog storm from automation — so it refuses honestly on
+     * the LCD when consent hasn't been granted by a button press yet, and
+     * it rate-limits consults ({@link #AUTO_COOLDOWN_MS}) so a flapping
+     * suite can't hammer a paid API. The threading rides the same off-EDT
+     * lane as the button; the checks here are the synchronous core the
+     * tests drive via {@link #autoConsultNow}.
+     */
+    private void onAutoExplain() {
+        if (!autoPreflight()) {
+            return;
+        }
+        thinking(true);
+        offEdt(() -> {
+            try {
+                autoConsultBody();
+            } finally {
+                onEdt(() -> thinking(false));
+            }
+        });
+    }
+
+    /** Cooldown + in-flight + consent checks; true = go consult. */
+    private boolean autoPreflight() {
+        if (consulting) {
+            return false; // a consult is already in flight
+        }
+        if (clock.getAsLong() - lastAutoConsultAt < AUTO_COOLDOWN_MS) {
+            setVerdict(COOLING, RackStyle.LCD_AMBER);
+            return false;
+        }
+        if (!consentCheck.getAsBoolean()) {
+            // consent is granted by a human on the button path only
+            setVerdict(AUTO_NO_CONSENT, RackStyle.LCD_AMBER);
+            return false;
+        }
+        lastAutoConsultAt = clock.getAsLong();
+        return true;
+    }
+
+    /**
+     * The consult body for the cable path: the FAIL trigger and the
+     * FlightRecorder tap both ride the same exit event through different
+     * listeners, so the tape may be a beat behind the cable — one bounded
+     * grace wait before giving up on "nothing to explain".
+     */
+    private void autoConsultBody() {
+        if (failureSource.get().isEmpty() && autoRetryDelayMs > 0) {
+            try {
+                Thread.sleep(autoRetryDelayMs);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        consult(true);
+    }
+
+    /** Test seam: the cable path's synchronous core (no threads). */
+    String autoConsultNow() {
+        if (!autoPreflight()) {
+            return null;
+        }
+        autoConsultBody();
+        return lastExplanation;
     }
 
     @Override
@@ -207,6 +300,9 @@ public class OracleDevice extends RackDevice {
             }
             String text = client.explain(maybe.get(), currentModel(), key);
             lastExplanation = text;
+            // composability (v1.91.0): the full text rides the OUT jack —
+            // patch into MONITOR/PHOSPHOR to read explanations in the rack
+            emit("out", org.nmox.studio.rack.model.Signal.data(text));
             return setVerdict(firstLines(text), RackStyle.LCD_TEXT);
         } catch (java.io.IOException e) {
             // honest, never a throw: the message is already key-free
@@ -224,8 +320,13 @@ public class OracleDevice extends RackDevice {
     }
 
     private void thinking(boolean on) {
-        thinkLed.setOn(on);
-        thinkLed.setBlinking(on);
+        consulting = on;
+        // the cable path reaches here on the signal-router thread; the
+        // LED is Swing — marshal (setVerdict marshals itself already)
+        onEdt(() -> {
+            thinkLed.setOn(on);
+            thinkLed.setBlinking(on);
+        });
         if (on) {
             setVerdict(THINKING, RackStyle.QUERY);
         }
