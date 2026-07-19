@@ -59,12 +59,12 @@ public class SpecterDevice extends CommandDevice {
         outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 324, 46);
         RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 384, 40);
 
-        RackButton run = place(new RackButton("RUN", RackStyle.GO), 44, 88);
-        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 100, 88);
-        RackButton report = place(new RackButton("REPORT", new Color(64, 156, 255)), 158, 88);
-        RackButton record = place(new RackButton("RECORD", RackStyle.QUERY), 226, 88);
-        RackButton browsers = place(new RackButton("BROWSERS", RackStyle.MUTATE), 294, 88);
-        headed = place(new ToggleSwitch("HEADED", false), 372, 82);
+        RackButton run = place(new RackButton("RUN", RackStyle.GO), 44, 130);
+        RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 100, 130);
+        RackButton report = place(new RackButton("REPORT", new Color(64, 156, 255)), 158, 130);
+        RackButton record = place(new RackButton("RECORD", RackStyle.QUERY), 226, 130);
+        RackButton browsers = place(new RackButton("BROWSERS", RackStyle.MUTATE), 294, 130);
+        headed = place(new ToggleSwitch("HEADED", false), 372, 124);
 
         check.addActionListener(e -> refreshVersions());
         run.addActionListener(e -> primaryAction());

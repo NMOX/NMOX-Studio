@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.90.1] - 2026-07-19
+
+### SPECTER faceplate polish
+
+The ENGINE knob (a two-unit control) visually overlapped the RUN
+button — found by the v1.90.0 live cable drive, invisible to the fit
+law (which checks the bottom edge, not overlap). The action row moved
+below the knob's extent; verified clean on a live faceplate.
+
 ## [1.90.0] - 2026-07-19
 
 ### The jacks tell the truth (ledger 50 closed)
