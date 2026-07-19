@@ -357,6 +357,92 @@ public enum ProjectTemplates {
         }
     },
 
+    VITE_SOLID("Vite + Solid", "SolidJS with Vite dev server and Vitest") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "package.json", """
+                {
+                  "name": "%s",
+                  "version": "0.1.0",
+                  "private": true,
+                  "type": "module",
+                  "scripts": {
+                    "dev": "vite",
+                    "build": "vite build",
+                    "preview": "vite preview",
+                    "test": "vitest run"
+                  },
+                  "dependencies": {
+                    "solid-js": "^1.9.0"
+                  },
+                  "devDependencies": {
+                    "@eslint/js": "^9.9.0",
+                    "eslint": "^9.9.0",
+                    "globals": "^15.9.0",
+                    "prettier": "^3.3.3",
+                    "vite": "^5.4.0",
+                    "vite-plugin-solid": "^2.10.0",
+                    "vitest": "^2.0.5"
+                  }
+                }
+                """.formatted(name));
+            write(dir, "vite.config.js", """
+                import { defineConfig } from 'vite';
+                import solid from 'vite-plugin-solid';
+
+                export default defineConfig({
+                  plugins: [solid()],
+                  server: { port: 5173 },
+                });
+                """);
+            write(dir, "index.html", """
+                <!doctype html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <title>%s</title>
+                  </head>
+                  <body>
+                    <div id="app"></div>
+                    <script type="module" src="/src/index.jsx"></script>
+                  </body>
+                </html>
+                """.formatted(name));
+            write(dir, "src/index.jsx", """
+                import { render } from 'solid-js/web';
+                import { createSignal } from 'solid-js';
+
+                function App() {
+                  const [count, setCount] = createSignal(0);
+                  return (
+                    <main>
+                      <h1>%s</h1>
+                      <button onClick={() => setCount(count() + 1)}>
+                        clicks: {count()}
+                      </button>
+                    </main>
+                  );
+                }
+
+                render(() => <App />, document.getElementById('app'));
+                """.formatted(name));
+            write(dir, "src/App.test.js", """
+                import { describe, expect, it } from 'vitest';
+
+                describe('sanity', () => {
+                  it('adds', () => {
+                    expect(1 + 1).toBe(2);
+                  });
+                });
+                """);
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            return vitePatch();
+        }
+    },
     VITE_SVELTE("Vite + Svelte", "Svelte 4 with Vite dev server and Vitest") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {

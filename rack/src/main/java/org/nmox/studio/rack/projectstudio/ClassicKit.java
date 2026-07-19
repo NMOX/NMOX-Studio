@@ -85,6 +85,14 @@ public final class ClassicKit {
             "jquery-3.7.1.min.js",
             "<script src=\"vendor/jquery-3.7.1.min.js\"></script>",
             "jquery", "^3.7.1");
+    private static final Lib ALPINE = new Lib("alpine", "Alpine.js", "3.14.9",
+            "alpinejs-3.14.9.min.js",
+            "<script defer src=\"vendor/alpinejs-3.14.9.min.js\"></script>",
+            "alpinejs", "^3.14.9");
+    private static final Lib HTMX = new Lib("htmx", "htmx", "2.0.4",
+            "htmx-2.0.4.min.js",
+            "<script src=\"vendor/htmx-2.0.4.min.js\"></script>",
+            "htmx.org", "^2.0.4");
     private static final Lib MOOTOOLS = new Lib("mootools", "MooTools Core (compat)", "1.6.0",
             "mootools-core-1.6.0-compat.min.js",
             "<script src=\"vendor/mootools-core-1.6.0-compat.min.js\"></script>",
@@ -110,7 +118,7 @@ public final class ClassicKit {
 
     /** The selectable catalog, dialog order. */
     public static List<Lib> libraries() {
-        return List.of(JQUERY, MOOTOOLS, PROTOTYPE, BACKBONE, KNOCKOUT);
+        return List.of(JQUERY, MOOTOOLS, PROTOTYPE, BACKBONE, KNOCKOUT, ALPINE, HTMX);
     }
 
     /** Backbone's silent companion, for labels and tests. */

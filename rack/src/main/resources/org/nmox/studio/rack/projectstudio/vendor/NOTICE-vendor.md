@@ -28,6 +28,8 @@ its in-file banner/version marker, and is redistributed under its MIT
 | backbone-1.6.0.min.js | https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.6.0/backbone-min.js | 25673 | e13ceba154c3897f282d3106d6b015b1c5f699ad69b4517fd1cd490fd08190eb |
 | underscore-1.13.7.min.js | https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.13.7/underscore-umd-min.js | 19571 | c12dae551a8773812f3c6b682e8e66ecf71c729bf7e83f295747c0773e76cabb |
 | knockout-3.5.1.js | https://cdnjs.cloudflare.com/ajax/libs/knockout/3.5.1/knockout-latest.min.js | 67224 | 8c9cadf2d340b9a5ff3a7f4601116ddc451747986b3b3d02cb1d6c5f2165d553 |
+| alpinejs-3.14.9.min.js | https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js | 44758 | 3ed1eed252488921df65e363d6715deb04d7f92aaedb9e52199fdf73cb1e0ad3 |
+| htmx-2.0.4.min.js | https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js | 50917 | e209dda5c8235479f3166defc7750e1dbcd5a5c1808b7792fc2e6733768fb447 |
 
 To refresh: bump a version here, re-download from the recorded source,
 update bytes + SHA-256, and keep `VendorResourcesTest` markers in step —

@@ -147,7 +147,7 @@ class ClassicKitTest {
         @DisplayName("Every catalog library vendors from the bundle without error")
         void everyLibraryVendors() throws Exception {
             ClassicKit.write(project(), options(
-                    Set.of("jquery", "mootools", "prototype", "backbone", "knockout"),
+                    Set.of("jquery", "mootools", "prototype", "backbone", "knockout", "alpine", "htmx"),
                     ClassicKit.Mode.VENDORED, Set.of()));
 
             for (ClassicKit.Lib lib : ClassicKit.libraries()) {
@@ -450,7 +450,7 @@ class ClassicKitTest {
     @Test
     @DisplayName("Only Prototype is npm-incapable; the catalog carries five libraries")
     void catalogShape() {
-        assertThat(ClassicKit.libraries()).hasSize(5);
+        assertThat(ClassicKit.libraries()).hasSize(7);
         assertThat(ClassicKit.libraries()).filteredOn(lib -> !lib.npmCapable())
                 .extracting(ClassicKit.Lib::id).containsExactly("prototype");
         assertThat(ClassicKit.underscore().npmCapable()).isTrue();
@@ -464,9 +464,14 @@ class ClassicKitTest {
         java.util.List<ClassicKit.Lib> all = new java.util.ArrayList<>(ClassicKit.libraries());
         all.add(ClassicKit.underscore());
         for (ClassicKit.Lib lib : all) {
+            // the tag must load exactly its own vendor file; attributes
+            // like Alpine's defer (required when injected into <head>) are
+            // part of the library's correct spelling, not drift
             assertThat(lib.scriptTag())
                     .as(lib.id())
-                    .isEqualTo("<script src=\"vendor/" + lib.vendorFile() + "\"></script>");
+                    .startsWith("<script ")
+                    .contains(" src=\"vendor/" + lib.vendorFile() + "\"")
+                    .endsWith("></script>");
         }
     }
 

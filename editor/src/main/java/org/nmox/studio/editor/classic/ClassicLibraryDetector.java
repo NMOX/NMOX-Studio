@@ -189,6 +189,8 @@ public final class ClassicLibraryDetector {
             case "prototype", "prototypejs" -> libs.add("prototype");
             case "underscore", "lodash" -> libs.add("underscore");
             case "knockout" -> libs.add("knockout");
+            case "alpinejs" -> libs.add("alpine");
+            case "htmx.org" -> libs.add("htmx");
             default -> {
                 if (key.equals("backbone") || key.startsWith("backbone.")) {
                     libs.add("backbone");
@@ -217,6 +219,12 @@ public final class ClassicLibraryDetector {
         }
         if (n.contains("knockout")) {
             libs.add("knockout");
+        }
+        if (n.contains("alpine")) {
+            libs.add("alpine");
+        }
+        if (n.contains("htmx")) {
+            libs.add("htmx");
         }
     }
 
