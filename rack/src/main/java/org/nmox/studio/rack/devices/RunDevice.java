@@ -74,9 +74,10 @@ public class RunDevice extends CommandDevice {
         List<String> cmd = buildCommand();
         webpackLane = cmd.contains("webpack");
         phpLane = cmd.contains("php");
-        emit("running", Signal.gate(true));
-        onEdt(() -> liveLed.setOn(true));
-        launch(cmd);
+        if (launch(cmd)) {
+            emit("running", Signal.gate(true));
+            onEdt(() -> liveLed.setOn(true));
+        }
     }
 
     /**

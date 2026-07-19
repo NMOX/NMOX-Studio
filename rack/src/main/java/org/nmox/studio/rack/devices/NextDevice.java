@@ -114,8 +114,9 @@ public class NextDevice extends CommandDevice {
 
     private void dev() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "next", "dev"));
+        if (launch(List.of("npx", "next", "dev"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

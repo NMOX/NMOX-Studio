@@ -185,28 +185,39 @@ public abstract class CommandDevice extends RackDevice {
      * Launches a command with the full standard treatment: LEDs, meter,
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
-    protected void launch(List<String> command) {
-        launchWithEnv(command, Map.of());
+    protected boolean launch(List<String> command) {
+        return launchWithEnv(command, Map.of());
     }
 
-    /** {@link #launch} with extra environment for this run only (e.g. MAVEN_OPTS). */
-    protected void launchWithEnv(List<String> command, Map<String, String> extraEnv) {
+    /** Test seam for the trust gate (production: the real prompt). */
+    static java.util.function.Predicate<java.io.File> trustCheck =
+            org.nmox.studio.rack.service.WorkspaceTrust::requestTrust;
+
+    /**
+     * {@link #launch} with extra environment for this run only (e.g.
+     * MAVEN_OPTS). Returns whether the command was actually handed to
+     * the executor — false on every refusal (no command, no manifest,
+     * trust declined). Serve devices emit their SERVING gate only on a
+     * true return, so a Keep Safe answer can never leave a phantom
+     * high gate driving downstream ENABLE cables (the v1.93.0 fix).
+     */
+    protected boolean launchWithEnv(List<String> command, Map<String, String> extraEnv) {
         if (command == null || command.isEmpty()) {
-            return;
+            return false;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             });
-            return;
+            return false;
         }
-        if (requiresProjectManifest() && !org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir())) {
+        if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             });
-            return;
+            return false;
         }
         // captured per launch: a relaunch must not skew a still-running
         // command's elapsed-time readout
@@ -251,6 +262,7 @@ public abstract class CommandDevice extends RackDevice {
             emit(ok ? "ok" : "fail", Signal.trigger(ok));
             emit("done", Signal.trigger(ok));
         });
+        return true;
     }
 
     /** One step of a multi-toolchain sequence: a command and where to run it. */
@@ -276,7 +288,7 @@ public abstract class CommandDevice extends RackDevice {
             });
             return;
         }
-        if (requiresProjectManifest() && !org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir())) {
+        if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");

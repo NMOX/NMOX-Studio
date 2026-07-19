@@ -223,8 +223,9 @@ public class SpecterDevice extends CommandDevice {
             return;
         }
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(cmd);
+        if (launch(cmd)) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     private void record() {

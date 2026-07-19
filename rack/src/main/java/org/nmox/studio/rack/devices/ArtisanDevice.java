@@ -134,8 +134,9 @@ public class ArtisanDevice extends CommandDevice {
 
     private void serve() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("php", "artisan", "serve"));
+        if (launch(List.of("php", "artisan", "serve"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     /** RUN fires the dialed action; serve gets the long-runner treatment. */

@@ -115,14 +115,16 @@ public class AstroDevice extends CommandDevice {
 
     private void dev() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "astro", "dev"));
+        if (launch(List.of("npx", "astro", "dev"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     private void preview() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "astro", "preview"));
+        if (launch(List.of("npx", "astro", "preview"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

@@ -142,8 +142,9 @@ public class PhoenixDevice extends CommandDevice {
 
     private void server() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("mix", "phx.server"));
+        if (launch(List.of("mix", "phx.server"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

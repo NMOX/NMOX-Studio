@@ -115,8 +115,9 @@ public class AnvilDevice extends CommandDevice {
         accountCount.set(0);
         firstAccount = null;
         firstBalance = null;
-        emit("serving", Signal.gate(true));
-        launch(buildCommand());
+        if (launch(buildCommand())) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

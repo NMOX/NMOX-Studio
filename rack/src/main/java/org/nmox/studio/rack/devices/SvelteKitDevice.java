@@ -115,14 +115,16 @@ public class SvelteKitDevice extends CommandDevice {
 
     private void dev() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "vite", "dev"));
+        if (launch(List.of("npx", "vite", "dev"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     private void preview() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "vite", "preview"));
+        if (launch(List.of("npx", "vite", "preview"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override

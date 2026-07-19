@@ -174,8 +174,9 @@ public class AngularDevice extends CommandDevice {
 
     private void serve() {
         readyFired.set(false);
-        emit("serving", Signal.gate(true));
-        launch(List.of("npx", "ng", "serve"));
+        if (launch(List.of("npx", "ng", "serve"))) {
+            emit("serving", Signal.gate(true));
+        }
     }
 
     @Override
