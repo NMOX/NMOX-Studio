@@ -186,4 +186,29 @@ class BlockMultiComponentTest {
             BlockStudioTopComponent.drainIoLane();
         }
     }
+
+    @Test
+    @DisplayName("jumpToComponent: sibling tag switches (a patch boundary); own/unknown tags fall through")
+    void jumpToComponentSemantics(@TempDir Path dir) throws Exception {
+        BlockStudioTopComponent tc = open(dir);
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                tc.addComponent(); // my-widget-2, now active
+                assertThat(tc.jumpToComponent("my-widget"))
+                        .as("a sibling tag jumps").isTrue();
+                assertThat(tc.currentWorkspace().active()).isZero();
+                assertThat(tc.undoDepth())
+                        .as("a jump is a switch — patch boundary, fresh undo").isZero();
+                assertThat(tc.jumpToComponent("my-widget"))
+                        .as("the ACTIVE component's own tag is not a jump").isFalse();
+                assertThat(tc.jumpToComponent("absent-tag"))
+                        .as("an unknown tag falls through to the usual gesture").isFalse();
+                assertThat(tc.currentWorkspace().active()).isZero();
+            });
+            drain();
+        } finally {
+            SwingUtilities.invokeAndWait(tc::componentClosed);
+            BlockStudioTopComponent.drainIoLane();
+        }
+    }
 }

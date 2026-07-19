@@ -162,4 +162,46 @@ class BlockCanvasKeyboardTest {
         assertThat(second.getAccessibleStateSet().contains(AccessibleState.SELECTED)).isFalse();
         assertThat(second.getAccessibleIndexInParent()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("F3 on an Element asks the host to open the component with that tag")
+    void f3JumpsToSiblingTag() throws Exception {
+        BlockDoc doc = new BlockDoc();
+        Block div = doc.create(BlockKind.ELEMENT);
+        div.setParam("tag", "other-widget");
+        doc.insert(doc.root(), div, 0);
+
+        java.util.List<String> jumps = new java.util.ArrayList<>();
+        BlockCanvas[] canvas = new BlockCanvas[1];
+        SwingUtilities.invokeAndWait(() -> canvas[0] = new BlockCanvas(new BlockCanvas.Host() {
+            @Override
+            public void aboutToChange() {
+            }
+
+            @Override
+            public void changed() {
+            }
+
+            @Override
+            public void selected(Block block) {
+            }
+
+            @Override
+            public void editParams(Block block) {
+            }
+
+            @Override
+            public boolean openComponentWithTag(String tag) {
+                jumps.add(tag);
+                return true;
+            }
+        }));
+        SwingUtilities.invokeAndWait(() -> canvas[0].setDoc(doc));
+
+        key(canvas[0], KeyEvent.VK_DOWN, 0); // root
+        key(canvas[0], KeyEvent.VK_F3, 0);   // COMPONENT row: no jump
+        key(canvas[0], KeyEvent.VK_DOWN, 0); // the element
+        key(canvas[0], KeyEvent.VK_F3, 0);
+        assertThat(jumps).containsExactly("other-widget");
+    }
 }
