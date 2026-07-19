@@ -26,10 +26,10 @@ import org.json.JSONObject;
  * vocabulary. Blocks that never appear in code (texts, attributes,
  * states…) get fresh ids above every anchored one.
  *
- * <p>Known strictness (documented, tested): a TEXT whose content itself
- * starts with {@code <} generates fine but cannot be re-imported — the
- * parser reads template lines starting with {@code <} as markup and
- * refuses when they aren't. Consistency is verified, not assumed: the
+ * <p>TEXT content is HTML-escaped by the generator ({@code &}/{@code <}
+ * → entities) and unescaped here, so a TEXT starting with {@code <}
+ * round-trips instead of being misread as markup (the pre-v1.88.0
+ * one-way limitation). Consistency is verified, not assumed: the
  * trailing {@code this.render()} must match the presence of a
  * Set-state, the class name must match the tag, and every data-b
  * anchor must gain its listener.
@@ -303,7 +303,7 @@ public final class BlockParser {
                     && !line.substring(indent).startsWith(" ")) {
                 at++;
                 out.add(node(freshId(), "TEXT",
-                        Map.of("text", untemplate(line.substring(indent), false))));
+                        Map.of("text", textUnescape(untemplate(line.substring(indent), false)))));
                 continue;
             }
             throw new ParseException(at + 1, "unrecognized template line: " + line.trim());
@@ -432,6 +432,15 @@ public final class BlockParser {
     // ---- text inversion (exact inverses of BlockCodegen's escaping) ----
 
     /** Template text back to its param form: refs → {x}/{@y}, unescape. */
+    /**
+     * The exact inverse of {@link BlockCodegen#textEscape}: {@code &lt;}
+     * first, then {@code &amp;} — reverse of the escape order, so a user
+     * who literally typed "&amp;lt;" survives the round trip.
+     */
+    private static String textUnescape(String s) {
+        return s.replace("&lt;", "<").replace("&amp;", "&");
+    }
+
     private String untemplate(String s, boolean attrContext) {
         StringBuilder out = new StringBuilder();
         int i = 0;

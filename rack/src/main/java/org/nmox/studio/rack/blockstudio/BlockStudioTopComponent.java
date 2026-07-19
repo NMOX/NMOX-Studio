@@ -247,6 +247,15 @@ public final class BlockStudioTopComponent extends TopComponent {
         saveBtn.getAccessibleContext().setAccessibleName("Save component to project");
         saveBtn.setToolTipText("Writes src/components/<tag>.js into the aimed project"
                 + " — refuses files Block Studio did not generate");
+        JButton saveAllBtn = new JButton(new AbstractAction("Save All") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveAllComponents();
+            }
+        });
+        saveAllBtn.getAccessibleContext().setAccessibleName("Save all components");
+        saveAllBtn.setToolTipText("Writes every valid component in this workspace to"
+                + " src/components/ — invalid components sit out, foreign files are refused");
 
         preview = new BlockPreviewServer(
                 () -> {
@@ -327,6 +336,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         toolbar.add(undoBtn);
         toolbar.add(openBtn);
         toolbar.add(saveBtn);
+        toolbar.add(saveAllBtn);
         toolbar.add(previewBtn);
         toolbar.add(status);
         status.getAccessibleContext().setAccessibleName("Block Studio status");
@@ -795,6 +805,62 @@ public final class BlockStudioTopComponent extends TopComponent {
             }
             String finalMessage = message;
             SwingUtilities.invokeLater(() -> setStatus(finalMessage));
+        });
+    }
+
+    /**
+     * Save All (v1.88.0): every valid component in the workspace goes to
+     * src/components/ through the same never-clobber write as Save
+     * Component; invalid components sit the pass out and foreign files
+     * refuse — the status line counts each outcome honestly.
+     * Package-private: tests drive it without the button.
+     */
+    void saveAllComponents() {
+        BlockWorkspace ws = workspace;
+        File dir = projectDir;
+        if (ws == null || dir == null) {
+            setStatus("Aim a project first");
+            return;
+        }
+        java.util.List<String[]> jobs = new java.util.ArrayList<>();
+        int invalid = 0;
+        for (BlockDoc d : ws.components()) {
+            if (BlockCodegen.validate(d).isEmpty()) {
+                jobs.add(new String[]{d.root().param("tag"), BlockCodegen.generate(d).code()});
+            } else {
+                invalid++;
+            }
+        }
+        int skipped = invalid;
+        RP.post(() -> {
+            int saved = 0;
+            java.util.List<String> refused = new java.util.ArrayList<>();
+            String failure = null;
+            for (String[] job : jobs) {
+                try {
+                    if (BlockIO.writeComponent(dir, job[0], job[1])) {
+                        saved++;
+                    } else {
+                        refused.add(job[0]);
+                    }
+                } catch (IOException ex) {
+                    failure = ex.getMessage();
+                }
+            }
+            StringBuilder msg = new StringBuilder("Saved " + saved + " component"
+                    + (saved == 1 ? "" : "s"));
+            if (!refused.isEmpty()) {
+                msg.append(" · refused ").append(refused.size())
+                        .append(" (foreign: ").append(String.join(", ", refused)).append(")");
+            }
+            if (skipped > 0) {
+                msg.append(" · ").append(skipped).append(" invalid skipped");
+            }
+            if (failure != null) {
+                msg.append(" · write failed: ").append(failure);
+            }
+            String finalMsg = msg.toString();
+            SwingUtilities.invokeLater(() -> setStatus(finalMsg));
         });
     }
 

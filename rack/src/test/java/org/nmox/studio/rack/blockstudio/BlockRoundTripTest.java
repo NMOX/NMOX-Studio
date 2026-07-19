@@ -29,7 +29,24 @@ class BlockRoundTripTest {
                 new NamedDoc("escaping", escaping()),
                 new NamedDoc("deepNesting", deepNesting()),
                 new NamedDoc("multiListenerMultiTimer", multiListenerMultiTimer()),
-                new NamedDoc("earlyListener", earlyListener()));
+                new NamedDoc("earlyListener", earlyListener()),
+                new NamedDoc("markupishText", markupishText()));
+    }
+
+    /**
+     * The pre-v1.88.0 one-way limitation, closed: TEXT content starting
+     * with (or containing) {@code <} and {@code &} is entity-escaped by
+     * the generator and unescaped by the parser — including text that
+     * literally says "&amp;lt;", which must not collapse to "&lt;".
+     */
+    static BlockDoc markupishText() {
+        BlockDoc doc = new BlockDoc();
+        doc.root().setParam("tag", "markup-ish");
+        Block div = add(doc, doc.root(), BlockKind.ELEMENT, "tag", "div");
+        add(doc, div, BlockKind.TEXT, "text", "<b>not markup</b>");
+        add(doc, div, BlockKind.TEXT, "text", "salt & pepper < sugar");
+        add(doc, div, BlockKind.TEXT, "text", "literally &lt; typed");
+        return doc;
     }
 
     record NamedDoc(String name, BlockDoc doc) {
