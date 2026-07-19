@@ -93,6 +93,76 @@ class ServingTruthTest {
         }
     }
 
+    /** Records DATA payloads — the ENDPOINT jack speaks data, not gates. */
+    private static final class DataProbe extends RackDevice {
+        final ConcurrentLinkedQueue<String> payloads = new ConcurrentLinkedQueue<>();
+
+        DataProbe() {
+            super("dataprobe", "DATAPROBE", "PROBE", new Color(0, 0, 0), 1);
+            addInPort("in", "IN", SignalType.DATA);
+        }
+
+        @Override
+        public void receive(Port in, Signal signal) {
+            payloads.add(signal.payload());
+        }
+    }
+
+    @Test
+    @DisplayName("INSPECTOR: Keep Safe emits no ENDPOINT and leaves no armed faceplate (v1.95.2)")
+    void inspectorRefusalEmitsNoEndpoint() throws Exception {
+        Rack rack = rackWithNodeProject();
+        try {
+            DebugDevice inspector = new DebugDevice();
+            DataProbe probe = new DataProbe();
+            GateProbe gates = new GateProbe();
+            rack.addDevice(inspector);
+            rack.addDevice(probe);
+            rack.addDevice(gates);
+            rack.connect(inspector.getPort("endpoint"), probe.getPort("in"));
+            rack.connect(inspector.getPort("live"), gates.getPort("gate"));
+
+            CommandDevice.trustCheck = f -> false; // the Keep Safe answer
+            inspector.receive(inspector.getPort("run"), Signal.trigger());
+            settle(rack);
+
+            assertThat(probe.payloads)
+                    .as("a refused launch must not advertise an attach address nothing listens on")
+                    .isEmpty();
+            assertThat(gates.gates).as("no phantom LIVE gate either").isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
+    @DisplayName("A removed device's queued serve reports launch=false — no phantom gate (v1.95.2)")
+    void disposedDeviceNeverReportsLaunched() throws Exception {
+        Rack rack = rackWithNodeProject();
+        try {
+            ViteDevice vite = new ViteDevice();
+            GateProbe probe = new GateProbe();
+            rack.addDevice(vite);
+            rack.addDevice(probe);
+            Port serving = vite.getPort("serving");
+            Port serve = vite.getPort("serve");
+            rack.removeDevice(vite); // disposes; cables would be severed, but the
+            // Port objects survive — a queued router delivery can still land
+            rack.connect(serving, probe.getPort("gate"));
+
+            CommandDevice.trustCheck = f -> true;
+            vite.receive(serve, Signal.trigger());
+            settle(rack);
+
+            assertThat(probe.gates)
+                    .as("launch() on a disposed device must return false — the old true "
+                            + "return raised gate(true) AFTER exec's synthetic exit dropped it")
+                    .isEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     @Test
     @DisplayName("A granted launch raises the gate exactly as before")
     void trustGrantRaisesGate() throws Exception {

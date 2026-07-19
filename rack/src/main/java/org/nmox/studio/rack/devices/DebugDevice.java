@@ -126,14 +126,13 @@ public class DebugDevice extends CommandDevice {
             return; // honest grey: no spawn, no live gate
         }
         String endpoint = endpointFor(target);
-        onEdt(() -> {
-            endpointLcd.setTextColor(RackStyle.LCD_AMBER);
-            endpointLcd.setText(endpoint);
-            armedLed.setBlinking(true);
-        });
-        emit("endpoint", Signal.data(endpoint));
 
-        // JDWP rides in on MAVEN_OPTS; everything else is plain argv
+        // JDWP rides in on MAVEN_OPTS; everything else is plain argv.
+        // Endpoint/armed-LED/ENDPOINT-jack all wait for launched-for-real:
+        // a trust refusal must not advertise an attach address nothing
+        // listens on, nor leave the WIRED LED blinking forever (the
+        // v1.95.1 review's INSPECTOR finding — the v1.93.0 bug shape on
+        // a DATA jack).
         boolean launched;
         if ("maven".equals(target)) {
             launched = launchWithEnv(buildCommand(), Map.of("MAVEN_OPTS",
@@ -142,7 +141,15 @@ public class DebugDevice extends CommandDevice {
             launched = launch(buildCommand());
         }
         if (launched) {
+            onEdt(() -> {
+                endpointLcd.setTextColor(RackStyle.LCD_AMBER);
+                endpointLcd.setText(endpoint);
+                armedLed.setBlinking(true);
+            });
+            emit("endpoint", Signal.data(endpoint));
             emit("live", Signal.gate(true));
+        } else {
+            onEdt(() -> armedLed.setBlinking(false));
         }
     }
 

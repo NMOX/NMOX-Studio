@@ -202,6 +202,14 @@ public abstract class CommandDevice extends RackDevice {
      * high gate driving downstream ENABLE cables (the v1.93.0 fix).
      */
     protected boolean launchWithEnv(List<String> command, Map<String, String> extraEnv) {
+        if (isDisposed()) {
+            // a queued trigger routed after removal must not report
+            // launched-for-real: exec() would refuse to spawn, and the
+            // true return would let the caller raise a phantom gate in
+            // inverted order with exec's synthetic exit (the v1.95.1
+            // review's contract finding)
+            return false;
+        }
         if (command == null || command.isEmpty()) {
             return false;
         }

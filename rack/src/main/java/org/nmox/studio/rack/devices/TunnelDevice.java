@@ -71,6 +71,11 @@ public class TunnelDevice extends CommandDevice {
     @Override
     protected void primaryAction() {
         announced = false;
+        // Pre-launch DIALING… + blinking LED are safe ONLY because this
+        // device has no refusal path (no manifest requirement, and
+        // buildCommand() is never empty). If either changes, move this
+        // faceplate state inside the launch() guard like INSPECTOR's —
+        // a refused launch must not leave the LED blinking forever.
         onEdt(() -> {
             urlLcd.setTextColor(RackStyle.LCD_AMBER);
             urlLcd.setText("DIALING…");
