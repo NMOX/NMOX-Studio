@@ -54,9 +54,13 @@ final class ApplyPreviewDialog {
                 BorderLayout.SOUTH);
 
         Object applyOption = "Apply";
+        // Cancel is the initialValue (the focused/default button), so a
+        // reflexive Enter does NOT run the UPDATEs against the live DB —
+        // the v1.98.0 dialog-safety law applied to the one destructive
+        // dialog in the module.
         DialogDescriptor descriptor = new DialogDescriptor(panel, "Apply Edits", true,
                 new Object[]{applyOption, NotifyDescriptor.CANCEL_OPTION},
-                applyOption, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                NotifyDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         return DialogDisplayer.getDefault().notify(descriptor) == applyOption;
     }
 }

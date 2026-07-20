@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.101.0] - 2026-07-20
+
+### DB Studio: safe quoting, bounded reads, honest Apply (first dedicated review)
+
+The first dedicated **dbstudio** review found seven defects worth
+shipping now (two HIGH, four MED, one LOW); the remaining lower-
+severity items are recorded as ledger 54.
+
+- **MySQL/MariaDB string values escape the backslash.** `UpdateBuilder`
+  doubled only the single quote; on MySQL/MariaDB (backslash is a
+  string escape by default) a cell ending in `\` — `C:\` — rendered
+  `'C:\'`, the server read `\'` as an escaped quote, the literal never
+  terminated and the trailing `WHERE …` was swallowed into the string:
+  broken at best, a break-out at worst. Value escaping is now
+  dialect-aware — MySQL/MariaDB double the backslash too, PostgreSQL
+  and SQLite (backslash is literal) keep quote-doubling only.
+  Mutation-proven across all three families.
+- **The CouchDB read is bounded.** `CouchBackend` buffered the whole
+  HTTP body via `ofString()`; a `_find` against a huge collection (or
+  a hostile endpoint) could OOM the IDE before the grid ever applied a
+  row cap. Bodies now stream through an 8 MB capped reader and refuse
+  past the cap — the apiclient v1.99.0 fix, here. Proven against a
+  real in-JVM server.
+- **The two destructive dialogs default to the safe button.** The
+  Apply-edits preview (which runs real UPDATEs) defaulted its Enter key
+  to **Apply**, and Remove-connection (which deletes the connection and
+  its keychain password) used the OK-defaulting `Confirmation`
+  shortcut. Both now default to Cancel via the full constructor's
+  initialValue (the v1.98.0 idiom) — a reflexive keypress can't run
+  UPDATEs or delete a saved password.
+- **EXPLAIN can no longer execute a trailing write.** The button
+  prefixed `EXPLAIN` to the whole console text and re-split it, so
+  `SELECT …; DELETE …` explained the SELECT and **ran the DELETE**
+  under a button the user believes is read-only. EXPLAIN now refuses
+  multi-statement text.
+- **Apply treats a 0-row UPDATE as a failure.** A PK-scoped UPDATE that
+  matched nothing (the row changed under the grid) was counted as
+  "applied" — a silent lost edit reported as success. A 0-row match
+  now stops with "0 rows matched — re-run the query."
+- **CSV export neutralizes formula injection.** A cell beginning
+  `= + - @` (attacker-controllable from a shared DB) executed as a
+  formula when the CSV opened in Excel/Sheets; such cells now get a
+  leading apostrophe.
+
+The review's clean list held: passwords Keyring-only and never on
+disk, identifier quoting injection-safe, the Apply preview shows
+exactly what runs, atomic save-lane writes, correct Statement/
+ResultSet/Connection lifecycle (the NB-bridge never closes NetBeans'
+own connection), and row caps on every grid.
+
 ## [1.100.0] - 2026-07-20
 
 ### Contract Studio: bounded RPC, clamped watch, confirmed broadcasts

@@ -792,6 +792,16 @@ public final class DbStudioTopComponent extends TopComponent {
                                     ? "The statement did not execute" : first.error();
                             break;
                         }
+                        // Each UPDATE is PK-scoped to exactly one row; a
+                        // count of 0 means the row changed/vanished under
+                        // the grid since it loaded. Counting that as
+                        // "applied" would report a success the DB never
+                        // performed — the edit is silently lost.
+                        if (first.updateCount() == 0) {
+                            failure = "0 rows matched — the row may have changed since the "
+                                    + "grid loaded. Re-run the query and try again.";
+                            break;
+                        }
                         applied++;
                     }
                 }
@@ -1719,9 +1729,15 @@ public final class DbStudioTopComponent extends TopComponent {
         if (spec == null || isServicesSpec(spec)) {
             return; // Services entries are removed in the Services window
         }
-        NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(
+        // Cancel is the default button (the v1.98.0 idiom — Confirmation
+        // hard-codes initialValue=OK_OPTION): a reflexive Enter must not
+        // delete the connection and its keychain password.
+        NotifyDescriptor confirm = new NotifyDescriptor(
                 "Remove connection \"" + spec.name() + "\"? Its stored password is deleted too.",
-                "Remove Connection", NotifyDescriptor.OK_CANCEL_OPTION);
+                "Remove Connection", NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[]{NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.CANCEL_OPTION);
         if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.OK_OPTION) {
             return;
         }

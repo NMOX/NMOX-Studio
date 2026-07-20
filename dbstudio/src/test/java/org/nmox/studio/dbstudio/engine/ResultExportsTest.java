@@ -33,6 +33,24 @@ class ResultExportsTest {
     }
 
     @Test
+    @DisplayName("Formula-injection: a cell starting =+-@ is neutralized with a leading apostrophe")
+    void csvFormulaInjectionNeutralized() {
+        QueryResult r = grid(List.of("payload"),
+                List.of(List.of("=cmd|'/c calc'!A1"),
+                        List.of("+1+1"), List.of("-2"), List.of("@SUM(A1)"),
+                        List.of("safe")));
+
+        String csv = ResultExports.toCsv(r);
+        // the risky cells are prefixed with ' and then quoted (the ' plus
+        // any original quoting); the benign one is untouched
+        assertThat(csv).contains("\"'=cmd|'/c calc'!A1\"");
+        assertThat(csv).contains("\"'+1+1\"");
+        assertThat(csv).contains("\"'-2\"");
+        assertThat(csv).contains("\"'@SUM(A1)\"");
+        assertThat(csv).contains("\r\nsafe\r\n");
+    }
+
+    @Test
     @DisplayName("Fields containing commas are double-quoted")
     void csvCommaQuoting() {
         QueryResult r = grid(List.of("name", "city"),
