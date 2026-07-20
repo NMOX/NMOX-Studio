@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.103.0] - 2026-07-20
+
+### The IDE won't run a cloned repo's code without asking (tools RCE gates)
+
+The editor security review (v1.102.0) exposed a systemic class — the
+IDE spawning a cloned repo's code with no Workspace Trust gate — and a
+follow-up review of the **tools** module found two more instances,
+both closed here:
+
+- **Run/Build/Test/Clean (F6/F11) is trust-gated.**
+  `WebProjectActionProvider.invokeAction` handed a project-controlled
+  command — the `package.json` "scripts" body, `make`/`cargo` (which
+  runs `build.rs`)/`gradle` build scripts, `npx`-resolved
+  `node_modules/.bin` binaries — straight to `CommandExecutor.run`
+  with no gate. Opening a hostile cloned repo and pressing Run
+  executed its code. It now calls `WorkspaceTrust.requestTrust(dir)`
+  (prompt-once, the debug-action idiom) before spawning.
+- **The NPM Explorer's run-script is trust-gated.**
+  `NpmService.runCommand` (reached by double-clicking a script in the
+  NPM panel, and by `install()`/`runScript()`) spawned `npm run
+  <script>` / `npm install` — arbitrary attacker script bodies and
+  pre/postinstall hooks — ungated. Same gate now guards it; the
+  fixed-tool paths (`npm ls -g`, `npm --version`) don't route through
+  it and never prompt. Its output accumulator is also capped so a
+  runaway build can't OOM.
+
+Root cause pinned in a comment: `CommandExecutor.run` and
+`ProcessSupport.builder` are deliberately un-gated primitives — trust
+is the caller's responsibility, which the rack devices and debug
+actions honor and these two paths skipped. Both gates mutation-proven.
+
+Also fixed in passing: a hand-written `Bundle.properties` in the npm
+package was missing the NPM Explorer's `@Messages` keys, so its
+registered name/tooltip could throw `MissingResourceException` under an
+unlucky classloader order (surfaced by the new test's fork ordering) —
+the keys are now present in both bundles.
+
 ## [1.102.0] - 2026-07-20
 
 ### Editor security: LSP/Prettier trust-gated, DAP frame bounded (first dedicated review)

@@ -53,6 +53,20 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
 
+### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
+
+The systemic finding of the module-review arc: the IDE spawned a
+cloned repo's project-controlled code with NO Workspace Trust gate.
+`CommandExecutor.run` and `ProcessSupport.builder` are deliberately
+un-gated primitives — trust is the CALLER's responsibility, honored by
+the rack devices (CommandDevice/ExtensionDevice) and the debug actions
+but skipped by four call sites. All four now gated: LSP `launchNpm` +
+Prettier `resolveBinary` (v1.102.0, silent isTrusted — auto-firing),
+WebProjectActionProvider Run/Build/Test/Clean + NpmService.runCommand
+(v1.103.0, prompt-once requestTrust — user-initiated). **The rule for
+any new spawn site: gate at the call site; never assume the primitive
+is safe.**
+
 ### 55. Editor: proxy socket leak + Prettier kill-tree + probe-port binding
 
 The 2026-07-20 dedicated editor review shipped its three HIGH findings
