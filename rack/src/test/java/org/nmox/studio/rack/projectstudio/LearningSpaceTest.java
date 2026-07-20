@@ -141,13 +141,31 @@ class LearningSpaceTest {
     }
 
     @Test
-    @DisplayName("The tutorial gains the install hint for the running OS")
+    @DisplayName("The tutorial gains the install hint for the running OS, framed as an in-app action")
     void tutorialCarriesInstallHint() {
         String tut = LearningSpace.tutorialWithInstall(repl());
         assertThat(tut).startsWith("# Common Lisp");
         assertThat(tut).contains("## Install");
         String os = LearningSpace.osKey();
         assertThat(tut).contains(repl().install().get(os));
+        // the install must point at the in-app affordance, never a hand-off to a
+        // terminal: a REPL space uses the REPL's INSTALL button
+        assertThat(tut)
+                .as("REPL spaces install via the REPL's INSTALL button, not a shell")
+                .contains("INSTALL")
+                .contains("No terminal needed");
+    }
+
+    @Test
+    @DisplayName("A run space's install points at SOLDER, not a terminal")
+    void runSpaceInstallUsesSolder() {
+        String tut = LearningSpace.tutorialWithInstall(run());
+        assertThat(tut).contains("## Install");
+        assertThat(tut)
+                .as("run spaces run the install through SOLDER → MONITOR")
+                .contains("SOLDER")
+                .contains("No terminal needed");
+        assertThat(tut).doesNotContain("install it:"); // the old shell-handoff phrasing
     }
 
     @Test
