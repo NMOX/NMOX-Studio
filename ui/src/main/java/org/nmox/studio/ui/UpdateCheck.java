@@ -68,16 +68,23 @@ public class UpdateCheck implements Runnable {
     private void check(Preferences prefs, String running) {
         prefs.putLong("updateCheck.lastRun", System.currentTimeMillis());
         try {
-            HttpResponse<String> response = HttpClientFactory.shared().send(
+            HttpResponse<java.io.InputStream> response = HttpClientFactory.shared().send(
                     HttpRequest.newBuilder(URI.create(RELEASES_API))
                             .timeout(Duration.ofSeconds(10))
                             .header("Accept", "application/vnd.github+json")
                             .build(),
-                    HttpResponse.BodyHandlers.ofString());
+                    HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() != 200) {
                 return;
             }
-            String latest = latestTag(response.body());
+            // bounded read: the GitHub release JSON is small; cap at 2 MB so a
+            // redirected/hostile endpoint can't OOM the IDE on a boot check
+            String bodyText;
+            try (java.io.InputStream in = response.body()) {
+                bodyText = new String(in.readNBytes(2 * 1024 * 1024),
+                        java.nio.charset.StandardCharsets.UTF_8);
+            }
+            String latest = latestTag(bodyText);
             if (latest == null || Versions.compare(running, latest) >= 0) {
                 return;
             }

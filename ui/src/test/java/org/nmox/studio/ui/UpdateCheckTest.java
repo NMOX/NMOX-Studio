@@ -71,4 +71,16 @@ class UpdateCheckTest {
                 .as("web browse must be the fallback inside openUpdater, not the notification's direct action")
                 .doesNotContain("e -> openReleases()");
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("The boot update check bounds the response read (no OOM on a hostile/redirected endpoint)")
+    void updateCheckBoundsTheRead() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/ui/UpdateCheck.java"));
+        assertThat(src)
+                .as("ofString() buffers the whole body; read through a capped stream instead")
+                .contains("BodyHandlers.ofInputStream()")
+                .contains("readNBytes(")
+                .doesNotContain("BodyHandlers.ofString()");
+    }
 }

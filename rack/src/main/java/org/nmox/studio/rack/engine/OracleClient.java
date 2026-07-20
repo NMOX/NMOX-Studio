@@ -224,10 +224,10 @@ public final class OracleClient {
                     .header("x-api-key", keyHeader)
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                     .build();
-            HttpResponse<String> response;
+            HttpResponse<java.io.InputStream> response;
             try {
                 response = HttpClientFactory.shared()
-                        .send(request, HttpResponse.BodyHandlers.ofString());
+                        .send(request, HttpResponse.BodyHandlers.ofInputStream());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while reaching ORACLE.");
@@ -235,9 +235,15 @@ public final class OracleClient {
                 // no cause chained: a transport message could echo the key
                 throw new IOException("Cannot reach ORACLE — " + e.getClass().getSimpleName());
             }
-            // 4xx/5xx bodies from Anthropic carry a JSON error we parse for a
-            // real message; hand the body up rather than a bare status code.
-            return response.body();
+            // bounded read: ofString() buffered the whole body, so a
+            // misbehaving or hostile endpoint could OOM the IDE. A real
+            // Messages response is tiny; 8 MB is orders of magnitude past it.
+            try (java.io.InputStream in = response.body()) {
+                byte[] raw = in.readNBytes(8 * 1024 * 1024);
+                // 4xx/5xx bodies from Anthropic carry a JSON error we parse
+                // for a real message; hand the body up rather than a status.
+                return new String(raw, StandardCharsets.UTF_8);
+            }
         };
     }
 }

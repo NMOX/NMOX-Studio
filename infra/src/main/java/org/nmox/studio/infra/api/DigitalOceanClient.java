@@ -169,11 +169,19 @@ public final class DigitalOceanClient {
             case "DELETE" -> rb.DELETE();
             default -> rb.GET();
         }
-        HttpResponse<String> response = http.send(rb.build(), HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() >= 300) {
-            throw new IOException("HTTP " + response.statusCode() + ": " + compact(response.body()));
+        HttpResponse<java.io.InputStream> response =
+                http.send(rb.build(), HttpResponse.BodyHandlers.ofInputStream());
+        // bounded read: ofString() buffered the whole body, so a hostile or
+        // misconfigured endpoint behind a secret token could OOM the IDE. A
+        // DO API list response is small; 8 MB is orders of magnitude past it.
+        String text;
+        try (java.io.InputStream in = response.body()) {
+            text = new String(in.readNBytes(8 * 1024 * 1024),
+                    java.nio.charset.StandardCharsets.UTF_8);
         }
-        String text = response.body();
+        if (response.statusCode() >= 300) {
+            throw new IOException("HTTP " + response.statusCode() + ": " + compact(text));
+        }
         return text == null || text.isBlank() ? new JSONObject() : new JSONObject(text);
     }
 
