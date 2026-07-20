@@ -361,15 +361,22 @@ public final class InfraDesignerTopComponent extends TopComponent {
         boolean live = DeployPlanner.liveEligible(used,
                 org.nmox.studio.infra.api.CloudProvider::hasToken);
         String title = live ? "Deploy?" : "Dry run (missing tokens: " + names + ")";
-        DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title);
         if (live) {
             Object deploy = "Deploy";
-            dd.setOptions(new Object[]{deploy, "Cancel"});
-            dd.setValue("Cancel");
+            Object cancel = "Cancel";
+            // Cancel is the DEFAULT button (Enter/Space), so a reflexive
+            // keypress on the plan-review dialog never fires a live
+            // multi-resource deploy. setValue() writes only `value`, not
+            // the default button — the constructor's initialValue is the
+            // only seam that moves it (v1.98.0, ledger 53).
+            DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title, true,
+                    new Object[]{deploy, cancel}, cancel,
+                    DialogDescriptor.DEFAULT_ALIGN, null, null);
             if (DialogDisplayer.getDefault().notify(dd) != deploy) {
                 return;
             }
         } else {
+            DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title);
             dd.setOptions(new Object[]{"Close"});
             DialogDisplayer.getDefault().notify(dd);
             return;
@@ -527,9 +534,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
+    /**
+     * A destructive confirmation whose DEFAULT button is the safe one
+     * (No), so a reflexive Enter or Space never destroys a paid cloud
+     * resource. {@code NotifyDescriptor.Confirmation} hard-codes
+     * {@code initialValue = OK_OPTION}, and {@code setValue} writes only
+     * {@code value}, not {@code defaultValue} — the only seam that moves
+     * the default button is the full {@code NotifyDescriptor}
+     * constructor's {@code initialValue} argument (v1.98.0, ledger 53).
+     */
     private boolean confirm(String message, String title) {
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(message, title,
-                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+        NotifyDescriptor d = new NotifyDescriptor(message, title,
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                NotifyDescriptor.NO_OPTION);
         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 

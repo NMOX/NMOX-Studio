@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.98.0] - 2026-07-20
+
+### Infra Designer: destructive dialogs default to the safe button
+
+The first dedicated **infra** review found its highest-real-world-risk
+defect: the confirmations that delete or create real paid cloud
+resources defaulted their Enter/Space button to the destructive
+option. A reflexive keypress on a Destroy Stack, Destroy Resource, or
+Deploy dialog fired the action.
+
+- `NotifyDescriptor.Confirmation` hard-codes `initialValue = OK_OPTION`,
+  and `setValue(...)` writes only the current value — neither moves the
+  default button. Both destructive confirms now build through the full
+  `NotifyDescriptor` constructor with `NO_OPTION` as the initial value,
+  and the live Deploy dialog through the `DialogDescriptor` constructor
+  with **Cancel** as the initial value. Enter/Space now hits the safe
+  button; the destructive action needs a real click.
+- Pinned by a source gate (DialogSafetyTest, mutation-proven: reverting
+  to the `Confirmation(...)` shortcut or `dd.setValue("Cancel")` fails
+  the build by name). Default-button semantics were confirmed from
+  NbPresenter bytecode by the review; the exact dialogs only surface
+  with a live deployed cloud node, so the constructor-seam gate is the
+  standing proof.
+
+Recorded for the next infra release (ledger 53 remainder): the canvas
++ rack aim stay live during a deploy/destroy (a mid-plan node deletion
+can orphan a billed resource), re-aim drops the last debounce window
+of edits, cross-thread `node.props` mutation can abort the autosave,
+and drift's `"404"` substring match severs the deploy linkage.
+
 ## [1.97.0] - 2026-07-20
 
 ### API Studio auth tokens move to the OS keychain
