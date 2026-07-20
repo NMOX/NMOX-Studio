@@ -83,11 +83,11 @@ class StudioSafetyGateTest {
     void watchGenerationGuard() throws Exception {
         String src = source();
         assertThat(method(src, "private void stopWatch()"))
-                .contains("watchGeneration++");
+                .contains("watchGeneration.incrementAndGet()");
         String tick = method(src, "private void watchTick()");
         assertThat(tick)
                 .as("a superseded tick abandons its cursor writes")
-                .contains("gen != watchGeneration");
+                .contains("gen != watchGeneration.get()");
         assertThat(tick)
                 .as("both fetch lanes ride the pure clamped plan")
                 .contains("WatchCursor.plan(");

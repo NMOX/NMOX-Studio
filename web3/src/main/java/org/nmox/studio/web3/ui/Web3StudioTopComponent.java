@@ -221,9 +221,12 @@ public final class Web3StudioTopComponent extends TopComponent {
      * a quick STOP→START or a network switch could otherwise leave the
      * dying tick writing the two cursor fields the new poller now owns.
      * A tick captures the generation at entry and abandons its cursor
-     * writes if it changed.
+     * writes if it changed. AtomicLong (not a volatile ++): the
+     * increment must be atomic for SpotBugs' VO_VOLATILE_INCREMENT law
+     * even though stopWatch is EDT-confined.
      */
-    private volatile long watchGeneration;
+    private final java.util.concurrent.atomic.AtomicLong watchGeneration =
+            new java.util.concurrent.atomic.AtomicLong();
 
     private final SizeModel sizeModel = new SizeModel();
     private final GasModel gasModel = new GasModel();
@@ -969,7 +972,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void stopWatch() {
-        watchGeneration++; // any in-flight tick loses cursor ownership
+        watchGeneration.incrementAndGet(); // any in-flight tick loses cursor ownership
         if (watchExec != null) {
             watchExec.shutdownNow();
             watchExec = null;
@@ -988,7 +991,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (c == null) {
             return;
         }
-        final long gen = watchGeneration;
+        final long gen = watchGeneration.get();
         try {
             long current = c.blockNumber();
             boolean firstTick = lastWatchedBlock < 0;
@@ -1012,7 +1015,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                     feedLogs(c, matcher, address, plan.logFrom(), plan.logTo());
                 }
             }
-            if (gen != watchGeneration) {
+            if (gen != watchGeneration.get()) {
                 return; // the watch was re-armed mid-tick — the new
                         // poller owns the cursors; a dying tick must
                         // not tear or resurrect them
