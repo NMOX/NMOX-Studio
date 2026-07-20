@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.100.0] - 2026-07-20
+
+### Contract Studio: bounded RPC, clamped watch, confirmed broadcasts
+
+The first dedicated **web3** review, all six findings fixed in one
+release:
+
+- **RPC responses are bounded.** `JsonRpcClient`'s transport buffered
+  the whole body via `ofString()` — and the Watch pane drives it every
+  2 seconds against arbitrary user-added endpoints, so a hostile or
+  misconfigured gateway could OOM the IDE. Bodies now stream through
+  an 8 MB capped reader; oversize is a refusal with a redacted
+  message, never a buffer. Proven against a real in-JVM server
+  (mutation: `readAllBytes` fails by name). `URI.create` also moved
+  inside the redacting try — its parse error echoes the full input
+  URL, the one path that bypassed the v1.33.0 redaction seam.
+- **The watch's log lane is clamped.** Blocks were capped to a
+  50-block catch-up window from day one, but the `eth_getLogs` range
+  was open-ended below: a failing fetch never advances the log cursor,
+  so every retry widened the range — and the response — without
+  bound, feeding the unbounded read above. The new pure `WatchCursor`
+  core plans both lanes inside the same window (outage case
+  mutation-proven), and a generation guard makes a re-armed watch
+  revoke cursor ownership from any tick still blocked in an RPC —
+  STOP→START during a slow poll can no longer tear the cursors.
+- **SEND and Deploy confirm before broadcasting to a non-local
+  chain.** A remote endpoint with unlocked accounts (a self-hosted
+  geth `--dev`, a mainnet fork holding value-equivalent state) accepts
+  a real, irreversible transaction on one stray click. Both now pass a
+  safe-default confirmation (the v1.98.0 `NO_OPTION` idiom) unless the
+  endpoint is provably loopback — the tutorial's ANVIL loop stays
+  frictionless. Loopback classification unit-tested; the raw URL never
+  leaves the client.
+- **Workspace reloads read off the EDT.** `reloadWorkspace` ran
+  `loadGuarded` (file read + corrupt-path `.bak` copy) on the paint
+  thread on every re-aim and external-edit pulse; the read now rides
+  RP with a newest-wins sequence, the apiclient idiom, and the EDT
+  only applies the result.
+
+The review's clean list, for the record: secret networks never
+serialize URLs, keyring-only with wiped `char[]`s; atomic save-lane
+writes with `.bak`-before-fallback; watch/pulse lifecycle symmetric;
+feed ring-capped at 500; no signing code anywhere (the no-private-keys
+boundary holds); Keccak/ABI/receipt cores sound.
+
 ## [1.99.0] - 2026-07-20
 
 ### API Studio: bounded, cancellable, honest sends (ledger 52 closed)
