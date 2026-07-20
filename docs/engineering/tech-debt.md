@@ -53,16 +53,17 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
 
-### 53. Infra Designer: destructive dialogs default to the destructive button + mid-op canvas is live
+### 53. Infra Designer: mid-op canvas is live + re-aim edit loss (dialog-defaults CLOSED v1.98.0)
 
 The 2026-07-20 dedicated infra review (its first) found five MED
-sharp edges around real paid cloud resources: (a) Destroy Stack /
-Destroy Resource confirmations default their Enter/Space button to
-Yes — `NotifyDescriptor.Confirmation` sets `initialValue = OK_OPTION`,
-so a reflexive Enter deletes N billed resources; the Deploy dialog's
-`setValue("Cancel")` is a no-op because `setValue` never writes
-`defaultValue` (the `DialogDescriptor(..., options, initialValue, ...)`
-constructor is the real seam); (b) the canvas + rack aim stay live
+sharp edges around real paid cloud resources. **(a) CLOSED (v1.98.0):**
+Destroy Stack / Destroy Resource / Deploy dialogs defaulted their
+Enter/Space button to the destructive option — `NotifyDescriptor.
+Confirmation` sets `initialValue = OK_OPTION` and `setValue` never
+writes `defaultValue`; both confirms now use the full constructor with
+NO_OPTION, and Deploy the DialogDescriptor constructor with Cancel as
+initialValue; DialogSafetyTest source-gates it, mutation-proven.
+Remaining MED: (b) the canvas + rack aim stay live
 during a live deploy/destroy, so a node deleted mid-plan orphans a
 created-and-billed resource with no id recorded, or a re-aim saves the
 new project's graph; (c) `load()` on re-aim drops the last debounce
