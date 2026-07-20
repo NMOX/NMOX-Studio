@@ -150,9 +150,17 @@ public final class PrettierFormatter {
      * augmented PATH; null when neither exists.
      */
     static String resolveBinary(File startDir) {
-        String local = findLocalBinary(startDir);
-        if (local != null) {
-            return local;
+        // A committed node_modules/.bin/prettier is attacker-controlled
+        // code in a cloned repo; running it on Ctrl+S is RCE. Only use
+        // the project-LOCAL binary when the workspace is trusted (a
+        // SILENT check — format-on-save fires on every save, must never
+        // prompt); untrusted, fall back to the user's own global
+        // prettier. Mirrors the LSP gate and the debug-action gate.
+        if (org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(startDir)) {
+            String local = findLocalBinary(startDir);
+            if (local != null) {
+                return local;
+            }
         }
         String global = ToolLocator.resolve("prettier");
         // ToolLocator returns the bare name unchanged when nothing was found

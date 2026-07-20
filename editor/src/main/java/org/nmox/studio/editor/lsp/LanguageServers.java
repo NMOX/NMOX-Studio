@@ -94,8 +94,17 @@ public final class LanguageServers {
             Lookup lookup, String bin, String... args) {
         File dir = projectDir(lookup);
         File local = dir == null ? null : new File(dir, "node_modules/.bin/" + bin);
+        // A committed node_modules/.bin/<server> is attacker-controlled
+        // code in a cloned repo; running it on file-open is RCE. Only
+        // prefer the project-LOCAL binary when the workspace is trusted
+        // (a SILENT check — the LSP client calls this constantly, so it
+        // must never prompt); untrusted, fall back to the user's own
+        // global tool on PATH. The debug actions already gate their
+        // spawns; the LSP layer must too.
+        boolean useLocal = local != null && local.canExecute()
+                && org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir);
         List<String> cmd = new ArrayList<>();
-        cmd.add(local != null && local.canExecute() ? local.getAbsolutePath() : bin);
+        cmd.add(useLocal ? local.getAbsolutePath() : bin);
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
         return reported(launch(lookup, cmd), bin);

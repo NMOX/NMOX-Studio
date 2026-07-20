@@ -108,8 +108,13 @@ public final class WorkspaceTrust {
         }
     }
 
-    /** Test hook: forget every trusted path, in memory and in the store. */
-    static synchronized void clearForTest() {
+    /**
+     * Test hook: forget every trusted path, in memory and in the store.
+     * Public so cross-module tests (the editor's LSP/Prettier trust
+     * gates) can restore a clean trust store after seeding one — keeps
+     * unique @TempDir paths out of the persisted prefs.
+     */
+    public static synchronized void clearForTest() {
         trustedPaths.clear();
         try {
             trustedNode.clear();
