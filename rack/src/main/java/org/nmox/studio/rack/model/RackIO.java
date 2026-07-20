@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.AtomicFiles;
 import org.nmox.studio.rack.devices.DeviceCatalog;
@@ -127,6 +129,38 @@ public final class RackIO {
     }
 
     public static void load(Rack rack, File file) throws IOException {
-        fromJson(rack, new JSONObject(Files.readString(file.toPath(), StandardCharsets.UTF_8)));
+        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        JSONObject root;
+        try {
+            root = new JSONObject(text);
+        } catch (JSONException corrupt) {
+            // A corrupt or hand-broken patch used to throw here BEFORE fromJson
+            // ran — so the previous project's devices stayed mounted (a switch
+            // A->B with B corrupt aimed A's rack at B's dir), and the untouched
+            // corrupt file was silently clobbered by the next atomic save.
+            // load()'s contract is "replace the rack's contents"; a corrupt
+            // patch can't supply real contents, so replace with empty, and
+            // preserve the user's file as .bak first (the BlockStudio idiom) so
+            // their hand-edit survives and save() writes a fresh file.
+            backupCorrupt(file);
+            for (RackDevice d : rack.getDevices()) {
+                rack.removeDevice(d);
+            }
+            rack.clearUndoHistory();
+            throw new IOException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+        }
+        fromJson(rack, root);
+    }
+
+    /** Renames a corrupt patch to {@code <name>.bak} so save() can't clobber it. */
+    private static void backupCorrupt(File file) {
+        try {
+            Files.move(file.toPath(), file.toPath().resolveSibling(file.getName() + ".bak"),
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ignored) {
+            // best effort: if the rename fails the empty rack is still the safe
+            // state; we simply couldn't preserve the bytes
+        }
     }
 }

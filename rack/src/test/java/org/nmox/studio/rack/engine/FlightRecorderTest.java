@@ -105,6 +105,9 @@ class FlightRecorderTest {
         first.line("FORGE", "$ npm run build", false);
         tick(1_200);
         first.line("FORGE", "[exit 0]", false);
+        // the journal append rides its own lane now (off the recorder monitor);
+        // drain it before reading the file back
+        FlightRecorder.awaitJournalIdle();
         assertThat(journal).exists();
 
         FlightRecorder reborn = new FlightRecorder(now::get);
@@ -112,6 +115,27 @@ class FlightRecorderTest {
         assertThat(reborn.timeline()).hasSize(2);
         assertThat(reborn.timeline().get(1).kind()).isEqualTo(Kind.EXIT_OK);
         assertThat(reborn.timeline().get(1).durationMs()).isEqualTo(1_200);
+    }
+
+    @Test
+    @DisplayName("Journal disk I/O rides JOURNAL_RP, never inline under the recorder monitor")
+    void journalWritesOffTheMonitor() throws Exception {
+        // Source gate for the rack-engine review's MED-1: record() must hand the
+        // append to JOURNAL_RP, not call appendToJournal(e) inline — otherwise a
+        // slow/full disk stalls every device's output pump (all funnel through
+        // the recorder monitor) and blocks EDT readers behind a pump's write.
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/rack/engine/FlightRecorder.java"),
+                java.nio.charset.StandardCharsets.UTF_8);
+        int m = src.indexOf("private void record(Event e)");
+        assertThat(m).as("record() exists").isPositive();
+        String body = src.substring(m, src.indexOf("\n    }", m));
+        assertThat(body)
+                .as("the append is posted to the journal lane")
+                .contains("JOURNAL_RP.post(() -> appendToJournal(e))");
+        assertThat(body)
+                .as("the append is NOT run inline under the caller's monitor")
+                .doesNotContain("        appendToJournal(e);");
     }
 
     @Test
@@ -138,6 +162,8 @@ class FlightRecorderTest {
             tick(1);
             writer.line("FORGE", "$ build-" + i, false);
         }
+        // appends + rotation ride JOURNAL_RP now; drain before reading the file
+        FlightRecorder.awaitJournalIdle();
 
         assertThat(journal.length())
                 .as("rotation must keep the file near its cap, not unbounded")
