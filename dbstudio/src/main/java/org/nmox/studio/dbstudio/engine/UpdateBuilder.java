@@ -121,7 +121,7 @@ public final class UpdateBuilder {
                         + " (the key is what addresses the row being updated).");
             }
             sets.add(SqlDialect.quote(quote, column.name()) + " = "
-                    + render(column, edit.getValue()));
+                    + render(engine, column, edit.getValue()));
         }
 
         // WHERE — every PK column, original values, grid order
@@ -136,7 +136,7 @@ public final class UpdateBuilder {
                 throw new IllegalArgumentException("Primary key column " + pk.name()
                         + " reads NULL in this row — the row cannot be addressed safely.");
             }
-            wheres.add(SqlDialect.quote(quote, pk.name()) + " = " + render(pk, original));
+            wheres.add(SqlDialect.quote(quote, pk.name()) + " = " + render(engine, pk, original));
         }
         for (ColumnInfo pk : pkColumns) {
             if (indexOfIgnoreCase(columnNames, pk.name()) < 0) {
@@ -155,7 +155,7 @@ public final class UpdateBuilder {
      * Renders one cell value as a SQL literal per the column's type.
      * Package-visible for tests; {@code null} renders the NULL keyword.
      */
-    static String render(ColumnInfo column, String value) {
+    static String render(DbEngine engine, ColumnInfo column, String value) {
         if (value == null) {
             return "NULL";
         }
@@ -179,7 +179,26 @@ public final class UpdateBuilder {
             }
             return trimmed;
         }
-        return "'" + value.replace("'", "''") + "'";
+        return "'" + escapeStringLiteral(engine, value) + "'";
+    }
+
+    /**
+     * String-literal body escaping, dialect-aware. Every engine doubles
+     * the single quote. MySQL/MariaDB ALSO treat backslash as a string
+     * escape by default (unless {@code sql_mode=NO_BACKSLASH_ESCAPES}),
+     * so a value ending in {@code \} (e.g. {@code C:\}) rendered
+     * {@code 'C:\'} — the server read {@code \'} as an escaped quote,
+     * the literal never terminated, and the trailing {@code WHERE …}
+     * was swallowed into the string: broken at best, a break-out at
+     * worst. On those engines we double the backslash too. PostgreSQL
+     * (standard_conforming_strings) and SQLite treat backslash as
+     * literal, so doubling it there would corrupt the value — they get
+     * quote-doubling only.
+     */
+    private static String escapeStringLiteral(DbEngine engine, String value) {
+        boolean backslashEscapes = engine == DbEngine.MYSQL || engine == DbEngine.MARIADB;
+        String body = backslashEscapes ? value.replace("\\", "\\\\") : value;
+        return body.replace("'", "''");
     }
 
     /**

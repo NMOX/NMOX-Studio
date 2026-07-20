@@ -398,4 +398,47 @@ class UpdateBuilderTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("outside the grid");
     }
+
+    // ---- dialect-aware string escaping (the backslash break-out) -----
+
+    @Test
+    @DisplayName("MySQL: a trailing backslash is doubled so the literal can't swallow the WHERE")
+    void mysqlBackslashEscaped() {
+        // 'C:\' would let the server read \' as an escaped quote — the
+        // literal never terminates and the WHERE is eaten. The value
+        // must render as 'C:\\'.
+        String sql = UpdateBuilder.update(DbEngine.MYSQL, USERS, usersColumns(), GRID,
+                row("7", "Ann", "30", "1", "hi"), Map.of(4, "C:\\"));
+        assertThat(sql).isEqualTo("UPDATE `users` SET `bio` = 'C:\\\\' WHERE `id` = 7;");
+    }
+
+    @Test
+    @DisplayName("MariaDB doubles backslashes like MySQL")
+    void mariadbBackslashEscaped() {
+        String sql = UpdateBuilder.update(DbEngine.MARIADB, USERS, usersColumns(), GRID,
+                row("7", "Ann", "30", "1", "hi"), Map.of(4, "a\\b"));
+        assertThat(sql).contains("SET `bio` = 'a\\\\b'");
+    }
+
+    @Test
+    @DisplayName("PostgreSQL/SQLite leave the backslash literal — doubling it would corrupt the value")
+    void postgresBackslashLiteral() {
+        String pg = UpdateBuilder.update(DbEngine.POSTGRES, USERS, usersColumns(), GRID,
+                row("7", "Ann", "30", "1", "hi"), Map.of(4, "C:\\"));
+        assertThat(pg).isEqualTo("UPDATE \"users\" SET \"bio\" = 'C:\\' WHERE \"id\" = 7;");
+
+        String sqlite = UpdateBuilder.update(DbEngine.SQLITE, USERS, usersColumns(), GRID,
+                row("7", "Ann", "30", "1", "hi"), Map.of(4, "a\\b"));
+        assertThat(sqlite).contains("SET \"bio\" = 'a\\b'");
+    }
+
+    @Test
+    @DisplayName("The single-quote double-escape still holds on every engine")
+    void singleQuoteStillDoubled() {
+        for (DbEngine e : List.of(DbEngine.MYSQL, DbEngine.POSTGRES, DbEngine.SQLITE)) {
+            String sql = UpdateBuilder.update(e, USERS, usersColumns(), GRID,
+                    row("7", "Ann", "30", "1", "hi"), Map.of(1, "O'Brien"));
+            assertThat(sql).as(e.name()).contains("= 'O''Brien'");
+        }
+    }
 }

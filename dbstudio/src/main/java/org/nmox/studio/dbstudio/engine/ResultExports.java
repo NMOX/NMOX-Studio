@@ -104,11 +104,20 @@ public final class ResultExports {
         if (value == null) {
             return "";
         }
-        boolean needsQuoting = value.indexOf(',') >= 0 || value.indexOf('"') >= 0
-                || value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0;
-        if (!needsQuoting) {
-            return value;
+        // Formula-injection defense: a DB value (which can be
+        // attacker-controlled on a shared database) beginning = + - @
+        // is executed as a formula when the CSV opens in Excel/Sheets.
+        // A leading apostrophe forces text; the cell then needs quoting.
+        String safe = value;
+        if (!value.isEmpty() && "=+-@".indexOf(value.charAt(0)) >= 0) {
+            safe = "'" + value;
         }
-        return '"' + value.replace("\"", "\"\"") + '"';
+        boolean needsQuoting = safe != value
+                || safe.indexOf(',') >= 0 || safe.indexOf('"') >= 0
+                || safe.indexOf('\r') >= 0 || safe.indexOf('\n') >= 0;
+        if (!needsQuoting) {
+            return safe;
+        }
+        return '"' + safe.replace("\"", "\"\"") + '"';
     }
 }

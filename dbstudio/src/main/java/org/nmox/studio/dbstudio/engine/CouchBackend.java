@@ -55,6 +55,15 @@ public final class CouchBackend implements DbBackend {
 
     private static final int TIMEOUT_SECONDS = 5;
 
+    /**
+     * Response-body cap. {@code ofString()} buffered the whole body
+     * unbounded; a {@code _find} against a huge collection (or a
+     * hostile endpoint) could OOM the IDE. The grid's row cap bounds
+     * document COUNT, not byte size, so the read itself must be
+     * bounded — the apiclient v1.99.0 fix, here.
+     */
+    static final int MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
+
     private static final String NO_DATABASE =
             "No database set — CouchDB queries need a database name in the "
             + "connection settings (query \"_all_dbs\" to list what the server has).";
@@ -408,20 +417,37 @@ public final class CouchBackend implements DbBackend {
      */
     private String send(HttpRequest request) throws Exception {
         try {
-            HttpResponse<String> response = HttpClientFactory.shared()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<java.io.InputStream> response = HttpClientFactory.shared()
+                    .send(request, HttpResponse.BodyHandlers.ofInputStream());
+            String body;
+            boolean truncated;
+            try (java.io.InputStream in = response.body()) {
+                byte[] raw = in.readNBytes(MAX_RESPONSE_BYTES);
+                truncated = in.read() != -1; // closing aborts the rest of the transfer
+                body = new String(raw, StandardCharsets.UTF_8);
+            }
             if (response.statusCode() >= 400) {
                 String detail = "";
-                if (JsonUtil.looksJson(response.body())) {
+                if (JsonUtil.looksJson(body)) {
                     try {
-                        detail = " — " + errorSummary(new JSONObject(response.body()));
+                        detail = " — " + errorSummary(new JSONObject(body));
                     } catch (RuntimeException notJson) {
                         // status alone will have to do
                     }
                 }
                 throw new IllegalStateException("HTTP " + response.statusCode() + detail);
             }
-            return response.body();
+            if (truncated) {
+                // a _find/_all_docs against a huge collection (or a
+                // wrong/hostile endpoint) could stream gigabytes;
+                // ofString() would have buffered it all and OOM'd the
+                // IDE (the apiclient v1.99.0 bug class). Refuse rather
+                // than return a JSON fragment DocumentGrid can't parse.
+                throw new IllegalStateException("Response over "
+                        + (MAX_RESPONSE_BYTES / (1024 * 1024)) + "MB — narrow the query"
+                        + " (add a limit or a selector).");
+            }
+            return body;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw e;

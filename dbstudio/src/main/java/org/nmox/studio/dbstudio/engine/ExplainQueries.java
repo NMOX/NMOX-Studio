@@ -46,6 +46,15 @@ public final class ExplainQueries {
         if (engine == null || engine.kind() != DbEngine.Kind.SQL) {
             return false;
         }
+        // EXPLAIN must be read-only. explain() prefixes EXPLAIN to the
+        // WHOLE console text, which is then re-split and run — so a
+        // trailing "; DELETE FROM t" would EXECUTE while the user
+        // believes the button only inspects a plan. Refuse anything but
+        // a single statement (the plan-inspection gesture is for one
+        // query at a time anyway).
+        if (SqlSplitter.split(statement == null ? "" : statement).size() != 1) {
+            return false;
+        }
         String word = firstWord(statement == null ? "" : statement).toUpperCase(Locale.ROOT);
         return word.equals("SELECT") || word.equals("WITH");
     }

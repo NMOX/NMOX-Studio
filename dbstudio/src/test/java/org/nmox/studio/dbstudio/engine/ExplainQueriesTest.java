@@ -88,4 +88,18 @@ class ExplainQueriesTest {
         assertThat(ExplainQueries.explainable(DbEngine.COUCHDB, "SELECT 1")).isFalse();
         assertThat(ExplainQueries.explainable(null, "SELECT 1")).isFalse();
     }
+
+    @Test
+    @DisplayName("Multi-statement text is NOT explainable — a trailing DELETE must never execute")
+    void multiStatementRefused() {
+        // explain() prefixes EXPLAIN to the whole text and re-splits; a
+        // trailing write would run for real under a read-only button.
+        assertThat(ExplainQueries.explainable(DbEngine.MYSQL,
+                "SELECT * FROM t; DELETE FROM t;")).isFalse();
+        assertThat(ExplainQueries.explainable(DbEngine.POSTGRES,
+                "SELECT 1; SELECT 2")).isFalse();
+        // a single statement, with or without a trailing ;, still passes
+        assertThat(ExplainQueries.explainable(DbEngine.MYSQL, "SELECT * FROM t;")).isTrue();
+        assertThat(ExplainQueries.explainable(DbEngine.MYSQL, "SELECT * FROM t")).isTrue();
+    }
 }

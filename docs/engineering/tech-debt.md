@@ -53,6 +53,38 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
 
+### 54. DB Studio: EDT workspace read + LOB cell cap + cleartext-Couch hardening
+
+The 2026-07-20 dedicated dbstudio review shipped seven fixes in
+v1.101.0 (backslash quoting, CouchBackend cap, both dialog defaults,
+EXPLAIN single-statement gate, Apply 0-row guard, CSV formula
+injection) and deferred the lower-severity remainder:
+
+- **M5 (MED):** `reloadWorkspace()` reads `.nmoxdb.json` via
+  `loadWorkspaceGuarded` (plus a `.bak` copy on the corrupt path) and
+  scans the project `.env` (`offerEnvConnection`) synchronously ON THE
+  EDT, from `componentOpened` and every re-aim. Small local files, so
+  low blast radius, but a house-law-1 violation on a slow/networked
+  FS. Fix: the web3 v1.100.0 idiom — post the read to RP, marshal the
+  parsed workspace back with a newest-wins sequence.
+- **M4 (MED):** `JdbcCore.executeOne` calls `rs.getString(c)` on every
+  cell; a single multi-hundred-MB BLOB/CLOB/`bytea` is fully
+  materialized despite the row cap. Fix: cap per-cell string length or
+  special-case LOB metadata.
+- **L2 (LOW):** `CouchBackend.baseUrl()` hard-codes `http://`; there is
+  no way to opt into TLS, so CouchDB credentials traverse cleartext.
+  Fix: an https scheme/flag on the spec.
+- **L3 (LOW):** JDBC connects leave `allowLocalInfile` at driver
+  defaults; a malicious MySQL/MariaDB server could attempt
+  `LOAD DATA LOCAL INFILE`. Defense-in-depth: set it false explicitly.
+- **L4 (LOW):** `PeekQueries.consoleTextFor` inlines a collection name
+  into JSON by concatenation; a name with `"`/`\` yields malformed
+  auto-run console text. Self-inflicted (own DB). Fix: build via
+  `JSONObject.quote`.
+- **L5 (LOW):** backend password `char[]` clones are never zeroed in
+  `close()`. Minor hygiene; `Arrays.fill` the clone.
+
+
 ### 53. Infra Designer: mid-op canvas is live + re-aim edit loss (dialog-defaults CLOSED v1.98.0)
 
 The 2026-07-20 dedicated infra review (its first) found five MED
