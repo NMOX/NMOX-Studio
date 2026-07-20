@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.105.0] - 2026-07-20
+
+### Device background work is drainable in tests (DYNAMO knob flake fixed)
+
+`ClassicWebDevicesTest.dynamoRunnerKnobSettlesBoth` flaked on loaded
+macOS CI (twice this cycle), blocking otherwise-green releases. Root
+cause: changing a device knob can fire a listener that schedules an
+async reload via `RackDevice.offEdt` (DYNAMO's RUNNER knob reloads the
+task list this way), and that work runs on the single-threaded
+`DEVICE_BG` RequestProcessor — which the test's `settle` helper never
+drained. `settle` flushed the EDT and the router but not the device
+background lane, so the async reload raced the assertion.
+
+- New `RackDevice.awaitDeviceBgIdle()` — a FIFO barrier on `DEVICE_BG`,
+  the device-lane counterpart to `Rack.awaitRouterIdle()`. The test's
+  `settle` now drains in dependency order: device background → EDT →
+  router. Fixed for the whole class, not just this test — any device
+  using `offEdt` is now deterministically drainable.
+- No production behavior change: `offEdt` is unchanged; the reload is
+  eventually-consistent and correct in the running IDE (the race was
+  test-only, from an explicit reload running concurrently with the
+  listener's). rack 1154 green, repeat-run-verified.
+
 ## [1.104.0] - 2026-07-20
 
 ### Every HTTP response read is bounded (the ofString sweep)
