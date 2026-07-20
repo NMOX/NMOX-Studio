@@ -116,7 +116,7 @@ public class HttpDevice extends RackDevice {
             });
             return;
         }
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
                 .whenComplete((response, error) -> {
                     long ms = (System.nanoTime() - start) / 1_000_000;
                     if (error != null) {
@@ -131,7 +131,17 @@ public class HttpDevice extends RackDevice {
                         return;
                     }
                     boolean ok = response.statusCode() < 400;
-                    String body = response.body() == null ? "" : response.body();
+                    // bounded read: ofString() buffered the WHOLE body before
+                    // the history truncation below, so a user-pointed endpoint
+                    // streaming gigabytes could OOM the IDE. Read at most a
+                    // little past the retained size, then truncate for history.
+                    String body;
+                    try (java.io.InputStream in = response.body()) {
+                        byte[] raw = in.readNBytes(1024 * 1024);
+                        body = new String(raw, java.nio.charset.StandardCharsets.UTF_8);
+                    } catch (java.io.IOException readFailed) {
+                        body = "";
+                    }
                     // capped before it enters history: fifty retained multi-MB
                     // payloads is a leak, not a console log
                     if (body.length() > 65_536) {

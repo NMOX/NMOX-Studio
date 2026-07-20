@@ -53,6 +53,19 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
 
+### 56. Unify the seven capped HTTP-read sites into one core helper
+
+The unbounded-`ofString` bug was fixed across seven sites in four
+releases (apiclient v1.99.0, web3 v1.100.0, dbstudio v1.101.0, and
+rack×2 + infra + ui v1.104.0), each inlining its own
+`ofInputStream` + `readNBytes(cap)`. The pattern is now stable enough
+to extract: a `core.http` helper (e.g. `HttpBodies.readCapped`) would
+DRY all seven and give one place to hold the cap constant. Deferred
+because it touches core's spec version + every consumer's dep, and the
+inlined versions are correct and tested. A source-gate ("no
+`BodyHandlers.ofString()` in main sources") is the standing regression
+guard until then.
+
 ### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
 
 The systemic finding of the module-review arc: the IDE spawned a

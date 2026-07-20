@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.104.0] - 2026-07-20
+
+### Every HTTP response read is bounded (the ofString sweep)
+
+A repo-wide sweep for the unbounded-buffering bug already fixed in
+apiclient (v1.99.0), web3 (v1.100.0), and dbstudio (v1.101.0) found the
+last four `HttpResponse.BodyHandlers.ofString()` sites — each reads a
+remote or user-pointed response into heap with no ceiling, so a
+hostile, misconfigured, or redirected endpoint could OOM the IDE.
+All four now stream through a capped reader (`ofInputStream` +
+`readNBytes`):
+
+- **rack `HttpDevice`** (the HTTP console) — the sharpest: it fires at
+  a URL the user typed. Capped at 1 MB before the existing 64 KB
+  history truncation (which previously ran only AFTER `ofString` had
+  already buffered the whole body).
+- **rack `OracleClient`** — the Anthropic Messages API response, 8 MB.
+- **infra `DigitalOceanClient`** — cloud API responses behind a secret
+  token, 8 MB.
+- **ui `UpdateCheck`** — the boot-time GitHub release check, 2 MB.
+
+Source-gated in each module (these clients use the shared HttpClient
+with no injectable URL seam). With this, no `BodyHandlers.ofString()`
+remains anywhere in the product's main sources. Ledger: unifying the
+seven capped-read sites into one `core.http` helper is a future
+cleanup.
+
 ## [1.103.0] - 2026-07-20
 
 ### The IDE won't run a cloned repo's code without asking (tools RCE gates)
