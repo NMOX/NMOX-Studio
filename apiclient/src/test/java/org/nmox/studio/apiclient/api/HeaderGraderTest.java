@@ -80,4 +80,26 @@ class HeaderGraderTest {
                 .filteredOn(c -> c.standard().startsWith("Strict-Transport"))
                 .allMatch(c -> c.verdict() == HeaderGrader.Verdict.PASS);
     }
+
+    @Test
+    @DisplayName("Split CSP: frame-ancestors in the SECOND header field still counts (no false MISS)")
+    void splitCspSecondFieldFrameAncestors() {
+        var report = HeaderGrader.grade(Map.of(
+                "Content-Security-Policy",
+                List.of("default-src 'self'", "frame-ancestors 'none'")));
+        assertThat(report.checks())
+                .filteredOn(c -> c.standard().startsWith("Clickjacking"))
+                .allMatch(c -> c.verdict() == HeaderGrader.Verdict.PASS);
+    }
+
+    @Test
+    @DisplayName("Split CSP: unsafe-inline in the SECOND header field still warns (no false PASS)")
+    void splitCspSecondFieldUnsafeInline() {
+        var report = HeaderGrader.grade(Map.of(
+                "Content-Security-Policy",
+                List.of("default-src 'self'", "script-src 'unsafe-inline'")));
+        assertThat(report.checks())
+                .filteredOn(c -> c.standard().equals("Content-Security-Policy"))
+                .allMatch(c -> c.verdict() == HeaderGrader.Verdict.WARN);
+    }
 }

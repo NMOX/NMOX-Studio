@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.99.0] - 2026-07-20
+
+### API Studio: bounded, cancellable, honest sends (ledger 52 closed)
+
+The remaining four findings from the first dedicated apiclient review,
+all in the original v1.19.0 send surface:
+
+- **The response body capture is bounded.** `ofString()` buffered an
+  unbounded body, so a runaway endpoint (a misconfigured download, a
+  log-streaming route) could OOM the IDE. Bodies now stream through a
+  capped reader (8 MB), the transfer is aborted past the cap, the
+  declared charset is still honored, and the truncation is flagged on
+  the status line — proven against a real in-JVM HTTP server serving
+  9 MB (mutation: unbounded `readAllBytes` fails the test).
+- **The pretty re-parse left the EDT.** Every send re-parsed the body
+  on the paint thread; a megabyte body froze the UI for the parse and
+  a deeply-nested one threw `StackOverflowError` (an Error the parse's
+  RuntimeException guard never catches) straight through it. The
+  guarded `prettyForDisplay` (size gate + SOE degrade-to-raw, proven
+  with a 100k-deep body) runs on the send worker; `showResponse`
+  renders precomputed text.
+- **Sends ride their own interruptible lane, and Cancel is real.** Two
+  hung sends used to occupy both slots of the shared two-slot
+  RequestProcessor, silently wedging re-aim follows, workspace loads,
+  and serving refreshes behind the network. Sends now run on a
+  dedicated interruptible lane, the Send button becomes **Cancel**
+  while in flight, and an interrupt lands as the grey "Cancelled"
+  verdict, not a red network error (live-thread test).
+- **A no-op open/close no longer rewrites `.nmoxapi.json`.**
+  `componentClosed` saved unconditionally, round-tripping the file
+  through the unknown-key-dropping parser — fields written by a NEWER
+  NMOX version vanished on a tab you merely looked at. Close now saves
+  only when the debounce says dirty (the `onProjectReaimed` idiom);
+  the v1.97.0 plaintext-token migration still rewrites immediately via
+  its own direct save.
+- **Split CSP grades correctly.** The security-header grader read only
+  the first value of a multi-valued header; Content-Security-Policy is
+  legitimately sent as multiple fields, so `frame-ancestors` in the
+  second field looked absent (false MISS) and `unsafe-inline` in the
+  second looked clean (false PASS). CSP now grades the union of all
+  values; HSTS deliberately keeps first-field-wins (RFC 6797 §8.1).
+  Both directions mutation-proven.
+
 ## [1.98.0] - 2026-07-20
 
 ### Infra Designer: destructive dialogs default to the safe button
