@@ -76,23 +76,24 @@ persistence atomicity, FlowCanvas loops, and listener lifecycle all
 CLEAN. The dialog-default fix (a) is the highest-value and cheapest —
 next infra release. Full report in the 2026-07-20 review.
 
-### 52. API Studio: response robustness + close-save + grader multi-value
+### 52. API Studio: response robustness + close-save + grader multi-value — CLOSED (v1.99.0)
 
-The 2026-07-20 dedicated apiclient review shipped its HIGH finding
-(auth tokens → keychain, v1.97.0) and the basic-auth `{{var}}` fix,
-and deferred four: (a) `ofString()` buffers an unbounded response
-body and `pretty()` re-parses it ON THE EDT — a 100MB or deeply-nested
-body OOMs or throws StackOverflowError (an Error `pretty()` doesn't
-catch) on the paint thread; cap the buffer + guard the parse; (b) no
-read-timeout on the body and no cancel, and two hung sends occupy both
-slots of the shared `RequestProcessor("API Studio", 2)`, silently
-wedging re-aim follows and serving refreshes; (c) `componentClosed`
-saves unconditionally, round-tripping through the unknown-key-dropping
-parser — a newer file's fields vanish on a no-op open/close; add a
-dirty guard; (d) `HeaderGrader.first()` reads only the first value of
-a multi-valued header, mis-grading split CSP in both directions.
-All MED, all in the original v1.19.0 send surface. Next apiclient
-release.
+All four deferred findings from the 2026-07-20 dedicated apiclient
+review shipped in v1.99.0: (a) capped streaming body read (8 MB, abort
+past the cap, charset honored, truncation flagged) + `prettyForDisplay`
+(size gate + StackOverflowError degrade) computed on the send worker,
+never the EDT; (b) sends on a dedicated INTERRUPTIBLE
+`RequestProcessor("API Studio Send", 4, true)` with a real Cancel
+(Send button toggles; interrupt → grey "cancelled" verdict) — the
+shared two-slot housekeeping RP can no longer be wedged by hung sends;
+(c) `componentClosed` saves only when the debounce says dirty (the
+`onProjectReaimed` idiom; the v1.97.0 token migration keeps its own
+direct save); (d) CSP graded over the union of all header values,
+HSTS deliberately first-field-wins (RFC 6797 §8.1). Fixture-server +
+mutation proofs throughout. One honest sliver remains: a body read
+that stalls mid-stream has no automatic timer — the user's Cancel
+(thread interrupt) is the unblock, and it no longer starves anything
+else.
 
 ### 51. Device SPI exec has no launched-for-real signal
 
