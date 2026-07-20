@@ -50,6 +50,12 @@ class ClassicWebDevicesTest {
     // Drain both async paths before asserting: the EDT and the rack's
     // single-threaded signal router.
     private static void settle(Rack rack) {
+        // Drain in dependency order: device background work first (a
+        // knob-change listener can fire offEdt — e.g. DYNAMO's RUNNER
+        // knob triggering an async task reload), THEN the EDT posts that
+        // work makes (setOptions), THEN the router. awaitRouterIdle alone
+        // left the DEVICE_BG reload racing the assertion on loaded CI.
+        org.nmox.studio.rack.model.RackDevice.awaitDeviceBgIdle();
         try {
             javax.swing.SwingUtilities.invokeAndWait(() -> { });
         } catch (Exception ignored) {

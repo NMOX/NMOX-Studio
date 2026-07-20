@@ -882,4 +882,22 @@ public abstract class RackDevice extends JPanel {
     protected static void offEdt(Runnable r) {
         DEVICE_BG.post(r);
     }
+
+    /**
+     * Block until every {@link #offEdt} task queued before this call has
+     * run. {@code DEVICE_BG} is single-threaded and FIFO, so a barrier
+     * posted now runs only after all prior device background work
+     * finishes. Test/diagnostic support — the counterpart to
+     * {@link Rack#awaitRouterIdle} for the device background lane, so a
+     * test's settle can drain an async reload (e.g. a knob-change
+     * listener firing {@code offEdt}) before it asserts. Not part of the
+     * normal flow.
+     */
+    public static void awaitDeviceBgIdle() {
+        try {
+            DEVICE_BG.post(() -> { }).waitFinished(10_000);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+    }
 }
