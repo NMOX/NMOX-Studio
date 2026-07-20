@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.96.0] - 2026-07-19
+
+### Resurrection survives an unsaved rack
+
+The night journey gauntlet re-walked the oldest shipped surfaces with
+real tools. Two passed clean, one found a structural hole:
+
+- **Update center (v1.51.0), PASS across 12 releases of drift**: a real
+  v1.90.0 install offered all 11 modules at 1.95.2 from the live GitHub
+  catalog, verified their SHA-512 digests against the per-tag absolute
+  URLs, showed the MIT license (not "Unknown"), installed, restarted,
+  and ran the new code — confirmed by a v1.95.1-only string live.
+- **Device SPI (v1.55.0), PASS against current bits**: the example
+  plugin compiled unchanged against today's core, installed through
+  Tools ▸ Plugins into the upgraded app **without restart**, joined the
+  shelf via the live catalog merge, mounted, fired the host-enforced
+  Workspace Trust prompt on its exec, and put real `uptime` output on
+  its LCD.
+- **Resurrection (v1.3.0), FAIL — fixed here**: kill -9 mid-serve
+  wrote a perfect session snapshot, but on relaunch the resume offer
+  silently skipped: `matchAgainst` only matches devices that exist in
+  the rack, and an **unsaved rack** (no Save Patch, the common case)
+  restores as the starter patch — nothing to match, no toast, despite
+  fresh intent on disk. Now `SessionState.unmatchedAgainst` names what
+  the rack lost, the offer includes those devices, and the user's
+  CLICK re-creates them from the DeviceCatalog at their recorded slots
+  before resuming. Uninstalled plugin types stay unresurrectable
+  (ledger 44). Both halves mutation-proven
+  (SessionStateTest.unmatchedAgainstFindsUnsavedPatchEntries /
+  resumeSessionRecreatesLostDevices).
+
 ## [1.95.2] - 2026-07-19
 
 ### The seventh review — the gesture must die with its context

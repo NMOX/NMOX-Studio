@@ -94,6 +94,30 @@ public record SessionState(String project, long at, List<Entry> running) {
         return matches;
     }
 
+    /**
+     * The entries this rack CANNOT account for — no device of the
+     * recorded type sits at the recorded position (or the slot holds a
+     * MissingDevice placeholder). This is the unsaved-patch case the
+     * v1.95.2 night journey found: kill -9 with a never-saved rack
+     * leaves a perfect snapshot whose devices simply don't exist after
+     * relaunch, and resurrection silently offered nothing. The caller
+     * decides which of these it can re-create (DeviceCatalog lookup —
+     * an uninstalled plugin's type stays unresurrectable, ledger 44).
+     */
+    public List<Entry> unmatchedAgainst(Rack rack) {
+        List<Entry> unmatched = new ArrayList<>();
+        List<RackDevice> devices = rack.getDevices();
+        for (Entry e : running) {
+            boolean matched = e.index() < devices.size()
+                    && devices.get(e.index()).getTypeId().equals(e.typeId())
+                    && !(devices.get(e.index()) instanceof org.nmox.studio.rack.model.MissingDevice);
+            if (!matched) {
+                unmatched.add(e);
+            }
+        }
+        return unmatched;
+    }
+
     /** Sessions older than this are history, not intent. */
     public boolean fresh() {
         return System.currentTimeMillis() - at < 7L * 24 * 3600 * 1000;

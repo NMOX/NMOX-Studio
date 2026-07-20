@@ -289,7 +289,20 @@ public class RackService {
             return;
         }
         java.util.List<org.nmox.studio.rack.model.RackDevice> matches = state.matchAgainst(rack);
-        if (matches.isEmpty()) {
+        // The unsaved-patch case (found by the v1.95.2 night journey):
+        // the snapshot is fresh but the devices it names were never
+        // persisted — kill -9 before any Save Patch left nothing to
+        // match. Re-creating them is deferred to the user's CLICK; the
+        // offer itself just has to stop being silent about them.
+        // Types the catalog no longer carries (uninstalled plugin,
+        // ledger 44) stay out — a device we can't build can't resume.
+        java.util.List<SessionState.Entry> recreate = new java.util.ArrayList<>();
+        for (SessionState.Entry e : state.unmatchedAgainst(rack)) {
+            if (org.nmox.studio.rack.devices.DeviceCatalog.byId(e.typeId()).isPresent()) {
+                recreate.add(e);
+            }
+        }
+        if (matches.isEmpty() && recreate.isEmpty()) {
             return;
         }
         StringBuilder names = new StringBuilder();
@@ -299,23 +312,48 @@ public class RackService {
             }
             names.append(d.getTitle());
         }
+        for (var e : recreate) {
+            if (names.length() > 0) {
+                names.append(", ");
+            }
+            names.append(e.title());
+        }
+        int count = matches.size() + recreate.size();
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
                         "Resume last session?",
                         javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                        names + (matches.size() == 1 ? " was" : " were")
+                        names + (count == 1 ? " was" : " were")
                         + " running when the IDE closed — click to bring "
-                        + (matches.size() == 1 ? "it" : "them") + " back",
-                        e -> {
-                            for (var d : matches) {
-                                d.resume();
-                            }
-                        });
+                        + (count == 1 ? "it" : "them") + " back",
+                        e -> resumeSession(rack, matches, recreate));
             } catch (RuntimeException | LinkageError ignored) {
                 // notifications unavailable (tests, stripped platform)
             }
         });
+    }
+
+    /**
+     * The resume click: re-create the devices the rack lost (unsaved
+     * patch), then bring everything back. Package-private so plain
+     * tests drive the exact click path.
+     */
+    static void resumeSession(Rack rack,
+            java.util.List<org.nmox.studio.rack.model.RackDevice> matches,
+            java.util.List<SessionState.Entry> recreate) {
+        for (SessionState.Entry e : recreate) {
+            var entry = org.nmox.studio.rack.devices.DeviceCatalog.byId(e.typeId());
+            if (entry.isEmpty()) {
+                continue; // catalog changed between offer and click
+            }
+            org.nmox.studio.rack.model.RackDevice d = entry.get().create();
+            rack.addDevice(d, Math.min(e.index(), rack.getDevices().size()));
+            d.resume();
+        }
+        for (var d : matches) {
+            d.resume();
+        }
     }
 
     /**
