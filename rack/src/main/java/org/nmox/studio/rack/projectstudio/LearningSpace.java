@@ -83,13 +83,27 @@ public final class LearningSpace {
                 StandardCharsets.UTF_8);
     }
 
-    /** Prepends the OS-appropriate install hint to the tutorial. */
+    /**
+     * Appends the OS-appropriate install section — framed as an IN-APP action,
+     * never a hand-off to a terminal. NMOX Studio runs the install for you: a
+     * REPL space has the REPL's INSTALL button (it runs this exact seeded
+     * command, streamed onto the screen); a run space has SOLDER, which runs
+     * any command to MONITOR. The command is shown only so you can see what
+     * runs, not so you type it into a shell.
+     */
     static String tutorialWithInstall(LearningCatalog.Space space) {
         StringBuilder sb = new StringBuilder(space.tutorial());
         String hint = installHint(space);
         if (!hint.isBlank()) {
-            sb.append("\n\n---\n\n## Install\n\nIf the tool isn't found when you press "
-                    + "START, install it:\n\n```sh\n").append(hint).append("\n```\n");
+            boolean repl = space.driver().kind() == LearningCatalog.DriverKind.REPL;
+            String how = repl
+                    ? "press **INSTALL** on the REPL device and NMOX Studio runs it for "
+                            + "you, streamed onto the REPL screen"
+                    : "drop it into the **SOLDER** device and press GO — NMOX Studio runs "
+                            + "it for you and streams the output to MONITOR";
+            sb.append("\n\n---\n\n## Install\n\nIf the tool isn't found when you start the "
+                    + "space, ").append(how).append(". No terminal needed — this is the exact "
+                    + "command it runs:\n\n```sh\n").append(hint).append("\n```\n");
         }
         return sb.toString();
     }

@@ -5,7 +5,7 @@ drag nodes (droplets, firewalls, DNS records…), wire them, and deploy to
 DigitalOcean, Hetzner, or Cloudflare — with cost framing before you spend
 anything. This tutorial builds a plan and dry-runs it, so no money moves.
 
-<!-- screenshot: the flow canvas with a droplet + firewall wired, property sheet open, cost estimate shown -->
+![A stack taking shape — DNS, load balancer, droplet, and a volume with its property sheet; the toolbar prices the design live and stays honest about dry-run mode](../images/infra-designer.png)
 
 ## Open it
 

@@ -4,7 +4,7 @@ API Studio is a Postman-style REST workbench built into the IDE. You
 build requests, run assertions against the response, and — uniquely —
 every response is graded against the web's security-header standards.
 
-<!-- screenshot: API Studio with a request built, response body pretty-printed, and the Standards tab showing a grade -->
+![A live 200 in 331ms — and the Standards tab grading the response's security headers](../images/api-studio.png)
 
 ## Open it
 

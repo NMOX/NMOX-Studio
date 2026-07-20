@@ -48,6 +48,9 @@ public class UpdateCheck implements Runnable {
                         userdir.getParentFile().getAbsolutePath());
             }
         }
+        if (System.getProperty("nmox.shots.dir") != null) {
+            return; // the docs screenshot forge: no network, no balloons in shots
+        }
         Preferences prefs = NbPreferences.root().node("nmox/ui");
         if (!prefs.getBoolean("updateCheck", true)) {
             return;

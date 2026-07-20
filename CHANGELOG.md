@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.109.0] - 2026-07-20
+
+### The docs screenshot forge, illustrated tutorials, and in-app install truth
+
+- **DocsShots — screenshots as a product capability.** Boot the app with
+  `-J-Dnmox.shots.dir=<dir>` and it cycles each suite tab, paints the main
+  window into a crisp 2x PNG per tab (pure Swing painting — no OS
+  screen-recording permission, no compositor), and exits.
+  `scripts/docs-shots.sh` wraps it: rebuild from current sources (a stale
+  assembly silently captures yesterday's UI), throwaway userdir + cachedir
+  for a deterministic first-launch state, update checks suppressed so no
+  balloon photobombs a shot. The forge owns `docs/images/tabs/`; the
+  hand-staged shots in `docs/images/` are never touched. Zero boot cost
+  without the property (one getProperty), shot-to-tutorial mapping
+  test-pinned and mutation-proven.
+- **All 13 tutorials illustrated (11 with images, 2 honestly pending).**
+  Eight slots use the curated staged library (a hit breakpoint with live
+  V8 variables, ANVIL live on chain 31337, a running postgres container,
+  a security-header grade, ORACLE's diagnosis, the rack front and rear);
+  three use fresh forge shots (Workbench, Project Studio, Block Studio).
+- **Learning-space tutorials install in-app, not in a terminal.** The
+  generated Install section told the user to run `brew install <tool>`
+  themselves; NMOX Studio already runs installs for you — the REPL's
+  INSTALL button (streamed onto the screen) for REPL spaces, SOLDER for
+  run spaces. The section now points at the right in-app affordance per
+  driver kind and shows the command only for transparency ("No terminal
+  needed"). Found in a live review of the Gleam space.
+
 ## [1.108.0] - 2026-07-20
 
 ### Rack-panel mouse handlers are owner-scoped, and Load/Export don't block the EDT

@@ -5,7 +5,7 @@ snap typed blocks together and it generates a self-contained custom
 element (shadow DOM, state, listeners) — and a live preview server so you
 see it run. Click a block to highlight the exact lines it produced.
 
-<!-- screenshot: Block Studio with a block tree on the left, generated JS in the middle, live preview on the right -->
+![Block Studio — the pieces palette, the canvas with a component root, and the generated custom element with click-a-piece code mapping](../images/tabs/block-studio.png)
 
 ## Open it
 

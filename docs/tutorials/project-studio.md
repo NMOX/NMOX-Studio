@@ -5,7 +5,7 @@ platform-native file tree, a package.json editor, and rack presets — plus
 the IDE-native **Run / Build / Test / Clean** that work without you ever
 opening a terminal.
 
-<!-- screenshot: Project Studio with the file tree, a package.json editor, and the presets menu -->
+![Project Studio in the left dock — the platform-native file tree and project toolbar, with the Task Rack open beside it](../images/tabs/project-studio.png)
 
 ## Open it
 
