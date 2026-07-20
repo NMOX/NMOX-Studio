@@ -64,6 +64,12 @@
             <artifactId>org-netbeans-modules-settings</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- OS-keychain token storage: auth secrets never touch .nmoxapi.json (v1.97.0) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.json</groupId>

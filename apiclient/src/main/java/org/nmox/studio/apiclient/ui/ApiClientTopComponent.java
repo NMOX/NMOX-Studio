@@ -125,7 +125,10 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTable headersTable = new JTable();
     private final JTextArea bodyArea = new JTextArea();
     private final JComboBox<AuthType> authCombo = new JComboBox<>(AuthType.values());
-    private final JTextField authField = new JTextField();
+    // A JPasswordField, not a plaintext JTextField (v1.97.0): the token
+    // is a secret, so it neither echoes on screen nor is written to the
+    // committable .nmoxapi.json — it lives in the OS keychain.
+    private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
     private final JTable testsTable = new JTable();
 
     private final JLabel statusLabel = new JLabel(" ");
@@ -279,13 +282,13 @@ public final class ApiClientTopComponent extends TopComponent {
         panel.add(new JLabel("Token (Bearer), or user:password (Basic) — {{vars}} allowed:"));
         authField.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
-                current.authToken = authField.getText();
+                current.authToken = new String(authField.getPassword());
                 touch();
             }
         }));
         panel.add(authField);
-        panel.add(new JLabel("<html><small>Secrets belong in environment variables kept out of "
-                + "source control — .nmoxapi.json is committable.</small></html>"));
+        panel.add(new JLabel("<html><small>Stored in the OS keychain, never in "
+                + ".nmoxapi.json. {{vars}} still resolve at send time.</small></html>"));
         return panel;
     }
 
@@ -673,6 +676,45 @@ public final class ApiClientTopComponent extends TopComponent {
             current = workspace.collections.get(0).requests.get(0);
             restoreSelection();
         }
+        reconcileSecrets(workspace);
+    }
+
+    /**
+     * Off-EDT keychain reconciliation for a freshly loaded workspace
+     * (v1.97.0): each request's real auth token lives in the OS keychain
+     * keyed by its id. A pre-v1.97.0 file carries a plaintext {@code
+     * authToken} that {@link WorkspaceIO} left on the model as a
+     * migration carrier — move it into the keychain and rewrite the file
+     * without it. Every keyring call is off the EDT (it may block on OS
+     * calls); the shown request's field is refreshed back on the EDT.
+     */
+    private void reconcileSecrets(Workspace ws) {
+        java.util.List<Request> all = new java.util.ArrayList<>();
+        for (var c : ws.collections) {
+            all.addAll(c.requests);
+        }
+        RP.post(() -> {
+            boolean migrated = false;
+            for (Request r : all) {
+                if (r.authToken != null && !r.authToken.isEmpty()) {
+                    org.nmox.studio.apiclient.api.ApiSecrets.save(r.id, r.authToken);
+                    migrated = true; // legacy plaintext just moved to the keychain
+                } else {
+                    r.authToken = org.nmox.studio.apiclient.api.ApiSecrets.read(r.id);
+                }
+            }
+            final boolean rewrite = migrated;
+            SwingUtilities.invokeLater(() -> {
+                if (rewrite && workspace == ws) {
+                    save(); // rewrites .nmoxapi.json without any authToken
+                }
+                if (current != null && authField != null) {
+                    loading = true;
+                    authField.setText(current.authToken);
+                    loading = false;
+                }
+            });
+        });
     }
 
     private void touch() {
@@ -694,7 +736,21 @@ public final class ApiClientTopComponent extends TopComponent {
     private void save() {
         File target = new File(boundDir(), WorkspaceIO.FILENAME);
         String json = WorkspaceIO.toJson(workspace);
-        SAVES.save(() -> writeSnapshot(target, json));
+        // Snapshot id->token on the EDT (the model is EDT-confined), push
+        // to the keychain off-EDT on the same lane BEFORE the file write,
+        // so the secret is durable before the tokenless JSON lands.
+        java.util.List<String[]> secrets = new java.util.ArrayList<>();
+        for (var c : workspace.collections) {
+            for (Request r : c.requests) {
+                secrets.add(new String[]{r.id, r.authToken == null ? "" : r.authToken});
+            }
+        }
+        SAVES.save(() -> {
+            for (String[] s : secrets) {
+                org.nmox.studio.apiclient.api.ApiSecrets.save(s[0], s[1]);
+            }
+            writeSnapshot(target, json);
+        });
     }
 
     /**

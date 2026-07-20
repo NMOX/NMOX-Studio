@@ -56,10 +56,17 @@ public final class ApiClient {
     private static void applyAuth(HttpRequest.Builder b, Request request, Map<String, String> vars) {
         if (request.authType == AuthType.BEARER && request.authToken != null && !request.authToken.isBlank()) {
             b.header("Authorization", "Bearer " + Variables.resolve(request.authToken, vars).trim());
-        } else if (request.authType == AuthType.BASIC && request.authToken != null && request.authToken.contains(":")) {
+        } else if (request.authType == AuthType.BASIC && request.authToken != null && !request.authToken.isBlank()) {
+            // Resolve {{vars}} FIRST, then check for the user:password
+            // colon — the credential is commonly a single {{creds}} var
+            // (the Auth tab advertises it), and the raw "{{creds}}" has
+            // no colon, so a pre-resolution check silently sent no
+            // Authorization header at all (v1.97.0).
             String creds = Variables.resolve(request.authToken, vars);
-            b.header("Authorization", "Basic "
-                    + Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8)));
+            if (creds.contains(":")) {
+                b.header("Authorization", "Basic "
+                        + Base64.getEncoder().encodeToString(creds.getBytes(StandardCharsets.UTF_8)));
+            }
         }
     }
 

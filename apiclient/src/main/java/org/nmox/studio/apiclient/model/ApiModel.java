@@ -59,6 +59,15 @@ public final class ApiModel {
     /** A saved request: everything needed to fire it and judge the result. */
     public static final class Request {
 
+        /**
+         * Stable identity for the life of this request, minted once on
+         * creation and persisted. It is the Keyring key under which the
+         * auth secret lives ({@code nmox.api.<id>}) — the {@code
+         * authToken} field below is the in-memory working copy and is
+         * NEVER serialized to {@code .nmoxapi.json} (v1.97.0, the
+         * secrets law the other studios have always honored).
+         */
+        public String id = java.util.UUID.randomUUID().toString();
         public String name = "New request";
         public String method = "GET";
         public String url = "";
@@ -66,6 +75,8 @@ public final class ApiModel {
         public final List<Pair> headers = new ArrayList<>();
         public String body = "";
         public AuthType authType = AuthType.NONE;
+        /** In-memory only — the real secret lives in the OS keychain via
+         *  {@code ApiSecrets}, keyed by {@link #id}. Never written to disk. */
         public String authToken = "";  // bearer token, or "user:password" for basic
         public final List<Assertion> tests = new ArrayList<>();
     }

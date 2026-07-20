@@ -71,7 +71,9 @@ class WorkspaceIORoundTripTest {
     @Test
     @DisplayName("A fully-loaded workspace survives toJson/fromJson with nothing lost")
     void fullRoundTrip() {
-        Workspace back = WorkspaceIO.fromJson(WorkspaceIO.toJson(richWorkspace()));
+        Workspace source = richWorkspace();
+        String json = WorkspaceIO.toJson(source);
+        Workspace back = WorkspaceIO.fromJson(json);
 
         assertThat(back.collections).extracting(c -> c.name)
                 .containsExactly("Users API", "Drafts");
@@ -83,7 +85,13 @@ class WorkspaceIORoundTripTest {
         assertThat(req.url).isEqualTo("{{base}}/users");
         assertThat(req.body).isEqualTo("{\"name\":\"ada\"}");
         assertThat(req.authType).isEqualTo(AuthType.BASIC);
-        assertThat(req.authToken).isEqualTo("user:pass");
+        // authToken is NOT round-tripped through the file (v1.97.0): the
+        // secret lives in the OS keychain, keyed by the request id. The
+        // id IS round-tripped so that key is stable across loads.
+        assertThat(req.id).isEqualTo(source.collections.get(0).requests.get(0).id);
+        assertThat(req.authToken).as("no secret survives the file").isEmpty();
+        assertThat(json).as("the token literal must never appear in the JSON")
+                .doesNotContain("user:pass");
 
         assertThat(req.params).hasSize(2);
         assertThat(req.params.get(0).name).isEqualTo("expand");
