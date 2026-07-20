@@ -127,6 +127,20 @@ class ApiClientBuildTest {
         noColon.authToken = "justtoken";
         assertThat(ApiClient.build(noColon, Map.of()).headers().firstValue("Authorization"))
                 .as("basic without user:pass shape is refused").isEmpty();
+
+        // v1.97.0: the whole credential as ONE {{var}} — the raw token
+        // has no literal colon, so the pre-resolution colon check used
+        // to send NO header at all. The colon must be checked AFTER
+        // variable resolution.
+        Request oneVar = request("GET", "https://x.dev");
+        oneVar.authType = AuthType.BASIC;
+        oneVar.authToken = "{{creds}}";
+        String creds = Base64.getEncoder()
+                .encodeToString("admin:hunter2".getBytes(StandardCharsets.UTF_8));
+        assertThat(ApiClient.build(oneVar, Map.of("creds", "admin:hunter2"))
+                .headers().firstValue("Authorization"))
+                .as("a single-var credential resolves to a colon and IS sent")
+                .hasValue("Basic " + creds);
     }
 
     @Test

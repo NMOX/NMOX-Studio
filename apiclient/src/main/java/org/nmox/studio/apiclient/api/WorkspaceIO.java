@@ -61,12 +61,15 @@ public final class WorkspaceIO {
 
     private static JSONObject requestJson(Request r) {
         JSONObject rj = new JSONObject();
+        rj.put("id", r.id);
         rj.put("name", r.name);
         rj.put("method", r.method);
         rj.put("url", r.url);
         rj.put("body", r.body);
         rj.put("authType", r.authType.name());
-        rj.put("authToken", r.authToken);
+        // authToken is DELIBERATELY not serialized (v1.97.0): the secret
+        // lives in the OS keychain via ApiSecrets, keyed by r.id. The
+        // TopComponent pushes it there on save.
         rj.put("params", pairsJson(r.params));
         rj.put("headers", pairsJson(r.headers));
         JSONArray tests = new JSONArray();
@@ -129,6 +132,12 @@ public final class WorkspaceIO {
 
     private static Request request(JSONObject rj) {
         Request r = new Request();
+        // Keep an existing id; mint one for a pre-v1.97.0 file so its
+        // keychain slot is stable from now on.
+        String id = rj.optString("id", "");
+        if (!id.isEmpty()) {
+            r.id = id;
+        }
         r.name = rj.optString("name", "request");
         r.method = rj.optString("method", "GET");
         r.url = rj.optString("url", "");
@@ -138,6 +147,10 @@ public final class WorkspaceIO {
         } catch (IllegalArgumentException ignored) {
             r.authType = AuthType.NONE;
         }
+        // A pre-v1.97.0 file may still carry a plaintext authToken; keep
+        // it in memory as the migration carrier — the TopComponent moves
+        // it to the keychain on load and the next save drops it from the
+        // file (it is never re-serialized). New files have no such key.
         r.authToken = rj.optString("authToken", "");
         readPairs(rj.optJSONArray("params"), r.params);
         readPairs(rj.optJSONArray("headers"), r.headers);
