@@ -23,7 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SpawnTrustGateTest {
 
     private static String read(String rel) throws Exception {
-        return Files.readString(Path.of(rel), StandardCharsets.UTF_8);
+        // normalize CRLF → LF: the Windows CI runner may check out .java
+        // with \r\n, which breaks the "\n    }" method-body delimiters
+        return Files.readString(Path.of(rel), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
     }
 
     @Test
