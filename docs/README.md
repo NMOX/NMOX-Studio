@@ -16,6 +16,10 @@ front to back or dipped into by section.
 
 ## The rest of the docs
 
+- **[🧭 Tutorials](tutorials/README.md)** — short, do-it-yourself
+  walkthroughs, one per unique system: the Task Rack, the four studios,
+  Block Studio, Infra Designer, polyglot debugging, Docker, ORACLE,
+  Learning Spaces, and the wizards. Each is a single sitting.
 - **[⛓️ Making a Smart Contract](making-a-smart-contract.md)** — a worked
   tutorial: build a real escrow contract the Contract Studio way, with
   Foundry tests, a gas gate, and the live local-chain loop. Every command
