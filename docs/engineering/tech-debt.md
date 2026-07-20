@@ -51,6 +51,39 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
+## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
+
+### 55. Editor: proxy socket leak + Prettier kill-tree + probe-port binding
+
+The 2026-07-20 dedicated editor review shipped its three HIGH findings
+in v1.102.0 (LSP + Prettier trust gates closing RCE-on-open/save, DAP
+frame cap closing the OOM) and deferred the lower-severity remainder:
+
+- **M1 (MED):** `DapProxy.close()` is never called in production
+  (`DapDebugAction.debugNode`/`BrowserDebugAction.debugChrome` create
+  the proxy as a local and only `endSession` runs on teardown, which
+  half-closes `proxySideClient` but never fully closes it). One
+  `proxySideClient` FD leaks per debug session. Fix: hold the proxy
+  and call `close()` in the onClosed cleanup, or fully close
+  `proxySideClient` in `endSession` after the reader drains.
+- **M2 (MED):** `PrettierFormatter`'s timeout path uses
+  `destroyForcibly()` (not `ProcessSupport.killTree`) — a node wrapper's
+  grandchild can survive; the stdout drain thread is non-daemon and
+  unbounded (`readAllBytes`). Fix: `killTreeAndWait`, daemon drain,
+  cap the drained bytes.
+- **L1 (LOW):** `DapDebugAction.freePort` binds `new ServerSocket(0)`
+  to all interfaces (vs the loopback-bound `JsDebugServer.freePort`).
+  Fix: bind `InetAddress.getLoopbackAddress()`.
+- **L3 (LOW):** the `startDebugging` reverse request is ACKed before
+  its config is parsed; a malformed config leaves the parent believing
+  a child launched. Fix: parse before responding success.
+- **L4 (LOW):** `JavaScriptCompletionProvider.addDocumentIdentifiers`
+  re-lexes the whole document per completion (O(file size) per query,
+  off-EDT). The 1MB-file cost path. Fix: cache/limit the scan window.
+- **L5 (LOW):** the shutdown-hook reaper kills adapters but does not
+  run `BrowserDebugAction`'s Chrome-profile cleanup, so a throwaway
+  profile dir leaks on IDE force-quit (disk-only, best-effort).
+
 ## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
 
 ### 54. DB Studio: EDT workspace read + LOB cell cap + cleartext-Couch hardening
