@@ -5,7 +5,7 @@ containers, images, volumes, networks — plus a **Dockerize** tab that
 generates a production Dockerfile for your project. Its rack counterpart
 is the **HARBOR** device.
 
-<!-- screenshot: the Docker panel Containers tab with a running container, and the Dockerize tab -->
+![Engine up, a postgres container running — status dot, ports, and the verb row: start, stop, logs, inspect](../images/docker-panel.png)
 
 ## Before you start
 

@@ -5,7 +5,7 @@ Anthropic API what went wrong. It's AI assistance through the rack's
 metaphor: one button, a clear consent gate, and an honest LCD — no
 project files or secrets are sent, only the bounded failure context.
 
-<!-- screenshot: the ORACLE device faceplate with an explanation on its LCD and the popup showing full text -->
+![ORACLE explaining a real failed run: the consent-gated diagnosis on the faceplate and the full fix steps in the viewer](../images/oracle-explain.png)
 
 ## Before you start
 

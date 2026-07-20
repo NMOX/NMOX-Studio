@@ -9,7 +9,7 @@ This is the quick tour. For a complete worked example — writing an
 escrow contract, testing it, and running it against a local chain — see
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-<!-- screenshot: Contract Studio Interact pane with a decoded call result, Watch pane streaming blocks -->
+![ANVIL running in the rack and Contract Studio connected to it by itself — chain 31337, the contract in the artifact tree with its EIP-170 size usage](../images/contract-studio.png)
 
 ## Open it
 

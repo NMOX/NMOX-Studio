@@ -5,7 +5,7 @@ Navigator outline, and language-server intelligence — and it debugs
 JavaScript/TypeScript (and the browser) out of the box with breakpoints
 that actually stop. This tutorial hits a breakpoint in a Node app.
 
-<!-- screenshot: the editor stopped at a breakpoint, variables and call stack visible -->
+![A JavaScript breakpoint hit: execution paused, the Node call stack, and live V8 variables](../images/debug-javascript.png)
 
 ## Before you start
 

@@ -6,7 +6,9 @@ patch cables. A device runs a real command; a cable carries a real
 signal. This tutorial builds a tiny patch — run something, and light an
 indicator when it finishes — so the metaphor clicks.
 
-<!-- screenshot: the Rack tab with a MONITOR device mounted, rear flipped to show jacks -->
+![The rack aimed at a real project — devices racked and running](../images/task-rack.png)
+
+![Tab flips the rack — patch cables wire the devices on the rear](../images/rack-rear.png)
 
 ## Before you start
 

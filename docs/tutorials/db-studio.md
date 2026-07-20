@@ -5,7 +5,7 @@ MongoDB, and CouchDB — bundled drivers, a kind-aware console, and result
 grids you can edit in place. This tutorial uses SQLite because it needs
 no server.
 
-<!-- screenshot: DB Studio with a connection tree, a SELECT result grid, and a cell being edited -->
+![A SQLite connection, a query, live rows in the grid — and the status bar giving the honest reason when a grid is read-only](../images/db-studio.png)
 
 ## Open it
 

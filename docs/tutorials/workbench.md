@@ -5,7 +5,7 @@ current project, open and recent files, known projects, and the tooling
 you have installed, all in one place. It's where you orient before diving
 into a studio.
 
-<!-- screenshot: the Workbench with current-project, open-files, recent-files, projects, and tooling columns -->
+![The Workbench in the left dock — current project with toolchain chips, open and recent files, projects, and the tooling directory](../images/tabs/workbench.png)
 
 ## Open it
 
