@@ -1,14 +1,10 @@
 package org.nmox.studio.rack.projectstudio;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import org.nmox.studio.core.process.ProcessSupport;
 
 /**
@@ -126,40 +122,67 @@ public final class EnvironmentDoctor {
      * a tool that launches but dislikes --version still counts as found.
      */
     public static Finding probe(String tool, String purpose, String installHint) {
+        return probeWith(tool, purpose, installHint, versionCommand(tool));
+    }
+
+    /** The version-query dialect for a tool: {@code --version} or its holdout form. */
+    static List<String> versionCommand(String tool) {
+        // most tools speak --version; the holdouts get their own dialect
+        return switch (tool) {
+            case "go" -> List.of("go", "version"); // rejects --version
+            case "zig" -> List.of("zig", "version"); // rejects --version
+            // nginx has no --version and prints `nginx -v` to STDERR —
+            // runBounded captures stderr, so the version line is found either way
+            case "nginx" -> List.of("nginx", "-v");
+            case "apachectl" -> List.of("apachectl", "-v"); // --version unsupported
+            default -> List.of(tool, "--version");
+        };
+    }
+
+    /**
+     * Runs one already-resolved version command under the 4s leash. Package
+     * private so a test can inject a command that launches, prints, then holds
+     * its pipe open — proving the timeout is real (the old hand-rolled probe
+     * read to EOF before waitFor, so a wedged tool hung the whole sweep).
+     */
+    static Finding probeWith(String tool, String purpose, String installHint,
+            List<String> versionCmd) {
         try {
-            // most tools speak --version; the holdouts get their own dialect
-            List<String> versionCmd = switch (tool) {
-                case "go" -> List.of("go", "version"); // rejects --version
-                case "zig" -> List.of("zig", "version"); // rejects --version
-                // nginx has no --version and prints `nginx -v` to STDERR —
-                // redirectErrorStream below folds it into the read stream
-                case "nginx" -> List.of("nginx", "-v");
-                case "apachectl" -> List.of("apachectl", "-v"); // --version unsupported
-                default -> List.of(tool, "--version");
-            };
-            Process p = ProcessSupport.builder(versionCmd)
-                    .redirectErrorStream(true)
-                    .start();
-            String firstLine = "";
-            try (BufferedReader r = new BufferedReader(
-                    new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-                String line = r.readLine();
-                if (line != null) {
-                    firstLine = line.strip();
-                }
-                r.transferTo(java.io.Writer.nullWriter()); // drain so the tool can exit
-            }
-            if (!p.waitFor(4, TimeUnit.SECONDS)) {
-                p.destroyForcibly();
+            // runBounded drains both streams on their own threads while
+            // waitFor runs FIRST — a tool that launches, prints nothing, and
+            // holds its pipe open still hits the 4s leash instead of hanging
+            // this whole sequential sweep. (The old hand-rolled probe read to
+            // EOF before waitFor, so the timeout was unreachable.) The version
+            // line lands on stdout for most tools and stderr for the holdouts
+            // (nginx -v, apachectl -v), so we take the first non-blank of each.
+            ProcessSupport.BoundedResult r =
+                    ProcessSupport.runBounded(versionCmd, null, java.time.Duration.ofSeconds(4));
+            String firstLine = firstNonBlankLine(r.stdout());
+            if (firstLine.isBlank()) {
+                firstLine = firstNonBlankLine(r.stderr());
             }
             String detail = firstLine.isBlank() ? "found (version unknown)"
                     : (firstLine.length() > 72 ? firstLine.substring(0, 72) + "…" : firstLine);
             return new Finding(tool, purpose, true, detail, installHint);
         } catch (IOException notFound) {
+            // no such binary, or the sweep thread was interrupted mid-probe
+            // (runBounded reasserts the interrupt flag before wrapping) — either
+            // way this tool doesn't answer, so report it missing and move on
             return new Finding(tool, purpose, false, "not found", installHint);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return new Finding(tool, purpose, false, "interrupted", installHint);
         }
+    }
+
+    /** The first non-blank line of a captured stream, stripped, or "". */
+    private static String firstNonBlankLine(String captured) {
+        if (captured == null || captured.isBlank()) {
+            return "";
+        }
+        for (String line : captured.split("\\R", -1)) {
+            String stripped = line.strip();
+            if (!stripped.isBlank()) {
+                return stripped;
+            }
+        }
+        return "";
     }
 }

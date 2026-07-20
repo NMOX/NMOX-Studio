@@ -4,6 +4,59 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.106.0] - 2026-07-20
+
+### The process-probe is bounded in time AND memory, and Discard defaults to No
+
+The first dedicated **ui-module review** surfaced two MED findings, and
+the follow-on **core-module review** surfaced the HIGH primitive bug the
+first fix leaned on. All three are fixed here, each verified against the
+code and mutation-proven.
+
+- **EnvironmentDoctor's per-probe timeout was illusory.** `probe()` read
+  the tool's first output line, then drained the rest to EOF via
+  `transferTo(nullWriter())`, and *only then* called `waitFor(4s)`. A
+  tool that launches, prints nothing, and holds its pipe open blocks at
+  `transferTo` forever — the 4s leash was unreachable, hanging the whole
+  sequential Doctor sweep and leaking the reader thread. `probe()` now
+  delegates to `ProcessSupport.runBounded` (drains both streams on their
+  own threads while `waitFor` runs first), taking the first non-blank
+  line of stdout, then stderr for the `nginx -v` / `apachectl -v`
+  holdouts. A wedged-pipe test (prints, then sleeps 30s) asserts the
+  probe returns under 15s — the mutation proof.
+
+- **`ProcessSupport.runBounded`'s output accumulator was uncapped
+  (HIGH).** Both stream drains appended every byte into a `StringBuilder`
+  with no ceiling — a runaway or hostile child that floods stdout (`yes`,
+  a build stuck in a reload loop, a probe that hit a spewing endpoint)
+  would grow the heap without limit until the timeout fired, and
+  `OutOfMemoryError` takes down the entire IDE. This is the shared
+  primitive every module's process launches route through, and the
+  EnvironmentDoctor fix above now leans on it (the old Doctor discarded
+  its tail; routing through `runBounded` would otherwise re-introduce the
+  unboundedness on the memory axis). Now each capture is held at a 4 M
+  char (~8 MB) ceiling while the drains keep reading to EOF — so a chatty
+  child still can't deadlock on a full pipe — and `BoundedResult` gains a
+  `truncated` flag so the dropped tail is reported, not hidden. A
+  20 MB-flood test asserts the capture is held at the ceiling and flagged.
+
+- **The "Discard experiment" confirmation defaulted to Yes.**
+  `Experiments.discard(dir)` stops anything running there and deletes the
+  tree — irreversible — yet the dialog let a reflexive Enter/Space land
+  on the destructive Yes (`NotifyDescriptor.Confirmation` hard-codes
+  `initialValue = OK_OPTION`). Switched to the full `NotifyDescriptor`
+  constructor with `NO_OPTION` as initialValue (the v1.98.0 infra
+  dialog-safety idiom); a new `ManageExperimentsSafetyTest` source-gates
+  it, mirroring infra's `DialogSafetyTest`.
+
+Three LOW core-review findings are recorded in the debt ledger (56–58):
+`AtomicFiles` narrowing perms to 0600 on rewrite, `Versions.compare`
+throwing on non-normalized public input, and `GitFacts.readFirstLine`
+reading a whole (attacker-influenceable) `.git` file to get one line.
+The core review verified `HttpClientFactory`, `JsonUtil`,
+`SelfWriteTracker`, `ToolLocator`, `AtomicFiles`, `TerminalPhosphor`,
+and the entire frozen Device SPI CLEAN.
+
 ## [1.105.0] - 2026-07-20
 
 ### Device background work is drainable in tests (DYNAMO knob flake fixed)
