@@ -146,6 +146,41 @@ class ProcessSupportTest {
     }
 
     @Test
+    @DisplayName("a runaway child that floods stdout is capped, not left to OOM the IDE")
+    @Timeout(30)
+    void shouldCapRunawayOutput() throws Exception {
+        // ~20 MB to stdout, far past the capture ceiling, then the child exits
+        // (head closes the pipe, yes takes SIGPIPE). The OLD unbounded drain
+        // appended every byte into a StringBuilder — a big enough flood at the
+        // 30s leash was hundreds of MB to GB of heap and an OutOfMemoryError
+        // that took down the whole IDE. The cap must hold the capture at the
+        // ceiling while still draining to EOF (so the child never deadlocks).
+        ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                List.of("sh", "-c", "yes | head -c 20000000"),
+                null, Duration.ofSeconds(25));
+
+        assertThat(r.stdout().length())
+                .as("stdout capture is held at the ceiling, not the full 20 MB flood")
+                .isLessThanOrEqualTo(ProcessSupport.MAX_CAPTURE_CHARS);
+        assertThat(r.stdout().length())
+                .as("the flood really did exceed the ceiling (the test is meaningful)")
+                .isEqualTo(ProcessSupport.MAX_CAPTURE_CHARS);
+        assertThat(r.truncated())
+                .as("the dropped tail is reported honestly, not hidden")
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("normal short output is never flagged truncated")
+    void shouldNotFlagShortOutput() throws Exception {
+        ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                List.of("sh", "-c", "echo hello"), null, Duration.ofSeconds(20));
+
+        assertThat(r.truncated()).isFalse();
+        assertThat(r.stdout()).isEqualTo("hello\n");
+    }
+
+    @Test
     @DisplayName("workingDir is honored")
     void shouldRunInWorkingDir(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
         // Comparing the shell's pwd output to the Java path breaks on two

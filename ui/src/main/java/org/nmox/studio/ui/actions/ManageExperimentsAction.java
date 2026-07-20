@@ -168,10 +168,18 @@ public final class ManageExperimentsAction implements ActionListener {
             if (dir == null) {
                 return;
             }
-            Object answer = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+            // Discard is an irreversible tree delete — the reflexive Enter/Space
+            // must NOT land on YES. NotifyDescriptor.Confirmation hard-codes
+            // initialValue=OK_OPTION and setValue never moves the default button,
+            // so use the full constructor with NO_OPTION as the initial value
+            // (the v1.98.0 infra dialog-safety idiom).
+            NotifyDescriptor confirm = new NotifyDescriptor(
                     "Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.",
                     "Discard Experiment", NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE));
+                    NotifyDescriptor.WARNING_MESSAGE,
+                    new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                    NotifyDescriptor.NO_OPTION);
+            Object answer = DialogDisplayer.getDefault().notify(confirm);
             if (answer != NotifyDescriptor.YES_OPTION) {
                 return;
             }

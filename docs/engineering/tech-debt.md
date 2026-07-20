@@ -66,6 +66,45 @@ inlined versions are correct and tested. A source-gate ("no
 `BodyHandlers.ofString()` in main sources") is the standing regression
 guard until then.
 
+## Open — deferred deliberately, with reasons (added v1.106.0, the first core review)
+
+The v1.106.0 core-module review's HIGH finding — `ProcessSupport.runBounded`'s
+uncapped output accumulator (an OOM vector on a runaway child, and the
+primitive every module's spawns route through) — was fixed in that
+release (4 M-char ceiling, keep-draining-to-EOF, `truncated` flag,
+20 MB-flood mutation proof). Its three LOW findings are deferred:
+
+### 57. `AtomicFiles.writeString` narrows file perms to 0600 on rewrite
+
+`Files.createTempFile` makes the temp owner-only, and the `ATOMIC_MOVE`
+carries those perms onto the target — so atomically rewriting a `0644`
+workspace file (`.nmoxapi.json`, `.nmoxweb3.json`, …) leaves it
+`rw-------`. Not a security problem (tighter is safer, and consistent
+with the keyring-only secrets posture), just a silent behavior change
+vs. `Files.writeString`, which honors umask. LOW: no functional impact —
+the owner always reads their own workspace files. Fix by re-applying the
+target's/umask perms after the move if a shared-perms need ever appears.
+
+### 58. `Versions.compare` throws on non-normalized public input
+
+`Integer.parseInt` on a version segment throws `NumberFormatException`
+on any non-numeric part (`compare("1.24.0-rc1", "1.24.0")`) or an
+overflowing segment. All internal callers feed it `extract()`-normalized
+strings, so no live path throws; the risk is a future caller passing a
+raw/suffixed version. LOW/latent. Fix by parsing defensively or
+documenting the `extract()`-normalized precondition on the public method.
+
+### 59. `GitFacts.readFirstLine` reads a whole `.git` file to get one line
+
+`Files.readString` slurps the entire file before taking the first line.
+For real `.git/HEAD` and `gitdir:` pointers this is a few bytes, but the
+class already treats a crafted `.git` FILE as adversarial input (the
+gitdir confinement) — a deliberately huge one would be read fully into
+memory first. LOW: the threat model is a file inside the user's own
+aimed project, and the chip's git spawn is already bounded elsewhere.
+Fix by reading a bounded prefix (`BufferedReader.readLine()` or a capped
+`readNBytes`) instead of the whole file.
+
 ### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
 
 The systemic finding of the module-review arc: the IDE spawned a
