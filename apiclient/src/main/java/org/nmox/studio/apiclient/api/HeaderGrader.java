@@ -45,7 +45,12 @@ public final class HeaderGrader {
             checks.add(new Check("Strict-Transport-Security", Verdict.PASS, hsts));
         }
 
-        String csp = first(headers, "content-security-policy");
+        // CSP is legitimately sent as MULTIPLE header fields (each an
+        // independently-enforced policy). Reading only the first one
+        // mis-graded split CSP in both directions: frame-ancestors in
+        // the second field looked absent (false MISS), unsafe-inline in
+        // the second field looked clean (false PASS). Grade the union.
+        String csp = joined(headers, "content-security-policy");
         if (csp == null) {
             checks.add(new Check("Content-Security-Policy", Verdict.MISS,
                     "absent — the single most effective XSS defense"));
@@ -98,6 +103,22 @@ public final class HeaderGrader {
         return new Report(letter(checks), checks);
     }
 
+    /** Every value of a repeatable header, comma-joined; null when absent. */
+    private static String joined(Map<String, List<String>> headers, String name) {
+        for (Map.Entry<String, List<String>> e : headers.entrySet()) {
+            if (e.getKey() != null && e.getKey().equalsIgnoreCase(name)
+                    && !e.getValue().isEmpty()) {
+                return String.join(", ", e.getValue());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The FIRST value only — correct for the single-value headers, and
+     * for HSTS by spec: RFC 6797 §8.1 says a UA processes only the
+     * first STS header field it receives.
+     */
     private static String first(Map<String, List<String>> headers, String name) {
         for (Map.Entry<String, List<String>> e : headers.entrySet()) {
             if (e.getKey() != null && e.getKey().equalsIgnoreCase(name)

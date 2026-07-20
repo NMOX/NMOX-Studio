@@ -95,21 +95,66 @@ public final class ApiClient {
         return org.nmox.studio.core.util.JsonUtil.looksJson(body);
     }
 
+    /**
+     * The response-body capture cap. {@code ofString()} buffered the
+     * whole body unbounded, so a runaway endpoint (a misconfigured file
+     * download, a log-streaming route) could OOM the IDE. Everything a
+     * response viewer and test runner need fits well under this; the
+     * truncation is flagged honestly on the {@link ApiResponse}.
+     */
+    public static final int MAX_BODY_BYTES = 8 * 1024 * 1024;
+
     /** Sends the request and captures timing, size, headers, and body. */
     public ApiResponse send(Request request, Map<String, String> vars) {
         long start = System.nanoTime();
         try {
-            HttpResponse<String> response = client.send(build(request, vars),
-                    HttpResponse.BodyHandlers.ofString());
+            HttpResponse<java.io.InputStream> response = client.send(build(request, vars),
+                    HttpResponse.BodyHandlers.ofInputStream());
+            byte[] raw;
+            boolean truncated;
+            try (java.io.InputStream in = response.body()) {
+                raw = in.readNBytes(MAX_BODY_BYTES);
+                truncated = in.read() != -1;
+                // closing the stream aborts the rest of the transfer —
+                // we never drain what we won't show
+            }
             long ms = (System.nanoTime() - start) / 1_000_000;
-            String body = response.body() == null ? "" : response.body();
             Map<String, java.util.List<String>> headers = new LinkedHashMap<>(response.headers().map());
+            String body = new String(raw, charsetOf(response.headers()
+                    .firstValue("content-type").orElse("")));
             return new ApiResponse(response.statusCode(), ms,
-                    body.getBytes(StandardCharsets.UTF_8).length, headers, body, null);
+                    raw.length, headers, body, null, truncated);
+        } catch (InterruptedException cancelled) {
+            // a Cancel press interrupts the send worker (the RP is
+            // created interruptible) — this is a user verdict, not a
+            // network failure, and the flag must be restored for the
+            // pool thread
+            Thread.currentThread().interrupt();
+            long ms = (System.nanoTime() - start) / 1_000_000;
+            return ApiResponse.failure(ms, "cancelled");
         } catch (Exception ex) {
             long ms = (System.nanoTime() - start) / 1_000_000;
             return ApiResponse.failure(ms,
                     ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage());
         }
+    }
+
+    /** Charset from a Content-Type header value; UTF-8 when absent or unknown. */
+    static java.nio.charset.Charset charsetOf(String contentType) {
+        int i = contentType.toLowerCase(java.util.Locale.ROOT).indexOf("charset=");
+        if (i >= 0) {
+            String name = contentType.substring(i + "charset=".length()).trim();
+            int end = name.indexOf(';');
+            if (end >= 0) {
+                name = name.substring(0, end);
+            }
+            name = name.replace("\"", "").trim();
+            try {
+                return java.nio.charset.Charset.forName(name);
+            } catch (RuntimeException unknown) {
+                // fall through to UTF-8
+            }
+        }
+        return StandardCharsets.UTF_8;
     }
 }

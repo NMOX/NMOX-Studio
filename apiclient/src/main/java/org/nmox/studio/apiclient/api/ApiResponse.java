@@ -9,7 +9,14 @@ import java.util.Map;
  * never reached a server (DNS, connection refused, timeout).
  */
 public record ApiResponse(int status, long millis, long bytes,
-        Map<String, List<String>> headers, String body, String error) {
+        Map<String, List<String>> headers, String body, String error,
+        boolean truncated) {
+
+    /** Full body captured — the common case. */
+    public ApiResponse(int status, long millis, long bytes,
+            Map<String, List<String>> headers, String body, String error) {
+        this(status, millis, bytes, headers, body, error, false);
+    }
 
     public boolean reached() {
         return status >= 0;

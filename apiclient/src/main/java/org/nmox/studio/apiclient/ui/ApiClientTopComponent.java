@@ -80,6 +80,21 @@ public final class ApiClientTopComponent extends TopComponent {
     // sends, rebind reads, and registry pokes are short bounded jobs: they
     // share one small pool instead of a raw thread per click
     private static final RequestProcessor RP = new RequestProcessor("API Studio", 2);
+
+    /**
+     * Sends ride their OWN interruptible lane. On the shared two-slot
+     * RP, two hung sends silently wedged everything else queued there —
+     * re-aim follows, workspace loads, serving refreshes — until the
+     * 30s request timeouts fired. Housekeeping must never queue behind
+     * the network. {@code interruptThread=true} is what makes Cancel
+     * real: {@code Task.cancel()} interrupts a running send and
+     * {@code HttpClient.send} unblocks with InterruptedException.
+     */
+    private static final RequestProcessor SEND_RP =
+            new RequestProcessor("API Studio Send", 4, true);
+
+    /** EDT-confined: the in-flight send, so Cancel can reach it. */
+    private RequestProcessor.Task inFlight;
     /**
      * Workspace writes ride their own single-throughput lane, NOT
      * {@link #RP} — RP's throughput 2 could interleave two writes
@@ -315,23 +330,39 @@ public final class ApiClientTopComponent extends TopComponent {
     // ---- sending ----
 
     private void send() {
+        if (inFlight != null && !inFlight.isFinished()) {
+            // the button reads "Cancel" — interrupt the running send
+            // (the worker's failure path resets the UI); if it hadn't
+            // started yet, nothing will run, so reset here
+            if (inFlight.cancel()) {
+                inFlight = null;
+                sendButton.setText("Send");
+                statusLabel.setForeground(Color.GRAY);
+                statusLabel.setText("Cancelled");
+            }
+            return;
+        }
         if (current == null) {
             return;
         }
-        sendButton.setEnabled(false);
+        sendButton.setText("Cancel");
         statusLabel.setForeground(Color.GRAY);
         statusLabel.setText("Sending…");
         Environment env = workspace.active();
         Map<String, String> vars = env != null ? env.variables : Map.of();
         Request request = current;
-        RP.post(() -> {
+        inFlight = SEND_RP.post(() -> {
             boolean delivered = false;
             String failure = "unexpected error";
             try {
                 ApiResponse response = client.send(request, vars);
                 List<TestRunner.Result> results = TestRunner.run(request, response);
+                // the pretty re-parse belongs HERE: on the EDT it froze
+                // the paint thread for megabyte bodies (ledger 52a)
+                String display = response.reached()
+                        ? WorkspaceIO.prettyForDisplay(response.body()) : null;
                 delivered = true;
-                SwingUtilities.invokeLater(() -> showResponse(response, results));
+                SwingUtilities.invokeLater(() -> showResponse(response, results, display));
             } catch (RuntimeException ex) {
                 failure = String.valueOf(ex.getMessage());
                 java.util.logging.Logger.getLogger(ApiClientTopComponent.class.getName())
@@ -342,7 +373,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     // status stuck on "Sending…" until restart
                     String message = "Send failed — " + failure;
                     SwingUtilities.invokeLater(() -> {
-                        sendButton.setEnabled(true);
+                        sendButton.setText("Send");
                         statusLabel.setForeground(FAIL_RED);
                         statusLabel.setText(message);
                     });
@@ -351,16 +382,20 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
-    private void showResponse(ApiResponse r, List<TestRunner.Result> results) {
+    private void showResponse(ApiResponse r, List<TestRunner.Result> results, String display) {
+        sendButton.setText("Send");
         sendButton.setEnabled(true);
         if (!r.reached()) {
-            statusLabel.setForeground(FAIL_RED);
-            statusLabel.setText("No route — " + r.error() + "  ·  " + r.millis() + "ms");
-            responseBody.setText(r.error());
+            boolean cancelled = "cancelled".equals(r.error());
+            statusLabel.setForeground(cancelled ? Color.GRAY : FAIL_RED);
+            statusLabel.setText(cancelled ? "Cancelled  ·  " + r.millis() + "ms"
+                    : "No route — " + r.error() + "  ·  " + r.millis() + "ms");
+            responseBody.setText(cancelled ? "" : r.error());
         } else {
             statusLabel.setForeground(r.ok() ? OK_GREEN : FAIL_RED);
-            statusLabel.setText(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes()));
-            responseBody.setText(WorkspaceIO.pretty(r.body()));
+            statusLabel.setText(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes())
+                    + (r.truncated() ? "  ·  body truncated at " + humanBytes(r.bytes()) : ""));
+            responseBody.setText(display == null ? r.body() : display);
             responseBody.setCaretPosition(0);
         }
         StringBuilder h = new StringBuilder();
@@ -842,12 +877,20 @@ public final class ApiClientTopComponent extends TopComponent {
             filePulse.stop();
             filePulse = null;
         }
+        // Save ONLY when edits are pending (debounce armed = dirty; the
+        // onProjectReaimed idiom). The old unconditional save round-
+        // tripped the file through the unknown-key-dropping parser, so
+        // a no-op open/close of the tab silently erased any fields a
+        // NEWER NMOX version had written into .nmoxapi.json.
+        boolean dirty = saveDebounce.isRunning();
         saveDebounce.stop();
-        save();
-        // the queued write must land before the window system forgets us —
-        // a bounded synchronous drain is the simplest correct close flush
-        // (the lane only carries ms-scale local writes; see SaveLane.flush)
-        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        if (dirty) {
+            save();
+            // the queued write must land before the window system forgets
+            // us — a bounded synchronous drain is the simplest correct
+            // close flush (the lane only carries ms-scale local writes)
+            SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        }
     }
 
     // ---- following the rack's aim ----

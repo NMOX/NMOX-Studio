@@ -238,4 +238,29 @@ public final class WorkspaceIO {
     public static String pretty(String body) {
         return org.nmox.studio.core.util.JsonUtil.pretty(body);
     }
+
+    /**
+     * The pretty of the WORKER thread. The response viewer used to call
+     * {@link #pretty} on the EDT for every send: a multi-megabyte body
+     * froze the paint thread for the length of the re-parse, and a
+     * deeply-nested one threw {@link StackOverflowError} (an Error the
+     * parse's RuntimeException guard never catches) straight through
+     * it. Bodies past the size guard show raw — a viewer doesn't owe a
+     * 2MB+ payload indentation — and a recursion blowup degrades to
+     * raw instead of killing the thread.
+     */
+    public static String prettyForDisplay(String body) {
+        if (body == null) {
+            return "";
+        }
+        if (body.length() > 2_000_000) {
+            return body;
+        }
+        try {
+            return pretty(body);
+        } catch (StackOverflowError deeplyNested) {
+            // org.json descends one stack frame per nesting level
+            return body;
+        }
+    }
 }
