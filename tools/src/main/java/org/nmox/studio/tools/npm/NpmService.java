@@ -134,32 +134,49 @@ public class NpmService {
         }
     }
 
+    /** Cap on the in-memory output accumulator — a runaway build can't OOM. */
+    private static final int MAX_OUTPUT_CHARS = 4 * 1024 * 1024;
+
     private CompletableFuture<String> runCommand(File workingDir, String... command) {
+        // npm install runs pre/postinstall lifecycle scripts and
+        // `npm run <script>` runs the package.json script body — all
+        // PROJECT-controlled, i.e. attacker code in a cloned repo.
+        // ProcessSupport.builder is a deliberately un-gated primitive;
+        // this caller must ask before running a stranger's scripts.
+        // (listGlobalPackages/isAvailable run fixed IDE tools and do NOT
+        // route through here, so they never prompt.)
+        if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(workingDir)) {
+            return CompletableFuture.completedFuture("");
+        }
         return CompletableFuture.supplyAsync(() -> {
             InputOutput io = IOProvider.getDefault().getIO("NPM Output", false);
             io.select();
             OutputWriter out = io.getOut();
             OutputWriter err = io.getErr();
-            
+
             try {
                 out.println("Running: " + String.join(" ", command));
                 out.println("Directory: " + workingDir.getAbsolutePath());
                 out.println("----------------------------------------");
-                
+
                 ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(java.util.List.of(command));
                 pb.directory(workingDir);
                 pb.redirectErrorStream(true);
-                
+
                 Process process = pb.start();
                 StringBuilder output = new StringBuilder();
-                
+
                 try (BufferedReader reader = new BufferedReader(
                         new InputStreamReader(process.getInputStream(),
                                 java.nio.charset.StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         out.println(line);
-                        output.append(line).append("\n");
+                        // stream to the window always; bound the returned
+                        // accumulator so a runaway/verbose build can't OOM
+                        if (output.length() < MAX_OUTPUT_CHARS) {
+                            output.append(line).append("\n");
+                        }
                     }
                 }
                 

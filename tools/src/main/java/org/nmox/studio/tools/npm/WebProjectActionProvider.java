@@ -50,6 +50,17 @@ final class WebProjectActionProvider implements ActionProvider {
         if (dir == null || cmd == null) {
             return;
         }
+        // Run/Build/Test/Clean execute PROJECT-controlled code — the
+        // package.json "scripts" body, make/cargo(build.rs)/gradle build
+        // scripts, npx-resolved node_modules/.bin binaries — all
+        // attacker-controlled in a cloned repo. CommandExecutor.run and
+        // ProcessSupport are deliberately un-gated primitives; the trust
+        // gate is the caller's job (as the rack devices and debug actions
+        // do it). Ask before running a stranger's tasks. requestTrust
+        // prompts once then caches; headless it auto-allows.
+        if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir)) {
+            return;
+        }
 
         // the action and the rack are one mechanism: aim the rack so the
         // monitor, explorer and recent list all follow the same project.
