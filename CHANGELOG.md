@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.97.0] - 2026-07-20
+
+### API Studio auth tokens move to the OS keychain
+
+A dedicated senior review of the never-before-audited **apiclient**
+module found the highest-value defect the codebase still carried: auth
+tokens typed into API Studio's Auth tab were serialized **plaintext**
+into `.nmoxapi.json` — a file the module's own warning label calls
+committable — contradicting the Keyring-only law every other studio
+has always honored (DB Studio passwords, web3 RPC URLs, ORACLE keys).
+
+- **Tokens are keychain-only now.** Each request carries a stable `id`;
+  its bearer/basic secret lives in the OS keychain via the new
+  `ApiSecrets` (the `dbstudio.Passwords` idiom: in-memory fallback +
+  warn-once when no backend, tests force the fallback). `WorkspaceIO`
+  no longer writes `authToken` at all, and the Auth field is a
+  `JPasswordField` — the secret neither echoes on screen nor hits disk.
+- **Automatic migration.** A pre-v1.97.0 file's plaintext token is
+  read once on load, pushed to the keychain, and dropped from the file
+  on the next save — no user action, no lost credentials.
+- **Basic auth with a single `{{var}}` credential now works.** The
+  `user:password` colon was checked on the RAW token *before* variable
+  resolution, so a `{{creds}}` credential (the documented usage) sent
+  no Authorization header at all. The colon is now checked after
+  resolution. Mutation-proven, as is the no-token-in-JSON law.
+
+Tests: ApiSecretsTest (2), ApiClientBuildTest basic-auth single-var
+case, WorkspaceIORoundTrip token-never-serialized; apiclient 112.
+Recorded for follow-up (ledger 52): the module's unbounded response
+buffer + on-EDT re-parse, the no-cancel/shared-pool hang, the lossy
+close-save, and the HeaderGrader multi-value miss.
+
 ## [1.96.0] - 2026-07-19
 
 ### Resurrection survives an unsaved rack

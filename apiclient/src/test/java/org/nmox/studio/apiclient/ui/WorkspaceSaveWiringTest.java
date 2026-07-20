@@ -31,7 +31,17 @@ class WorkspaceSaveWiringTest {
     @DisplayName("save() snapshots on the EDT and queues the write on the lane")
     void saveQueuesOnTheLane() throws Exception {
         String src = source();
-        assertThat(src).contains("SAVES.save(() -> writeSnapshot(");
+        // The lane task is the only writer. Since v1.97.0 it also pushes
+        // auth secrets to the keychain before the file write, so the task
+        // is a block rather than a one-liner — but writeSnapshot still
+        // runs only inside a SAVES.save(...) task, never synchronously.
+        int saveMethod = src.indexOf("private void save()");
+        assertThat(saveMethod).as("save() exists").isPositive();
+        String saveBody = src.substring(saveMethod, src.indexOf("\n    private", saveMethod + 1));
+        assertThat(saveBody).contains("SAVES.save(");
+        assertThat(saveBody)
+                .as("writeSnapshot runs only through the lane, never synchronously in save()")
+                .containsOnlyOnce("writeSnapshot(target, json)");
         assertThat(src)
                 .as("no synchronous EDT write may remain — the lane is the only writer")
                 .doesNotContain("WorkspaceIO.save(");

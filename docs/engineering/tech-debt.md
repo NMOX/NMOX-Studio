@@ -53,6 +53,46 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
 
+### 53. Infra Designer: destructive dialogs default to the destructive button + mid-op canvas is live
+
+The 2026-07-20 dedicated infra review (its first) found five MED
+sharp edges around real paid cloud resources: (a) Destroy Stack /
+Destroy Resource confirmations default their Enter/Space button to
+Yes — `NotifyDescriptor.Confirmation` sets `initialValue = OK_OPTION`,
+so a reflexive Enter deletes N billed resources; the Deploy dialog's
+`setValue("Cancel")` is a no-op because `setValue` never writes
+`defaultValue` (the `DialogDescriptor(..., options, initialValue, ...)`
+constructor is the real seam); (b) the canvas + rack aim stay live
+during a live deploy/destroy, so a node deleted mid-plan orphans a
+created-and-billed resource with no id recorded, or a re-aim saves the
+new project's graph; (c) `load()` on re-aim drops the last debounce
+window of edits (the force-save-before-re-aim law API Studio adopted
+in v1.35.1, never applied here); (d) cloud workers mutate `node.props`
+off the EDT while `GraphIO.toJson` iterates it on the EDT → CME aborts
+the autosave that just imported resources; (e) drift's `"404"`
+substring match severs the deploy linkage on any 404. Tokens,
+persistence atomicity, FlowCanvas loops, and listener lifecycle all
+CLEAN. The dialog-default fix (a) is the highest-value and cheapest —
+next infra release. Full report in the 2026-07-20 review.
+
+### 52. API Studio: response robustness + close-save + grader multi-value
+
+The 2026-07-20 dedicated apiclient review shipped its HIGH finding
+(auth tokens → keychain, v1.97.0) and the basic-auth `{{var}}` fix,
+and deferred four: (a) `ofString()` buffers an unbounded response
+body and `pretty()` re-parses it ON THE EDT — a 100MB or deeply-nested
+body OOMs or throws StackOverflowError (an Error `pretty()` doesn't
+catch) on the paint thread; cap the buffer + guard the parse; (b) no
+read-timeout on the body and no cancel, and two hung sends occupy both
+slots of the shared `RequestProcessor("API Studio", 2)`, silently
+wedging re-aim follows and serving refreshes; (c) `componentClosed`
+saves unconditionally, round-tripping through the unknown-key-dropping
+parser — a newer file's fields vanish on a no-op open/close; add a
+dirty guard; (d) `HeaderGrader.first()` reads only the first value of
+a multi-valued header, mis-grading split CSP in both directions.
+All MED, all in the original v1.19.0 send surface. Next apiclient
+release.
+
 ### 51. Device SPI exec has no launched-for-real signal
 
 The frozen `core.spi.device` `DeviceServices.exec` refuses an untrusted
