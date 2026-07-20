@@ -76,4 +76,39 @@ class DapFramesTest {
         assertThat(DapFrames.read(new ByteArrayInputStream(out.toByteArray())))
                 .isEqualTo(json);
     }
+
+    @Test
+    @DisplayName("An oversize Content-Length is refused BEFORE any allocation (OOM DoS)")
+    void shouldRefuseOversizeFrameWithoutAllocating() {
+        // a header claiming ~2GB must throw on the header alone — never
+        // reach readNBytes and try to allocate a debuggee-sized array.
+        // The stream carries NO payload: if the code allocated first it
+        // would block/OOM; instead it throws immediately.
+        String header = "Content-Length: 2000000000\r\n\r\n";
+        InputStream in = new ByteArrayInputStream(header.getBytes(StandardCharsets.US_ASCII));
+        assertThatThrownBy(() -> DapFrames.read(in))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("64MB")
+                .isNotInstanceOf(OutOfMemoryError.class);
+    }
+
+    @Test
+    @DisplayName("A malformed Content-Length is a protocol error, not a crash")
+    void shouldRejectMalformedContentLength() {
+        String header = "Content-Length: not-a-number\r\n\r\n";
+        InputStream in = new ByteArrayInputStream(header.getBytes(StandardCharsets.US_ASCII));
+        assertThatThrownBy(() -> DapFrames.read(in))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("malformed");
+    }
+
+    @Test
+    @DisplayName("A frame right at the cap still reads normally")
+    void shouldReadFrameAtReasonableSize() throws IOException {
+        String json = "{\"data\":\"" + "y".repeat(100_000) + "\"}";
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        DapFrames.write(out, json);
+        assertThat(DapFrames.read(new ByteArrayInputStream(out.toByteArray())))
+                .isEqualTo(json);
+    }
 }

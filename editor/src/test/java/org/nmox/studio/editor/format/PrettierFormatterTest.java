@@ -142,6 +142,11 @@ class PrettierFormatterTest {
 
     // ---- the format run ----------------------------------------------------
 
+    @org.junit.jupiter.api.AfterEach
+    void clearTrust() {
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
+    }
+
     private PrettierFormatter withStub(List<List<String>> commands, PrettierFormatter.Result result)
             throws IOException {
         Files.createFile(root.resolve(".prettierrc"));
@@ -149,6 +154,9 @@ class PrettierFormatterTest {
         File prettier = bin.resolve("prettier").toFile();
         Files.createFile(prettier.toPath());
         assertThat(prettier.setExecutable(true)).isTrue();
+        // using the project-LOCAL binary now requires the workspace to be
+        // trusted (v1.102.0 RCE gate); a real user opted in, so does the test
+        org.nmox.studio.rack.service.WorkspaceTrust.trust(root.toFile());
         return new PrettierFormatter((command, workDir, stdin) -> {
             commands.add(command);
             return result;
@@ -226,6 +234,8 @@ class PrettierFormatterTest {
         Path script = bin.resolve("prettier");
         Files.writeString(script, "#!/bin/sh\ntr 'a-z' 'A-Z'\n");
         assertThat(script.toFile().setExecutable(true)).isTrue();
+        // the local binary path is trust-gated now (v1.102.0)
+        org.nmox.studio.rack.service.WorkspaceTrust.trust(root.toFile());
 
         String out = new PrettierFormatter().format("shout", root.resolve("a.js").toFile());
 

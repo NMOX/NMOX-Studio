@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.102.0] - 2026-07-20
+
+### Editor security: LSP/Prettier trust-gated, DAP frame bounded (first dedicated review)
+
+The first dedicated **editor** review found the two most serious
+defects of the module-review arc — remote code execution — plus an
+OOM. All three fixed:
+
+- **RCE on file-open (LSP) is closed.** `LanguageServers.launchNpm`
+  ran a project's committed `node_modules/.bin/<server>` — attacker-
+  controlled code in a cloned repo — the moment you opened a `.ts`/
+  `.js` file, with no Workspace Trust gate (the debug actions gate
+  their spawns; the LSP layer never did). The project-local binary is
+  now used only when the workspace is trusted (a SILENT
+  `WorkspaceTrust.isTrusted` check — the LSP client calls this
+  constantly, so it must never prompt); untrusted, it falls back to
+  the user's own global tool on PATH.
+- **RCE on save (Prettier) is closed.** Format-on-save ran
+  `node_modules/.bin/prettier` on Ctrl+S with the same missing gate.
+  Same fix: the project-local binary is used only when the workspace
+  is trusted, else the user's global prettier.
+- **The DAP frame read is bounded.** `DapFrames` read
+  `readNBytes(contentLength)` with an uncapped `Content-Length` —
+  payloads carry debuggee-controlled data, so a debugged program doing
+  `console.log('x'.repeat(2e9))` made the adapter emit a multi-GB
+  frame that OOM'd the IDE in one allocation. Frames over 64 MB are
+  now refused before allocation (session ends), and a malformed
+  `Content-Length` is a protocol error rather than a crash.
+
+Each fix is mutation-proven; the review verified the debug spawns'
+trust gate, the process-tree kills, the DAP half-close teardown, and
+the JavaScript lexer's progress-on-malformed-input all CLEAN. Ledger
+55 records the lower-severity remainder (per-session proxy socket
+leak, Prettier timeout kill-tree, all-interface probe port, per-
+completion re-lex).
+
 ## [1.101.0] - 2026-07-20
 
 ### DB Studio: safe quoting, bounded reads, honest Apply (first dedicated review)

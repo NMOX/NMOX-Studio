@@ -14,6 +14,18 @@ import java.nio.charset.StandardCharsets;
  */
 final class DapFrames {
 
+    /**
+     * The largest DAP frame we will buffer. Payloads carry
+     * debuggee-derived data (console output, evaluated expressions,
+     * variable dumps), so a debugged program doing
+     * {@code console.log('x'.repeat(2e9))} makes the adapter emit a
+     * multi-GB output event. {@code readNBytes(contentLength)} would
+     * allocate it in one array → OutOfMemoryError takes down the IDE.
+     * 64 MB is orders of magnitude past any real frame; oversize is a
+     * protocol error that ends the session.
+     */
+    static final int MAX_FRAME_BYTES = 64 * 1024 * 1024;
+
     private DapFrames() {
     }
 
@@ -33,11 +45,22 @@ final class DapFrames {
             }
             int colon = line.indexOf(':');
             if (colon > 0 && line.substring(0, colon).trim().equalsIgnoreCase("Content-Length")) {
-                contentLength = Integer.parseInt(line.substring(colon + 1).trim());
+                try {
+                    contentLength = Integer.parseInt(line.substring(colon + 1).trim());
+                } catch (NumberFormatException malformed) {
+                    // a garbage header is a protocol error, not a crash
+                    throw new IOException("DAP frame with malformed Content-Length");
+                }
             }
         }
         if (contentLength < 0) {
             throw new IOException("DAP frame without Content-Length header");
+        }
+        if (contentLength > MAX_FRAME_BYTES) {
+            // refuse to allocate a debuggee-sized array (OOM DoS); ending
+            // the session is the safe response to a runaway adapter frame
+            throw new IOException("DAP frame over " + (MAX_FRAME_BYTES / (1024 * 1024))
+                    + "MB (" + contentLength + " bytes) — ending session");
         }
         byte[] payload = in.readNBytes(contentLength);
         if (payload.length != contentLength) {
