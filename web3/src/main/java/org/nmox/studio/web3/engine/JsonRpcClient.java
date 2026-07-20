@@ -122,6 +122,33 @@ public final class JsonRpcClient {
         this.transport = Objects.requireNonNull(transport, "transport");
     }
 
+    /**
+     * Whether this client points at the local machine — the devnet
+     * case (anvil, hardhat node) where a broadcast is throwaway. The
+     * UI uses it to decide when SEND/Deploy deserve a confirmation:
+     * anything NOT provably loopback gets one. The raw URL never
+     * leaves this class.
+     */
+    public boolean isLoopbackEndpoint() {
+        return loopback(url);
+    }
+
+    /** Pure classification; unparseable or hostless URLs are NOT loopback. */
+    static boolean loopback(String url) {
+        String host;
+        try {
+            host = URI.create(url.trim()).getHost();
+        } catch (RuntimeException unparseable) {
+            return false;
+        }
+        if (host == null) {
+            return false;
+        }
+        String h = host.toLowerCase(Locale.ROOT);
+        return h.equals("localhost") || h.equals("::1") || h.equals("[::1]")
+                || h.startsWith("127.");
+    }
+
     // ---- the eth_* surface -----------------------------------------------
 
     /** {@code eth_chainId} — the EIP-155 chain id. */
@@ -371,31 +398,54 @@ public final class JsonRpcClient {
         return out;
     }
 
+    /**
+     * The response-body cap. {@code ofString()} buffered the whole body
+     * unbounded, and the Watch pane drives this transport every 2s
+     * against arbitrary user-added endpoints — a hostile or
+     * misconfigured gateway could OOM the IDE (the apiclient v1.99.0
+     * bug class). No legitimate RPC result the studio decodes comes
+     * near this; past it the node is refused, honestly and redacted.
+     */
+    public static final int MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
+
     /** The production transport: POST over the shared HTTP pool, URL-redacting failures. */
     public static Transport httpTransport() {
         return (url, jsonBody) -> {
-            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                    .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
-                    .build();
-            HttpResponse<String> response;
+            HttpResponse<java.io.InputStream> response;
             try {
+                // URI.create sits INSIDE the redacting try: its
+                // IllegalArgumentException echoes the full input URL
+                HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                        .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                        .build();
                 response = HttpClientFactory.shared()
-                        .send(request, HttpResponse.BodyHandlers.ofString());
+                        .send(request, HttpResponse.BodyHandlers.ofInputStream());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IOException("Interrupted while calling " + Redacted.url(url));
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 // no cause attached: nested messages may echo the full URL
                 throw new IOException("Cannot reach " + Redacted.url(url)
                         + " — " + sanitizeMessage(e, url));
+            }
+            byte[] raw;
+            try (java.io.InputStream in = response.body()) {
+                raw = in.readNBytes(MAX_RESPONSE_BYTES);
+                if (in.read() != -1) {
+                    // closing aborts the transfer; a truncated JSON-RPC
+                    // body is useless, so oversize is a refusal
+                    throw new IOException("Response over "
+                            + (MAX_RESPONSE_BYTES / (1024 * 1024)) + "MB from "
+                            + Redacted.url(url) + " — refusing to buffer it");
+                }
             }
             if (response.statusCode() >= 400) {
                 throw new IOException("HTTP " + response.statusCode()
                         + " from " + Redacted.url(url));
             }
-            return response.body();
+            return new String(raw, StandardCharsets.UTF_8);
         };
     }
 

@@ -215,6 +215,16 @@ public final class Web3StudioTopComponent extends TopComponent {
     private long lastWatchedBlock = -1;
     private long logsFromBlock = Long.MAX_VALUE;
 
+    /**
+     * Bumped on every {@link #stopWatch}. {@code shutdownNow} interrupts
+     * but does not JOIN a tick blocked in an RPC (up to the 10s timeout);
+     * a quick STOP→START or a network switch could otherwise leave the
+     * dying tick writing the two cursor fields the new poller now owns.
+     * A tick captures the generation at entry and abandons its cursor
+     * writes if it changed.
+     */
+    private volatile long watchGeneration;
+
     private final SizeModel sizeModel = new SizeModel();
     private final GasModel gasModel = new GasModel();
     private final DeploymentsModel deploymentsModel = new DeploymentsModel();
@@ -606,6 +616,33 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     // ---- deploy / call / send -----------------------------------------------
 
+    /**
+     * EDT, before any non-local broadcast. A devnet on loopback stays
+     * frictionless (the tutorial's ANVIL loop is untouched), but a
+     * remote endpoint with unlocked accounts — a self-hosted geth
+     * {@code --dev}, a mainnet fork holding value-equivalent state —
+     * accepts a real, irreversible transaction on one stray click.
+     * The v1.98.0 dialog-safety idiom: the full NotifyDescriptor
+     * constructor with NO as the initialValue, so Enter/Space land on
+     * the safe button ({@code Confirmation} hard-codes OK as default).
+     */
+    private boolean confirmRemoteBroadcast(String verb) {
+        JsonRpcClient c = client;
+        if (c == null || c.isLoopbackEndpoint()) {
+            return true;
+        }
+        Network network = selectedNetwork();
+        String where = network == null ? "a remote endpoint" : "\"" + network.name() + "\"";
+        NotifyDescriptor d = new NotifyDescriptor(
+                verb + " will broadcast a REAL transaction to " + where
+                + " — a non-local endpoint. There is no undo.",
+                "Broadcast transaction?",
+                NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                NotifyDescriptor.NO_OPTION);
+        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
+    }
+
     private void deploy(InteractSession s, List<JTextField> argFields,
             JTextField valueField, JLabel result) {
         if (running) {
@@ -632,6 +669,10 @@ public final class Web3StudioTopComponent extends TopComponent {
         } catch (IllegalArgumentException | IllegalStateException refusal) {
             setResult(result, refusal.getMessage(), FAIL_RED);
             status(refusal.getMessage(), FAIL_RED);
+            return;
+        }
+        if (!confirmRemoteBroadcast("Deploying " + s.artifact().name())) {
+            status("Deploy cancelled", Color.GRAY);
             return;
         }
         running = true;
@@ -747,6 +788,10 @@ public final class Web3StudioTopComponent extends TopComponent {
         } catch (IllegalArgumentException refusal) {
             setResult(result, refusal.getMessage(), FAIL_RED);
             status(refusal.getMessage(), FAIL_RED);
+            return;
+        }
+        if (!confirmRemoteBroadcast("SEND " + function.name() + "()")) {
+            status("Send cancelled", Color.GRAY);
             return;
         }
         running = true;
@@ -924,6 +969,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void stopWatch() {
+        watchGeneration++; // any in-flight tick loses cursor ownership
         if (watchExec != null) {
             watchExec.shutdownNow();
             watchExec = null;
@@ -942,14 +988,16 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (c == null) {
             return;
         }
+        final long gen = watchGeneration;
         try {
             long current = c.blockNumber();
-            if (lastWatchedBlock < 0) {
-                lastWatchedBlock = current - 1;
-                logsFromBlock = current; // the watch-start block
-            }
-            long from = Math.max(lastWatchedBlock + 1, current - CATCHUP_CAP + 1);
-            for (long n = from; n <= current; n++) {
+            boolean firstTick = lastWatchedBlock < 0;
+            // both lanes clamped to the cap window (the log clamp is the
+            // v1.100.0 fix: a failing getLogs never advanced its cursor,
+            // so retries widened the range — and the response — unboundedly)
+            var plan = org.nmox.studio.web3.engine.WatchCursor.plan(
+                    lastWatchedBlock, logsFromBlock, current, CATCHUP_CAP);
+            for (long n = plan.blockFrom(); n <= plan.blockTo(); n++) {
                 JsonRpcClient.Block block = c.getBlockByNumber(String.valueOf(n), false);
                 if (block != null) {
                     feed.addBlock(block.number(), block.txCount(), block.gasUsed(),
@@ -958,11 +1006,21 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
             List<String> addresses = watchAddresses;
             EventMatcher matcher = eventMatcher;
-            if (current >= logsFromBlock && !addresses.isEmpty()) {
+            boolean consumedLogs = plan.hasLogs() && !addresses.isEmpty();
+            if (consumedLogs) {
                 for (String address : addresses) {
-                    feedLogs(c, matcher, address, logsFromBlock, current);
+                    feedLogs(c, matcher, address, plan.logFrom(), plan.logTo());
                 }
-                logsFromBlock = current + 1;
+            }
+            if (gen != watchGeneration) {
+                return; // the watch was re-armed mid-tick — the new
+                        // poller owns the cursors; a dying tick must
+                        // not tear or resurrect them
+            }
+            if (consumedLogs) {
+                logsFromBlock = plan.logTo() + 1;
+            } else if (firstTick) {
+                logsFromBlock = current; // the watch-start block
             }
             lastWatchedBlock = current;
             SwingUtilities.invokeLater(() -> {
@@ -1527,12 +1585,35 @@ public final class Web3StudioTopComponent extends TopComponent {
         // bounce could otherwise read A's file before A's last save lands
         // (bounded ms drain; see SaveLane.flush)
         SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        // the FILE READ rides RP, not the EDT (the apiclient
+        // onProjectReaimed idiom): a slow or networked filesystem must
+        // stall a worker, never the paint thread. State teardown waits
+        // for the loaded workspace so the tab never shows an empty
+        // in-between; the sequence makes the newest reload win an
+        // overlapping re-aim/pulse burst.
+        final File dir = workspaceDir();
+        final long seq = ++reloadSeq;
+        RP.post(() -> {
+            Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+            SwingUtilities.invokeLater(() -> {
+                if (seq != reloadSeq) {
+                    return; // a newer reload superseded this read
+                }
+                applyReloadedWorkspace(dir, outcome);
+            });
+        });
+    }
+
+    /** EDT-confined: the reload seam; only {@link #reloadWorkspace} bumps it. */
+    private long reloadSeq;
+
+    /** EDT: swaps the studio onto a freshly read workspace. */
+    private void applyReloadedWorkspace(File dir, Web3WorkspaceIO.LoadOutcome outcome) {
         Network previous = selectedNetwork();
         stopWatch();
         session = null;
         networks.clear();
         deployments.clear();
-        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(workspaceDir());
         Web3WorkspaceIO.Workspace workspace = outcome.workspace();
         if (outcome.backup() != null) {
             // corrupt file: the IO layer copied it aside BEFORE handing us the
@@ -1549,7 +1630,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
-        selfWrites.noteSync(new File(workspaceDir(), Web3WorkspaceIO.FILENAME));
+        selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
         rebuildNetworksBranch();
         rebuildDeploymentsBranch();
         deploymentsModel.refresh();
