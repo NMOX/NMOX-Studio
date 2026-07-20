@@ -105,6 +105,25 @@ aimed project, and the chip's git spawn is already bounded elsewhere.
 Fix by reading a bounded prefix (`BufferedReader.readLine()` or a capped
 `readNBytes`) instead of the whole file.
 
+## Open — deferred deliberately, with reasons (added v1.107.0, the first rack-engine review)
+
+The v1.107.0 rack-engine review's two MED findings were fixed in that
+release (FlightRecorder journal I/O off the singleton monitor onto
+JOURNAL_RP; RackIO.load `.bak`s a corrupt patch + resets to known-empty).
+Its one LOW finding is deferred:
+
+### 60. `CommandExecutor.pumpStream` reads lines with no per-line cap
+
+The pump has no output *accumulator* (it dispatches each line and
+discards it — the reason it doesn't share the `ProcessSupport.runBounded`
+OOM bug), but `BufferedReader.readLine()` itself buffers a single logical
+line unbounded. A pathological child that emits a very large volume of
+bytes with no `\n` or `\r` would grow one `String` until OOM. LOW: real
+dev servers essentially always emit line terminators (and `\r` also
+breaks a line), so this is the one remaining unbounded read on an
+otherwise-streaming path. Fix by reading into a bounded buffer that
+flushes/truncates a partial line past a max length instead of `readLine()`.
+
 ### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
 
 The systemic finding of the module-review arc: the IDE spawned a

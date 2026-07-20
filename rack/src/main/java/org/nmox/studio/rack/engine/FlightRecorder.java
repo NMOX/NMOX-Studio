@@ -145,10 +145,31 @@ public final class FlightRecorder implements RackBus.Listener {
         }
     }
 
-    /** add() + journal append - the path live events take. */
+    /**
+     * add() + journal append - the path live events take. The in-memory add
+     * stays under the caller's monitor (readers see a consistent tape); the
+     * disk append is handed to JOURNAL_RP so no pump thread ever blocks on I/O
+     * while holding the monitor. Posts happen in event order from the
+     * synchronized line(), and JOURNAL_RP is single-threaded, so the journal
+     * on disk stays in the same order as the tape in memory.
+     */
     private void record(Event e) {
         add(e);
-        appendToJournal(e);
+        JOURNAL_RP.post(() -> appendToJournal(e));
+    }
+
+    /**
+     * Blocks until every append posted so far has hit the disk. The FIFO
+     * barrier idiom (cf. Rack.awaitRouterIdle / RackDevice.awaitDeviceBgIdle):
+     * for tests that read the journal file right after recording, and for a
+     * clean-shutdown flush. Never call from the EDT in production.
+     */
+    static void awaitJournalIdle() {
+        try {
+            JOURNAL_RP.post(() -> { }).waitFinished(10_000);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     // ---- reading the record ----
@@ -193,8 +214,22 @@ public final class FlightRecorder implements RackBus.Listener {
 
     // ---- the journal: the tape survives the JVM ----
 
-    private java.io.File journal;
+    // volatile: written under the FlightRecorder monitor in attachJournal,
+    // read on the JOURNAL_RP thread in appendToJournal
+    private volatile java.io.File journal;
     private static final long JOURNAL_MAX_BYTES = 1_500_000;
+
+    /**
+     * The journal's disk I/O rides its own single-thread FIFO lane, OFF the
+     * FlightRecorder monitor. That monitor gates every bus publish (so every
+     * device's output-pump thread funnels through it) and every EDT reader
+     * (timeline/export/statistics); doing the per-event {@code Files.writeString}
+     * append and the readAllLines+write rotate under it meant one slow or full
+     * disk could serialize and stall every pump at once, and block a UI read
+     * behind a pump's write. Single-threaded so journal order stays event order.
+     */
+    private static final org.openide.util.RequestProcessor JOURNAL_RP =
+            new org.openide.util.RequestProcessor("nmox-flightrec-journal", 1, true);
 
     /**
      * Attaches a JSONL journal: existing events load onto the tape (so

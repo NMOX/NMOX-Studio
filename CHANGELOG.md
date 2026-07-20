@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.107.0] - 2026-07-20
+
+### The flight recorder writes off the hot path, and a corrupt patch is never clobbered
+
+The first dedicated **rack-engine review** (the engine/persistence/service
+core, not the 51 device faceplates) confirmed the headline worry CLEAN —
+`CommandExecutor` does NOT share the `ProcessSupport.runBounded`
+uncapped-accumulator bug, because it dispatches a dev server's output
+line-by-line with no growing buffer — and surfaced two MED findings, both
+fixed here with tests.
+
+- **FlightRecorder did blocking disk I/O under the singleton monitor.**
+  `record()` ran its per-event journal append (`Files.writeString`,
+  APPEND) and its rotate (`readAllLines` + `write`, up to 1.5 MB) inside
+  `synchronized (this)` — the same monitor that gates every bus publish
+  (so every device's output-pump thread funnels through it) and every EDT
+  reader (`timeline`/`export`/`statistics`). One slow or full disk could
+  therefore serialize and stall the output pumps of *all* devices at once,
+  and block a UI read behind a pump's write. The append + rotate now ride a
+  dedicated single-thread FIFO `RequestProcessor` (`JOURNAL_RP`), off the
+  monitor; only the fast in-memory `add()` stays under the lock. Single-
+  threaded so the journal on disk keeps event order. A new
+  `awaitJournalIdle()` barrier (the `awaitRouterIdle`/`awaitDeviceBgIdle`
+  idiom) drains it for tests and clean shutdown; a source gate proves the
+  append is posted, never inlined.
+
+- **A corrupt `.nmoxrack.json` was clobbered without a backup.**
+  `RackIO.load` parsed the JSON *before* `fromJson` cleared anything, so a
+  hand-edit syntax error threw early — leaving the *previous* project's
+  devices mounted against this project on a switch, and the untouched
+  corrupt file in place for the next atomic Save Patch to silently
+  overwrite. Now `load()` preserves the user's file as `<name>.bak` (the
+  BlockStudio idiom) and resets the rack to a known-empty state before
+  rethrowing, so no stale device survives and no hand-edit is lost.
+
+The review verified `Rack`, `RackDevice`, `WorkspaceTrust`, `RackService`,
+`FileWatcher`, `RackBus`, `Cable`, and `AtomicFiles` CLEAN. The one LOW
+finding — `CommandExecutor.pumpStream`'s `readLine()` has no per-line cap
+(a child emitting huge bytes with no newline could grow one String) — is
+recorded as ledger 60; real dev servers always emit line terminators, so
+likelihood is low.
+
 ## [1.106.0] - 2026-07-20
 
 ### The process-probe is bounded in time AND memory, and Discard defaults to No
