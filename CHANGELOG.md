@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.108.0] - 2026-07-20
+
+### Rack-panel mouse handlers are owner-scoped, and Load/Export don't block the EDT
+
+The first dedicated **rack UI-layer review** (RackTopComponent, RackPanel,
+the cable-patch gesture, palette, controls). It verified the v1.95.2
+armed-gesture-survives-rebuild class holds, the paint path is CME-safe by
+construction (defensive-copy snapshots, EDT-marshaled listeners), and every
+timer/listener in the controls and the panel is attach/detach-symmetric —
+and found two MED findings, both fixed with source gates.
+
+- **RackPanel installed its device mouse handlers by type, not identity.**
+  The devices are shared and outlive the panel (closing the window keeps the
+  rack alive), so `installInteraction`'s `l instanceof DeviceMouse` guard
+  matched a *different* panel's handler — a second `RackPanel` over the same
+  rack would skip its own wiring (dead selection/reorder/patching) and route
+  events into the stale panel, which every device would pin in memory
+  (leak). The guard is now identity-aware (`dm.owner() == this`), and
+  `removeNotify` detaches this panel's handlers from every device — symmetric
+  with install.
+
+- **Load Patch and Export CI did blocking disk I/O on the EDT.** The Save
+  button was moved onto `SAVE_RP` (snapshot on the EDT, write on the lane),
+  but its two siblings weren't: Load read + parsed the patch file, and
+  Export CI ran `createDirectories` + `writeString`, synchronously on the
+  paint thread. Both now ride `SAVE_RP`. Load needed a read/apply split —
+  the new `RackIO.readDocument` reads + parses (and `.bak`s a corrupt file,
+  the v1.107.0 guarantee) off the EDT, and `fromJson` mutates the device
+  components back on the EDT.
+
+The review's CLEAN list is broad: `CablePatchGesture` (the sticky armed patch
+still can't connect a disposed device across a rebuild or flip),
+`RackTopComponent`'s own listener lifecycle, the palette, and every control
+(`Led`/`VuMeter`/`LcdDisplay`/`Knob`/`RackButton`/`ToggleSwitch`) — timers
+self-stop and stop on `removeNotify`, off-thread callers marshal to the EDT,
+and the LCD line buffer paints a synchronized snapshot (CME-safe).
+
 ## [1.107.0] - 2026-07-20
 
 ### The flight recorder writes off the hot path, and a corrupt patch is never clobbered

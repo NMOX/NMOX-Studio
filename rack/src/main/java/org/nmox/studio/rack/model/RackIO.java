@@ -153,6 +153,24 @@ public final class RackIO {
         fromJson(rack, root);
     }
 
+    /**
+     * Reads and parses a patch file WITHOUT touching the rack — safe to call
+     * off the EDT (the caller applies the returned document with
+     * {@link #fromJson} on the EDT, where the device components are mutated).
+     * On corrupt JSON the user's file is preserved as {@code <name>.bak} and an
+     * IOException is thrown, the same data-safety guarantee {@link #load} gives.
+     */
+    public static JSONObject readDocument(File file) throws IOException {
+        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        try {
+            return new JSONObject(text);
+        } catch (JSONException corrupt) {
+            backupCorrupt(file);
+            throw new IOException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+        }
+    }
+
     /** Renames a corrupt patch to {@code <name>.bak} so save() can't clobber it. */
     private static void backupCorrupt(File file) {
         try {

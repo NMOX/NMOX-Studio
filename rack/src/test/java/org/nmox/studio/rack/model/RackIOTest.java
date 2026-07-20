@@ -69,6 +69,42 @@ class RackIOTest {
     }
 
     @Test
+    @DisplayName("readDocument parses a valid patch without touching the rack")
+    void readDocumentParsesValid(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        Rack rack = new Rack();
+        rack.addDevice(DeviceType.MASTER.create());
+        java.io.File file = new java.io.File(dir, RackIO.DEFAULT_FILENAME);
+        RackIO.save(rack, file);
+
+        org.json.JSONObject doc = RackIO.readDocument(file);
+        assertThat(doc.getJSONArray("devices").length()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("readDocument keeps a corrupt patch as .bak and throws, leaving the rack alone")
+    void readDocumentBacksUpCorrupt(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.io.File file = new java.io.File(dir, RackIO.DEFAULT_FILENAME);
+        String corruptBytes = "{ broken ]";
+        java.nio.file.Files.writeString(file.toPath(), corruptBytes);
+
+        // the off-EDT read path preserves the file but — unlike load() — does
+        // NOT mutate the rack (the caller applies fromJson on the EDT)
+        Rack rack = new Rack();
+        rack.addDevice(DeviceType.MASTER.create());
+        assertThatThrownBy(() -> RackIO.readDocument(file))
+                .isInstanceOf(java.io.IOException.class)
+                .hasMessageContaining(".bak");
+        assertThat(rack.getDevices()).as("readDocument must not touch the rack").hasSize(1);
+
+        java.io.File bak = new java.io.File(dir, RackIO.DEFAULT_FILENAME + ".bak");
+        assertThat(bak).exists();
+        assertThat(java.nio.file.Files.readString(bak.toPath())).isEqualTo(corruptBytes);
+        assertThat(file).doesNotExist();
+    }
+
+    @Test
     @DisplayName("A corrupt patch is kept as .bak, the rack is reset, and no stale device survives")
     void corruptPatchIsBackedUpAndRackReset(@org.junit.jupiter.api.io.TempDir java.io.File dir)
             throws Exception {

@@ -182,6 +182,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
             rack.removeListener(this);
             listenerAttached = false;
         }
+        uninstallInteraction();
         flashTimer.stop();
         dropClearTimer.stop();
         super.removeNotify();
@@ -265,9 +266,14 @@ public class RackPanel extends JPanel implements Rack.Listener {
     // ---- interaction ----
 
     private void installInteraction(RackDevice device) {
-        // only install once per device
+        // Install once per device PER PANEL. The devices are shared and outlive
+        // this panel (componentClosed keeps the rack alive), so a bare
+        // `instanceof DeviceMouse` guard would match a DIFFERENT panel's handler
+        // — a second RackPanel over the same rack would then skip its own wiring
+        // (dead interaction) and route events into the stale panel (a leak).
+        // Match only OUR handler.
         for (var l : device.getMouseListeners()) {
-            if (l instanceof DeviceMouse) {
+            if (l instanceof DeviceMouse dm && dm.owner() == this) {
                 return;
             }
         }
@@ -276,12 +282,34 @@ public class RackPanel extends JPanel implements Rack.Listener {
         device.addMouseMotionListener(handler);
     }
 
+    /**
+     * Detach this panel's mouse handlers from the shared devices. Symmetric with
+     * {@link #installInteraction}: the devices survive the window, so a panel
+     * that leaves the hierarchy without pulling its handlers pins itself in
+     * memory and keeps reacting to events it should no longer see.
+     */
+    private void uninstallInteraction() {
+        for (RackDevice device : rack.getDevices()) {
+            for (var l : device.getMouseListeners()) {
+                if (l instanceof DeviceMouse dm && dm.owner() == this) {
+                    device.removeMouseListener(dm);
+                    device.removeMouseMotionListener(dm);
+                }
+            }
+        }
+    }
+
     private final class DeviceMouse extends MouseAdapter {
 
         private final RackDevice device;
 
         DeviceMouse(RackDevice device) {
             this.device = device;
+        }
+
+        /** The panel that owns this handler — for identity-aware install/uninstall. */
+        RackPanel owner() {
+            return RackPanel.this;
         }
 
         @Override
