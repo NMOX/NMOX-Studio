@@ -293,19 +293,28 @@ public final class RackTopComponent extends TopComponent {
         exportCi.setToolTipText("Compile this patch into .github/workflows/nmox-rack.yml —"
                 + " the same commands the rack runs, as a GitHub Actions pipeline");
         exportCi.addActionListener(e -> {
-            try {
-                String yaml = org.nmox.studio.rack.projectstudio.CiExporter.toWorkflowYaml(rack);
-                File dir = new File(rack.getProjectDir(), ".github/workflows");
-                java.nio.file.Files.createDirectories(dir.toPath());
-                File out = new File(dir, "nmox-rack.yml");
-                java.nio.file.Files.writeString(out.toPath(), yaml, java.nio.charset.StandardCharsets.UTF_8);
-                org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Exported " + out.getAbsolutePath());
-                org.nmox.studio.rack.engine.FileLink.open(
-                        new org.nmox.studio.rack.engine.FileLink.Location(out, 1));
-            } catch (Exception ex) {
-                error("Could not export the CI workflow: " + ex.getMessage());
-            }
+            // YAML built here (synchronous, model-consistent on the EDT); the
+            // mkdir + write ride the lane — the same no-blocking-I/O-on-the-EDT
+            // discipline the Save button uses, applied to its sibling.
+            String yaml = org.nmox.studio.rack.projectstudio.CiExporter.toWorkflowYaml(rack);
+            File dir = new File(rack.getProjectDir(), ".github/workflows");
+            File out = new File(dir, "nmox-rack.yml");
+            SAVE_RP.post(() -> {
+                try {
+                    java.nio.file.Files.createDirectories(dir.toPath());
+                    java.nio.file.Files.writeString(out.toPath(), yaml,
+                            java.nio.charset.StandardCharsets.UTF_8);
+                    java.awt.EventQueue.invokeLater(() -> {
+                        org.openide.awt.StatusDisplayer.getDefault()
+                                .setStatusText("Exported " + out.getAbsolutePath());
+                        org.nmox.studio.rack.engine.FileLink.open(
+                                new org.nmox.studio.rack.engine.FileLink.Location(out, 1));
+                    });
+                } catch (Exception ex) {
+                    java.awt.EventQueue.invokeLater(() ->
+                            error("Could not export the CI workflow: " + ex.getMessage()));
+                }
+            });
         });
         bar.add(exportCi);
         bar.addSeparator();
@@ -346,11 +355,27 @@ public final class RackTopComponent extends TopComponent {
     }
 
     private void loadPatch(File file) {
-        try {
-            RackIO.load(rack, file);
-        } catch (IOException | RuntimeException ex) {
-            error("Could not load the patch: " + ex.getMessage());
-        }
+        // Read + parse off the EDT (a project-homed patch can live on a slow or
+        // network volume), then apply on the EDT where fromJson mutates the
+        // device components — the read/apply split the Save button's sibling
+        // needs but load() (called from off-EDT autoload) doesn't.
+        SAVE_RP.post(() -> {
+            org.json.JSONObject doc;
+            try {
+                doc = RackIO.readDocument(file);
+            } catch (IOException | RuntimeException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        error("Could not load the patch: " + ex.getMessage()));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                try {
+                    RackIO.fromJson(rack, doc);
+                } catch (RuntimeException ex) {
+                    error("Could not load the patch: " + ex.getMessage());
+                }
+            });
+        });
     }
 
     // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
