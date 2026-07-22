@@ -14,7 +14,7 @@ public class CppLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-cpp");
+        return Lexers.find("text/x-cpp");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class FSharpLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-fsharp");
+        return Lexers.find("text/x-fsharp");
     }
 
     @Override

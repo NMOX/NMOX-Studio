@@ -14,7 +14,7 @@ public class RLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-r");
+        return Lexers.find("text/x-r");
     }
 
     @Override

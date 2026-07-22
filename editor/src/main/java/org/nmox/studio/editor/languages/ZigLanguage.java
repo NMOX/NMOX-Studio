@@ -14,7 +14,7 @@ public class ZigLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-zig");
+        return Lexers.find("text/x-zig");
     }
 
     @Override

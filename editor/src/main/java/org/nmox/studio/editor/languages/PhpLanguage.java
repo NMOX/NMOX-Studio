@@ -14,7 +14,7 @@ public class PhpLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-php5");
+        return Lexers.find("text/x-php5");
     }
 
     @Override

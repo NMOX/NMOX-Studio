@@ -14,7 +14,7 @@ public class KotlinLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-kotlin");
+        return Lexers.find("text/x-kotlin");
     }
 
     @Override

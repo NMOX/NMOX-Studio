@@ -14,7 +14,7 @@ public class PerlLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-perl");
+        return Lexers.find("text/x-perl");
     }
 
     @Override

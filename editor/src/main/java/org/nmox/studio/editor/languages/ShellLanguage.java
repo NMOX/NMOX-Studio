@@ -14,7 +14,7 @@ public class ShellLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/sh");
+        return Lexers.find("text/sh");
     }
 
     @Override

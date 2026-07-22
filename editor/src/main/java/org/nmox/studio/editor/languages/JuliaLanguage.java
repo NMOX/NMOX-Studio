@@ -14,7 +14,7 @@ public class JuliaLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-julia");
+        return Lexers.find("text/x-julia");
     }
 
     @Override

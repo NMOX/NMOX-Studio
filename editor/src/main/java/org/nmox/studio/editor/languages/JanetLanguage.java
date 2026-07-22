@@ -14,7 +14,7 @@ public class JanetLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-janet");
+        return Lexers.find("text/x-janet");
     }
 
     @Override

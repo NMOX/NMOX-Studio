@@ -14,7 +14,7 @@ public class CobolLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-cobol");
+        return Lexers.find("text/x-cobol");
     }
 
     @Override

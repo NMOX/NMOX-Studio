@@ -14,7 +14,7 @@ public class HaskellLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-haskell");
+        return Lexers.find("text/x-haskell");
     }
 
     @Override

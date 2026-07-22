@@ -14,7 +14,7 @@ public class DartLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-dart");
+        return Lexers.find("text/x-dart");
     }
 
     @Override

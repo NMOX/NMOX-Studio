@@ -14,7 +14,7 @@ public class ReScriptLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-rescript");
+        return Lexers.find("text/x-rescript");
     }
 
     @Override

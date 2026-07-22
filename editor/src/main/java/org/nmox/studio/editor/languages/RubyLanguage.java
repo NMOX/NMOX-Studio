@@ -14,7 +14,7 @@ public class RubyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-ruby");
+        return Lexers.find("text/x-ruby");
     }
 
     @Override

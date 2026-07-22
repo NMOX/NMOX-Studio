@@ -14,7 +14,7 @@ public class RustLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-rust");
+        return Lexers.find("text/x-rust");
     }
 
     @Override

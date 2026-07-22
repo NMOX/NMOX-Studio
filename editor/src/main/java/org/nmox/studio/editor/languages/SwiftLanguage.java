@@ -14,7 +14,7 @@ public class SwiftLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-swift");
+        return Lexers.find("text/x-swift");
     }
 
     @Override

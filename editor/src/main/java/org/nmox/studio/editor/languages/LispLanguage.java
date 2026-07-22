@@ -14,7 +14,7 @@ public class LispLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-lisp");
+        return Lexers.find("text/x-lisp");
     }
 
     @Override

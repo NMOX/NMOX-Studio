@@ -14,7 +14,7 @@ public class PascalLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-pascal");
+        return Lexers.find("text/x-pascal");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class JavaCslLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-java");
+        return Lexers.find("text/x-java");
     }
 
     @Override

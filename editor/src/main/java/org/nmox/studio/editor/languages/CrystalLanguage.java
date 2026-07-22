@@ -14,7 +14,7 @@ public class CrystalLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-crystal");
+        return Lexers.find("text/x-crystal");
     }
 
     @Override

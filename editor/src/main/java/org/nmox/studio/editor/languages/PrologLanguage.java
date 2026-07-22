@@ -14,7 +14,7 @@ public class PrologLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-prolog");
+        return Lexers.find("text/x-prolog");
     }
 
     @Override

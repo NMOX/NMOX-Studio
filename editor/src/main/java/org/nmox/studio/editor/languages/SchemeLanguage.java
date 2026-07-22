@@ -14,7 +14,7 @@ public class SchemeLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-scheme");
+        return Lexers.find("text/x-scheme");
     }
 
     @Override

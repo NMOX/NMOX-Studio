@@ -14,7 +14,7 @@ public class GleamLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-gleam");
+        return Lexers.find("text/x-gleam");
     }
 
     @Override
