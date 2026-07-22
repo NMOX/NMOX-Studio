@@ -112,17 +112,16 @@ release (FlightRecorder journal I/O off the singleton monitor onto
 JOURNAL_RP; RackIO.load `.bak`s a corrupt patch + resets to known-empty).
 Its one LOW finding is deferred:
 
-### 60. `CommandExecutor.pumpStream` reads lines with no per-line cap
+### 60. `CommandExecutor.pumpStream` reads lines with no per-line cap — CLOSED (v1.112.0)
 
-The pump has no output *accumulator* (it dispatches each line and
-discards it — the reason it doesn't share the `ProcessSupport.runBounded`
-OOM bug), but `BufferedReader.readLine()` itself buffers a single logical
-line unbounded. A pathological child that emits a very large volume of
-bytes with no `\n` or `\r` would grow one `String` until OOM. LOW: real
-dev servers essentially always emit line terminators (and `\r` also
-breaks a line), so this is the one remaining unbounded read on an
-otherwise-streaming path. Fix by reading into a bounded buffer that
-flushes/truncates a partial line past a max length instead of `readLine()`.
+Closed: `readLineBounded` replaces `readLine()` in the pump — same
+terminator handling (`\n`, `\r`, `\r\n`), but a line past 200k chars is
+returned truncated with an honest ` …[line truncated]` marker and the
+remainder of that physical line is drained and discarded, so the child
+keeps writing into a moving pipe (no deadlock) while the IDE's memory
+stays capped (~400 KB worst case per pump). Terminator parity,
+flood truncation, post-flood continuation, and the \r\n boundary all
+test-pinned in `BoundedLineReadTest`.
 
 ### 61. A hung mount can wedge the Workbench's single-thread detection lane
 

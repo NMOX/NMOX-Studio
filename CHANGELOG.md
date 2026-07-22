@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.112.0] - 2026-07-22
+
+### The last unbounded read is bounded (ledger 60 closed)
+
+- **`CommandExecutor.pumpStream` read lines with no per-line cap**: the pump
+  streams (each line dispatches and drops — no accumulator), but
+  `BufferedReader.readLine()` itself buffered one logical line unbounded, so
+  a pathological child emitting gigabytes with no line terminator grew a
+  single String until OOM. New `readLineBounded` keeps `readLine`'s exact
+  terminator handling (`\n`, `\r`, `\r\n`) but truncates past 200k chars with
+  an honest ` …[line truncated]` marker, draining the remainder of the
+  physical line so the child keeps writing into a moving pipe (no deadlock)
+  while the IDE's memory stays capped (~400 KB worst case per pump).
+- Terminator parity, flood truncation, post-flood continuation, and the
+  `\r\n`-at-the-truncation-boundary case all test-pinned
+  (`BoundedLineReadTest`, 6 tests); the whole rack engine package re-run
+  green. With this, zero unbounded reads remain in the product — HTTP
+  (v1.104.0's ofString sweep), process capture (v1.106.0's runBounded cap),
+  and now the pump's line lane are all ceilinged.
+
 ## [1.111.0] - 2026-07-22
 
 ### The recent-files trail leaves the paint thread (first dedicated project-module review)
