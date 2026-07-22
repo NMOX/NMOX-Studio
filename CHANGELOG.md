@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.111.0] - 2026-07-22
+
+### The recent-files trail leaves the paint thread (first dedicated project-module review)
+
+- **`RecentFiles.record()` ran disk I/O on the EDT on every tab switch**: the
+  window-registry tracker fires on `PROP_ACTIVATED` (the EDT), and record did
+  a file stat, a pref rewrite, and a synchronous `prefs.flush()` — a
+  backing-store disk write — right there, on the hot path of ordinary
+  editing. All of it now rides a dedicated single-thread
+  `RequestProcessor("nmox-recent-files")` lane (FIFO keeps trail order true);
+  the EDT pays only for posting.
+- **Workbench refresh no longer stats the trail on the EDT**: rendering used
+  `RecentFiles.list()`, which stat()ed up to 20 paths — any one on a hung
+  network mount could freeze a refresh for seconds. New `listRaw()` renders
+  from a pure pref parse (zero filesystem I/O); new `pruneAsync()` sweeps
+  vanished files off-EDT and re-requests one coalesced refresh only when
+  something actually dropped, so prune → refresh → prune converges instead of
+  storming — test-pinned (`cleanPruneDoesNotNotify`).
+- The review verified the module's prior laws all HOLD (v1.33.1 off-EDT
+  detection, v1.33.2 RefreshCoalescer, v1.33.3 no-repost, listener symmetry)
+  and the rest CLEAN; its one LOW (a hung mount can wedge the single-thread
+  detection lane — degraded chips, no UI hang) → ledger 61.
+
 ## [1.110.0] - 2026-07-22
 
 ### The lexer-recursion guard — a live-caught session-poisoning crash, killed as a class

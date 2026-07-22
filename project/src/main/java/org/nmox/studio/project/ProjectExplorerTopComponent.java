@@ -405,7 +405,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
         }
         int count = 0;
-        for (File file : RecentFiles.list()) {
+        // listRaw is a pure pref parse — no filesystem stats on the EDT (a
+        // hung network mount in the trail must never freeze a refresh). A
+        // vanished file may render for one beat; pruneAsync sweeps it off
+        // the EDT and re-requests this refresh only when something dropped,
+        // so the loop converges instead of storming.
+        for (File file : RecentFiles.listRaw()) {
             if (openPaths.contains(file.getAbsolutePath()) || ++count > 10) {
                 continue;
             }
@@ -415,6 +420,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         if (count == 0) {
             emptyRow("files you open will gather here");
         }
+        RecentFiles.pruneAsync(refreshCoalescer::request);
     }
 
     /** Recent projects; the aimed one carries the green dot. */

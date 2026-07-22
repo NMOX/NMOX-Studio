@@ -124,6 +124,18 @@ breaks a line), so this is the one remaining unbounded read on an
 otherwise-streaming path. Fix by reading into a bounded buffer that
 flushes/truncates a partial line past a max length instead of `readLine()`.
 
+### 61. A hung mount can wedge the Workbench's single-thread detection lane
+
+`WorkbenchDetect.detectAsync` walks project directories on the explorer's
+single-thread `detector` RP with no reachable timeout. One project dir on
+a hung network mount blocks that task indefinitely, and every queued
+detection (one per project row) starves behind it — toolchain chips stay
+"detecting…" for the session. LOW: off-EDT, so no UI hang — a degraded
+feature, not a freeze (the same hung-mount input can no longer touch the
+EDT at all since v1.111.0 moved the recent-files stats off it). Fix by
+bounding the walk (interrupt/timeout) or isolating rows so one hung dir
+can't wedge the lane. From the first dedicated project-module review.
+
 ### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
 
 The systemic finding of the module-review arc: the IDE spawned a
