@@ -14,7 +14,7 @@ public class TclLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-tcl");
+        return Lexers.find("text/x-tcl");
     }
 
     @Override

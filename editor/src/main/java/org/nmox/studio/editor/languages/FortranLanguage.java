@@ -14,7 +14,7 @@ public class FortranLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-fortran");
+        return Lexers.find("text/x-fortran");
     }
 
     @Override

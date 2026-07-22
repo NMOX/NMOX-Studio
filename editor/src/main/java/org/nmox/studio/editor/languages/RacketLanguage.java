@@ -14,7 +14,7 @@ public class RacketLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-racket");
+        return Lexers.find("text/x-racket");
     }
 
     @Override

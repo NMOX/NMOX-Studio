@@ -14,7 +14,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-groovy");
+        return Lexers.find("text/x-groovy");
     }
 
     @Override

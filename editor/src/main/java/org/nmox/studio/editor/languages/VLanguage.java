@@ -14,7 +14,7 @@ public class VLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-vlang");
+        return Lexers.find("text/x-vlang");
     }
 
     @Override

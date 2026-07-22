@@ -13,7 +13,7 @@ public class LessLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-less");
+        return Lexers.find("text/x-less");
     }
 
     @Override

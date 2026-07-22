@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.110.0] - 2026-07-22
+
+### The lexer-recursion guard — a live-caught session-poisoning crash, killed as a class
+
+- **The bug, found live in the running app** (a red "Unexpected Exception —
+  Could not initialize class org.openide.util.Exceptions$OwnLevel" over a Nim
+  learning space): every CSL language config answered `getLexerLanguage()`
+  with `Language.find(<its own mime>)`. When the CSL provider is consulted
+  before the TextMate provider has claimed that mime (a document-load ordering
+  race), `Language.find` falls back into the CSL editor kit, which asks the
+  config again — `getLexerLanguage → find → kit → getLexerLanguage → …` — and
+  the stack blows. Worse than losing one file's lexer: the
+  `StackOverflowError` struck inside the static initializer of the platform's
+  `Exceptions$OwnLevel` logging Level, poisoning it for the whole session, so
+  every later benign notification surfaced as that scary red error.
+- **The fix, applied as a class**: new `Lexers.find(mime)` — a ThreadLocal
+  cycle guard that returns `null` on a same-thread re-entry for the same mime
+  instead of recursing (the CSL kit handles a null lexer gracefully; TextMate
+  highlighting is a separate layer and unaffected). All **50** language
+  configs now ride it; bare `Language.find` in a config fails the build
+  (`LexerIdiomGateTest`).
+- **Mutation-proven**: neutering the guard reproduces the exact production
+  `StackOverflowError` in `LexersTest`; restoring it passes. The guard clears
+  its in-flight set per call, so later resolutions retry for real.
+
 ## [1.109.0] - 2026-07-20
 
 ### The docs screenshot forge, illustrated tutorials, and in-app install truth

@@ -14,7 +14,7 @@ public class SmalltalkLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-smalltalk");
+        return Lexers.find("text/x-smalltalk");
     }
 
     @Override

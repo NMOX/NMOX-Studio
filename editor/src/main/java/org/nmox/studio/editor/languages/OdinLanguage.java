@@ -14,7 +14,7 @@ public class OdinLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-odin");
+        return Lexers.find("text/x-odin");
     }
 
     @Override

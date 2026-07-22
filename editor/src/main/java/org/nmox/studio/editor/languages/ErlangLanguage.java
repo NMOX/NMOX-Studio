@@ -14,7 +14,7 @@ public class ErlangLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-erlang");
+        return Lexers.find("text/x-erlang");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class JsonLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-json");
+        return Lexers.find("text/x-json");
     }
 
     @Override

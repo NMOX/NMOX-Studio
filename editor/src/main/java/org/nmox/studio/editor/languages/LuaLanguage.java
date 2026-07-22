@@ -14,7 +14,7 @@ public class LuaLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-lua");
+        return Lexers.find("text/x-lua");
     }
 
     @Override

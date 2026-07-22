@@ -14,7 +14,7 @@ public class CssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/css");
+        return Lexers.find("text/css");
     }
 
     @Override

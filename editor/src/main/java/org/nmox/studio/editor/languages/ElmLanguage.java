@@ -14,7 +14,7 @@ public class ElmLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-elm");
+        return Lexers.find("text/x-elm");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class DLangLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-d");
+        return Lexers.find("text/x-d");
     }
 
     @Override

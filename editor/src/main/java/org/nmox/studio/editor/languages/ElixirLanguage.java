@@ -14,7 +14,7 @@ public class ElixirLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-elixir");
+        return Lexers.find("text/x-elixir");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class OCamlLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-ocaml");
+        return Lexers.find("text/x-ocaml");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class HaxeLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-haxe");
+        return Lexers.find("text/x-haxe");
     }
 
     @Override

@@ -14,7 +14,7 @@ public class PythonLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-python");
+        return Lexers.find("text/x-python");
     }
 
     @Override

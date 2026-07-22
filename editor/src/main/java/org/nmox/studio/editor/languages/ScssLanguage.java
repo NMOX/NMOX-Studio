@@ -13,7 +13,7 @@ public class ScssLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-scss");
+        return Lexers.find("text/x-scss");
     }
 
     @Override

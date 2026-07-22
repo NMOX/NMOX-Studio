@@ -14,7 +14,7 @@ public class ScalaLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-scala");
+        return Lexers.find("text/x-scala");
     }
 
     @Override

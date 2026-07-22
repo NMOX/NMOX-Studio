@@ -14,7 +14,7 @@ public class NimLanguage extends DefaultLanguageConfig {
 
     @Override
     public Language<?> getLexerLanguage() {
-        return Language.find("text/x-nim");
+        return Lexers.find("text/x-nim");
     }
 
     @Override
