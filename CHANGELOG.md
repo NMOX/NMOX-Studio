@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.122.0] - 2026-07-23
+
+### CouchDB speaks TLS — the deferred ledger is empty
+
+- `ConnectionSpec` gains a `secure` flag: the connection dialog offers
+  "Use TLS (https)" for CouchDB, and `CouchBackend.baseUrl()` picks the
+  scheme from it — credentials stop traversing cleartext when the server
+  supports TLS (port 6984 by convention).
+- Compatibility by construction: a delegating 8-arg constructor keeps every
+  existing call site compiling, and a pre-v1.122.0 `.nmoxdb.json` without
+  the key loads as `secure=false` — the exact behavior those workspaces
+  always had. No migration. Round-trip, old-file, and scheme cases
+  test-pinned; dbstudio 383 green.
+- **With this, ledger 54 is fully closed — and the deferred ledger is
+  empty**: 53 (infra) and 54 (dbstudio) were the last open items.
+
 ## [1.121.0] - 2026-07-23
 
 ### Infra Designer: the canvas locks during live cloud operations (ledger 53 closed)

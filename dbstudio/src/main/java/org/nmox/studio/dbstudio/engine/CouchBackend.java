@@ -454,9 +454,14 @@ public final class CouchBackend implements DbBackend {
         }
     }
 
-    private String baseUrl() {
+    /** Package-private for the TLS test (ledger 54 L2). */
+    String baseUrl() {
         int port = spec.port() > 0 ? spec.port() : spec.engine().defaultPort();
-        return "http://" + (spec.host() == null ? "" : spec.host()) + ":" + port;
+        // TLS opt-in (ledger 54 L2): the spec's secure flag picks https so
+        // CouchDB credentials stop traversing cleartext when the server
+        // supports it; false keeps the pre-v1.122.0 behavior
+        String scheme = spec.secure() ? "https://" : "http://";
+        return scheme + (spec.host() == null ? "" : spec.host()) + ":" + port;
     }
 
     /** Encodes one path segment (CouchDB db names may contain {@code +/$...}). */

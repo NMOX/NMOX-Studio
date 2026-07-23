@@ -54,6 +54,9 @@ final class ConnectionDialog extends JPanel {
     private final JTextField userField = new JTextField(18);
     private final JPasswordField passwordField = new JPasswordField(18);
     private final JTextField fileField = new JTextField(24);
+    /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
+    private final javax.swing.JCheckBox secureBox =
+            new javax.swing.JCheckBox("Use TLS (https)");
     private final JLabel testLabel = new JLabel(" ");
     private final JPanel cards = new JPanel(new CardLayout());
 
@@ -94,6 +97,7 @@ final class ConnectionDialog extends JPanel {
             databaseField.setText(existing.database());
             userField.setText(existing.user());
             fileField.setText(existing.filePath());
+            secureBox.setSelected(existing.secure());
             passwordField.setToolTipText("Leave blank to keep the stored password");
         }
         lastDefaultPort = selectedEngine().defaultPort();
@@ -136,6 +140,9 @@ final class ConnectionDialog extends JPanel {
         JLabel hint = new JLabel("<html><small>Stored in the OS keychain — never in "
                 + ".nmoxdb.json.</small></html>");
         addRow(panel, 5, "", hint);
+        secureBox.setToolTipText(
+                "CouchDB only: speak https to the server (port 6984 by convention)");
+        addRow(panel, 6, "", secureBox);
         return panel;
     }
 
@@ -179,6 +186,9 @@ final class ConnectionDialog extends JPanel {
                     ? String.valueOf(engine.defaultPort()) : "");
         }
         lastDefaultPort = engine.defaultPort();
+        // the TLS flag only means anything on CouchDB's HTTP transport;
+        // JDBC engines carry TLS in driver URLs, Mongo in its own client
+        secureBox.setVisible(engine == DbEngine.COUCHDB);
         revalidate();
         repaint();
     }
@@ -192,7 +202,8 @@ final class ConnectionDialog extends JPanel {
                 parsePort(portField.getText()),
                 databaseField.getText().trim(),
                 userField.getText().trim(),
-                fileField.getText().trim());
+                fileField.getText().trim(),
+                selectedEngine() == DbEngine.COUCHDB && secureBox.isSelected());
     }
 
     private static int parsePort(String text) {

@@ -22,6 +22,10 @@ package org.nmox.studio.dbstudio.model;
  * @param user     login user; unused for SQLite
  * @param filePath absolute path to the database file — SQLite only,
  *                 empty for server engines
+ * @param secure   TLS (https) for CouchDB's HTTP transport (ledger 54
+ *                 L2) — false is the pre-v1.122.0 cleartext behavior;
+ *                 JDBC engines carry their TLS in driver URLs and
+ *                 ignore this flag
  */
 public record ConnectionSpec(
         String id,
@@ -31,5 +35,16 @@ public record ConnectionSpec(
         int port,
         String database,
         String user,
-        String filePath) {
+        String filePath,
+        boolean secure) {
+
+    /**
+     * Pre-v1.122.0 shape: every existing call site and every workspace
+     * file written before the flag existed means cleartext ({@code
+     * secure=false}) — the exact behavior those callers always had.
+     */
+    public ConnectionSpec(String id, String name, DbEngine engine, String host,
+            int port, String database, String user, String filePath) {
+        this(id, name, engine, host, port, database, user, filePath, false);
+    }
 }
