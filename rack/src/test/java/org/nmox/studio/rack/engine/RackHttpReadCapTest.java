@@ -27,7 +27,7 @@ class RackHttpReadCapTest {
                 StandardCharsets.UTF_8);
         assertThat(src)
                 .contains("BodyHandlers.ofInputStream()")
-                .contains("readNBytes(")
+                .contains("HttpBodies")   // the v1.124.0 core helper owns the capped mechanics
                 .doesNotContain("BodyHandlers.ofString()");
     }
 
@@ -39,7 +39,7 @@ class RackHttpReadCapTest {
                 StandardCharsets.UTF_8);
         assertThat(src)
                 .contains("BodyHandlers.ofInputStream()")
-                .contains("readNBytes(")
+                .contains("HttpBodies")   // the v1.124.0 core helper owns the capped mechanics
                 .doesNotContain("BodyHandlers.ofString()");
     }
 }

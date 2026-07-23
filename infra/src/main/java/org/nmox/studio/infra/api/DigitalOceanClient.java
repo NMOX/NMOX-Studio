@@ -212,8 +212,8 @@ public final class DigitalOceanClient {
         // DO API list response is small; 8 MB is orders of magnitude past it.
         String text;
         try (java.io.InputStream in = response.body()) {
-            text = new String(in.readNBytes(8 * 1024 * 1024),
-                    java.nio.charset.StandardCharsets.UTF_8);
+            text = org.nmox.studio.core.http.HttpBodies.readUtf8(in,
+                    org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES).text();
         }
         if (response.statusCode() >= 300) {
             throw new IOException("HTTP " + response.statusCode() + ": " + compact(text));

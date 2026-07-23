@@ -53,7 +53,7 @@ the default to node fails the grey assertion).
 
 ## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
 
-### 56. Unify the seven capped HTTP-read sites into one core helper
+### 56. Unify the seven capped HTTP-read sites into one core helper — CLOSED (v1.124.0)
 
 The unbounded-`ofString` bug was fixed across seven sites in four
 releases (apiclient v1.99.0, web3 v1.100.0, dbstudio v1.101.0, and
@@ -65,6 +65,20 @@ because it touches core's spec version + every consumer's dep, and the
 inlined versions are correct and tested. A source-gate ("no
 `BodyHandlers.ofString()` in main sources") is the standing regression
 guard until then.
+
+Closed in v1.124.0: `core.http.HttpBodies` (`read`/`readUtf8` →
+`Capped(text, byteLength, truncated)`) owns the mechanics — read at most
+the cap, probe ONE byte for the truncation bit, decode; a gigabyte body
+costs the cap, not the gigabyte (counting-stream proven, cap mutation
+fatal). Truncation POLICY deliberately stays at the call sites, where
+the seven genuinely differ: API Studio flags it, JSON-RPC and CouchDB
+refuse it, the display-only consoles shrug. All seven sites migrated;
+the three per-module v1.104.0 source gates now pin routing through
+HttpBodies, and a cross-module gate in core fails the build if any site
+re-inlines `readNBytes` or reverts to `ofString`. With this — and 55
+closed in v1.123.0 — the ledger holds NO actionable open items; 51 and
+45 remain deferred with standing reasons (additive-when-a-plugin-needs-it
+/ waits-on-platform).
 
 ## Open — deferred deliberately, with reasons (added v1.106.0, the first core review)
 

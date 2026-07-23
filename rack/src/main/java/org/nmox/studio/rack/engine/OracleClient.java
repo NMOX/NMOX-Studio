@@ -239,10 +239,10 @@ public final class OracleClient {
             // misbehaving or hostile endpoint could OOM the IDE. A real
             // Messages response is tiny; 8 MB is orders of magnitude past it.
             try (java.io.InputStream in = response.body()) {
-                byte[] raw = in.readNBytes(8 * 1024 * 1024);
                 // 4xx/5xx bodies from Anthropic carry a JSON error we parse
                 // for a real message; hand the body up rather than a status.
-                return new String(raw, StandardCharsets.UTF_8);
+                return org.nmox.studio.core.http.HttpBodies.readUtf8(in,
+                        org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES).text();
             }
         };
     }

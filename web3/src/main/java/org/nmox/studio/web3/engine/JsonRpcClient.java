@@ -430,22 +430,22 @@ public final class JsonRpcClient {
                 throw new IOException("Cannot reach " + Redacted.url(url)
                         + " — " + sanitizeMessage(e, url));
             }
-            byte[] raw;
+            org.nmox.studio.core.http.HttpBodies.Capped capped;
             try (java.io.InputStream in = response.body()) {
-                raw = in.readNBytes(MAX_RESPONSE_BYTES);
-                if (in.read() != -1) {
-                    // closing aborts the transfer; a truncated JSON-RPC
-                    // body is useless, so oversize is a refusal
-                    throw new IOException("Response over "
-                            + (MAX_RESPONSE_BYTES / (1024 * 1024)) + "MB from "
-                            + Redacted.url(url) + " — refusing to buffer it");
-                }
+                capped = org.nmox.studio.core.http.HttpBodies.readUtf8(in, MAX_RESPONSE_BYTES);
+            }
+            if (capped.truncated()) {
+                // closing aborted the transfer; a truncated JSON-RPC
+                // body is useless, so oversize is a refusal
+                throw new IOException("Response over "
+                        + (MAX_RESPONSE_BYTES / (1024 * 1024)) + "MB from "
+                        + Redacted.url(url) + " — refusing to buffer it");
             }
             if (response.statusCode() >= 400) {
                 throw new IOException("HTTP " + response.statusCode()
                         + " from " + Redacted.url(url));
             }
-            return new String(raw, StandardCharsets.UTF_8);
+            return capped.text();
         };
     }
 
