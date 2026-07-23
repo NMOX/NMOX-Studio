@@ -138,10 +138,25 @@ public final class GitFacts {
         return null;
     }
 
+    /** Bytes read from HEAD / a gitdir pointer — a real one is tens of bytes. */
+    static final int FIRST_LINE_CAP = 4_096;
+
     private static String readFirstLine(File file) {
-        try {
-            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        try (java.io.InputStream in = Files.newInputStream(file.toPath())) {
+            // bounded prefix, never a full slurp: this class already treats
+            // a crafted .git FILE as adversarial (the gitdir confinement) —
+            // a deliberately huge one must cost 4 KB, not its whole size
+            // (ledger 59)
+            byte[] prefix = in.readNBytes(FIRST_LINE_CAP);
+            String content = new String(prefix, StandardCharsets.UTF_8);
             int nl = content.indexOf('\n');
+            if (nl < 0 && prefix.length == FIRST_LINE_CAP) {
+                // the cap filled without a line break: the true first line is
+                // longer than any honest HEAD/gitdir pointer — reporting a
+                // truncated prefix as the line would show a corrupted branch
+                // name on the chip; hiding beats lying
+                return null;
+            }
             String line = (nl >= 0 ? content.substring(0, nl) : content).trim();
             return line.isEmpty() ? null : line;
         } catch (IOException | RuntimeException ex) {

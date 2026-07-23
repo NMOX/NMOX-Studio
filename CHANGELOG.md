@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.113.0] - 2026-07-22
+
+### The core LOW sweep — ledger 57, 58, 59 closed
+
+- **57 — atomic rewrites keep an existing file's permissions**: the temp
+  sibling is created 0600 and the `ATOMIC_MOVE` carried that onto the target,
+  silently narrowing a previously shared workspace file; an existing target's
+  POSIX permissions are now captured before the write and re-applied after
+  the move (fresh files stay 0600 — tighter is the safe default; non-POSIX
+  filesystems skip both steps).
+- **58 — `Versions.compare` survives raw/suffixed input**: segments now
+  compare by their leading digits (`"1.24.0-rc1"` vs `"1.24.0"` no longer
+  throws `NumberFormatException`; suffixes carry no ordering by documented
+  law), and absurd digit runs clamp instead of overflowing. All normalized
+  comparisons — every existing caller — behave identically.
+- **59 — the git first-line read is bounded**: `GitFacts.readFirstLine`
+  reads a 4 KB prefix instead of slurping the file (the class already treats
+  a crafted `.git` FILE as adversarial — the gitdir confinement); a
+  cap-filling line with no newline degrades to null rather than showing a
+  truncated branch name on the chip — hiding beats lying, test-pinned.
+- CoreLowSweepTest (7) + the pre-existing GitFacts/Versions/AtomicFiles
+  suites all green — no behavior change on any honest input.
+
 ## [1.112.0] - 2026-07-22
 
 ### The last unbounded read is bounded (ledger 60 closed)

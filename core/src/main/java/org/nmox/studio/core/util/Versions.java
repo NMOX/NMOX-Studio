@@ -25,19 +25,41 @@ public final class Versions {
         return m.find() ? m.group(1) : null;
     }
 
-    /** Numeric dotted-version compare: negative if a &lt; b, 0 if equal. */
+    /**
+     * Numeric dotted-version compare: negative if a &lt; b, 0 if equal.
+     * Segments are read as their leading digits only, so a raw or suffixed
+     * version ("1.24.0-rc1", "2.0.0+build5") compares by its numeric spine
+     * instead of throwing — suffixes carry no ordering here by design
+     * (ledger 58; internal callers always pass extract()-normalized input,
+     * this hardens the public seam). Absurdly long runs of digits clamp
+     * rather than overflow.
+     */
     public static int compare(String a, String b) {
         String[] as = a.split("\\.");
         String[] bs = b.split("\\.");
         int n = Math.max(as.length, bs.length);
         for (int i = 0; i < n; i++) {
-            int ai = i < as.length ? Integer.parseInt(as[i]) : 0;
-            int bi = i < bs.length ? Integer.parseInt(bs[i]) : 0;
+            long ai = i < as.length ? numericPrefix(as[i]) : 0;
+            long bi = i < bs.length ? numericPrefix(bs[i]) : 0;
             if (ai != bi) {
-                return Integer.compare(ai, bi);
+                return Long.compare(ai, bi);
             }
         }
         return 0;
+    }
+
+    /** The leading digits of a segment as a long; blank/non-numeric → 0, 18+ digits clamp. */
+    static long numericPrefix(String segment) {
+        int end = 0;
+        while (end < segment.length() && Character.isDigit(segment.charAt(end))) {
+            end++;
+        }
+        if (end == 0) {
+            return 0;
+        }
+        // 18 digits always fit a long; anything longer is no real version
+        String digits = segment.substring(0, Math.min(end, 18));
+        return Long.parseLong(digits);
     }
 
     /** True when the running version is stamped (a release build, not "1.0"). */
