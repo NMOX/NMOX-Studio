@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.115.0] - 2026-07-22
+
+### The tools EDT polish — ledger 62 closed same-day
+
+- Wizard Finish scaffolds off the EDT: `WebProjectWizardIterator` is now an
+  `AsynchronousInstantiatingIterator`, so the platform runs `instantiate()`'s
+  file writes on a background thread with the wizard's own progress UI.
+- `WebProject.Info.getDisplayName` caches the parsed package.json name keyed
+  by mtime — a Projects-window paint costs one stat, not a read+parse; a
+  half-saved (malformed) package.json falls back to the directory name
+  instead of breaking the label.
+- `NpmService.runCommand(File,String)` dispatches on its RP: the lockfile
+  probes behind package-manager detection leave the EDT (the trust prompt
+  marshals its own dialog, so the hop is safe).
+
 ## [1.114.0] - 2026-07-22
 
 ### The tools review lands — enablement off the directory walk, script runs off the RP lane

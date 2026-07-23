@@ -75,20 +75,33 @@ public class WebProject implements Project {
             return getProjectDirectory().getName();
         }
 
+        // getDisplayName is called during Projects-window painting on the
+        // EDT; cache the parsed name keyed by package.json's mtime so a
+        // paint costs one stat, not a read+parse (ledger 62b)
+        private volatile String cachedName;
+        private volatile long cachedNameStamp = -1;
+
         @Override
         public String getDisplayName() {
             try {
                 FileObject packageJson = projectDir.getFileObject("package.json");
                 if (packageJson != null) {
+                    long stamp = packageJson.lastModified().getTime();
+                    String cached = cachedName;
+                    if (cached != null && stamp == cachedNameStamp) {
+                        return cached;
+                    }
                     // package.json is spec-UTF-8; readString decodes it as such
                     String content = Files.readString(FileUtil.toFile(packageJson).toPath());
                     JSONObject json = new JSONObject(content);
-                    if (json.has("name")) {
-                        return json.getString("name");
-                    }
+                    String name = json.has("name") ? json.getString("name") : getName();
+                    cachedName = name;
+                    cachedNameStamp = stamp;
+                    return name;
                 }
-            } catch (IOException e) {
-                // Fall back to directory name
+            } catch (IOException | RuntimeException e) {
+                // Fall back to directory name (malformed JSON included:
+                // a half-saved package.json must not break the tree label)
             }
             return getName();
         }

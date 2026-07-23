@@ -48,7 +48,7 @@ import org.openide.util.NbBundle.Messages;
     "WebProject_vue_displayName=Vue Application",
     "WebProject_vanilla_displayName=Vanilla JavaScript Application"
 })
-public class WebProjectWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+public class WebProjectWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
     private int index;
     private WizardDescriptor wizard;
