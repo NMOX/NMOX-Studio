@@ -207,20 +207,20 @@ injection) and deferred the lower-severity remainder:
   low blast radius, but a house-law-1 violation on a slow/networked
   FS. Fix: the web3 v1.100.0 idiom — post the read to RP, marshal the
   parsed workspace back with a newest-wins sequence.
-- **M4 (MED):** `JdbcCore.executeOne` calls `rs.getString(c)` on every
-  cell; a single multi-hundred-MB BLOB/CLOB/`bytea` is fully
-  materialized despite the row cap. Fix: cap per-cell string length or
-  special-case LOB metadata.
+- **M4 (MED): CLOSED (v1.116.0).** `JdbcCore.cell` caps each cell at
+  64k chars; CLOB/NCLOB read only a capped prefix via `getSubString`,
+  BLOB/binary render as `[N bytes]` (never stringified), oversize text
+  gets an honest `…[N chars, truncated]` marker — a giant LOB can no
+  longer OOM the IDE. Live SQLite test-pinned.
 - **L2 (LOW):** `CouchBackend.baseUrl()` hard-codes `http://`; there is
   no way to opt into TLS, so CouchDB credentials traverse cleartext.
   Fix: an https scheme/flag on the spec.
 - **L3 (LOW):** JDBC connects leave `allowLocalInfile` at driver
   defaults; a malicious MySQL/MariaDB server could attempt
   `LOAD DATA LOCAL INFILE`. Defense-in-depth: set it false explicitly.
-- **L4 (LOW):** `PeekQueries.consoleTextFor` inlines a collection name
-  into JSON by concatenation; a name with `"`/`\` yields malformed
-  auto-run console text. Self-inflicted (own DB). Fix: build via
-  `JSONObject.quote`.
+- **L4 (LOW): CLOSED (v1.116.0).** `PeekQueries.consoleTextFor` builds
+  the Mongo `find` name via `JSONObject.quote`, so a collection name
+  with `"`/`\` yields valid JSON (parse-round-trip test-pinned).
 - **L5 (LOW):** backend password `char[]` clones are never zeroed in
   `close()`. Minor hygiene; `Arrays.fill` the clone.
 

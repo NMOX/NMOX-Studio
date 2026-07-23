@@ -43,6 +43,17 @@ class PeekQueriesTest {
     }
 
     @Test
+    @DisplayName("A collection name with quotes/backslashes yields valid JSON, not malformed console text (ledger 54 L4)")
+    void mongoNameIsJsonQuoted() {
+        String text = PeekQueries.consoleTextFor(DbEngine.MONGODB,
+                new TableInfo("", "appdb", "wei\"rd\\coll", "COLLECTION"), 10);
+        // the escaped name round-trips through a JSON parse — proof it's valid
+        org.json.JSONObject parsed = new org.json.JSONObject(text);
+        assertThat(parsed.getString("find")).isEqualTo("wei\"rd\\coll");
+        assertThat(parsed.getInt("limit")).isEqualTo(10);
+    }
+
+    @Test
     @DisplayName("The explicit-quote path speaks SQL standard: quoted identifiers + FETCH FIRST")
     void explicitQuotePath() {
         // Derby through the Services window: double-quote identifiers, and the
