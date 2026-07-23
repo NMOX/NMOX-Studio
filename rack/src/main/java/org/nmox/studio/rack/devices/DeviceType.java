@@ -61,7 +61,8 @@ public enum DeviceType {
     TASK_RUNNER("task-runner", "DYNAMO", "Grunt/Gulp task runner — dial a task, GO", new Color(210, 150, 50), DynamoDevice::new),
     ORACLE("oracle", "ORACLE", "Error Explainer — AI explains the last failed run, on a button press", new Color(120, 90, 220), OracleDevice::new),
     E2E("e2e", "SPECTER", "E2E Console — Playwright/Cypress run, served report, codegen recorder", new Color(0x2E, 0xAD, 0x33), SpecterDevice::new),
-    SOROBAN("stellar", "STELLAR", "Soroban Console — Stellar contracts: build, cargo test, local quickstart net", new Color(0xFD, 0xDA, 0x24), StellarDevice::new);
+    SOROBAN("stellar", "STELLAR", "Soroban Console — Stellar contracts: build, cargo test, local quickstart net", new Color(0xFD, 0xDA, 0x24), StellarDevice::new),
+    SOLANA("anchor", "ANCHOR", "Solana Console — anchor build/test, solana-test-validator with a live RPC URL", new Color(0x99, 0x45, 0xFF), AnchorDevice::new);
 
     private final String id;
     private final String title;
@@ -116,7 +117,7 @@ public enum DeviceType {
             case SSH -> PaletteCategory.SHIP;
             case PACKAGE_MANAGER, BUILD, TEST, E2E, LINT, FORMAT, TYPECHECK, VITALS, BUNDLE_SIZE, GAS_BUDGET -> PaletteCategory.VERIFY;
             case DEV_SERVER, TUNNEL, BROWSER, HTTP, DATABASE, LOCAL_CHAIN -> PaletteCategory.SERVE;
-            case ANGULAR, PHOENIX, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, ARTISAN, SOROBAN -> PaletteCategory.FRAMEWORKS;
+            case ANGULAR, PHOENIX, NEXTJS, VITE, ASTRO, SVELTEKIT, NUXT, ARTISAN, SOROBAN, SOLANA -> PaletteCategory.FRAMEWORKS;
             case CONSOLE, TERMINAL, REPL, BENCH, DEBUG, BLACKBOX, SONAR, TAIL, BEACON, ORACLE -> PaletteCategory.OBSERVE;
             case GIT, AUDIT, DEPLOY, DOCKER, PREFLIGHT -> PaletteCategory.SHIP;
             case ENV, ROSETTA, WAYPOINT -> PaletteCategory.UTILITY;
@@ -173,6 +174,7 @@ public enum DeviceType {
             case BEACON -> "CHECK answers: is it up, and how many days on the TLS cert?\nPatch TEMPO BAR → CHECK to watch production on a clock; MIN DAYS fires FAIL inside the window.";
             case BUNDLE_SIZE -> "Weighs the build output dir; MAX sets the budget.\nPatch FORGE OK → MEASURE and OK → LAUNCHPAD: bundles over budget don't ship.";
             case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.";
+            case SOLANA -> "START boots solana-test-validator — a real local chain; the URL jack fires on its\nJSON RPC banner and SERVING gates downstream for as long as it lives. The ACTION knob dials\nanchor build/test for RUN (test spins its own throwaway validator). Keypairs live in the\nsolana CLI's own config — the IDE never touches them; non-local deploys are SOLDER one-liners.";
             case SOROBAN -> "BUILD compiles the Soroban contract to WASM (stellar contract build); the ACTION knob\ndials cargo test (the SDK runs contracts natively — no network) and the local quickstart net\n(stellar container start/stop local — Docker; RPC on localhost:8000). Deploy/invoke need\nidentities and free-form args: use SOLDER (stellar contract deploy/invoke). Keys stay in the\nstellar CLI's own config — the IDE never touches them.";
             case LOCAL_CHAIN -> "START boots anvil on the dialed PORT: a local EVM chain, ten unlocked funded accounts, instant mining.\nPatch URL → Contract Studio's network and SERVING → a gate; FORK-URL forks any live network's state.";
             case GAS_BUDGET -> "CHECK runs forge snapshot --check against the committed .gas-snapshot; TOLERANCE allows dialed drift.\nPatch VERITAS OK → CHECK and OK → LAUNCHPAD: gas regressions physically cannot ship.";

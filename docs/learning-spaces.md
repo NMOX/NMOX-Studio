@@ -1,6 +1,6 @@
 # Learning Spaces: the community catalog
 
-*New Learning Space…* (⇧⌘L) ships 79 built-in tutorials, and the whole
+*New Learning Space…* (⇧⌘L) ships 80 built-in tutorials, and the whole
 catalog is data — a JSON file, not code. This page documents that
 format so you can add your own spaces (or improve a built-in) by
 dropping a file into a directory. No plugin, no rebuild, no restart.
