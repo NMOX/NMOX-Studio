@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.126.0] - 2026-07-23
+
+### The day review — fresh lenses over v1.119–v1.125, one real find
+
+Two read-only lenses (correctness/threading/lifecycle; tests-tell-the-
+truth) over everything shipped today: the infra op-lock and re-aim
+plumbing, the DB Studio off-EDT reload, the CouchDB TLS flag, all six
+editor remainder fixes, core HttpBodies and its seven call sites, and
+forge v2's dialog phase.
+
+- **Fixed (MED): the infra op lock was a boolean, and the node popup
+  could overlap it.** The "Destroy in cloud" context item has no button
+  to grey, so it can queue a second operation behind a running Deploy or
+  Sync — and the first operation's cleanup lifted the canvas lock and
+  re-enabled every op button while that destroy still ran (the exact
+  ledger-53b hazard, one path over). `opsInFlight` is now a depth: the
+  lock lifts and deferred re-aims fire only when the LAST operation
+  finishes. Source-gated with the depth discipline pinned; mutation-
+  proven (always-unlock regression fails the gate).
+- Verified CLEAN: DB Studio's reload seam (RP read behind a bounded
+  save-lane drain, newest-wins sequence, EDT apply), the TLS flag's
+  dialog lifecycle, the DapProxy pair-reap and parse-before-ack paths,
+  Prettier's capped daemon drain, the Chrome-profile reaper's
+  delete-then-remove ordering, HttpBodies' probe semantics against all
+  seven pre-migration behaviors, and forge v2's dispose-with-nothing-
+  created contract.
+
 ## [1.125.0] - 2026-07-23
 
 ### Forge v2 — every tutorial is illustrated

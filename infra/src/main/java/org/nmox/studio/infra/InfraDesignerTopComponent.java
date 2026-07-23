@@ -294,7 +294,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * cloud-op button is disabled, and a rack re-aim DEFERS instead of
      * loading a different project's graph mid-operation.
      */
-    private boolean opInFlight;
+    /** A DEPTH, not a flag: the node-popup "Destroy in cloud" item has no
+     *  button to grey, so it can queue a second op behind a running one —
+     *  a boolean's first finally would lift the lock and re-enable every
+     *  op button while that second op still runs (the day-review finding).
+     *  EDT-confined like the rest of the lock state. */
+    private int opsInFlight;
     private boolean pendingReaim;
 
     private void runExclusive(JButton trigger, Runnable work) {
@@ -303,7 +308,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
         // the full lock (ledger 53b): canvas structural edits refused with a
         // painted banner, all op buttons off, re-aims deferred until done
-        opInFlight = true;
+        opsInFlight++;
         canvas.setLocked(true);
         deployButton.setEnabled(false);
         syncButton.setEnabled(false);
@@ -313,19 +318,21 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 work.run();
             } finally {
                 SwingUtilities.invokeLater(() -> {
-                    opInFlight = false;
-                    canvas.setLocked(false);
-                    deployButton.setEnabled(true);
-                    syncButton.setEnabled(true);
-                    destroyStackButton.setEnabled(true);
+                    opsInFlight--;
                     if (trigger != null) {
                         trigger.setEnabled(true);
                     }
-                    if (pendingReaim) {
-                        // the aim moved while the op ran; follow it now that
-                        // following can no longer tear the operation apart
-                        pendingReaim = false;
-                        onProjectReaimed();
+                    if (opsInFlight == 0) {
+                        canvas.setLocked(false);
+                        deployButton.setEnabled(true);
+                        syncButton.setEnabled(true);
+                        destroyStackButton.setEnabled(true);
+                        if (pendingReaim) {
+                            // the aim moved while ops ran; follow it now that
+                            // following can no longer tear an operation apart
+                            pendingReaim = false;
+                            onProjectReaimed();
+                        }
                     }
                 });
             }
@@ -680,7 +687,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * save here would have written the old graph into the NEW project).
      */
     private void onProjectReaimed() {
-        if (opInFlight) {
+        if (opsInFlight > 0) {
             // a cloud op is mutating THIS graph; loading another project's
             // design mid-operation would tear it apart (ledger 53b). The
             // re-aim is honored the moment the op finishes.
