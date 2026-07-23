@@ -16,6 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class Ledger53RemainderTest {
 
+    /** Reads a source file with line endings normalized — the newline-
+     * delimited slicing below breaks on a CRLF (Windows) checkout
+     * otherwise (the v1.103.0 SpawnTrustGateTest lesson). */
+    private static String source(String path) throws Exception {
+        return Files.readString(Path.of(path)).replace("\r\n", "\n");
+    }
+
     @Test
     @DisplayName("Only a real HTTP 404 severs the deploy linkage — impostor 404s don't (53e)")
     void preciseNotFound() {
@@ -41,8 +48,7 @@ class Ledger53RemainderTest {
     @Test
     @DisplayName("Op-in-flight lock (53b): canvas refuses structural edits; TC defers re-aims")
     void opLockGates() throws Exception {
-        String canvas = Files.readString(Path.of(
-                "src/main/java/org/nmox/studio/infra/ui/FlowCanvas.java"));
+        String canvas = source("src/main/java/org/nmox/studio/infra/ui/FlowCanvas.java");
         // the three structural entry points all check the lock
         int del = canvas.indexOf("private void deleteSelection()");
         assertThat(canvas.substring(del, del + 200)).contains("if (locked)");
@@ -50,8 +56,7 @@ class Ledger53RemainderTest {
         int drop = canvas.indexOf("public boolean importData(TransferSupport support)");
         assertThat(canvas.substring(drop, drop + 200)).contains("if (locked)");
         // the TC's one op choke point arms the lock and defers re-aims
-        String tc = Files.readString(Path.of(
-                "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"));
+        String tc = source("src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java");
         int run = tc.indexOf("private void runExclusive(");
         String runBody = tc.substring(run, tc.indexOf("\n    }\n", run));
         assertThat(runBody).contains("opInFlight = true");
@@ -65,8 +70,7 @@ class Ledger53RemainderTest {
     @Test
     @DisplayName("Designer source gate (53c): re-aim force-saves the OLD bound file before loading")
     void reaimForceSavesBoundFile() throws Exception {
-        String src = Files.readString(Path.of(
-                "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"));
+        String src = source("src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java");
         // save() must target the bound file, never the live aim
         int saveAt = src.indexOf("private void save()");
         String saveBody = src.substring(saveAt, src.indexOf("\n    }", saveAt));
