@@ -194,12 +194,22 @@ public final class CommandExecutor {
      * into the Output window, where stderr prints in the error color and
      * file:line references become clickable links.
      */
+    /**
+     * Per-line ceiling for {@link #readLineBounded}. The pump has no output
+     * accumulator (each line dispatches and drops — the streaming design),
+     * but {@code readLine()} itself buffered one logical line unbounded: a
+     * pathological child emitting gigabytes with no line terminator grew a
+     * single String until OOM (ledger 60). 200k chars is far beyond any
+     * honest log line and caps the worst case at ~400 KB per pump.
+     */
+    static final int MAX_LINE_CHARS = 200_000;
+
     private static void pumpStream(java.io.InputStream stream, OutputWriter writer,
             boolean isErr, String tabName, File dir, Consumer<String> onLine) {
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = readLineBounded(reader, MAX_LINE_CHARS)) != null) {
                 String clean = stripAnsi(line);
                 if (writer != null) {
                     FileLink.Location loc = FileLink.find(clean, dir);
@@ -219,6 +229,51 @@ public final class CommandExecutor {
         } catch (IOException ignored) {
             // stream closes when the process dies or is killed
         }
+    }
+
+    /**
+     * {@code readLine} with a ceiling: same terminator handling
+     * ({@code \n}, {@code \r}, {@code \r\n}), but a line that exceeds
+     * {@code max} chars is returned truncated (marked so the log is honest)
+     * and the remainder of that physical line is drained and discarded —
+     * the child keeps writing into a moving pipe (no deadlock) while the
+     * IDE's memory stays bounded. Package-private for the flood test.
+     */
+    static String readLineBounded(java.io.BufferedReader reader, int max)
+            throws IOException {
+        StringBuilder sb = new StringBuilder(120);
+        int c;
+        while ((c = reader.read()) != -1) {
+            if (c == '\n') {
+                return sb.toString();
+            }
+            if (c == '\r') {
+                // swallow the \n of a \r\n pair without consuming a lone \r's successor
+                reader.mark(1);
+                int next = reader.read();
+                if (next != '\n' && next != -1) {
+                    reader.reset();
+                }
+                return sb.toString();
+            }
+            if (sb.length() >= max) {
+                // ceiling hit: discard the rest of this physical line,
+                // still reading so the child never blocks on a full pipe
+                while ((c = reader.read()) != -1 && c != '\n') {
+                    if (c == '\r') {
+                        reader.mark(1);
+                        int next = reader.read();
+                        if (next != '\n' && next != -1) {
+                            reader.reset();
+                        }
+                        break;
+                    }
+                }
+                return sb.append(" …[line truncated]").toString();
+            }
+            sb.append((char) c);
+        }
+        return sb.length() == 0 ? null : sb.toString(); // EOF: last unterminated line
     }
 
     /** ANSI CSI/OSC escape sequences, e.g. color codes from vite/vitest. */
