@@ -14,7 +14,12 @@ closed E2E loop, the console-jack and serving-gate truth work, ORACLE's
 cable path built AND live-proven against the real API, the modern
 lightweights, click-to-click patching). The prior capstone was written
 at v1.36.0; seven releases (v1.44.0→v1.50.0) ran overnight and drained the
-high-value debt queue, so this is a from-scratch pass, not a patch. It is
+high-value debt queue, so this is a from-scratch pass, not a patch. Currency pass 2026-07-23 at
+v1.126.0 after the security-and-robustness arc (v1.96–v1.124: a dedicated
+review for EVERY module, the editor/tools RCE gates, keychain-only secrets
+in the last holdout, bounded reads on every HTTP/process/file path, the
+whole deferred ledger worked to empty) plus forge v2 (13/13 tutorials
+illustrated) and the same-day review of that surface. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
@@ -55,6 +60,27 @@ serves the whole component library so components render composed, the
 canvas is fully keyboard-operable and screen-reader-visible (ledger 48
 closed), and the arc carried its own two-lens review release (v1.82.0,
 14 mutation-proven fixes).
+
+**The security-and-robustness arc is complete as of v1.124.0 — and the
+deferred ledger is EMPTY.** Starting from the first dedicated apiclient
+review (v1.97.0), every module got its own senior review, and the whole
+class of findings shipped: the editor and tools RCE gates (LSP servers,
+Prettier-on-save, Run/Build/Test, NPM Explorer all Workspace-Trust-gated
+before running a cloned repo's code, v1.102–v1.103), API Studio tokens
+moved to the OS keychain (the last Keyring-law holdout, v1.97.0),
+safe-default dialogs everywhere a reflexive Enter could destroy something,
+and bounded reads on EVERY path — HTTP (capped per-site v1.99–v1.104, then
+unified into core.http.HttpBodies in v1.124.0 with a cross-module
+re-inline gate), process capture (v1.106.0), process lines (v1.112.0),
+LOB cells (v1.116.0), and DB Studio connections that refuse local-infile
+and zero their password on close (v1.117.0). The 2026-07-22 night shift
+(v1.110–v1.118) and 2026-07-23 morning (v1.119–v1.124) then worked the
+deferred ledger to empty: items 51 (SPI additive overload) and 45
+(Tailwind LSP) remain deferred with standing reasons; everything else is
+CLOSED. Docs screenshots are a product capability (DocsShots, v1.109.0;
+forge v2's dialog shots in v1.125.0 put an image in all 13 tutorials),
+and the same-day review of the day's own surface (v1.126.0) caught the
+infra op-lock needing a depth counter.
 
 **The language-compatibility mission is complete as of v1.77.2.** Full
 verticals where a real manifest/toolchain exists (V/fpm/Alire join
@@ -197,13 +223,13 @@ left is either a settled won't-fix or a call that needs a product decision.
    returns bounded) and neither ships a triggering path today. The real fix is
    Windows Job Objects via JNA/FFM — outside pure Java, a dedicated sprint.
 
-5. **FileTreePanel is still a raw JTree over java.io.File (ledger 36).** The
-   v1.39.0 review took the *correctness* half (CRUD routes through DataObject,
-   so open editors follow deletes/renames; hyperlink paths normalized); the UI
-   half — Nodes/BeanTreeView/ExplorerManager for free file-type icons and
-   platform file actions — stays custom because the rewrite carries
-   visual-regression risk against a tree that is already careful (off-EDT,
-   lazy, TCC-safe).
+5. **~~FileTreePanel~~ — CLOSED (v1.64.0), stale here through two currency
+   passes.** The tree became a platform citizen (BeanTreeView over the real
+   DataFolder node: file-type icons, git annotation, the full node menu,
+   lazy off-EDT children) and this entry contradicted the "as of v1.85.0"
+   paragraph below for ten days. Kept struck-through as a reminder that a
+   gap list is a claim like any other — verify against the ledger's
+   headers, don't trust the last pass.
 
 6. **The seven studios live in the `editor` wsmode (ledger 33).** Documents
    opened later interleave with the permanently-open tool tabs. A custom
@@ -464,3 +490,23 @@ as drag (v1.95.0). Two more reviews ran (v1.89.0 fifth, v1.92.1 sixth).
 file's opportunity list, Block Studio's ideas, and the live-drive
 observation queue. The next unit comes from a premise change, a real
 user, or David — not from manufacturing work.
+
+**As of v1.126.0** (the 2026-07-22 night shift + 2026-07-23 day shift,
+seventeen releases v1.110–v1.126): the security-and-robustness arc
+completed — every module now has a dedicated review behind it, every
+read path in the product is bounded (the capped HTTP mechanics unified
+into core.http.HttpBodies with a cross-module re-inline gate), the
+editor/tools RCE class is gated, the last plaintext secret moved to the
+keychain, and the deferred ledger was worked to EMPTY (51 and 45 stay
+deferred with standing reasons — additive-when-a-plugin-author-asks and
+waits-on-platform). The docs forge became a product capability and every
+one of the 13 tutorials carries a real screenshot (v1.109.0 tabs,
+v1.125.0 dialog shots). Two same-day reviews of fresh surface each found
+exactly one real bug (v1.115.0's ledger 62, v1.126.0's op-lock depth),
+which is the pattern to keep: review the day's work the same day, while
+the design intent is loud. Two NEW failure patterns joined the method:
+*a scripted docs edit that doesn't assert its anchor no-ops silently*
+(CLAUDE.md drifted five releases before v1.123.0 caught it), and *a
+"done" claim must be checked against the artifact it summarizes* (the
+ledger's own section headers, not the working-set memory of them). The
+standing guidance is unchanged — and the backlogs are empty again.

@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.127.0] - 2026-07-23
+
+### plan.md tells the truth again
+
+The "read this first" engineering plan was frozen at v1.95.1 — 31
+releases stale — and carried an internal contradiction that survived two
+currency passes: gap #5 still claimed FileTreePanel was a raw JTree while
+the same file's history section recorded ledger 36 closing with the
+platform-native tree in v1.64.0.
+
+- New currency pass at v1.126.0: the security-and-robustness arc
+  (per-module reviews complete, bounded reads everywhere, the RCE gates,
+  keychain-only secrets), the deferred ledger worked to empty, the docs
+  forge, and the two same-day-review catches are all in "where the
+  project stands" and "what I'd do next".
+- The stale FileTreePanel gap is struck through with the lesson attached:
+  a gap list is a claim like any other — verify against the ledger's
+  headers, don't trust the last pass.
+- Two new failure patterns recorded in the method: silent no-op scripted
+  docs edits (assert the anchor), and "done" claims checked against the
+  artifact they summarize.
+
 ## [1.126.0] - 2026-07-23
 
 ### The day review — fresh lenses over v1.119–v1.125, one real find
