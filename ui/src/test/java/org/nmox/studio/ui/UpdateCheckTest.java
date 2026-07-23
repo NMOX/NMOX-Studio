@@ -80,7 +80,7 @@ class UpdateCheckTest {
         assertThat(src)
                 .as("ofString() buffers the whole body; read through a capped stream instead")
                 .contains("BodyHandlers.ofInputStream()")
-                .contains("readNBytes(")
+                .contains("HttpBodies")   // the v1.124.0 core helper owns the capped mechanics
                 .doesNotContain("BodyHandlers.ofString()");
     }
 }

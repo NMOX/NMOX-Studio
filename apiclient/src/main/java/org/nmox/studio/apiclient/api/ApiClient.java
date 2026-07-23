@@ -110,20 +110,17 @@ public final class ApiClient {
         try {
             HttpResponse<java.io.InputStream> response = client.send(build(request, vars),
                     HttpResponse.BodyHandlers.ofInputStream());
-            byte[] raw;
-            boolean truncated;
+            org.nmox.studio.core.http.HttpBodies.Capped capped;
             try (java.io.InputStream in = response.body()) {
-                raw = in.readNBytes(MAX_BODY_BYTES);
-                truncated = in.read() != -1;
+                capped = org.nmox.studio.core.http.HttpBodies.read(in, MAX_BODY_BYTES,
+                        charsetOf(response.headers().firstValue("content-type").orElse("")));
                 // closing the stream aborts the rest of the transfer —
                 // we never drain what we won't show
             }
             long ms = (System.nanoTime() - start) / 1_000_000;
             Map<String, java.util.List<String>> headers = new LinkedHashMap<>(response.headers().map());
-            String body = new String(raw, charsetOf(response.headers()
-                    .firstValue("content-type").orElse("")));
             return new ApiResponse(response.statusCode(), ms,
-                    raw.length, headers, body, null, truncated);
+                    capped.byteLength(), headers, capped.text(), null, capped.truncated());
         } catch (InterruptedException cancelled) {
             // a Cancel press interrupts the send worker (the RP is
             // created interruptible) — this is a user verdict, not a

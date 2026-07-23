@@ -137,8 +137,8 @@ public class HttpDevice extends RackDevice {
                     // little past the retained size, then truncate for history.
                     String body;
                     try (java.io.InputStream in = response.body()) {
-                        byte[] raw = in.readNBytes(1024 * 1024);
-                        body = new String(raw, java.nio.charset.StandardCharsets.UTF_8);
+                        body = org.nmox.studio.core.http.HttpBodies
+                                .readUtf8(in, 1024 * 1024).text();
                     } catch (java.io.IOException readFailed) {
                         body = "";
                     }

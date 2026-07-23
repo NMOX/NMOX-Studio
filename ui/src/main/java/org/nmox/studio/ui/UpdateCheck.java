@@ -84,8 +84,8 @@ public class UpdateCheck implements Runnable {
             // redirected/hostile endpoint can't OOM the IDE on a boot check
             String bodyText;
             try (java.io.InputStream in = response.body()) {
-                bodyText = new String(in.readNBytes(2 * 1024 * 1024),
-                        java.nio.charset.StandardCharsets.UTF_8);
+                bodyText = org.nmox.studio.core.http.HttpBodies
+                        .readUtf8(in, 2 * 1024 * 1024).text();
             }
             String latest = latestTag(bodyText);
             if (latest == null || Versions.compare(running, latest) >= 0) {

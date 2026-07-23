@@ -422,9 +422,10 @@ public final class CouchBackend implements DbBackend {
             String body;
             boolean truncated;
             try (java.io.InputStream in = response.body()) {
-                byte[] raw = in.readNBytes(MAX_RESPONSE_BYTES);
-                truncated = in.read() != -1; // closing aborts the rest of the transfer
-                body = new String(raw, StandardCharsets.UTF_8);
+                var capped = org.nmox.studio.core.http.HttpBodies
+                        .readUtf8(in, MAX_RESPONSE_BYTES);
+                truncated = capped.truncated(); // closing aborts the rest of the transfer
+                body = capped.text();
             }
             if (response.statusCode() >= 400) {
                 String detail = "";
