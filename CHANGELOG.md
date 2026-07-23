@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.131.0] - 2026-07-23
+
+### ANCHOR — Solana joins the rack (53rd device)
+
+Web3-expansion tranche 2: Solana programs as rack citizens.
+
+- **ANCHOR, the Solana console** (Frameworks shelf, Solana purple):
+  START boots `solana-test-validator` — a REAL foreground long-runner,
+  so unlike STELLAR's detached quickstart this device carries a
+  **truthful SERVING gate**. The URL jack fires on the validator's
+  JSON RPC banner (pinned verbatim against a live Agave 4.1.2 boot on
+  this machine), the chain registers with the ServingRegistry, and the
+  gate drops with the process. The ACTION knob dials `anchor build` /
+  `anchor test` (test spins its own throwaway validator); the version
+  cluster compares Cargo.lock's anchor-lang against crates.io — where
+  the live check surfaced that **Anchor is 1.x now** (1.1.2).
+- **Keys stay yours**: the solana CLI manages keypairs in its own
+  config and the test validator airdrops localnet SOL — the ANVIL
+  boundary, no key material in the IDE, non-local deploys are SOLDER
+  one-liners.
+- **Learning space #80: "Solana (programs)"** — a native program with
+  its logic kept pure so it tests in milliseconds without a validator;
+  live-proven (`cargo test` green on real solana-program 4 from
+  crates.io). The tutorial walks the account model, the entrypoint,
+  the ANCHOR device's validator lane, and the SBF build story.
+- Doctor probes `solana` + `anchor`; devices.md regenerated (53);
+  banner-parse mutation-proven; rack 1164 green.
+
 ## [1.130.0] - 2026-07-23
 
 ### STELLAR — Stellar smart contracts join the rack (52nd device)

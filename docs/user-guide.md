@@ -313,7 +313,7 @@ The rack is fully operable without a mouse: **Tab** moves between a
 device's controls (a focus ring shows where you are), **arrow keys**
 turn the focused knob (Home/End jump to the rails), and **Space/Enter**
 press buttons and flip toggles. Every knob, button, LED, LCD and meter
-on all 52 devices reports its name, role, value and state to assistive
+on all 53 devices reports its name, role, value and state to assistive
 technology, so screen readers announce the rack the way they announce
 native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.)
@@ -502,7 +502,7 @@ files, recent projects, and launchers for every tool surface.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
-*New Learning Space…* offers 79 built-in tutorials — languages (Python,
+*New Learning Space…* offers 80 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and

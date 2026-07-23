@@ -281,6 +281,16 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger)
 
+### ANCHOR — Solana Console — anchor build/test, solana-test-validator with a live RPC URL
+
+> START boots solana-test-validator — a real local chain; the URL jack fires on its
+> JSON RPC banner and SERVING gates downstream for as long as it lives. The ACTION knob dials
+> anchor build/test for RUN (test spins its own throwaway validator). Keypairs live in the
+> solana CLI's own config — the IDE never touches them; non-local deploys are SOLDER one-liners.
+
+- **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
+
 ## OBSERVE
 
 ### INSPECTOR — Debug Launcher — debug servers with attach endpoints

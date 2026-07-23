@@ -2716,6 +2716,38 @@
         }
       ],
       "tutorial": "# Stellar smart contracts (Soroban)\n\nYes \u2014 Stellar has real smart contracts. They are **Rust** compiled to\nWASM, and the whole loop runs from tools you already have here.\n\n## 1. Run the tests (no network needed)\n\nPress **GO** on the run driver: `cargo test`. The soroban-sdk's\n`testutils` run the contract natively \u2014 `Env::default()` is a whole\nin-memory ledger. Watch `says_hello` pass on the MONITOR.\n\n## 2. Read the contract\n\nOpen `src/lib.rs`. `#[contract]` marks the type, `#[contractimpl]`\nexports `hello` as a contract function, and the generated\n`HelloContractClient` is how tests (and other contracts) call it.\n`Symbol` is Soroban's cheap interned string; `vec![&env, ...]` builds\na ledger-native Vec.\n\n## 3. Build real WASM\n\nOne-time setup: the WASM target (`rustup target add wasm32v1-none`)\nand the CLI (`brew install stellar-cli`) \u2014 SOLDER runs both. Then rack\na **STELLAR** device (Frameworks shelf) and press **BUILD** \u2014\n`stellar contract build` compiles the WASM artifact into\n`target/wasm32v1-none/release/`.\n\n## 4. A local network, when you want one\n\nDial the STELLAR device's ACTION knob to `net-start` \u2014 the quickstart\nDocker image boots a whole private Stellar network with RPC on\n`http://localhost:8000/rpc`. Deploy and invoke are SOLDER one-liners\n(they take free-form args and an identity the CLI manages itself):\n\n    stellar keys generate dev --fund --network local\n    stellar contract deploy --wasm target/wasm32v1-none/release/hello_stellar.wasm --source dev --network local\n    stellar contract invoke --id <CONTRACT_ID> --source dev --network local -- hello --to Dev\n\nThe IDE never touches your keys \u2014 the stellar CLI keeps identities in\nits own config, the same boundary ANVIL's unlocked accounts honor.\n\n## 5. Where XLM fits\n\nLumens pay the fees on every network, and the Stellar Asset Contract\nexposes XLM (and any Stellar asset) to your contract code \u2014 no bridge,\nno wrapper token.\n"
+    },
+    {
+      "slug": "solana-native",
+      "name": "Solana (programs)",
+      "category": "FRAMEWORK",
+      "family": "Web3",
+      "blurb": "Solana smart contracts: Rust programs with pure-logic tests, a real local validator one button away.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "cargo",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install solana",
+        "linux": "sh -c \"$(curl -sSfL https://release.anza.xyz/stable/install)\"",
+        "windows": "winget install Anza.Agave"
+      },
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"hello-solana\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[lib]\ncrate-type = [\"cdylib\", \"lib\"]\n\n[dependencies]\nsolana-program = \"4\"\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "content": "use solana_program::{\n    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg,\n    pubkey::Pubkey,\n};\n\nentrypoint!(process_instruction);\n\n/// The on-chain entrypoint: every Solana transaction that targets this\n/// program lands here with the accounts it named and raw instruction data.\npub fn process_instruction(\n    _program_id: &Pubkey,\n    _accounts: &[AccountInfo],\n    instruction_data: &[u8],\n) -> ProgramResult {\n    msg!(\"counter incremented to {}\", bump(instruction_data.first().copied()));\n    Ok(())\n}\n\n/// The program logic, kept pure so it tests natively \u2014 no validator,\n/// no cluster, just cargo test.\npub fn bump(current: Option<u8>) -> u8 {\n    current.unwrap_or(0).saturating_add(1)\n}\n\n#[cfg(test)]\nmod test {\n    use super::*;\n\n    #[test]\n    fn bumps_from_empty_and_saturates() {\n        assert_eq!(bump(None), 1);\n        assert_eq!(bump(Some(41)), 42);\n        assert_eq!(bump(Some(u8::MAX)), u8::MAX);\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# Solana programs\n\nSolana smart contracts are called **programs**: Rust compiled to SBF\n(a BPF dialect), invoked by transactions that name every account they\ntouch up front \u2014 that account model is what makes Solana parallel.\n\n## 1. Run the test (no validator needed)\n\nPress **GO**: `cargo test`. The program logic lives in a pure function\n(`bump`), so it tests natively in milliseconds. Keeping logic pure and\nthe entrypoint thin is the house style of real Solana programs.\n\n## 2. Read the program\n\n`entrypoint!(process_instruction)` wires the on-chain entrypoint.\nEvery invocation receives the program id, the accounts the transaction\nnamed, and raw instruction bytes. `msg!` writes to the transaction log.\n\n## 3. A real local chain\n\nRack an **ANCHOR** device (Frameworks shelf) and press **START** \u2014\n`solana-test-validator` boots a private cluster, the URL jack carries\nits JSON RPC endpoint (http://127.0.0.1:8899), and SERVING gates\ndownstream devices for as long as it lives.\n\n## 4. Building for the chain\n\nOn-chain builds need the SBF toolchain (`cargo build-sbf`, installed\nwith the Solana CLI: `brew install solana`). The Anchor framework\n(`anchor init/build/test` \u2014 the ANCHOR device ACTION knob) adds typed\naccounts, IDLs, and a TypeScript client on top; `anchor test` spins\nits own throwaway validator.\n\n## 5. Keys stay yours\n\nThe solana CLI manages keypairs in its own config; the test validator\nairdrops localnet SOL. The IDE never sees key material.\n"
     }
   ]
 }

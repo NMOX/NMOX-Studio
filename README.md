@@ -47,7 +47,7 @@ Update later with `brew update && brew upgrade --cask nmox-studio`; remove clean
 ### 🎛️ The Task Rack
 Every web-dev task is a hardware device — knobs, LEDs, LCDs, patch cables.
 Wire OK jacks together (Tab flips the rack) and one keypress runs install →
-build → test, with output scrolling on a phosphor monitor. 52 devices:
+build → test, with output scrolling on a phosphor monitor. 53 devices:
 package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
 QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
@@ -192,7 +192,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **79 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **80 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
@@ -395,7 +395,7 @@ NMOX-Studio/
 │   ├── javascript/        # Regex-aware JavaScript lexer
 │   └── outline/           # Structure navigator (⌘7)
 ├── rack/                   # The Task Rack: hardware-styled task devices
-│   ├── devices/           # The 52 rack devices
+│   ├── devices/           # The 53 rack devices
 │   ├── engine/            # Patch execution (wire OK jacks → run pipeline)
 │   ├── docker/            # HARBOR device + Docker panel
 │   └── projectstudio/     # Project Studio templates
