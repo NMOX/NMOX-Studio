@@ -200,13 +200,13 @@ v1.101.0 (backslash quoting, CouchBackend cap, both dialog defaults,
 EXPLAIN single-statement gate, Apply 0-row guard, CSV formula
 injection) and deferred the lower-severity remainder:
 
-- **M5 (MED):** `reloadWorkspace()` reads `.nmoxdb.json` via
-  `loadWorkspaceGuarded` (plus a `.bak` copy on the corrupt path) and
-  scans the project `.env` (`offerEnvConnection`) synchronously ON THE
-  EDT, from `componentOpened` and every re-aim. Small local files, so
-  low blast radius, but a house-law-1 violation on a slow/networked
-  FS. Fix: the web3 v1.100.0 idiom — post the read to RP, marshal the
-  parsed workspace back with a newest-wins sequence.
+- **M5 (MED): CLOSED (v1.119.0).** `reloadWorkspace` posts the save-lane
+  drain + file read + own-write stamp to RP and marshals the parsed
+  workspace back with a newest-wins `reloadSeq` (the web3 v1.100.0
+  idiom; teardown waits for the read so the tab never shows an empty
+  in-between). `offerEnvConnection` keeps its once-per-project guard on
+  the EDT and reads `.env` on RP. `ReloadOffEdtGateTest` pins both
+  structurally (mutation-proven).
 - **M4 (MED): CLOSED (v1.116.0).** `JdbcCore.cell` caps each cell at
   64k chars; CLOB/NCLOB read only a capped prefix via `getSubString`,
   BLOB/binary render as `[N bytes]` (never stringified), oversize text

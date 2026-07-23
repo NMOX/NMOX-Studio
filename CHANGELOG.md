@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.119.0] - 2026-07-23
+
+### DB Studio reload leaves the paint thread (ledger 54 M5 — the deferred MED)
+
+- `reloadWorkspace()` read `.nmoxdb.json` (plus its save-lane drain and the
+  own-write stamp's file stat) and scanned the project `.env` synchronously
+  on the EDT, from `componentOpened` and every re-aim — a slow or networked
+  filesystem stalled the paint thread. All of it now rides RP (the web3
+  v1.100.0 idiom): drain → read → stamp off-EDT, then the parsed workspace
+  marshals back under a newest-wins `reloadSeq` so an overlapping
+  re-aim/external-edit burst applies only the newest read; state teardown
+  waits for the read, so the tab never shows an empty in-between.
+- `offerEnvConnection` keeps its once-per-project guard on the EDT and moves
+  the `.env` stat + read + parse to RP, marshalling the suggestion back for
+  the already-configured check and the balloon.
+- `ReloadOffEdtGateTest` pins the structure (I/O inside `RP.post`,
+  seq-guarded apply) — mutation-proven; dbstudio 380 green. Ledger 54 is now
+  down to L2 alone (Couch TLS opt-in, a connection-spec schema change).
+
 ## [1.118.0] - 2026-07-22
 
 ### The Workbench detection lane widens — one hung mount no longer starves all rows
