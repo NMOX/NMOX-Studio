@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.123.0] - 2026-07-23
+
+### Ledger 55 closed — the editor debug/format remainder, all six items
+
+A docs-truth correction first: v1.122.0's notes claimed the deferred
+ledger was empty. It wasn't — items 55 (this release) and 56 (the
+capped-HTTP-read helper unification) were still open; 51 and 45 remain
+deferred with standing reasons (additive-when-needed / waits-on-platform).
+The claim is corrected in this release's docs.
+
+- **M1** — the DapProxy loopback socket pair leaked once per debug
+  session (production never calls `close()`; `endSession` only
+  half-closes). The pair is now reaped when the client pump hits clean
+  EOF — the client has closed its socket, so nothing unread can be
+  discarded and the v1.37.0 half-close law still holds. Mutation-proven.
+- **M2** — Prettier's timeout used `destroyForcibly()` (a node wrapper's
+  grandchild survives); now `killTreeAndWait`. The stdout drain is a
+  daemon and bounded: it reads a capped prefix (8 MB) then discards to
+  EOF, and output past the cap is REFUSED outright — a truncated format
+  result written into the document would destroy the file's tail.
+  Cap refusal mutation-proven.
+- **L3** — a malformed `startDebugging` reverse request was acked
+  success before its configuration parsed, leaving js-debug believing a
+  child launched that never would. Parse-before-ack: malformed = honest
+  failure response, no child dialed. Mutation-proven.
+- **L1** — the Go-debug free-port probe bound `new ServerSocket(0)` to
+  every interface; now loopback-only like JsDebugServer's.
+- **L4** — the completion identifier harvest re-lexed the WHOLE document
+  on every query (O(file) per keystroke); now a 200k-char window around
+  the caret — ordinary files see no change, 1 MB files stop paying.
+- **L5** — IDE force-quit leaked the throwaway Chrome debug profile dir;
+  live profiles now ride a shutdown-hook live-set (the JsDebugServer
+  reaper idiom), best-effort by design.
+- editor 442 green (+8: 2 DapProxy behavior, 2 exec behavior, 4 gates).
+
 ## [1.122.0] - 2026-07-23
 
 ### CouchDB speaks TLS — the deferred ledger is empty

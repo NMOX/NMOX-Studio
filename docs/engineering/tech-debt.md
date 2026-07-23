@@ -160,11 +160,26 @@ WebProjectActionProvider Run/Build/Test/Clean + NpmService.runCommand
 any new spawn site: gate at the call site; never assume the primitive
 is safe.**
 
-### 55. Editor: proxy socket leak + Prettier kill-tree + probe-port binding
+### 55. Editor: proxy socket leak + Prettier kill-tree + probe-port binding — CLOSED (v1.123.0)
 
 The 2026-07-20 dedicated editor review shipped its three HIGH findings
 in v1.102.0 (LSP + Prettier trust gates closing RCE-on-open/save, DAP
-frame cap closing the OOM) and deferred the lower-severity remainder:
+frame cap closing the OOM) and deferred the lower-severity remainder.
+All six closed in v1.123.0: **M1** the loopback pair is reaped when the
+client pump hits clean EOF (the client has closed — nothing unread can
+be discarded, so the half-close law holds; `clientPairClosed` probe,
+mutation-proven); **M2** the Prettier timeout runs `killTreeAndWait`,
+the drain is a daemon reading a capped prefix then discarding to EOF,
+and output past 8 MB is REFUSED outright — a truncated format result
+written into the document would destroy the file's tail (cap refusal
+mutation-proven); **L1** `freePort` binds loopback; **L3** the child
+configuration is parsed BEFORE the success ack, so a malformed
+`startDebugging` gets an honest failure response (mutation-proven);
+**L4** the completion identifier harvest lexes a 200k-char window
+around the caret instead of the whole file; **L5** live Chrome profile
+dirs ride a shutdown-hook live-set (the JsDebugServer reaper idiom) so
+a force-quit no longer leaks them. The original findings, for the
+record:
 
 - **M1 (MED):** `DapProxy.close()` is never called in production
   (`DapDebugAction.debugNode`/`BrowserDebugAction.debugChrome` create
