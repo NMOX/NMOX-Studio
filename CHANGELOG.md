@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.114.0] - 2026-07-22
+
+### The tools review lands — enablement off the directory walk, script runs off the RP lane
+
+- **HIGH — menu enablement no longer walks the project directory on the EDT**:
+  `isActionEnabled` (called at every menu/toolbar/selection refresh) resolved
+  the project kind via an uncached `ProjectInspector.detectKind` — dozens of
+  `listFiles` passes per call, a UI stall on network mounts. A 3s-TTL
+  `KindCache` turns a menu-paint storm into one scan per window (a project's
+  toolchain doesn't change between two paints); cache behavior test-pinned.
+- **MED — NPM Explorer script runs can no longer pin the service lane**:
+  `NpmService.runCommand` drained stdout to EOF *before* its 60s `waitFor` —
+  the EnvironmentDoctor bug class — so one double-clicked `npm run dev`
+  pinned a thread of the throughput-3 RP forever, and three wedged the lane
+  for the whole session. Runs now route through `CommandExecutor` (named
+  daemon pumps, future completes from onExit, kill/orphan guarantee at
+  shutdown); the trust gate stays ahead of the spawn (source-gate updated),
+  the returned accumulator stays capped at 4 MB.
+- **MED — the visible NPM Explorer coalesces re-aim storms**: `projectChanged`
+  refreshed per event while the tab was showing (the storm guard only covered
+  the hidden case) — N events meant N npm spawns + tree rebuilds. A 300ms
+  trailing-edge timer collapses a storm to one refresh, the v1.33.2
+  RefreshCoalescer law applied to the visible case.
+- From the first full dedicated tools review, which also verified all five
+  prior fix families HOLD (trust gates + 4MB cap, zero-boot-spawns,
+  node-publication self-echo guard, package-manager delegation, named RP);
+  its three LOWs (wizard EDT scaffolding, getDisplayName read,
+  install-path probes) → ledger 62.
+
 ## [1.113.0] - 2026-07-22
 
 ### The core LOW sweep — ledger 57, 58, 59 closed

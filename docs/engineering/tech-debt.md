@@ -135,6 +135,17 @@ EDT at all since v1.111.0 moved the recent-files stats off it). Fix by
 bounding the walk (interrupt/timeout) or isolating rows so one hung dir
 can't wedge the lane. From the first dedicated project-module review.
 
+### 62. tools-module LOWs: wizard EDT scaffolding, display-name read, install-path probes
+
+From the first full tools review (v1.114.0 fixed its HIGH+2 MED): (a)
+WebProjectWizardIterator.instantiate runs its ~8 small file writes on the
+EDT at wizard Finish — implement AsynchronousInstantiatingIterator; (b)
+WebProject.Info.getDisplayName reads package.json per call during Projects-
+window painting — cache or delegate to the mtime-cached ProjectInspector;
+(c) NpmExplorer's install/run path does lockfile isFile probes + a
+package.json read on the EDT before handing off. All LOW: small local
+reads, no storms. Fix together as a tools EDT-polish pass.
+
 ### The RCE spawn-gate class — CLOSED across editor (v1.102.0) + tools (v1.103.0)
 
 The systemic finding of the module-review arc: the IDE spawned a

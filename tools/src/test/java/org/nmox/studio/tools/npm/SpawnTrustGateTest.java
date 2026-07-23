@@ -50,8 +50,10 @@ class SpawnTrustGateTest {
         int m = src.indexOf("private CompletableFuture<String> runCommand(");
         assertThat(m).as("runCommand exists").isPositive();
         String body = src.substring(m, src.indexOf("\n    }\n", m));
+        // v1.114.0: the spawn is CommandExecutor.run (streams via its own
+        // pump threads — no RP pin, no drain-before-waitFor), not pb.start()
         int gate = body.indexOf("WorkspaceTrust.requestTrust(workingDir)");
-        int spawn = body.indexOf("pb.start()");
+        int spawn = body.indexOf("CommandExecutor.run(");
         assertThat(gate).as("the trust gate is present").isGreaterThan(0);
         assertThat(spawn).as("the spawn is present").isGreaterThan(0);
         assertThat(gate).as("trust is checked BEFORE the spawn").isLessThan(spawn);

@@ -69,6 +69,24 @@ public final class NpmExplorerTopComponent extends TopComponent {
     boolean refreshPending;
 
     /**
+     * Trailing-edge coalescer for the VISIBLE tab's aim-change refreshes:
+     * restart() per event, one refreshProjectView 300ms after the last —
+     * a re-aim storm becomes one npm spawn / tree rebuild, not N. (EDT-only;
+     * Swing Timer fires on the EDT, so no marshalling needed.)
+     */
+    final javax.swing.Timer refreshStorm = new javax.swing.Timer(300, e -> {
+        if (isShowing()) {
+            refreshProjectView();
+        } else {
+            refreshPending = true; // hidden mid-coalesce: defer to first show
+        }
+    }) {
+        {
+            setRepeats(false);
+        }
+    };
+
+    /**
      * Ledger 29 remainder (v1.48.0): when a Node project is found, its
      * directory's DataObject node becomes this window's activated nodes,
      * so the global selection keeps meaning the project while this tab is
@@ -119,7 +137,13 @@ public final class NpmExplorerTopComponent extends TopComponent {
                         // must not turn into a process storm behind a tab
                         // nobody can see
                         if (isShowing()) {
-                            refreshProjectView();
+                            // visible tabs coalesce too: AimNodePublisher's
+                            // own doc anticipates 100 projectChanged events
+                            // for one aim — a storm must collapse to ONE
+                            // trailing refresh, not one spawn/tree-rebuild
+                            // per event (the v1.33.2 RefreshCoalescer law,
+                            // applied to the visible case)
+                            refreshStorm.restart();
                         } else {
                             refreshPending = true;
                         }
