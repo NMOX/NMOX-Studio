@@ -192,7 +192,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **80 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **82 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack

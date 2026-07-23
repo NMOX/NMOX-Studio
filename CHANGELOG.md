@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.132.0] - 2026-07-23
+
+### CosmWasm + ink! — the Web3 arc's third tranche (82 learning spaces)
+
+- **Learning space #81: "CosmWasm (Cosmos)"** — a real contract with
+  `instantiate` and `query` entry points, tested natively against
+  `mock_dependencies()` (a whole in-memory chain). Live-proven: test
+  green on cosmwasm-std 3 from crates.io, first try.
+- **Learning space #82: "ink! (Polkadot)"** — the canonical flipper,
+  `#[ink::test]` running storage/constructor/messages off-chain.
+  Live-proven on ink 5 (6.0 is still beta — the pin follows stable).
+- Both tutorials point real chain work at SOLDER (wasmd, cargo-contract,
+  substrate-contracts-node) with keys staying in each CLI's own keyring.
+- Recorded for the arc's future premises: Cairo/Starknet and Move
+  (Aptos/Sui) are their own languages — full verticals with grammar
+  licensing recon, not spaces; built when chosen.
+
 ## [1.131.0] - 2026-07-23
 
 ### ANCHOR — Solana joins the rack (53rd device)
