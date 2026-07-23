@@ -1,5 +1,7 @@
 # Tutorial: Learning Spaces
 
+![The New Learning Space picker — search across the 78 tutorials, with the availability probe telling you up front whether this machine has the space's tool](../images/tabs/learning-spaces.png)
+
 A Learning Space is a self-contained sandbox for learning a language,
 framework, or library: NMOX Studio generates sample code, a walked
 tutorial, and a rack pre-wired with a **real in-rack REPL** you type

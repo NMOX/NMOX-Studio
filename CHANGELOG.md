@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.125.0] - 2026-07-23
+
+### Forge v2 — every tutorial is illustrated
+
+- DocsShots gains a dialog-shot phase: after the tab cycle it invokes an
+  action exactly as a menu click would, waits for its dialog (modal
+  dialogs pump a secondary event loop, so the forge's timers keep
+  firing), paints the dialog's ROOT PANE at 2x (the native title-bar
+  region isn't Swing-painted and landed as a black band on the first
+  attempt), disposes it — the blocked action returns with a CLOSED
+  verdict, nothing is created — and moves on. A dialog that never
+  appears is skipped with a log line, never a stalled run.
+- Two new shots close the gap: the New Learning Space picker (with the
+  live availability probe caught mid-verdict) and the Standards Kit
+  wizard. **13 of 13 tutorials illustrated.**
+- The shot→tutorial mapping test covers both maps with a combined
+  no-duplicates gate, and scripts/docs-shots.sh gates the two new files.
+
 ## [1.124.0] - 2026-07-23
 
 ### Ledger 56 closed — one capped HTTP-body read for the whole product

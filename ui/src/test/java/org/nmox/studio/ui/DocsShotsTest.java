@@ -20,15 +20,20 @@ class DocsShotsTest {
     void shotsMatchTutorials() {
         File tutorials = new File("../docs/tutorials");
         assertThat(tutorials).isDirectory();
-        for (String image : DocsShots.SHOTS.values()) {
+        java.util.List<String> all = new java.util.ArrayList<>(DocsShots.SHOTS.values());
+        all.addAll(DocsShots.DIALOG_SHOTS.values());
+        for (String image : all) {
             String page = image.replace(".png", ".md");
             assertThat(new File(tutorials, page))
                     .as("shot %s illustrates a real tutorial", image)
                     .isFile();
         }
-        assertThat(DocsShots.SHOTS.values())
-                .as("one image per tab, no duplicates")
+        assertThat(all)
+                .as("one image per shot, no duplicates across tabs and dialogs")
                 .doesNotHaveDuplicates();
+        // forge v2's reason to exist: the two dialog-only tutorials
+        assertThat(DocsShots.DIALOG_SHOTS.values())
+                .contains("learning-spaces.png", "wizards-and-kits.png");
     }
 
     @Test
