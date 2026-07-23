@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.118.0] - 2026-07-22
+
+### The Workbench detection lane widens — one hung mount no longer starves all rows
+
+- The toolchain-detection `RequestProcessor` goes from one lane to four
+  (ledger 61). A project directory on a hung network mount blocks its
+  `File.list` walk in uninterruptible kernel I/O; on a single lane that
+  starved every other row's detection for the session (chips stuck at
+  "detecting…"). Four lanes bound the damage to itself — it takes four
+  simultaneously wedged mounts to stall detection. Concurrent completion is
+  safe: each result targets its own chip/row and applies only if that
+  component is still in the tree. Test-pinned (a wedged lane no longer blocks
+  a fast detection — the test hangs on the old single-thread RP).
+
 ## [1.117.0] - 2026-07-22
 
 ### DB Studio connection hardening — ledger 54 L3 + L5

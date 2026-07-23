@@ -89,4 +89,38 @@ class WorkbenchDetectTest {
         assertThat(done.await(3, TimeUnit.SECONDS)).isTrue();
         assertThat(ran.get()).as("detection thread differs from the caller").isNotSameAs(caller);
     }
+
+    @Test
+    @DisplayName("A wedged detection on one lane doesn't starve a fast one (ledger 61)")
+    void oneWedgedDetectionDoesNotStarveOthers() throws Exception {
+        // the production detector has 4 lanes; a dir stuck in uninterruptible
+        // I/O must not block every other row's detection
+        RequestProcessor multi = new RequestProcessor("detect-widen-test", 4, true);
+        CountDownLatch wedgedStarted = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        CountDownLatch fastApplied = new CountDownLatch(1);
+
+        // lane 1: a dir that never returns until released (the hung mount)
+        WorkbenchDetect.detectAsync(multi, new File("/hung"), dir -> {
+            wedgedStarted.countDown();
+            try {
+                release.await(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return List.of();
+        }, names -> { });
+
+        assertThat(wedgedStarted.await(3, TimeUnit.SECONDS)).isTrue();
+
+        // lane 2: a fast dir — on a single-thread RP it would queue behind the
+        // wedged one forever; with 4 lanes it completes now
+        WorkbenchDetect.detectAsync(multi, new File("/fast"),
+                dir -> List.of("node"), names -> fastApplied.countDown());
+
+        assertThat(fastApplied.await(3, TimeUnit.SECONDS))
+                .as("the fast detection completed despite the wedged lane").isTrue();
+
+        release.countDown();
+    }
 }
