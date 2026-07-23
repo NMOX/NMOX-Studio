@@ -74,7 +74,7 @@ primitive every module's spawns route through) — was fixed in that
 release (4 M-char ceiling, keep-draining-to-EOF, `truncated` flag,
 20 MB-flood mutation proof). Its three LOW findings are deferred:
 
-### 57. `AtomicFiles.writeString` narrows file perms to 0600 on rewrite
+### 57. `AtomicFiles.writeString` narrows file perms to 0600 on rewrite — CLOSED (v1.113.0)
 
 `Files.createTempFile` makes the temp owner-only, and the `ATOMIC_MOVE`
 carries those perms onto the target — so atomically rewriting a `0644`
@@ -85,7 +85,7 @@ vs. `Files.writeString`, which honors umask. LOW: no functional impact —
 the owner always reads their own workspace files. Fix by re-applying the
 target's/umask perms after the move if a shared-perms need ever appears.
 
-### 58. `Versions.compare` throws on non-normalized public input
+### 58. `Versions.compare` throws on non-normalized public input — CLOSED (v1.113.0)
 
 `Integer.parseInt` on a version segment throws `NumberFormatException`
 on any non-numeric part (`compare("1.24.0-rc1", "1.24.0")`) or an
@@ -94,7 +94,7 @@ strings, so no live path throws; the risk is a future caller passing a
 raw/suffixed version. LOW/latent. Fix by parsing defensively or
 documenting the `extract()`-normalized precondition on the public method.
 
-### 59. `GitFacts.readFirstLine` reads a whole `.git` file to get one line
+### 59. `GitFacts.readFirstLine` reads a whole `.git` file to get one line — CLOSED (v1.113.0)
 
 `Files.readString` slurps the entire file before taking the first line.
 For real `.git/HEAD` and `gitdir:` pointers this is a few bytes, but the

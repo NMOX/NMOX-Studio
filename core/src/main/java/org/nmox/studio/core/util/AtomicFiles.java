@@ -29,9 +29,27 @@ public final class AtomicFiles {
     private AtomicFiles() {
     }
 
-    /** Writes UTF-8 text so that readers never observe a partial file. */
+    /**
+     * Writes UTF-8 text so that readers never observe a partial file.
+     *
+     * <p>Permissions: {@code createTempFile} makes the temp owner-only
+     * (0600) and the move carries that onto the target, silently narrowing
+     * a previously shared file — so an EXISTING target's POSIX permissions
+     * are captured first and re-applied after the move (ledger 57). A file
+     * created fresh by this method stays 0600: tighter is the safe default
+     * and consistent with the keyring-only secrets posture. Non-POSIX
+     * filesystems (Windows) skip both steps.
+     */
     public static void writeString(Path target, String content) throws IOException {
         Path dir = target.toAbsolutePath().getParent();
+        java.util.Set<java.nio.file.attribute.PosixFilePermission> keep = null;
+        try {
+            if (Files.exists(target)) {
+                keep = Files.getPosixFilePermissions(target);
+            }
+        } catch (UnsupportedOperationException | IOException nonPosixOrGone) {
+            keep = null; // Windows, or the target vanished — nothing to preserve
+        }
         Path tmp = Files.createTempFile(dir, target.getFileName().toString(), ".tmp");
         try {
             Files.writeString(tmp, content, StandardCharsets.UTF_8);
@@ -40,6 +58,13 @@ public final class AtomicFiles {
                         StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException fsCannotAtomicMove) {
                 Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+            if (keep != null) {
+                try {
+                    Files.setPosixFilePermissions(target, keep);
+                } catch (UnsupportedOperationException | IOException bestEffort) {
+                    // the write itself succeeded; perms stay at the temp's 0600
+                }
             }
         } finally {
             Files.deleteIfExists(tmp);
