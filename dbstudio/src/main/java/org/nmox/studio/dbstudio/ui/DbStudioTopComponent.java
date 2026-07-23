@@ -939,29 +939,44 @@ public final class DbStudioTopComponent extends TopComponent {
      */
     private void offerEnvConnection() {
         File dir = projectDir();
-        File envFile = new File(dir, ".env");
-        if (!envFile.isFile() || !envOfferedProjects.add(dir.getAbsolutePath())) {
+        // once-per-project guard on the EDT (the set is EDT-confined); the
+        // stat + read + parse ride RP — the other half of ledger 54 M5, so
+        // a slow/networked .env never touches the paint thread. Claiming
+        // the guard before the read keeps the offer idempotent even if two
+        // reloads race; a missing .env "wastes" the claim, which is fine —
+        // there is nothing to offer for that project anyway.
+        if (!envOfferedProjects.add(dir.getAbsolutePath())) {
             return;
         }
-        String content;
-        try {
-            content = Files.readString(envFile.toPath(), StandardCharsets.UTF_8);
-        } catch (IOException unreadable) {
-            return; // no signal, no offer
-        }
-        EnvConnections.fromEnv(content).ifPresent(suggestion -> {
-            if (WorkspaceEdits.alreadyConfigured(suggestion, specs)) {
+        RP.post(() -> {
+            File envFile = new File(dir, ".env");
+            if (!envFile.isFile()) {
                 return;
             }
-            org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Found database config in .env",
-                    javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                    "Create a \"" + suggestion.database() + "\" ("
-                    + suggestion.engine().displayName()
-                    + ") connection? Click to review — nothing is saved until you confirm.",
-                    e -> createFromSuggestion(suggestion),
-                    org.openide.awt.NotificationDisplayer.Priority.LOW);
+            String content;
+            try {
+                content = Files.readString(envFile.toPath(), StandardCharsets.UTF_8);
+            } catch (IOException unreadable) {
+                return; // no signal, no offer
+            }
+            EnvConnections.fromEnv(content).ifPresent(suggestion ->
+                    SwingUtilities.invokeLater(() -> maybeOfferEnv(suggestion)));
         });
+    }
+
+    /** EDT: shows the .env offer if it isn't already a workspace connection. */
+    private void maybeOfferEnv(EnvConnections.Suggestion suggestion) {
+        if (WorkspaceEdits.alreadyConfigured(suggestion, specs)) {
+            return;
+        }
+        org.openide.awt.NotificationDisplayer.getDefault().notify(
+                "Found database config in .env",
+                javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                "Create a \"" + suggestion.database() + "\" ("
+                + suggestion.engine().displayName()
+                + ") connection? Click to review — nothing is saved until you confirm.",
+                e -> createFromSuggestion(suggestion),
+                org.openide.awt.NotificationDisplayer.Priority.LOW);
     }
 
     private void createFromSuggestion(EnvConnections.Suggestion suggestion) {
@@ -1820,17 +1835,49 @@ public final class DbStudioTopComponent extends TopComponent {
         return new File(System.getProperty("user.home"));
     }
 
+    /** EDT-confined reload sequence; only {@link #reloadWorkspace} bumps it. */
+    private long reloadSeq;
+
     private void reloadWorkspace() {
-        // the read below must see every queued write — an A→B→A re-aim
-        // bounce could otherwise read A's file before A's last save lands
-        // (bounded ms drain; see SaveLane.flush)
-        SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        // The FILE READ (and the save-lane drain it must run behind) ride
+        // RP, never the EDT (ledger 54 M5; the web3 v1.100.0 idiom): a slow
+        // or networked filesystem stalls a worker, not the paint thread.
+        // State teardown waits for the loaded workspace so the tab never
+        // shows an empty in-between; the sequence makes the newest reload
+        // win an overlapping re-aim/external-edit burst — every re-aim
+        // routes through here (the rack listener), so a stale read of a
+        // previous project's dir is always superseded before it applies.
+        final File dir = projectDir();
+        final long seq = ++reloadSeq;
+        RP.post(() -> {
+            // the read must see every queued write — an A→B→A re-aim bounce
+            // could otherwise read A's file before A's last save lands; the
+            // save was queued on the EDT before this task was posted, so
+            // draining here preserves that ordering (bounded ms drain)
+            SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+            DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(dir);
+            // stamp the just-read file off-EDT too: Stamp.of stats the file,
+            // and the whole point of M5 is that no reload I/O touches paint
+            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp ownStamp =
+                    org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(
+                            new File(dir, org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME));
+            SwingUtilities.invokeLater(() -> {
+                if (seq != reloadSeq) {
+                    return; // a newer reload superseded this read
+                }
+                applyReloadedWorkspace(outcome, ownStamp);
+            });
+        });
+    }
+
+    /** EDT: swaps the studio onto a freshly read workspace. */
+    private void applyReloadedWorkspace(DbWorkspaceIO.LoadOutcome outcome,
+            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp ownStamp) {
         closeAllBackends();
         containerCache.clear();
         connecting.clear();
         activeSpecId = null;
         specs.clear();
-        DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(projectDir());
         DbWorkspaceIO.Workspace workspace = outcome.workspace();
         if (outcome.backup() != null) {
             // corrupt file: the IO layer copied it aside BEFORE handing us the
@@ -1862,9 +1909,9 @@ public final class DbStudioTopComponent extends TopComponent {
         status(specs.isEmpty() ? " "
                 : specs.size() + (specs.size() == 1 ? " connection" : " connections"), Color.GRAY);
         // the freshly loaded version is now "ours" — only later foreign
-        // writes should trigger the external-reload flow
-        externalEdits.recordOwn(org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(
-                new File(projectDir(), org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME)));
+        // writes should trigger the external-reload flow. The stamp was
+        // computed off-EDT right after the read (same file, same moment).
+        externalEdits.recordOwn(ownStamp);
         offerEnvConnection();
         if (isOpened()) {
             restartWorkspaceWatcher(); // the project dir may have changed
