@@ -44,10 +44,28 @@ public class DocsShots implements Runnable {
         SHOTS.put("BlockStudioTopComponent", "block-studio.png");
     }
 
+    /**
+     * Forge v2: dialog shots. "Category/action-id" → image name; the action
+     * is invoked exactly as a menu click would, the dialog it shows (modal
+     * dialogs pump a secondary event loop, so timers keep firing) is painted,
+     * then disposed — the blocked action returns with a CLOSED verdict and
+     * nothing is created.
+     */
+    static final Map<String, String> DIALOG_SHOTS = new LinkedHashMap<>();
+
+    static {
+        DIALOG_SHOTS.put("File/org.nmox.studio.ui.actions.NewLearningSpaceAction",
+                "learning-spaces.png");
+        DIALOG_SHOTS.put("File/org.nmox.studio.ui.actions.StandardsKitAction",
+                "wizards-and-kits.png");
+    }
+
     /** ms after selecting a tab before painting — lets componentShowing-deferred work land. */
     static final int SETTLE_MS = 2_500;
     /** ms after UI-ready before the first selection — lets the default-open set finish. */
     static final int WARMUP_MS = 5_000;
+    /** A dialog that hasn't appeared by now was never coming — skip, never stall. */
+    static final int DIALOG_TIMEOUT_MS = 20_000;
 
     @Override
     public void run() {
@@ -88,7 +106,7 @@ public class DocsShots implements Runnable {
 
         void next() {
             if (!queue.hasNext()) {
-                org.openide.LifecycleManager.getDefault().exit();
+                nextDialog();
                 return;
             }
             Map.Entry<String, String> shot = queue.next();
@@ -110,9 +128,12 @@ public class DocsShots implements Runnable {
         }
 
         private void capture(String filename) {
+            captureComponent(WindowManager.getDefault().getMainWindow(), filename);
+        }
+
+        private void captureComponent(java.awt.Component window, String filename) {
             try {
-                Frame main = WindowManager.getDefault().getMainWindow();
-                int w = main.getWidth(), h = main.getHeight();
+                int w = window.getWidth(), h = window.getHeight();
                 if (w <= 0 || h <= 0) {
                     return; // never NPE the run on a hidden window
                 }
@@ -121,7 +142,7 @@ public class DocsShots implements Runnable {
                         BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = img.createGraphics();
                 g.scale(2, 2);
-                main.paint(g);
+                window.paint(g);
                 g.dispose();
                 ImageIO.write(img, "png", new File(dir, filename));
             } catch (Exception ex) {
@@ -129,6 +150,80 @@ public class DocsShots implements Runnable {
                 // missing-file check reports it honestly
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
                         .warning("shot " + filename + " failed: " + ex);
+            }
+        }
+
+        // --- forge v2: dialog shots -----------------------------------------
+
+        private final java.util.Iterator<Map.Entry<String, String>> dialogQueue =
+                DIALOG_SHOTS.entrySet().iterator();
+
+        void nextDialog() {
+            if (!dialogQueue.hasNext()) {
+                org.openide.LifecycleManager.getDefault().exit();
+                return;
+            }
+            Map.Entry<String, String> shot = dialogQueue.next();
+            String[] parts = shot.getKey().split("/", 2);
+            javax.swing.Action action = org.openide.awt.Actions.forID(parts[0], parts[1]);
+            if (action == null) {
+                nextDialog(); // action not installed here — skip, never stall
+                return;
+            }
+            // invokeLater: a modal show blocks this actionPerformed, but the
+            // modal pump keeps dispatching — our timers below still fire
+            java.awt.EventQueue.invokeLater(() -> action.actionPerformed(
+                    new java.awt.event.ActionEvent(
+                            WindowManager.getDefault().getMainWindow(),
+                            java.awt.event.ActionEvent.ACTION_PERFORMED, "docs-shot")));
+            awaitDialog(shot.getValue(),
+                    System.currentTimeMillis() + DIALOG_TIMEOUT_MS);
+        }
+
+        private void awaitDialog(String filename, long deadline) {
+            javax.swing.Timer poll = new javax.swing.Timer(250, null);
+            poll.addActionListener(e -> {
+                java.awt.Dialog dialog = visibleDialog();
+                if (dialog != null) {
+                    poll.stop();
+                    javax.swing.Timer settle = new javax.swing.Timer(SETTLE_MS, e2 -> {
+                        // paint the root pane, not the window: the native
+                        // title-bar region isn't Swing-painted and would
+                        // land as a black band across every dialog shot
+                        java.awt.Component subject =
+                                dialog instanceof javax.swing.RootPaneContainer rpc
+                                        ? rpc.getRootPane() : dialog;
+                        captureComponent(subject, filename);
+                        closeAllDialogs(); // unblocks the modal actionPerformed
+                        nextDialog();
+                    });
+                    settle.setRepeats(false);
+                    settle.start();
+                } else if (System.currentTimeMillis() > deadline) {
+                    poll.stop();
+                    java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                            .warning("dialog for " + filename + " never appeared — skipped");
+                    nextDialog();
+                }
+            });
+            poll.start();
+        }
+
+        private static java.awt.Dialog visibleDialog() {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                if (w instanceof java.awt.Dialog d && d.isShowing()
+                        && d.getWidth() > 0 && d.getHeight() > 0) {
+                    return d;
+                }
+            }
+            return null;
+        }
+
+        private static void closeAllDialogs() {
+            for (java.awt.Window w : java.awt.Window.getWindows()) {
+                if (w instanceof java.awt.Dialog d && d.isShowing()) {
+                    d.dispose();
+                }
             }
         }
     }

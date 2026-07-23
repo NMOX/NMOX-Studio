@@ -1,5 +1,7 @@
 # Tutorial: Wizards & Kits
 
+![The Standards Kit wizard — robots.txt, sitemap, web manifest, RFC 9116 security.txt, and humans.txt generated from your answers](../images/tabs/wizards-and-kits.png)
+
 NMOX Studio ships several one-shot generators that add production-grade
 scaffolding to an existing project without clobbering your files. This
 tutorial adds a PWA to a web project; the others work the same way.

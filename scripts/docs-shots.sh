@@ -47,7 +47,8 @@ echo "== booting with nmox.shots.dir=$OUT_ABS (throwaway userdir + cachedir) =="
 echo "== shots =="
 missing=0
 for f in workbench the-task-rack project-studio db-studio contract-studio \
-         infra-designer api-studio docker-panel block-studio; do
+         infra-designer api-studio docker-panel block-studio \
+         learning-spaces wizards-and-kits; do
   if [ -s "$OUT_ABS/$f.png" ]; then
     echo "  ok   $f.png"
   else
