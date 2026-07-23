@@ -215,14 +215,16 @@ injection) and deferred the lower-severity remainder:
 - **L2 (LOW):** `CouchBackend.baseUrl()` hard-codes `http://`; there is
   no way to opt into TLS, so CouchDB credentials traverse cleartext.
   Fix: an https scheme/flag on the spec.
-- **L3 (LOW):** JDBC connects leave `allowLocalInfile` at driver
-  defaults; a malicious MySQL/MariaDB server could attempt
-  `LOAD DATA LOCAL INFILE`. Defense-in-depth: set it false explicitly.
+- **L3 (LOW): CLOSED (v1.117.0).** MySQL/MariaDB connects set
+  `allowLoadLocalInfile=false` + `allowLocalInfile=false`, so a
+  malicious/compromised server can't answer a query with a
+  `LOAD DATA LOCAL INFILE` request to read a client file. Test-pinned.
 - **L4 (LOW): CLOSED (v1.116.0).** `PeekQueries.consoleTextFor` builds
   the Mongo `find` name via `JSONObject.quote`, so a collection name
   with `"`/`\` yields valid JSON (parse-round-trip test-pinned).
-- **L5 (LOW):** backend password `char[]` clones are never zeroed in
-  `close()`. Minor hygiene; `Arrays.fill` the clone.
+- **L5 (LOW): CLOSED (v1.117.0).** `DbClient.close()` zeroes its
+  password clone (close is disposal — the backend is discarded from
+  the caller's map, so no reopen re-reads it). Test-pinned.
 
 
 ### 53. Infra Designer: mid-op canvas is live + re-aim edit loss (dialog-defaults CLOSED v1.98.0)
