@@ -59,12 +59,17 @@ class Ledger53RemainderTest {
         String tc = source("src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java");
         int run = tc.indexOf("private void runExclusive(");
         String runBody = tc.substring(run, tc.indexOf("\n    }\n", run));
-        assertThat(runBody).contains("opInFlight = true");
+        // a DEPTH, not a flag: the popup destroy path can queue a second op
+        // behind a running one, and a boolean's first finally lifted the
+        // lock while that op still ran (the v1.126.0 day-review finding)
+        assertThat(runBody).contains("opsInFlight++");
+        assertThat(runBody).contains("opsInFlight--");
+        assertThat(runBody).contains("if (opsInFlight == 0)");
         assertThat(runBody).contains("canvas.setLocked(true)");
         assertThat(runBody).contains("canvas.setLocked(false)");
         assertThat(runBody).contains("pendingReaim");
         int reaim = tc.indexOf("private void onProjectReaimed()");
-        assertThat(tc.substring(reaim, reaim + 400)).contains("if (opInFlight)");
+        assertThat(tc.substring(reaim, reaim + 400)).contains("if (opsInFlight > 0)");
     }
 
     @Test
