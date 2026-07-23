@@ -193,7 +193,7 @@ frame cap closing the OOM) and deferred the lower-severity remainder:
 
 ## Open — deferred deliberately, with reasons (added v1.95.2, the seventh review)
 
-### 54. DB Studio: EDT workspace read + LOB cell cap + cleartext-Couch hardening
+### 54. DB Studio remainder — FULLY CLOSED (M4/L4 v1.116.0, L3/L5 v1.117.0, M5 v1.119.0, L2 v1.122.0)
 
 The 2026-07-20 dedicated dbstudio review shipped seven fixes in
 v1.101.0 (backslash quoting, CouchBackend cap, both dialog defaults,
@@ -212,9 +212,12 @@ injection) and deferred the lower-severity remainder:
   BLOB/binary render as `[N bytes]` (never stringified), oversize text
   gets an honest `…[N chars, truncated]` marker — a giant LOB can no
   longer OOM the IDE. Live SQLite test-pinned.
-- **L2 (LOW):** `CouchBackend.baseUrl()` hard-codes `http://`; there is
-  no way to opt into TLS, so CouchDB credentials traverse cleartext.
-  Fix: an https scheme/flag on the spec.
+- **L2 (LOW): CLOSED (v1.122.0).** `ConnectionSpec` gains a `secure`
+  flag (delegating 8-arg constructor keeps every old call site; absent
+  key in a pre-v1.122.0 `.nmoxdb.json` loads as false — the cleartext
+  behavior those files always had, no migration). The connection dialog
+  shows "Use TLS (https)" for CouchDB only; `CouchBackend.baseUrl`
+  picks the scheme from it. Round-trip + old-file + scheme test-pinned.
 - **L3 (LOW): CLOSED (v1.117.0).** MySQL/MariaDB connects set
   `allowLoadLocalInfile=false` + `allowLocalInfile=false`, so a
   malicious/compromised server can't answer a query with a

@@ -122,6 +122,7 @@ public final class DbWorkspaceIO {
             cj.put("database", nz(spec.database()));
             cj.put("user", nz(spec.user()));
             cj.put("filePath", nz(spec.filePath()));
+            cj.put("secure", spec.secure());
             connections.put(cj);
         }
         root.put("connections", connections);
@@ -252,7 +253,10 @@ public final class DbWorkspaceIO {
                 cj.optInt("port", -1),
                 cj.optString("database", ""),
                 cj.optString("user", ""),
-                cj.optString("filePath", ""));
+                cj.optString("filePath", ""),
+                // absent in every pre-v1.122.0 file → false, the exact
+                // cleartext behavior those workspaces always had (54 L2)
+                cj.optBoolean("secure", false));
     }
 
     /**
