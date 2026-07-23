@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.128.0] - 2026-07-23
+
+### The floors ratchet — two days of new tests locked in
+
+The night shift and day shift added tests across every module (the
+module-review arc, the ledger closures, the day review). Measured line
+coverage on the testable surface now clears every floor by 4–28 points,
+so all ten floors rise to measured-minus-margin — a regression that
+sheds tests now fails the build instead of eroding silently:
+
+| module | floor | measured |
+|---|---|---|
+| core | 0.70 → 0.78 | 0.819 |
+| editor | 0.53 → 0.57 | 0.608 |
+| tools | 0.50 → 0.59 | 0.624 |
+| project | 0.48 → 0.73 | 0.765 |
+| ui | 0.10 → 0.13 | 0.164 |
+| rack | 0.60 → 0.69 | 0.728 |
+| apiclient | 0.76 → 0.81 | 0.844 |
+| dbstudio | 0.73 → 0.85 | 0.882 |
+| web3 | 0.80 → 0.87 | 0.901 |
+| infra | 0.72 → 0.73 | 0.764 |
+
+No floor was lowered; no exclusion changed. README's headline claims
+(51 devices, 78 learning spaces, 13 illustrated tutorials) re-verified
+against the code in passing.
+
 ## [1.127.0] - 2026-07-23
 
 ### plan.md tells the truth again
