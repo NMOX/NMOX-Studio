@@ -366,6 +366,83 @@ public final class ProjectInspector {
      * "v11.9.2" -> "11.9.2". Null when there is no readable lock or the
      * package is not in it.
      */
+    /** Cargo.toml text ceiling — a manifest is small; a crafted one stays cheap. */
+    private static final int CARGO_SCAN_CAP = 256 * 1024;
+
+    /**
+     * True when this directory's Cargo project speaks Soroban: its
+     * Cargo.toml mentions {@code soroban-sdk}, or (the {@code stellar
+     * contract init} workspace layout) any one-level member's does.
+     * Text scan, not a TOML parse — the crate name is distinctive.
+     */
+    public static boolean hasSorobanSdk(File dir) {
+        if (cargoTomlMentions(new File(dir, "Cargo.toml"), "soroban-sdk")) {
+            return true;
+        }
+        File[] children = dir.listFiles(File::isDirectory);
+        if (children == null) {
+            return false;
+        }
+        int scanned = 0;
+        for (File child : children) {
+            if (SKIP_DIRS.contains(child.getName()) || ++scanned > MAX_CHILD_SCAN) {
+                break;
+            }
+            if (cargoTomlMentions(new File(child, "Cargo.toml"), "soroban-sdk")) {
+                return true;
+            }
+            // stellar contract init nests members under contracts/<name>/
+            File[] grandchildren = child.listFiles(File::isDirectory);
+            if (grandchildren != null) {
+                for (File grandchild : grandchildren) {
+                    if (cargoTomlMentions(new File(grandchild, "Cargo.toml"), "soroban-sdk")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean cargoTomlMentions(File cargoToml, String needle) {
+        if (!cargoToml.isFile() || cargoToml.length() > CARGO_SCAN_CAP) {
+            return false;
+        }
+        try {
+            return Files.readString(cargoToml.toPath(),
+                    java.nio.charset.StandardCharsets.UTF_8).contains(needle);
+        } catch (Exception unreadable) {
+            return false;
+        }
+    }
+
+    /**
+     * The locked version of a crate from Cargo.lock, or null. Cargo.lock
+     * is INI-ish TOML: {@code [[package]]} blocks with {@code name = "x"}
+     * then {@code version = "y"} on the next lines.
+     */
+    public static String cargoLockVersion(File dir, String crate) {
+        File lock = new File(dir, "Cargo.lock");
+        if (!lock.isFile()) {
+            return null;
+        }
+        try {
+            boolean inCrate = false;
+            for (String line : Files.readAllLines(lock.toPath(),
+                    java.nio.charset.StandardCharsets.UTF_8)) {
+                String t = line.trim();
+                if (t.startsWith("name = ")) {
+                    inCrate = t.equals("name = \"" + crate + "\"");
+                } else if (inCrate && t.startsWith("version = \"") && t.endsWith("\"")) {
+                    return t.substring("version = \"".length(), t.length() - 1);
+                }
+            }
+        } catch (Exception ex) {
+            // unreadable or malformed lock: report unknown
+        }
+        return null;
+    }
+
     public static String composerLockVersion(File dir, String packageName) {
         File lock = new File(dir, "composer.lock");
         if (!lock.isFile()) {

@@ -270,6 +270,17 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 - **In:** `RUN` (trigger), `SERVE` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
+### STELLAR — Soroban Console — Stellar contracts: build, cargo test, local quickstart net
+
+> BUILD compiles the Soroban contract to WASM (stellar contract build); the ACTION knob
+> dials cargo test (the SDK runs contracts natively — no network) and the local quickstart net
+> (stellar container start/stop local — Docker; RPC on localhost:8000). Deploy/invoke need
+> identities and free-form args: use SOLDER (stellar contract deploy/invoke). Keys stay in the
+> stellar CLI's own config — the IDE never touches them.
+
+- **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger)
+
 ## OBSERVE
 
 ### INSPECTOR — Debug Launcher — debug servers with attach endpoints
