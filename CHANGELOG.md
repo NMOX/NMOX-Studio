@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.124.0] - 2026-07-23
+
+### Ledger 56 closed — one capped HTTP-body read for the whole product
+
+- New `core.http.HttpBodies`: `read`/`readUtf8` return
+  `Capped(text, byteLength, truncated)` — read at most the cap, probe one
+  byte for the truncation bit, decode. A gigabyte body costs the cap, not
+  the gigabyte (proven with a counting stream; cap mutation fatal).
+- All seven former `ofString` sites migrated: API Studio's ApiClient,
+  Contract Studio's JsonRpcClient, DB Studio's CouchBackend, the rack's
+  OracleClient and HTTP console, the infra DigitalOceanClient, and the
+  boot UpdateCheck. Truncation POLICY stays at each site — flag (API
+  Studio), refuse (JSON-RPC/CouchDB), shrug (display-only) — because
+  that is where the seven genuinely differ.
+- The v1.104.0 per-module source gates now pin routing through HttpBodies,
+  and a cross-module gate in core fails the build if any site re-inlines
+  the mechanics or reverts to `ofString`.
+- **The deferred ledger now holds no actionable open items** — 51 and 45
+  remain deferred with standing reasons (additive-when-needed /
+  waits-on-platform). This time the claim is checked against the ledger's
+  section headers, not asserted from memory.
+
 ## [1.123.0] - 2026-07-23
 
 ### Ledger 55 closed — the editor debug/format remainder, all six items
