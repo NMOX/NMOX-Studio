@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.133.0] - 2026-07-23
+
+### Multi-Chain Bench — the Web3 arc gets its preset
+
+- New rack preset: **Multi-Chain Bench** — STELLAR, ANCHOR, and ANVIL
+  side by side with one MONITOR. MAESTRO's TRIG 1/2 fire the Soroban
+  and Solana test lanes (both default to their no-network `cargo test`
+  actions, so the bench works tool-light), and the EVM devnet free-runs
+  beside them exactly as in Web3 Bench. One rack, three chains.
+- Preset wiring covered by the parameterized preset gate.
+
 ## [1.132.0] - 2026-07-23
 
 ### CosmWasm + ink! — the Web3 arc's third tranche (82 learning spaces)
