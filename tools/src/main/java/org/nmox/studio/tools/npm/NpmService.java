@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.nmox.studio.rack.engine.CommandExecutor;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -148,65 +149,41 @@ public class NpmService {
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(workingDir)) {
             return CompletableFuture.completedFuture("");
         }
-        return CompletableFuture.supplyAsync(() -> {
-            InputOutput io = IOProvider.getDefault().getIO("NPM Output", false);
-            io.select();
-            OutputWriter out = io.getOut();
-            OutputWriter err = io.getErr();
-
-            try {
-                out.println("Running: " + String.join(" ", command));
-                out.println("Directory: " + workingDir.getAbsolutePath());
-                out.println("----------------------------------------");
-
-                ProcessBuilder pb = org.nmox.studio.core.process.ProcessSupport.builder(java.util.List.of(command));
-                pb.directory(workingDir);
-                pb.redirectErrorStream(true);
-
-                Process process = pb.start();
-                StringBuilder output = new StringBuilder();
-
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(process.getInputStream(),
-                                java.nio.charset.StandardCharsets.UTF_8))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        out.println(line);
-                        // stream to the window always; bound the returned
-                        // accumulator so a runaway/verbose build can't OOM
+        // Route through CommandExecutor: its named daemon pump threads
+        // stream to the Output window and the future completes from onExit —
+        // no "NPM Service" RP thread sits draining stdout, so a long-running
+        // script (npm run dev / start / serve, one double-click away in NPM
+        // Explorer) can no longer pin the throughput-3 lane until the app
+        // exits, and there is no drain-to-EOF-before-waitFor unreachable
+        // timeout (the EnvironmentDoctor bug class, v1.106.0). The process
+        // rides CommandExecutor's kill/orphan guarantee at shutdown.
+        CompletableFuture<String> done = new CompletableFuture<>();
+        StringBuilder output = new StringBuilder();
+        CommandExecutor.run("NPM Output", workingDir, java.util.Map.of(),
+                java.util.List.of(command),
+                line -> {
+                    synchronized (output) {
+                        // bound the returned accumulator so a runaway/verbose
+                        // build can't OOM; the window itself streams unbounded
                         if (output.length() < MAX_OUTPUT_CHARS) {
-                            output.append(line).append("\n");
+                            output.append(line).append('\n');
                         }
                     }
-                }
-                
-                // the read loop above already drained all output (it blocks
-                // until stdout closes), so the process should exit promptly;
-                // a generous grace then reap guards against a child that
-                // closes its pipe but never exits, without ever truncating a
-                // legitimately slow build (whose output had to finish first)
-                if (!process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS)) {
-                    process.destroyForcibly();
-                    throw new RuntimeException("Command did not exit after its output ended");
-                }
-                int exitCode = process.exitValue();
-                if (exitCode != 0) {
-                    err.println("Command failed with exit code: " + exitCode);
-                    throw new RuntimeException("Command failed with exit code: " + exitCode + "\nOutput: " + output);
-                } else {
-                    out.println("----------------------------------------");
-                    out.println("Command completed successfully");
-                }
-                
-                return output.toString();
-            } catch (IOException | InterruptedException e) {
-                err.println("Failed to execute command: " + e.getMessage());
-                throw new RuntimeException("Failed to execute command: " + String.join(" ", command), e);
-            } finally {
-                out.close();
-                err.close();
-            }
-        }, RP);
+                },
+                exit -> {
+                    String text;
+                    synchronized (output) {
+                        text = output.toString();
+                    }
+                    if (exit == 0) {
+                        done.complete(text);
+                    } else {
+                        done.completeExceptionally(new RuntimeException(
+                                "Command failed with exit code: " + exit
+                                        + "\nOutput: " + text));
+                    }
+                });
+        return done;
     }
     
     /**

@@ -90,12 +90,48 @@ final class WebProjectActionProvider implements ActionProvider {
         CommandExecutor.showOutput(label);
     }
 
+    /**
+     * The kind cache behind {@code isActionEnabled}: the platform calls
+     * enablement on the EDT at every menu/toolbar/selection refresh, and
+     * {@code ProjectInspector.detectKind} walks the project directory
+     * (dozens of listFiles passes across ~35 kinds — a network mount could
+     * stall the UI per menu open). A short TTL turns that into one scan per
+     * window, with staleness bounded at {@code KIND_TTL_MS} — a project's
+     * toolchain does not change between two menu paints.
+     */
+    static final long KIND_TTL_MS = 3_000;
+    private final KindCache kindCache = new KindCache(KIND_TTL_MS,
+            ProjectInspector::detectKind);
+
+    /** TTL memo for the detected kind; pure and injectable for tests. */
+    static final class KindCache {
+        private final long ttlMs;
+        private final java.util.function.Function<File, ProjectKind> detector;
+        private volatile ProjectKind kind;
+        private volatile long at;
+
+        KindCache(long ttlMs, java.util.function.Function<File, ProjectKind> detector) {
+            this.ttlMs = ttlMs;
+            this.detector = detector;
+        }
+
+        ProjectKind get(File dir, long now) {
+            ProjectKind k = kind;
+            if (k == null || now - at > ttlMs) {
+                k = detector.apply(dir);
+                kind = k;
+                at = now;
+            }
+            return k;
+        }
+    }
+
     private List<String> resolve(String command) {
         File dir = FileUtil.toFile(project.getProjectDirectory());
         if (dir == null) {
             return null;
         }
-        ProjectKind kind = ProjectInspector.detectKind(dir);
+        ProjectKind kind = kindCache.get(dir, System.currentTimeMillis());
         return WebProjectCommands.commandFor(dir, kind, command);
     }
 
