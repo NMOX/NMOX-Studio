@@ -21,7 +21,12 @@ final class PeekQueries {
         return switch (engine.kind()) {
             case SQL -> "SELECT * FROM " + qualified(engine, table) + " LIMIT " + limit + ";";
             case DOCUMENT -> engine == DbEngine.MONGODB
-                    ? "{\"find\": \"" + table.name() + "\", \"limit\": " + limit + "}"
+                    // quote the name properly: a collection with a " or \ in
+                    // it would otherwise yield malformed auto-run JSON (ledger
+                    // 54 L4). JSONObject.quote returns the value WITH its
+                    // surrounding quotes.
+                    ? "{\"find\": " + org.json.JSONObject.quote(table.name())
+                            + ", \"limit\": " + limit + "}"
                     : "{\"selector\": {}, \"limit\": " + limit + "}";
         };
     }

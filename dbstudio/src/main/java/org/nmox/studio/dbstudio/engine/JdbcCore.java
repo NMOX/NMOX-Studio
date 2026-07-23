@@ -150,6 +150,49 @@ final class JdbcCore {
         return results;
     }
 
+    /**
+     * Per-cell character ceiling (ledger 54 M4). The row cap bounds row
+     * COUNT, but a single multi-hundred-MB BLOB/CLOB/{@code bytea} was fully
+     * materialized by {@code getString} — one such cell could OOM the IDE
+     * despite a tiny result. A grid cell can't usefully show more than this
+     * anyway; oversize values are truncated with an honest marker.
+     */
+    static final int MAX_CELL_CHARS = 64 * 1024;
+
+    /**
+     * One cell as display text, capped at {@link #MAX_CELL_CHARS}. For LOB
+     * columns the length is checked from metadata FIRST so a giant value is
+     * never fully pulled into a String — only its capped prefix is read.
+     */
+    static String cell(ResultSet rs, int c) throws SQLException {
+        int type = rs.getMetaData().getColumnType(c);
+        if (type == java.sql.Types.CLOB || type == java.sql.Types.NCLOB) {
+            java.sql.Clob clob = rs.getClob(c);
+            if (clob == null) {
+                return "NULL";
+            }
+            long len = clob.length();
+            String prefix = clob.getSubString(1, (int) Math.min(len, MAX_CELL_CHARS));
+            return len > MAX_CELL_CHARS ? prefix + " …[" + len + " chars, truncated]" : prefix;
+        }
+        if (type == java.sql.Types.BLOB || type == java.sql.Types.LONGVARBINARY
+                || type == java.sql.Types.VARBINARY || type == java.sql.Types.BINARY) {
+            java.sql.Blob blob = rs.getBlob(c);
+            if (blob == null) {
+                return "NULL";
+            }
+            return "[" + blob.length() + " bytes]"; // never stringify binary
+        }
+        String value = rs.getString(c);
+        if (value == null) {
+            return "NULL";
+        }
+        return value.length() > MAX_CELL_CHARS
+                ? value.substring(0, MAX_CELL_CHARS) + " …[" + value.length()
+                        + " chars, truncated]"
+                : value;
+    }
+
     private static QueryResult executeOne(Connection connection, String statementSql,
             int rowLimit, CancelHook hook) {
         long start = System.nanoTime();
@@ -177,8 +220,7 @@ final class JdbcCore {
                     }
                     List<String> row = new ArrayList<>(columnCount);
                     for (int c = 1; c <= columnCount; c++) {
-                        String value = rs.getString(c);
-                        row.add(value == null ? "NULL" : value);
+                        row.add(cell(rs, c));
                     }
                     rows.add(row);
                 }

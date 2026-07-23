@@ -61,4 +61,31 @@ class JdbcCoreTest {
             assertThat(borrowed.isClosed()).isFalse();
         }
     }
+
+    @Test
+    @DisplayName("A huge cell is truncated with an honest marker — never fully materialized (ledger 54 M4)")
+    void oversizedCellIsCapped(@TempDir Path dir) throws SQLException {
+        try (Connection c = DriverManager.getConnection(
+                "jdbc:sqlite:" + dir.resolve("big.db"))) {
+            JdbcCore.CancelHook hook = new JdbcCore.CancelHook();
+            int huge = JdbcCore.MAX_CELL_CHARS * 3;
+            JdbcCore.runStatements(c,
+                    SqlSplitter.split("CREATE TABLE big (id INTEGER, blobtext TEXT);"),
+                    10, hook);
+            // one row whose text cell is 3x the ceiling
+            try (var st = c.prepareStatement("INSERT INTO big VALUES (1, ?)")) {
+                st.setString(1, "z".repeat(huge));
+                st.executeUpdate();
+            }
+            QueryResult r = JdbcCore.runStatements(c,
+                    SqlSplitter.split("SELECT blobtext FROM big;"), 10, hook).get(0);
+            String cell = r.rows().get(0).get(0);
+            assertThat(cell)
+                    .hasSizeLessThan(huge)
+                    .startsWith("zzz")
+                    .contains("truncated");
+            assertThat(cell).hasSizeLessThanOrEqualTo(
+                    JdbcCore.MAX_CELL_CHARS + 40); // prefix + short marker
+        }
+    }
 }

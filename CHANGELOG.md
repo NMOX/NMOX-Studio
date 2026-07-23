@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.116.0] - 2026-07-22
+
+### DB Studio: LOB cells can't OOM the grid, and Mongo peeks are valid JSON
+
+- **M4 — per-cell LOB cap**: a result grid materialized every cell via
+  `getString`, so a single multi-hundred-MB BLOB/CLOB/`bytea` could OOM the
+  IDE despite the row cap. New `JdbcCore.cell` caps text at 64k chars
+  (CLOB/NCLOB read only a capped prefix via `getSubString`), renders binary
+  as `[N bytes]` without ever stringifying it, and marks oversize text
+  honestly — live-SQLite test-pinned.
+- **L4 — JSON-safe Mongo peeks**: the auto-run `find` console text inlined
+  the collection name by string concatenation; a name with `"`/`\` produced
+  malformed JSON. It now builds via `JSONObject.quote` (parse-round-trip
+  pinned).
+- From the dbstudio review's deferred remainder (ledger 54); the M5 off-EDT
+  reload and L2/L3/L5 (Couch TLS, `allowLocalInfile`, password zeroing) stay
+  open as they touch the connection-spec schema.
+
 ## [1.115.0] - 2026-07-22
 
 ### The tools EDT polish — ledger 62 closed same-day
