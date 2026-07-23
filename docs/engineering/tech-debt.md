@@ -135,7 +135,7 @@ EDT at all since v1.111.0 moved the recent-files stats off it). Fix by
 bounding the walk (interrupt/timeout) or isolating rows so one hung dir
 can't wedge the lane. From the first dedicated project-module review.
 
-### 62. tools-module LOWs: wizard EDT scaffolding, display-name read, install-path probes
+### 62. tools-module LOWs: wizard EDT scaffolding, display-name read, install-path probes — CLOSED (v1.115.0)
 
 From the first full tools review (v1.114.0 fixed its HIGH+2 MED): (a)
 WebProjectWizardIterator.instantiate runs its ~8 small file writes on the

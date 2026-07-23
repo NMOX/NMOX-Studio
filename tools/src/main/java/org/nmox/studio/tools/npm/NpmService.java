@@ -190,11 +190,16 @@ public class NpmService {
      * Run a simple command string (for compatibility with NpmExplorerTopComponent)
      */
     public void runCommand(File projectDir, String command) {
-        List<String> parts = parseArguments(command);
-        List<String> cmdList = new ArrayList<>();
-        cmdList.add(getCommand(detectPackageManager(projectDir)));
-        cmdList.addAll(parts);
-        runCommand(projectDir, cmdList.toArray(new String[0]));
+        // dispatch off the caller's thread: detectPackageManager stats
+        // lockfiles and NPM Explorer calls this from the EDT (ledger 62c);
+        // requestTrust marshals its own dialog, so the RP hop is safe
+        RP.post(() -> {
+            List<String> parts = parseArguments(command);
+            List<String> cmdList = new ArrayList<>();
+            cmdList.add(getCommand(detectPackageManager(projectDir)));
+            cmdList.addAll(parts);
+            runCommand(projectDir, cmdList.toArray(new String[0]));
+        });
     }
 
     static List<String> parseArguments(String commandLine) {
