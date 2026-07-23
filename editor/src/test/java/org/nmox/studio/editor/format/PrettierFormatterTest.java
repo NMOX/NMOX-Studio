@@ -256,4 +256,39 @@ class PrettierFormatterTest {
         assertThat(formatter.format(huge, root.resolve("a.js").toFile())).isNull();
         assertThat(runs).hasValue(0);
     }
+
+    // ---- the real runner (ledger 55 M2) ------------------------------------
+
+    @Test
+    @DisplayName("exec captures a normal process's stdout with its exit code")
+    @org.junit.jupiter.api.Timeout(30)
+    @org.junit.jupiter.api.condition.DisabledOnOs(
+            value = org.junit.jupiter.api.condition.OS.WINDOWS,
+            disabledReason = "sh fixture; the exec path itself is OS-neutral")
+    void execCapturesNormalOutput() throws Exception {
+        PrettierFormatter.Result r = PrettierFormatter.exec(
+                List.of("sh", "-c", "cat"), root.toFile(), "hello world");
+        assertThat(r.exitCode()).isZero();
+        assertThat(r.stdout()).isEqualTo("hello world");
+    }
+
+    @Test
+    @DisplayName("output past the cap is refused outright — truncated text must never reach the document")
+    @org.junit.jupiter.api.Timeout(30)
+    @org.junit.jupiter.api.condition.DisabledOnOs(
+            value = org.junit.jupiter.api.condition.OS.WINDOWS,
+            disabledReason = "sh fixture; the cap check itself is OS-neutral")
+    void execRefusesOversizedOutput() throws Exception {
+        // ledger 55 M2: the old drain readAllBytes()'d without bound — a
+        // runaway formatter grew the heap unbounded. Worse than the OOM
+        // would be capping silently: writing a TRUNCATED format result into
+        // the document destroys the file's tail. Past the cap = refuse.
+        PrettierFormatter.Result r = PrettierFormatter.exec(
+                List.of("sh", "-c", "head -c " + (PrettierFormatter.OUTPUT_CAP_BYTES + 1024)
+                        + " /dev/zero"), root.toFile(), "");
+        assertThat(r.exitCode())
+                .as("oversized output collapses to the failure shape")
+                .isEqualTo(-1);
+        assertThat(r.stdout()).isEmpty();
+    }
 }

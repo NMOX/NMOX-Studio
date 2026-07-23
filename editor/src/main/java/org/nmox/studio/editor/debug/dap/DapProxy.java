@@ -111,6 +111,13 @@ public final class DapProxy {
         return spliced;
     }
 
+    /** Visible for tests: the loopback pair is fully reaped — the per-session
+     *  FD leak ledger 55 M1 named. True only after the client closed its
+     *  socket and the client pump swept up on clean EOF. */
+    boolean clientPairClosed() {
+        return proxySideClient.isClosed() && actionSideClient.isClosed();
+    }
+
     /** Stream pair for {@code DAPConfiguration.create} — the client side. */
     public InputStream clientInput() throws IOException {
         return actionSideClient.getInputStream();
@@ -233,15 +240,27 @@ public final class DapProxy {
             LOG.log(Level.FINE, "declined reverse request {0}", command);
             return;
         }
-        respond(from, frame, true, null);
         if (childSocket != null) {
             // one child per session; launch config disables auto-attach so
             // this only fires for exotic targets — run them undebugged
+            respond(from, frame, true, null);
             LOG.log(Level.INFO, "ignoring additional js-debug target");
             return;
         }
-        childConfiguration = frame.getJSONObject("arguments")
-                .getJSONObject("configuration");
+        // parse BEFORE acking success: a malformed configuration used to be
+        // acked first, so the parent believed a child launched that never
+        // would (the getJSONObject throw landed in the pump's catch)
+        JSONObject configuration;
+        try {
+            configuration = frame.getJSONObject("arguments")
+                    .getJSONObject("configuration");
+        } catch (org.json.JSONException ex) {
+            respond(from, frame, false, "malformed startDebugging configuration");
+            LOG.log(Level.INFO, "refused malformed startDebugging", ex);
+            return;
+        }
+        respond(from, frame, true, null);
+        childConfiguration = configuration;
         Socket child = dial(adapterPort);
         childSocket = child;
         pump("nmox-dap-child", child, this::onChildFrame);
@@ -352,6 +371,7 @@ public final class DapProxy {
 
     private void pump(String name, Socket socket, FrameHandler handler) {
         Thread t = new Thread(() -> {
+            boolean peerClosed = false;
             try {
                 InputStream in = socket.getInputStream();
                 String json;
@@ -363,12 +383,23 @@ public final class DapProxy {
                         LOG.log(Level.INFO, "DAP frame handling failed", ex);
                     }
                 }
+                peerClosed = true;   // clean EOF: the far side closed its socket
             } catch (IOException ex) {
                 LOG.log(Level.FINE, name + " pump ended", ex);
             } finally {
                 // a dropped link ends the session; it must not slam the
                 // client's socket shut on top of frames it hasn't read
                 endSession();
+                // ...but once the CLIENT's own socket has hit clean EOF, the
+                // client is gone and has read everything it ever will — the
+                // loopback pair can be reaped. Nothing else ever closes it in
+                // production (close() is the owner's call and no owner holds
+                // the proxy), so this is where the per-session FD pair used
+                // to leak.
+                if (socket == proxySideClient && peerClosed) {
+                    closeQuietly(proxySideClient);
+                    closeQuietly(actionSideClient);
+                }
             }
         }, name);
         t.setDaemon(true);

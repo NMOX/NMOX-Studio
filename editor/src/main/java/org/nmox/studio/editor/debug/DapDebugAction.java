@@ -3,6 +3,7 @@ package org.nmox.studio.editor.debug;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.List;
@@ -239,7 +240,10 @@ public class DapDebugAction extends BaseAction {
     }
 
     private static int freePort() throws IOException {
-        try (java.net.ServerSocket s = new java.net.ServerSocket(0)) {
+        // loopback-bound like JsDebugServer.freePort — the probe must never
+        // open (however briefly) a listener on every interface
+        try (java.net.ServerSocket s = new java.net.ServerSocket(
+                0, 1, InetAddress.getLoopbackAddress())) {
             return s.getLocalPort();
         }
     }

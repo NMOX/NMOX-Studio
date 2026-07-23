@@ -33,6 +33,9 @@ public final class PrettierFormatter {
     static final int MAX_CHARS = 512_000;
     /** A hung prettier is killed after this many milliseconds. */
     static final long TIMEOUT_MS = 5_000;
+    /** Formatted output ceiling (~8 MB): larger means something is wrong,
+     *  and a truncated result must never be written into the document. */
+    static final int OUTPUT_CAP_BYTES = 8 * 1024 * 1024;
 
     /** Every filename Prettier recognizes as its own configuration. */
     static final List<String> CONFIG_FILES = List.of(
@@ -190,7 +193,7 @@ public final class PrettierFormatter {
     }
 
     /** The real runner: stdout drained on its own thread, stdin fed, hard timeout. */
-    private static Result exec(List<String> command, File workDir, String stdin)
+    static Result exec(List<String> command, File workDir, String stdin)
             throws IOException, InterruptedException {
         ProcessBuilder pb = ProcessSupport.builder(command);
         pb.directory(workDir);
@@ -202,21 +205,34 @@ public final class PrettierFormatter {
         AtomicReference<byte[]> output = new AtomicReference<>(new byte[0]);
         Thread drain = new Thread(() -> {
             try (InputStream in = process.getInputStream()) {
-                output.set(in.readAllBytes());
+                // cap+1 so overflow is detectable, then keep draining to EOF
+                // (never applied — see below) so the child can't pipe-deadlock
+                output.set(in.readNBytes(OUTPUT_CAP_BYTES + 1));
+                in.transferTo(OutputStream.nullOutputStream());
             } catch (IOException ex) {
                 // process died; the exit code tells the story
             }
         }, "prettier-stdout");
+        drain.setDaemon(true);   // an unbounded read must never pin shutdown
         drain.start();
         try (OutputStream out = process.getOutputStream()) {
             out.write(stdin.getBytes(StandardCharsets.UTF_8));
         }
         if (!process.waitFor(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
-            process.destroyForcibly();
+            // a node wrapper's grandchild survives destroyForcibly(); the
+            // tree kill is the orphan guarantee every other spawn honors
+            ProcessSupport.killTreeAndWait(process, java.time.Duration.ofSeconds(2));
             LOG.log(Level.INFO, "prettier timed out after {0} ms, killed", TIMEOUT_MS);
             return new Result(-1, "");
         }
         drain.join(1_000);
-        return new Result(process.exitValue(), new String(output.get(), StandardCharsets.UTF_8));
+        byte[] bytes = output.get();
+        if (bytes.length > OUTPUT_CAP_BYTES) {
+            // a truncated format result written into the document would
+            // destroy the file's tail — refuse it outright, save as-is
+            LOG.log(Level.INFO, "prettier output exceeded {0} bytes, refused", OUTPUT_CAP_BYTES);
+            return new Result(-1, "");
+        }
+        return new Result(process.exitValue(), new String(bytes, StandardCharsets.UTF_8));
     }
 }

@@ -57,6 +57,19 @@ public class BrowserDebugAction extends BaseAction {
     /** Launches run off the EDT; interruptible daemon so it can never pin shutdown. */
     private static final RequestProcessor RP = new RequestProcessor("nmox-dap-browser", 1, true);
 
+    /** Throwaway Chrome profiles alive right now. The JsDebugServer reaper
+     *  kills the adapter+browser trees on IDE force-quit but never ran this
+     *  class's profile cleanup, so a profile dir leaked per interrupted
+     *  session (ledger 55 L5). Best-effort by design: a file Chrome still
+     *  holds at hook time survives — disk cost only, never correctness. */
+    private static final java.util.Set<Path> LIVE_PROFILES =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(
+                () -> LIVE_PROFILES.forEach(BrowserDebugAction::deleteRecursively),
+                "nmox-browser-profile-reaper"));
+    }
+
     public BrowserDebugAction() {
         super("nmox-debug-browser");
     }
@@ -156,6 +169,7 @@ public class BrowserDebugAction extends BaseAction {
         }
         Path profile = Files.createTempDirectory(
                 Places.getCacheSubdirectory("browser-debug").toPath(), "profile-");
+        LIVE_PROFILES.add(profile);
         JsDebugServer server = JsDebugServer.start(serverJs);
         // session over (terminated, disconnect, or a dropped link): stop()
         // confirms the adapter+browser tree dead — bounded — THEN the
@@ -163,6 +177,7 @@ public class BrowserDebugAction extends BaseAction {
         Runnable cleanup = () -> {
             server.stop();
             deleteRecursively(profile);
+            LIVE_PROFILES.remove(profile);
         };
         try {
             DapProxy proxy = DapProxy.start(server.port(), cleanup);

@@ -273,6 +273,54 @@ class DapProxyTest {
                 .as("clean EOF, not a slammed socket").isEqualTo(-1);
     }
 
+    @Test
+    @DisplayName("once the client closes its socket, the loopback pair is reaped — no FD leak per session")
+    void shouldReapClientPairAfterClientCloses() throws Exception {
+        // ledger 55 M1: production never calls close() (the proxy is a local
+        // in the debug actions), so endSession's half-close left BOTH pair
+        // sockets open for the IDE's lifetime — one leaked pair per debug
+        // session. The reap point is the client pump's clean EOF: the client
+        // has closed, nothing unread can be discarded.
+        spliceChild();
+        adapter.eventChild("terminated", new JSONObject());
+        client.awaitEvent("terminated");
+        assertThat(proxy.clientInput().read())
+                .as("half-close delivered first — the M1 fix must not regress it")
+                .isEqualTo(-1);
+
+        proxy.clientOutput().close();   // the platform client closing its socket
+
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (!proxy.clientPairClosed()) {
+            if (System.nanoTime() > deadline) {
+                throw new AssertionError("loopback pair never reaped after client close");
+            }
+            Thread.sleep(5);
+        }
+    }
+
+    @Test
+    @DisplayName("a malformed startDebugging is refused, not acked-then-dropped")
+    void shouldRefuseMalformedStartDebugging() throws Exception {
+        // ledger 55 L3: the proxy used to ack success FIRST, then throw
+        // parsing the configuration — the parent believed a child launched
+        // that never would. Parse-before-ack turns that into an honest no.
+        client.request("launch", new JSONObject().put("program", "/tmp/hello.js"));
+        adapter.respondParent(adapter.parentReceived(), new JSONObject());
+        client.awaitResponse("launch");
+
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch"));   // no "configuration" at all
+        JSONObject reply = adapter.parentReceived();
+        assertThat(reply.getString("command")).isEqualTo("startDebugging");
+        assertThat(reply.getBoolean("success"))
+                .as("malformed config = failure response, never a false yes")
+                .isFalse();
+        assertThat(adapter.connectionCount())
+                .as("no child connection is dialed for a refused request")
+                .isEqualTo(1);
+    }
+
     private void spliceChild() throws Exception {
         driveToChildDance();
         adapter.parentReceived(); // success reply to startDebugging
