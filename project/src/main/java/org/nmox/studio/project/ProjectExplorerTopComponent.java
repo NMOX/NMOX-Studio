@@ -85,9 +85,18 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     private final JPanel content = new JPanel();
     private final JPanel header = new JPanel();
-    /** Toolchain detection (File.list-heavy) runs here, never on the EDT. */
+    /**
+     * Toolchain detection (File.list-heavy) runs here, never on the EDT.
+     * Four lanes, not one (ledger 61): one project directory on a hung
+     * network mount blocks its walk in uninterruptible kernel I/O, and on a
+     * single-thread lane that starves every other row's detection for the
+     * session. Four lanes bound the damage — it takes four simultaneously
+     * wedged mounts to stall detection, versus one. Concurrent completion is
+     * safe: each result targets its own chip/row and is applied only if that
+     * component is still in the tree (see fillChipsAsync / addProjects).
+     */
     private final org.openide.util.RequestProcessor detector =
-            new org.openide.util.RequestProcessor("nmox-workbench-detect", 1, true);
+            new org.openide.util.RequestProcessor("nmox-workbench-detect", 4, true);
 
     /**
      * Collapses a burst of registry events into a single deferred refresh.

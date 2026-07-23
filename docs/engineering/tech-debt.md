@@ -123,7 +123,7 @@ stays capped (~400 KB worst case per pump). Terminator parity,
 flood truncation, post-flood continuation, and the \r\n boundary all
 test-pinned in `BoundedLineReadTest`.
 
-### 61. A hung mount can wedge the Workbench's single-thread detection lane
+### 61. A hung mount can wedge the Workbench's single-thread detection lane — CLOSED (v1.118.0)
 
 `WorkbenchDetect.detectAsync` walks project directories on the explorer's
 single-thread `detector` RP with no reachable timeout. One project dir on
