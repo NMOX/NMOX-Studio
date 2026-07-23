@@ -20,6 +20,10 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
 
     private static final Logger LOG = Logger.getLogger(JavaScriptCompletionProvider.class.getName());
 
+    /** Identifier-harvest window (chars, centered on the caret): bounds the
+     *  per-query re-lex so a huge file costs O(window), not O(file). */
+    static final int SCAN_WINDOW_CHARS = 200_000;
+
     private static final Map<String, List<JavaScriptMethod>> GLOBAL_OBJECTS = new HashMap<>();
     private static final Set<String> KEYWORDS = new HashSet<>();
     private static final List<JavaScriptSnippet> SNIPPETS = new ArrayList<>();
@@ -236,7 +240,16 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         private void addDocumentIdentifiers(CompletionResultSet resultSet, Document doc,
                 JavaScriptContext context, int caretOffset) throws BadLocationException {
             String prefix = context.prefix;
-            String source = doc.getText(0, doc.getLength());
+            // Bound the re-lex to a window around the caret: this runs on
+            // EVERY completion query, and lexing a whole 1 MB file per
+            // keystroke is the O(file) cost path ledger 55 L4 named. Nearby
+            // identifiers are the relevant ones anyway; a window edge can at
+            // worst split one token and yield a fragment, which prefix
+            // matching filters like any other non-match.
+            int windowStart = Math.max(0, caretOffset - SCAN_WINDOW_CHARS / 2);
+            int windowEnd = Math.min(doc.getLength(), caretOffset + SCAN_WINDOW_CHARS / 2);
+            String source = doc.getText(windowStart, windowEnd - windowStart);
+            int caretInWindow = caretOffset - windowStart;
             org.netbeans.api.lexer.Language<org.nmox.studio.editor.javascript.JavaScriptTokenId> language =
                     "text/typescript".equals(doc.getProperty("mimeType"))
                             ? org.nmox.studio.editor.typescript.TypeScriptLanguage.language()
@@ -249,8 +262,8 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
                     String name = ts.token().text().toString();
                     // skip the fragment being typed right now: any token
                     // the caret touches, not just one it sits at the end of
-                    if (ts.offset() <= caretOffset
-                            && caretOffset <= ts.offset() + name.length()) {
+                    if (ts.offset() <= caretInWindow
+                            && caretInWindow <= ts.offset() + name.length()) {
                         continue;
                     }
                     if (name.length() > 1 && !KEYWORDS.contains(name)
