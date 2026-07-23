@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.121.0] - 2026-07-23
+
+### Infra Designer: the canvas locks during live cloud operations (ledger 53 closed)
+
+- While a deploy / sync / refresh / destroy runs, the canvas now refuses
+  structural edits — node delete, wire connect, palette drop — under an
+  unmistakable red banner ("CLOUD OPERATION RUNNING — canvas locked"), every
+  cloud-op button is disabled, and a rack re-aim defers until the operation
+  finishes instead of loading another project's graph mid-plan. Deleting a
+  node mid-deploy could orphan a created-and-billed resource with no id
+  recorded; that whole class is now structurally impossible.
+- Property/label edits stay live during an op — they aren't structural and
+  can't orphan anything (documented scoping).
+- `runExclusive` was already the single choke point every cloud op rode
+  (throughput-1 RP, trigger disabled); the lock arms there and releases in
+  its marshalled finally, so no op path can bypass it. Source-gated; infra
+  211 green. **Ledger 53 is fully closed** — (a) v1.98.0, (c)/(d)/(e)
+  v1.120.0, (b) here.
+
 ## [1.120.0] - 2026-07-23
 
 ### Infra Designer: re-aim edit loss, worker-thread CME, and impostor 404s (ledger 53 c/d/e)

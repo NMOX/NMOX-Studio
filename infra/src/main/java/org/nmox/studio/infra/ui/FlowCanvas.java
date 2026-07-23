@@ -160,7 +160,32 @@ public class FlowCanvas extends JPanel {
         select(node, null);
     }
 
+    /**
+     * Structural-edit lock (ledger 53b): while a live cloud operation runs
+     * (deploy / destroy / sync), deleting a node mid-plan would orphan a
+     * created-and-billed resource with no id recorded. The designer locks
+     * the canvas for the operation's duration — delete, wire, and
+     * palette-drop are refused (property edits stay live: they are not
+     * structural and cannot orphan anything). Painted as a banner so the
+     * state is unmistakable. EDT-confined like every other canvas field:
+     * runExclusive arms it before posting and clears it in a marshalled
+     * finally, and every reader is a mouse/key/paint handler.
+     */
+    private boolean locked;
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+        repaint();
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
     private void deleteSelection() {
+        if (locked) {
+            return; // a cloud op is running — structural edits are refused
+        }
         if (selectedNode != null) {
             graph.removeNode(selectedNode);
             select(null, null);
@@ -374,6 +399,17 @@ public class FlowCanvas extends JPanel {
         for (InfraNode node : graph.getNodes()) {
             paintNode(g, node);
         }
+        if (locked) {
+            // unmistakable state: a cloud op is running, edits are refused
+            Graphics2D banner = (Graphics2D) gr.create();
+            banner.setColor(new Color(0xC6, 0x2B, 0x2B, 200));
+            banner.fillRect(0, 0, getWidth(), 26);
+            banner.setColor(Color.WHITE);
+            banner.setFont(banner.getFont().deriveFont(Font.BOLD, 12f));
+            banner.drawString("CLOUD OPERATION RUNNING — canvas locked until it finishes",
+                    12, 18);
+            banner.dispose();
+        }
         g.dispose();
     }
 
@@ -528,7 +564,7 @@ public class FlowCanvas extends JPanel {
             }
             if (wireFrom != null) {
                 InfraNode target = nodeAt(toWorld(e.getPoint()));
-                if (target != null) {
+                if (target != null && !locked) { // 53b: no wiring mid-op
                     graph.connect(wireFrom, target);
                 }
                 wireFrom = null;
@@ -576,6 +612,9 @@ public class FlowCanvas extends JPanel {
 
         @Override
         public boolean importData(TransferSupport support) {
+            if (locked) {
+                return false; // 53b: no palette drops mid-op
+            }
             try {
                 String name = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
                 NodeKind kind = NodeKind.valueOf(name);

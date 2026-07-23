@@ -227,7 +227,7 @@ injection) and deferred the lower-severity remainder:
   the caller's map, so no reopen re-reads it). Test-pinned.
 
 
-### 53. Infra Designer: mid-op canvas is live + re-aim edit loss (dialog-defaults CLOSED v1.98.0)
+### 53. Infra Designer: mid-op canvas + re-aim + CME + drift-404 — FULLY CLOSED (v1.98.0/v1.120.0/v1.121.0)
 
 The 2026-07-20 dedicated infra review (its first) found five MED
 sharp edges around real paid cloud resources. **(a) CLOSED (v1.98.0):**
@@ -248,11 +248,15 @@ sequencing preserved), so `GraphIO.toJson`'s autosave iteration can no
 longer race a worker `putAll` into a CME; (e) `deletedInCloud` matches
 the `HTTP 404:` status PREFIX — impostor 404s (proxy pages, resource
 names, retry-afters) no longer sever the deploy linkage; all
-test-pinned. Remaining MED: (b) the canvas + rack aim stay live during
-a live deploy/destroy, so a node deleted mid-plan can orphan a
-created-and-billed resource with no id recorded — an op-in-flight state
-machine (block structural edits + defer re-aim load during a cloud op),
-its own design decision. Tokens,
+test-pinned. **(b) CLOSED (v1.121.0):** the full structural lock. `runExclusive` —
+the one choke point every cloud op (deploy / sync / refresh / destroy)
+already rode — now arms `opInFlight` + `FlowCanvas.setLocked(true)` and
+disables every op button before posting; the canvas refuses delete,
+wire, and palette-drop while locked (painted as an unmistakable red
+banner; property edits stay live — not structural, cannot orphan), and
+a rack re-aim DEFERS (`pendingReaim`) instead of loading another
+project's graph mid-operation, honored the moment the op finishes.
+Source-gated. Ledger 53 is fully closed. Tokens,
 persistence atomicity, FlowCanvas loops, and listener lifecycle all
 CLEAN. The dialog-default fix (a) is the highest-value and cheapest —
 next infra release. Full report in the 2026-07-20 review.

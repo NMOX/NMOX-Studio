@@ -39,6 +39,30 @@ class Ledger53RemainderTest {
     }
 
     @Test
+    @DisplayName("Op-in-flight lock (53b): canvas refuses structural edits; TC defers re-aims")
+    void opLockGates() throws Exception {
+        String canvas = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/infra/ui/FlowCanvas.java"));
+        // the three structural entry points all check the lock
+        int del = canvas.indexOf("private void deleteSelection()");
+        assertThat(canvas.substring(del, del + 200)).contains("if (locked)");
+        assertThat(canvas).contains("target != null && !locked");
+        int drop = canvas.indexOf("public boolean importData(TransferSupport support)");
+        assertThat(canvas.substring(drop, drop + 200)).contains("if (locked)");
+        // the TC's one op choke point arms the lock and defers re-aims
+        String tc = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"));
+        int run = tc.indexOf("private void runExclusive(");
+        String runBody = tc.substring(run, tc.indexOf("\n    }\n", run));
+        assertThat(runBody).contains("opInFlight = true");
+        assertThat(runBody).contains("canvas.setLocked(true)");
+        assertThat(runBody).contains("canvas.setLocked(false)");
+        assertThat(runBody).contains("pendingReaim");
+        int reaim = tc.indexOf("private void onProjectReaimed()");
+        assertThat(tc.substring(reaim, reaim + 400)).contains("if (opInFlight)");
+    }
+
+    @Test
     @DisplayName("Designer source gate (53c): re-aim force-saves the OLD bound file before loading")
     void reaimForceSavesBoundFile() throws Exception {
         String src = Files.readString(Path.of(
