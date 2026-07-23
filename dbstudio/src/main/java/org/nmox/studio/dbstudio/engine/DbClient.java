@@ -144,6 +144,15 @@ public final class DbClient implements DbBackend {
             }
             connection = null;
         }
+        // zero the secret's in-memory copy (ledger 54 L5): the char[] is our
+        // own clone, so wiping it can't disturb the keyring source. Hygiene —
+        // shrinks the window a heap dump can recover the password. close()
+        // is disposal (AutoCloseable): the caller always discards the backend
+        // from its per-spec map here, so no reopen re-reads this password —
+        // a reopen after close is unsupported and would auth with the zeros.
+        if (password != null) {
+            java.util.Arrays.fill(password, '\0');
+        }
     }
 
     /**
@@ -250,7 +259,8 @@ public final class DbClient implements DbBackend {
         };
     }
 
-    private Properties credentials() {
+    /** Package-private for the security-hardening test (ledger 54 L3). */
+    Properties credentials() {
         Properties props = new Properties();
         if (spec.engine() != DbEngine.SQLITE) {
             if (spec.user() != null && !spec.user().isBlank()) {
@@ -258,6 +268,15 @@ public final class DbClient implements DbBackend {
             }
             if (password != null) {
                 props.setProperty("password", new String(password));
+            }
+            if (spec.engine() == DbEngine.MYSQL || spec.engine() == DbEngine.MARIADB) {
+                // defense-in-depth (ledger 54 L3): a malicious/compromised
+                // MySQL or MariaDB server can answer a benign query with a
+                // `LOAD DATA LOCAL INFILE` request to exfiltrate a file from
+                // THIS client's disk. DB Studio never uses local-infile, so
+                // refuse it explicitly rather than trust the driver default.
+                props.setProperty("allowLoadLocalInfile", "false");
+                props.setProperty("allowLocalInfile", "false"); // Connector/J name
             }
         }
         return props;

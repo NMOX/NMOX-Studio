@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.117.0] - 2026-07-22
+
+### DB Studio connection hardening — ledger 54 L3 + L5
+
+- **L3 — refuse LOAD DATA LOCAL INFILE**: MySQL/MariaDB connects now set
+  `allowLoadLocalInfile=false` + `allowLocalInfile=false`, so a
+  malicious/compromised server can't answer a benign query with a
+  local-infile request that reads a file off THIS client's disk. PostgreSQL
+  (not vulnerable to the MySQL-ism) is left untouched.
+- **L5 — zero the password clone**: `DbClient.close()` wipes its in-memory
+  password copy with `Arrays.fill`, shrinking the window a heap dump can
+  recover the secret. close() is disposal (the backend is discarded from the
+  per-spec map), so no reopen re-reads it; the caller's own array is never
+  touched. Both test-pinned. Ledger 54's M5 (off-EDT reload) + L2 (Couch TLS)
+  remain — they touch the connection-spec schema.
+
 ## [1.116.0] - 2026-07-22
 
 ### DB Studio: LOB cells can't OOM the grid, and Mongo peeks are valid JSON
