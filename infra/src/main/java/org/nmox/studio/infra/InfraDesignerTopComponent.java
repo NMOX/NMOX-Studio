@@ -287,17 +287,47 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * clicks can't interleave graph mutations and save() writes), with
      * the triggering button disabled until it finishes.
      */
+    /**
+     * EDT-confined: true while a cloud operation runs. While set, the
+     * canvas is structurally locked (ledger 53b — a node deleted mid-plan
+     * would orphan a created-and-billed resource with no id recorded), every
+     * cloud-op button is disabled, and a rack re-aim DEFERS instead of
+     * loading a different project's graph mid-operation.
+     */
+    private boolean opInFlight;
+    private boolean pendingReaim;
+
     private void runExclusive(JButton trigger, Runnable work) {
         if (trigger != null) {
             trigger.setEnabled(false);
         }
+        // the full lock (ledger 53b): canvas structural edits refused with a
+        // painted banner, all op buttons off, re-aims deferred until done
+        opInFlight = true;
+        canvas.setLocked(true);
+        deployButton.setEnabled(false);
+        syncButton.setEnabled(false);
+        destroyStackButton.setEnabled(false);
         RP.post(() -> {
             try {
                 work.run();
             } finally {
-                if (trigger != null) {
-                    SwingUtilities.invokeLater(() -> trigger.setEnabled(true));
-                }
+                SwingUtilities.invokeLater(() -> {
+                    opInFlight = false;
+                    canvas.setLocked(false);
+                    deployButton.setEnabled(true);
+                    syncButton.setEnabled(true);
+                    destroyStackButton.setEnabled(true);
+                    if (trigger != null) {
+                        trigger.setEnabled(true);
+                    }
+                    if (pendingReaim) {
+                        // the aim moved while the op ran; follow it now that
+                        // following can no longer tear the operation apart
+                        pendingReaim = false;
+                        onProjectReaimed();
+                    }
+                });
             }
         });
     }
@@ -650,6 +680,13 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * save here would have written the old graph into the NEW project).
      */
     private void onProjectReaimed() {
+        if (opInFlight) {
+            // a cloud op is mutating THIS graph; loading another project's
+            // design mid-operation would tear it apart (ledger 53b). The
+            // re-aim is honored the moment the op finishes.
+            pendingReaim = true;
+            return;
+        }
         if (saveDebounce.isRunning()) {
             saveDebounce.stop();
             save(); // boundDesignFile still points at the old project's file
