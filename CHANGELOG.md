@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.120.0] - 2026-07-23
+
+### Infra Designer: re-aim edit loss, worker-thread CME, and impostor 404s (ledger 53 c/d/e)
+
+- **(c) — the debounced save binds to its file**: `save()` wrote to the LIVE
+  aim's path, so a debounce window still holding the old project's edits
+  after a re-aim would have written the old graph into the NEW project's
+  file, and the plain re-aim dropped the last second of edits. The design
+  file now binds at load (`boundDesignFile`, the apiclient v1.35.1 idiom)
+  and `onProjectReaimed` stops the debounce and force-saves to the OLD file
+  before loading the new. Source-gated.
+- **(d) — cloud workers stop mutating the EDT-confined graph**: deploy id/ip
+  recording, drift's ip refresh and doId-clear, import placement (the
+  `props.putAll` that raced `GraphIO.toJson`'s autosave iteration into a
+  ConcurrentModificationException), and destroy's doId-clear all cross to
+  the EDT via `onModel` (invokeAndWait, so the deploy sequence still sees
+  each id before the next step's placeholders resolve).
+- **(e) — only a real 404 severs the deploy linkage**: drift matched
+  `"404"` anywhere in the error text; a proxy error page, a resource named
+  `web-404`, or a retry-after value would sever `doId` and orphan the
+  linkage. `deletedInCloud` now matches the `HTTP 404:` status prefix that
+  `send` reports. Test-pinned with impostor cases.
+- infra 210 green. Ledger 53 is down to (b) alone — the op-in-flight state
+  machine (block structural edits + defer re-aim during a live cloud op).
+
 ## [1.119.0] - 2026-07-23
 
 ### DB Studio reload leaves the paint thread (ledger 54 M5 — the deferred MED)

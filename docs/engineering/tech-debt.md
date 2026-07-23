@@ -237,15 +237,22 @@ Confirmation` sets `initialValue = OK_OPTION` and `setValue` never
 writes `defaultValue`; both confirms now use the full constructor with
 NO_OPTION, and Deploy the DialogDescriptor constructor with Cancel as
 initialValue; DialogSafetyTest source-gates it, mutation-proven.
-Remaining MED: (b) the canvas + rack aim stay live
-during a live deploy/destroy, so a node deleted mid-plan orphans a
-created-and-billed resource with no id recorded, or a re-aim saves the
-new project's graph; (c) `load()` on re-aim drops the last debounce
-window of edits (the force-save-before-re-aim law API Studio adopted
-in v1.35.1, never applied here); (d) cloud workers mutate `node.props`
-off the EDT while `GraphIO.toJson` iterates it on the EDT → CME aborts
-the autosave that just imported resources; (e) drift's `"404"`
-substring match severs the deploy linkage on any 404. Tokens,
+**(c)/(d)/(e) CLOSED (v1.120.0):** (c) the designer's debounced save
+binds to `boundDesignFile` at load (the apiclient v1.35.1 idiom) and a
+re-aim force-saves the pending window to the OLD project's file before
+loading the new — the last-second edit loss AND the old-graph-into-new-
+project clobber are both dead, source-gated; (d) every cloud-worker
+model mutation (deploy id/ip, drift ip/doId-clear, import placement,
+destroy's doId-clear) crosses to the EDT via `onModel` (invokeAndWait —
+sequencing preserved), so `GraphIO.toJson`'s autosave iteration can no
+longer race a worker `putAll` into a CME; (e) `deletedInCloud` matches
+the `HTTP 404:` status PREFIX — impostor 404s (proxy pages, resource
+names, retry-afters) no longer sever the deploy linkage; all
+test-pinned. Remaining MED: (b) the canvas + rack aim stay live during
+a live deploy/destroy, so a node deleted mid-plan can orphan a
+created-and-billed resource with no id recorded — an op-in-flight state
+machine (block structural edits + defer re-aim load during a cloud op),
+its own design decision. Tokens,
 persistence atomicity, FlowCanvas loops, and listener lifecycle all
 CLEAN. The dialog-default fix (a) is the highest-value and cheapest —
 next infra release. Full report in the 2026-07-20 review.
