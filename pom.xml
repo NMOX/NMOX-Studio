@@ -91,7 +91,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -320,7 +320,7 @@
              ledger items 3 and 23); the copies STAY. This single property only
              centralizes the VERSION STRING so Dependabot bumps all eight in one
              PR. Every module pom references ${orgjson.version}. -->
-        <orgjson.version>20260522</orgjson.version>
+        <orgjson.version>20260719</orgjson.version>
     </properties>
 
     <profiles>
