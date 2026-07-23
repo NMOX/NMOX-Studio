@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.130.0] - 2026-07-23
+
+### STELLAR — Stellar smart contracts join the rack (52nd device)
+
+Yes, you can write smart contracts on Stellar: Soroban contracts are
+Rust compiled to WASM, driven end to end by the `stellar` CLI — and now
+they are rack citizens.
+
+- **STELLAR, the Soroban console** (Frameworks shelf, Lumens gold):
+  BUILD runs `stellar contract build`; the ACTION knob dials
+  `cargo test` (the SDK's testutils run contracts natively — no network
+  needed) and the local quickstart network (`stellar container
+  start/stop local`, Docker under the hood, RPC URL emitted for SCOPE).
+  The version cluster compares Cargo.lock's soroban-sdk against the
+  newest crate on crates.io. No SERVING gate on purpose: the quickstart
+  container outlives the start process, and a gate we cannot keep
+  truthful stays off the plate (the v1.93.0 law). Deploy/invoke need
+  identities and free-form args — SOLDER's job, named in the how-to.
+- **The no-private-keys law holds by construction**: the stellar CLI
+  manages its own identities in its own config, exactly as anvil's
+  unlocked accounts sign for ANVIL. The IDE never sees key material.
+- **Detection without a new ProjectKind**: a Soroban project IS a Cargo
+  project — `hasSorobanSdk` lights the device from the root Cargo.toml
+  or the `stellar contract init` workspace layout, and a plain Rust
+  project greys honestly ("stellar contract init FIRST").
+- **Learning space #79: "Stellar (Soroban)"** — a real hello contract
+  with a native test, live-proven against real tools: `cargo test`
+  green with soroban-sdk 27 fetched from crates.io, `stellar contract
+  build` (CLI 27.0.0) produced a real 719-byte WASM. The live proof
+  caught two doc-truth bugs before ship: the sdk pin had to be 27 (a
+  "23" pin resolves an old soroban-env-host that no longer compiles)
+  and `rustup target add wasm32v1-none` is a named one-time setup step.
+- Doctor probes `stellar`; devices.md regenerated (52); detection
+  mutation-proven; rack 1154 green.
+
+Next in the arc: Solana/Anchor, then the survey-driven rest (CosmWasm,
+ink!, Cairo) as their premises prove honest.
+
 ## [1.129.0] - 2026-07-23
 
 ### Housekeeping — dependencies current, links whole, the frozen SPI re-proven
