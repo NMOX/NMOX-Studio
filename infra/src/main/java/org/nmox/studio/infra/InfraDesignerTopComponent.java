@@ -159,7 +159,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
             public void projectChanged() {
-                SwingUtilities.invokeLater(InfraDesignerTopComponent.this::load);
+                SwingUtilities.invokeLater(InfraDesignerTopComponent.this::onProjectReaimed);
             }
         };
         // listeners attach in componentOpened (and load() runs there), so a
@@ -635,6 +635,28 @@ public final class InfraDesignerTopComponent extends TopComponent {
         return aim != null ? aim.projectDir() : null;
     }
 
+    /**
+     * The file this designer's edits belong to — bound at load, NOT read
+     * live at save time (ledger 53c): a debounced save that fires after a
+     * re-aim must write the OLD project's graph to the OLD project's file,
+     * never clobber the new one. The apiclient v1.35.1 boundDir idiom.
+     */
+    private File boundDesignFile;
+
+    /**
+     * EDT, on every rack re-aim: force-save the pending debounce window to
+     * the OLD project's bound file BEFORE loading the new one (ledger 53c —
+     * the last second of edits used to silently vanish; worse, a live-file
+     * save here would have written the old graph into the NEW project).
+     */
+    private void onProjectReaimed() {
+        if (saveDebounce.isRunning()) {
+            saveDebounce.stop();
+            save(); // boundDesignFile still points at the old project's file
+        }
+        load(); // drains the save lane first, so the queued save always lands
+    }
+
     private void load() {
         // the read below must see every queued write — an A→B→A re-aim
         // bounce could otherwise read A's file before A's last save lands
@@ -643,6 +665,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         loading = true;
         try {
             File file = designFile();
+            boundDesignFile = file; // edits from here on belong to THIS file
             if (file.isFile()) {
                 // corrupt file: GraphIO copies it to .bak BEFORE handing back
                 // the empty fallback, so the next autosave can't destroy the
@@ -676,7 +699,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * the write must not retarget the edits.
      */
     private void save() {
-        File file = designFile();
+        // the bound file, not the live aim: after a re-aim the debounce may
+        // still hold the OLD project's edits (ledger 53c)
+        File file = boundDesignFile != null ? boundDesignFile : designFile();
         String json = GraphIO.toJson(graph).toString(2);
         SAVES.save(() -> writeSnapshot(file, json));
     }

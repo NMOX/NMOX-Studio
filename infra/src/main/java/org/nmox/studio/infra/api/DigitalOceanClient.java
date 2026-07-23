@@ -40,6 +40,41 @@ public final class DigitalOceanClient {
      * @param onStep (node, message) per state change
      * @return true when every step succeeded
      */
+    /**
+     * Runs a graph/node mutation on the EDT and waits for it (ledger 53d).
+     * The graph and its nodes are EDT-confined — the designer's autosave
+     * iterates {@code node.props} in {@code GraphIO.toJson} on the EDT, so a
+     * worker-thread {@code putAll} raced it into a
+     * ConcurrentModificationException that aborted the very autosave that
+     * had just imported resources. Every mutation this client makes now
+     * crosses to the EDT; waiting keeps the deploy sequence honest (a
+     * step's id must be recorded before the next step's placeholders
+     * resolve against it).
+     */
+    static void onModel(Runnable mutation) {
+        if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+            mutation.run();
+            return;
+        }
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(mutation);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (java.lang.reflect.InvocationTargetException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+    }
+
+    /**
+     * True only for a real HTTP 404 — the status {@code send} reports as the
+     * message PREFIX. The old {@code contains("404")} matched the digits
+     * anywhere (a proxy error page, a resource name, a retry-after value)
+     * and severed the deploy linkage on impostors (ledger 53e).
+     */
+    static boolean deletedInCloud(String message) {
+        return message != null && message.startsWith("HTTP 404:");
+    }
+
     public boolean execute(List<DoRequest> plan, InfraGraph graph,
             BiConsumer<InfraNode, String> onStep) {
         Map<String, String> ids = new ConcurrentHashMap<>();
@@ -64,11 +99,12 @@ public final class DigitalOceanClient {
                 JSONObject response = send(provider, step.method(), path, bodyText);
                 String doId = extractId(node == null ? null : node.kind, response);
                 if (node != null && doId != null && node.doId == null) {
-                    node.doId = doId;
+                    onModel(() -> node.doId = doId);
                     ids.put(node.id, doId);
                 }
                 if (node != null && ips.containsKey(node.id) && ips.get(node.id) != null) {
-                    node.ip = ips.get(node.id); // remember it: the SSH command needs it later
+                    // remember it: the SSH command needs it later
+                    onModel(() -> node.ip = ips.get(node.id));
                 }
                 // honesty over green lights: a created resource whose id we
                 // could not parse cannot be synced or destroyed later
@@ -493,7 +529,21 @@ public final class DigitalOceanClient {
      * in place: status, ip and blank props (a lost zoneId) update, but
      * values the user set deliberately stay untouched.
      */
+    /**
+     * Places one imported record into the graph ON THE EDT (ledger 53d):
+     * the sync worker calls this per record, and both the lookup stream and
+     * the props merge touch EDT-confined state — a worker-side
+     * {@code putAll} raced {@code GraphIO.toJson}'s autosave iteration into
+     * a CME. The model work lives in {@link #placeModel} so tests exercise
+     * the pure placement directly.
+     */
     static boolean place(InfraGraph graph, Grid grid, Imported record) {
+        boolean[] added = new boolean[1];
+        onModel(() -> added[0] = placeModel(graph, grid, record));
+        return added[0];
+    }
+
+    static boolean placeModel(InfraGraph graph, Grid grid, Imported record) {
         InfraNode existing = graph.getNodes().stream()
                 .filter(n -> record.doId().equals(n.doId)).findFirst().orElse(null);
         if (existing != null) {
@@ -620,13 +670,14 @@ public final class DigitalOceanClient {
                 JSONObject response = send(node.kind.provider(), "GET", path, "");
                 String ip = extractPublicIp(node.kind, response);
                 if (ip != null) {
-                    node.ip = ip; // ssh parity: the context menu offers root@ip
+                    // ssh parity: the context menu offers root@ip
+                    onModel(() -> node.ip = ip);
                 }
                 onStatus.accept(node, "live");
             } catch (IOException ex) {
                 String msg = ex.getMessage() == null ? "" : ex.getMessage();
-                if (msg.contains("404")) {
-                    node.doId = null; // the cloud is the truth: it is gone
+                if (deletedInCloud(msg)) {
+                    onModel(() -> node.doId = null); // the cloud is the truth: it is gone
                     onStatus.accept(node, "drifted: deleted in cloud");
                 } else {
                     onStatus.accept(node, "check failed: " + (msg.length() > 60 ? msg.substring(0, 60) : msg));
@@ -670,7 +721,7 @@ public final class DigitalOceanClient {
         String path = resourcePath(node.kind, node.doId, node.props);
         if (path != null) {
             send(node.kind.provider(), "DELETE", path, "");
-            node.doId = null;
+            onModel(() -> node.doId = null); // EDT-confined model (ledger 53d)
         }
     }
 
