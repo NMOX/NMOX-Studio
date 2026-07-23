@@ -2748,6 +2748,70 @@
         }
       ],
       "tutorial": "# Solana programs\n\nSolana smart contracts are called **programs**: Rust compiled to SBF\n(a BPF dialect), invoked by transactions that name every account they\ntouch up front \u2014 that account model is what makes Solana parallel.\n\n## 1. Run the test (no validator needed)\n\nPress **GO**: `cargo test`. The program logic lives in a pure function\n(`bump`), so it tests natively in milliseconds. Keeping logic pure and\nthe entrypoint thin is the house style of real Solana programs.\n\n## 2. Read the program\n\n`entrypoint!(process_instruction)` wires the on-chain entrypoint.\nEvery invocation receives the program id, the accounts the transaction\nnamed, and raw instruction bytes. `msg!` writes to the transaction log.\n\n## 3. A real local chain\n\nRack an **ANCHOR** device (Frameworks shelf) and press **START** \u2014\n`solana-test-validator` boots a private cluster, the URL jack carries\nits JSON RPC endpoint (http://127.0.0.1:8899), and SERVING gates\ndownstream devices for as long as it lives.\n\n## 4. Building for the chain\n\nOn-chain builds need the SBF toolchain (`cargo build-sbf`, installed\nwith the Solana CLI: `brew install solana`). The Anchor framework\n(`anchor init/build/test` \u2014 the ANCHOR device ACTION knob) adds typed\naccounts, IDLs, and a TypeScript client on top; `anchor test` spins\nits own throwaway validator.\n\n## 5. Keys stay yours\n\nThe solana CLI manages keypairs in its own config; the test validator\nairdrops localnet SOL. The IDE never sees key material.\n"
+    },
+    {
+      "slug": "cosmwasm",
+      "name": "CosmWasm (Cosmos)",
+      "category": "FRAMEWORK",
+      "family": "Web3",
+      "blurb": "Smart contracts for the interchain: Rust to WASM, tested natively with a mock chain in-process.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "cargo",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install rustup && rustup default stable",
+        "linux": "sudo apt install rustup && rustup default stable",
+        "windows": "winget install Rustlang.Rustup"
+      },
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"hello-cosmwasm\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[lib]\ncrate-type = [\"cdylib\", \"rlib\"]\n\n[dependencies]\ncosmwasm-std = \"3\"\nserde = { version = \"1\", features = [\"derive\"] }\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "content": "use cosmwasm_std::{\n    entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo,\n    Response, StdResult,\n};\nuse serde::{Deserialize, Serialize};\n\n#[derive(Serialize, Deserialize)]\npub struct InstantiateMsg {}\n\n#[derive(Serialize, Deserialize)]\npub enum QueryMsg {\n    Greet { name: String },\n}\n\n#[entry_point]\npub fn instantiate(\n    _deps: DepsMut, _env: Env, _info: MessageInfo, _msg: InstantiateMsg,\n) -> StdResult<Response> {\n    Ok(Response::new().add_attribute(\"action\", \"instantiate\"))\n}\n\n#[entry_point]\npub fn query(_deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {\n    match msg {\n        QueryMsg::Greet { name } => to_json_binary(&greeting(&name)),\n    }\n}\n\n/// Pure logic, natively testable \u2014 the CosmWasm house style.\npub fn greeting(name: &str) -> String {\n    format!(\"Hello, {name}! Welcome to the interchain.\")\n}\n\n#[cfg(test)]\nmod test {\n    use super::*;\n    use cosmwasm_std::testing::{message_info, mock_dependencies, mock_env};\n\n    #[test]\n    fn instantiates_and_greets() {\n        let mut deps = mock_dependencies();\n        let creator = deps.api.addr_make(\"creator\");\n        let res = instantiate(\n            deps.as_mut(), mock_env(), message_info(&creator, &[]), InstantiateMsg {},\n        ).unwrap();\n        assert_eq!(res.attributes[0].value, \"instantiate\");\n        assert_eq!(greeting(\"Dev\"), \"Hello, Dev! Welcome to the interchain.\");\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# CosmWasm smart contracts\n\nCosmWasm is the smart-contract engine of the Cosmos ecosystem \u2014 Rust\ncompiled to WASM, running on dozens of interchain networks.\n\n## 1. Run the test\n\nPress **GO**: `cargo test`. `mock_dependencies()` is a whole in-memory\nchain environment \u2014 instantiate and query run natively, no node.\n\n## 2. Read the contract\n\nTwo `#[entry_point]`s: `instantiate` (deploy-time setup) and `query`\n(read-only calls, JSON in and out via serde). Execute endpoints work\nthe same way. Keeping real logic in pure functions (`greeting`) is the\nCosmWasm house style.\n\n## 3. Toward a real chain\n\nCompile for the chain with the wasm target\n(`cargo build --release --target wasm32-unknown-unknown`), then deploy\nwith a chain daemon like `wasmd` \u2014 SOLDER one-liners once a localnet\nruns. Keys live in the chain CLI's own keyring; the IDE never sees them.\n"
+    },
+    {
+      "slug": "ink-polkadot",
+      "name": "ink! (Polkadot)",
+      "category": "FRAMEWORK",
+      "family": "Web3",
+      "blurb": "Polkadot smart contracts in Rust: the canonical flipper, tested off-chain in milliseconds.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "cargo",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install rustup && rustup default stable",
+        "linux": "sudo apt install rustup && rustup default stable",
+        "windows": "winget install Rustlang.Rustup"
+      },
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "content": "[package]\nname = \"flipper\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nink = { version = \"5\", default-features = false }\n\n[lib]\npath = \"src/lib.rs\"\n\n[features]\ndefault = [\"std\"]\nstd = [\"ink/std\"]\nink-as-dependency = []\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "content": "#![cfg_attr(not(feature = \"std\"), no_std, no_main)]\n\n#[ink::contract]\nmod flipper {\n\n    #[ink(storage)]\n    pub struct Flipper {\n        value: bool,\n    }\n\n    impl Flipper {\n        #[ink(constructor)]\n        pub fn new(init: bool) -> Self {\n            Self { value: init }\n        }\n\n        #[ink(message)]\n        pub fn flip(&mut self) {\n            self.value = !self.value;\n        }\n\n        #[ink(message)]\n        pub fn get(&self) -> bool {\n            self.value\n        }\n    }\n\n    #[cfg(test)]\n    mod tests {\n        use super::*;\n\n        #[ink::test]\n        fn flips() {\n            let mut flipper = Flipper::new(false);\n            assert!(!flipper.get());\n            flipper.flip();\n            assert!(flipper.get());\n        }\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# ink! smart contracts (Polkadot)\n\nink! is Polkadot's smart-contract language: a Rust eDSL compiling to\nWASM for any Substrate chain with the contracts pallet.\n\n## 1. Run the test\n\nPress **GO**: `cargo test`. `#[ink::test]` runs the contract in an\noff-chain environment \u2014 storage, constructor, and messages all work\nnatively, no node.\n\n## 2. Read the contract\n\n`#[ink(storage)]` is the contract's state; `#[ink(constructor)]` runs\nat instantiation; `#[ink(message)]` marks callable entry points. The\nflipper is ink!'s canonical hello world.\n\n## 3. Toward a real chain\n\n`cargo-contract` builds the deployable bundle (`cargo contract build`)\nand `substrate-contracts-node` runs a local chain \u2014 SOLDER one-liners\n(`cargo install cargo-contract`). Keys stay in the node/CLI keyring;\nthe IDE never touches them.\n"
     }
   ]
 }
