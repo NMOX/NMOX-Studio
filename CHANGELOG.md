@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.143.0] - 2026-07-24
+
+### Clarity joins the Contract Kit (9th chain) — Bitcoin-anchored contracts
+
+The recorded Bitcoin-family follow-up: Clarity on Stacks, the decidable
+contract language that settles to Bitcoin. Live-proven BEFORE the code
+(clarinet 3.22.0 + @stacks/clarinet-sdk 3.9), and the templated kit
+output re-proven end to end: `clarinet check` clean, 3/3 simnet tests.
+
+- Contract Kit chain #9: an owner-gated counter as Clarinet.toml +
+  ASCII-only `.clar` + the vitest/simnet harness. Names go kebab-case
+  (SIP-003). `telemetry = false` always — clarinet's own default is true.
+- The live proof caught two real rules before ship: Clarity source is
+  ASCII-only (an em-dash in a COMMENT fails `clarinet check`), and
+  clarinet refuses to run without `settings/Devnet.toml` — the kit ships
+  clarinet's published public devnet accounts (the anvil-unlocked class;
+  never real funds, no keys in the IDE).
+- Learning space #86 (clarity-stacks): GO = `clarinet check` (no
+  install); the tutorial walks the full simnet suite through SOLDER.
+- KitCatalogParityTest covers the new pair and now reads npm-form pins;
+  mutation-proven ("kit pins ^2.0.0, catalog pins ^3.9.0" fails loud).
+- Doctor probes clarinet. 9 chains, 86 spaces.
+
 ## [1.142.0] - 2026-07-24
 
 ### Move speaks both dialects — the Aptos sniff

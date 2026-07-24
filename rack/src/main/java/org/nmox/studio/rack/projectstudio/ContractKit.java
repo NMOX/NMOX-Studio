@@ -9,9 +9,10 @@ import java.util.Locale;
 /**
  * The Contract Kit: scaffold a smart contract for any chain the studio
  * speaks — Solidity/Foundry, Soroban (Stellar), Solana, CosmWasm, ink!,
- * Cairo, or Move (Sui) — into the aimed project. Every template is the
- * v1.130–v1.137 arc's LIVE-PROVEN starter (each ran green against its
- * real toolchain before shipping), name-templated for your contract.
+ * Cairo, Move (Sui), Bitcoin (Script/Miniscript), or Clarity (Stacks) —
+ * into the aimed project. Every template is a LIVE-PROVEN starter (each
+ * ran green against its real toolchain before shipping), name-templated
+ * for your contract.
  *
  * House laws, same as Standards/PWA/Classic Kit: idempotent and
  * never-clobbering (an existing file gets a {@code .suggested} sibling,
