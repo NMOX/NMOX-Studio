@@ -53,6 +53,8 @@ class ContractKitTest {
             case CAIRO -> assertThat(all).contains("name = \"sky_vault\"");
             case MOVE -> assertThat(all)
                     .contains("name = \"sky_vault\"").contains("module sky_vault::counter");
+            case BITCOIN -> assertThat(all)
+                    .contains("name = \"sky_vault\"").contains("miniscript").contains("older(144)");
         }
     }
 
