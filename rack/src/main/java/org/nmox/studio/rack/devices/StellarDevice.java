@@ -47,6 +47,11 @@ public class StellarDevice extends CommandDevice {
     private final Knob actionKnob;
     private volatile String installedVersion;
     private volatile String latestVersion;
+    /** The verb that actually launched — onFinished must never consult the
+     *  knob, which the user can turn mid-run: a plain test exit would then
+     *  announce LOCAL NET UP for a network that was never started (the
+     *  v1.135.0 arc-review finding, the serving-truth bug class). */
+    private volatile String launchedVerb = "";
 
     public StellarDevice() {
         super("stellar", "STELLAR", "SOROBAN CONSOLE", new Color(0xFD, 0xDA, 0x24), 3);
@@ -161,6 +166,7 @@ public class StellarDevice extends CommandDevice {
             });
             return;
         }
+        launchedVerb = "build"; // never inherit a stale net-start attribution
         launch(buildCommand());
     }
 
@@ -194,7 +200,18 @@ public class StellarDevice extends CommandDevice {
             });
             return;
         }
+        launchedVerb = verb;
         launch(actionCommand());
+    }
+
+    /** Test seam for the exit-attribution law. */
+    void setLaunchedVerbForTest(String verb) {
+        launchedVerb = verb;
+    }
+
+    /** Test seam: the status LCD's current text. */
+    String statusText() {
+        return statusLcd.getText();
     }
 
     @Override
@@ -204,7 +221,7 @@ public class StellarDevice extends CommandDevice {
         // is declared (a gate we cannot keep truthful stays off the plate;
         // the v1.93.0 law). The URL still flows for SCOPE/Contract-style
         // consumers, and net-stop tears the container down.
-        if (exitCode == 0 && "net-start".equals(actionKnob.getSelectedOption())) {
+        if (exitCode == 0 && "net-start".equals(launchedVerb)) {
             onEdt(() -> statusLcd.setText("LOCAL NET UP (docker) — " + LOCAL_RPC_URL));
             emit("url", Signal.data(LOCAL_RPC_URL));
             emit("ready", Signal.trigger());
