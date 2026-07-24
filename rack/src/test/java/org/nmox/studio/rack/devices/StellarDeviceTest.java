@@ -114,6 +114,39 @@ class StellarDeviceTest {
     }
 
     @Test
+    @DisplayName("Exit attribution follows the LAUNCHED verb, never the knob's current position")
+    void exitAttributionFollowsLaunchedVerb() {
+        // the v1.135.0 arc-review finding: onFinished used to consult the
+        // knob, which the user can turn mid-run — a plain test exit then
+        // announced LOCAL NET UP for a network that was never started
+        StellarDevice device = new StellarDevice();
+        try {
+            dialTo(device, "net-start"); // the knob LIES about what ran
+            device.setLaunchedVerbForTest("test");
+            device.onFinished(0);
+            flushEdt(); // status writes marshal to the EDT
+            assertThat(device.statusText())
+                    .as("a test exit must never announce the local net")
+                    .doesNotContain("LOCAL NET UP");
+
+            device.setLaunchedVerbForTest("net-start");
+            device.onFinished(0);
+            flushEdt();
+            assertThat(device.statusText()).contains("LOCAL NET UP");
+        } finally {
+            device.dispose();
+        }
+    }
+
+    private static void flushEdt() {
+        try {
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
     @DisplayName("No SERVING gate on the plate — the quickstart net outlives the start process")
     void noServingGateDeclared() {
         // `stellar container start local` detaches and exits; a SERVING
