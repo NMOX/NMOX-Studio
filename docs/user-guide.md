@@ -463,10 +463,13 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   network-first, your choice), an offline page, and the `index.html`
   wiring to tie it together.
 - **Contract Kit (Web3)** — pick a chain (Solidity/Foundry, Soroban, Solana,
-  CosmWasm, ink!, Cairo, Move, or Bitcoin/Miniscript) and a contract name, and the
-  kit scaffolds the live-proven starter: manifest, contract, native
-  test, and a CONTRACT-NOTES.md naming the rack devices and one-time
-  steps. Keys never touch the IDE.
+  CosmWasm, ink!, Cairo, Move, Bitcoin/Miniscript, or Clarity on
+  Stacks) and a contract name, and the kit scaffolds the live-proven
+  starter: manifest, contract, native test, and a CONTRACT-NOTES.md
+  naming the rack devices and one-time steps. Keys never touch the
+  IDE. (Move projects that name AptosFramework in Move.toml drive
+  every lane with `aptos move compile/test` instead of `sui move` —
+  the dialect is sniffed, not dialed.)
 - **Classic Kit** — extend any codebase with jQuery, MooTools, Prototype,
   Backbone+Underscore, or Knockout, either vendored (pinned versions,
   sha256 recorded in a NOTICE file) or as npm deps; plus webpack, grunt,

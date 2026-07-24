@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.145.0] - 2026-07-24
+
+### Docs truth — the kit family enters the story
+
+The docs-drift class caught at v1.127.0, applied before it grows:
+
+- **README**: the mangled Contract Kit sentence untangled from the
+  Classic Kit paragraph; the beyond-the-EVM section now tells the
+  whole arc — nine kit chains including Bitcoin (spending conditions
+  as Miniscript) and Clarity on Stacks, the Aptos dialect sniff, and
+  the eight Web3 learning-space walks; counts current (86 tutorials,
+  74 grammars).
+- **User guide**: the Contract Kit entry names all nine chains and
+  explains that the Move dialect is sniffed, not dialed.
+- **plan.md**: currency pass at v1.144.0 — the Web3-kit day recorded
+  (kit wizard → Bitcoin → debt sprint + parity gate → Aptos dialect →
+  Clarity → arc review), standing counts fixed (53 devices, 74
+  grammars, 86 spaces, nine chains).
+
 ## [1.144.0] - 2026-07-24
 
 ### The kit-arc review — two finds, both same-day catches

@@ -19,7 +19,19 @@ v1.126.0 after the security-and-robustness arc (v1.96–v1.124: a dedicated
 review for EVERY module, the editor/tools RCE gates, keychain-only secrets
 in the last holdout, bounded reads on every HTTP/process/file path, the
 whole deferred ledger worked to empty) plus forge v2 (13/13 tutorials
-illustrated) and the same-day review of that surface. It is
+illustrated) and the same-day review of that surface. Currency pass 2026-07-24 at
+v1.144.0 after the Web3-kit day: the arc that began at v1.130.0 closed
+and then kept going — the Contract Kit wizard (v1.139.0, nine chains by
+v1.143.0 including Bitcoin-as-spending-conditions and Clarity on
+Stacks, every template live-proven against its real toolchain BEFORE
+ship), Move speaking both dialects (v1.142.0, the AptosFramework sniff
+steering all five lanes), a debt-only sprint (v1.141.0: the kit
+write-law extracted to one KitFiles home + the NEW KitCatalogParityTest
+that fails the build when kit and learning-catalog crate pins drift —
+the pin-rot lesson made structural), and the arc's own review
+(v1.144.0: two same-day finds, both fixed). Standing counts as of
+v1.144.0: 53 devices, 74 grammars, 86 learning spaces, five studios,
+nine kit chains. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
@@ -27,18 +39,19 @@ docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.95.1, 19 release assets per
+NMOX Studio is a shipping NetBeans RCP IDE (v1.144.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
-whose identity is the **Reason-style task rack**: 51 hardware-styled devices
-wired with patch cables, backed by real process execution, session
+whose identity is the **Reason-style task rack**: 53 hardware-styled devices
+(STELLAR and ANCHOR joined in the v1.130+ Web3 arc) wired with patch
+cables, backed by real process execution, session
 resurrection, CI export, and since v1.55.0 a **frozen public Device SPI**
-third parties extend it through. Around it: a **72-grammar polyglot editor**
+third parties extend it through. Around it: a **74-grammar polyglot editor**
 (70+ language mimes — the 2026-07-16 run added V, Fortran, Smalltalk,
 Prolog, Tcl, Scheme, Ada, Pascal, Odin, COBOL, Haxe, Janet; every
 cleanly-licensed grammar is now vendored, the Raku/Forth-class skips
 documented in NOTICE) with LSP, five studios (Block, API, DB,
-Contract/Web3, Infra), the classic-web-first-class layer, 78 Learning
+Contract/Web3, Infra), the classic-web-first-class layer, 86 Learning
 Spaces (the twelve v1.72–v1.77 additions live-verified against real
 installed toolchains in v1.77.2, the six v1.92.0 lightweights the same
 way), and the v1.35 "connections" spine (ServingRegistry +

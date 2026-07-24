@@ -155,7 +155,7 @@ Completion knows the classic APIs (`$.ajax`, `_.debounce`,
 MooTools, Prototype, Backbone, Underscore, or Knockout — and a project
 still on jQuery 1.x wears an honest **EOL** chip. CoffeeScript
 highlights and outlines like any other language. Want to go the other
-way? The **Contract Kit (scaffold a live-proven smart contract for any of seven chains), Classic Kit** (File → Classic Kit…) extends any codebase with
+way? The **Classic Kit** (File → Classic Kit…) extends any codebase with
 pinned vendored builds (script tags wired idempotently) or npm deps, and
 generates webpack/Grunt/gulp/bower scaffolds without ever clobbering a
 file you wrote. There's even a **Classic Web (jQuery)** template —
@@ -165,7 +165,7 @@ script-tag era, no build step, served as-is.
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export
 included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
-more. 70+ languages with syntax highlighting (73 TextMate grammars through NetBeans
+more. 70+ languages with syntax highlighting (74 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
@@ -193,7 +193,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **85 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **86 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
@@ -301,11 +301,19 @@ test`, the quickstart local network one knob away) and **ANCHOR** runs
 Solana (`solana-test-validator` with a live RPC URL and a truthful
 SERVING gate, `anchor build/test`); **Cairo/Starknet and Move (Sui) are full language
 verticals** — `Scarb.toml` projects get the official grammar, outline,
-LSP (served by scarb itself), and every Run/Build/Test lane; and the
-**Multi-Chain Bench** preset racks all three chains on one MONITOR.
-Learning spaces walk Stellar, Solana, CosmWasm, ink!, and Cairo with
-samples proven against the real toolchains. Keys never touch the IDE:
-every chain CLI manages its own identities.
+LSP (served by scarb itself), and every Run/Build/Test lane — and Move
+speaks **both dialects**: a `Move.toml` naming AptosFramework flips
+every lane to `aptos move compile/test` automatically. The
+**Multi-Chain Bench** preset racks all three chains on one MONITOR,
+and the **Contract Kit** (File → Contract Kit (Web3)…) scaffolds a
+live-proven starter for any of **nine chains** — Solidity/Foundry,
+Soroban, Solana, CosmWasm, ink!, Cairo, Move, **Bitcoin**
+(spending conditions as Miniscript policies compiled to consensus
+Script), and **Clarity on Stacks** (decidable, Bitcoin-anchored, with
+a simnet test harness). Learning spaces walk Stellar, Solana,
+CosmWasm, ink!, Cairo, Move, Bitcoin, and Clarity with samples proven
+against the real toolchains. Keys never touch the IDE: every chain
+CLI manages its own identities.
 
 **The security boundary is the feature**: the IDE never touches
 private keys — no key fields, no signing code. Deploys and sends go
