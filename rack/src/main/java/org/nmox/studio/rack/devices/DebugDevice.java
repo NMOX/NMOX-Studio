@@ -76,7 +76,7 @@ public class DebugDevice extends CommandDevice {
             case PHP -> "php";
             // the web family really is node underneath
             case NODE, BUN, DENO, WEBPACK, GRUNT, GULP, BOWER, STATIC, NONE -> "node";
-            default -> null; // rust/zig/v/fortran/ada/…: no wired debugger
+            default -> null; // rust/zig/v/fortran/ada/cairo/move/…: no wired debugger
         };
     }
 

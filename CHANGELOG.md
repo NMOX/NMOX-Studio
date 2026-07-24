@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.138.0] - 2026-07-24
+
+### Web3 arc review #2 — the surface is clean
+
+Two lenses over the v1.135–v1.137 surface (the STELLAR exit-attribution
+fix plus the Cairo and Move language verticals). For the first time in
+four arc reviews, no real bug — the V/fpm vertical checklist plus the
+build-time gates (outline lockstep, device contract, lane, grammar
+bundle, catalog) caught everything at compile time. Verified by hand:
+ROSETTA enumerates kinds generically (auto-covers Cairo/Move), INSPECTOR
+greys by default for languages with no wired debugger, detection
+precedence follows the documented NODE-outranks law (a dApp with a JS
+frontend beside Move contracts detects as NODE, Move on the knob), and
+the Move CI-export NOTE is valid YAML. The one touch: INSPECTOR's
+"no wired debugger" comment now names cairo/move.
+
+The Web3 arc (v1.130–v1.138) is complete: STELLAR and ANCHOR devices,
+Cairo and Move language verticals, learning spaces for Stellar, Solana,
+CosmWasm, ink!, Cairo, and Move — every sample proven against its real
+toolchain — and the Multi-Chain Bench preset.
+
 ## [1.137.0] - 2026-07-24
 
 ### Move (Sui) — the second smart-contract language vertical (74 grammars, 84 spaces)
