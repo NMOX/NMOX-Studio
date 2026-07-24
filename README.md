@@ -155,7 +155,7 @@ Completion knows the classic APIs (`$.ajax`, `_.debounce`,
 MooTools, Prototype, Backbone, Underscore, or Knockout — and a project
 still on jQuery 1.x wears an honest **EOL** chip. CoffeeScript
 highlights and outlines like any other language. Want to go the other
-way? The **Classic Kit** (File → Classic Kit…) extends any codebase with
+way? The **Contract Kit (scaffold a live-proven smart contract for any of seven chains), Classic Kit** (File → Classic Kit…) extends any codebase with
 pinned vendored builds (script tags wired idempotently) or npm deps, and
 generates webpack/Grunt/gulp/bower scaffolds without ever clobbering a
 file you wrote. There's even a **Classic Web (jQuery)** template —
