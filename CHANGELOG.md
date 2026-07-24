@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.135.0] - 2026-07-23
+
+### The Web3 arc review — one real find, the rest CLEAN
+
+The same-day review pattern over the whole v1.130–v1.134 surface (two
+console devices, four learning spaces, the Multi-Chain Bench, the Cairo
+vertical) — and for the third time running it found exactly one real bug:
+
+- **Fixed: STELLAR attributed a run's exit to the knob's CURRENT
+  position, not the verb that launched.** Turn the ACTION knob after
+  pressing RUN and a plain `cargo test` exit could announce
+  "LOCAL NET UP" with a URL and READY trigger for a network that was
+  never started — the serving-truth bug class (v1.93.0), one device
+  over. The launched verb is now captured at launch (BUILD included, so
+  a stale net-start attribution can't leak into it) and `onFinished`
+  consults only that. Regression test dials the knob to lie about what
+  ran; mutation-proven (regressing to the knob-read fails it).
+- Verified CLEAN: ANCHOR's exit handling (banner-driven, immune to this
+  class) and its serving drop under the shared process slot, the
+  preset's honest greys on single-chain projects, Cairo's honest FAIL
+  for `scarb execute` on libraries, and all four spaces' tutorial claims
+  against their live proofs.
+
 ## [1.134.0] - 2026-07-23
 
 ### Cairo (Starknet) — a full language vertical (73 grammars, 83 spaces)
