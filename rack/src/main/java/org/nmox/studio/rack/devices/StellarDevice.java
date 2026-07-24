@@ -113,15 +113,7 @@ public class StellarDevice extends CommandDevice {
         return null;
     }
 
-    static boolean toolOnPath(String tool) {
-        for (String dir : org.nmox.studio.core.process.ToolLocator.augmentedPath()
-                .split(File.pathSeparator)) {
-            if (new File(dir, tool).canExecute() || new File(dir, tool + ".exe").canExecute()) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
     private void refreshVersions() {
         installedVersion = ProjectInspector.cargoLockVersion(commandDir(), "soroban-sdk");

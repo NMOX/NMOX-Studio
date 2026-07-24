@@ -135,7 +135,7 @@ public class AnchorDevice extends CommandDevice {
     }
 
     private void startValidator() {
-        if (!StellarDevice.toolOnPath("solana-test-validator")) {
+        if (!toolOnPath("solana-test-validator")) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("solana-test-validator not found — brew install solana");
@@ -179,7 +179,7 @@ public class AnchorDevice extends CommandDevice {
             });
             return;
         }
-        if (!StellarDevice.toolOnPath("anchor")) {
+        if (!toolOnPath("anchor")) {
             onEdt(() -> {
                 statusLcd.setTextColor(RackStyle.LCD_AMBER);
                 statusLcd.setText("anchor not found — cargo install avm && avm install latest");
