@@ -2931,8 +2931,8 @@
       },
       "install": {
         "mac": "brew install clarinet",
-        "linux": "curl -sL https://github.com/hirosystems/clarinet/releases/latest | echo 'see github.com/hirosystems/clarinet releases'",
-        "windows": "winget install HiroSystems.Clarinet"
+        "linux": "brew install clarinet    # linuxbrew; or see docs.stacks.co/clarinet",
+        "windows": "see docs.stacks.co/clarinet/overview#installation"
       },
       "files": [
         {

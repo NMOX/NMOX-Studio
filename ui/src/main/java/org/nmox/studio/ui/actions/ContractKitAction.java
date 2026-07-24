@@ -21,9 +21,10 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * The Contract Kit wizard: pick a chain — Solidity/Foundry, Soroban,
- * Solana, CosmWasm, ink!, Cairo, or Move — name the contract, and the
- * kit scaffolds the arc's live-proven starter into the aimed project:
+ * The Contract Kit wizard: pick any chain the kit speaks (the list IS
+ * {@link ContractKit.Chain} — nine as of v1.143.0, from Solidity/Foundry
+ * through Bitcoin/Miniscript and Clarity/Stacks), name the contract, and
+ * the kit scaffolds the arc's live-proven starter into the aimed project:
  * manifest, contract, native test, and a CONTRACT-NOTES.md naming the
  * rack devices and one-time steps. Never clobbers; no keys, ever.
  */

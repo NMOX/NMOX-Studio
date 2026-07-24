@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.144.0] - 2026-07-24
+
+### The kit-arc review — two finds, both same-day catches
+
+Two read-only lenses over v1.139-v1.143 (Contract Kit, Bitcoin, the
+debt sprint, the Aptos dialect, Clarity):
+
+- **Space #86's linux install hint was a do-nothing pipeline**
+  (`curl ... | echo ...`) and its windows hint named an unverified
+  winget id. Now the catalog's honest idiom: linuxbrew line for linux,
+  `see docs.stacks.co` for windows — hints the INSTALL button can
+  actually run or honestly defer.
+- **ContractKitAction's javadoc still listed seven chains** (stale
+  through the Bitcoin and Clarity ships — the same rot class the
+  v1.143.0 ship fixed in ContractKit itself). Rewritten to point at
+  the enum so the list can't rot again.
+- Verified CLEAN: the Move dialect sniff reads exactly where the
+  command runs (consistent with every kind's one-level-down class,
+  blessed); kebab/pascal/snake can't emit invalid chain names because
+  validate() gates the input alphabet; CLARITY inherits the kit's
+  idempotency + never-clobber gates via chain iteration; Doctor rows,
+  parity pairs, and the CI-export NOTE all current.
+- Recorded premise: a Clarity editor grammar/vertical when demand
+  appears — the kit+space scope mirrors the Bitcoin chain's.
+
 ## [1.143.0] - 2026-07-24
 
 ### Clarity joins the Contract Kit (9th chain) — Bitcoin-anchored contracts
