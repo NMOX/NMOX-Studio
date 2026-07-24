@@ -321,6 +321,34 @@ class PolyglotDevicesTest {
     }
 
     @Test
+    @DisplayName("Cairo: Scarb.toml detects and every AUTO lane speaks scarb (v1.134.0)")
+    void cairoLanes() throws IOException {
+        // live-proven before the vertical was written: scarb 2.20.0 ran the
+        // learning space's fib test with a gas estimate on this machine
+        Rack rack = rackAimedAt("Scarb.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.CAIRO);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("scarb", "execute");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("scarb", "build");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("scarb", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("scarb", "build");
+
+        rack.shutdown();
+    }
+
+    @Test
     @DisplayName("V: v.mod detects and every AUTO lane speaks v (v1.72.0)")
     void vlangLanes() throws IOException {
         Rack rack = rackAimedAt("v.mod");

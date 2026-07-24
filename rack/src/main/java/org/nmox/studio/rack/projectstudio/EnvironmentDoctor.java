@@ -44,6 +44,7 @@ public final class EnvironmentDoctor {
                 new String[]{"stellar", "Stellar/Soroban CLI (smart contracts)", "brew install stellar-cli"},
                 new String[]{"solana", "Solana CLI (keys, airdrops, deploys)", "brew install solana"},
                 new String[]{"anchor", "Anchor framework CLI (Solana programs)", "cargo install avm && avm install latest"},
+                new String[]{"scarb", "Cairo/Starknet build tool (also serves the LSP)", "brew install scarb"},
                 new String[]{"go", "Go toolchain", "brew install go"},
                 new String[]{"python3", "Python — tooling and spaces", "brew install python"},
                 new String[]{"ruby", "Ruby toolchain", "brew install ruby"},

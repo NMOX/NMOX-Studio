@@ -80,6 +80,7 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-rescript", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-purescript", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-vlang", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-cairo", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-fortran", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-smalltalk", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-prolog", service = DeletedTextInterceptor.Factory.class),
