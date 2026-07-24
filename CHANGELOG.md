@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.147.0] - 2026-07-24
+
+### Ask ORACLE holds a conversation
+
+The v1.146.0 answer dialog becomes a conversation window: keep asking
+follow-ups about the same selection, and each turn rides the full
+history to the Messages API so "that error" means what it meant.
+
+- One conversation per Ask; the SUBJECT IS FIXED — follow-ups never
+  widen what was disclosed, so the code consent covers the whole
+  conversation and nothing new silently joins the payload.
+- Bounded by law: ten exchanges max (the cap appears in the transcript,
+  never silent trimming — a trimmed history would misrepresent what the
+  model was told), follow-ups capped at 2k chars.
+- Every send passes the same key + consent gates as a fresh ask — both
+  mutation-proven on the converse path (each deletion kills its named
+  test with the spy transport). Input disables while a send is in
+  flight; sends run off the EDT.
+- Live-proven multi-turn against the real API: turn two asked for "the
+  numeric code inside that error" and the model answered 100 — the
+  reference only resolves if the history really made the round trip.
+  OracleConversation pure model + 9 new tests.
+
 ## [1.146.0] - 2026-07-24
 
 ### Ask ORACLE about your code — the AI surface reaches the editor

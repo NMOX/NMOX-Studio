@@ -223,12 +223,42 @@ public final class OracleClient {
 
     /** The Messages request envelope: model, token cap, one user turn. */
     static String requestBody(String model, String prompt) {
+        return requestBodyConversation(model,
+                List.of(new Turn("user", prompt)));
+    }
+
+    /** One conversation turn — the Messages API's role/content pair. */
+    public record Turn(String role, String text) {
+
+        public Turn {
+            if (!"user".equals(role) && !"assistant".equals(role)) {
+                throw new IllegalArgumentException("role must be user|assistant: " + role);
+            }
+        }
+    }
+
+    /** The envelope for a whole conversation: alternating turns, in order. */
+    static String requestBodyConversation(String model, List<Turn> turns) {
+        JSONArray messages = new JSONArray();
+        for (Turn t : turns) {
+            messages.put(new JSONObject().put("role", t.role()).put("content", t.text()));
+        }
         return new JSONObject()
                 .put("model", model == null || model.isBlank() ? MODEL_HAIKU : model)
                 .put("max_tokens", MAX_TOKENS)
-                .put("messages", new JSONArray().put(
-                        new JSONObject().put("role", "user").put("content", prompt)))
+                .put("messages", messages)
                 .toString();
+    }
+
+    /**
+     * Continues a conversation: the full turn list goes up, the next
+     * assistant turn comes back. Same contract as {@link #ask} — the
+     * caller owns the key array; failures are honest {@link IOException}s.
+     */
+    public String converse(List<Turn> turns, String model, char[] apiKey) throws IOException {
+        String response = transport.post(ENDPOINT,
+                requestBodyConversation(model, turns), apiKey);
+        return parseExplanation(response);
     }
 
     /**
