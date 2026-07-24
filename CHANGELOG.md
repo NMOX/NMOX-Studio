@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.139.0] - 2026-07-24
+
+### The Contract Kit — a Web3 contract wizard for seven chains
+
+*File ▸ Contract Kit (Web3)…* — pick a chain, name your contract, and
+the kit scaffolds a working start into the aimed project.
+
+- **Seven chains, one wizard**: Solidity/Foundry, Soroban (Stellar),
+  Solana, CosmWasm, ink! (Polkadot), Cairo (Starknet), and Move (Sui).
+  Every template is the Web3 arc's live-proven starter, name-templated
+  into each dialect's own casing (`SkyVault` the contract, `sky_vault`
+  the crate/module).
+- **Live-proven as a set, post-templating**: all seven scaffolds ran
+  green against their real toolchains before ship — four `cargo test`
+  lanes, `scarb test`, `sui move test`, and the Foundry flow exactly as
+  the generated notes describe it (`git init`, `forge install`,
+  `forge test` → PASS with a gas figure).
+- **House laws by construction**: idempotent re-runs, never-clobber
+  (existing files get `.suggested` siblings — both laws
+  mutation-proven), scaffolding off the EDT, pure generator testable
+  without UI, and no keys ever — each CONTRACT-NOTES.md routes deploys
+  to SOLDER with identities in the chain CLI's own config.
+- rack 16 new kit tests; the property-gated live-scaffold driver stays
+  as the reusable proof seam (skipped in CI).
+
 ## [1.138.0] - 2026-07-24
 
 ### Web3 arc review #2 — the surface is clean
