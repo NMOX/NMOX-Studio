@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.146.0] - 2026-07-24
+
+### Ask ORACLE about your code — the AI surface reaches the editor
+
+The gap David asked for by name ("What is NMOX Studio missing?"): the
+IDE could explain a failed run since v1.52.0, but nothing answered
+questions about the code on screen. Now it does — recon first ruled
+out the other candidate (the platform already ships markdown preview;
+the ide-cluster lesson pays again).
+
+- **Ask ORACLE About Selection…** in every editor's right-click menu:
+  select code in any language, ask a question (empty = explain this),
+  the answer opens in a dialog. Selection capped at 8k chars with an
+  honest truncation marker.
+- **Its own consent, by law.** The failure-flow consent promises source
+  never leaves the machine — so a grant given there can never authorize
+  sending code. The code flow asks its own one-time question, naming
+  exactly what goes (the selection, file name, language, your question)
+  and what never does (the rest of the file, other files, environment,
+  secrets).
+- The whole ORACLE law set holds: zero boot cost, no network without
+  the explicit click, key Keyring-or-env only and wiped after use, and
+  honest degradation for no-key / no-consent / offline. Key and consent
+  gates both mutation-proven (each deletion kills its named test).
+- Live-proven against the real Anthropic API before ship: asked who can
+  call the Clarity counter's reset — the model answered the owner-only
+  gate correctly. AskOracleEngine 9 tests; registration verified in the
+  generated layer (/Editors/Popup shadow + separator).
+
 ## [1.145.0] - 2026-07-24
 
 ### Docs truth — the kit family enters the story

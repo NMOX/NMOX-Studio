@@ -54,7 +54,9 @@ QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
 files), HELM (run commands on your servers over ssh), an in-rack REPL,
 the ANVIL local EVM chain, the STELLAR (Soroban) and ANCHOR (Solana)
 smart-contract consoles, the DYNAMO Grunt/Gulp runner, the ORACLE AI
-error explainer, the WAYPOINT monorepo-workspace selector, and framework
+error explainer (which also answers questions about selected code from
+any editor's right-click menu — with its own consent gate, sending only
+the selection), the WAYPOINT monorepo-workspace selector, and framework
 consoles for Angular, Phoenix, Next.js, Vite, Astro, SvelteKit, Nuxt,
 and Laravel (ARTISAN), and more. Patches
 persist per project, ship as presets, and export to GitHub Actions.
