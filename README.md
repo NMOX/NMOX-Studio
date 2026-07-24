@@ -9,7 +9,7 @@
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 72 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 73 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
 
 ## Download
 
@@ -164,7 +164,7 @@ script-tag era, no build step, served as-is.
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export
 included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
-more. 70+ languages with syntax highlighting (72 TextMate grammars through NetBeans
+more. 70+ languages with syntax highlighting (73 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
@@ -192,7 +192,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **82 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **83 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
