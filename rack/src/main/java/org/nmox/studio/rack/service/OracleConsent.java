@@ -2,6 +2,7 @@ package org.nmox.studio.rack.service;
 
 import java.awt.GraphicsEnvironment;
 import java.util.prefs.Preferences;
+import org.nmox.studio.rack.engine.OracleClient;
 import org.nmox.studio.rack.engine.OracleClient.FailureContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -29,6 +30,10 @@ public final class OracleConsent {
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(OracleConsent.class);
     private static final String GRANTED_KEY = "oracle.external.consent";
+    /** The CODE flow's own grant. The failure-flow dialog above promises
+     *  "does not send your source files" — so a grant given there can
+     *  never authorize sending source. Ask ORACLE asks its own question. */
+    private static final String CODE_GRANTED_KEY = "oracle.code.consent";
 
     private OracleConsent() {
     }
@@ -87,6 +92,66 @@ public final class OracleConsent {
                 "Keep Local");
         if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
             grant();
+            return true;
+        }
+        return false;
+    }
+
+    // ---- the code-question flow's own consent ----------------------------
+
+    /** True once the user has agreed to send SELECTED CODE to the API. */
+    public static boolean isCodeGranted() {
+        return PREFS.getBoolean(CODE_GRANTED_KEY, false);
+    }
+
+    static void grantCode() {
+        PREFS.putBoolean(CODE_GRANTED_KEY, true);
+    }
+
+    /** Test hook: forget the code grant. */
+    static void revokeCodeForTest() {
+        PREFS.remove(CODE_GRANTED_KEY);
+    }
+
+    /**
+     * Ensures the CODE consent, prompting once if needed. Separate from
+     * {@link #requestConsent} by design: that dialog promises source never
+     * leaves the machine, and this flow sends exactly the selection — so
+     * it must earn its own yes. Names what is sent (the selected code,
+     * the file's name and language, the question) and what is not (the
+     * rest of the file, other files, environment, secrets). Blocking and
+     * Swing-safe; headless auto-allows without persisting, like the
+     * failure flow.
+     */
+    public static boolean requestCodeConsent(OracleClient.CodeQuestion q) {
+        if (isCodeGranted()) {
+            return true;
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            return true;
+        }
+        String message = "<html><b>Send this code selection to Anthropic's API?</b>"
+                + "<br><br>Ask ORACLE will send <b>only</b> the following, and nothing else:"
+                + "<ul>"
+                + "<li>the code you selected (" + q.code().length() + " characters)</li>"
+                + "<li>the file's name: <code>" + escape(q.fileName()) + "</code></li>"
+                + "<li>its language: <code>" + escape(q.language()) + "</code></li>"
+                + "<li>your question</li>"
+                + "</ul>"
+                + "It does <b>not</b> send the rest of the file, other files, "
+                + "environment variables, or any secret."
+                + "<br><br>Your API key authenticates the request. This choice is remembered."
+                + "</html>";
+        Object sendOption = "Send to ORACLE";
+        NotifyDescriptor nd = new NotifyDescriptor(
+                new javax.swing.JLabel(message),
+                "Ask ORACLE — send selected code?",
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[]{sendOption, "Keep Local"},
+                "Keep Local");
+        if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
+            grantCode();
             return true;
         }
         return false;

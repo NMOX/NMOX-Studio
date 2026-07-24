@@ -209,6 +209,17 @@ press the button.
 If the network is down, the key is wrong, or the model declines, ORACLE
 says so plainly on its display — it never fails silently and never crashes.
 
+**Ask ORACLE about your code.** The same assistant reaches the editor:
+select any code, in any language, right-click, and choose **Ask ORACLE
+About Selection…**. Type a question (or leave it empty for a plain
+explanation) and the answer opens in a dialog. This flow has its **own**
+one-time consent, separate from the failure flow — the failure consent
+promises your source never leaves the machine, so sending a selection
+must earn its own yes. It sends only the code you selected (capped),
+the file's name and language, and your question — never the rest of the
+file, other files, or your environment. Same key, same honesty: no key
+or no consent and it says so; nothing is ever sent without your click.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
