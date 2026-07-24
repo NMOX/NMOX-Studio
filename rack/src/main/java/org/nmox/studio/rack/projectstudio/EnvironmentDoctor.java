@@ -47,6 +47,7 @@ public final class EnvironmentDoctor {
                 new String[]{"scarb", "Cairo/Starknet build tool (also serves the LSP)", "brew install scarb"},
                 new String[]{"sui", "Sui CLI (Move smart contracts: build/test/localnet)", "brew install sui"},
                 new String[]{"aptos", "Aptos CLI (Move smart contracts, Aptos dialect)", "brew install aptos"},
+                new String[]{"clarinet", "Clarinet (Clarity/Stacks contracts: check/test/devnet)", "brew install clarinet"},
                 new String[]{"go", "Go toolchain", "brew install go"},
                 new String[]{"python3", "Python — tooling and spaces", "brew install python"},
                 new String[]{"ruby", "Ruby toolchain", "brew install ruby"},

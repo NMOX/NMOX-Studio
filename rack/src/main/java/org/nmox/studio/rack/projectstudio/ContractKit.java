@@ -9,9 +9,10 @@ import java.util.Locale;
 /**
  * The Contract Kit: scaffold a smart contract for any chain the studio
  * speaks — Solidity/Foundry, Soroban (Stellar), Solana, CosmWasm, ink!,
- * Cairo, or Move (Sui) — into the aimed project. Every template is the
- * v1.130–v1.137 arc's LIVE-PROVEN starter (each ran green against its
- * real toolchain before shipping), name-templated for your contract.
+ * Cairo, Move (Sui), Bitcoin (Script/Miniscript), or Clarity (Stacks) —
+ * into the aimed project. Every template is a LIVE-PROVEN starter (each
+ * ran green against its real toolchain before shipping), name-templated
+ * for your contract.
  *
  * House laws, same as Standards/PWA/Classic Kit: idempotent and
  * never-clobbering (an existing file gets a {@code .suggested} sibling,
@@ -33,7 +34,8 @@ public final class ContractKit {
         INK("ink! (Polkadot)", "cargo"),
         CAIRO("Cairo (Starknet)", "scarb"),
         MOVE("Move (Sui)", "sui"),
-        BITCOIN("Bitcoin — Script/Miniscript", "cargo");
+        BITCOIN("Bitcoin — Script/Miniscript", "cargo"),
+        CLARITY("Clarity (Stacks)", "clarinet");
 
         public final String label;
         /** The tool the scaffold's test lane needs on PATH. */
@@ -77,6 +79,11 @@ public final class ContractKit {
         return name.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase(Locale.ROOT);
     }
 
+    /** my-token — Clarity contract names are lowercase-hyphen (SIP-003). */
+    static String kebab(String name) {
+        return snake(name).replace('_', '-');
+    }
+
     /** Scaffolds the chain's starter into {@code dir}; never clobbers. */
     public static List<Outcome> scaffold(File dir, Chain chain, String name)
             throws IOException {
@@ -94,6 +101,7 @@ public final class ContractKit {
             case CAIRO -> cairo(dir, name, outcomes);
             case MOVE -> move(dir, name, outcomes);
             case BITCOIN -> bitcoin(dir, name, outcomes);
+            case CLARITY -> clarity(dir, name, outcomes);
         }
         return outcomes;
     }
@@ -627,6 +635,177 @@ public final class ContractKit {
                 in Core's own wallet; the IDE never sees them. Want richer
                 contracts anchored to Bitcoin? Clarity on Stacks, or RSK via the
                 Foundry/ANVIL lanes.
+                """.replace("%P%", pascal(name)));
+    }
+
+    // --- Clarity / Stacks ---------------------------------------------------
+
+    private static void clarity(File dir, String name, List<Outcome> out) throws IOException {
+        String k = kebab(name);
+        // clarinet's own scaffold defaults telemetry to TRUE — ours never does
+        write(dir, "Clarinet.toml", """
+                [project]
+                name = "%K%"
+                telemetry = false
+                cache_dir = "./.cache"
+
+                [contracts.%K%]
+                path = "contracts/%K%.clar"
+                clarity_version = 5
+                epoch = "latest"
+                """.replace("%K%", k), out);
+        // Clarity source is ASCII-ONLY, comments included — the live proof
+        // failed on an em-dash before a single line of product code existed
+        write(dir, "contracts/" + k + ".clar", """
+                ;; %K% - a value only its deployer can reset.
+                ;; Clarity is decidable and interpreted on-chain: what you read
+                ;; here is exactly what the network runs. ASCII only, by rule.
+                (define-data-var count uint u0)
+                (define-constant contract-owner tx-sender)
+                (define-constant err-owner-only (err u100))
+
+                (define-read-only (get-count)
+                  (var-get count))
+
+                (define-public (increment)
+                  (begin
+                    (var-set count (+ (var-get count) u1))
+                    (ok (var-get count))))
+
+                (define-public (reset)
+                  (begin
+                    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+                    (var-set count u0)
+                    (ok true)))
+                """.replace("%K%", k), out);
+        write(dir, "tests/" + k + ".test.ts", """
+                import { describe, expect, it } from "vitest";
+                import { Cl } from "@stacks/transactions";
+
+                const accounts = simnet.getAccounts();
+                const wallet1 = accounts.get("wallet_1")!;
+                const deployer = accounts.get("deployer")!;
+
+                describe("%K%", () => {
+                  it("starts at zero", () => {
+                    const { result } = simnet.callReadOnlyFn("%K%", "get-count", [], wallet1);
+                    expect(result).toBeUint(0);
+                  });
+
+                  it("increment bumps the count", () => {
+                    simnet.callPublicFn("%K%", "increment", [], wallet1);
+                    simnet.callPublicFn("%K%", "increment", [], wallet1);
+                    const { result } = simnet.callReadOnlyFn("%K%", "get-count", [], wallet1);
+                    expect(result).toBeUint(2);
+                  });
+
+                  it("only the owner can reset", () => {
+                    simnet.callPublicFn("%K%", "increment", [], wallet1);
+                    const stranger = simnet.callPublicFn("%K%", "reset", [], wallet1);
+                    expect(stranger.result).toBeErr(Cl.uint(100));
+                    const owner = simnet.callPublicFn("%K%", "reset", [], deployer);
+                    expect(owner.result).toBeOk(Cl.bool(true));
+                    const { result } = simnet.callReadOnlyFn("%K%", "get-count", [], wallet1);
+                    expect(result).toBeUint(0);
+                  });
+                });
+                """.replace("%K%", k), out);
+        write(dir, "package.json", """
+                {
+                  "name": "%K%-tests",
+                  "private": true,
+                  "type": "module",
+                  "scripts": {
+                    "test": "vitest run"
+                  },
+                  "dependencies": {
+                    "@stacks/clarinet-sdk": "^3.9.0",
+                    "@stacks/transactions": "^7.2.0",
+                    "vitest": "^4.1.8",
+                    "vitest-environment-clarinet": "^3.0.0"
+                  }
+                }
+                """.replace("%K%", k), out);
+        write(dir, "vitest.config.ts", """
+                import { defineConfig } from "vitest/config";
+                import {
+                  vitestSetupFilePath,
+                  getClarinetVitestsArgv,
+                } from "@stacks/clarinet-sdk/vitest";
+
+                // vitest-environment-clarinet boots the simnet and exposes the
+                // global `simnet` plus the Clarity matchers (toBeUint, toBeErr).
+                export default defineConfig({
+                  test: {
+                    environment: "clarinet",
+                    pool: "forks",
+                    isolate: false,
+                    maxWorkers: 1,
+                    setupFiles: [vitestSetupFilePath],
+                    environmentOptions: {
+                      clarinet: { ...getClarinetVitestsArgv() },
+                    },
+                  },
+                });
+                """, out);
+        write(dir, "tsconfig.json", """
+                {
+                  "compilerOptions": {
+                    "target": "ESNext",
+                    "module": "ESNext",
+                    "lib": ["ESNext"],
+                    "skipLibCheck": true,
+                    "moduleResolution": "bundler",
+                    "isolatedModules": true,
+                    "noEmit": true,
+                    "strict": true
+                  },
+                  "include": [
+                    "node_modules/@stacks/clarinet-sdk/vitest-helpers/src",
+                    "tests"
+                  ]
+                }
+                """, out);
+        // clarinet refuses to run without this file (the live proof caught
+        // it). These are clarinet's own PUBLISHED devnet defaults — the same
+        // public mnemonics every `clarinet new` scaffold on GitHub carries,
+        // the anvil-unlocked-accounts class: never real funds, never a secret.
+        write(dir, "settings/Devnet.toml", """
+                # clarinet's published devnet accounts - public, never real funds
+                [network]
+                name = "devnet"
+
+                [accounts.deployer]
+                mnemonic = "twice kind fence tip hidden tilt action fragile skin nothing glory cousin green tomorrow spring wrist shed math olympic multiply hip blue scout claw"
+                balance = 100_000_000_000_000
+
+                [accounts.wallet_1]
+                mnemonic = "sell invite acquire kitten bamboo drastic jelly vivid peace spawn twice guilt pave pen trash pretty park cube fragile unaware remain midnight betray rebuild"
+                balance = 100_000_000_000_000
+
+                [accounts.wallet_2]
+                mnemonic = "hold excess usual excess ring elephant install account glad dry fragile donkey gaze humble truck breeze nation gasp vacuum limb head keep delay hospital"
+                balance = 100_000_000_000_000
+                """, out);
+        notes(dir, out, """
+                # %P% — next steps (Clarity on Stacks)
+
+                `clarinet check` proves the contract type-checks — no install,
+                no network. For the full simnet test suite, SOLDER two lines:
+
+                    npm install
+                    npm test
+
+                Three tests run against an in-memory Stacks chain: the counter
+                starts at zero, increments, and only the deployer can reset it
+                (the stranger gets `(err u100)`).
+
+                A local devnet (`clarinet devnet start`, Docker) gives you a
+                real chain with explorer; deploy accounts are clarinet's own
+                published devnet defaults — never real funds, and the IDE never
+                holds a key. Clarity is Bitcoin-anchored: every Stacks block
+                settles to Bitcoin, which is why this chain pairs with the
+                kit's Bitcoin/Miniscript starter.
                 """.replace("%P%", pascal(name)));
     }
 
