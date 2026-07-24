@@ -9,7 +9,7 @@
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 73 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 74 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
 
 ## Download
 
@@ -193,7 +193,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **83 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **84 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
@@ -299,8 +299,8 @@ tolerance knob) alongside the other quality gates.
 contracts (Rust → WASM via `stellar contract build`, native `cargo
 test`, the quickstart local network one knob away) and **ANCHOR** runs
 Solana (`solana-test-validator` with a live RPC URL and a truthful
-SERVING gate, `anchor build/test`); **Cairo/Starknet is a full language
-vertical** — `Scarb.toml` projects get the official grammar, outline,
+SERVING gate, `anchor build/test`); **Cairo/Starknet and Move (Sui) are full language
+verticals** — `Scarb.toml` projects get the official grammar, outline,
 LSP (served by scarb itself), and every Run/Build/Test lane; and the
 **Multi-Chain Bench** preset racks all three chains on one MONITOR.
 Learning spaces walk Stellar, Solana, CosmWasm, ink!, and Cairo with

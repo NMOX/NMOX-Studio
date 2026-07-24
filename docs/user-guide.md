@@ -511,7 +511,7 @@ files, recent projects, and launchers for every tool surface.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
-*New Learning Space…* offers 83 built-in tutorials — languages (Python,
+*New Learning Space…* offers 84 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and
