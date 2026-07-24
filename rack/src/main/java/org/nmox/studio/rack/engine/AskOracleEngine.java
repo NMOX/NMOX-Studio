@@ -36,6 +36,44 @@ public final class AskOracleEngine {
     }
 
     /**
+     * Continues a conversation (or starts one — the first ask is just an
+     * empty history). Every send passes the SAME gates as a fresh ask:
+     * the subject selection, the key, the consent, plus the conversation
+     * cap. On success the exchange is committed to the conversation.
+     */
+    public Result converse(OracleConversation convo, String userText, String model) {
+        if (convo.subject() == null || convo.subject().code().isBlank()) {
+            return new Result(Status.NO_SELECTION,
+                    "Select some code first — Ask ORACLE sends only the selection.");
+        }
+        if (!convo.canAsk()) {
+            return new Result(Status.FAILED,
+                    "Conversation cap reached (" + OracleConversation.MAX_EXCHANGES
+                    + " exchanges) — start a new Ask from a selection.");
+        }
+        char[] key = keySource.get();
+        try {
+            if (key == null || key.length == 0) {
+                return new Result(Status.NO_KEY,
+                        "No API key. Set one on the ORACLE device (KEY…) or export "
+                        + "ANTHROPIC_API_KEY / CLAUDE_API_KEY.");
+            }
+            if (!consentGate.test(convo.subject())) {
+                return new Result(Status.NO_CONSENT, "Kept local — nothing was sent.");
+            }
+            String answer = client.converse(convo.outgoing(userText), model, key);
+            convo.record(userText, answer);
+            return new Result(Status.ANSWERED, answer);
+        } catch (IOException e) {
+            return new Result(Status.FAILED, "ORACLE could not answer: " + e.getMessage());
+        } finally {
+            if (key != null) {
+                Arrays.fill(key, '\0');
+            }
+        }
+    }
+
+    /**
      * Answers the question, or refuses honestly. Synchronous — the caller
      * runs it off the EDT. The key array is wiped before returning.
      */

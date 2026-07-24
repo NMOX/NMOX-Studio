@@ -6,10 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.nmox.studio.rack.engine.AskOracleEngine;
@@ -23,7 +20,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
 
 /**
  * Ask ORACLE about the selected code — the AI surface's editor face.
@@ -39,9 +35,6 @@ import org.openide.util.RequestProcessor;
 @ActionReference(path = "Editors/Popup", position = 1950, separatorBefore = 1940)
 @Messages("CTL_AskOracleAction=Ask ORACLE About Selection…")
 public final class AskOracleAction implements ActionListener {
-
-    private static final RequestProcessor RP =
-            new RequestProcessor("nmox-ask-oracle", 1, true);
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -75,34 +68,13 @@ public final class AskOracleAction implements ActionListener {
         CodeQuestion q = new CodeQuestion(preview.fileName(), preview.language(),
                 selection, question.getText().trim());
 
-        // key peek, consent prompt, and the network call all belong off the
-        // EDT (the keychain can block on an unlock prompt — the v1.56 law)
-        RP.post(() -> {
-            AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
-                    OracleKeys::read, OracleConsent::requestCodeConsent);
-            AskOracleEngine.Result result = engine.answer(q, OracleClient.MODEL_HAIKU);
-            SwingUtilities.invokeLater(() -> show(result, q.fileName()));
-        });
-    }
-
-    private static void show(AskOracleEngine.Result result, String fileName) {
-        if (result.status() != AskOracleEngine.Status.ANSWERED) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    result.text(),
-                    result.status() == AskOracleEngine.Status.FAILED
-                            ? NotifyDescriptor.ERROR_MESSAGE
-                            : NotifyDescriptor.INFORMATION_MESSAGE));
-            return;
-        }
-        JTextArea area = new JTextArea(result.text(), 20, 72);
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
-        DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area),
-                "ORACLE — " + fileName, false, new Object[]{DialogDescriptor.CLOSED_OPTION},
-                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+        // one conversation per Ask: the subject is fixed, follow-ups ride
+        // the same disclosure; the dialog runs every send off the EDT (the
+        // keychain can block on an unlock prompt — the v1.56 law)
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
+                OracleKeys::read, OracleConsent::requestCodeConsent);
+        new AskOracleDialog(new org.nmox.studio.rack.engine.OracleConversation(q), engine)
+                .open(q.question());
     }
 
     /** The editor under the popup: focus stays on it while a menu shows. */
