@@ -266,7 +266,7 @@ public class RunDevice extends CommandDevice {
             case "purescript" -> List.of("spago", "run");
             case "vlang" -> List.of("v", "run", ".");
             case "cairo" -> List.of("scarb", "execute"); // executable targets; libs get scarb's own honest error
-            case "move" -> List.of("sui", "move", "build"); // Move has no run verb — build is the honest "make my code"
+            case "move" -> ProjectInspector.moveBuildCommand(commandDir()); // Move has no run verb — build is the honest "make my code"; dialect-aware (Sui/Aptos)
             case "fortran" -> List.of("fpm", "run");
             case "ada" -> List.of("alr", "run");
             // ReScript compiles but has no run entry point — grey IGNITION

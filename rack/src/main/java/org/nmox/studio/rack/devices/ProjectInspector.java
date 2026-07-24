@@ -418,6 +418,35 @@ public final class ProjectInspector {
         }
     }
 
+    /** The two Move dialects: one Move.toml, two CLIs with different verbs. */
+    public enum MoveDialect { SUI, APTOS }
+
+    /**
+     * Which Move dialect this project speaks. Sui-first (the documented
+     * default since v1.137.0); APTOS only when Move.toml names the
+     * AptosFramework dependency — {@code aptos move init} writes it as a
+     * dotted table ({@code [dependencies.AptosFramework]}), hand-written
+     * manifests use the inline form, and a plain text scan catches both.
+     */
+    public static MoveDialect moveDialect(File dir) {
+        return cargoTomlMentions(new File(dir, "Move.toml"), "AptosFramework")
+                ? MoveDialect.APTOS : MoveDialect.SUI;
+    }
+
+    /** The dialect's build command — Sui says {@code build}, Aptos says {@code compile}. */
+    public static java.util.List<String> moveBuildCommand(File dir) {
+        return moveDialect(dir) == MoveDialect.APTOS
+                ? java.util.List.of("aptos", "move", "compile")
+                : java.util.List.of("sui", "move", "build");
+    }
+
+    /** The dialect's test command — both CLIs agree on the verb. */
+    public static java.util.List<String> moveTestCommand(File dir) {
+        return moveDialect(dir) == MoveDialect.APTOS
+                ? java.util.List.of("aptos", "move", "test")
+                : java.util.List.of("sui", "move", "test");
+    }
+
     /**
      * The locked version of a crate from Cargo.lock, or null. Cargo.lock
      * is INI-ish TOML: {@code [[package]]} blocks with {@code name = "x"}

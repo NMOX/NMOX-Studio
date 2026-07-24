@@ -321,7 +321,7 @@ public class TestDevice extends CommandDevice {
             case "purescript" -> cmd.addAll(List.of("spago", "test"));
             case "vlang" -> cmd.addAll(List.of("v", "test", "."));
             case "cairo" -> cmd.addAll(List.of("scarb", "test"));
-            case "move" -> cmd.addAll(List.of("sui", "move", "test"));
+            case "move" -> cmd.addAll(ProjectInspector.moveTestCommand(commandDir()));
             case "fortran" -> cmd.addAll(List.of("fpm", "test"));
             case "ada" -> { } // Alire has no universal test verb — VERITAS greys
             // ReScript has no standard test runner — leave cmd empty (VERITAS greys)

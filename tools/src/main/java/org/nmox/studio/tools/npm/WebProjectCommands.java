@@ -80,8 +80,11 @@ final class WebProjectCommands {
                 return fixed(action, List.of("scarb", "execute"), List.of("scarb", "build"),
                         List.of("scarb", "test"), null);
             case MOVE:
-                return fixed(action, List.of("sui", "move", "build"), List.of("sui", "move", "build"),
-                        List.of("sui", "move", "test"), null);
+                // dialect-aware: Aptos projects (Move.toml names AptosFramework)
+                // get aptos move compile/test, everything else Sui
+                return fixed(action, ProjectInspector.moveBuildCommand(dir),
+                        ProjectInspector.moveBuildCommand(dir),
+                        ProjectInspector.moveTestCommand(dir), null);
             case FORTRAN:
                 return fixed(action, List.of("fpm", "run"), List.of("fpm", "build"),
                         List.of("fpm", "test"), null);
