@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.136.0] - 2026-07-24
+
+### Docs truth for the Web3 arc
+
+README, the user guide, and plan.md now tell the multi-chain story the
+product has shipped since v1.130.0: STELLAR and ANCHOR in the device
+roll-call, a "Web3 is more than the EVM here" section beside Contract
+Studio (Soroban, Solana, the Cairo language vertical, the Multi-Chain
+Bench, and the keys-never-touch-the-IDE boundary), the same story in
+the user guide's studio chapter, and a plan.md currency paragraph
+recording the arc, its review finding, and the Move premise (waits on
+grammar provenance; Sui's CLI side is clean).
+
 ## [1.135.0] - 2026-07-23
 
 ### The Web3 arc review — one real find, the rest CLEAN

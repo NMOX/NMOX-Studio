@@ -403,6 +403,15 @@ JDBC driver) appear in the tree too and run in the same console.
 
 *Want the full worked example? **[Making a Smart Contract](making-a-smart-contract.md)** builds a real escrow contract — code, tests, gas gate, and the live ANVIL loop.*
 
+Beyond the EVM: the rack's **STELLAR** console builds and tests Soroban
+contracts (the quickstart local net is a knob position), **ANCHOR** runs
+a real Solana validator with a truthful SERVING gate, **Cairo** is a
+full language here (`Scarb.toml` projects — editor, outline, LSP, and
+every lane speak scarb), and the **Multi-Chain Bench** preset puts all
+three chains on one MONITOR. Deploys and invokes that need identities
+are SOLDER one-liners; every chain CLI keeps its own keys — the IDE
+never sees them.
+
 Web3 development with a hard safety rule: **the IDE never touches a
 private key.** Sends go through your devnet's unlocked accounts only.
 Build with Foundry or Hardhat and your compiled contracts appear in the

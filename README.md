@@ -52,7 +52,8 @@ package managers, bundlers, test runners, dev servers, databases, linters,
 formatters, git, deploy, HTTP, tunnels, load bench, file watcher, the
 QUORUM lane-join barrier, SOLDER (any command as a unit), TAIL (follow log
 files), HELM (run commands on your servers over ssh), an in-rack REPL,
-the ANVIL local EVM chain, the DYNAMO Grunt/Gulp runner, the ORACLE AI
+the ANVIL local EVM chain, the STELLAR (Soroban) and ANCHOR (Solana)
+smart-contract consoles, the DYNAMO Grunt/Gulp runner, the ORACLE AI
 error explainer, the WAYPOINT monorepo-workspace selector, and framework
 consoles for Angular, Phoenix, Next.js, Vite, Astro, SvelteKit, Nuxt,
 and Laravel (ARTISAN), and more. Patches
@@ -293,6 +294,18 @@ and the deployment book. In the rack, **ANVIL** runs your local chain
 (port/chain-id/block-time/fork-url, READY gate, resurrection) and
 **GOVERNOR** holds the gas line (`forge snapshot --check` with a
 tolerance knob) alongside the other quality gates.
+
+**And Web3 is more than the EVM here.** **STELLAR** builds Soroban
+contracts (Rust → WASM via `stellar contract build`, native `cargo
+test`, the quickstart local network one knob away) and **ANCHOR** runs
+Solana (`solana-test-validator` with a live RPC URL and a truthful
+SERVING gate, `anchor build/test`); **Cairo/Starknet is a full language
+vertical** — `Scarb.toml` projects get the official grammar, outline,
+LSP (served by scarb itself), and every Run/Build/Test lane; and the
+**Multi-Chain Bench** preset racks all three chains on one MONITOR.
+Learning spaces walk Stellar, Solana, CosmWasm, ink!, and Cairo with
+samples proven against the real toolchains. Keys never touch the IDE:
+every chain CLI manages its own identities.
 
 **The security boundary is the feature**: the IDE never touches
 private keys — no key fields, no signing code. Deploys and sends go

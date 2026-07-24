@@ -510,3 +510,15 @@ the design intent is loud. Two NEW failure patterns joined the method:
 "done" claim must be checked against the artifact it summarizes* (the
 ledger's own section headers, not the working-set memory of them). The
 standing guidance is unchanged — and the backlogs are empty again.
+
+**As of v1.136.0** (the 2026-07-23/24 Web3 arc, David-directed: "increase
+our support and coverage of Web3 tech"): STELLAR (52nd device, Soroban)
+and ANCHOR (53rd, Solana — a truthful SERVING gate on a real validator
+long-runner), learning spaces for Stellar/Solana/CosmWasm/ink! all
+live-proven against real toolchains, the Cairo/Starknet FULL language
+vertical (live-proven with scarb before the code was written — now the
+house pattern for verticals), the Multi-Chain Bench preset, and the
+arc's same-day review (third run, third single-bug catch: STELLAR's
+exit attribution had to capture the launched verb — never consult a
+knob in onFinished). Recorded premise: Move (Aptos/Sui) waits on
+grammar provenance; Sui's CLI side is clean (Apache-2.0, brewed).
