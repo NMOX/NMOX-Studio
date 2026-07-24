@@ -33,7 +33,8 @@ class KitCatalogParityTest {
             ContractKit.Chain.SOLANA, new String[]{"solana-native", "solana-program"},
             ContractKit.Chain.COSMWASM, new String[]{"cosmwasm", "cosmwasm-std"},
             ContractKit.Chain.INK, new String[]{"ink-polkadot", "ink"},
-            ContractKit.Chain.BITCOIN, new String[]{"bitcoin-miniscript", "miniscript"});
+            ContractKit.Chain.BITCOIN, new String[]{"bitcoin-miniscript", "miniscript"},
+            ContractKit.Chain.CLARITY, new String[]{"clarity-stacks", "@stacks/clarinet-sdk"});
 
     @Test
     @DisplayName("Every shared dependency pin matches between kit template and catalog space")
@@ -55,11 +56,13 @@ class KitCatalogParityTest {
         }
     }
 
-    /** The first version number pinned to {@code crate}, tolerating both
-     *  {@code crate = "X"} and {@code crate = { version = "X", ... }}. */
+    /** The first version number pinned to {@code crate}, tolerating the
+     *  cargo forms ({@code crate = "X"}, {@code crate = { version = "X" }})
+     *  and the npm form ({@code "crate": "^X"}). */
     private static String pinIn(String manifests, String crate) {
         Matcher m = Pattern.compile(
-                Pattern.quote(crate) + "\\s*=\\s*(?:\\{[^}]*version\\s*=\\s*)?\"([^\"]+)\"")
+                "\"?" + Pattern.quote(crate)
+                + "\"?\\s*[=:]\\s*(?:\\{[^}]*version\\s*=\\s*)?\"([^\"]+)\"")
                 .matcher(manifests);
         assertThat(m.find()).as("a pin for %s exists", crate).isTrue();
         return m.group(1);

@@ -55,6 +55,11 @@ class ContractKitTest {
                     .contains("name = \"sky_vault\"").contains("module sky_vault::counter");
             case BITCOIN -> assertThat(all)
                     .contains("name = \"sky_vault\"").contains("miniscript").contains("older(144)");
+            case CLARITY -> assertThat(all)
+                    .contains("name = \"sky-vault\"")           // kebab, the Clarity convention
+                    .contains("telemetry = false")              // clarinet's default is true; ours never
+                    .contains("(define-public (reset)")
+                    .contains("@stacks/clarinet-sdk");
         }
     }
 
