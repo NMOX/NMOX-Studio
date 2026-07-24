@@ -34,7 +34,8 @@ public final class ContractKit {
         COSMWASM("CosmWasm (Cosmos)", "cargo"),
         INK("ink! (Polkadot)", "cargo"),
         CAIRO("Cairo (Starknet)", "scarb"),
-        MOVE("Move (Sui)", "sui");
+        MOVE("Move (Sui)", "sui"),
+        BITCOIN("Bitcoin — Script/Miniscript", "cargo");
 
         public final String label;
         /** The tool the scaffold's test lane needs on PATH. */
@@ -94,6 +95,7 @@ public final class ContractKit {
             case INK -> ink(dir, name, outcomes);
             case CAIRO -> cairo(dir, name, outcomes);
             case MOVE -> move(dir, name, outcomes);
+            case BITCOIN -> bitcoin(dir, name, outcomes);
         }
         return outcomes;
     }
@@ -564,6 +566,69 @@ public final class ContractKit {
                 FORGE builds. `sui start` runs a local network and
                 `sui client publish` deploys — SOLDER one-liners; addresses
                 and keys live in the sui CLI's own config.
+                """.replace("%P%", pascal(name)));
+    }
+
+    // --- Bitcoin (Script / Miniscript) -------------------------------------
+
+    private static void bitcoin(File dir, String name, List<Outcome> out) throws IOException {
+        String s = snake(name);
+        write(dir, "Cargo.toml", """
+                [package]
+                name = "%S%"
+                version = "0.1.0"
+                edition = "2021"
+
+                [dependencies]
+                miniscript = { version = "13", features = ["compiler"] }
+                """.replace("%S%", s), out);
+        write(dir, "src/lib.rs", """
+                //! A Bitcoin contract is a SPENDING CONDITION: rules locked onto
+                //! coins that the whole network enforces. This one is a 2-of-2
+                //! vault with a timelocked recovery path, written as a Miniscript
+                //! policy and compiled to analyzable consensus Script.
+                use miniscript::policy::Concrete;
+                use miniscript::{Miniscript, Segwitv0};
+                use std::str::FromStr;
+
+                /// Both owners sign, OR the backup key signs after ~1 day (144 blocks).
+                pub const POLICY: &str =
+                    "or(and(pk(OwnerA),pk(OwnerB)),and(pk(Backup),older(144)))";
+
+                pub fn compile() -> Miniscript<String, Segwitv0> {
+                    Concrete::<String>::from_str(POLICY)
+                        .expect("policy parses")
+                        .compile()
+                        .expect("policy compiles")
+                }
+
+                #[cfg(test)]
+                mod tests {
+                    use super::*;
+
+                    #[test]
+                    fn vault_compiles_and_is_sane() {
+                        let ms = compile();
+                        ms.sanity_check().expect("consensus-sane");
+                        assert!(ms.script_size() > 0);
+                        assert!(format!("{ms}").contains("older(144)"));
+                    }
+                }
+                """, out);
+        notes(dir, out, """
+                # %P% — next steps (Bitcoin)
+
+                VERITAS runs the policy tests (`cargo test`) — no node needed;
+                the compiler proves the script is consensus-sane. For a real
+                chain, `brew install bitcoin` and SOLDER two lines:
+
+                    bitcoind -regtest -fallbackfee=0.0001
+                    bitcoin-cli -regtest createwallet dev
+
+                Descriptor wallets take Miniscript policies directly. Keys live
+                in Core's own wallet; the IDE never sees them. Want richer
+                contracts anchored to Bitcoin? Clarity on Stacks, or RSK via the
+                Foundry/ANVIL lanes.
                 """.replace("%P%", pascal(name)));
     }
 

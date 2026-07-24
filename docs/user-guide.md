@@ -462,8 +462,8 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   maskable variants), a readable service worker (app-shell or
   network-first, your choice), an offline page, and the `index.html`
   wiring to tie it together.
-- **Contract Kit (Web3)** — pick a chain (Solidity/Foundry, Soroban,
-  Solana, CosmWasm, ink!, Cairo, or Move) and a contract name, and the
+- **Contract Kit (Web3)** — pick a chain (Solidity/Foundry, Soroban, Solana,
+  CosmWasm, ink!, Cairo, Move, or Bitcoin/Miniscript) and a contract name, and the
   kit scaffolds the live-proven starter: manifest, contract, native
   test, and a CONTRACT-NOTES.md naming the rack devices and one-time
   steps. Keys never touch the IDE.
@@ -516,7 +516,7 @@ files, recent projects, and launchers for every tool surface.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
-*New Learning Space…* offers 84 built-in tutorials — languages (Python,
+*New Learning Space…* offers 85 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and
