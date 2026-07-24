@@ -121,6 +121,10 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> null; // spago has no outdated query — CHECK greys
                 default -> List.of("spago", "install");
             };
+            case MOVE -> switch (verb) {
+                case "outdated" -> null; // no move outdated query — CHECK greys
+                default -> List.of("sui", "move", "build"); // build fetches/updates deps
+            };
             case CAIRO -> switch (verb) {
                 case "update" -> List.of("scarb", "update");
                 case "outdated" -> null; // scarb has no outdated query — CHECK greys

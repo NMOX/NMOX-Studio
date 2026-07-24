@@ -321,6 +321,34 @@ class PolyglotDevicesTest {
     }
 
     @Test
+    @DisplayName("Move: Move.toml detects and every AUTO lane speaks sui move (v1.137.0)")
+    void moveLanes() throws IOException {
+        // live-proven before the vertical: sui 1.76.0 ran the space's
+        // counter test green against an in-memory chain
+        Rack rack = rackAimedAt("Move.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.MOVE);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("sui", "move", "build");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("sui", "move", "build");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("sui", "move", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("sui", "move", "build");
+
+        rack.shutdown();
+    }
+
+    @Test
     @DisplayName("Cairo: Scarb.toml detects and every AUTO lane speaks scarb (v1.134.0)")
     void cairoLanes() throws IOException {
         // live-proven before the vertical was written: scarb 2.20.0 ran the

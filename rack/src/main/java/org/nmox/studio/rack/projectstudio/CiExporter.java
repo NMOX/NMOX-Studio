@@ -190,6 +190,7 @@ public final class CiExporter {
                     """.stripTrailing() + "\n");
                 case VLANG -> steps.add("      - uses: vlang/setup-v@v1.4\n");
                 case CAIRO -> steps.add("      - uses: software-mansion/setup-scarb@v1\n");
+                case MOVE -> steps.add("      # NOTE: install the Sui CLI in CI (no first-party setup action); see docs.sui.io\n");
                 case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v5\n");
                 case ADA -> steps.add("      - uses: alire-project/setup-alire@v4\n");
                 // the functional web rides npm — their lanes run npx/spago

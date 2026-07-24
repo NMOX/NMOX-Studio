@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.137.0] - 2026-07-24
+
+### Move (Sui) — the second smart-contract language vertical (74 grammars, 84 spaces)
+
+Move is the resource-oriented contract language behind Sui and Aptos;
+this vertical does Sui Move, live-proven before the code was written
+(sui 1.76.0 ran the space's counter test green against an in-memory
+chain).
+
+- **Editor citizenship**: the damirka/move-syntax grammar vendored and
+  sha256-pinned (MIT) on `text/x-move` for `.move`; CSL language
+  (`//`), typing, spellcheck, keyword completion, and a brace-family
+  Navigator outline — outline lockstep gate held.
+- **A real ProjectKind**: `Move.toml` → `ProjectKind.MOVE`. Every lane
+  speaks `sui move`: FORGE `sui move build`, VERITAS `sui move test`,
+  IGNITION maps run→build (contracts have no run verb — the honest
+  action is "make my code"), CRATE builds to fetch deps with an
+  honestly-grey CHECK; the IDE-native Run/Build/Test match; ROSETTA
+  lists it; CI export emits an honest NOTE (no first-party setup
+  action). Detection mutation-proven.
+- **LSP**: `move-analyzer`; Doctor probes `sui`.
+- **Learning space #84: "Move (Sui)"** — an owned Counter object with a
+  native `test_scenario` test, and a tutorial that walks resources,
+  Sui objects, the local-network road, and the keys-stay-yours boundary.
+- **Scope, stated honestly**: this is Sui Move. Aptos is Move too — its
+  Move.toml carries an AptosFramework dependency and its lanes are
+  `aptos move compile/test`; a dialect sniff is the documented next
+  step, dialed via SOLDER today.
+
 ## [1.136.0] - 2026-07-24
 
 ### Docs truth for the Web3 arc

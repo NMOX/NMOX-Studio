@@ -41,6 +41,7 @@ public final class ProjectInspector {
         RACKET("info.rkt"),
         VLANG("v.mod"),
         CAIRO("Scarb.toml"),
+        MOVE("Move.toml"),
         FORTRAN("fpm.toml"),
         ADA("alire.toml"),
         // the functional web: these almost always sit beside a package.json,
