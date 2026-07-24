@@ -27,7 +27,7 @@ class KitCatalogParityTest {
     @TempDir
     Path root;
 
-    /** kit chain → (catalog slug, the pinned dependency's manifest line prefix). */
+    /** kit chain → (catalog slug, the pinned dependency's crate name). */
     private static final Map<ContractKit.Chain, String[]> PAIRS = Map.of(
             ContractKit.Chain.SOROBAN, new String[]{"stellar-soroban", "soroban-sdk"},
             ContractKit.Chain.SOLANA, new String[]{"solana-native", "solana-program"},
@@ -37,3 +37,53 @@ class KitCatalogParityTest {
 
     @Test
     @DisplayName("Every shared dependency pin matches between kit template and catalog space")
+    void kitAndCatalogPinsAgree() throws Exception {
+        for (var entry : PAIRS.entrySet()) {
+            ContractKit.Chain chain = entry.getKey();
+            String slug = entry.getValue()[0];
+            String crate = entry.getValue()[1];
+
+            File dir = Files.createDirectories(root.resolve(chain.name())).toFile();
+            ContractKit.scaffold(dir, chain, "Vault");
+            String kitPin = pinIn(readAll(dir), crate);
+            String catalogPin = pinIn(catalogFiles(slug), crate);
+
+            assertThat(kitPin)
+                    .as("%s: kit pins %s, catalog pins %s — the same starter, "
+                            + "two homes: keep them in lockstep", crate, kitPin, catalogPin)
+                    .isEqualTo(catalogPin);
+        }
+    }
+
+    /** The first version number pinned to {@code crate}, tolerating both
+     *  {@code crate = "X"} and {@code crate = { version = "X", ... }}. */
+    private static String pinIn(String manifests, String crate) {
+        Matcher m = Pattern.compile(
+                Pattern.quote(crate) + "\\s*=\\s*(?:\\{[^}]*version\\s*=\\s*)?\"([^\"]+)\"")
+                .matcher(manifests);
+        assertThat(m.find()).as("a pin for %s exists", crate).isTrue();
+        return m.group(1);
+    }
+
+    private static String readAll(File dir) throws Exception {
+        StringBuilder all = new StringBuilder();
+        try (var walk = Files.walk(dir.toPath())) {
+            for (Path p : walk.filter(Files::isRegularFile).toList()) {
+                all.append(Files.readString(p)).append('\n');
+            }
+        }
+        return all.toString();
+    }
+
+    /** The concatenated file bodies of a learning-catalog space. */
+    private static String catalogFiles(String slug) {
+        for (LearningCatalog.Space s : LearningCatalog.all()) {
+            if (s.slug().equals(slug)) {
+                StringBuilder all = new StringBuilder();
+                s.files().forEach(f -> all.append(f.content()).append('\n'));
+                return all.toString();
+            }
+        }
+        throw new AssertionError("no catalog space: " + slug);
+    }
+}

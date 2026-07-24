@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.141.0] - 2026-07-24
+
+### A tech-debt sprint — three dedups and a cross-home drift gate
+
+Debt only, no features. Each fix carries a test; each removal is real.
+
+- **The kit write-law lived in three copies.** ClassicKit and
+  ContractKit each inlined the never-clobber `.suggested` logic (the
+  HttpBodies-class debt). Extracted to `KitFiles.writeNeverClobber` —
+  one home, four-outcome test, mutation-proven.
+- **`AnchorDevice` reached into `StellarDevice.toolOnPath`.** A console
+  borrowing a sibling's static PATH probe. Rehomed to `CommandDevice`,
+  the shared base every console extends; the reach-in is gone.
+- **`ContractKit.Chain.tool` was a dead field.** Now drives an honest
+  "tool isn't on your PATH yet" hint in the wizard report.
+- **New: `KitCatalogParityTest`.** The Contract Kit templates and the
+  learning-catalog spaces carry the same live-proven starters, so the
+  same crate pins (soroban-sdk, cosmwasm-std, ink, solana-program,
+  miniscript) lived in two homes with nothing tying them. The gate
+  fails the build the moment they disagree — the soroban-sdk "23"
+  pin-rot lesson made structural. Mutation-proven.
+
+## [1.140.0] - 2026-07-24
+
+### Bitcoin joins the Contract Kit (8th chain)
+
+- Bitcoin's real contracts are spending conditions, not deployed
+  programs — the kit's Bitcoin chain scaffolds a 2-of-2 timelocked
+  vault as a Miniscript policy compiled to consensus-sane Script, with
+  a passing `cargo test` and no node needed. Learning space #85 teaches
+  it; the notes route regtest (`bitcoind`), Clarity/Stacks, and RSK
+  through SOLDER, keys in Bitcoin Core's own wallet. Live-proven (the
+  proof caught the miniscript-13 compiler feature flag). 8 chains, 85 spaces.
+
 ## [1.139.0] - 2026-07-24
 
 ### The Contract Kit — a Web3 contract wizard for seven chains
