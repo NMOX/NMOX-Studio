@@ -32,4 +32,32 @@ class AskOracleLiveDriver {
         assertThat(r.status()).isEqualTo(AskOracleEngine.Status.ANSWERED);
         assertThat(r.text()).isNotBlank();
     }
+
+    @Test
+    @EnabledIfSystemProperty(named = "nmox.oracle.live", matches = ".+")
+    void liveConversation() {
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
+                OracleKeys::read, unused -> true);
+        OracleConversation convo = new OracleConversation(new CodeQuestion(
+                "counter.clar", "text/x-clarity",
+                "(define-constant err-owner-only (err u100))\n"
+                + "(define-public (reset)\n  (begin\n"
+                + "    (asserts! (is-eq tx-sender contract-owner) err-owner-only)\n"
+                + "    (var-set count u0)\n    (ok true)))",
+                ""));
+        AskOracleEngine.Result first = engine.converse(convo,
+                "What does a non-owner get back from this call?", OracleClient.MODEL_HAIKU);
+        System.out.println("LIVE T1: " + first.status() + "\n" + first.text());
+        assertThat(first.status()).isEqualTo(AskOracleEngine.Status.ANSWERED);
+
+        // the follow-up only works if the model kept the conversation:
+        // "that error" refers to the previous answer, not the prompt
+        AskOracleEngine.Result second = engine.converse(convo,
+                "What is the numeric code inside that error, as a bare number?",
+                OracleClient.MODEL_HAIKU);
+        System.out.println("LIVE T2: " + second.status() + "\n" + second.text());
+        assertThat(second.status()).isEqualTo(AskOracleEngine.Status.ANSWERED);
+        assertThat(second.text()).contains("100");
+        assertThat(convo.exchanges()).isEqualTo(2);
+    }
 }
