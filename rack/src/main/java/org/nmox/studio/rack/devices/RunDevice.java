@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -154,6 +154,7 @@ public class RunDevice extends CommandDevice {
             case PURESCRIPT -> "purescript";
             case VLANG -> "vlang";
             case CAIRO -> "cairo";
+            case MOVE -> "move";
             case FORTRAN -> "fortran";
             case ADA -> "ada";
             case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
@@ -200,6 +201,7 @@ public class RunDevice extends CommandDevice {
             case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
             case "vlang" -> ProjectInspector.ProjectKind.VLANG;
             case "cairo" -> ProjectInspector.ProjectKind.CAIRO;
+            case "move" -> ProjectInspector.ProjectKind.MOVE;
             case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
             case "ada" -> ProjectInspector.ProjectKind.ADA;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
@@ -264,6 +266,7 @@ public class RunDevice extends CommandDevice {
             case "purescript" -> List.of("spago", "run");
             case "vlang" -> List.of("v", "run", ".");
             case "cairo" -> List.of("scarb", "execute"); // executable targets; libs get scarb's own honest error
+            case "move" -> List.of("sui", "move", "build"); // Move has no run verb — build is the honest "make my code"
             case "fortran" -> List.of("fpm", "run");
             case "ada" -> List.of("alr", "run");
             // ReScript compiles but has no run entry point — grey IGNITION

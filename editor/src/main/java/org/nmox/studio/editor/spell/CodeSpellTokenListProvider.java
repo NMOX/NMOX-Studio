@@ -57,6 +57,7 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/x-purescript", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-vlang", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-cairo", service = TokenListProvider.class),
+    @MimeRegistration(mimeType = "text/x-move", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-fortran", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-smalltalk", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-prolog", service = TokenListProvider.class),

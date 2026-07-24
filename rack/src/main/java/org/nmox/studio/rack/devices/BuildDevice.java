@@ -169,6 +169,7 @@ public class BuildDevice extends CommandDevice {
             case PURESCRIPT -> List.of("spago", "build");
             case VLANG -> List.of("v", ".");
             case CAIRO -> List.of("scarb", "build");
+            case MOVE -> List.of("sui", "move", "build");
             case FORTRAN -> List.of("fpm", "build");
             case ADA -> List.of("alr", "build");
             case OCAML -> List.of("dune", "build");

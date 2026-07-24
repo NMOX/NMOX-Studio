@@ -82,6 +82,7 @@ public final class LanguageServerCatalog {
         add("PureScript", "purescript-language-server", "npm i -g purescript-language-server", List.of("npm", "i", "-g", "purescript-language-server"));
         add("V", "v-analyzer", "v install v-analyzer (or see github.com/vlang/v-analyzer)", List.of());
         add("Cairo", "scarb", "brew install scarb (serves LSP via scarb cairo-language-server)", List.of());
+        add("Move", "move-analyzer", "cargo install --git https://github.com/MystenLabs/sui.git move-analyzer", List.of());
         add("Fortran", "fortls", "pip install fortls", List.of("pip", "install", "fortls"));
         add("Ada", "ada_language_server", "ships with GNAT / alr install (Alire)", List.of());
         add("Odin", "ols", "build from github.com/DanielGavin/ols", List.of());

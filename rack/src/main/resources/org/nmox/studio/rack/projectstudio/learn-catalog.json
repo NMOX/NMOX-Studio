@@ -2844,6 +2844,43 @@
         }
       ],
       "tutorial": "# Cairo (Starknet)\n\nCairo is the language of provable computation: programs compile to\ntraces a STARK prover can attest to, and it powers Starknet's smart\ncontracts. It reads like Rust \u2014 and NMOX Studio treats it like a\nfirst-class language.\n\n## 1. Run the test\n\nPress **GO**: `scarb test`. Scarb (Cairo's build tool and package\nmanager) compiles the package and runs the test natively \u2014 watch the\ngas estimate printed beside the passing test. Every computation in\nCairo has a provable cost.\n\n## 2. Read the code\n\n`src/lib.cairo` is Rust-shaped: `pub fn`, `let mut`, `while`, modules,\nand `#[cfg(test)]`. The dedicated types (`felt252`, `u128`) are field\nelements and bounded integers the prover reasons about.\n\n## 3. The IDE knows Cairo\n\nScarb.toml makes this a real project: Run/Build/Test and the rack's\nIGNITION/FORGE/VERITAS lanes all speak scarb, the editor highlights\n`.cairo` with the official grammar, the Navigator shows the structure,\nand scarb itself serves the language server.\n\n## 4. Toward Starknet\n\nContracts add `#[starknet::contract]` modules and deploy with Starknet\nFoundry (`snforge`, `sncast`) \u2014 SOLDER one-liners once you have a\ndevnet. Account keys live in sncast's own config; the IDE never\ntouches them.\n"
+    },
+    {
+      "slug": "move-sui",
+      "name": "Move (Sui)",
+      "category": "LANGUAGE",
+      "family": "Web3",
+      "blurb": "Resource-oriented smart contracts: Move on Sui, tested natively against an in-memory chain.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "sui",
+          "move",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install sui",
+        "linux": "cargo install --locked --git https://github.com/MystenLabs/sui.git sui",
+        "windows": "choco install sui"
+      },
+      "files": [
+        {
+          "path": "Move.toml",
+          "content": "[package]\nname = \"hello_move\"\nedition = \"2024\"\n\n[dependencies]\n"
+        },
+        {
+          "path": "sources/counter.move",
+          "content": "/// A minimal Sui Move module: an owned Counter object with public\n/// functions callable straight from a programmable transaction block.\nmodule hello_move::counter {\n\n    public struct Counter has key, store {\n        id: UID,\n        value: u64,\n    }\n\n    /// Create a fresh counter and give it to the caller. The linter nudges\n    /// toward composable (return-the-object) designs; for a first module the\n    /// self-transfer is the clearest shape, so we opt out of that one lint.\n    #[allow(lint(self_transfer))]\n    public fun create(ctx: &mut TxContext) {\n        transfer::public_transfer(\n            Counter { id: object::new(ctx), value: 0 },\n            tx_context::sender(ctx),\n        );\n    }\n\n    public fun bump(counter: &mut Counter) {\n        counter.value = counter.value + 1;\n    }\n\n    public fun value(counter: &Counter): u64 {\n        counter.value\n    }\n}\n"
+        },
+        {
+          "path": "tests/counter_tests.move",
+          "content": "#[test_only]\nmodule hello_move::counter_tests {\n    use hello_move::counter::{Self, Counter};\n    use sui::test_scenario;\n\n    #[test]\n    fun bumps() {\n        let dev = @0xCAFE;\n        let mut sc = test_scenario::begin(dev);\n        counter::create(sc.ctx());\n        sc.next_tx(dev);\n        {\n            let mut c = sc.take_from_sender<Counter>();\n            assert!(counter::value(&c) == 0, 0);\n            counter::bump(&mut c);\n            assert!(counter::value(&c) == 1, 1);\n            sc.return_to_sender(c);\n        };\n        sc.end();\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# Move smart contracts (Sui)\n\nMove is a smart-contract language built around **resources** \u2014 values\nthe type system guarantees can't be copied or silently dropped, which\nis exactly what you want for assets. Sui and Aptos both speak it; this\nspace uses Sui.\n\n## 1. Run the test\n\nPress **GO**: `sui move test`. Sui's `test_scenario` gives you a whole\nin-memory chain \u2014 create the Counter object, bump it, assert its value,\nall natively, no network.\n\n## 2. Read the module\n\n`public struct Counter has key, store` is a Sui *object*: `key` makes it\nownable on-chain, the `UID` is its identity. Public functions are\ncallable straight from a transaction. `create` mints one and transfers\nit to the caller; `bump` mutates it through a `&mut` reference.\n\n## 3. Build and a local network\n\nRack a rack with **FORGE** (`sui move build`) and **VERITAS**\n(`sui move test`) \u2014 a `Move.toml` project drives both, and the editor\nhighlights `.move` with the official grammar, shows the outline, and\n(with `move-analyzer` installed) offers a language server. For a real\nchain, `sui start` runs a local network and `sui client publish` deploys\n\u2014 SOLDER one-liners.\n\n## 4. Keys stay yours\n\nThe sui CLI manages addresses and keys in its own config\n(`~/.sui/sui_config`); the IDE never sees them. Aptos is Move too \u2014 its\n`Move.toml` carries an AptosFramework dependency and its lanes are\n`aptos move compile/test` (dial SOLDER for those today).\n"
     }
   ]
 }
