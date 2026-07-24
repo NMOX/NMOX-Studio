@@ -90,6 +90,33 @@ public final class OracleClient {
         }
     }
 
+    /**
+     * Everything the editor's Ask ORACLE sends, and the whole of it: the
+     * SELECTED code (capped), the file's name and language, and the
+     * user's question. Nothing else — not the rest of the file, not other
+     * files, not the environment. This record IS the disclosure the code
+     * consent dialog promises, exactly as {@link FailureContext} is for
+     * the failure flow.
+     */
+    public record CodeQuestion(String fileName, String language, String code,
+            String question) {
+
+        /** The selection cap: enough for any honest "explain this" ask. */
+        public static final int MAX_CODE_CHARS = 8_000;
+        static final int MAX_QUESTION_CHARS = 500;
+
+        public CodeQuestion {
+            code = code == null ? "" : code;
+            if (code.length() > MAX_CODE_CHARS) {
+                code = code.substring(0, MAX_CODE_CHARS) + "\n[selection truncated]";
+            }
+            question = question == null ? "" : question;
+            if (question.length() > MAX_QUESTION_CHARS) {
+                question = question.substring(0, MAX_QUESTION_CHARS);
+            }
+        }
+    }
+
     /** How a request body reaches the API; the seam tests inject. */
     public interface Transport {
 
@@ -129,6 +156,18 @@ public final class OracleClient {
         return parseExplanation(response);
     }
 
+    /**
+     * Answers a question about selected code — the editor's Ask ORACLE.
+     * Same contract as {@link #explain}: the caller owns the key array,
+     * and every failure mode surfaces as an {@link IOException} the UI
+     * turns into an honest message.
+     */
+    public String ask(CodeQuestion q, String model, char[] apiKey) throws IOException {
+        String body = requestBody(model, assembleCodePrompt(q));
+        String response = transport.post(ENDPOINT, body, apiKey);
+        return parseExplanation(response);
+    }
+
     // ---- pure, unit-testable core -----------------------------------------
 
     /**
@@ -160,6 +199,26 @@ public final class OracleClient {
 
     private static String nz(String s) {
         return s == null || s.isBlank() ? "(unknown)" : s;
+    }
+
+    /**
+     * The code-question prompt, a pure function of the {@link CodeQuestion}.
+     * Deterministic so a test asserts it verbatim; states the boundary to
+     * the model the same way the consent dialog states it to the user.
+     */
+    static String assembleCodePrompt(CodeQuestion q) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("You are helping a developer understand code inside their IDE. ")
+                .append("You are given ONLY the selection below — not the rest of ")
+                .append("the file, not the project. Answer concisely and concretely; ")
+                .append("if the selection alone cannot answer the question, say so ")
+                .append("and name what is missing.\n\n");
+        sb.append("File: ").append(nz(q.fileName())).append('\n');
+        sb.append("Language: ").append(nz(q.language())).append('\n');
+        sb.append("Question: ").append(q.question().isBlank()
+                ? "Explain what this code does." : q.question()).append('\n');
+        sb.append("Selected code:\n").append(q.code()).append('\n');
+        return sb.toString();
     }
 
     /** The Messages request envelope: model, token cap, one user turn. */
