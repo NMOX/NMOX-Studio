@@ -59,6 +59,32 @@ class WebProjectCommandsTest {
     }
 
     @Test
+    @DisplayName("Move actions follow the dialect — Sui by default, Aptos when Move.toml names AptosFramework (v1.142.0)")
+    void moveDialectTruth() throws Exception {
+        File suiRepo = Files.createDirectory(dir.resolve("sui-repo")).toFile();
+        Files.writeString(suiRepo.toPath().resolve("Move.toml"),
+                "[package]\nname = \"counter\"\nedition = \"2024.beta\"\n");
+        assertThat(WebProjectCommands.commandFor(suiRepo, ProjectKind.MOVE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("sui", "move", "build");
+        assertThat(WebProjectCommands.commandFor(suiRepo, ProjectKind.MOVE, ActionProvider.COMMAND_TEST))
+                .containsExactly("sui", "move", "test");
+
+        File aptosRepo = Files.createDirectory(dir.resolve("aptos-repo")).toFile();
+        Files.writeString(aptosRepo.toPath().resolve("Move.toml"), """
+                [package]
+                name = "counter"
+
+                [dependencies.AptosFramework]
+                git = "https://github.com/aptos-labs/aptos-framework.git"
+                rev = "mainnet"
+                """);
+        assertThat(WebProjectCommands.commandFor(aptosRepo, ProjectKind.MOVE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("aptos", "move", "compile");
+        assertThat(WebProjectCommands.commandFor(aptosRepo, ProjectKind.MOVE, ActionProvider.COMMAND_TEST))
+                .containsExactly("aptos", "move", "test");
+    }
+
+    @Test
     @DisplayName("Node RUN falls back start -> serve, and is null when none exist")
     void nodeRunFallback() throws Exception {
         // distinct dirs: ProjectInspector caches package.json per path, so

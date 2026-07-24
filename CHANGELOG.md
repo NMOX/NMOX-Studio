@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.142.0] - 2026-07-24
+
+### Move speaks both dialects — the Aptos sniff
+
+The Move vertical's one documented remainder (recorded at v1.137.0):
+one Move.toml, two CLIs. Live-proven BEFORE the code: aptos 9.5.0
+compiled and tested a counter module green (`aptos move test`, PASS).
+
+- `ProjectInspector.moveDialect` — Sui-first as documented; APTOS only
+  when Move.toml names the AptosFramework dependency (the dotted table
+  `aptos move init` writes, or the inline form; capped text scan).
+- All five Move lane sites route through one pair of dialect-aware
+  helpers (`moveBuildCommand`/`moveTestCommand`), so the verb difference
+  (Sui `build` vs Aptos `compile`) can never drift per-site: IGNITION,
+  FORGE, VERITAS, CRATE, and the IDE-native Run/Build/Test.
+- Doctor probes `aptos`; the CI-export Move NOTE names both CLIs.
+- Mutation-proven: deleting the sniff fails the two named tests.
+
 ## [1.141.0] - 2026-07-24
 
 ### A tech-debt sprint — three dedups and a cross-home drift gate

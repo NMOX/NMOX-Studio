@@ -349,6 +349,66 @@ class PolyglotDevicesTest {
     }
 
     @Test
+    @DisplayName("Move Aptos dialect: AptosFramework in Move.toml flips every lane to aptos move (v1.142.0)")
+    void aptosMoveLanes() throws IOException {
+        // live-proven before the code: aptos 9.5.0 ran a counter test green
+        // (`aptos move test`, PASS 1/1) and compiled it (`aptos move compile`).
+        // The manifest below is the exact shape `aptos move init` writes.
+        Rack rack = rackAimedAt("Move.toml");
+        Files.writeString(projectDir.resolve("Move.toml"), """
+                [package]
+                name = "counter"
+                version = "1.0.0"
+
+                [dependencies.AptosFramework]
+                git = "https://github.com/aptos-labs/aptos-framework.git"
+                rev = "mainnet"
+                subdir = "aptos-framework"
+                """);
+        assertThat(ProjectInspector.moveDialect(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.MoveDialect.APTOS);
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("aptos", "move", "compile");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("aptos", "move", "compile");
+
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("aptos", "move", "test");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("aptos", "move", "compile");
+
+        rack.shutdown();
+    }
+
+    @Test
+    @DisplayName("Move dialect sniff: inline dep matches, bare manifest and missing file stay Sui")
+    void moveDialectSniff() throws IOException {
+        // inline form (hand-written manifests)
+        Files.writeString(projectDir.resolve("Move.toml"),
+                "[dependencies]\nAptosFramework = { git = \"x\", rev = \"mainnet\" }\n");
+        assertThat(ProjectInspector.moveDialect(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.MoveDialect.APTOS);
+
+        // a Sui manifest mentions no AptosFramework — Sui-first default
+        Files.writeString(projectDir.resolve("Move.toml"),
+                "[package]\nname = \"counter\"\nedition = \"2024.beta\"\n");
+        assertThat(ProjectInspector.moveDialect(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.MoveDialect.SUI);
+
+        // no Move.toml at all: still the Sui default, never a crash
+        Files.delete(projectDir.resolve("Move.toml"));
+        assertThat(ProjectInspector.moveDialect(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.MoveDialect.SUI);
+    }
+
+    @Test
     @DisplayName("Cairo: Scarb.toml detects and every AUTO lane speaks scarb (v1.134.0)")
     void cairoLanes() throws IOException {
         // live-proven before the vertical was written: scarb 2.20.0 ran the
