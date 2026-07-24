@@ -2812,6 +2812,38 @@
         }
       ],
       "tutorial": "# ink! smart contracts (Polkadot)\n\nink! is Polkadot's smart-contract language: a Rust eDSL compiling to\nWASM for any Substrate chain with the contracts pallet.\n\n## 1. Run the test\n\nPress **GO**: `cargo test`. `#[ink::test]` runs the contract in an\noff-chain environment \u2014 storage, constructor, and messages all work\nnatively, no node.\n\n## 2. Read the contract\n\n`#[ink(storage)]` is the contract's state; `#[ink(constructor)]` runs\nat instantiation; `#[ink(message)]` marks callable entry points. The\nflipper is ink!'s canonical hello world.\n\n## 3. Toward a real chain\n\n`cargo-contract` builds the deployable bundle (`cargo contract build`)\nand `substrate-contracts-node` runs a local chain \u2014 SOLDER one-liners\n(`cargo install cargo-contract`). Keys stay in the node/CLI keyring;\nthe IDE never touches them.\n"
+    },
+    {
+      "slug": "cairo-starknet",
+      "name": "Cairo (Starknet)",
+      "category": "LANGUAGE",
+      "family": "Web3",
+      "blurb": "The language of provable computation \u2014 Rust-shaped, STARK-provable, and the heart of Starknet.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "scarb",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install scarb",
+        "linux": "curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh",
+        "windows": "winget install SoftwareMansion.Scarb"
+      },
+      "files": [
+        {
+          "path": "Scarb.toml",
+          "content": "[package]\nname = \"hello_cairo\"\nversion = \"0.1.0\"\nedition = \"2024_07\"\n\n[dev-dependencies]\ncairo_test = \"2\"\n"
+        },
+        {
+          "path": "src/lib.cairo",
+          "content": "/// Provable computation: Cairo functions compile to STARK-provable traces.\npub fn fib(n: u32) -> u128 {\n    let mut a: u128 = 0;\n    let mut b: u128 = 1;\n    let mut i: u32 = 0;\n    while i != n {\n        let next = a + b;\n        a = b;\n        b = next;\n        i += 1;\n    };\n    a\n}\n\n#[cfg(test)]\nmod tests {\n    use super::fib;\n\n    #[test]\n    fn fib_works() {\n        assert!(fib(0) == 0, \"base\");\n        assert!(fib(10) == 55, \"tenth\");\n    }\n}\n"
+        }
+      ],
+      "tutorial": "# Cairo (Starknet)\n\nCairo is the language of provable computation: programs compile to\ntraces a STARK prover can attest to, and it powers Starknet's smart\ncontracts. It reads like Rust \u2014 and NMOX Studio treats it like a\nfirst-class language.\n\n## 1. Run the test\n\nPress **GO**: `scarb test`. Scarb (Cairo's build tool and package\nmanager) compiles the package and runs the test natively \u2014 watch the\ngas estimate printed beside the passing test. Every computation in\nCairo has a provable cost.\n\n## 2. Read the code\n\n`src/lib.cairo` is Rust-shaped: `pub fn`, `let mut`, `while`, modules,\nand `#[cfg(test)]`. The dedicated types (`felt252`, `u128`) are field\nelements and bounded integers the prover reasons about.\n\n## 3. The IDE knows Cairo\n\nScarb.toml makes this a real project: Run/Build/Test and the rack's\nIGNITION/FORGE/VERITAS lanes all speak scarb, the editor highlights\n`.cairo` with the official grammar, the Navigator shows the structure,\nand scarb itself serves the language server.\n\n## 4. Toward Starknet\n\nContracts add `#[starknet::contract]` modules and deploy with Starknet\nFoundry (`snforge`, `sncast`) \u2014 SOLDER one-liners once you have a\ndevnet. Account keys live in sncast's own config; the IDE never\ntouches them.\n"
     }
   ]
 }

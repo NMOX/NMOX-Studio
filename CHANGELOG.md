@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.134.0] - 2026-07-23
+
+### Cairo (Starknet) — a full language vertical (73 grammars, 83 spaces)
+
+The first non-EVM smart-contract LANGUAGE to get the complete NMOX
+treatment, live-proven before a line of product code was written
+(scarb 2.20.0 ran the learning space's fib test with a gas estimate).
+
+- **Editor citizenship**: the official software-mansion/vscode-cairo
+  grammar vendored and sha256-pinned (Apache-2.0) on `text/x-cairo`
+  for `.cairo`; CSL language (`//` comments via the Lexers.find cycle
+  guard), typing intelligence, spellcheck, keyword completion
+  (Rust-shaped keywords + felt252/u128/Array/Span), and a Navigator
+  outline on the brace family — with the OutlineNavigatorGateTest
+  lockstep holding.
+- **A real ProjectKind**: `Scarb.toml` → `ProjectKind.CAIRO` (unlike
+  the Rust-based chains, Cairo IS its own language and manifest).
+  Every AUTO lane speaks scarb: IGNITION `scarb execute` (libs get
+  scarb's own honest error), FORGE `scarb build`, VERITAS `scarb test`,
+  CRATE deps-at-build with update and an honestly-grey CHECK; the
+  IDE-native Run/Build/Test lanes match; ROSETTA lists it; CI export
+  emits software-mansion/setup-scarb. Knob entries appended at array
+  ends per the append-only law; detection mutation-proven.
+- **LSP**: scarb itself serves it (`scarb cairo-language-server`);
+  Doctor probes scarb.
+- **Learning space #83: "Cairo (Starknet)"** — provable computation
+  with a passing native test and a tutorial that walks the gas
+  estimate, the Rust-shaped syntax, and the Starknet Foundry road
+  (keys in sncast's own config, never the IDE).
+
 ## [1.133.0] - 2026-07-23
 
 ### Multi-Chain Bench — the Web3 arc gets its preset

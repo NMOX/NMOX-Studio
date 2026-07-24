@@ -66,6 +66,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-vlang", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-cairo", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-fortran", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-smalltalk", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-prolog", service = CompletionProvider.class),
@@ -270,6 +271,7 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "derive if then else case of let in do ado forall infixl infixr foreign "
                     + "Boolean Int Number String Char Array Maybe Just Nothing Either Left Right Effect Aff Unit "
                     + "pure bind map discard")),
+            Map.entry("text/x-cairo", set("as break const continue else enum extern false fn if impl let loop match mod mut nopanic of pub ref return struct trait true type use while assert felt252 bool u8 u16 u32 u64 u128 u256 usize Array Option Span")),
             Map.entry("text/x-vlang", set("as asm assert atomic break const continue defer else enum false fn "
                     + "for go goto if import in interface is isreftype lock match module mut none or "
                     + "return rlock select shared sizeof spawn static struct true type typeof union unsafe "
