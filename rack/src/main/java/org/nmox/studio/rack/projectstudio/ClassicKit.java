@@ -529,21 +529,7 @@ public final class ClassicKit {
      */
     private static Outcome writeGenerated(File dir, String name, String content)
             throws IOException {
-        File target = new File(dir, name);
-        if (!target.exists()) {
-            Files.writeString(target.toPath(), content, StandardCharsets.UTF_8);
-            return new Outcome(name, "written", true);
-        }
-        if (content.equals(Files.readString(target.toPath(), StandardCharsets.UTF_8))) {
-            return new Outcome(name, "already exists, untouched", false);
-        }
-        File suggested = new File(dir, name + ".suggested");
-        if (suggested.exists()) {
-            return new Outcome(name,
-                    "skipped — " + name + " and " + name + ".suggested both exist", false);
-        }
-        Files.writeString(suggested.toPath(), content, StandardCharsets.UTF_8);
-        return new Outcome(name + ".suggested",
-                "existing " + name + " kept — suggestion written alongside", true);
+        KitFiles.Write w = KitFiles.writeNeverClobber(dir, name, content);
+        return new Outcome(w.path(), w.status(), w.changed());
     }
 }

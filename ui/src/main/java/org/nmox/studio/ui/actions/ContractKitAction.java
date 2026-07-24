@@ -33,6 +33,11 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_ContractKitAction=Contract Kit (Web3)...")
 public final class ContractKitAction implements ActionListener {
 
+    /** True when the chain's tool resolves on the augmented PATH. */
+    static boolean toolOnPath(String tool) {
+        return !org.nmox.studio.core.process.ToolLocator.resolve(tool).equals(tool);
+    }
+
     /** The report surface, Standards Kit style: ✓ changed, – left alone. */
     static String renderReport(List<ContractKit.Outcome> outcomes) {
         StringBuilder report = new StringBuilder();
@@ -98,9 +103,12 @@ public final class ContractKitAction implements ActionListener {
                 List<ContractKit.Outcome> outcomes =
                         ContractKit.scaffold(project, chain, contractName);
                 String report = renderReport(outcomes);
+                String hint = toolOnPath(chain.tool) ? ""
+                        : "\n\nHeads up: `" + chain.tool + "` isn't on your PATH yet — "
+                          + "CONTRACT-NOTES.md has the install line.";
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message("Contract Kit (" + chain.label + "):\n\n"
-                                + report + "\nCONTRACT-NOTES.md has the next steps.",
+                                + report + "\nCONTRACT-NOTES.md has the next steps." + hint,
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not scaffold: " + ex.getMessage();

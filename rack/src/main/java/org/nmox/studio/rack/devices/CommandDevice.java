@@ -24,6 +24,22 @@ import org.nmox.studio.rack.ui.controls.VuMeter;
  */
 public abstract class CommandDevice extends RackDevice {
 
+    /** True when {@code tool} resolves on the IDE's augmented PATH — the
+     *  shared availability probe every console's grey-honestly path uses
+     *  (moved here from StellarDevice in the v1.141.0 debt sprint: a
+     *  device borrowing another device's static was a reach-in). */
+    protected static boolean toolOnPath(String tool) {
+        for (String dir : org.nmox.studio.core.process.ToolLocator.augmentedPath()
+                .split(java.io.File.pathSeparator)) {
+            if (new java.io.File(dir, tool).canExecute()
+                    || new java.io.File(dir, tool + ".exe").canExecute()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     /** Exit codes from STOP-button kills (SIGINT/SIGKILL/SIGTERM); not real failures. */
     private static final Set<Integer> KILL_EXIT_CODES = Set.of(130, 137, 143);
 

@@ -2,8 +2,6 @@ package org.nmox.studio.rack.projectstudio;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -638,31 +636,10 @@ public final class ContractKit {
         write(dir, "CONTRACT-NOTES.md", content, out);
     }
 
-    /** The Classic Kit write law: never clobber, suggest alongside. */
+    /** The one kit write law lives in {@link KitFiles}; kits never inline it. */
     private static void write(File dir, String path, String content, List<Outcome> out)
             throws IOException {
-        File target = new File(dir, path);
-        File parent = target.getParentFile();
-        if (parent != null && !parent.isDirectory() && !parent.mkdirs()) {
-            throw new IOException("cannot create " + parent);
-        }
-        if (!target.exists()) {
-            Files.writeString(target.toPath(), content, StandardCharsets.UTF_8);
-            out.add(new Outcome(path, "written", true));
-            return;
-        }
-        if (content.equals(Files.readString(target.toPath(), StandardCharsets.UTF_8))) {
-            out.add(new Outcome(path, "already exists, untouched", false));
-            return;
-        }
-        File suggested = new File(dir, path + ".suggested");
-        if (suggested.exists()) {
-            out.add(new Outcome(path,
-                    "skipped — " + path + " and " + path + ".suggested both exist", false));
-            return;
-        }
-        Files.writeString(suggested.toPath(), content, StandardCharsets.UTF_8);
-        out.add(new Outcome(path + ".suggested",
-                "existing " + path + " kept — suggestion written alongside", true));
+        KitFiles.Write w = KitFiles.writeNeverClobber(dir, path, content);
+        out.add(new Outcome(w.path(), w.status(), w.changed()));
     }
 }

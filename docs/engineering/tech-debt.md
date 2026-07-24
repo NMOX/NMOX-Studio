@@ -20,6 +20,34 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Closed — the v1.141.0 debt sprint (2026-07-24)
+
+Three real duplications/reach-ins, each fixed with a test; plus a new
+cross-home drift gate. No feature work — debt only.
+
+### The kit write-law lived in three copies — CLOSED (v1.141.0)
+`ClassicKit` and `ContractKit` each inlined the never-clobber
+`.suggested` logic (the HttpBodies-class debt from v1.124.0). Extracted
+to `KitFiles.writeNeverClobber` — the one home every kit generator now
+calls; `KitFilesTest` pins the four outcomes, mutation-proven.
+
+### `AnchorDevice` reached into `StellarDevice.toolOnPath` — CLOSED (v1.141.0)
+A console borrowing a sibling device's static PATH probe was a reach-in.
+The helper moved home to `CommandDevice` (the shared base every console
+extends); the cross-device call is gone.
+
+### `ContractKit.Chain.tool` was a dead field — CLOSED (v1.141.0)
+Added but never read. Now drives an honest "`<tool>` isn't on your PATH
+yet" hint in the wizard's report — the field earns its place.
+
+### Kit and catalog pins drifted freely — GATED (v1.141.0)
+The Contract Kit's templates and the learning-catalog spaces carry the
+SAME live-proven starters, so the same dependency pins (soroban-sdk,
+cosmwasm-std, ink, solana-program, miniscript) lived in two places with
+nothing tying them. `KitCatalogParityTest` now fails the build the
+moment they disagree — the soroban-sdk "23" pin-rot lesson made
+structural. Mutation-proven (kit→26 vs catalog→27 fails loud).
+
 ## Open — deferred deliberately, with reasons (added v1.76.0, the fourth review)
 
 ### 46. CiExporter emits no setup step for the post-v1.59 toolchains — CLOSED (v1.79.0)
