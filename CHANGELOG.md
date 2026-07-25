@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.149.0] - 2026-07-25
+
+### The AI-arc review — three finds, one surviving mutant
+
+Two lenses (disclosure/security, Swing/lifecycle) over v1.146-v1.148:
+
+- **A cap landing mid-emoji emitted a lone surrogate** — Java substring
+  is UTF-16, so an emoji straddling the 8k/2k boundary sent half a
+  character the API would reject as bad JSON. All three caps now cut on
+  code-point boundaries (CodeQuestion.truncate).
+- **Two windows on one conversation could race record()** — a double
+  VIEW plus the dialog RP going multi-lane made concurrent sends
+  possible. converse() now holds a per-conversation lock (one in-flight
+  send per subject), the dialog RP is 3-wide so windows never block
+  each other, and VIEW fronts the existing window instead of twinning.
+- **The first lock test let the mutant survive** — record() re-derives
+  from current state, so the structural assertion healed itself even
+  when the race fired. The rewritten rendezvous test pins what the race
+  actually breaks: without the lock both requests carry 1 turn and the
+  recorded history lies about what was sent; with it the bodies are
+  {1,3}. Mutation now killed by name.
+- Verified CLEAN: key wipes in finally on every path, consent prompts
+  off the EDT, escape() on consent HTML, volatile seeding publication,
+  post-close RP appends harmless. Rack oracle tests 48.
+
 ## [1.148.0] - 2026-07-25
 
 ### EXPLAIN holds a conversation — the failure flow catches up

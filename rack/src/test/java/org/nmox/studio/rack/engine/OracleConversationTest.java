@@ -107,6 +107,62 @@ class OracleConversationTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    // ---- the v1.149.0 review fixes ------------------------------------------
+
+    @Test
+    @DisplayName("Caps cut on code-point boundaries — never a lone surrogate to the API")
+    void capsRespectCodePoints() {
+        // an emoji straddling the cap: high surrogate at index cap-1
+        String straddling = "a".repeat(CodeQuestion.MAX_CODE_CHARS - 1) + "😀tail";
+        CodeQuestion q = new CodeQuestion("F.java", "text/x-java", straddling, "");
+        String kept = q.code().replace("\n[selection truncated]", "");
+        assertThat(Character.isHighSurrogate(kept.charAt(kept.length() - 1)))
+                .as("the cap must drop the split emoji, not emit half of it").isFalse();
+
+        String longFollowUp = "b".repeat(OracleConversation.MAX_FOLLOW_UP_CHARS - 1)
+                + "😀tail";
+        OracleConversation convo = new OracleConversation(subject());
+        convo.record("q", "a");
+        String sent = convo.outgoing(longFollowUp).get(2).text();
+        assertThat(Character.isHighSurrogate(sent.charAt(sent.length() - 1))).isFalse();
+    }
+
+    @Test
+    @DisplayName("Concurrent sends on ONE conversation serialize — the second request replays the first")
+    void concurrentSendsSerialize() throws Exception {
+        // a rendezvous transport: releases only when BOTH sends are inside
+        // it at once. With the engine's per-conversation lock that overlap
+        // is impossible (the latch times out and each send proceeds alone),
+        // so the second request body carries 3 turns — the first exchange
+        // replayed. Without the lock both arrive together and both send a
+        // 1-turn body: the recorded history then LIES about what was sent.
+        java.util.concurrent.CountDownLatch both = new java.util.concurrent.CountDownLatch(2);
+        java.util.List<Integer> turnCounts =
+                java.util.Collections.synchronizedList(new ArrayList<>());
+        OracleClient.Transport rendezvous = (url, body, key) -> {
+            turnCounts.add(new JSONObject(body).getJSONArray("messages").length());
+            both.countDown();
+            try {
+                both.await(400, java.util.concurrent.TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return messageResponse("ok");
+        };
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(rendezvous),
+                () -> "key".toCharArray(), unused -> true);
+        OracleConversation convo = new OracleConversation(subject());
+        Thread a = new Thread(() -> engine.converse(convo, "one", OracleClient.MODEL_HAIKU));
+        Thread b = new Thread(() -> engine.converse(convo, "two", OracleClient.MODEL_HAIKU));
+        a.start();
+        b.start();
+        a.join(5_000);
+        b.join(5_000);
+        assertThat(convo.exchanges()).isEqualTo(2);
+        assertThat(turnCounts).as("serialized sends: the later one replays the earlier exchange")
+                .containsExactlyInAnyOrder(1, 3);
+    }
+
     // ---- the failure flow (v1.148.0) ---------------------------------------
 
     private static OracleClient.FailureContext failure() {

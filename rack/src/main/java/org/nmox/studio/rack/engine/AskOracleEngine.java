@@ -42,6 +42,14 @@ public final class AskOracleEngine {
      * cap. On success the exchange is committed to the conversation.
      */
     public Result converse(OracleConversation convo, String userText, String model) {
+        // one in-flight send per conversation: two windows on the same
+        // subject (a double VIEW) must serialize, or record() would race
+        synchronized (convo) {
+            return converseLocked(convo, userText, model);
+        }
+    }
+
+    private Result converseLocked(OracleConversation convo, String userText, String model) {
         if (!convo.hasSubject()) {
             return new Result(Status.NO_SELECTION,
                     "Nothing to talk about yet — select code, or run something first.");

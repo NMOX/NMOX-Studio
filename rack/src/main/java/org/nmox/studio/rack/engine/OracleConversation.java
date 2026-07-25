@@ -100,7 +100,7 @@ public final class OracleConversation {
         } else {
             String text = userText == null ? "" : userText;
             if (text.length() > MAX_FOLLOW_UP_CHARS) {
-                text = text.substring(0, MAX_FOLLOW_UP_CHARS);
+                text = OracleClient.CodeQuestion.truncate(text, MAX_FOLLOW_UP_CHARS);
             }
             out.add(new Turn("user", text));
         }
