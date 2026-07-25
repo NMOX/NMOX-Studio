@@ -128,17 +128,28 @@ class OracleConversationTest {
     }
 
     @Test
-    @DisplayName("Concurrent sends on ONE conversation serialize — history never corrupts")
+    @DisplayName("Concurrent sends on ONE conversation serialize — the second request replays the first")
     void concurrentSendsSerialize() throws Exception {
-        OracleClient.Transport slow = (url, body, key) -> {
+        // a rendezvous transport: releases only when BOTH sends are inside
+        // it at once. With the engine's per-conversation lock that overlap
+        // is impossible (the latch times out and each send proceeds alone),
+        // so the second request body carries 3 turns — the first exchange
+        // replayed. Without the lock both arrive together and both send a
+        // 1-turn body: the recorded history then LIES about what was sent.
+        java.util.concurrent.CountDownLatch both = new java.util.concurrent.CountDownLatch(2);
+        java.util.List<Integer> turnCounts =
+                java.util.Collections.synchronizedList(new ArrayList<>());
+        OracleClient.Transport rendezvous = (url, body, key) -> {
+            turnCounts.add(new JSONObject(body).getJSONArray("messages").length());
+            both.countDown();
             try {
-                Thread.sleep(30);
+                both.await(400, java.util.concurrent.TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
             return messageResponse("ok");
         };
-        AskOracleEngine engine = new AskOracleEngine(new OracleClient(slow),
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(rendezvous),
                 () -> "key".toCharArray(), unused -> true);
         OracleConversation convo = new OracleConversation(subject());
         Thread a = new Thread(() -> engine.converse(convo, "one", OracleClient.MODEL_HAIKU));
@@ -147,12 +158,9 @@ class OracleConversationTest {
         b.start();
         a.join(5_000);
         b.join(5_000);
-        // both landed, in SOME order, with intact user/assistant alternation
         assertThat(convo.exchanges()).isEqualTo(2);
-        List<Turn> h = convo.history();
-        for (int i = 0; i < h.size(); i++) {
-            assertThat(h.get(i).role()).isEqualTo(i % 2 == 0 ? "user" : "assistant");
-        }
+        assertThat(turnCounts).as("serialized sends: the later one replays the earlier exchange")
+                .containsExactlyInAnyOrder(1, 3);
     }
 
     // ---- the failure flow (v1.148.0) ---------------------------------------
