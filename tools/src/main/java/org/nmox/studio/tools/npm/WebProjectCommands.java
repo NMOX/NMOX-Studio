@@ -135,6 +135,42 @@ final class WebProjectCommands {
                 // IDE's Run and the rack agree on what "run" means here
                 return ActionProvider.COMMAND_RUN.equals(action)
                         ? List.of("python3", "-m", "http.server", "8000") : null;
+            // ---- v1.163.0: the kinds the rack always spoke but F6/F11
+            // silently greyed — commands mirror the rack device tables ----
+            case BUN:
+                return fixed(action, List.of("bun", "run", "start"),
+                        List.of("bun", "run", "build"), List.of("bun", "test"), null);
+            case DENO:
+                return fixed(action, List.of("deno", "task", "start"),
+                        List.of("deno", "task", "build"), List.of("deno", "test"), null);
+            case ERLANG:
+                // BEAM apps run under mix/releases — no honest bare run
+                return fixed(action, null, List.of("rebar3", "compile"),
+                        List.of("rebar3", "eunit"), List.of("rebar3", "clean"));
+            case CLOJURE:
+                return fixed(action, List.of("clojure", "-M:run"),
+                        List.of("clojure", "-P"), List.of("clojure", "-X:test"), null);
+            case SCALA:
+                return fixed(action, List.of("sbt", "run"), List.of("sbt", "compile"),
+                        List.of("sbt", "test"), List.of("sbt", "clean"));
+            case HASKELL:
+                return fixed(action, List.of("stack", "run"), List.of("stack", "build"),
+                        List.of("stack", "test"), List.of("stack", "clean"));
+            case OCAML:
+                // run needs an executable target name — dune can't guess it
+                return fixed(action, null, List.of("dune", "build"),
+                        List.of("dune", "runtest"), List.of("dune", "clean"));
+            case CRYSTAL:
+                return fixed(action, List.of("shards", "run"), List.of("shards", "build"),
+                        List.of("crystal", "spec"), null);
+            case PHP:
+                // run is docroot-dependent (IGNITION owns `php -S`); the
+                // test runner mirrors VERITAS' vendored-first resolution
+                return fixed(action, null, null,
+                        new File(dir, "vendor/bin/phpunit").isFile()
+                                ? List.of("./vendor/bin/phpunit")
+                                : List.of("phpunit"),
+                        null);
             default:
                 return null;
         }
