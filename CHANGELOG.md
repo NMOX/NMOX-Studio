@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.152.0] - 2026-07-25
+
+### Night docs truth — the AI arc and the tenth chain enter the story
+
+- README: ten kit chains with Cardano's declared-refusal validators,
+  87 tutorials, the nine-chain space walk now names Cardano.
+- User guide: the Contract Kit list adds Cardano/Aiken.
+- plan.md: the night recorded — the AI arc (v1.146–v1.150, editor face
+  click-verified live), Cardano as the tenth chain, the TON verdict;
+  standing counts current (53 devices, 74 grammars, 87 spaces, ten
+  chains).
+
 ## [1.151.0] - 2026-07-25
 
 ### Cardano joins the Contract Kit (10th chain)
