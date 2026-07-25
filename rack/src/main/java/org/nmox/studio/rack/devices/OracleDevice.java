@@ -82,6 +82,9 @@ public class OracleDevice extends RackDevice {
 
     /** The last explanation, shown in full by the VIEW popup. */
     private volatile String lastExplanation;
+    /** The follow-up conversation seeded by the last successful EXPLAIN. */
+    private volatile org.nmox.studio.rack.engine.OracleConversation lastConversation;
+    private volatile OracleClient.FailureContext lastFailure;
     private volatile boolean consulting;
     private volatile long lastAutoConsultAt = Long.MIN_VALUE / 2;
 
@@ -300,6 +303,14 @@ public class OracleDevice extends RackDevice {
             }
             String text = client.explain(maybe.get(), currentModel(), key);
             lastExplanation = text;
+            // seed the follow-up conversation from the exchange that just
+            // happened — no extra API call: forFailure's opening turn is
+            // assemblePrompt(ctx) verbatim, the same bytes explain() sent
+            org.nmox.studio.rack.engine.OracleConversation convo =
+                    org.nmox.studio.rack.engine.OracleConversation.forFailure(maybe.get());
+            convo.record("", text);
+            lastConversation = convo;
+            lastFailure = maybe.get();
             // composability (v1.91.0): the full text rides the OUT jack —
             // patch into MONITOR/PHOSPHOR to read explanations in the rack
             emit("out", org.nmox.studio.rack.model.Signal.data(text));
@@ -312,6 +323,11 @@ public class OracleDevice extends RackDevice {
                 Arrays.fill(key, '\0');
             }
         }
+    }
+
+    /** Test seam: the conversation seeded by the last successful consult. */
+    org.nmox.studio.rack.engine.OracleConversation lastConversationForTest() {
+        return lastConversation;
     }
 
     private String currentModel() {
@@ -394,6 +410,20 @@ public class OracleDevice extends RackDevice {
     // ---- the full-text popup (BLACKBOX dialog shape) -----------------------
 
     private void showFullText() {
+        // a completed EXPLAIN opens as a conversation: read the diagnosis,
+        // keep asking. Follow-ups ride the SAME failure disclosure — the
+        // consent already given for it — plus the device's own key seam.
+        org.nmox.studio.rack.engine.OracleConversation convo = lastConversation;
+        OracleClient.FailureContext ctx = lastFailure;
+        if (convo != null && ctx != null) {
+            org.nmox.studio.rack.engine.AskOracleEngine engine =
+                    new org.nmox.studio.rack.engine.AskOracleEngine(
+                            client, keySource,
+                            c -> org.nmox.studio.rack.service.OracleConsent.requestConsent(ctx));
+            new org.nmox.studio.rack.service.AskOracleDialog(convo, engine, currentModel())
+                    .open("");
+            return;
+        }
         String text = lastExplanation;
         JDialog dialog = new JDialog(
                 (java.awt.Frame) SwingUtilities.getWindowAncestor(this),

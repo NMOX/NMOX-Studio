@@ -53,6 +53,26 @@ class OracleDeviceTest {
     }
 
     @Test
+    @DisplayName("A successful EXPLAIN seeds the follow-up conversation (v1.148.0)")
+    void consultSeedsConversation() {
+        SpyTransport spy = new SpyTransport();
+        OracleDevice device = wired(spy);
+
+        device.consult(true);
+
+        org.nmox.studio.rack.engine.OracleConversation convo =
+                device.lastConversationForTest();
+        assertThat(convo).as("VIEW opens a conversation after a green consult").isNotNull();
+        assertThat(convo.exchanges()).isEqualTo(1);
+        // the seeded history claims exactly what explain() actually sent
+        // (byte parity with assemblePrompt is pinned in OracleConversationTest)
+        assertThat(convo.history().get(0).text())
+                .isEqualTo(org.nmox.studio.rack.engine.OracleConversation
+                        .forFailure(ctx()).outgoing("").get(0).text());
+        assertThat(convo.history().get(1).text()).contains("It failed because X");
+    }
+
+    @Test
     @DisplayName("KEY GATE: no key ⇒ no post, honest NO-API-KEY status")
     void keyGateBlocksTheCall() {
         SpyTransport spy = new SpyTransport();

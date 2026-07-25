@@ -2,15 +2,17 @@ package org.nmox.studio.rack.engine;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import org.nmox.studio.rack.engine.OracleClient.CodeQuestion;
+import org.nmox.studio.rack.engine.OracleClient.FailureContext;
 import org.nmox.studio.rack.engine.OracleClient.Turn;
 
 /**
- * One Ask ORACLE conversation about one selection — the pure state the
- * dialog holds. The subject (the {@link CodeQuestion}) is fixed at the
- * first ask; follow-ups ride the same disclosed context, so consent
- * given for the selection covers the whole conversation and nothing new
- * ever silently joins the payload.
+ * One ORACLE conversation about one fixed subject — a code selection
+ * (the editor's Ask) or a failed run (the device's EXPLAIN). The subject
+ * is fixed at the first ask; follow-ups ride the same disclosed context,
+ * so the consent given for that subject covers the whole conversation
+ * and nothing new ever silently joins the payload.
  *
  * <p>Bounded by law, like every send in the product: at most
  * {@link #MAX_EXCHANGES} question/answer pairs, each follow-up capped at
@@ -24,10 +26,46 @@ public final class OracleConversation {
     public static final int MAX_FOLLOW_UP_CHARS = 2_000;
 
     private final CodeQuestion subject;
+    private final String title;
+    /** Builds the FIRST user turn from the first question's text. */
+    private final Function<String, String> openingTurn;
     private final List<Turn> turns = new ArrayList<>();
 
+    /** A conversation about a code selection (the editor's Ask). */
     public OracleConversation(CodeQuestion subject) {
         this.subject = subject;
+        this.title = subject.fileName();
+        this.openingTurn = userText -> OracleClient.assembleCodePrompt(
+                new CodeQuestion(subject.fileName(), subject.language(),
+                        subject.code(), userText));
+    }
+
+    private OracleConversation(String title, Function<String, String> openingTurn) {
+        this.subject = null;
+        this.title = title;
+        this.openingTurn = openingTurn;
+    }
+
+    /**
+     * A conversation about a failed run (the device's EXPLAIN). The
+     * opening turn is EXACTLY {@link OracleClient#assemblePrompt} — the
+     * same bytes {@code explain()} sends — so a conversation seeded from
+     * a completed EXPLAIN, via {@link #record}, replays to the model
+     * precisely what it was actually told. Parity is test-pinned.
+     */
+    public static OracleConversation forFailure(FailureContext ctx) {
+        return new OracleConversation(ctx == null ? "(no failure)" : ctx.device(),
+                userText -> ctx == null ? "" : OracleClient.assemblePrompt(ctx));
+    }
+
+    /** True when there is anything to talk about — the engine's refusal gate. */
+    public boolean hasSubject() {
+        return subject != null ? !subject.code().isBlank() : !openingTurn.apply("").isBlank();
+    }
+
+    /** The window title's identity: file name or device name. */
+    public String title() {
+        return title;
     }
 
     public CodeQuestion subject() {
@@ -37,6 +75,11 @@ public final class OracleConversation {
     /** Completed question/answer pairs so far. */
     public int exchanges() {
         return turns.size() / 2;
+    }
+
+    /** The recorded turns, oldest first — the dialog renders these. */
+    public List<Turn> history() {
+        return List.copyOf(turns);
     }
 
     /** False once the exchange cap is reached — the UI disables input. */
@@ -53,9 +96,7 @@ public final class OracleConversation {
     public List<Turn> outgoing(String userText) {
         List<Turn> out = new ArrayList<>(turns);
         if (out.isEmpty()) {
-            out.add(new Turn("user", OracleClient.assembleCodePrompt(
-                    new CodeQuestion(subject.fileName(), subject.language(),
-                            subject.code(), userText))));
+            out.add(new Turn("user", openingTurn.apply(userText)));
         } else {
             String text = userText == null ? "" : userText;
             if (text.length() > MAX_FOLLOW_UP_CHARS) {

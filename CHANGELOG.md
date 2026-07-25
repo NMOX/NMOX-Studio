@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.148.0] - 2026-07-25
+
+### EXPLAIN holds a conversation — the failure flow catches up
+
+The symmetry release: v1.147.0 gave the editor's Ask ORACLE follow-ups;
+now the rack's EXPLAIN has them too. After a successful EXPLAIN, VIEW
+opens the diagnosis as a conversation — "which file first?" just works.
+
+- **Seeded, not re-asked**: the conversation starts from the exchange
+  EXPLAIN already completed, zero extra API calls. PROMPT PARITY is the
+  law that makes this honest — forFailure's opening turn is
+  assemblePrompt(ctx) byte-for-byte, the same bytes explain() sent, so
+  the replayed history never misrepresents what the model was told.
+  Mutation-proven (corrupting the opening turn kills two named tests).
+- One engine, one gated path: answer() is now sugar over converse(), so
+  the selection/key/consent gates exist exactly once; the consent seam
+  generalized to the conversation (the device wires the failure consent,
+  the editor wires the code consent — neither can ride the other's).
+- The transcript renders the seeded history in full, including the
+  disclosed failure prompt — the window IS the disclosure.
+- Live-proven multi-turn against the real API: "which file and line,
+  per your diagnosis?" came back src/date.js line 4 — resolvable only
+  through the replayed diagnosis. Device seeding test + 3 conversation
+  tests + parity mutation proof; rack oracle tests 46.
+
 ## [1.147.0] - 2026-07-24
 
 ### Ask ORACLE holds a conversation

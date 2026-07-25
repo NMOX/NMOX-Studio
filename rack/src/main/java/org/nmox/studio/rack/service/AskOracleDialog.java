@@ -25,7 +25,7 @@ import org.openide.util.RequestProcessor;
  * the input disables while a send is in flight so one conversation can
  * never interleave its own turns.
  */
-final class AskOracleDialog {
+public final class AskOracleDialog {
 
     private static final RequestProcessor RP =
             new RequestProcessor("nmox-ask-oracle", 1, true);
@@ -36,9 +36,16 @@ final class AskOracleDialog {
     private final JTextField input = new JTextField();
     private final JButton ask = new JButton("Ask");
 
-    AskOracleDialog(OracleConversation convo, AskOracleEngine engine) {
+    private final String model;
+
+    public AskOracleDialog(OracleConversation convo, AskOracleEngine engine) {
+        this(convo, engine, OracleClient.MODEL_HAIKU);
+    }
+
+    public AskOracleDialog(OracleConversation convo, AskOracleEngine engine, String model) {
         this.convo = convo;
         this.engine = engine;
+        this.model = model;
         transcript.setEditable(false);
         transcript.setLineWrap(true);
         transcript.setWrapStyleWord(true);
@@ -47,8 +54,13 @@ final class AskOracleDialog {
         input.getAccessibleContext().setAccessibleName("Follow-up question");
     }
 
-    /** Opens the window and fires the first ask. Call on the EDT. */
-    void open(String firstQuestion) {
+    /**
+     * Opens the window. An empty conversation fires the first ask; a
+     * SEEDED one (the device's completed EXPLAIN) renders its history
+     * and waits — no auto-send, the exchange already happened.
+     * Call on the EDT.
+     */
+    public void open(String firstQuestion) {
         JPanel south = new JPanel(new BorderLayout(6, 0));
         south.add(input, BorderLayout.CENTER);
         south.add(ask, BorderLayout.EAST);
@@ -59,7 +71,7 @@ final class AskOracleDialog {
         panel.add(south, BorderLayout.SOUTH);
 
         DialogDescriptor dd = new DialogDescriptor(panel,
-                "ORACLE — " + convo.subject().fileName(), false,
+                "ORACLE — " + convo.title(), false,
                 new Object[]{DialogDescriptor.CLOSED_OPTION},
                 DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
@@ -74,8 +86,13 @@ final class AskOracleDialog {
         ask.addActionListener(e -> submit.run());
         input.addActionListener(e -> submit.run());
 
+        for (org.nmox.studio.rack.engine.OracleClient.Turn t : convo.history()) {
+            append(("user".equals(t.role()) ? "You: " : "ORACLE: ") + t.text() + "\n\n");
+        }
         dialog.setVisible(true);
-        send(firstQuestion);
+        if (convo.exchanges() == 0) {
+            send(firstQuestion);
+        }
     }
 
     /** One exchange: append the question, disable input, answer off-EDT. */
@@ -85,8 +102,7 @@ final class AskOracleDialog {
         append("You: " + shown + "\n");
         busy(true);
         RP.post(() -> {
-            AskOracleEngine.Result r = engine.converse(convo, question,
-                    OracleClient.MODEL_HAIKU);
+            AskOracleEngine.Result r = engine.converse(convo, question, model);
             SwingUtilities.invokeLater(() -> {
                 append("ORACLE: " + r.text() + "\n\n");
                 busy(false);
