@@ -67,6 +67,9 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-crystal", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-vlang", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-cairo", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-aiken", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-tact", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-clarity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-move", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-fortran", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-smalltalk", service = CompletionProvider.class),
@@ -274,6 +277,9 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "pure bind map discard")),
             Map.entry("text/x-move", set("module public entry fun struct has key store copy drop use let mut if else while loop return abort const native public friend acquires as spec address u8 u16 u32 u64 u128 u256 bool vector signer Self")),
             Map.entry("text/x-cairo", set("as break const continue else enum extern false fn if impl let loop match mod mut nopanic of pub ref return struct trait true type use while assert felt252 bool u8 u16 u32 u64 u128 u256 usize Array Option Span")),
+            Map.entry("text/x-aiken", set("use pub fn type opaque const if else when is expect test fail todo trace validator and or let Int ByteArray Bool List Option Data spend mint withdraw publish else")),
+            Map.entry("text/x-tact", set("contract trait struct message init receive external get fun let const return if else while until repeat do try catch require sender self Int Bool Address Cell Slice Builder String map bounced with import primitive native abstract virtual override extends as")),
+            Map.entry("text/x-clarity", set("define-public define-private define-read-only define-constant define-data-var define-map define-trait define-fungible-token define-non-fungible-token begin let if asserts! unwrap! unwrap-err! try! ok err some none var-get var-set map-get? map-set contract-call? tx-sender contract-caller is-eq and or not print u0 true false uint int principal")),
             Map.entry("text/x-vlang", set("as asm assert atomic break const continue defer else enum false fn "
                     + "for go goto if import in interface is isreftype lock match module mut none or "
                     + "return rlock select shared sizeof spawn static struct true type typeof union unsafe "

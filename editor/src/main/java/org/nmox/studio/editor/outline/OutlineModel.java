@@ -106,6 +106,10 @@ public final class OutlineModel {
             case "text/x-rescript" -> "brace"; // curly-brace syntax; the generic extractor reads it
             case "text/x-vlang" -> "brace"; // V is a brace language (fn/struct/{}); the generic extractor reads it
             case "text/x-cairo" -> "brace"; // Cairo is Rust-shaped (fn/mod/struct/trait/{})
+            case "text/x-aiken" -> "brace"; // fn/type/validator with braces
+            case "text/x-tact" -> "brace";  // contract/fun/receive with braces
+            // text/x-clarity deliberately has NO outline: Lisp-shaped defines
+            // would need their own extractor; junk beats absence — skipped
             case "text/x-move" -> "brace"; // Move: module/struct/fun/{}
             case "text/x-fortran" -> "fortran";
             case "text/x-scheme" -> "racket"; // same (define ...) shape — the Racket extractor reads it

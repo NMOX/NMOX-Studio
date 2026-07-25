@@ -38,6 +38,9 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | purescript.tmLanguage.json | sha256 e99c6695bafa5585022f493ab69b0276997a918ee128079c0346ab166f3e7f97 | nwolverson/vscode-language-purescript syntaxes/purescript.json (MIT) |
 | move.tmLanguage.json | sha256 957e0ca327223ed26bd0d193728474df19061633bb207f6d8c275dbc58b3f0ca | damirka/move-syntax syntaxes/move.tmLanguage.json (MIT) |
 | cairo.tmLanguage.json | sha256 3d4491dbaa543907bfd5cb28848408bdc3f169ac65be0b322280585e4f827eb8 | software-mansion/vscode-cairo syntaxes/cairo.tmLanguage.json (Apache-2.0) |
+| aiken.tmLanguage.json | sha256 f3a6c56e03456f70198a85fdc7edeb655f8280ecaa69e4de7cd2cab50a437997 | aiken-lang/vscode-aiken syntaxes/aiken.tmLanguage.json (Apache-2.0) |
+| tact.tmLanguage.json | sha256 f817bcfe08facbc544222c0ca3ad75f9176bbdb368ad670e88f1b9d68d136f75 | tact-lang/tact-vscode syntaxes/tact.json (Apache-2.0; FunC grammar deliberately NOT used: GPL-3.0 + archived) |
+| clarity.tmLanguage.json | sha256 e32cf9c707dda399bb7bebb505afd10d4222eeadf39f1945cdbb42bc83ab2d5d | hirosystems/clarity.tmbundle Syntaxes/clarity.JSON-tmLanguage (MIT) |
 | vlang.tmLanguage.json | sha256 b3b8a46ce457fca0f22dde2c256ad5237665b8e7725285d98f703db873bfa45a | vlang/vscode-vlang syntaxes/v.tmLanguage.json (MIT) |
 | fortran.tmLanguage.json | sha256 b8df797e51e65b45c54511a123e20297c6dd04f3a4745c3a15da7383c6596808 | fortran-lang/vscode-fortran-support syntaxes/fortran_free-form.tmLanguage.json (MIT) |
 | smalltalk.tmLanguage.json | sha256 8191beb90357837e13d8c07dcd7e613fcb7063b1b3bc5ecf3c6a21bd0d70cee0 | leocamello/vscode-smalltalk syntaxes/gnu-smalltalk.YAML-tmLanguage, converted YAML→JSON (MIT) |

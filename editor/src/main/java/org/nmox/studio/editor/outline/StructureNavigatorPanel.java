@@ -100,6 +100,8 @@ import org.openide.util.RequestProcessor;
     @NavigatorPanel.Registration(mimeType = "text/x-purescript", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-vlang", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-cairo", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-aiken", position = 100, displayName = "#LBL_Structure"),
+    @NavigatorPanel.Registration(mimeType = "text/x-tact", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-move", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-fortran", position = 100, displayName = "#LBL_Structure"),
     @NavigatorPanel.Registration(mimeType = "text/x-scheme", position = 100, displayName = "#LBL_Structure"),
