@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.163.0] - 2026-07-25
+
+### The ship gate and the IDE lanes speak every toolchain
+
+- **PREFLIGHT plans checks for ~30 more toolchains** — the ship gate
+  understood five kinds (NODE/RUST/GO/PYTHON/MAVEN) while the product
+  speaks ~40; every kind with honest test/build verbs now gets a plan,
+  commands mirrored from the rack lane tables (VERITAS/FORGE) and
+  builds release-hardened where the toolchain offers it (`swift build
+  -c release`, `dotnet build -c Release`, `zig build
+  -Doptimize=ReleaseFast` — the existing `cargo build --release`
+  convention). Kinds whose verbs are guesses (make/cmake targets, task
+  runners) stay out deliberately: a false RED gate is worse than no
+  gate.
+- **IDE Run/Build/Test stop greying for nine toolchains the rack
+  always spoke** — WebProjectCommands silently returned null for
+  Bun, Deno, Erlang, Clojure, Scala, Haskell, OCaml, Crystal, and PHP;
+  F6/F11 now run the same commands the rack lanes do (PHP's test
+  runner mirrors VERITAS' vendored-first phpunit resolution).
+- **PreflightLaneParityTest makes the v1.161.0 starvation class
+  structural** — for every kind where the IDE lanes define a test or
+  build command, PREFLIGHT must plan at least one check driven by the
+  same tool; flags may differ (preflight hardens deliberately) but
+  the tool may not drift and the coverage may not vanish.
+  Mutation-proven: deleting the FOUNDRY plan fails the gate naming
+  FOUNDRY and 'forge'.
+
 ## [1.162.0] - 2026-07-25
 
 ### The kind-lattice review: one find, fixed
