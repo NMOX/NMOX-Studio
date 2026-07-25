@@ -88,4 +88,29 @@ class PreflightPlanTest {
         List<File> changed = org.nmox.studio.rack.engine.ChangedSince.scan(root.toFile(), since);
         assertThat(changed).contains(fresh).doesNotContain(dep, old);
     }
+
+    @Test
+    @DisplayName("A Clarinet repo plans clarinet check AND its npm harness tests (v1.162.0)")
+    void clarityChecklist() throws Exception {
+        // the v1.161.0 precedence inversion (CLARITY outranks NODE) must
+        // not cost a Clarinet repo its ship checks: the contract check
+        // joins the plan and the harness tests stay in it
+        Files.writeString(dir.resolve("Clarinet.toml"), "[project]\n");
+        Files.writeString(dir.resolve("package.json"),
+                "{\"scripts\":{\"test\":\"vitest run\"}}");
+        List<Check> checks = PreflightPlan.forProject(dir.toFile());
+        assertThat(checks).extracting(Check::name)
+                .containsExactly("CHECK", "TESTS");
+        assertThat(checks.get(0).command()).containsExactly("clarinet", "check");
+        assertThat(checks.get(1).command()).containsExactly("npm", "test");
+    }
+
+    @Test
+    @DisplayName("An Aiken repo plans aiken check (v1.162.0)")
+    void aikenChecklist() throws Exception {
+        Files.writeString(dir.resolve("aiken.toml"), "name = \"vault\"\n");
+        List<Check> checks = PreflightPlan.forProject(dir.toFile());
+        assertThat(checks).extracting(Check::name).containsExactly("CHECK");
+        assertThat(checks.get(0).command()).containsExactly("aiken", "check");
+    }
 }

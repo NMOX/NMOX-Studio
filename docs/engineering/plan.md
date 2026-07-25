@@ -38,10 +38,23 @@ review, Fast/Deep model choice — the editor face click-verified LIVE
 in the shipped app), and the Contract Kit closed its tenth AND eleventh chains
 (v1.151.0 Cardano/Aiken, refusal paths as declared tests; v1.153.0
 TON via Tact — FunC honestly out on the GPL+archived grammar, the
-refusal a bounced transaction asserted as such). Standing counts as of
-v1.155.0: 53 devices, 77 grammars, 88 learning spaces, five studios,
-eleven kit chains — and the three contract languages the kit
-scaffolds (.clar/.ak/.tact) are editor citizens. It is
+refusal a bounced transaction asserted as such). Currency pass 2026-07-25 at v1.162.0
+after the docs-and-detection day: the demo tranche (v1.156–v1.159:
+README hero, docs/tour.html, the smart-contracts beginner's guide,
+docs/tour.md rendering natively on GitHub), the About-screen logo
+(v1.160.0, branded about.png the platform prefers via
+Splash.loadContent(true)), and the kind-lattice close (v1.161.0:
+aiken.toml/Clarinet.toml/tact.config.json as ProjectKinds — 58
+recognized manifests, every lane wired, the CLARITY-outranks-NODE
+precedence inversion mutation-proven; its same-day review, v1.162.0,
+caught the one starved consumer — PreflightPlan fell to the empty
+default for CLARITY-primary repos, losing the npm ship checks the
+same repo had as NODE — the "precedence flip starves NODE-keyed
+consumers" failure pattern). Standing counts as of
+v1.162.0: 53 devices, 77 grammars, 88 learning spaces, five studios,
+eleven kit chains, 58 recognized manifests — the three contract
+languages the kit scaffolds (.clar/.ak/.tact) are editor citizens AND
+their repos open as projects with real lanes. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
@@ -533,6 +546,12 @@ the design intent is loud. Two NEW failure patterns joined the method:
 "done" claim must be checked against the artifact it summarizes* (the
 ledger's own section headers, not the working-set memory of them). The
 standing guidance is unchanged — and the backlogs are empty again.
+A third pattern joined at v1.162.0: *changing detection precedence
+starves every consumer keyed on the OLD primary kind* — when CLARITY
+began outranking NODE, PreflightPlan's `case NODE` silently stopped
+matching Clarinet repos and fell to the empty default; after any
+precedence change, grep every `switch (kind)` and every `== NODE`
+comparison for behavior the flip removes.
 
 **As of v1.136.0** (the 2026-07-23/24 Web3 arc, David-directed: "increase
 our support and coverage of Web3 tech"): STELLAR (52nd device, Soroban)

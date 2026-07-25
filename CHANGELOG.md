@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.162.0] - 2026-07-25
+
+### The kind-lattice review: one find, fixed
+
+- **PREFLIGHT lost a Clarinet repo's ship checks** — the v1.161.0
+  precedence inversion (CLARITY outranks NODE) starved PreflightPlan's
+  `case NODE`: a repo that yesterday planned npm test/build/lint/audit
+  fell to the empty default and planned only the git-clean check. The
+  plan now speaks the contract kind honestly — `clarinet check` plus
+  the npm harness tests when a test script exists, and Aiken repos
+  (which had no plan at all) gain `aiken check`. Test-pinned,
+  failing-first by construction against the pre-fix code.
+- The new failure pattern is recorded in plan.md: *changing detection
+  precedence starves every consumer keyed on the old primary kind* —
+  after any precedence change, grep every `switch (kind)` and `== NODE`
+  comparison for removed behavior.
+- Verified CLEAN with the same lens: DebugDevice greys the new kinds
+  honestly ("no wired debugger"), DockerizeGenerator's generic
+  Dockerfile is more honest for a contract repo than the node image it
+  used to emit (blessed), WAYPOINT re-rooting stays NODE-only by
+  design (blessed), and CiExporter/CRATE/ROSETTA route the new kinds
+  correctly. plan.md currency pass at v1.162.0 (58 manifests joins the
+  standing counts).
+
 ## [1.161.0] - 2026-07-25
 
 ### Contract chains are project citizens
