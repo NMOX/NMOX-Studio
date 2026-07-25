@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.151.0] - 2026-07-25
+
+### Cardano joins the Contract Kit (10th chain)
+
+The night recon opened two doors and honestly closed one: Aiken came
+back GREEN on every axis (grammar and CLI both Apache-2.0, active,
+brewable), while TON/FunC is recorded RED — its classic grammar is
+GPL-3.0 AND archived, never vendored; the MIT Tact route stays a
+premise pending its own grammar recon.
+
+- Contract Kit chain #10: a vault validator — spend only with the
+  magic word AND the owner's signature — with BOTH paths tested:
+  the happy path passes and the refusal is declared `test ... fail`,
+  because on Cardano the refusals ARE the contract. Live-proven twice
+  (raw on aiken 1.1.23, then the kit's templated sky_vault: 2/2).
+- Learning space #87 (cardano-aiken): GO = `aiken check`, off-chain
+  tests in milliseconds; `aiken build` emits the CIP-57 blueprint.
+  No node, no network, no keys — signing stays in your wallet.
+- KitCatalogParityTest covers the pair and learned aiken.toml's
+  dependency-table pin form; mutation-proven ("kit pins v2.0.0,
+  catalog pins v3.1.0" fails loud). Doctor probes aiken.
+  10 chains, 87 spaces.
+
 ## [1.150.0] - 2026-07-25
 
 ### Ask ORACLE picks its depth
