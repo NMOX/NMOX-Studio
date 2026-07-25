@@ -78,8 +78,11 @@ public final class AskOracleEngine {
      * fresh conversation, so there is exactly ONE gated API path.
      */
     public Result answer(CodeQuestion q, String model) {
-        return converse(new OracleConversation(q),
-                q == null ? "" : q.question(), model);
+        if (q == null) {
+            return new Result(Status.NO_SELECTION,
+                    "Select some code first — Ask ORACLE sends only the selection.");
+        }
+        return converse(new OracleConversation(q), q.question(), model);
     }
 
 }

@@ -60,4 +60,29 @@ class AskOracleLiveDriver {
         assertThat(second.text()).contains("100");
         assertThat(convo.exchanges()).isEqualTo(2);
     }
+
+    @Test
+    @EnabledIfSystemProperty(named = "nmox.oracle.live", matches = ".+")
+    void liveFailureConversation() {
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
+                OracleKeys::read, unused -> true);
+        OracleConversation convo = OracleConversation.forFailure(
+                new OracleClient.FailureContext("VERITAS", "npm test", 1,
+                        java.util.List.of(
+                                "FAIL src/date.test.js",
+                                "TypeError: Cannot read properties of undefined (reading 'toISOString')",
+                                "  at formatDate (src/date.js:4:18)"),
+                        "my-app", 1400));
+        AskOracleEngine.Result first = engine.converse(convo, "", OracleClient.MODEL_HAIKU);
+        System.out.println("LIVE F1: " + first.status() + "\n" + first.text());
+        assertThat(first.status()).isEqualTo(AskOracleEngine.Status.ANSWERED);
+
+        AskOracleEngine.Result second = engine.converse(convo,
+                "Which file and line should I open first, per your diagnosis?",
+                OracleClient.MODEL_HAIKU);
+        System.out.println("LIVE F2: " + second.status() + "\n" + second.text());
+        assertThat(second.status()).isEqualTo(AskOracleEngine.Status.ANSWERED);
+        assertThat(second.text()).contains("date.js");
+        assertThat(convo.exchanges()).isEqualTo(2);
+    }
 }

@@ -209,6 +209,14 @@ press the button.
 If the network is down, the key is wrong, or the model declines, ORACLE
 says so plainly on its display — it never fails silently and never crashes.
 
+**Keep asking.** After a successful EXPLAIN, the **VIEW** button opens
+the diagnosis as a conversation: ask follow-ups about the same failure
+("which file first?", "what does that flag do?") and each turn carries
+the full history, so the answers stay anchored to your actual error.
+Same bounds and gates as the editor's Ask ORACLE; the transcript shows
+exactly what the model was told, starting with the disclosed failure
+context itself.
+
 **Ask ORACLE about your code.** The same assistant reaches the editor:
 select any code, in any language, right-click, and choose **Ask ORACLE
 About Selection…**. Type a question (or leave it empty for a plain
