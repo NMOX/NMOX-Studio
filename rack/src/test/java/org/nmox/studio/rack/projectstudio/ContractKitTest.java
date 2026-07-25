@@ -60,6 +60,11 @@ class ContractKitTest {
                     .contains("telemetry = false")              // clarinet's default is true; ours never
                     .contains("(define-public (reset)")
                     .contains("@stacks/clarinet-sdk");
+            case AIKEN -> assertThat(all)
+                    .contains("name = \"nmox/sky_vault\"")      // aiken's org/snake convention
+                    .contains("validator sky_vault")
+                    .contains("test sky_vault_refuses_wrong_word() fail")
+                    .contains("aiken-lang/stdlib");
         }
     }
 
