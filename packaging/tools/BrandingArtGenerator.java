@@ -29,6 +29,7 @@ import javax.imageio.ImageIO;
  *
  * Outputs:
  *   branding/.../core/core.jar/org/netbeans/core/startup/splash.gif
+ *   branding/.../core/core.jar/org/netbeans/core/startup/about.png (About dialog logo)
  *   branding/.../core/core.jar/org/netbeans/core/startup/frame.gif (+32/48)
  *   packaging/icons/nmox-studio-{16..1024}.png
  *   packaging/icons/nmox-studio.iconset/   (feed to iconutil on macOS)
@@ -56,6 +57,7 @@ public final class BrandingArtGenerator {
         iconset.mkdirs();
 
         ImageIO.write(splash(500, 300), "gif", new File(startup, "splash.gif"));
+        ImageIO.write(about(500, 180), "png", new File(startup, "about.png"));
 
         int[] frameSizes = {16, 32, 48};
         String[] frameNames = {"frame.gif", "frame32.gif", "frame48.gif"};
@@ -328,6 +330,48 @@ public final class BrandingArtGenerator {
         g.fillRoundRect(36, 272, w - 72, 8, 4, 4);
         g.setColor(new Color(70, 71, 76));
         g.drawRoundRect(36, 272, w - 72, 8, 4, 4);
+
+        g.dispose();
+        return img;
+    }
+
+    // ---- the About dialog logo: the icon mark + wordmark lockup ----
+    //      Splash.loadContent(true) prefers org/netbeans/core/startup/about.png
+    //      over the splash, so this is what Help ▸ About shows above the
+    //      product-information text.
+
+    private static BufferedImage about(int w, int h) {
+        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+        g.setPaint(new GradientPaint(0, 0, BG_TOP, 0, h, BG_BOTTOM));
+        g.fillRect(0, 0, w, h);
+
+        // the app-icon mark itself, rendered large so About and Dock agree
+        int mark = 116;
+        g.drawImage(icon(mark), 30, (h - mark) / 2, null);
+
+        // wordmark, measured so the two words never collide across JDK fonts
+        int tx = 30 + mark + 26;
+        Font big = new Font(Font.SANS_SERIF, Font.BOLD, 42);
+        g.setFont(big);
+        int baseline = h / 2 + 6;
+        g.setColor(TEXT);
+        g.drawString("NMOX", tx, baseline);
+        int nmoxW = g.getFontMetrics().stringWidth("NMOX ");
+        g.setColor(ACCENT);
+        g.drawString("STUDIO", tx + nmoxW, baseline);
+
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        g.setColor(TEXT_DIM);
+        g.drawString("The web development task rack", tx + 2, baseline + 26);
+
+        // thin accent baseline echoing the faceplate stripe
+        g.setColor(ACCENT);
+        g.fillRect(0, h - 4, w, 4);
 
         g.dispose();
         return img;

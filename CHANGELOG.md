@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.160.0] - 2026-07-25
+
+### The About screen wears the logo
+
+- **Help ▸ About shows the NMOX Studio logo** — the platform's About
+  dialog prefers a branded `org/netbeans/core/startup/about.png` over
+  the splash (`Splash.loadContent(true)`, verified in bytecode), and
+  we never shipped one, so About reused the busy splash banner. The
+  BrandingArtGenerator now emits a 500×180 About lockup — the real
+  app-icon mark beside the measured NMOX STUDIO wordmark and tagline
+  on the house dark gradient — and `BrandingResourcesTest` gates the
+  file's existence, PNG signature, and banner shape (mutation-proven:
+  removing the file fails the build). Live-verified in the assembled
+  app: the dialog renders the lockup above the product-information
+  text. Diff kept to the one new file — the generator ran against a
+  scratch root so splash and icons carry zero byte churn.
+
 ## [1.159.0] - 2026-07-25
 
 ### The tour renders on GitHub
