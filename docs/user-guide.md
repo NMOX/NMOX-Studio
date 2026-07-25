@@ -84,10 +84,13 @@ the Welcome tab):
 
 ## 3. Projects
 
-**Opening:** any folder carrying one of 51 recognized manifests opens as a
+**Opening:** any folder carrying one of 58 recognized manifests opens as a
 real project — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`,
 `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`,
-`gulpfile.js`, `webpack.config.js`, and friends. A plain folder of HTML
+`gulpfile.js`, `webpack.config.js`, and friends — including the contract
+chains' own manifests: a cloned Aiken repo (`aiken.toml`) or Clarinet
+repo (`Clarinet.toml`) opens with its real lanes (`aiken check`,
+`clarinet check`) wired, and a Tact repo rides its npm scripts. A plain folder of HTML
 with script tags and **no** manifest opens too, as a STATIC project — the
 classic web is first-class, not an error.
 

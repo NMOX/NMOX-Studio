@@ -130,6 +130,10 @@ public class PackageManagerDevice extends CommandDevice {
                 case "outdated" -> null; // scarb has no outdated query — CHECK greys
                 default -> List.of("scarb", "build"); // build fetches deps
             };
+            case AIKEN -> switch (verb) {
+                case "update", "outdated" -> null; // `aiken packages upgrade` needs a package name; no outdated query — both grey
+                default -> List.of("aiken", "check"); // check fetches deps
+            };
             case VLANG -> switch (verb) {
                 case "update" -> List.of("v", "update");
                 case "outdated" -> null; // vpm has no outdated query — CHECK greys
@@ -148,6 +152,13 @@ public class PackageManagerDevice extends CommandDevice {
             // ELM deps live in elm.json / RESCRIPT deps in package.json beside their manifests
             // — the NODE lane (npm/yarn/pnpm detection) already covers them
             case ELM, RESCRIPT -> null;
+            // CLARITY/TACT deps live entirely in package.json beside the contract
+            // manifest. Install rides the NODE entry of the install-all sequence
+            // (same directory — a second install would just repeat it), but
+            // update/outdated must still answer when the contract kind is primary.
+            case CLARITY, TACT -> "install".equals(verb)
+                    ? null
+                    : cmdFor(ProjectInspector.ProjectKind.NODE, verb);
             case ERLANG -> switch (verb) {
                 case "update" -> List.of("rebar3", "upgrade", "--all");
                 default -> List.of("rebar3", "get-deps");

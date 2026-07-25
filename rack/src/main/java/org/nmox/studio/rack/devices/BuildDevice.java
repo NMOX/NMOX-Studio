@@ -170,6 +170,9 @@ public class BuildDevice extends CommandDevice {
             case VLANG -> List.of("v", ".");
             case CAIRO -> List.of("scarb", "build");
             case MOVE -> ProjectInspector.moveBuildCommand(commandDir());
+            case AIKEN -> List.of("aiken", "build");
+            case CLARITY -> List.of("clarinet", "check"); // Clarity is interpreted on-chain: check IS the compile
+            case TACT -> List.of("npx", "tact", "--config", "tact.config.json");
             case FORTRAN -> List.of("fpm", "build");
             case ADA -> List.of("alr", "build");
             case OCAML -> List.of("dune", "build");

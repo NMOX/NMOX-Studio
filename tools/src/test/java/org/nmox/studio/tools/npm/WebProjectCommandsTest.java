@@ -364,4 +364,37 @@ class WebProjectCommandsTest {
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.GLEAM, ActionProvider.COMMAND_CLEAN))
                 .containsExactly("gleam", "clean");
     }
+
+    @Test
+    @DisplayName("Aiken: build and run both compile, test runs aiken check (v1.161.0)")
+    void aikenCommands() {
+        File d = dir.toFile();
+        // validators have no run verb — build is the honest "make my code"
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.AIKEN, ActionProvider.COMMAND_RUN))
+                .containsExactly("aiken", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.AIKEN, ActionProvider.COMMAND_BUILD))
+                .containsExactly("aiken", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.AIKEN, ActionProvider.COMMAND_TEST))
+                .containsExactly("aiken", "check");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.AIKEN, ActionProvider.COMMAND_CLEAN))
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("Clarity: build is clarinet check, tests ride the npm harness (v1.161.0)")
+    void clarityCommands() throws Exception {
+        Files.writeString(dir.resolve("Clarinet.toml"), "[project]\n");
+        Files.writeString(dir.resolve("package.json"),
+                "{\"scripts\":{\"test\":\"vitest run\"}}");
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CLARITY, ActionProvider.COMMAND_RUN))
+                .isNull();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CLARITY, ActionProvider.COMMAND_BUILD))
+                .containsExactly("clarinet", "check");
+        // the vitest/simnet harness, in the project's own package manager
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CLARITY, ActionProvider.COMMAND_TEST))
+                .containsExactly("npm", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CLARITY, ActionProvider.COMMAND_CLEAN))
+                .isNull();
+    }
 }
