@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.157.0] - 2026-07-25
+
+### The visual tour joins the docs
+
+- **docs/tour.html** — the full demo page, in the repo: every advanced
+  feature as a rack-unit panel in the product's own NMOX Phosphor
+  design, referencing the repo's real screenshots by relative path
+  (a 16 KB standalone page, no duplicated image bytes, works offline
+  from any checkout). Linked from the README's tour section and the
+  user guide's opening line.
+
 ## [1.156.0] - 2026-07-25
 
 ### The README leads with the tour

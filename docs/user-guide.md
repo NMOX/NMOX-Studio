@@ -1,5 +1,7 @@
 # NMOX Studio — User Guide
 
+> Prefer pictures? **[The visual tour](tour.html)** shows every major feature on one page, with real screenshots.
+
 How to actually use the thing. This guide walks the features in the order
 you'll meet them: install, first launch, projects, the rack, the studios,
 the wizards, and the safety nets. For every device's knobs and jacks, see
