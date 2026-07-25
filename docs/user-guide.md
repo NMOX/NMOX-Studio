@@ -1,6 +1,6 @@
 # NMOX Studio — User Guide
 
-> Prefer pictures? **[The visual tour](tour.html)** shows every major feature on one page, with real screenshots.
+> Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots ([tour.html](tour.html) is the phosphor-styled version for a browser).
 
 How to actually use the thing. This guide walks the features in the order
 you'll meet them: install, first launch, projects, the rack, the studios,
