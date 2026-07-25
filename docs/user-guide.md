@@ -486,7 +486,8 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   maskable variants), a readable service worker (app-shell or
   network-first, your choice), an offline page, and the `index.html`
   wiring to tie it together.
-- **Contract Kit (Web3)** — pick a chain (Solidity/Foundry, Soroban, Solana,
+- **Contract Kit (Web3)** — (new to contracts? read
+  [the Beginner's Guide](smart-contracts-beginners-guide.md) first) — pick a chain (Solidity/Foundry, Soroban, Solana,
   CosmWasm, ink!, Cairo, Move, Bitcoin/Miniscript, Clarity on
   Stacks, Cardano/Aiken, or TON/Tact) and a contract name, and the kit scaffolds the live-proven
   starter: manifest, contract, native test, and a CONTRACT-NOTES.md

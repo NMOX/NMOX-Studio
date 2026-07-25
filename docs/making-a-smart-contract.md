@@ -1,5 +1,10 @@
 # Making a Smart Contract — a worked example
 
+> New to smart contracts entirely? Start with
+> **[the Beginner's Guide](smart-contracts-beginners-guide.md)** —
+> the mental models, the vocabulary, and a first contract in ten
+> minutes, no network and no keys.
+
 A real contract, built the way [Contract Studio](user-guide.md#contract-studio-6)
 and the rack expect you to work: Foundry project, tests-first, a local
 chain, and gates on the things that silently rot. Everything below was
