@@ -7,9 +7,32 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
+`53 RACK DEVICES` · `77 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
-NMOX Studio is an IDE for web development with a twist: your tooling lives in a Reason-style **Task Rack**. Every task — install, build, test, serve, lint, deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire OK jacks together and one keypress runs your whole pipeline, with errors landing on a phosphor monitor bus. Around the rack: a polyglot editor (70+ languages via 74 TextMate grammars, NetBeans CSL, and LSP — code and the whole config layer, down to `.editorconfig` and `.env`), a Workbench home base, a Node-RED-style multi-cloud infra designer (DigitalOcean, Hetzner, Cloudflare), and project templates. Built on the NetBeans Rich Client Platform; the core developer loop is proven against real `node`/`npm` in CI on every commit.
+NMOX Studio is an IDE for the modern web with a twist: your tooling lives in a
+Reason-style **Task Rack**. Every task — install, build, test, serve, lint,
+deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire a
+FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
+**77-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
+**Ask ORACLE** — select code in any language and hold an AI conversation about
+it (consent-gated, keys keychain-only), **five studios** (Block, API, DB,
+Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
+proven against its real toolchain, and **88 learning spaces** with in-rack
+REPLs. Built on the NetBeans Rich Client Platform, shipped through a gated
+pipeline where the house laws are enforced by tests, not intentions: private
+keys never touch the IDE, a cloned repo's code never runs without your yes,
+every read is bounded, and quitting leaves zero orphan processes.
+
+### The tour, in four frames
+
+| | |
+|---|---|
+| ![Ask ORACLE](docs/images/oracle-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
+| ***Ask ORACLE*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
+| ![Block Studio](docs/images/tabs/block-studio.png) | ![DB Studio](docs/images/tabs/db-studio.png) |
+| ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs* |
 
 ## Download
 
