@@ -71,8 +71,14 @@ class CiExporterTest {
 
     @Test
     @DisplayName("Exports cable-ordered steps with the devices' own commands")
-    void exportsOrderedWorkflow() {
+    void exportsOrderedWorkflow() throws Exception {
         Rack rack = new Rack();
+        // aim at a hermetic fixture: an UNAIMED rack defaults to the real
+        // ~/NMOX, so this test's verdict used to change with whatever
+        // projects the developer had there (caught 2026-07-25 when a
+        // CLARITY-primary gauntlet project appeared in ~/NMOX and CRATE's
+        // step vanished) — tests must never read the machine's home
+        rack.setProjectDir(dirWith("ordered", "package.json"));
         RackDevice deps = DeviceType.PACKAGE_MANAGER.create();
         RackDevice build = DeviceType.BUILD.create();
         RackDevice test = DeviceType.TEST.create();

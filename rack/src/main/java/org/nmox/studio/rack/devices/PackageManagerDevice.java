@@ -152,13 +152,12 @@ public class PackageManagerDevice extends CommandDevice {
             // ELM deps live in elm.json / RESCRIPT deps in package.json beside their manifests
             // — the NODE lane (npm/yarn/pnpm detection) already covers them
             case ELM, RESCRIPT -> null;
-            // CLARITY/TACT deps live entirely in package.json beside the contract
-            // manifest. Install rides the NODE entry of the install-all sequence
-            // (same directory — a second install would just repeat it), but
-            // update/outdated must still answer when the contract kind is primary.
-            case CLARITY, TACT -> "install".equals(verb)
-                    ? null
-                    : cmdFor(ProjectInspector.ProjectKind.NODE, verb);
+            // CLARITY/TACT deps live entirely in package.json beside the
+            // contract manifest — every verb delegates to the NODE lane so
+            // a contract-primary repo still installs/updates its harness
+            // (a null install here starved the CI export's CRATE step; the
+            // install-all sequence dedupes the same-command-same-dir repeat)
+            case CLARITY, TACT -> cmdFor(ProjectInspector.ProjectKind.NODE, verb);
             case ERLANG -> switch (verb) {
                 case "update" -> List.of("rebar3", "upgrade", "--all");
                 default -> List.of("rebar3", "get-deps");
@@ -265,9 +264,13 @@ public class PackageManagerDevice extends CommandDevice {
      */
     List<Step> installSteps() {
         List<Step> steps = new java.util.ArrayList<>();
+        // dedupe by (command, dir): a Clarinet repo detects CLARITY and
+        // NODE in the same directory and both resolve to the same npm
+        // install — one step, not a repeat
+        java.util.Set<String> seen = new java.util.HashSet<>();
         for (var entry : ProjectInspector.detectKinds(projectDir()).entrySet()) {
             List<String> command = cmdFor(entry.getKey(), "install");
-            if (command != null) {
+            if (command != null && seen.add(command + "@" + entry.getValue())) {
                 steps.add(new Step(command, entry.getValue()));
             }
         }

@@ -30,6 +30,17 @@ All notable changes to NMOX Studio are documented here. The format follows
   the tool may not drift and the coverage may not vanish.
   Mutation-proven: deleting the FOUNDRY plan fails the gate naming
   FOUNDRY and 'forge'.
+- **The ship's own verify caught two more real bugs** — CRATE's
+  install verb returned null for CLARITY-primary repos, which starved
+  the CI export's CRATE step (every verb now delegates to the npm
+  lane, and the install-all sequence dedupes the CLARITY/NODE
+  same-command-same-dir repeat to one step); and
+  `CiExporterTest.exportsOrderedWorkflow` ran an UNAIMED rack, whose
+  default is the real `~/NMOX` — the test's verdict changed with
+  whatever projects the developer had there (it now aims at a hermetic
+  fixture). Both surfaced because the live gauntlet left a
+  CLARITY-primary project in ~/NMOX: an accidental environment
+  mutation that a hermetic test would have shrugged off.
 
 ## [1.162.0] - 2026-07-25
 
