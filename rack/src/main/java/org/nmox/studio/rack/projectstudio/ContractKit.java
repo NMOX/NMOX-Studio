@@ -9,8 +9,8 @@ import java.util.Locale;
 /**
  * The Contract Kit: scaffold a smart contract for any chain the studio
  * speaks — Solidity/Foundry, Soroban (Stellar), Solana, CosmWasm, ink!,
- * Cairo, Move (Sui), Bitcoin (Script/Miniscript), Clarity (Stacks), or
- * Cardano (Aiken) —
+ * Cairo, Move (Sui), Bitcoin (Script/Miniscript), Clarity (Stacks),
+ * Cardano (Aiken), or TON (Tact) —
  * into the aimed project. Every template is a LIVE-PROVEN starter (each
  * ran green against its real toolchain before shipping), name-templated
  * for your contract.
@@ -37,7 +37,8 @@ public final class ContractKit {
         MOVE("Move (Sui)", "sui"),
         BITCOIN("Bitcoin — Script/Miniscript", "cargo"),
         CLARITY("Clarity (Stacks)", "clarinet"),
-        AIKEN("Cardano — Aiken", "aiken");
+        AIKEN("Cardano — Aiken", "aiken"),
+        TACT("TON — Tact", "npm");
 
         public final String label;
         /** The tool the scaffold's test lane needs on PATH. */
@@ -105,6 +106,7 @@ public final class ContractKit {
             case BITCOIN -> bitcoin(dir, name, outcomes);
             case CLARITY -> clarity(dir, name, outcomes);
             case AIKEN -> aiken(dir, name, outcomes);
+            case TACT -> tact(dir, name, outcomes);
         }
         return outcomes;
     }
@@ -910,6 +912,139 @@ public final class ContractKit {
                 and wallet software; signing keys live in your wallet, never
                 the IDE. Aiken docs: aiken-lang.org.
                 """.replace("%P%", pascal(name)));
+    }
+
+    // --- TON / Tact ---------------------------------------------------------
+
+    private static void tact(File dir, String name, List<Outcome> out) throws IOException {
+        String p = pascal(name);
+        // FunC's grammar is GPL+archived — never vendored; Tact (MIT) is
+        // TON's modern language and the honest route in. The whole loop is
+        // npm-local: compile via @tact-lang/compiler, tests on @ton/sandbox.
+        write(dir, "package.json", """
+                {
+                  "name": "%K%-contracts",
+                  "private": true,
+                  "scripts": {
+                    "build": "tact --config tact.config.json",
+                    "test": "tact --config tact.config.json && jest"
+                  },
+                  "devDependencies": {
+                    "@tact-lang/compiler": "^1.6.13",
+                    "@ton/core": "^0.60.0",
+                    "@ton/sandbox": "^0.24.0",
+                    "@ton/test-utils": "^0.5.0",
+                    "@types/jest": "^29.5.0",
+                    "jest": "^29.7.0",
+                    "ts-jest": "^29.1.0",
+                    "typescript": "^5.4.0"
+                  }
+                }
+                """.replace("%K%", kebab(name)), out);
+        write(dir, "tact.config.json", """
+                {
+                  "projects": [
+                    {
+                      "name": "%S%",
+                      "path": "./contracts/%S%.tact",
+                      "output": "./build"
+                    }
+                  ]
+                }
+                """.replace("%S%", snake(name)), out);
+        write(dir, "contracts/" + snake(name) + ".tact", """
+                // %P%: anyone may increment, only the deployer may reset.
+                contract %P% {
+                    owner: Address;
+                    val: Int as uint32;
+
+                    init() {
+                        self.owner = sender();
+                        self.val = 0;
+                    }
+
+                    receive("increment") {
+                        self.val = self.val + 1;
+                    }
+
+                    receive("reset") {
+                        require(sender() == self.owner, "owner only");
+                        self.val = 0;
+                    }
+
+                    get fun value(): Int {
+                        return self.val;
+                    }
+                }
+                """.replace("%P%", p), out);
+        write(dir, "tests/" + snake(name) + ".spec.ts", """
+                import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';
+                import { toNano } from '@ton/core';
+                import { %P% } from '../build/%S%_%P%';
+                import '@ton/test-utils';
+
+                describe('%P%', () => {
+                  let blockchain: Blockchain;
+                  let deployer: SandboxContract<TreasuryContract>;
+                  let stranger: SandboxContract<TreasuryContract>;
+                  let contract: SandboxContract<%P%>;
+
+                  beforeEach(async () => {
+                    blockchain = await Blockchain.create();
+                    deployer = await blockchain.treasury('deployer');
+                    stranger = await blockchain.treasury('stranger');
+                    contract = blockchain.openContract(await %P%.fromInit());
+                    await contract.send(deployer.getSender(), { value: toNano('0.05') }, 'increment');
+                  });
+
+                  it('increments for anyone', async () => {
+                    await contract.send(stranger.getSender(), { value: toNano('0.05') }, 'increment');
+                    expect(await contract.getValue()).toBe(2n);
+                  });
+
+                  it('only the owner resets', async () => {
+                    const refused = await contract.send(
+                        stranger.getSender(), { value: toNano('0.05') }, 'reset');
+                    expect(refused.transactions).toHaveTransaction({
+                      to: contract.address, success: false });
+                    expect(await contract.getValue()).toBe(1n);
+
+                    await contract.send(deployer.getSender(), { value: toNano('0.05') }, 'reset');
+                    expect(await contract.getValue()).toBe(0n);
+                  });
+                });
+                """.replace("%P%", p).replace("%S%", snake(name)), out);
+        write(dir, "tsconfig.json", """
+                {
+                  "compilerOptions": {
+                    "target": "ES2020",
+                    "module": "commonjs",
+                    "esModuleInterop": true,
+                    "strict": true,
+                    "skipLibCheck": true,
+                    "types": ["jest", "node"]
+                  }
+                }
+                """, out);
+        write(dir, "jest.config.js", """
+                module.exports = { preset: 'ts-jest', testEnvironment: 'node' };
+                """, out);
+        notes(dir, out, """
+                # %P% — next steps (TON / Tact)
+
+                One-time, then the rack takes over — SOLDER two lines:
+
+                    npm install
+                    npm test
+
+                `npm test` compiles the Tact contract (typecheck + BoC
+                bytecode + generated TypeScript wrappers under build/) and
+                runs both sandbox tests on an in-memory TON blockchain: the
+                increment passes for anyone, and a stranger's reset BOUNCES —
+                the refusal is asserted, not assumed. No node, no network;
+                deploy keys belong to your TON wallet, never the IDE.
+                Tact docs: tact-lang.org.
+                """.replace("%P%", p));
     }
 
     // --- plumbing ---------------------------------------------------------------

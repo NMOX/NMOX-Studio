@@ -486,7 +486,7 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   wiring to tie it together.
 - **Contract Kit (Web3)** — pick a chain (Solidity/Foundry, Soroban, Solana,
   CosmWasm, ink!, Cairo, Move, Bitcoin/Miniscript, Clarity on
-  Stacks, or Cardano/Aiken) and a contract name, and the kit scaffolds the live-proven
+  Stacks, Cardano/Aiken, or TON/Tact) and a contract name, and the kit scaffolds the live-proven
   starter: manifest, contract, native test, and a CONTRACT-NOTES.md
   naming the rack devices and one-time steps. Keys never touch the
   IDE. (Move projects that name AptosFramework in Move.toml drive

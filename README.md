@@ -195,7 +195,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **87 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **88 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
@@ -308,14 +308,16 @@ speaks **both dialects**: a `Move.toml` naming AptosFramework flips
 every lane to `aptos move compile/test` automatically. The
 **Multi-Chain Bench** preset racks all three chains on one MONITOR,
 and the **Contract Kit** (File → Contract Kit (Web3)…) scaffolds a
-live-proven starter for any of **ten chains** — Solidity/Foundry,
+live-proven starter for any of **eleven chains** — Solidity/Foundry,
 Soroban, Solana, CosmWasm, ink!, Cairo, Move, **Bitcoin**
 (spending conditions as Miniscript policies compiled to consensus
 Script), and **Clarity on Stacks** (decidable, Bitcoin-anchored, with
 a simnet test harness), and **Cardano** (Aiken validators whose
-refusal paths are declared tests). Learning spaces walk Stellar,
-Solana, CosmWasm, ink!, Cairo, Move, Bitcoin, Clarity, and Cardano
-with samples proven against the real toolchains. Keys never touch the IDE: every chain
+refusal paths are declared tests), and **TON** (Tact actors tested on
+an in-memory chain where a refusal is a bounced message). Learning
+spaces walk Stellar, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin,
+Clarity, Cardano, and TON with samples proven against the real
+toolchains. Keys never touch the IDE: every chain
 CLI manages its own identities.
 
 **The security boundary is the feature**: the IDE never touches

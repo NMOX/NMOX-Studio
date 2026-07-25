@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.153.0] - 2026-07-25
+
+### TON joins the Contract Kit (11th chain) — the honest way in
+
+FunC's grammar is GPL-3.0 and archived, so it was never an option
+(the AdaCore precedent). Tact — TON's modern, MIT-licensed language —
+is: the whole loop is npm-local and live-proven twice.
+
+- Contract Kit chain #11: a Tact counter actor (anyone increments,
+  only the deployer resets) with sandbox tests where the refusal is a
+  BOUNCED transaction, asserted with toHaveTransaction success:false —
+  on TON a refusal is a bounce, not an exception. Compile emits BoC
+  bytecode + typed TypeScript wrappers; tests run on @ton/sandbox's
+  in-memory chain. Live-proven raw (tact 1.6.13, 2/2) and templated
+  (the kit's SkyVault, 2/2 after a plain npm install).
+- Learning space #88 (ton-tact): INSTALL = npm install (folder-local,
+  nothing global), GO = npm test. The two TS traps the proof caught
+  are baked into the template: ES2020 target (BigInt literals) and
+  jest in tsconfig types.
+- KitCatalogParityTest covers the pair; mutation-proven ("kit pins
+  ^1.0.0, catalog pins ^1.6.13" fails loud). 11 chains, 88 spaces.
+
 ## [1.152.0] - 2026-07-25
 
 ### Night docs truth — the AI arc and the tenth chain enter the story

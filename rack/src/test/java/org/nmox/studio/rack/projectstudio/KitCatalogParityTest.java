@@ -35,7 +35,8 @@ class KitCatalogParityTest {
             ContractKit.Chain.INK, new String[]{"ink-polkadot", "ink"},
             ContractKit.Chain.BITCOIN, new String[]{"bitcoin-miniscript", "miniscript"},
             ContractKit.Chain.CLARITY, new String[]{"clarity-stacks", "@stacks/clarinet-sdk"},
-            ContractKit.Chain.AIKEN, new String[]{"cardano-aiken", "aiken-lang/stdlib"});
+            ContractKit.Chain.AIKEN, new String[]{"cardano-aiken", "aiken-lang/stdlib"},
+            ContractKit.Chain.TACT, new String[]{"ton-tact", "@tact-lang/compiler"});
 
     @Test
     @DisplayName("Every shared dependency pin matches between kit template and catalog space")
