@@ -50,6 +50,9 @@ public final class LanguageComments {
             Map.entry("text/x-purescript", "--"),
             Map.entry("text/x-vlang", "//"),
             Map.entry("text/x-cairo", "//"),
+            Map.entry("text/x-aiken", "//"),
+            Map.entry("text/x-tact", "//"),
+            Map.entry("text/x-clarity", ";;"),
             Map.entry("text/x-move", "//"),
             Map.entry("text/x-fortran", "!"),
             // text/x-smalltalk deliberately absent: Smalltalk has no line comment
