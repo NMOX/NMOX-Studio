@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.154.0] - 2026-07-25
+
+### The night-arc review — one find, fixed
+
+Two lenses over v1.150-v1.153 (kit templates + spaces/docs):
+
+- **The npm-harness chains shipped no .gitignore** — Clarity and Tact
+  scaffolds grow node_modules/build the moment their notes are
+  followed, so a plain `git add .` in a fresh project would stage the
+  world. Both chains now write one (never-clobber like every kit
+  file), and a dedicated test pins the law: npm-harness chains must
+  ignore node_modules.
+- Verified CLEAN: the parity gate's three pin forms each carried by a
+  live pair, tool hints honest for the npm-carried chain, casing
+  proven by the templated live runs, space schemas gated.
+- plan.md lineage brought current through the eleventh chain
+  (standing counts: 53 devices, 74 grammars, 88 spaces, 11 chains).
+
 ## [1.153.0] - 2026-07-25
 
 ### TON joins the Contract Kit (11th chain) — the honest way in

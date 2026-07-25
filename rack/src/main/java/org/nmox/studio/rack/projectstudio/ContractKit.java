@@ -792,6 +792,14 @@ public final class ContractKit {
                 mnemonic = "hold excess usual excess ring elephant install account glad dry fragile donkey gaze humble truck breeze nation gasp vacuum limb head keep delay hospital"
                 balance = 100_000_000_000_000
                 """, out);
+        // an npm harness without an ignore file turns `git add .` into
+        // staging the world — same never-clobber law as every kit file
+        write(dir, ".gitignore", """
+                node_modules/
+                .cache/
+                logs/
+                costs-reports.json
+                """, out);
         notes(dir, out, """
                 # %P% — next steps (Clarity on Stacks)
 
@@ -1028,6 +1036,10 @@ public final class ContractKit {
                 """, out);
         write(dir, "jest.config.js", """
                 module.exports = { preset: 'ts-jest', testEnvironment: 'node' };
+                """, out);
+        write(dir, ".gitignore", """
+                node_modules/
+                build/
                 """, out);
         notes(dir, out, """
                 # %P% — next steps (TON / Tact)

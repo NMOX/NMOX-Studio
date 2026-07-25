@@ -123,4 +123,20 @@ class ContractKitTest {
         }
         return all.toString();
     }
+
+    @Test
+    @DisplayName("npm-harness chains ship a .gitignore — git add . must not stage node_modules")
+    void npmHarnessChainsShipIgnore(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        for (ContractKit.Chain chain : java.util.List.of(
+                ContractKit.Chain.CLARITY, ContractKit.Chain.TACT)) {
+            java.io.File sub = new java.io.File(dir, chain.name());
+            org.assertj.core.api.Assertions.assertThat(sub.mkdirs()).isTrue();
+            ContractKit.scaffold(sub, chain, "SkyVault");
+            String ignore = java.nio.file.Files.readString(
+                    new java.io.File(sub, ".gitignore").toPath());
+            org.assertj.core.api.Assertions.assertThat(ignore)
+                    .as("%s ignores node_modules", chain).contains("node_modules/");
+        }
+    }
 }

@@ -35,12 +35,12 @@ surface reached the editor** (v1.146–v1.150: Ask ORACLE on any
 selection, multi-turn conversations for both the code and failure
 flows, the consent-scoping and prompt-parity laws, the arc's own
 review, Fast/Deep model choice — the editor face click-verified LIVE
-in the shipped app), and the Contract Kit closed its tenth chain
-(v1.151.0 Cardano/Aiken, refusal paths as declared tests; TON honestly
-recorded RED on the GPL+archived FunC grammar, Tact/MIT route
-resolved). Standing counts as of
-v1.151.0: 53 devices, 74 grammars, 87 learning spaces, five studios,
-ten kit chains. It is
+in the shipped app), and the Contract Kit closed its tenth AND eleventh chains
+(v1.151.0 Cardano/Aiken, refusal paths as declared tests; v1.153.0
+TON via Tact — FunC honestly out on the GPL+archived grammar, the
+refusal a bounced transaction asserted as such). Standing counts as of
+v1.154.0: 53 devices, 74 grammars, 88 learning spaces, five studios,
+eleven kit chains. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
