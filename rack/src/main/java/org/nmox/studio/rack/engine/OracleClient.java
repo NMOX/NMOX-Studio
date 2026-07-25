@@ -108,12 +108,22 @@ public final class OracleClient {
         public CodeQuestion {
             code = code == null ? "" : code;
             if (code.length() > MAX_CODE_CHARS) {
-                code = code.substring(0, MAX_CODE_CHARS) + "\n[selection truncated]";
+                code = truncate(code, MAX_CODE_CHARS) + "\n[selection truncated]";
             }
             question = question == null ? "" : question;
             if (question.length() > MAX_QUESTION_CHARS) {
-                question = question.substring(0, MAX_QUESTION_CHARS);
+                question = truncate(question, MAX_QUESTION_CHARS);
             }
+        }
+
+        /** Cuts on a CODE POINT boundary — a cap landing mid-emoji must
+         *  not emit a lone surrogate the API would reject as bad JSON. */
+        static String truncate(String s, int max) {
+            if (s.length() <= max) {
+                return s;
+            }
+            int cut = Character.isHighSurrogate(s.charAt(max - 1)) ? max - 1 : max;
+            return s.substring(0, cut);
         }
     }
 

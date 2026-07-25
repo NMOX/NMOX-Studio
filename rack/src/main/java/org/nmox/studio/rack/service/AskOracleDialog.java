@@ -28,7 +28,7 @@ import org.openide.util.RequestProcessor;
 public final class AskOracleDialog {
 
     private static final RequestProcessor RP =
-            new RequestProcessor("nmox-ask-oracle", 1, true);
+            new RequestProcessor("nmox-ask-oracle", 3, true); // windows never block each other; per-conversation order is the engine lock
 
     private final OracleConversation convo;
     private final AskOracleEngine engine;
@@ -58,9 +58,10 @@ public final class AskOracleDialog {
      * Opens the window. An empty conversation fires the first ask; a
      * SEEDED one (the device's completed EXPLAIN) renders its history
      * and waits — no auto-send, the exchange already happened.
-     * Call on the EDT.
+     * Call on the EDT. Returns the window so the caller can front it
+     * instead of opening a twin on the same conversation.
      */
-    public void open(String firstQuestion) {
+    public JDialog open(String firstQuestion) {
         JPanel south = new JPanel(new BorderLayout(6, 0));
         south.add(input, BorderLayout.CENTER);
         south.add(ask, BorderLayout.EAST);
@@ -93,6 +94,7 @@ public final class AskOracleDialog {
         if (convo.exchanges() == 0) {
             send(firstQuestion);
         }
+        return dialog;
     }
 
     /** One exchange: append the question, disable input, answer off-EDT. */

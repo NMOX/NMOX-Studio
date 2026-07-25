@@ -107,6 +107,54 @@ class OracleConversationTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    // ---- the v1.149.0 review fixes ------------------------------------------
+
+    @Test
+    @DisplayName("Caps cut on code-point boundaries — never a lone surrogate to the API")
+    void capsRespectCodePoints() {
+        // an emoji straddling the cap: high surrogate at index cap-1
+        String straddling = "a".repeat(CodeQuestion.MAX_CODE_CHARS - 1) + "😀tail";
+        CodeQuestion q = new CodeQuestion("F.java", "text/x-java", straddling, "");
+        String kept = q.code().replace("\n[selection truncated]", "");
+        assertThat(Character.isHighSurrogate(kept.charAt(kept.length() - 1)))
+                .as("the cap must drop the split emoji, not emit half of it").isFalse();
+
+        String longFollowUp = "b".repeat(OracleConversation.MAX_FOLLOW_UP_CHARS - 1)
+                + "😀tail";
+        OracleConversation convo = new OracleConversation(subject());
+        convo.record("q", "a");
+        String sent = convo.outgoing(longFollowUp).get(2).text();
+        assertThat(Character.isHighSurrogate(sent.charAt(sent.length() - 1))).isFalse();
+    }
+
+    @Test
+    @DisplayName("Concurrent sends on ONE conversation serialize — history never corrupts")
+    void concurrentSendsSerialize() throws Exception {
+        OracleClient.Transport slow = (url, body, key) -> {
+            try {
+                Thread.sleep(30);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return messageResponse("ok");
+        };
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(slow),
+                () -> "key".toCharArray(), unused -> true);
+        OracleConversation convo = new OracleConversation(subject());
+        Thread a = new Thread(() -> engine.converse(convo, "one", OracleClient.MODEL_HAIKU));
+        Thread b = new Thread(() -> engine.converse(convo, "two", OracleClient.MODEL_HAIKU));
+        a.start();
+        b.start();
+        a.join(5_000);
+        b.join(5_000);
+        // both landed, in SOME order, with intact user/assistant alternation
+        assertThat(convo.exchanges()).isEqualTo(2);
+        List<Turn> h = convo.history();
+        for (int i = 0; i < h.size(); i++) {
+            assertThat(h.get(i).role()).isEqualTo(i % 2 == 0 ? "user" : "assistant");
+        }
+    }
+
     // ---- the failure flow (v1.148.0) ---------------------------------------
 
     private static OracleClient.FailureContext failure() {

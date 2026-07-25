@@ -85,6 +85,9 @@ public class OracleDevice extends RackDevice {
     /** The follow-up conversation seeded by the last successful EXPLAIN. */
     private volatile org.nmox.studio.rack.engine.OracleConversation lastConversation;
     private volatile OracleClient.FailureContext lastFailure;
+    /** EDT-confined: the open conversation window, so VIEW fronts not twins. */
+    private javax.swing.JDialog openConversationDialog;
+    private org.nmox.studio.rack.engine.OracleConversation openDialogConvo;
     private volatile boolean consulting;
     private volatile long lastAutoConsultAt = Long.MIN_VALUE / 2;
 
@@ -416,12 +419,20 @@ public class OracleDevice extends RackDevice {
         org.nmox.studio.rack.engine.OracleConversation convo = lastConversation;
         OracleClient.FailureContext ctx = lastFailure;
         if (convo != null && ctx != null) {
+            // a second VIEW fronts the open window — never a twin on the
+            // same conversation (the transcripts would talk past each other)
+            javax.swing.JDialog open = openConversationDialog;
+            if (open != null && open.isShowing() && openDialogConvo == convo) {
+                open.toFront();
+                return;
+            }
             org.nmox.studio.rack.engine.AskOracleEngine engine =
                     new org.nmox.studio.rack.engine.AskOracleEngine(
                             client, keySource,
                             c -> org.nmox.studio.rack.service.OracleConsent.requestConsent(ctx));
-            new org.nmox.studio.rack.service.AskOracleDialog(convo, engine, currentModel())
-                    .open("");
+            openConversationDialog = new org.nmox.studio.rack.service.AskOracleDialog(
+                    convo, engine, currentModel()).open("");
+            openDialogConvo = convo;
             return;
         }
         String text = lastExplanation;
