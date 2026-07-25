@@ -27,6 +27,9 @@ every read is bounded, and quitting leaves zero orphan processes.
 
 ### The tour, in four frames
 
+*The full visual tour — every feature, one page — lives at
+**[docs/tour.html](docs/tour.html)** (open it in a browser from a checkout).*
+
 | | |
 |---|---|
 | ![Ask ORACLE](docs/images/oracle-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
