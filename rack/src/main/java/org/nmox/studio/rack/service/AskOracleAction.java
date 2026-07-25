@@ -50,6 +50,16 @@ public final class AskOracleAction implements ActionListener {
                 fileName(doc), language(doc), selection, "");
 
         JTextField question = new JTextField();
+        javax.swing.JComboBox<String> model =
+                new javax.swing.JComboBox<>(AskOracleModel.LABELS);
+        model.setSelectedIndex(AskOracleModel.chosenIndex());
+        model.getAccessibleContext().setAccessibleName("Model depth");
+        JPanel south = new JPanel(new BorderLayout(8, 0));
+        south.add(new JLabel("<html><small>Sends only the selection, the file name, "
+                + "the language, and your question — never the rest of the file.</small></html>"),
+                BorderLayout.CENTER);
+        south.add(model, BorderLayout.EAST);
+
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("<html>Question about the selection ("
@@ -57,23 +67,24 @@ public final class AskOracleAction implements ActionListener {
                 + preview.fileName() + "</b>) — empty asks for an explanation:</html>"),
                 BorderLayout.NORTH);
         panel.add(question, BorderLayout.CENTER);
-        panel.add(new JLabel("<html><small>Sends only the selection, the file name, "
-                + "the language, and your question — never the rest of the file.</small></html>"),
-                BorderLayout.SOUTH);
+        panel.add(south, BorderLayout.SOUTH);
 
         DialogDescriptor descriptor = new DialogDescriptor(panel, "Ask ORACLE");
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
+        AskOracleModel.remember(model.getSelectedIndex());
         CodeQuestion q = new CodeQuestion(preview.fileName(), preview.language(),
                 selection, question.getText().trim());
 
         // one conversation per Ask: the subject is fixed, follow-ups ride
         // the same disclosure; the dialog runs every send off the EDT (the
-        // keychain can block on an unlock prompt — the v1.56 law)
+        // keychain can block on an unlock prompt — the v1.56 law). The
+        // chosen model is fixed for the conversation's whole life.
         AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
                 OracleKeys::read, c -> OracleConsent.requestCodeConsent(c.subject()));
-        new AskOracleDialog(new org.nmox.studio.rack.engine.OracleConversation(q), engine)
+        new AskOracleDialog(new org.nmox.studio.rack.engine.OracleConversation(q), engine,
+                AskOracleModel.chosen())
                 .open(q.question());
     }
 

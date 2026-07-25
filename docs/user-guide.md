@@ -220,7 +220,8 @@ context itself.
 **Ask ORACLE about your code.** The same assistant reaches the editor:
 select any code, in any language, right-click, and choose **Ask ORACLE
 About Selection…**. Type a question (or leave it empty for a plain
-explanation) and a conversation window opens — keep asking follow-ups
+explanation), pick a depth — Fast (Haiku, the default) or Deep
+(Sonnet), remembered for next time — and a conversation window opens — keep asking follow-ups
 about the same selection, up to ten exchanges (the cap surfaces in the
 transcript, never silently). This flow has its **own**
 one-time consent, separate from the failure flow — the failure consent

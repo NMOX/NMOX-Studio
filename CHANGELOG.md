@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.150.0] - 2026-07-25
+
+### Ask ORACLE picks its depth
+
+- The ask dialog gains a model choice: **Fast (Haiku)**, the default,
+  or **Deep (Sonnet)** — remembered as a preference for the next Ask
+  (the ORACLE device idiom: a model id is not a secret). The chosen
+  model is fixed for the conversation's whole life, because a
+  mid-conversation switch would make the transcript lie about who
+  answered what. Junk or out-of-range stored values fall back to
+  Haiku. The device's VIEW conversations keep honoring the faceplate
+  MODEL knob, unchanged.
+- Also records the night gauntlet: the editor face click-verified live
+  in the shipped v1.149.0 app — menu item, ask dialog, first-send code
+  consent (text/x-nim mime detected), real answer, history-resolving
+  follow-up, honest "selection alone cannot answer" boundary, clean
+  exit with zero orphans.
+
 ## [1.149.0] - 2026-07-25
 
 ### The AI-arc review — three finds, one surviving mutant
