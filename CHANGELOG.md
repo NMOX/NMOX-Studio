@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.161.0] - 2026-07-25
+
+### Contract chains are project citizens
+
+- **Cloned contract repos open as real projects** — `aiken.toml`,
+  `Clarinet.toml`, and `tact.config.json` are recognized manifests now
+  (58 total): three new ProjectKinds with every lane wired. AIKEN —
+  FORGE/IGNITION `aiken build` (validators have no run verb; the Move
+  rule), VERITAS `aiken check` (which compiles AND runs the declared
+  tests, including the `fail` ones), CRATE `aiken check` fetches deps.
+  CLARITY — FORGE `clarinet check` (Clarity is interpreted on-chain:
+  check IS the compile), VERITAS rides the npm vitest/simnet harness
+  beside the manifest in the project's own package manager, CRATE
+  delegates update/outdated to the npm lane and skips its install-all
+  entry (the NODE entry covers the same directory). TACT — npm-carried
+  by design (the compiler is an npm dep), so NODE stays primary and
+  ROSETTA can dial the toolchain explicitly (`npx tact --config
+  tact.config.json`; IGNITION greys — no run verb).
+- **One deliberate precedence inversion, mutation-proven** — CLARITY
+  outranks NODE, because every `clarinet new` scaffold carries a
+  package.json whose only job is the test harness; NODE-first would
+  shadow the contract toolchain forever (the inverse of the ELM rule,
+  for the inverse reason). The pin: moving CLARITY below NODE in the
+  enum fails `clarityLanes` by name.
+- IDE-native Run/Build/Test speak the same commands
+  (`WebProjectCommands`), CI export emits the verified
+  `aiken-lang/setup-aiken@v1` (checked against the live repo before
+  ship) and an honest NOTE for clarinet (no first-party setup action
+  exists), knob options appended at END per the index law, and both of
+  TestDevice's kind maps carry AIKEN.
+
 ## [1.160.0] - 2026-07-25
 
 ### The About screen wears the logo
