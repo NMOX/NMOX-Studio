@@ -23,7 +23,7 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class RunDevice extends CommandDevice {
 
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move"};
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "clarity", "tact"};
 
     /** The static lane's fixed port: python3 -m http.server on 8000. */
     private static final String STATIC_PORT = "8000";
@@ -155,6 +155,9 @@ public class RunDevice extends CommandDevice {
             case VLANG -> "vlang";
             case CAIRO -> "cairo";
             case MOVE -> "move";
+            case AIKEN -> "aiken";
+            case CLARITY -> "clarity";
+            case TACT -> "tact";
             case FORTRAN -> "fortran";
             case ADA -> "ada";
             case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
@@ -202,6 +205,9 @@ public class RunDevice extends CommandDevice {
             case "vlang" -> ProjectInspector.ProjectKind.VLANG;
             case "cairo" -> ProjectInspector.ProjectKind.CAIRO;
             case "move" -> ProjectInspector.ProjectKind.MOVE;
+            case "aiken" -> ProjectInspector.ProjectKind.AIKEN;
+            case "clarity" -> ProjectInspector.ProjectKind.CLARITY;
+            case "tact" -> ProjectInspector.ProjectKind.TACT;
             case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
             case "ada" -> ProjectInspector.ProjectKind.ADA;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
@@ -267,6 +273,9 @@ public class RunDevice extends CommandDevice {
             case "vlang" -> List.of("v", "run", ".");
             case "cairo" -> List.of("scarb", "execute"); // executable targets; libs get scarb's own honest error
             case "move" -> ProjectInspector.moveBuildCommand(commandDir()); // Move has no run verb — build is the honest "make my code"; dialect-aware (Sui/Aptos)
+            case "aiken" -> List.of("aiken", "build"); // validators have no run verb — build is the honest "make my code" (the Move rule)
+            case "clarity" -> List.of("clarinet", "check"); // Clarity is interpreted on-chain: check IS the compile, and there is nothing else to "run" locally
+            case "tact" -> null; // Tact rides npm scripts (build/test) and has no run verb — IGNITION greys
             case "fortran" -> List.of("fpm", "run");
             case "ada" -> List.of("alr", "run");
             // ReScript compiles but has no run entry point — grey IGNITION

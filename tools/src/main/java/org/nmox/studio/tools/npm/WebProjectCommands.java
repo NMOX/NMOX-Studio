@@ -79,6 +79,17 @@ final class WebProjectCommands {
             case CAIRO:
                 return fixed(action, List.of("scarb", "execute"), List.of("scarb", "build"),
                         List.of("scarb", "test"), null);
+            case AIKEN:
+                // validators have no run verb — build is the honest "make my
+                // code" (the Move rule); check compiles AND runs the tests
+                return fixed(action, List.of("aiken", "build"), List.of("aiken", "build"),
+                        List.of("aiken", "check"), null);
+            case CLARITY:
+                // check IS the compile (Clarity is interpreted on-chain);
+                // tests ride the npm vitest/simnet harness beside
+                // Clarinet.toml, speaking the project's own package manager
+                return fixed(action, null, List.of("clarinet", "check"),
+                        node(dir, ActionProvider.COMMAND_TEST), null);
             case MOVE:
                 // dialect-aware: Aptos projects (Move.toml names AptosFramework)
                 // get aptos move compile/test, everything else Sui

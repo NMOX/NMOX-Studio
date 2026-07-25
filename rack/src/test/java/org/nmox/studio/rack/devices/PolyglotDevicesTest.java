@@ -515,4 +515,100 @@ class PolyglotDevicesTest {
 
         rack.shutdown();
     }
+
+    @Test
+    @DisplayName("Aiken: aiken.toml detects and the lanes speak aiken (v1.161.0)")
+    void aikenLanes() throws IOException {
+        Rack rack = rackAimedAt("aiken.toml");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.AIKEN);
+
+        // validators have no run verb — build is the honest "make my code"
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).containsExactly("aiken", "build");
+
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("aiken", "build");
+
+        // check compiles AND runs the declared tests, incl. the `fail` ones
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).startsWith("aiken", "check");
+
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("aiken", "check");
+
+        rack.shutdown();
+    }
+
+    @Test
+    @DisplayName("Clarity: Clarinet.toml outranks the harness package.json (v1.161.0)")
+    void clarityLanes() throws IOException {
+        // every `clarinet new` scaffold (and our Contract Kit's) carries a
+        // package.json whose only job is the vitest/simnet harness — the
+        // contract manifest must win or CLARITY could never be primary.
+        // THE precedence pin: moving CLARITY below NODE fails this test.
+        Files.writeString(projectDir.resolve("Clarinet.toml"), "[project]\nname = \"counter\"\n");
+        Files.writeString(projectDir.resolve("package.json"),
+                "{ \"scripts\": { \"test\": \"vitest run\" } }");
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.CLARITY);
+        // both kinds are listed — the npm harness stays reachable
+        assertThat(ProjectInspector.detectKinds(projectDir.toFile()).keySet())
+                .contains(ProjectInspector.ProjectKind.CLARITY,
+                          ProjectInspector.ProjectKind.NODE);
+
+        // check IS the compile: Clarity is interpreted on-chain
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand()).containsExactly("clarinet", "check");
+
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).startsWith("clarinet", "check");
+
+        // tests ride the npm harness beside the manifest
+        TestDevice test = new TestDevice();
+        rack.addDevice(test);
+        assertThat(test.buildCommand()).contains("test");
+        assertThat(test.buildCommand().get(0)).isEqualTo("npm");
+
+        rack.shutdown();
+    }
+
+    @Test
+    @DisplayName("Tact: npm-carried by design — NODE outranks, ROSETTA can still dial it (v1.161.0)")
+    void tactLanes() throws IOException {
+        // a Tact project is npm-first (the compiler is an npm dep and
+        // build/test are package.json scripts) — NODE stays primary
+        Files.writeString(projectDir.resolve("tact.config.json"), "{ \"projects\": [] }");
+        Files.writeString(projectDir.resolve("package.json"),
+                "{ \"scripts\": { \"build\": \"tact --config tact.config.json\" } }");
+        assertThat(ProjectInspector.detectKind(projectDir.toFile()))
+                .isEqualTo(ProjectInspector.ProjectKind.NODE);
+        assertThat(ProjectInspector.detectKinds(projectDir.toFile()).keySet())
+                .contains(ProjectInspector.ProjectKind.TACT);
+
+        // an explicit ROSETTA dial speaks the Tact toolchain directly
+        Rack rack = new Rack();
+        rack.setProjectDir(projectDir.toFile());
+        rack.setToolchainOverride(ProjectInspector.ProjectKind.TACT.name());
+        BuildDevice build = new BuildDevice();
+        rack.addDevice(build);
+        assertThat(build.buildCommand())
+                .containsExactly("npx", "tact", "--config", "tact.config.json");
+
+        // Tact has no run verb — IGNITION greys instead of inventing one
+        // (RunDevice's grey contract is a null command, the ReScript shape)
+        RunDevice run = new RunDevice();
+        rack.addDevice(run);
+        assertThat(run.buildCommand()).isNull();
+
+        rack.shutdown();
+    }
 }

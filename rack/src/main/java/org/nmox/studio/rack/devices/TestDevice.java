@@ -18,7 +18,7 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 public class TestDevice extends CommandDevice {
 
     // append-only: persisted patches store the knob index, not the label
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     private static final String[] COVERAGE_MINIMUMS = {"off", "50", "60", "70", "80", "90"};
@@ -222,6 +222,10 @@ public class TestDevice extends CommandDevice {
             case VLANG: return "vlang";
             case CAIRO: return "cairo";
             case MOVE: return "move";
+            case AIKEN: return "aiken";
+            // CLARITY and TACT tests ride the npm harness beside the
+            // manifest (vitest/simnet, jest/@ton/sandbox) — fall through
+            // to the script/dependency detection below
             case FORTRAN: return "fortran";
             case ADA: return "ada"; // no universal Ada test verb: greys
             case RESCRIPT: return "rescript"; // build-only: no test runner
@@ -273,6 +277,7 @@ public class TestDevice extends CommandDevice {
             case "vlang" -> ProjectInspector.ProjectKind.VLANG;
             case "cairo" -> ProjectInspector.ProjectKind.CAIRO;
             case "move" -> ProjectInspector.ProjectKind.MOVE;
+            case "aiken" -> ProjectInspector.ProjectKind.AIKEN;
             case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
             case "ada" -> ProjectInspector.ProjectKind.ADA;
             case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
@@ -322,6 +327,7 @@ public class TestDevice extends CommandDevice {
             case "vlang" -> cmd.addAll(List.of("v", "test", "."));
             case "cairo" -> cmd.addAll(List.of("scarb", "test"));
             case "move" -> cmd.addAll(ProjectInspector.moveTestCommand(commandDir()));
+            case "aiken" -> cmd.addAll(List.of("aiken", "check")); // check compiles AND runs the declared tests — incl. the `fail` ones
             case "fortran" -> cmd.addAll(List.of("fpm", "test"));
             case "ada" -> { } // Alire has no universal test verb — VERITAS greys
             // ReScript has no standard test runner — leave cmd empty (VERITAS greys)

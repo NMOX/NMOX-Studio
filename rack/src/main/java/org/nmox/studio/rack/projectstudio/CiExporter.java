@@ -191,10 +191,12 @@ public final class CiExporter {
                 case VLANG -> steps.add("      - uses: vlang/setup-v@v1.4\n");
                 case CAIRO -> steps.add("      - uses: software-mansion/setup-scarb@v1\n");
                 case MOVE -> steps.add("      # NOTE: install the Sui CLI in CI (or the Aptos CLI for AptosFramework projects; no first-party setup action); see docs.sui.io / aptos.dev\n");
+                case AIKEN -> steps.add("      - uses: aiken-lang/setup-aiken@v1\n");
+                case CLARITY -> steps.add("      # NOTE: install clarinet in CI (no first-party setup action) — download a release binary from github.com/hirosystems/clarinet/releases; the vitest/simnet tests ride the npm harness below\n");
                 case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v5\n");
                 case ADA -> steps.add("      - uses: alire-project/setup-alire@v4\n");
-                // the functional web rides npm — their lanes run npx/spago
-                case ELM, RESCRIPT, PURESCRIPT -> steps.add("""
+                // the functional web and Tact ride npm — their lanes run npx/spago
+                case ELM, RESCRIPT, PURESCRIPT, TACT -> steps.add("""
                           - uses: actions/setup-node@v4
                             with: { node-version: 22 }
                     """.stripTrailing() + "\n");

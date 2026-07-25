@@ -19,6 +19,13 @@ public final class ProjectInspector {
     public enum ProjectKind {
         BUN("bun.lock", "bun.lockb", "bunfig.toml"),
         DENO("deno.json", "deno.jsonc"),
+        // CLARITY outranks NODE deliberately: every `clarinet new` scaffold
+        // (and our Contract Kit's) carries a package.json whose only job is
+        // the vitest/simnet test harness — NODE-first would shadow the
+        // contract toolchain forever. The inverse of the ELM rule below,
+        // for the inverse reason: there the app is the point, here the
+        // contracts are.
+        CLARITY("Clarinet.toml"),
         NODE("package.json"),
         RUST("Cargo.toml"),
         FOUNDRY("foundry.toml"),
@@ -42,6 +49,7 @@ public final class ProjectInspector {
         VLANG("v.mod"),
         CAIRO("Scarb.toml"),
         MOVE("Move.toml"),
+        AIKEN("aiken.toml"),
         FORTRAN("fpm.toml"),
         ADA("alire.toml"),
         // the functional web: these almost always sit beside a package.json,
@@ -50,6 +58,11 @@ public final class ProjectInspector {
         ELM("elm.json"),
         RESCRIPT("rescript.json", "bsconfig.json"),
         PURESCRIPT("spago.yaml", "spago.dhall"),
+        // Tact (TON) is npm-carried by design: the compiler is an npm dep
+        // and the kit's build/test are package.json scripts, so NODE
+        // rightly outranks — detectKinds still lists it and ROSETTA can
+        // dial it explicitly
+        TACT("tact.config.json"),
         MAVEN("pom.xml"),
         GRADLE("build.gradle", "build.gradle.kts"),
         PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
