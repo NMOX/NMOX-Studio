@@ -65,6 +65,11 @@ class ContractKitTest {
                     .contains("validator sky_vault")
                     .contains("test sky_vault_refuses_wrong_word() fail")
                     .contains("aiken-lang/stdlib");
+            case TACT -> assertThat(all)
+                    .contains("contract SkyVault")
+                    .contains("require(sender() == self.owner, \"owner only\")")
+                    .contains("success: false")                 // the bounce is asserted
+                    .contains("@tact-lang/compiler");
         }
     }
 

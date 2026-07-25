@@ -2997,6 +2997,54 @@
         }
       ],
       "tutorial": "# Cardano contracts in Aiken\n\nCardano validators are PURE FUNCTIONS: given a datum (state locked\nwith the funds), a redeemer (the spender's argument), and the\ntransaction, they answer one question - may this spend happen? No\ngas surprises mid-run; the answer is decided before anything moves.\nAiken is the modern language for writing them.\n\n## 1. Run the tests\n\nPress **GO**: `aiken check`. It compiles the vault and runs BOTH\ntests off-chain in milliseconds: the owner-signed spend with the\nmagic word passes, and the wrong-word spend fails - exactly as\ndeclared, because Aiken lets you write `test ... fail` for paths\nthat MUST refuse.\n\n## 2. Read the validator\n\n`validators/vault.ak` is the whole contract. The `spend` handler\ngets the datum, redeemer, and transaction; `expect Some(d)` insists\nstate exists; the final expression is the verdict. The refusal path\nis as tested as the happy path - on Cardano, the refusals ARE the\ncontract.\n\n## 3. Build the blueprint\n\nSOLDER `aiken build` to emit `plutus.json` - the CIP-57 blueprint\noff-chain tools consume. A real chain needs a provider and wallet\nsoftware; signing keys live in your wallet, never the IDE. The\nContract Kit (File > Contract Kit (Web3)) scaffolds this same\nstarter into any project as the AIKEN chain."
+    },
+    {
+      "slug": "ton-tact",
+      "name": "TON (Tact)",
+      "category": "LANGUAGE",
+      "family": "Web3",
+      "blurb": "TON contracts in Tact: message receivers as the API, tested on an in-memory TON blockchain where refusals bounce.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "npm",
+          "test"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "npm install    # in this space's folder — pulls the Tact compiler + TON sandbox",
+        "linux": "npm install    # in this space's folder",
+        "windows": "npm install"
+      },
+      "files": [
+        {
+          "path": "package.json",
+          "content": "{\n  \"name\": \"counter-contracts\",\n  \"private\": true,\n  \"scripts\": {\n    \"build\": \"tact --config tact.config.json\",\n    \"test\": \"tact --config tact.config.json && jest\"\n  },\n  \"devDependencies\": {\n    \"@tact-lang/compiler\": \"^1.6.13\",\n    \"@ton/core\": \"^0.60.0\",\n    \"@ton/sandbox\": \"^0.24.0\",\n    \"@ton/test-utils\": \"^0.5.0\",\n    \"@types/jest\": \"^29.5.0\",\n    \"jest\": \"^29.7.0\",\n    \"ts-jest\": \"^29.1.0\",\n    \"typescript\": \"^5.4.0\"\n  }\n}\n"
+        },
+        {
+          "path": "tact.config.json",
+          "content": "{\n  \"projects\": [\n    { \"name\": \"counter\", \"path\": \"./contracts/counter.tact\", \"output\": \"./build\" }\n  ]\n}\n"
+        },
+        {
+          "path": "contracts/counter.tact",
+          "content": "// Counter: anyone may increment, only the deployer may reset.\ncontract Counter {\n    owner: Address;\n    val: Int as uint32;\n\n    init() {\n        self.owner = sender();\n        self.val = 0;\n    }\n\n    receive(\"increment\") {\n        self.val = self.val + 1;\n    }\n\n    receive(\"reset\") {\n        require(sender() == self.owner, \"owner only\");\n        self.val = 0;\n    }\n\n    get fun value(): Int {\n        return self.val;\n    }\n}\n"
+        },
+        {
+          "path": "tests/counter.spec.ts",
+          "content": "import { Blockchain, SandboxContract, TreasuryContract } from '@ton/sandbox';\nimport { toNano } from '@ton/core';\nimport { Counter } from '../build/counter_Counter';\nimport '@ton/test-utils';\n\ndescribe('Counter', () => {\n  let blockchain: Blockchain;\n  let deployer: SandboxContract<TreasuryContract>;\n  let stranger: SandboxContract<TreasuryContract>;\n  let contract: SandboxContract<Counter>;\n\n  beforeEach(async () => {\n    blockchain = await Blockchain.create();\n    deployer = await blockchain.treasury('deployer');\n    stranger = await blockchain.treasury('stranger');\n    contract = blockchain.openContract(await Counter.fromInit());\n    await contract.send(deployer.getSender(), { value: toNano('0.05') }, 'increment');\n  });\n\n  it('increments for anyone', async () => {\n    await contract.send(stranger.getSender(), { value: toNano('0.05') }, 'increment');\n    expect(await contract.getValue()).toBe(2n);\n  });\n\n  it('only the owner resets', async () => {\n    const refused = await contract.send(\n        stranger.getSender(), { value: toNano('0.05') }, 'reset');\n    expect(refused.transactions).toHaveTransaction({\n      to: contract.address, success: false });\n    expect(await contract.getValue()).toBe(1n);\n\n    await contract.send(deployer.getSender(), { value: toNano('0.05') }, 'reset');\n    expect(await contract.getValue()).toBe(0n);\n  });\n});\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ES2020\",\n    \"module\": \"commonjs\",\n    \"esModuleInterop\": true,\n    \"strict\": true,\n    \"skipLibCheck\": true,\n    \"types\": [\"jest\", \"node\"]\n  }\n}\n"
+        },
+        {
+          "path": "jest.config.js",
+          "content": "module.exports = { preset: 'ts-jest', testEnvironment: 'node' };\n"
+        }
+      ],
+      "tutorial": "# TON contracts in Tact\n\nTON contracts are actors: they hold state and answer MESSAGES. Tact\nmakes each `receive(...)` a typed entry point - the message surface\nIS the API. (TON's classic language, FunC, has no cleanly-licensed\ngrammar, so the studio speaks Tact - TON's modern, MIT-licensed\nlanguage.)\n\n## 1. Install, once\n\nPress **INSTALL** (or SOLDER `npm install`): it pulls the Tact\ncompiler and the TON sandbox into this folder. Nothing global.\n\n## 2. Run the tests\n\nPress **GO**: `npm test` compiles the contract (typecheck, BoC\nbytecode, generated TypeScript wrappers under build/) and runs both\ntests on an in-memory TON blockchain: anyone can increment, and a\nstranger's reset BOUNCES - the test asserts the failed transaction,\nbecause on TON a refusal is a bounced message, not an exception.\n\n## 3. Read the contract\n\n`contracts/counter.tact` is the whole thing. `init()` captures the\ndeployer as owner; `receive(\\\"reset\\\")` guards with `require`;\n`get fun value()` is a free off-chain read.\n\n## 4. A real chain\n\nDeploys go through TON wallet tooling - keys live in your wallet,\nnever the IDE. The Contract Kit (File > Contract Kit (Web3))\nscaffolds this same starter into any project as the TACT chain."
     }
   ]
 }
