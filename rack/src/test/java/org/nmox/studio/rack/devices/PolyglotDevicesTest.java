@@ -578,6 +578,15 @@ class PolyglotDevicesTest {
         assertThat(test.buildCommand()).contains("test");
         assertThat(test.buildCommand().get(0)).isEqualTo("npm");
 
+        // CRATE answers with the npm lane even though CLARITY is primary
+        // (a null here starved the CI export's CRATE step — 2026-07-25),
+        // and the install-all sequence dedupes the CLARITY/NODE repeat:
+        // same command, same dir, ONE step
+        PackageManagerDevice deps = new PackageManagerDevice();
+        rack.addDevice(deps);
+        assertThat(deps.buildCommand()).containsExactly("npm", "install");
+        assertThat(deps.installSteps()).hasSize(1);
+
         rack.shutdown();
     }
 
