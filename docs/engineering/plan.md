@@ -39,8 +39,9 @@ in the shipped app), and the Contract Kit closed its tenth AND eleventh chains
 (v1.151.0 Cardano/Aiken, refusal paths as declared tests; v1.153.0
 TON via Tact — FunC honestly out on the GPL+archived grammar, the
 refusal a bounced transaction asserted as such). Standing counts as of
-v1.154.0: 53 devices, 74 grammars, 88 learning spaces, five studios,
-eleven kit chains. It is
+v1.155.0: 53 devices, 77 grammars, 88 learning spaces, five studios,
+eleven kit chains — and the three contract languages the kit
+scaffolds (.clar/.ak/.tact) are editor citizens. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of

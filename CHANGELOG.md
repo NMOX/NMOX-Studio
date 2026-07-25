@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.155.0] - 2026-07-25
+
+### The contract languages become editor citizens
+
+The kit was scaffolding .clar, .ak, and .tact files the editor
+rendered as plain text — the product wrote code it could not
+highlight. Now all three are citizens:
+
+- **Grammars vendored, sha256-pinned in NOTICE**: Aiken
+  (aiken-lang/vscode-aiken, Apache-2.0), Tact (tact-lang/tact-vscode,
+  Apache-2.0 — FunC's grammar deliberately NOT used: GPL-3.0 and
+  archived), Clarity (hirosystems/clarity.tmbundle, MIT).
+- **Full citizenship each**: CSL language (Lexers.find cycle-guard
+  law), line comments (// for Aiken/Tact, ;; for Clarity), typing
+  intelligence, spellcheck-in-comments, keyword completion.
+- **Outline** for the brace pair (Aiken validators/fns, Tact
+  contracts/receivers) with Navigator registrations — the v1.76.0
+  drift-gate enforced the pairing; Clarity deliberately has NO outline
+  (Lisp-shaped defines need their own extractor; junk beats absence,
+  skipped with reason in place).
+- Editor suite 442 green including all three gates.
+  77 grammars.
+
 ## [1.154.0] - 2026-07-25
 
 ### The night-arc review — one find, fixed
