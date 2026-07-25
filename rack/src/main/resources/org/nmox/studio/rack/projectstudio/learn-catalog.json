@@ -2965,6 +2965,38 @@
         }
       ],
       "tutorial": "# Clarity on Stacks\n\nClarity is the smart-contract language of Stacks, the chain that\nsettles to Bitcoin. Two things make it unusual: it is **decidable**\n(no gas surprises - you can know what a call costs before running\nit), and it is **interpreted on-chain** - the source you read IS the\ncontract, no compiler between you and the network. One more rule the\nhard way: Clarity source is ASCII-only, comments included.\n\n## 1. Check the contract\n\nPress **GO**: `clarinet check`. The counter type-checks - one\ncontract, no install, no network.\n\n## 2. Run the simnet tests\n\nThe real test loop runs on an in-memory Stacks chain. SOLDER two\nlines:\n\n    npm install\n    npm test\n\nThree tests pass: the counter starts at zero, increments, and only\nthe deployer can reset it - a stranger gets `(err u100)` back,\nwhich the test asserts with `toBeErr`.\n\n## 3. Read the contract\n\n`contracts/counter.clar` is the whole thing. `define-data-var` is\nchain state; `define-public` functions are the transaction surface;\n`asserts!` returns an error and aborts. `tx-sender` at deploy time\nbecomes the owner - that is the whole access-control story.\n\n## 4. A real chain\n\n`clarinet devnet start` (Docker) boots a local Stacks + Bitcoin\ndevnet with an explorer. The accounts in `settings/Devnet.toml` are\nclarinet's public devnet defaults - never real funds; real keys\nnever touch the IDE. The Contract Kit (File > Contract Kit (Web3))\nscaffolds this same starter into any project as the CLARITY chain."
+    },
+    {
+      "slug": "cardano-aiken",
+      "name": "Cardano (Aiken)",
+      "category": "LANGUAGE",
+      "family": "Web3",
+      "blurb": "Cardano validators in Aiken: pure functions over transactions, tested off-chain in milliseconds with aiken check.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "aiken",
+          "check"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install aiken",
+        "linux": "brew install aiken    # linuxbrew; or see aiken-lang.org/installation-instructions",
+        "windows": "see aiken-lang.org/installation-instructions"
+      },
+      "files": [
+        {
+          "path": "aiken.toml",
+          "content": "name = \"nmox/vault\"\nversion = \"0.1.0\"\ncompiler = \"v1.1.23\"\nplutus = \"v3\"\nlicense = \"Apache-2.0\"\ndescription = \"An Aiken learning space\"\n\n[[dependencies]]\nname = \"aiken-lang/stdlib\"\nversion = \"v3.1.0\"\nsource = \"github\"\n"
+        },
+        {
+          "path": "validators/vault.ak",
+          "content": "// vault: spending is allowed only when the redeemer says the\n// magic word AND the transaction is signed by the owner from the\n// datum. `aiken check` runs the tests below - no node, no keys.\nuse cardano/transaction.{OutputReference, Transaction}\nuse aiken/collection/list\n\npub type Datum {\n  owner: ByteArray,\n}\n\npub type Redeemer {\n  msg: ByteArray,\n}\n\nvalidator vault {\n  spend(\n    datum: Option<Datum>,\n    redeemer: Redeemer,\n    _own_ref: OutputReference,\n    self: Transaction,\n  ) {\n    expect Some(d) = datum\n    let says_open = redeemer.msg == \"open\"\n    let owner_signed = list.has(self.extra_signatories, d.owner)\n    says_open && owner_signed\n  }\n\n  else(_) {\n    fail\n  }\n}\n\ntest vault_opens_for_owner() {\n  let d = Datum { owner: \"alice\" }\n  let r = Redeemer { msg: \"open\" }\n  let tx =\n    Transaction { ..transaction.placeholder, extra_signatories: [\"alice\"] }\n  vault.spend(\n    Some(d),\n    r,\n    OutputReference { transaction_id: \"\", output_index: 0 },\n    tx,\n  )\n}\n\ntest vault_refuses_wrong_word() fail {\n  let d = Datum { owner: \"alice\" }\n  let r = Redeemer { msg: \"sesame\" }\n  let tx =\n    Transaction { ..transaction.placeholder, extra_signatories: [\"alice\"] }\n  expect\n    vault.spend(\n      Some(d),\n      r,\n      OutputReference { transaction_id: \"\", output_index: 0 },\n      tx,\n    )\n}\n"
+        }
+      ],
+      "tutorial": "# Cardano contracts in Aiken\n\nCardano validators are PURE FUNCTIONS: given a datum (state locked\nwith the funds), a redeemer (the spender's argument), and the\ntransaction, they answer one question - may this spend happen? No\ngas surprises mid-run; the answer is decided before anything moves.\nAiken is the modern language for writing them.\n\n## 1. Run the tests\n\nPress **GO**: `aiken check`. It compiles the vault and runs BOTH\ntests off-chain in milliseconds: the owner-signed spend with the\nmagic word passes, and the wrong-word spend fails - exactly as\ndeclared, because Aiken lets you write `test ... fail` for paths\nthat MUST refuse.\n\n## 2. Read the validator\n\n`validators/vault.ak` is the whole contract. The `spend` handler\ngets the datum, redeemer, and transaction; `expect Some(d)` insists\nstate exists; the final expression is the verdict. The refusal path\nis as tested as the happy path - on Cardano, the refusals ARE the\ncontract.\n\n## 3. Build the blueprint\n\nSOLDER `aiken build` to emit `plutus.json` - the CIP-57 blueprint\noff-chain tools consume. A real chain needs a provider and wallet\nsoftware; signing keys live in your wallet, never the IDE. The\nContract Kit (File > Contract Kit (Web3)) scaffolds this same\nstarter into any project as the AIKEN chain."
     }
   ]
 }

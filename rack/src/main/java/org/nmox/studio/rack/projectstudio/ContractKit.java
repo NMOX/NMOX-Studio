@@ -9,7 +9,8 @@ import java.util.Locale;
 /**
  * The Contract Kit: scaffold a smart contract for any chain the studio
  * speaks — Solidity/Foundry, Soroban (Stellar), Solana, CosmWasm, ink!,
- * Cairo, Move (Sui), Bitcoin (Script/Miniscript), or Clarity (Stacks) —
+ * Cairo, Move (Sui), Bitcoin (Script/Miniscript), Clarity (Stacks), or
+ * Cardano (Aiken) —
  * into the aimed project. Every template is a LIVE-PROVEN starter (each
  * ran green against its real toolchain before shipping), name-templated
  * for your contract.
@@ -35,7 +36,8 @@ public final class ContractKit {
         CAIRO("Cairo (Starknet)", "scarb"),
         MOVE("Move (Sui)", "sui"),
         BITCOIN("Bitcoin — Script/Miniscript", "cargo"),
-        CLARITY("Clarity (Stacks)", "clarinet");
+        CLARITY("Clarity (Stacks)", "clarinet"),
+        AIKEN("Cardano — Aiken", "aiken");
 
         public final String label;
         /** The tool the scaffold's test lane needs on PATH. */
@@ -102,6 +104,7 @@ public final class ContractKit {
             case MOVE -> move(dir, name, outcomes);
             case BITCOIN -> bitcoin(dir, name, outcomes);
             case CLARITY -> clarity(dir, name, outcomes);
+            case AIKEN -> aiken(dir, name, outcomes);
         }
         return outcomes;
     }
@@ -806,6 +809,106 @@ public final class ContractKit {
                 holds a key. Clarity is Bitcoin-anchored: every Stacks block
                 settles to Bitcoin, which is why this chain pairs with the
                 kit's Bitcoin/Miniscript starter.
+                """.replace("%P%", pascal(name)));
+    }
+
+    // --- Cardano / Aiken ----------------------------------------------------
+
+    private static void aiken(File dir, String name, List<Outcome> out) throws IOException {
+        String s = snake(name);
+        write(dir, "aiken.toml", """
+                name = "nmox/%S%"
+                version = "0.1.0"
+                compiler = "v1.1.23"
+                plutus = "v3"
+                license = "Apache-2.0"
+                description = "Aiken contract scaffolded by the NMOX Contract Kit"
+
+                [[dependencies]]
+                name = "aiken-lang/stdlib"
+                version = "v3.1.0"
+                source = "github"
+                """.replace("%S%", s), out);
+        // the live-proven vault: spend only with the magic word AND the
+        // owner's signature — both the pass and the refusal are tested
+        write(dir, "validators/" + s + ".ak", """
+                // %S%: spending is allowed only when the redeemer says the
+                // magic word AND the transaction is signed by the owner from
+                // the datum. `aiken check` runs the tests below — no node,
+                // no network, no keys.
+                use cardano/transaction.{OutputReference, Transaction}
+                use aiken/collection/list
+
+                pub type Datum {
+                  owner: ByteArray,
+                }
+
+                pub type Redeemer {
+                  msg: ByteArray,
+                }
+
+                validator %S% {
+                  spend(
+                    datum: Option<Datum>,
+                    redeemer: Redeemer,
+                    _own_ref: OutputReference,
+                    self: Transaction,
+                  ) {
+                    expect Some(d) = datum
+                    let says_open = redeemer.msg == "open"
+                    let owner_signed = list.has(self.extra_signatories, d.owner)
+                    says_open && owner_signed
+                  }
+
+                  else(_) {
+                    fail
+                  }
+                }
+
+                test %S%_opens_for_owner() {
+                  let d = Datum { owner: "alice" }
+                  let r = Redeemer { msg: "open" }
+                  let tx =
+                    Transaction { ..transaction.placeholder, extra_signatories: ["alice"] }
+                  %S%.spend(
+                    Some(d),
+                    r,
+                    OutputReference { transaction_id: "", output_index: 0 },
+                    tx,
+                  )
+                }
+
+                test %S%_refuses_wrong_word() fail {
+                  let d = Datum { owner: "alice" }
+                  let r = Redeemer { msg: "sesame" }
+                  let tx =
+                    Transaction { ..transaction.placeholder, extra_signatories: ["alice"] }
+                  expect
+                    %S%.spend(
+                      Some(d),
+                      r,
+                      OutputReference { transaction_id: "", output_index: 0 },
+                      tx,
+                    )
+                }
+                """.replace("%S%", s), out);
+        notes(dir, out, """
+                # %P% — next steps (Cardano / Aiken)
+
+                `aiken check` compiles the validator and runs both tests — the
+                owner-signed spend passes, the wrong-magic-word spend fails as
+                declared (`test ... fail`). No node, no network, no keys.
+                `aiken build` emits plutus.json (the CIP-57 blueprint) for
+                off-chain tooling.
+
+                VERITAS speaks these through SOLDER lines:
+
+                    aiken check
+                    aiken build
+
+                A real chain needs a provider (cardano-node or a hosted API)
+                and wallet software; signing keys live in your wallet, never
+                the IDE. Aiken docs: aiken-lang.org.
                 """.replace("%P%", pascal(name)));
     }
 
