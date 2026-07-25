@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.158.0] - 2026-07-25
+
+### A Beginner's Guide to Smart Contracts
+
+- **docs/smart-contracts-beginners-guide.md** — the guide that sits
+  BEFORE the worked escrow example: what a contract actually is (a
+  program many mutually-distrusting machines verify — the one property
+  everything else follows from), the five shapes side by side
+  (deployed program / pure validator / spending condition / actor /
+  decidable script — the kit's eleven chains as the evidence), the
+  vocabulary that matters, and the truths beginners learn the hard way
+  ("the refusals ARE the contract", with the four refusal idioms shown
+  in REAL kit code — every snippet grep-verified against the
+  templates). Then a first contract in ten minutes, three paths
+  (Clarity / Aiken / Foundry), all local, no network, no keys — and an
+  honest closing note that mainnet deployment is a different level of
+  care. Linked from the README's Web3 section, the user guide's
+  Contract Kit entry, and the top of making-a-smart-contract.md.
+
 ## [1.157.0] - 2026-07-25
 
 ### The visual tour joins the docs

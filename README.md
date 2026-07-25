@@ -343,7 +343,10 @@ refusal paths are declared tests), and **TON** (Tact actors tested on
 an in-memory chain where a refusal is a bounced message). Learning
 spaces walk Stellar, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin,
 Clarity, Cardano, and TON with samples proven against the real
-toolchains. Keys never touch the IDE: every chain
+toolchains. New to contracts? **[The Beginner's Guide to Smart
+Contracts](docs/smart-contracts-beginners-guide.md)** teaches the five
+mental models and gets you to a green refusal test in ten minutes —
+no network, no keys. Keys never touch the IDE: every chain
 CLI manages its own identities.
 
 **The security boundary is the feature**: the IDE never touches
