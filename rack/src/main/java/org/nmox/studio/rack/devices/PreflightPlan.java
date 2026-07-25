@@ -71,6 +71,19 @@ public final class PreflightPlan {
                 checks.add(new Check("TESTS", List.of("mvn", "-q", "test"), Pass.EXIT_ZERO, false));
                 checks.add(new Check("BUILD", List.of("mvn", "-q", "package", "-DskipTests"), Pass.EXIT_ZERO, false));
             }
+            case CLARITY -> {
+                // v1.161.0 made CLARITY outrank NODE, which silently
+                // dropped a Clarinet repo's whole npm ship-check plan —
+                // the contract check AND the harness tests both belong here
+                checks.add(new Check("CHECK", List.of("clarinet", "check"), Pass.EXIT_ZERO, false));
+                if (ProjectInspector.hasScript(dir, "test")) {
+                    checks.add(new Check("TESTS", List.of("npm", "test"), Pass.EXIT_ZERO, false));
+                }
+            }
+            case AIKEN -> {
+                // check compiles AND runs the declared tests
+                checks.add(new Check("CHECK", List.of("aiken", "check"), Pass.EXIT_ZERO, false));
+            }
             default -> {
                 // no toolchain: git-clean (if present) is the whole list
             }
