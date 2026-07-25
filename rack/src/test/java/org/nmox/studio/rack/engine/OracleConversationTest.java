@@ -107,6 +107,48 @@ class OracleConversationTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    // ---- the failure flow (v1.148.0) ---------------------------------------
+
+    private static OracleClient.FailureContext failure() {
+        return new OracleClient.FailureContext("VERITAS", "npm test", 1,
+                List.of("FAIL src/app.test.js"), "my-app", 900);
+    }
+
+    @Test
+    @DisplayName("PROMPT PARITY: forFailure's opening turn IS assemblePrompt, byte for byte")
+    void failureOpeningTurnParity() {
+        // the device seeds a conversation from a COMPLETED explain — the
+        // replayed first turn must be exactly what explain() actually sent
+        OracleConversation convo = OracleConversation.forFailure(failure());
+        assertThat(convo.outgoing("").get(0).text())
+                .isEqualTo(OracleClient.assemblePrompt(failure()));
+    }
+
+    @Test
+    @DisplayName("A seeded failure conversation replays the diagnosis on follow-up")
+    void seededFailureReplay() {
+        OracleConversation convo = OracleConversation.forFailure(failure());
+        convo.record("", "Your test import is wrong.");
+        assertThat(convo.exchanges()).isEqualTo(1);
+        List<Turn> out = convo.outgoing("which line?");
+        assertThat(out).hasSize(3);
+        assertThat(out.get(0).text()).isEqualTo(OracleClient.assemblePrompt(failure()));
+        assertThat(out.get(1)).isEqualTo(new Turn("assistant", "Your test import is wrong."));
+        assertThat(out.get(2).text()).isEqualTo("which line?");
+    }
+
+    @Test
+    @DisplayName("No failure means no subject — the engine refuses before anything else")
+    void noFailureNoSubject() {
+        SpyTransport spy = new SpyTransport(messageResponse("never"));
+        AskOracleEngine engine = new AskOracleEngine(new OracleClient(spy),
+                () -> "key".toCharArray(), unused -> true);
+        AskOracleEngine.Result r = engine.converse(
+                OracleConversation.forFailure(null), "?", OracleClient.MODEL_HAIKU);
+        assertThat(r.status()).isEqualTo(AskOracleEngine.Status.NO_SELECTION);
+        assertThat(spy.bodies).isEmpty();
+    }
+
     // ---- the engine's converse path keeps the gates ------------------------
 
     @Test

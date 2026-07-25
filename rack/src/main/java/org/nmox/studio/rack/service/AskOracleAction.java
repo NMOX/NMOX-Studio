@@ -72,7 +72,7 @@ public final class AskOracleAction implements ActionListener {
         // the same disclosure; the dialog runs every send off the EDT (the
         // keychain can block on an unlock prompt — the v1.56 law)
         AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
-                OracleKeys::read, OracleConsent::requestCodeConsent);
+                OracleKeys::read, c -> OracleConsent.requestCodeConsent(c.subject()));
         new AskOracleDialog(new org.nmox.studio.rack.engine.OracleConversation(q), engine)
                 .open(q.question());
     }
