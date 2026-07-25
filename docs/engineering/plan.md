@@ -29,9 +29,18 @@ steering all five lanes), a debt-only sprint (v1.141.0: the kit
 write-law extracted to one KitFiles home + the NEW KitCatalogParityTest
 that fails the build when kit and learning-catalog crate pins drift —
 the pin-rot lesson made structural), and the arc's own review
-(v1.144.0: two same-day finds, both fixed). Standing counts as of
-v1.144.0: 53 devices, 74 grammars, 86 learning spaces, five studios,
-nine kit chains. It is
+(v1.144.0: two same-day finds, both fixed). Extended the same
+night at v1.151.0 after the AI arc and the Cardano close: **the AI
+surface reached the editor** (v1.146–v1.150: Ask ORACLE on any
+selection, multi-turn conversations for both the code and failure
+flows, the consent-scoping and prompt-parity laws, the arc's own
+review, Fast/Deep model choice — the editor face click-verified LIVE
+in the shipped app), and the Contract Kit closed its tenth chain
+(v1.151.0 Cardano/Aiken, refusal paths as declared tests; TON honestly
+recorded RED on the GPL+archived FunC grammar, Tact/MIT route
+resolved). Standing counts as of
+v1.151.0: 53 devices, 74 grammars, 87 learning spaces, five studios,
+ten kit chains. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
