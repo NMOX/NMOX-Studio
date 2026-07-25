@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.156.0] - 2026-07-25
+
+### The README leads with the tour
+
+The demo-page first impression, translated to GitHub markdown:
+
+- An LCD-style counts strip under the badges (53 devices, 77 grammars,
+  88 spaces, 5 studios, 11 chains), the hero rack shot, and a rewritten
+  opening paragraph that finally names the AI surface, the studios, the
+  kit, and the house laws in one breath.
+- "The tour, in four frames": Ask ORACLE, Contract Studio, Block
+  Studio, DB Studio — each caption carrying its real entry point
+  (right-click, ⌥⌘6, ⌥⌘5, ⌥⌘7), the artifact-eyebrow idiom in
+  markdown. Stale "70+/74 grammars" copy in the old intro replaced.
+
 ## [1.155.0] - 2026-07-25
 
 ### The contract languages become editor citizens
