@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.159.0] - 2026-07-25
+
+### The tour renders on GitHub
+
+- **docs/tour.md** — the visual tour translated to GitHub-flavored
+  markdown so it renders natively in the repo browser: counts as code
+  chips, entry-point eyebrows as code-span lines, the live Ask ORACLE
+  transcript as a fenced block, the eleven chains as a quote strip,
+  and the house laws as a plain list — same twelve real screenshots
+  by relative path, all verified. tour.html stays as the
+  phosphor-styled version for a browser; README and user-guide links
+  now lead with the markdown version and offer the styled one.
+
 ## [1.158.0] - 2026-07-25
 
 ### A Beginner's Guide to Smart Contracts
