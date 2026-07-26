@@ -270,7 +270,13 @@ params/headers/body/auth, `{{variable}}` environments so one request
 travels from localhost to prod, and per-request assertions (status,
 response time, body contains, JSON path, header present) that turn a
 probe into a check. The workspace persists as `.nmoxapi.json` beside the
-project.
+project. **Import what you already have**: curl commands, `.http`/`.rest`
+files, OpenAPI 3 specs, **Postman Collections**, and **HAR captures**
+from the browser's Network tab — with every secret routed to the OS
+keychain at the border (captured cookies and opaque credentials are
+dropped and counted, never written to a committable file) — and export
+any collection back out as a `.http` file. See the
+[migration tutorial](docs/tutorials/migrating-from-postman.md).
 
 ### 🗄️ DB Studio
 A database management suite in its own tab (⌥⌘7) — **SQLite, PostgreSQL,
