@@ -60,6 +60,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- FileChooserBuilder (the Import .http… chooser) lives in
+                 the -nb half of filesystems, same as rack's v1.81.0 dep -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems-nb</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <version>${netbeans.version}</version>
