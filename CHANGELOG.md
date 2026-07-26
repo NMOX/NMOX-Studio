@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.176.0] - 2026-07-26
+
+### Docs truth — the AI surface gets its tutorial (docs only)
+
+- **New tutorial: [Explain anything with
+  ORACLE](docs/tutorials/explain-anything.md)** — the four faces (a
+  failed run, your code, an API response, a database error) with what
+  each one sends and what it never can, the per-face consent scoping,
+  and the two-minute DB Studio demo. Joins the tutorials index.
+- The [API Studio](docs/tutorials/api-studio.md) tutorial gains the
+  import steps (curl / `.http` / OpenAPI, with the keychain
+  Authorization lift) and the Explain-a-bad-response step; the
+  [DB Studio](docs/tutorials/db-studio.md) tutorial gains the
+  Explain-a-failed-statement step.
+- The user guide's API Studio and DB Studio sections now describe
+  their Explain buttons — including the workspace-ownership law
+  (switching projects clears armed results) and DB Studio's honest
+  literals-are-sent consent line.
+- plan.md currency for v1.169–v1.175: the OracleAsk seam arc, the
+  twice-caught "stale artifact becomes a disclosure path" pattern and
+  its review lens, the prefs-pollution law, and the
+  module-verify-vs-reactor-verify law. Standing counts restated as of
+  v1.175.0.
+
 ## [1.175.0] - 2026-07-26
 
 ### The AI-arc review: the same hazard, in the new consumer
@@ -6317,6 +6341,53 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.175.0...v1.176.0
+[1.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.174.0...v1.175.0
+[1.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.173.0...v1.174.0
+[1.173.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.172.0...v1.173.0
+[1.172.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.171.0...v1.172.0
+[1.171.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.170.0...v1.171.0
+[1.170.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.169.0...v1.170.0
+[1.169.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.168.0...v1.169.0
+[1.168.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.167.0...v1.168.0
+[1.167.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.166.0...v1.167.0
+[1.166.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.165.0...v1.166.0
+[1.165.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.164.0...v1.165.0
+[1.164.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.163.0...v1.164.0
+[1.163.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.162.0...v1.163.0
+[1.162.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.161.0...v1.162.0
+[1.161.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.160.0...v1.161.0
+[1.160.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.159.0...v1.160.0
+[1.159.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.158.0...v1.159.0
+[1.158.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.157.0...v1.158.0
+[1.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.156.0...v1.157.0
+[1.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.155.0...v1.156.0
+[1.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.154.0...v1.155.0
+[1.154.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.153.0...v1.154.0
+[1.153.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.152.0...v1.153.0
+[1.152.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.151.0...v1.152.0
+[1.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.150.0...v1.151.0
+[1.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.149.0...v1.150.0
+[1.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.148.0...v1.149.0
+[1.148.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.147.0...v1.148.0
+[1.147.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.146.0...v1.147.0
+[1.146.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.145.0...v1.146.0
+[1.145.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.144.0...v1.145.0
+[1.144.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.143.0...v1.144.0
+[1.143.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.142.0...v1.143.0
+[1.142.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.141.0...v1.142.0
+[1.141.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.140.0...v1.141.0
+[1.140.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.139.0...v1.140.0
+[1.139.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.138.0...v1.139.0
+[1.138.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.137.0...v1.138.0
+[1.137.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.136.0...v1.137.0
+[1.136.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.135.0...v1.136.0
+[1.135.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.134.0...v1.135.0
+[1.134.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.133.0...v1.134.0
+[1.133.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.132.0...v1.133.0
+[1.132.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.131.0...v1.132.0
+[1.131.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.130.0...v1.131.0
+[1.130.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.129.0...v1.130.0
 [1.129.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.128.0...v1.129.0
 [1.128.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.127.0...v1.128.0
 [1.127.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.126.0...v1.127.0

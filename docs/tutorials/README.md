@@ -23,6 +23,7 @@ For the wide reference (install, every menu, every safety net) see the
 | [Polyglot editing & debugging](polyglot-editing-and-debugging.md) | Set a breakpoint in a Node app and hit it | open any project |
 | [The Docker panel](docker-panel.md) | Inspect containers and dockerize a project | Docker tab |
 | [ORACLE](oracle.md) | Ask the AI why a run failed | Rack → ORACLE |
+| [Explain anything](explain-anything.md) | Use ORACLE's four faces: runs, code, API responses, DB errors | anywhere something fails |
 | [Learning Spaces](learning-spaces.md) | Spin up a guided sandbox with a live REPL | New Learning Space… |
 | [Wizards & Kits](wizards-and-kits.md) | Add a PWA, standards files, or classic-web scaffolds | Tools menu |
 

@@ -39,6 +39,14 @@ no server.
 5. **EXPLAIN a query.** Select a `SELECT` and press **EXPLAIN** for the
    engine-native query plan.
 
+6. **Let ORACLE explain a failure.** Run `SELECT * FROM user;` (note
+   the typo). Under the error message an **Explain…** button appears.
+   Press it and a consent dialog names exactly what would be sent —
+   the SQL you ran (including any literal values in it), the error
+   message, and the engine kind; never the connection, password, or
+   any rows. Accept and ORACLE explains the error and suggests the
+   fix, in a conversation window that takes follow-up questions.
+
 ## What you just learned
 
 - Passwords are OS-keychain only, never in `.nmoxdb.json`.
