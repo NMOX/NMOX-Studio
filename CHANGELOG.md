@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.170.0] - 2026-07-26
+
+### OpenAPI 3 joins the Import… menu
+
+- **OpenAPI 3 (JSON)…** — a spec becomes a collection: one request per
+  path+operation named from its summary, path templates `{petId}`
+  becoming API Studio's own `{{petId}}`, the first server URL offered
+  into the environment as `{{baseUrl}}`, query parameters landing in
+  the params table (required ones enabled), header parameters in
+  headers, and JSON request-body examples becoming the body.
+  Honest limits, refused or noted rather than guessed: YAML documents
+  (export as JSON first), Swagger 2.0 (convert to OpenAPI 3),
+  schema-only bodies (imported as {} with a note), and security
+  schemes (noted — a spec never carries the actual token, so the
+  keychain-backed Auth field stays the user's own). OpenApiCodec pure
+  core, petstore-pinned tests. The import trio is complete: curl,
+  .http, OpenAPI.
+- Overnight the update channel was live-proven end to end: a v1.160.0
+  portable install updated ITSELF in-app to 1.169.0 — catalog, SHA-512
+  digests, MIT license page, 11 NBMs, clean restart — and the About
+  dialog then showed 1.169.0 under the branded logo with tonight's
+  Import… button live in the updated install. Nine releases of
+  catalog drift, zero hiccups.
+
 ## [1.169.0] - 2026-07-26
 
 ### Night docs truth

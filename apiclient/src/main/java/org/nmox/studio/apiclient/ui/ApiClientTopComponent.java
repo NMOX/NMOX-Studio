@@ -269,6 +269,61 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /** Import an OpenAPI 3 JSON document as a whole collection. */
+    private void importOpenApi() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import OpenAPI 3 (JSON)")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "OpenAPI JSON documents", "json"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.OpenApiCodec.Imported got;
+            try {
+                got = org.nmox.studio.apiclient.api.OpenApiCodec.parse(
+                        java.nio.file.Files.readString(file.toPath()));
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                Collection c = new Collection();
+                c.name = got.title();
+                c.requests.addAll(got.requests());
+                workspace.collections.add(c);
+                int added = 0;
+                Environment env = workspace.active();
+                if (env != null) {
+                    for (var e : got.variables().entrySet()) {
+                        if (env.variables.putIfAbsent(e.getKey(), e.getValue()) == null) {
+                            added++;
+                        }
+                    }
+                }
+                rebuildTree();
+                current = c.requests.get(0);
+                restoreSelection();
+                touch();
+                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
+                        .append("\": ").append(c.requests.size()).append(" request")
+                        .append(c.requests.size() == 1 ? "" : "s");
+                if (added > 0) {
+                    msg.append(", {{baseUrl}} into ").append(env.name);
+                }
+                if (!got.notes().isEmpty()) {
+                    msg.append(" — ").append(String.join(" ", got.notes()));
+                }
+                status(msg.append('.').toString());
+            });
+        });
+    }
+
     private void applyHttpImport(java.io.File file,
             org.nmox.studio.apiclient.api.HttpFileCodec.Imported got) {
         Collection c = new Collection();
@@ -367,8 +422,11 @@ public final class ApiClientTopComponent extends TopComponent {
             curl.addActionListener(a -> importCurl());
             javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
             http.addActionListener(a -> importHttpFile());
+            javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON)…");
+            openapi.addActionListener(a -> importOpenApi());
             menu.add(curl);
             menu.add(http);
+            menu.add(openapi);
             menu.show(importBtn, 0, importBtn.getHeight());
         });
         JButton del = new JButton("Delete");
