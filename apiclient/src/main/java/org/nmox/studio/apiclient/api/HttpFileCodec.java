@@ -165,6 +165,62 @@ public final class HttpFileCodec {
         r.headers.add(new Pair(name, value));
     }
 
+    /**
+     * Renders a collection as a {@code .http} file in the same dialect
+     * {@link #parse} reads — the export half of the v1.166.0 import.
+     * {@code {{variables}}} stay verbatim (both dialects share the
+     * syntax); enabled params rejoin the URL's query string; disabled
+     * rows are omitted, because the dialect has no disabled concept and
+     * exporting them live would change what Send does.
+     *
+     * <p>Auth is deliberately NOT exported. The secret lives in the OS
+     * keychain (v1.97.0) and a shareable text file is exactly where it
+     * must never land; each authed request carries a comment saying
+     * what to re-add. That makes render→parse deliberately LOSSY on
+     * auth alone — a written exception to the round-trip law, not a bug.
+     */
+    public static String render(ApiModel.Collection c) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# ").append(c.name).append('\n');
+        sb.append("# Exported by NMOX Studio API Studio — {{variables}} resolve\n");
+        sb.append("# against your environment/@variables.\n");
+        for (ApiModel.Request r : c.requests) {
+            sb.append("\n### ").append(r.name).append('\n');
+            if (r.authType == AuthType.BEARER) {
+                sb.append("# Auth not exported (OS keychain): re-add "
+                        + "'Authorization: Bearer <token>'\n");
+            } else if (r.authType == AuthType.BASIC) {
+                sb.append("# Auth not exported (OS keychain): re-add "
+                        + "'Authorization: Basic <user:password base64>'\n");
+            }
+            sb.append(r.method).append(' ').append(urlWithParams(r)).append('\n');
+            for (Pair h : r.headers) {
+                if (h.enabled && h.name != null && !h.name.isBlank()) {
+                    sb.append(h.name).append(": ")
+                            .append(h.value == null ? "" : h.value).append('\n');
+                }
+            }
+            if (r.body != null && !r.body.isBlank()) {
+                sb.append('\n').append(r.body.stripTrailing()).append('\n');
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Enabled params rejoin the query string, {{vars}} untouched. */
+    private static String urlWithParams(ApiModel.Request r) {
+        StringBuilder url = new StringBuilder(r.url == null ? "" : r.url);
+        char sep = url.indexOf("?") >= 0 ? '&' : '?';
+        for (Pair p : r.params) {
+            if (p.enabled && p.name != null && !p.name.isBlank()) {
+                url.append(sep).append(p.name).append('=')
+                        .append(p.value == null ? "" : p.value);
+                sep = '&';
+            }
+        }
+        return url.toString();
+    }
+
     private static void finish(List<ApiModel.Request> requests, ApiModel.Request cur,
             StringBuilder body, List<String> notes) {
         if (cur == null) {

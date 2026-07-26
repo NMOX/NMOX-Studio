@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.179.0] - 2026-07-26
+
+### Collections leave as .http files — the export half of v1.166.0
+
+- **Import… ▸ Export collection to .http…** writes the selected
+  collection in the REST Client dialect any editor and CI runner can
+  replay: `###` blocks with names, enabled params rejoined to the
+  query string, `{{variables}}` verbatim (both dialects share the
+  syntax), bodies as-is. Disabled rows are omitted — the dialect has
+  no disabled concept, and exporting them live would change what Send
+  does.
+- **Auth is deliberately NOT exported.** The secret lives in the OS
+  keychain and a shareable text file is exactly where it must never
+  land; each authed request carries a comment naming what to re-add.
+  `parse(render(c))` is pinned as the round-trip law with auth as its
+  one WRITTEN exception (`HttpFileRenderTest` asserts the secret never
+  appears in the rendered text).
+- The Import… tooltip now names the whole family: curl / .http /
+  OpenAPI / Postman / HAR in, .http out.
+
 ## [1.178.0] - 2026-07-26
 
 ### The Network tab becomes requests — HAR import
@@ -6390,6 +6410,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.178.0...v1.179.0
 [1.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.177.0...v1.178.0
 [1.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.176.0...v1.177.0
 [1.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.175.0...v1.176.0
