@@ -44,7 +44,12 @@ class PreflightLaneParityTest {
             ProjectKind.CMAKE, ProjectKind.WEBPACK, ProjectKind.GRUNT,
             ProjectKind.GULP, ProjectKind.BOWER, ProjectKind.TACT);
 
-    /** Files that make a directory detect as the given kind. */
+    /**
+     * Files that make a directory detect as the given kind — including
+     * the conditioning files PreflightPlan probes before planning a
+     * check (Rakefile, phpunit.xml, test/, main.rkt, src/Main.elm), so
+     * the gate exercises the fullest honest plan each kind can have.
+     */
     private static Map<String, String> fixtureFor(ProjectKind kind) {
         return switch (kind) {
             case NIM -> Map.of("app.nimble", "# glob-detected");
@@ -54,6 +59,16 @@ class PreflightLaneParityTest {
             case CLARITY -> Map.of(
                     "Clarinet.toml", "[project]\n",
                     "package.json", "{\"scripts\":{\"test\":\"vitest run\"}}");
+            case RUBY -> Map.of("Gemfile", "source 'https://rubygems.org'",
+                    "Rakefile", "task :test");
+            case PHP -> Map.of("composer.json", "{}",
+                    "phpunit.xml", "<phpunit/>");
+            case DART -> Map.of("pubspec.yaml", "name: app",
+                    "test/app_test.dart", "void main() {}");
+            case RACKET -> Map.of("info.rkt", "#lang info",
+                    "main.rkt", "#lang racket");
+            case ELM -> Map.of("elm.json", "{}",
+                    "src/Main.elm", "module Main exposing (..)");
             default -> Map.of(kind.manifest(), "# test manifest");
         };
     }
@@ -68,7 +83,9 @@ class PreflightLaneParityTest {
             }
             Path dir = Files.createDirectories(root.resolve(kind.name().toLowerCase()));
             for (var e : fixtureFor(kind).entrySet()) {
-                Files.writeString(dir.resolve(e.getKey()), e.getValue());
+                Path f = dir.resolve(e.getKey());
+                Files.createDirectories(f.getParent());
+                Files.writeString(f, e.getValue());
             }
             File d = dir.toFile();
             Set<String> plannedTools = PreflightPlan.forProject(d).stream()
