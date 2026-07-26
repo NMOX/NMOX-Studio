@@ -408,6 +408,15 @@ as a test suite. Everything persists to `.nmoxapi.json` in your project —
 commit it, and your teammate has your workspace. When a dev server starts
 in the rack, API Studio offers to set `{{baseUrl}}` for you.
 
+curl speaks both ways: **Import curl…** turns a pasted command (from
+browser devtools' "Copy as cURL", a README, a teammate) into a saved
+request — an `Authorization: Bearer/Basic` header is lifted into the
+Auth field so the secret lands in your OS keychain, never the
+committable workspace file — and **Copy curl** puts the exact command
+Send would run on your clipboard, `{{variables}}` resolved. Imports
+refuse what they can't represent (multipart forms, `@file` bodies)
+instead of importing it wrong.
+
 ### DB Studio (⌥⌘7)
 ![A SQLite connection, a query, 8 rows in 1 ms — and the status bar giving the honest reason this grid is read-only](images/db-studio.png)
 
