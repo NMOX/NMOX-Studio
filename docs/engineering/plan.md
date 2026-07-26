@@ -109,7 +109,39 @@ reactor plus a grep of the pom* (v1.174.0 shipped a test whose premise
 was wrong under exactly that blindness). Standing counts as of
 v1.175.0: 53 devices, 78 grammars, 88 learning spaces, five studios,
 eleven kit chains, 58 recognized manifests, and ORACLE reachable from
-the rack, the editor, API Studio, and DB Studio. It is
+the rack, the editor, API Studio, and DB Studio.
+
+Currency pass 2026-07-26 evening (the day shift, v1.176–v1.184, nine
+releases): the migration story completed — API Studio now reads
+Postman Collections v2.x (v1.177.0) and browser HAR captures
+(v1.178.0) and writes .http files back out (v1.179.0), making the
+import family curl/.http/OpenAPI/Postman/HAR in, .http out. The
+secrets law was applied at every new border and then TIGHTENED by the
+same-day review (v1.181.0): a HAR is a RECORDING, so a captured
+non-Bearer/Basic Authorization now follows the Cookie rule
+(drop-and-count) while the curl import deliberately keeps what the
+user typed — the distinction is written at both code sites. The
+review's second find was proven failing-first on shipped code: a body
+line starting with ### split the .http round trip into two requests;
+the fix is the auth idiom, omit-and-say, because the dialect has no
+escape. The whole surface was then gauntleted live in the INSTALLED
+app with a byte-level secret scan (v1.182.0, zero finds, three
+planted secrets absent from both the exported file and
+.nmoxapi.json). David's image-optimization feature shipped as the
+Image Kit (v1.183.0): pure-Java JPEG press + downscale with the
+user's own cwebp for WebP siblings, the kit laws applied to pixels
+(never-clobber, under-10%-savings discarded as already-tight),
+live-proven 17.8 MB → 347 KB before ship. Debt paid alongside: all
+ten JaCoCo floors ratcheted to measured-minus-margin (v1.180.0), the
+CHANGELOG link block regenerated for all 217 versions after
+dead-ending at v1.129.0 (v1.176.0 — found because a docs pass LOOKED),
+and two new tutorials (Explain-anything, Migrating-from-Postman,
+Image Kit makes three) joined the index. Process laws added to the
+pipeline memory: the ship-script deriver must replace the WHOLE
+multi-line pr-create command and `bash -n` the result before launch
+(bit once, then the check caught the second attempt), and a
+Maven-Central 403 on a release lane is a rerun---failed flake, not a
+code problem. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of

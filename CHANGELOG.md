@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.184.0] - 2026-07-26
+
+### Day docs truth — the migration-complete story (docs only)
+
+- CLAUDE.md status + version history carry the nine-release day arc
+  (v1.176–v1.184); README's API Studio section now names the full
+  import family (curl / .http / OpenAPI / Postman / HAR in, .http
+  out) with the secrets-at-the-border law and links the migration
+  tutorial; plan.md currency records the day — the review's two
+  finds, the installed-app gauntlet's byte-level PASS, the Image Kit,
+  the floors ratchet, and the two new pipeline process laws.
+
 ## [1.183.0] - 2026-07-26
 
 ### Image Kit (Web) — press your images (David-directed)
@@ -6514,6 +6526,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.183.0...v1.184.0
 [1.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.182.0...v1.183.0
 [1.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.181.0...v1.182.0
 [1.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.180.0...v1.181.0
