@@ -48,6 +48,32 @@ class OracleSoftDependencyTest {
         assertThat(source).contains("result.isError() && org.nmox.studio.core.spi.OracleAsk.find()");
     }
 
+    /**
+     * v1.175.0 — the same law the API Studio review established in
+     * v1.172.0, checked on THIS consumer: a result belongs to the
+     * workspace that produced it, so a re-aim must drop it before the
+     * Explain button can disclose a previous project's SQL.
+     */
+    @Test
+    @DisplayName("a workspace re-aim drops the result tabs Explain could disclose")
+    void reAimClearsResultTabs() throws Exception {
+        String source = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java"));
+
+        String apply = source.substring(source.indexOf("private void applyReloadedWorkspace"));
+        apply = apply.substring(0, apply.indexOf("\n    }"));
+        assertThat(apply)
+                .as("every re-aim must forget the previous workspace's results")
+                .contains("clearResultTabs()");
+
+        // and the run path shares the one implementation, so the two can
+        // never drift apart
+        assertThat(source).contains("private void clearResultTabs()");
+        assertThat(source.split("clearResultTabs\\(\\)", -1).length - 1)
+                .as("declaration plus BOTH call sites")
+                .isGreaterThanOrEqualTo(3);
+    }
+
     @Test
     @DisplayName("the disclosure cannot carry connection details — structurally")
     void disclosureCarriesNoConnection() throws Exception {

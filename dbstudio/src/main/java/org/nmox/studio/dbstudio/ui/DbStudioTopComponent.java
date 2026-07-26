@@ -552,10 +552,20 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
-    private void showResults(ConnectionSpec spec, List<TabContent> tabs, long totalMs) {
+    /**
+     * Drops every result tab, keeping the trailing History tab. Shared
+     * by a fresh run and by a workspace re-aim — a result (and anything
+     * Explain could disclose from it) belongs to the workspace that
+     * produced it.
+     */
+    private void clearResultTabs() {
         while (resultsTabs.getTabCount() > 1) {
             resultsTabs.removeTabAt(0); // everything but the trailing History tab
         }
+    }
+
+    private void showResults(ConnectionSpec spec, List<TabContent> tabs, long totalMs) {
+        clearResultTabs();
         int failed = 0;
         for (int i = 0; i < tabs.size(); i++) {
             TabContent content = tabs.get(i);
@@ -1883,6 +1893,13 @@ public final class DbStudioTopComponent extends TopComponent {
         connecting.clear();
         activeSpecId = null;
         specs.clear();
+        // Results belong to the workspace that produced them. Leaving
+        // them up was cosmetic until v1.174.0 put an Explain button on
+        // the error tab: after a re-aim it stayed armed with the
+        // PREVIOUS project's SQL and error. Same class as the v1.172.0
+        // API Studio fix, found by asking whether the second consumer
+        // survived the hazard the first one failed.
+        clearResultTabs();
         DbWorkspaceIO.Workspace workspace = outcome.workspace();
         if (outcome.backup() != null) {
             // corrupt file: the IO layer copied it aside BEFORE handing us the

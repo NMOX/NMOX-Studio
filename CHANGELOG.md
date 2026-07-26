@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.175.0] - 2026-07-26
+
+### The AI-arc review: the same hazard, in the new consumer
+
+- **A re-aim left DB Studio's error tab — and its Explain button — on
+  screen.** `applyReloadedWorkspace` clears the specs, the caches and
+  the history, but never touched the result tabs: run a failing query
+  in project X, re-aim to project Y, and X's error tab stayed up with
+  a live Explain armed on X's SQL. That was cosmetic staleness until
+  v1.174.0 put the button there; then it became the same
+  cross-project disclosure path v1.172.0 fixed in API Studio. Found
+  by the lens that asks whether the SECOND consumer survives the
+  hazard the FIRST one failed — the answer was no.
+- The run path and the re-aim path now share one `clearResultTabs()`,
+  so they cannot drift; source-gated on both call sites and
+  mutation-proven (removing the reload's call fails the gate by name).
+- The recurring shape is now explicit in the codebase: **a result
+  belongs to the workspace that produced it.** Both studios say so in
+  a comment at the clearing site, pointing at each other.
+
 ## [1.174.0] - 2026-07-26
 
 ### DB Studio explains its errors — the seam's second consumer
