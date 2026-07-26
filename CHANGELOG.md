@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.166.0] - 2026-07-26
+
+### .http request files are citizens
+
+- **Import .http…** — API Studio reads the REST Client / JetBrains
+  HTTP-client dialect: requests split on `###` (the separator's
+  trailing text becomes the request name), `METHOD url` start lines
+  (a bare URL means GET), headers to the first blank line, body after
+  it, comments only outside the body (a JSON line may start with
+  `//`). The happy accident that makes the import near-lossless:
+  the dialect's `{{variables}}` are exactly API Studio's own syntax,
+  kept verbatim — and file-level `@name = value` definitions join the
+  active environment without clobbering. The same Authorization
+  Bearer/Basic lift as the curl import keeps secrets keychain-side,
+  and `< ./file` body references are refused into a note rather than
+  surprise-reading disk. HttpFileCodec pure core, 7 tests.
+- **.http/.rest files highlight in the editor** — the vscode-restclient
+  grammar (MIT) vendored sha256-pinned as the 78th grammar,
+  grammar-only citizenship by design (no CSL for a grammar-only mime),
+  `#` comment toggle registered; counts strips updated across
+  README/tour.
+
 ## [1.165.0] - 2026-07-26
 
 ### API Studio speaks curl, both ways

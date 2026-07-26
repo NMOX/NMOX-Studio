@@ -40,6 +40,7 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | cairo.tmLanguage.json | sha256 3d4491dbaa543907bfd5cb28848408bdc3f169ac65be0b322280585e4f827eb8 | software-mansion/vscode-cairo syntaxes/cairo.tmLanguage.json (Apache-2.0) |
 | aiken.tmLanguage.json | sha256 f3a6c56e03456f70198a85fdc7edeb655f8280ecaa69e4de7cd2cab50a437997 | aiken-lang/vscode-aiken syntaxes/aiken.tmLanguage.json (Apache-2.0) |
 | tact.tmLanguage.json | sha256 f817bcfe08facbc544222c0ca3ad75f9176bbdb368ad670e88f1b9d68d136f75 | tact-lang/tact-vscode syntaxes/tact.json (Apache-2.0; FunC grammar deliberately NOT used: GPL-3.0 + archived) |
+| http.tmLanguage.json | sha256 0f5d2d6ffe1127371b37256b8bf04a28d3208b24dea86266f0d930c16e4d9820 | Huachao/vscode-restclient syntaxes/http.tmLanguage.json (MIT) |
 | clarity.tmLanguage.json | sha256 e32cf9c707dda399bb7bebb505afd10d4222eeadf39f1945cdbb42bc83ab2d5d | hirosystems/clarity.tmbundle Syntaxes/clarity.JSON-tmLanguage (MIT) |
 | vlang.tmLanguage.json | sha256 b3b8a46ce457fca0f22dde2c256ad5237665b8e7725285d98f703db873bfa45a | vlang/vscode-vlang syntaxes/v.tmLanguage.json (MIT) |
 | fortran.tmLanguage.json | sha256 b8df797e51e65b45c54511a123e20297c6dd04f3a4745c3a15da7383c6596808 | fortran-lang/vscode-fortran-support syntaxes/fortran_free-form.tmLanguage.json (MIT) |

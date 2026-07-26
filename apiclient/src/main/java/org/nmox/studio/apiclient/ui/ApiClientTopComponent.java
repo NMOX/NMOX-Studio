@@ -241,6 +241,58 @@ public final class ApiClientTopComponent extends TopComponent {
         statusLabel.setText(text);
     }
 
+    /** Import a REST Client .http/.rest file as a whole collection. */
+    private void importHttpFile() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import .http file")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        ".http / .rest request files", "http", "rest"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        org.nmox.studio.apiclient.api.HttpFileCodec.Imported got;
+        try {
+            String text = java.nio.file.Files.readString(file.toPath());
+            got = org.nmox.studio.apiclient.api.HttpFileCodec.parse(text);
+        } catch (java.io.IOException | IllegalArgumentException ex) {
+            org.openide.DialogDisplayer.getDefault().notify(
+                    new org.openide.NotifyDescriptor.Message(
+                            ex.getMessage(), org.openide.NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
+        Collection c = new Collection();
+        c.name = file.getName();
+        c.requests.addAll(got.requests());
+        workspace.collections.add(c);
+        // file-level @vars join the active environment, never clobbering
+        int added = 0;
+        Environment env = workspace.active();
+        if (env != null) {
+            for (var e : got.variables().entrySet()) {
+                if (env.variables.putIfAbsent(e.getKey(), e.getValue()) == null) {
+                    added++;
+                }
+            }
+        }
+        rebuildTree();
+        current = c.requests.get(0);
+        restoreSelection();
+        touch();
+        StringBuilder msg = new StringBuilder("Imported ")
+                .append(c.requests.size()).append(" request")
+                .append(c.requests.size() == 1 ? "" : "s");
+        if (added > 0) {
+            msg.append(", ").append(added).append(" variable")
+                    .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+        }
+        if (!got.notes().isEmpty()) {
+            msg.append(" — ").append(String.join(" ", got.notes()));
+        }
+        status(msg.append('.').toString());
+    }
+
     /** Paste a curl command, get a saved request — the reverse of Copy curl. */
     private void importCurl() {
         javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
@@ -298,11 +350,15 @@ public final class ApiClientTopComponent extends TopComponent {
         JButton importCurl = new JButton("Import curl…");
         importCurl.setToolTipText("Paste a curl command and save it as a request");
         importCurl.addActionListener(e -> importCurl());
+        JButton importHttp = new JButton("Import .http…");
+        importHttp.setToolTipText("Import a REST Client .http/.rest request file as a collection");
+        importHttp.addActionListener(e -> importHttpFile());
         JButton del = new JButton("Delete");
         del.addActionListener(e -> deleteSelected());
         tools.add(addCol);
         tools.add(addReq);
         tools.add(importCurl);
+        tools.add(importHttp);
         tools.add(del);
         panel.add(tools, BorderLayout.SOUTH);
         return panel;

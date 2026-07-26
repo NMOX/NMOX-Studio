@@ -65,6 +65,7 @@ public final class LanguageComments {
             Map.entry("text/x-cobol", "*>"),
             Map.entry("text/x-haxe", "//"),
             Map.entry("text/x-janet", "#"),
+            Map.entry("text/x-http-request", "#"),
             Map.entry("text/x-crystal", "#"),
             Map.entry("text/x-solidity", "//"),
             Map.entry("text/coffeescript", "#"),

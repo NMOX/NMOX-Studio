@@ -2,7 +2,7 @@
 
 **The IDE with a rack in it.**
 
-`53 RACK DEVICES` · `77 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `78 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 A NetBeans-platform IDE for the modern web where every build tool is a
 piece of hardware you patch with cables, every studio is a first-class
@@ -61,7 +61,7 @@ ORACLE: # UFCS style — reads naturally as a pipeline
 ## The editor
 
 ### Polyglot editing
-`77 GRAMMARS · LSP · NAVIGATOR OUTLINE`
+`78 GRAMMARS · LSP · NAVIGATOR OUTLINE`
 
 From TypeScript to Fortran to COBOL to the contract languages the Web3
 kit writes (Clarity, Aiken, Tact) — highlighting, typing intelligence,
