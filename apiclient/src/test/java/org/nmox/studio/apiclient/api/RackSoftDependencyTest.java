@@ -20,10 +20,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RackSoftDependencyTest {
 
     @Test
-    @DisplayName("without the rack module, both facade lookups are null (the feature-off branch)")
+    @DisplayName("without the rack module, every facade lookup is null (the feature-off branch)")
     void lookupsAreNullWithoutRack() {
         assertThat(ProjectAim.find()).isNull();
         assertThat(LiveServings.find()).isNull();
+        // v1.171.0: the Explain button follows the same law — no rack,
+        // no provider, no button (never a caught LinkageError)
+        assertThat(org.nmox.studio.core.spi.OracleAsk.find()).isNull();
     }
 
     @Test

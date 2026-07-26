@@ -147,6 +147,11 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTable testsTable = new JTable();
 
     private final JLabel statusLabel = new JLabel(" ");
+    private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
+    /** The last delivered response — what Explain would disclose. */
+    private ApiResponse lastResponse;
+    private String lastMethod;
+    private String lastUrl;
     private final JTextArea responseBody = new JTextArea();
     private final JTextArea responseHeaders = new JTextArea();
     private final JPanel testResults = new JPanel();
@@ -239,6 +244,32 @@ public final class ApiClientTopComponent extends TopComponent {
     private void status(String text) {
         statusLabel.setForeground(Color.GRAY);
         statusLabel.setText(text);
+    }
+
+    /**
+     * Hands ORACLE a REDACTED summary of the response on screen. The
+     * disclosure is assembled here, in the studio that owns the data —
+     * the seam carries text only, so the rack can never widen it — and
+     * the flow earns its own consent (a response body can carry customer
+     * data that no other ORACLE grant ever described).
+     */
+    private void explainResponse() {
+        org.nmox.studio.core.spi.OracleAsk oracle = org.nmox.studio.core.spi.OracleAsk.find();
+        if (oracle == null || lastResponse == null) {
+            status("Nothing to explain yet — send a request first.");
+            return;
+        }
+        String title = (lastMethod == null ? "GET" : lastMethod) + " · "
+                + (lastResponse.reached() ? String.valueOf(lastResponse.status()) : "no route");
+        boolean started = oracle.explain(new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+                "api.response", title,
+                org.nmox.studio.apiclient.api.ResponseDisclosure.what(lastResponse),
+                org.nmox.studio.apiclient.api.ResponseDisclosure.body(
+                        lastMethod, lastUrl, lastResponse),
+                "What does this response mean, and what should I check first?"));
+        if (!started) {
+            status("ORACLE did not run — needs an API key and your consent.");
+        }
     }
 
     /** Import a REST Client .http/.rest file as a whole collection. */
@@ -511,7 +542,18 @@ public final class ApiClientTopComponent extends TopComponent {
         JPanel panel = new JPanel(new BorderLayout());
         statusLabel.setFont(statusLabel.getFont().deriveFont(Font.BOLD));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        panel.add(statusLabel, BorderLayout.NORTH);
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(statusLabel, BorderLayout.CENTER);
+        // ORACLE is a SOFT dependency (ledger 30): with no rack in the
+        // platform the lookup misses and the button simply never appears
+        if (org.nmox.studio.core.spi.OracleAsk.find() != null) {
+            explainButton.setToolTipText("Ask ORACLE what this response means"
+                    + " (sends a redacted summary — you confirm first)");
+            explainButton.setEnabled(false);
+            explainButton.addActionListener(e -> explainResponse());
+            north.add(explainButton, BorderLayout.EAST);
+        }
+        panel.add(north, BorderLayout.NORTH);
         JTabbedPane tabs = new JTabbedPane();
         responseBody.setEditable(false);
         responseBody.setFont(MONO);
@@ -585,6 +627,11 @@ public final class ApiClientTopComponent extends TopComponent {
     private void showResponse(ApiResponse r, List<TestRunner.Result> results, String display) {
         sendButton.setText("Send");
         sendButton.setEnabled(true);
+        // remember what Explain would send: the response actually shown
+        lastResponse = r;
+        lastMethod = current == null ? "GET" : current.method;
+        lastUrl = current == null ? "" : current.url;
+        explainButton.setEnabled(true);
         if (!r.reached()) {
             boolean cancelled = "cancelled".equals(r.error());
             statusLabel.setForeground(cancelled ? Color.GRAY : FAIL_RED);
