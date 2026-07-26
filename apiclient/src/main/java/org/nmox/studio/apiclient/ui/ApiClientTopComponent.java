@@ -212,7 +212,72 @@ public final class ApiClientTopComponent extends TopComponent {
         sendButton.setForeground(new Color(0x1D, 0x9E, 0x75));
         sendButton.addActionListener(e -> send());
         bar.add(sendButton);
+        JButton copyCurl = new JButton("Copy curl");
+        copyCurl.setToolTipText("Copy this request as the exact curl command Send would run");
+        copyCurl.addActionListener(e -> copyAsCurl());
+        bar.add(copyCurl);
         return bar;
+    }
+
+    /** The current request as a terminal-ready curl command, to the clipboard. */
+    private void copyAsCurl() {
+        if (current == null) {
+            status("Select a request first.");
+            return;
+        }
+        Environment env = workspace.active();
+        String curl = org.nmox.studio.apiclient.api.CurlCodec.render(
+                current, env != null ? env.variables : Map.of());
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                new java.awt.datatransfer.StringSelection(curl), null);
+        status("curl command copied"
+                + (current.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
+                        && !current.authToken.isBlank()
+                        ? " — includes the auth secret" : "") + ".");
+    }
+
+    private void status(String text) {
+        statusLabel.setForeground(Color.GRAY);
+        statusLabel.setText(text);
+    }
+
+    /** Paste a curl command, get a saved request — the reverse of Copy curl. */
+    private void importCurl() {
+        javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
+        area.setLineWrap(true);
+        javax.swing.JPanel panel = new javax.swing.JPanel(new BorderLayout(0, 6));
+        panel.add(new JLabel("Paste a curl command:"), BorderLayout.NORTH);
+        panel.add(new JScrollPane(area), BorderLayout.CENTER);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+                panel, "Import curl");
+        if (org.openide.DialogDisplayer.getDefault().notify(dd)
+                != org.openide.DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        org.nmox.studio.apiclient.api.CurlCodec.Imported got;
+        try {
+            got = org.nmox.studio.apiclient.api.CurlCodec.parse(area.getText());
+        } catch (IllegalArgumentException ex) {
+            org.openide.DialogDisplayer.getDefault().notify(
+                    new org.openide.NotifyDescriptor.Message(
+                            ex.getMessage(), org.openide.NotifyDescriptor.ERROR_MESSAGE));
+            return;
+        }
+        Collection c = selectedCollection();
+        if (c == null) {
+            if (workspace.collections.isEmpty()) {
+                addCollection();
+            }
+            c = workspace.collections.get(workspace.collections.size() - 1);
+        }
+        c.requests.add(got.request());
+        rebuildTree();
+        current = got.request();
+        restoreSelection();
+        touch();
+        status(got.notes().isEmpty()
+                ? "Imported \"" + got.request().name + "\"."
+                : "Imported with notes: " + String.join(" ", got.notes()));
     }
 
     // ---- left: collections tree ----
@@ -230,10 +295,14 @@ public final class ApiClientTopComponent extends TopComponent {
         addCol.addActionListener(e -> addCollection());
         JButton addReq = new JButton("+ Request");
         addReq.addActionListener(e -> addRequest());
+        JButton importCurl = new JButton("Import curl…");
+        importCurl.setToolTipText("Paste a curl command and save it as a request");
+        importCurl.addActionListener(e -> importCurl());
         JButton del = new JButton("Delete");
         del.addActionListener(e -> deleteSelected());
         tools.add(addCol);
         tools.add(addReq);
+        tools.add(importCurl);
         tools.add(del);
         panel.add(tools, BorderLayout.SOUTH);
         return panel;

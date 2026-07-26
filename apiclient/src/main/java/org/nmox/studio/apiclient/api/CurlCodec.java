@@ -205,9 +205,9 @@ public final class CurlCodec {
     public static String render(ApiModel.Request r, Map<String, String> vars) {
         StringBuilder sb = new StringBuilder("curl");
         boolean bodied = r.body != null && !r.body.isBlank();
-        if (!"GET".equals(r.method) || !bodied && !"GET".equals(r.method)) {
-            sb.append(" -X ").append(r.method);
-        } else if (!"GET".equals(r.method)) {
+        // -X whenever it carries information: any non-GET method, or a
+        // GET with a body (bare --data would flip curl to POST)
+        if (!"GET".equals(r.method) || bodied) {
             sb.append(" -X ").append(r.method);
         }
         sb.append(' ').append(quote(

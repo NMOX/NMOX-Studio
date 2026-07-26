@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.165.0] - 2026-07-26
+
+### API Studio speaks curl, both ways
+
+- **Import curl…** — paste a curl command (browser devtools' "Copy as
+  cURL", a README, a teammate's Slack message) and it becomes a saved
+  request: quotes and line continuations parsed shell-style, `-H`
+  headers landed, `-d/--data*` joined with `&` and implying POST,
+  `--json` setting body plus both JSON headers, `-G` moving data into
+  the query string, `-u`/`--oauth2-bearer` mapped to auth. An
+  `Authorization: Bearer/Basic` HEADER is lifted into the Auth field so
+  the secret lands in the OS keychain instead of the committable
+  .nmoxapi.json (the v1.97.0 secrets law). Honest refusals for what a
+  saved request can't represent — multipart forms, `@file` bodies,
+  ANSI-C quoting — and unknown flags are noted, never guessed at (an
+  unknown flag must not eat the URL).
+- **Copy curl** — the exact command Send would run, on your clipboard:
+  same URL-plus-params composition, same headers, same auth, with the
+  active environment's `{{variables}}` resolved; the status line says
+  when the copied command includes the auth secret.
+- `CurlCodec` is a pure core — no network, no IO — with 17 tests
+  covering paste shapes, the secrets-law lift, exact render text, and
+  a field-level round trip (`parse(render(r))`).
+
 ## [1.164.0] - 2026-07-25
 
 ### The night review: the plans obey their own law
