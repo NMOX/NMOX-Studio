@@ -26,9 +26,18 @@ public final class RackOracleAsk implements OracleAsk {
         if (d == null || d.body().isBlank()) {
             return false;
         }
+        // Ask BEFORE opening the window. The engine gates every send too
+        // (that law is mutation-proven and stays), but consent-inside-the-
+        // send meant the conversation window appeared first and rendered
+        // "Thinking…" while the prompt was still on screen — the UI
+        // claiming work that consent had not yet allowed, and a declined
+        // ask leaving an orphaned window behind. Live-caught 2026-07-26.
+        // Once granted this returns immediately, so the per-send gate
+        // below is unchanged in behaviour and still defends every turn.
+        if (!OracleConsent.requestKindConsent(d.kind(), d.what())) {
+            return false;
+        }
         OracleConversation convo = OracleConversation.forDisclosure(d.title(), d.body());
-        // the kind's OWN consent: a grant for one disclosure never
-        // authorizes another (the consent-scoping law)
         AskOracleEngine engine = new AskOracleEngine(new OracleClient(),
                 OracleKeys::read, c -> OracleConsent.requestKindConsent(d.kind(), d.what()));
         new AskOracleDialog(convo, engine, AskOracleModel.chosen()).open(d.question());

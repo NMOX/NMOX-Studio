@@ -14,19 +14,37 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OracleKindConsentTest {
 
+    /**
+     * Tests own a kind namespace the PRODUCT never uses. These
+     * preferences live in the real userRoot, so asserting on a shipping
+     * kind ("api.response") reads whatever the developer's own app runs
+     * have granted — a live gauntlet on 2026-07-26 granted it and broke
+     * this suite. A private namespace is immune by construction.
+     */
+    private static final String KIND_A = "test.kind.alpha";
+    private static final String KIND_B = "test.kind.beta";
+
+    /**
+     * EVERY kind this suite grants is revoked here, not at the end of a
+     * test body: a test that writes the real userRoot and cleans up only
+     * on the happy path leaves its grant behind when it fails, and then
+     * poisons its own next run. That is precisely how the blank-kind
+     * case broke twice on 2026-07-26.
+     */
     @AfterEach
     void clean() {
-        OracleConsent.revokeKindForTest("api.response");
-        OracleConsent.revokeKindForTest("other.kind");
+        OracleConsent.revokeKindForTest(KIND_A);
+        OracleConsent.revokeKindForTest(KIND_B);
+        OracleConsent.revokeKindForTest("");
     }
 
     @Test
     @DisplayName("A kind starts ungranted and grants only itself")
     void grantsAreScopedPerKind() {
-        assertThat(OracleConsent.isKindGranted("api.response")).isFalse();
-        OracleConsent.grantKind("api.response");
-        assertThat(OracleConsent.isKindGranted("api.response")).isTrue();
-        assertThat(OracleConsent.isKindGranted("other.kind")).isFalse();
+        assertThat(OracleConsent.isKindGranted(KIND_A)).isFalse();
+        OracleConsent.grantKind(KIND_A);
+        assertThat(OracleConsent.isKindGranted(KIND_A)).isTrue();
+        assertThat(OracleConsent.isKindGranted(KIND_B)).isFalse();
     }
 
     @Test
@@ -39,7 +57,7 @@ class OracleKindConsentTest {
         boolean codeBefore = OracleConsent.isCodeGranted();
         boolean failureBefore = OracleConsent.isGranted();
 
-        OracleConsent.grantKind("api.response");
+        OracleConsent.grantKind(KIND_A);
 
         assertThat(OracleConsent.isCodeGranted()).isEqualTo(codeBefore);
         assertThat(OracleConsent.isGranted()).isEqualTo(failureBefore);
@@ -51,7 +69,8 @@ class OracleKindConsentTest {
         assertThat(OracleConsent.isKindGranted("")).isFalse();
         OracleConsent.grantKind("");
         assertThat(OracleConsent.isKindGranted("")).isTrue();
-        assertThat(OracleConsent.isKindGranted("api.response")).isFalse();
-        OracleConsent.revokeKindForTest("");
+        // compare against the test namespace, never a SHIPPING kind: a
+        // live run of the app grants those for real
+        assertThat(OracleConsent.isKindGranted(KIND_A)).isFalse();
     }
 }
