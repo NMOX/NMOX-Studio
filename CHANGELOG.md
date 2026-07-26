@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.174.0] - 2026-07-26
+
+### DB Studio explains its errors — the seam's second consumer
+
+- **Explain… on a failed statement.** A cryptic driver message
+  ("invalid input syntax for type integer", "relation does not
+  exist", a MySQL 1064) now opens an ORACLE conversation that names
+  the cause and how to fix the statement. The button appears only
+  under the failed-statement message, and only when the ORACLE
+  provider is found. Note the correction the full-reactor build
+  forced: unlike API Studio, DB Studio still DECLARES a rack
+  dependency (FileWatcher and DockerClient are rack surfaces with no
+  core equivalent, their KEPT catches documented against ledger 30),
+  so this is a DEFENSIVE null check, not a soft-dependency boundary.
+  A first version of the test asserted the lookup was null; it passed
+  under `-pl dbstudio` and failed the reactor, because the premise was
+  wrong.
+- **The tightest disclosure in the product.** A failed statement
+  produced no rows, so there is no customer data to withhold: what
+  goes is the SQL, the driver's error and the engine kind. The
+  connection — host, port, database, user — never appears, and the
+  password is keychain-only and never leaves the OS store.
+  `SqlErrorDisclosure` is a pure core with 6 tests, and its inability
+  to carry a connection is asserted STRUCTURALLY (no method or field
+  may take a non-String type), not by grepping for words.
+- **Literals are deliberately NOT masked, and the consent says so.**
+  Database errors are frequently *about* a literal, so a masked
+  statement would earn a confidently wrong explanation. The consent
+  line reads "the SQL statement you ran (including any literal values
+  in it) … no connection details, no password, and no result rows" —
+  honesty over silent mangling, with the choice left to the user.
+- This is the second consumer of v1.171.0's `core.spi.OracleAsk`
+  seam, which needed no changes to accept it — the text-only contract
+  held.
+
 ## [1.173.0] - 2026-07-26
 
 ### The Explain gauntlet: live-proven, one find
