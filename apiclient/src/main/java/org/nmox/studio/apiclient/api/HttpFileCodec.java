@@ -185,7 +185,10 @@ public final class HttpFileCodec {
         sb.append("# Exported by NMOX Studio API Studio — {{variables}} resolve\n");
         sb.append("# against your environment/@variables.\n");
         for (ApiModel.Request r : c.requests) {
-            sb.append("\n### ").append(r.name).append('\n');
+            // a multi-line name would smear into the request block; the
+            // separator line carries exactly one line of name
+            sb.append("\n### ").append(r.name == null ? ""
+                    : r.name.replaceAll("\\s+", " ").trim()).append('\n');
             if (r.authType == AuthType.BEARER) {
                 sb.append("# Auth not exported (OS keychain): re-add "
                         + "'Authorization: Bearer <token>'\n");
@@ -201,7 +204,18 @@ public final class HttpFileCodec {
                 }
             }
             if (r.body != null && !r.body.isBlank()) {
-                sb.append('\n').append(r.body.stripTrailing()).append('\n');
+                // 2026-07-26 review find, proven failing-first: a body LINE
+                // starting with ### reads back as a request separator — the
+                // round trip returned TWO requests with the body destroyed.
+                // The dialect has no escape for it, so the honest move is
+                // the auth move: omit and say so, never mangle.
+                if (r.body.lines().anyMatch(l -> l.startsWith("###"))) {
+                    sb.append("# Body not exported: it contains a line starting "
+                            + "with '###', which this dialect reads as a request "
+                            + "separator — paste the body back in.\n");
+                } else {
+                    sb.append('\n').append(r.body.stripTrailing()).append('\n');
+                }
             }
         }
         return sb.toString();

@@ -57,6 +57,27 @@ class HarCodecTest {
         assertThat(r.headers).noneMatch(h -> "Authorization".equalsIgnoreCase(h.name));
     }
 
+    /**
+     * v1.181.0 review find: a HAR is a RECORDING, so a non-liftable
+     * Authorization value ("Token …", SigV4) is a live credential and
+     * follows the Cookie rule — dropped and counted, never a plaintext
+     * row. The curl import deliberately differs (the user typed it).
+     */
+    @Test
+    @DisplayName("A captured non-Bearer/Basic Authorization is dropped, not kept")
+    void opaqueAuthorizationNeverSurvives() {
+        var got = HarCodec.parse(har(entry("", "GET", "https://api.example.com/x",
+                """
+                {"name":"Authorization","value":"Token opaque-live-secret"},
+                {"name":"Accept","value":"application/json"}""")));
+        ApiModel.Request r = got.requests().get(0);
+        assertThat(r.headers).noneMatch(h -> "Authorization".equalsIgnoreCase(h.name));
+        assertThat(r.authType).isEqualTo(AuthType.NONE);
+        assertThat(got.notes()).anyMatch(n -> n.contains("DROPPED"));
+        // and the secret string appears NOWHERE in the imported model
+        assertThat(r.headers).noneMatch(h -> h.value.contains("opaque-live-secret"));
+    }
+
     @Test
     @DisplayName("When the capture is typed, only XHR/fetch import — assets are counted")
     void typedCaptureKeepsApiTraffic() {
