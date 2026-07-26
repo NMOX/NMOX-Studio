@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.178.0] - 2026-07-26
+
+### The Network tab becomes requests — HAR import
+
+- **Import… ▸ HAR capture…** reads a browser devtools HAR ("Save all
+  as HAR") into a collection — the fastest path from "I watched my
+  app do it in the Network tab" to "I can replay and assert on it."
+- A HAR records a REAL session, so the import is mostly about what
+  must NOT survive it: **Cookie headers are dropped and counted** (a
+  captured session cookie in a committable workspace file is a leaked
+  credential), a captured **Authorization Bearer/Basic lifts into the
+  keychain-backed Auth field** (v1.97.0), HTTP/2 pseudo-headers and
+  stale Host/Content-Length/Connection/Accept-Encoding rows are
+  omitted (any client recomputes them), and `data:`/`blob:`/`ws:`
+  entries are skipped by name.
+- **Chrome-typed captures import only the API traffic**: when entries
+  carry `_resourceType`, XHR/fetch survive and the page assets are
+  counted out loud. Repeated method+URL pairs collapse to the first.
+  Bodies over 100k chars are refused by name — a silently truncated
+  payload would replay as a *different* request and appear to work.
+- `HarCodec` is a pure core with 8 tests; the import quintet is now
+  curl / .http / OpenAPI / Postman / HAR.
+
 ## [1.177.0] - 2026-07-26
 
 ### API Studio speaks Postman — the incumbent's format imports whole
@@ -6367,6 +6390,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.177.0...v1.178.0
 [1.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.176.0...v1.177.0
 [1.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.175.0...v1.176.0
 [1.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.174.0...v1.175.0
