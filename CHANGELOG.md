@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.171.0] - 2026-07-26
+
+### The AI surface reaches your API responses
+
+- **Explain… on the response pane** — press it and ORACLE opens a
+  conversation about the response on screen: what a 422 means, which
+  header is missing, what to check first. Follow-ups ride the same
+  window as every other ORACLE flow.
+- **A new soft-dependency seam, `core.spi.OracleAsk`** — API Studio
+  has no rack dependency by law (ledger 30), so the rack publishes a
+  provider and the studio branches on a null lookup: no rack, no
+  button, never a caught LinkageError. The seam carries **text only**
+  — no request or response objects cross it — so the rack cannot reach
+  back into a studio's data and widen what leaves the machine.
+- **The disclosure is redacted where the data lives.** API Studio
+  assembles what it is willing to send: credential headers
+  (Authorization, Cookie, Set-Cookie, anything named \*token\*,
+  \*secret\*, \*api-key\*) are dropped and COUNTED so the user sees
+  that something was withheld; query VALUES are masked while parameter
+  names survive (a masked `api_key=…` still explains a 401); the body
+  is a 4,000-character code-point-safe prefix, marked when truncated.
+  `ResponseDisclosure` is pure and its 6 tests are the promise.
+- **The flow earns its own consent** (the consent-scoping law, now
+  generalized): a response body can carry customer data that no
+  existing ORACLE grant ever described, so `api.response` has its own
+  one-time prompt quoting the studio's own "what is sent" line.
+  `OracleConsent.requestKindConsent` gives every future SPI flow the
+  same discipline — 3 tests pin that a kind grant never changes the
+  failure or code gates.
+
 ## [1.170.0] - 2026-07-26
 
 ### OpenAPI 3 joins the Import… menu
