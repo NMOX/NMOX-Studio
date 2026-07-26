@@ -50,11 +50,34 @@ precedence inversion mutation-proven; its same-day review, v1.162.0,
 caught the one starved consumer — PreflightPlan fell to the empty
 default for CLARITY-primary repos, losing the npm ship checks the
 same repo had as NODE — the "precedence flip starves NODE-keyed
-consumers" failure pattern). Standing counts as of
+consumers" failure pattern). Standing counts then at
 v1.162.0: 53 devices, 77 grammars, 88 learning spaces, five studios,
 eleven kit chains, 58 recognized manifests — the three contract
 languages the kit scaffolds (.clar/.ak/.tact) are editor citizens AND
-their repos open as projects with real lanes. It is
+their repos open as projects with real lanes. Currency pass 2026-07-26 (the overnight API-surface arc, v1.164–v1.168):
+the same-day review law paid four more times. v1.164.0 held the new
+preflight plans against their own oldest law (plansOnlyWhatExists) and
+conditioned five file-assuming checks; v1.165.0 gave API Studio curl
+both ways (Import curl… with the Authorization-header lift into the
+keychain-backed Auth field — the secrets law applied at import time —
+and Copy curl emitting the exact command Send would run); v1.166.0 made
+.http/.rest files citizens (the REST Client dialect imports
+near-losslessly because its {{variables}} ARE API Studio's syntax; the
+vscode-restclient grammar vendored MIT as the 78th); v1.167.0 was the
+live in-app gauntlet of that whole surface — every law check passed on
+screen (masked keychain Bearer, no plaintext header row, byte-exact
+clipboard) and its two finds (method-duped names, toolbar overflow
+hiding Delete) shipped fixed the same night; v1.168.0's night-arc
+review caught the XML-body refusal (startsWith("<") is not a file
+reference — "< path" is) and moved the .http read off the EDT per the
+v1.108.0 law. Standing counts as of v1.168.0: 53 devices, 78 grammars,
+88 learning spaces, five studios, eleven kit chains, 58 recognized
+manifests. Process lessons of the night, recorded in the pipeline
+memory: the tree-frozen law includes the CHECKED-OUT BRANCH (a
+mid-pipeline `git checkout -b` killed one ship at gh pr create), and
+the pipeline's own step-1 verify caught two more real bugs before
+anything left the machine (CRATE null starving CI export; a
+months-latent test reading the developer's real ~/NMOX). It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of

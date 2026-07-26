@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.169.0] - 2026-07-26
+
+### Night docs truth
+
+- plan.md currency pass at v1.168.0: the overnight API-surface arc
+  (v1.164–v1.168) recorded in full — the preflight-law review, curl
+  both ways with the secrets law applied at import time, .http
+  citizenship and the 78th grammar, the live import gauntlet and its
+  two same-night fixes, the XML-body catch — plus the night's process
+  lessons (the tree-frozen law includes the checked-out branch; the
+  pipeline's step-1 verify caught two real bugs before anything left
+  the machine). Standing counts current: 53 devices, 78 grammars, 88
+  learning spaces, five studios, eleven kit chains, 58 manifests.
+
 ## [1.168.0] - 2026-07-26
 
 ### The night-arc review: two finds, fixed
