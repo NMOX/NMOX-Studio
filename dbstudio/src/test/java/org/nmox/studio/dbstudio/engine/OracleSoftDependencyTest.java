@@ -4,24 +4,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.nmox.studio.core.spi.OracleAsk;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * DB Studio's Explain button follows the same soft-dependency law as
- * API Studio's (ledger 30): the studio compiles against core's
- * {@link OracleAsk} facade and branches on a null lookup, so a platform
- * without the rack simply has no button — an honest lookup miss, never
- * a caught {@code LinkageError}.
+ * The Explain button's standing properties.
+ *
+ * <p><b>NOT a soft-dependency boundary</b> — the correction is worth
+ * recording. Unlike API Studio (which dropped its rack dependency in
+ * v1.46.0), DB Studio still DECLARES one: {@code FileWatcher} and
+ * {@code DockerClient} are rack surfaces with no core equivalent, and
+ * their KEPT catches are documented against ledger 30. So the ORACLE
+ * provider IS on this module's classpath and the lookup finds it. An
+ * earlier version of this test asserted the lookup was null; it passed
+ * under {@code -pl dbstudio} and failed the full reactor, because the
+ * PREMISE was wrong, not the assertion.
+ *
+ * <p>The null branch is therefore DEFENSIVE — it covers a platform
+ * where the provider was never registered — not a module boundary. It
+ * still has to exist, which is what the source gate below pins.
  */
 class OracleSoftDependencyTest {
-
-    @Test
-    @DisplayName("without the rack module, the ORACLE lookup is null (the feature-off branch)")
-    void lookupIsNullWithoutRack() {
-        assertThat(OracleAsk.find()).isNull();
-    }
 
     @Test
     @DisplayName("the error strip is built only when the lookup succeeds")
@@ -33,6 +36,16 @@ class OracleSoftDependencyTest {
         int strip = source.indexOf("explainStrip(spec, result)");
         assertThat(guard).as("the null-lookup guard must exist").isGreaterThan(-1);
         assertThat(strip).as("the strip is added under it").isGreaterThan(guard);
+    }
+
+    @Test
+    @DisplayName("the strip is offered only for a FAILED statement")
+    void stripOnlyOnError() throws Exception {
+        String source = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java"));
+        // a successful statement has rows on screen; Explain exists for
+        // the error message, and the disclosure assumes there are none
+        assertThat(source).contains("result.isError() && org.nmox.studio.core.spi.OracleAsk.find()");
     }
 
     @Test

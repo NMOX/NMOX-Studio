@@ -12,8 +12,15 @@ All notable changes to NMOX Studio are documented here. The format follows
   ("invalid input syntax for type integer", "relation does not
   exist", a MySQL 1064) now opens an ORACLE conversation that names
   the cause and how to fix the statement. The button appears only
-  under the failed-statement message, and only when the rack is
-  present — the same soft-dependency law as API Studio's.
+  under the failed-statement message, and only when the ORACLE
+  provider is found. Note the correction the full-reactor build
+  forced: unlike API Studio, DB Studio still DECLARES a rack
+  dependency (FileWatcher and DockerClient are rack surfaces with no
+  core equivalent, their KEPT catches documented against ledger 30),
+  so this is a DEFENSIVE null check, not a soft-dependency boundary.
+  A first version of the test asserted the lookup was null; it passed
+  under `-pl dbstudio` and failed the reactor, because the premise was
+  wrong.
 - **The tightest disclosure in the product.** A failed statement
   produced no rows, so there is no customer data to withhold: what
   goes is the SQL, the driver's error and the engine kind. The
