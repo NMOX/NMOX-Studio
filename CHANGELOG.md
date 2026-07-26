@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.164.0] - 2026-07-25
+
+### The night review: the plans obey their own law
+
+- **File-assuming ship checks are now planned only when the file
+  exists** — the same-day review of v1.163.0 held its new plans
+  against PreflightPlan's oldest standing law (the test is literally
+  named `plansOnlyWhatExists`: checks the project cannot satisfy are
+  never planned) and found five violations: RACKET's `raco make
+  main.rkt` and ELM's `src/Main.elm` build checks now probe for their
+  files, RUBY plans rspec on a spec/ dir or rake on a Rakefile and
+  nothing on a bare Gemfile, PHP plans phpunit only when
+  phpunit.xml(.dist) or the vendored binary exists, and DART requires
+  the conventional test/ dir (`dart test` without one exits nonzero —
+  a false RED). The lanes keep their blind commands deliberately: a
+  button press gets the tool's own honest error, but a ship gate
+  planning an unpassable check is a lie.
+- The parity-gate fixtures grew the conditioning files so the gate
+  exercises each kind's fullest honest plan; the rest of the v1.163.0
+  surface (mirror-the-lanes command choices, the out-of-gate list)
+  verified CLEAN or blessed in place.
+
 ## [1.163.0] - 2026-07-25
 
 ### The ship gate and the IDE lanes speak every toolchain

@@ -113,4 +113,37 @@ class PreflightPlanTest {
         assertThat(checks).extracting(Check::name).containsExactly("CHECK");
         assertThat(checks.get(0).command()).containsExactly("aiken", "check");
     }
+
+    @Test
+    @DisplayName("File-assuming checks are planned only when the file exists (v1.164.0)")
+    void plansConditionOnProbedFiles() throws Exception {
+        // a bare info.rkt: TESTS yes, but no main.rkt means no BUILD —
+        // the plansOnlyWhatExists law applies to the v1.163.0 plans too
+        Files.writeString(dir.resolve("info.rkt"), "#lang info");
+        assertThat(PreflightPlan.forProject(dir.toFile()))
+                .extracting(Check::name).containsExactly("TESTS");
+        Files.writeString(dir.resolve("main.rkt"), "#lang racket");
+        assertThat(PreflightPlan.forProject(dir.toFile()))
+                .extracting(Check::name).containsExactly("TESTS", "BUILD");
+    }
+
+    @Test
+    @DisplayName("A Gemfile-only library plans no blind rake test (v1.164.0)")
+    void gemfileOnlyPlansNothing() throws Exception {
+        Files.writeString(dir.resolve("Gemfile"), "source 'https://rubygems.org'");
+        assertThat(PreflightPlan.forProject(dir.toFile())).isEmpty();
+        Files.writeString(dir.resolve("Rakefile"), "task :test");
+        assertThat(PreflightPlan.forProject(dir.toFile()))
+                .anySatisfy(c -> assertThat(c.command()).startsWith("rake"));
+    }
+
+    @Test
+    @DisplayName("A test-less composer lib plans no blind phpunit (v1.164.0)")
+    void composerWithoutPhpunitPlansNothing() throws Exception {
+        Files.writeString(dir.resolve("composer.json"), "{}");
+        assertThat(PreflightPlan.forProject(dir.toFile())).isEmpty();
+        Files.writeString(dir.resolve("phpunit.xml"), "<phpunit/>");
+        assertThat(PreflightPlan.forProject(dir.toFile()))
+                .anySatisfy(c -> assertThat(c.command()).contains("phpunit"));
+    }
 }

@@ -120,8 +120,12 @@ public final class PreflightPlan {
                 checks.add(new Check("BUILD", List.of("dotnet", "build", "-c", "Release"), Pass.EXIT_ZERO, false));
             }
             case DART -> {
-                // build targets vary (exe/js/aot) — tests are the honest gate
-                checks.add(new Check("TESTS", List.of("dart", "test"), Pass.EXIT_ZERO, false));
+                // build targets vary (exe/js/aot) — tests are the honest
+                // gate, and only when the conventional test/ dir exists
+                // (`dart test` with no test dir exits nonzero — false RED)
+                if (new File(dir, "test").isDirectory()) {
+                    checks.add(new Check("TESTS", List.of("dart", "test"), Pass.EXIT_ZERO, false));
+                }
             }
             case SCALA -> {
                 checks.add(new Check("TESTS", List.of("sbt", "test"), Pass.EXIT_ZERO, false));
@@ -168,11 +172,17 @@ public final class PreflightPlan {
             }
             case RACKET -> {
                 checks.add(new Check("TESTS", List.of("raco", "test", "."), Pass.EXIT_ZERO, false));
-                checks.add(new Check("BUILD", List.of("raco", "make", "main.rkt"), Pass.EXIT_ZERO, false));
+                // the lane's main.rkt convention, but planned only when the
+                // file exists — a ship check that cannot pass is a false RED
+                if (new File(dir, "main.rkt").isFile()) {
+                    checks.add(new Check("BUILD", List.of("raco", "make", "main.rkt"), Pass.EXIT_ZERO, false));
+                }
             }
             case ELM -> {
                 checks.add(new Check("TESTS", List.of("npx", "elm-test"), Pass.EXIT_ZERO, false));
-                checks.add(new Check("BUILD", List.of("npx", "elm", "make", "src/Main.elm"), Pass.EXIT_ZERO, false));
+                if (new File(dir, "src/Main.elm").isFile()) {
+                    checks.add(new Check("BUILD", List.of("npx", "elm", "make", "src/Main.elm"), Pass.EXIT_ZERO, false));
+                }
             }
             case RESCRIPT -> {
                 // build-only toolchain: no standard test runner
@@ -207,16 +217,26 @@ public final class PreflightPlan {
                 checks.add(new Check("TESTS", List.of("clojure", "-X:test"), Pass.EXIT_ZERO, false));
             }
             case RUBY -> {
-                checks.add(new Check("TESTS",
-                        new File(dir, "spec").isDirectory()
-                                ? List.of("bundle", "exec", "rspec")
-                                : List.of("rake", "test"), Pass.EXIT_ZERO, false));
+                // rspec when a spec/ dir exists, rake test when a Rakefile
+                // does — a Gemfile-only library plans neither (the
+                // plansOnlyWhatExists law)
+                if (new File(dir, "spec").isDirectory()) {
+                    checks.add(new Check("TESTS", List.of("bundle", "exec", "rspec"), Pass.EXIT_ZERO, false));
+                } else if (new File(dir, "Rakefile").isFile()) {
+                    checks.add(new Check("TESTS", List.of("rake", "test"), Pass.EXIT_ZERO, false));
+                }
             }
             case PHP -> {
-                checks.add(new Check("TESTS",
-                        new File(dir, "vendor/bin/phpunit").isFile()
-                                ? List.of("./vendor/bin/phpunit")
-                                : List.of("phpunit"), Pass.EXIT_ZERO, false));
+                // planned only when the project declares a phpunit setup —
+                // a blind `phpunit` on a test-less composer lib is a false RED
+                if (new File(dir, "phpunit.xml").isFile()
+                        || new File(dir, "phpunit.xml.dist").isFile()
+                        || new File(dir, "vendor/bin/phpunit").isFile()) {
+                    checks.add(new Check("TESTS",
+                            new File(dir, "vendor/bin/phpunit").isFile()
+                                    ? List.of("./vendor/bin/phpunit")
+                                    : List.of("phpunit"), Pass.EXIT_ZERO, false));
+                }
             }
             default -> {
                 // no toolchain (or make/cmake/task-runner kinds whose
