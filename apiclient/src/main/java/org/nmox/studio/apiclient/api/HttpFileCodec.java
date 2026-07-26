@@ -121,8 +121,9 @@ public final class HttpFileCodec {
             r.method = "GET";
             r.url = parts[0];
         }
+        // unnamed requests: no method prefix — the tree renderer adds it
         r.name = name != null ? name
-                : r.method + " " + r.url.replaceFirst("^https?://", "");
+                : r.url.replaceFirst("^https?://", "");
         if (r.name.length() > 48) {
             r.name = r.name.substring(0, 48) + "…";
         }

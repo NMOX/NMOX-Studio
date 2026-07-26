@@ -24,7 +24,7 @@ class CurlCodecTest {
         var got = CurlCodec.parse("curl https://api.example.com/users");
         assertThat(got.request().method).isEqualTo("GET");
         assertThat(got.request().url).isEqualTo("https://api.example.com/users");
-        assertThat(got.request().name).isEqualTo("GET api.example.com/users");
+        assertThat(got.request().name).isEqualTo("api.example.com/users");
         assertThat(got.notes()).isEmpty();
     }
 
