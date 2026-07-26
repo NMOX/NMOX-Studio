@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.173.0] - 2026-07-26
+
+### The Explain gauntlet: live-proven, one find
+
+- **Live-proven end to end.** A real GitHub API 404 explained by the
+  real Anthropic API in the shipped app: ORACLE named the wrong
+  endpoint path, suggested the correct URL, and read the rate-limit
+  headers to rule out auth — the redaction proving itself useful as
+  well as safe, since `x-ratelimit-remaining` survived while
+  `Authorization` never would. The v1.172.0 re-aim fix was confirmed
+  in the running app too: switching projects cleared the pane, the
+  status line and the armed button.
+- **The find: the conversation window opened BEFORE consent.** With
+  the gate only inside the engine's send, the window appeared and
+  rendered "Thinking…" while the consent prompt was still on screen —
+  the UI claiming work that consent had not yet allowed — and
+  declining left an orphaned window behind. Nothing ever left the
+  machine (the engine's gate held, and still does), but the window
+  lied about what was happening. The SPI adapter now asks first: a
+  decline opens nothing and returns not-started, so the caller reports
+  it in its own status line. The per-send gate is untouched — once
+  granted it short-circuits, so every follow-up turn is still
+  defended. Source-gated and mutation-proven.
+
 ## [1.172.0] - 2026-07-26
 
 ### The API-arc review: one find, fixed
