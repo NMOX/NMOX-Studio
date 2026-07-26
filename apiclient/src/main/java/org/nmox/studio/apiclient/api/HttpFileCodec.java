@@ -172,9 +172,11 @@ public final class HttpFileCodec {
             return;
         }
         String b = body.toString().strip();
-        if (b.startsWith("<")) {
-            // "< ./payload.json" pulls a file from disk in the dialect —
-            // importing would surprise-read files; refuse into a note
+        // the dialect's file reference is "< path" / "<@encoding path" —
+        // angle bracket THEN whitespace/@. A bare "<" is a legitimate
+        // XML/HTML body and must import as one (2026-07-26 review find:
+        // startsWith("<") refused every XML payload)
+        if (b.startsWith("< ") || b.startsWith("<@")) {
             notes.add("Body file reference (" + b.split("\n", 2)[0]
                     + ") not imported — paste the payload into the request.");
             b = "";

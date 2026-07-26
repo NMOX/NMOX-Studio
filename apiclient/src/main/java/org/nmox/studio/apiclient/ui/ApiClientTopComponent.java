@@ -252,16 +252,25 @@ public final class ApiClientTopComponent extends TopComponent {
         if (file == null) {
             return;
         }
-        org.nmox.studio.apiclient.api.HttpFileCodec.Imported got;
-        try {
-            String text = java.nio.file.Files.readString(file.toPath());
-            got = org.nmox.studio.apiclient.api.HttpFileCodec.parse(text);
-        } catch (java.io.IOException | IllegalArgumentException ex) {
-            org.openide.DialogDisplayer.getDefault().notify(
-                    new org.openide.NotifyDescriptor.Message(
-                            ex.getMessage(), org.openide.NotifyDescriptor.ERROR_MESSAGE));
-            return;
-        }
+        // read + parse off the EDT (the v1.108.0 Load-Patch law), apply on it
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.HttpFileCodec.Imported got;
+            try {
+                String text = java.nio.file.Files.readString(file.toPath());
+                got = org.nmox.studio.apiclient.api.HttpFileCodec.parse(text);
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> applyHttpImport(file, got));
+        });
+    }
+
+    private void applyHttpImport(java.io.File file,
+            org.nmox.studio.apiclient.api.HttpFileCodec.Imported got) {
         Collection c = new Collection();
         c.name = file.getName();
         c.requests.addAll(got.requests());
