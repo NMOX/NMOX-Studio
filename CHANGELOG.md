@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.168.0] - 2026-07-26
+
+### The night-arc review: two finds, fixed
+
+- **XML bodies import as bodies** — HttpFileCodec's file-reference
+  refusal checked `startsWith("<")`, which wrongly refused every
+  XML/HTML payload; the dialect's file reference is `< path` (bracket
+  THEN whitespace, or `<@encoding`), and the check now says so.
+  Test-pinned with a SOAP-shaped body.
+- **The .http import reads off the EDT** — the file read+parse now
+  rides the API Studio RequestProcessor with an EDT apply, per the
+  v1.108.0 Load-Patch law (blocking disk IO never belongs on the
+  paint thread, however small the file).
+- The rest of the v1.164–v1.167 surface verified CLEAN: curl
+  tokenizer edge cases (continuations inside quotes, -I with data,
+  method casing), render quoting law, preflight conditioning, and the
+  Import… menu button's EDT paths.
+
 ## [1.167.0] - 2026-07-26
 
 ### The import surface, gauntleted

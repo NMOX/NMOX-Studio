@@ -115,6 +115,22 @@ class HttpFileCodecTest {
     }
 
     @Test
+    @DisplayName("An XML body is a body, not a file reference (v1.168.0)")
+    void xmlBodyImports() {
+        // the review find: startsWith("<") refused every XML payload —
+        // the dialect's file reference is "< path", bracket THEN space
+        var got = HttpFileCodec.parse("""
+                POST https://h/soap
+                Content-Type: text/xml
+
+                <envelope><body>hi</body></envelope>
+                """);
+        assertThat(got.requests().get(0).body)
+                .isEqualTo("<envelope><body>hi</body></envelope>");
+        assertThat(got.notes()).isEmpty();
+    }
+
+    @Test
     @DisplayName("An empty file is an honest error")
     void emptyFile() {
         assertThatThrownBy(() -> HttpFileCodec.parse("# nothing here\n"))
