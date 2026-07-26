@@ -410,6 +410,64 @@ public final class ApiClientTopComponent extends TopComponent {
         status(msg.append('.').toString());
     }
 
+    /** Import a Postman Collection v2.x export as a whole collection. */
+    private void importPostman() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import Postman Collection (v2.1)")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "Postman collections", "json", "postman_collection"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.PostmanCodec.Imported got;
+            try {
+                got = org.nmox.studio.apiclient.api.PostmanCodec.parse(
+                        java.nio.file.Files.readString(file.toPath()));
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                Collection c = new Collection();
+                c.name = got.name();
+                c.requests.addAll(got.requests());
+                workspace.collections.add(c);
+                // collection variables join the active environment,
+                // never clobbering — the .http import's law
+                int added = 0;
+                Environment env = workspace.active();
+                if (env != null) {
+                    for (var e : got.variables().entrySet()) {
+                        if (env.variables.putIfAbsent(e.getKey(), e.getValue()) == null) {
+                            added++;
+                        }
+                    }
+                }
+                rebuildTree();
+                current = c.requests.get(0);
+                restoreSelection();
+                touch();
+                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
+                        .append("\": ").append(c.requests.size()).append(" request")
+                        .append(c.requests.size() == 1 ? "" : "s");
+                if (added > 0) {
+                    msg.append(", ").append(added).append(" variable")
+                            .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+                }
+                if (!got.notes().isEmpty()) {
+                    msg.append(" — ").append(String.join(" ", got.notes()));
+                }
+                status(msg.append('.').toString());
+            });
+        });
+    }
+
     /** Paste a curl command, get a saved request — the reverse of Copy curl. */
     private void importCurl() {
         javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
@@ -477,9 +535,12 @@ public final class ApiClientTopComponent extends TopComponent {
             http.addActionListener(a -> importHttpFile());
             javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON)…");
             openapi.addActionListener(a -> importOpenApi());
+            javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
+            postman.addActionListener(a -> importPostman());
             menu.add(curl);
             menu.add(http);
             menu.add(openapi);
+            menu.add(postman);
             menu.show(importBtn, 0, importBtn.getHeight());
         });
         JButton del = new JButton("Delete");
