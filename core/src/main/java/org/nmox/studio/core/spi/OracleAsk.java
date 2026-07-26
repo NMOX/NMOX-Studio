@@ -55,6 +55,11 @@ public interface OracleAsk {
             title = title == null || title.isBlank() ? "ORACLE" : title;
             what = what == null ? "" : what;
             body = body == null ? "" : body;
+            // a null question would fall through to the CODE flow's
+            // default ("Explain what this code does.") — wrong words for
+            // a response or a query, so the seam supplies a neutral one
+            question = question == null || question.isBlank()
+                    ? "Explain this and tell me what to check first." : question;
         }
     }
 

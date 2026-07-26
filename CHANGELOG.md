@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.172.0] - 2026-07-26
+
+### The API-arc review: one find, fixed
+
+- **A re-aim left Explain… armed with the previous project's
+  response** — `applyWorkspace` swaps the workspace, resets the current
+  request and rebuilds the tree on every project switch, but never
+  touched the response state. Switch from project X to project Y and
+  the pane still held X's response with the button enabled: pressing
+  Explain would have disclosed **another project's response body**
+  while the user worked in Y. The same staleness predates v1.171.0 as
+  a cosmetic display bug; the Explain button turned it into a
+  disclosure path. Binding a workspace now clears the response, its
+  headers, the status line and every field Explain could send —
+  source-gated and mutation-proven (removing the call fails the gate
+  by name).
+- The seam's `Disclosure` now supplies a NEUTRAL default question: a
+  null question fell through to the code flow's "Explain what this
+  code does.", the wrong words for a response or a query — unreachable
+  today, wrong for the next consumer.
+- Verified CLEAN with the same lenses: the disclosure body is bounded
+  by construction (the cap short-circuits before touching a large
+  body, so building it on the EDT costs nothing), OpenAPI's
+  `servers[0]` carries no secret the spec didn't already hold, and
+  `forDisclosure`'s empty-subject refusal matches the engine's gate.
+
 ## [1.171.0] - 2026-07-26
 
 ### The AI surface reaches your API responses
