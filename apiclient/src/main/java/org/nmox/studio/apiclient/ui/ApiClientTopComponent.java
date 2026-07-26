@@ -468,6 +468,50 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /** Import a browser HAR capture — the Network tab becomes requests. */
+    private void importHar() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import HAR capture")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "HAR captures", "har", "json"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.HarCodec.Imported got;
+            try {
+                got = org.nmox.studio.apiclient.api.HarCodec.parse(
+                        java.nio.file.Files.readString(file.toPath()));
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                Collection c = new Collection();
+                c.name = file.getName();
+                c.requests.addAll(got.requests());
+                workspace.collections.add(c);
+                rebuildTree();
+                current = c.requests.get(0);
+                restoreSelection();
+                touch();
+                StringBuilder msg = new StringBuilder("Imported ")
+                        .append(c.requests.size()).append(" request")
+                        .append(c.requests.size() == 1 ? "" : "s")
+                        .append(" from the capture");
+                if (!got.notes().isEmpty()) {
+                    msg.append(" — ").append(String.join(" ", got.notes()));
+                }
+                status(msg.append('.').toString());
+            });
+        });
+    }
+
     /** Paste a curl command, get a saved request — the reverse of Copy curl. */
     private void importCurl() {
         javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
@@ -537,10 +581,13 @@ public final class ApiClientTopComponent extends TopComponent {
             openapi.addActionListener(a -> importOpenApi());
             javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
             postman.addActionListener(a -> importPostman());
+            javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
+            har.addActionListener(a -> importHar());
             menu.add(curl);
             menu.add(http);
             menu.add(openapi);
             menu.add(postman);
+            menu.add(har);
             menu.show(importBtn, 0, importBtn.getHeight());
         });
         JButton del = new JButton("Delete");
