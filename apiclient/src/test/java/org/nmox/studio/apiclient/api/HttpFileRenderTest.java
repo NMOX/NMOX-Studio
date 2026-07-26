@@ -82,6 +82,32 @@ class HttpFileRenderTest {
         assertThat(text).contains("GET {{baseUrl}}/orders?status=open");
     }
 
+    /**
+     * v1.181.0 review find, proven failing-first on the shipped v1.179.0:
+     * a body line starting with {@code ###} rendered into a file that
+     * re-imported as TWO requests with the body destroyed. The dialect
+     * has no escape, so the fix is the auth idiom — omit and say so.
+     */
+    @Test
+    @DisplayName("A ###-carrying body cannot split the file — omitted and said")
+    void hashBodySurvivesAsOneRequest() {
+        ApiModel.Collection c = new ApiModel.Collection();
+        ApiModel.Request r = new ApiModel.Request();
+        r.name = "Markdown\npayload"; // and a hostile multi-line name
+        r.method = "POST";
+        r.url = "https://x.example.com/md";
+        r.body = "line one\n### a heading inside the body\nline three";
+        c.requests.add(r);
+
+        String text = HttpFileCodec.render(c);
+        HttpFileCodec.Imported back = HttpFileCodec.parse(text);
+
+        assertThat(back.requests()).as("one request in, one request out").hasSize(1);
+        assertThat(back.requests().get(0).name).isEqualTo("Markdown payload");
+        assertThat(back.requests().get(0).body).isEmpty();
+        assertThat(text).contains("Body not exported");
+    }
+
     @Test
     @DisplayName("A URL that already has a query gets & not a second ?")
     void queryAppendJoins() {

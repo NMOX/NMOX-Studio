@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.181.0] - 2026-07-26
+
+### The import-arc review: two finds, both about what must not survive
+
+Two read-only lenses over the day's fresh surface (v1.176–v1.180): a
+codec-safety lens (secrets law, caps, refusal honesty) and a
+UI/lifecycle lens (EDT, selection, menu). Both finds fixed:
+
+- **A captured non-Bearer/Basic Authorization survived the HAR import
+  as a plaintext header row.** "Token …", AWS SigV4, and opaque
+  schemes fell past the keychain lift into a visible row with only a
+  warning note — but a HAR is a RECORDING, so any Authorization value
+  in it is a live credential; it now follows the Cookie rule, dropped
+  and counted. The curl import deliberately differs (the user TYPED
+  that header; keeping it honors their input) and both stances are
+  now written at the code site.
+- **A body line starting with `###` broke the .http round trip** —
+  proven failing-first on shipped v1.179.0: render→parse returned TWO
+  requests with the body destroyed, because the dialect reads `###`
+  at line start as a request separator and has no escape for it. The
+  fix is the auth idiom: the body is omitted with a comment saying
+  exactly why, never mangled. Multi-line request names now collapse
+  to one line for the same reason.
+- Blessed with reasons, in writing: export-with-no-selection falls
+  back to the first collection (the save dialog's TITLE names the
+  collection before anything is written); Postman/OpenAPI/.http
+  imports carry no body cap (they read authored, user-chosen files —
+  HAR caps because it reads recordings); a Postman `apikey` stays a
+  visible row with the plaintext warning (an export is shared
+  deliberately; the model has no keychain slot for arbitrary header
+  names).
+
 ## [1.180.0] - 2026-07-26
 
 ### The day's tests are locked in — floors ratchet (debt only)
@@ -6426,6 +6458,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.180.0...v1.181.0
 [1.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.179.0...v1.180.0
 [1.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.178.0...v1.179.0
 [1.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.177.0...v1.178.0

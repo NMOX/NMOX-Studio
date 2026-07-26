@@ -194,21 +194,30 @@ public final class HarCodec {
                             continue;
                         }
                     } catch (IllegalArgumentException notBase64) {
-                        // fall through to the visible-row warning
+                        // fall through to the drop below
                     }
                 }
+                // 2026-07-26 review find: a HAR is a RECORDING, so any
+                // Authorization value in it is a live credential. The
+                // liftable schemes go to the keychain above; everything
+                // else ("Token …", AWS SigV4, an opaque blob) follows the
+                // Cookie rule — dropped and counted, never a plaintext row
+                // in the committable workspace file. This deliberately
+                // differs from the curl import, where the user TYPED the
+                // header and keeping it is honoring their input.
                 if (!notes.contains(AUTH_NOTE)) {
                     notes.add(AUTH_NOTE);
                 }
+                continue;
             }
             r.headers.add(new Pair(name, value));
         }
         return cookies;
     }
 
-    private static final String AUTH_NOTE = "An Authorization header that isn't "
-            + "Bearer/Basic was kept as a visible row — move the secret to the "
-            + "Auth field (OS keychain).";
+    private static final String AUTH_NOTE = "A captured Authorization header "
+            + "that isn't Bearer/Basic was DROPPED — recorded credentials never "
+            + "land in the workspace file; set the request's Auth field yourself.";
 
     private static void body(JSONObject postData, ApiModel.Request r, List<String> notes) {
         if (postData == null) {
