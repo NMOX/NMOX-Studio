@@ -421,6 +421,15 @@ becoming `{{variables}}`, the first server offered as `{{baseUrl}}`).
 Imports refuse what they can't represent (multipart forms, `@file`
 bodies, YAML specs, Swagger 2) instead of importing it wrong.
 
+When a response is wrong and you don't know why, **Explain with
+ORACLE…** sends a redacted picture of it — method, URL with query
+values masked, status, headers with credential headers dropped and
+counted, capped body — to the same AI that explains rack failures,
+after a consent dialog that quotes exactly that list. It opens as a
+conversation, so you can ask follow-ups. Switching projects clears the
+armed response first: Explain can never disclose another project's
+traffic.
+
 ### DB Studio (⌥⌘7)
 ![A SQLite connection, a query, 8 rows in 1 ms — and the status bar giving the honest reason this grid is read-only](images/db-studio.png)
 
@@ -437,6 +446,13 @@ read-only), and Apply shows you the exact UPDATE statements before
 touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
 NetBeans Database Explorer connections (Oracle, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
+
+A failed statement grows an **Explain…** button under its error
+message: ORACLE gets the SQL you ran (including its literal values —
+the consent line says so, because the error is usually *about* a
+literal), the error message, and the engine kind. Never the
+connection details, the password (keychain-only, out of reach by
+construction), or any rows — a failed statement produced none.
 
 ### Contract Studio (⌥⌘6)
 ![ANVIL running in the rack, and Contract Studio connected to it by itself — chain 31337, the escrow contract in the artifact tree with its EIP-170 size usage, the live RPC on the serving chip](images/contract-studio.png)

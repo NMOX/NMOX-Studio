@@ -36,6 +36,22 @@ every response is graded against the web's security-header standards.
    enter a token. The token is **never** written to the committable
    `.nmoxapi.json` — it lives in the OS keychain, keyed to the request.
 
+6. **Import what you already have.** The **Import…** button reads a
+   pasted curl command (browser devtools' "Copy as cURL"), a
+   `.http`/`.rest` request file, or an OpenAPI 3 JSON spec — each
+   becomes real requests, and an `Authorization` header is lifted
+   straight into the keychain-backed Auth field instead of landing in
+   your workspace file. **Copy curl** goes the other way: the exact
+   command Send would run, on your clipboard.
+
+7. **Ask ORACLE about a bad response.** When a send comes back wrong,
+   press **Explain with ORACLE…**. A consent dialog first tells you
+   exactly what would leave your machine — method, URL with query
+   *values* masked, status, safe headers (credential headers already
+   dropped and counted), and a capped body — and nothing is sent until
+   you say so. Decline and nothing runs; accept and the explanation
+   opens as a conversation you can ask follow-ups in.
+
 ## What you just learned
 
 - Requests, environments, and assertions persist per-project in

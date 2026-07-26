@@ -77,7 +77,39 @@ memory: the tree-frozen law includes the CHECKED-OUT BRANCH (a
 mid-pipeline `git checkout -b` killed one ship at gh pr create), and
 the pipeline's own step-1 verify caught two more real bugs before
 anything left the machine (CRATE null starving CI export; a
-months-latent test reading the developer's real ~/NMOX). It is
+months-latent test reading the developer's real ~/NMOX).
+
+Currency pass 2026-07-26 (the AI-surface arc, v1.169–v1.175): the
+import trio closed with OpenAPI 3 JSON (v1.170.0, one request per
+operation, `{petId}`→`{{petId}}`, honest YAML/Swagger-2 refusals) and
+the update-center gauntlet re-passed across nine releases of drift
+(v1.160→v1.169 in-app). Then ORACLE grew its fourth and fifth faces on
+a NEW frozen seam: `core.spi.OracleAsk` carries a text-only
+`Disclosure` — no request/response/result types can cross it, so the
+rack can never widen what a studio chose to send — and each disclosure
+KIND earns its own one-time consent. v1.171.0 wired API Studio
+responses through it (query values masked, credential headers
+dropped-and-counted); v1.174.0 wired DB Studio failed statements
+(literals deliberately NOT masked — the error is usually about a
+literal — and the consent line says so). Both live-proven against the
+real API in the shipped app. The arc's reviews caught the same bug
+class TWICE in fresh code — *a stale artifact that was cosmetic for
+years becomes a disclosure path the moment an Explain button is
+attached to it* (v1.172.0: API Studio kept the previous project's
+response armed across a re-aim; v1.175.0: DB Studio kept its error
+tabs) — now a standing law: A RESULT BELONGS TO THE WORKSPACE THAT
+PRODUCED IT, and the review lens that finds it is "does consumer N
+survive the hazard consumer N-1 failed?". Two more process laws paid
+for in blood: *tests that touch real-userRoot prefs own a private
+`test.*` namespace, clean in @AfterEach, and assert UNCHANGED on keys
+they don't own* (bit three times before v1.173.0 pinned it), and
+*`mvn verify -pl module` cannot see cross-module @ServiceProvider
+registrations — a soft-dependency claim is only proven by the full
+reactor plus a grep of the pom* (v1.174.0 shipped a test whose premise
+was wrong under exactly that blindness). Standing counts as of
+v1.175.0: 53 devices, 78 grammars, 88 learning spaces, five studios,
+eleven kit chains, 58 recognized manifests, and ORACLE reachable from
+the rack, the editor, API Studio, and DB Studio. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
