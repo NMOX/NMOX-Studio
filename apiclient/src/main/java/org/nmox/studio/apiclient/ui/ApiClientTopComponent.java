@@ -468,6 +468,46 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * Export the selected collection as a .http file — the other half
+     * of the v1.166.0 import. Auth never leaves the keychain; the file
+     * says so per request.
+     */
+    private void exportHttp() {
+        Collection c = selectedCollection();
+        if (c == null || c.requests.isEmpty()) {
+            status("Nothing to export — select a collection with requests.");
+            return;
+        }
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Export \"" + c.name + "\" as .http")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        ".http request files", "http", "rest"))
+                .showSaveDialog();
+        if (file == null) {
+            return;
+        }
+        java.io.File target = file.getName().contains(".") ? file
+                : new java.io.File(file.getParentFile(), file.getName() + ".http");
+        String text = org.nmox.studio.apiclient.api.HttpFileCodec.render(c);
+        int n = c.requests.size();
+        RP.post(() -> {
+            try {
+                java.nio.file.Files.writeString(target.toPath(), text);
+            } catch (java.io.IOException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> status("Exported " + n
+                    + " request" + (n == 1 ? "" : "s") + " to " + target.getName()
+                    + " — auth stays in your keychain, the file says what to re-add."));
+        });
+    }
+
     /** Import a browser HAR capture — the Network tab becomes requests. */
     private void importHar() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
@@ -570,7 +610,8 @@ public final class ApiClientTopComponent extends TopComponent {
         // toolbar at the default panel width and silently hid Delete
         // (2026-07-26 gauntlet find — a JToolBar clips without a chevron)
         JButton importBtn = new JButton("Import…");
-        importBtn.setToolTipText("Import a curl command or a .http/.rest request file");
+        importBtn.setToolTipText("Import curl / .http / OpenAPI / Postman / HAR, "
+                + "or export a collection to .http");
         importBtn.addActionListener(e -> {
             javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
             javax.swing.JMenuItem curl = new javax.swing.JMenuItem("curl command…");
@@ -583,11 +624,16 @@ public final class ApiClientTopComponent extends TopComponent {
             postman.addActionListener(a -> importPostman());
             javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
             har.addActionListener(a -> importHar());
+            javax.swing.JMenuItem export = new javax.swing.JMenuItem(
+                    "Export collection to .http…");
+            export.addActionListener(a -> exportHttp());
             menu.add(curl);
             menu.add(http);
             menu.add(openapi);
             menu.add(postman);
             menu.add(har);
+            menu.addSeparator();
+            menu.add(export);
             menu.show(importBtn, 0, importBtn.getHeight());
         });
         JButton del = new JButton("Delete");
