@@ -247,6 +247,28 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     /**
+     * Forgets the shown response and everything Explain could disclose
+     * from it. Package-visible so the re-aim law is testable without a
+     * live tab (v1.172.0).
+     */
+    void clearResponse() {
+        lastResponse = null;
+        lastMethod = null;
+        lastUrl = null;
+        explainButton.setEnabled(false);
+        responseBody.setText("");
+        responseHeaders.setText("");
+        statusLabel.setText(" ");
+        testResults.removeAll();
+        standardsPanel.removeAll();
+    }
+
+    /** Test seam: what Explain would send right now, or null when disarmed. */
+    ApiResponse armedResponse() {
+        return explainButton.isEnabled() ? lastResponse : null;
+    }
+
+    /**
      * Hands ORACLE a REDACTED summary of the response on screen. The
      * disclosure is assembled here, in the studio that owns the data —
      * the seam carries text only, so the rack can never widen it — and
@@ -944,6 +966,12 @@ public final class ApiClientTopComponent extends TopComponent {
         loading = true;
         workspace = loaded;
         current = null;
+        // A response belongs to the project it came from. Before
+        // v1.171.0 keeping it across a re-aim was merely stale display;
+        // with Explain… it became a disclosure path — the button would
+        // still be armed with the PREVIOUS project's response body while
+        // the user works in a new one. Clear it with the workspace.
+        clearResponse();
         selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
         DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
         workspace.environments.forEach(e -> envs.addElement(e.name));

@@ -67,4 +67,31 @@ class ApiStudioLifecycleGateTest {
                 .doesNotContain("new Thread(");
         assertThat(source).contains("new RequestProcessor(\"API Studio\"");
     }
+
+    /**
+     * v1.172.0 — the disclosure law: a response belongs to the project
+     * it came from. Binding a new workspace must forget it, or Explain…
+     * stays armed with the PREVIOUS project's response body while the
+     * user works in a new one. Before v1.171.0 the same staleness was
+     * only a cosmetic display bug; the Explain button made it a
+     * disclosure path.
+     */
+    @Test
+    @DisplayName("a workspace re-aim clears the response Explain could disclose")
+    void reAimClearsTheArmedResponse() throws Exception {
+        String source = source();
+
+        String apply = method(source, "private void applyWorkspace(Workspace loaded, File dir)");
+        assertThat(apply)
+                .as("every re-aim must forget the previous project's response")
+                .contains("clearResponse()");
+
+        String clear = method(source, "void clearResponse()");
+        assertThat(clear)
+                .as("clearing means the disclosure fields AND the button")
+                .contains("lastResponse = null")
+                .contains("lastMethod = null")
+                .contains("lastUrl = null")
+                .contains("explainButton.setEnabled(false)");
+    }
 }
