@@ -408,18 +408,27 @@ as a test suite. Everything persists to `.nmoxapi.json` in your project —
 commit it, and your teammate has your workspace. When a dev server starts
 in the rack, API Studio offers to set `{{baseUrl}}` for you.
 
-curl speaks both ways: **Import curl…** turns a pasted command (from
-browser devtools' "Copy as cURL", a README, a teammate) into a saved
-request — an `Authorization: Bearer/Basic` header is lifted into the
-Auth field so the secret lands in your OS keychain, never the
-committable workspace file — and **Copy curl** puts the exact command
-Send would run on your clipboard, `{{variables}}` resolved. **Import…** also reads
-`.http`/`.rest` request files (the REST Client dialect — its
-`{{variables}}` are API Studio's own syntax, so they import verbatim)
-and OpenAPI 3 JSON documents (one request per operation, path templates
-becoming `{{variables}}`, the first server offered as `{{baseUrl}}`).
+The **Import…** menu reads everything you already have: a pasted curl
+command (devtools' "Copy as cURL" — an `Authorization: Bearer/Basic`
+header is lifted into the Auth field so the secret lands in your OS
+keychain, never the committable workspace file), `.http`/`.rest`
+request files (the REST Client dialect — its `{{variables}}` are API
+Studio's own syntax, so they import verbatim), OpenAPI 3 JSON
+documents (one request per operation, path templates becoming
+`{{variables}}`), **Postman Collections v2.x** (folders keep identity
+as "Folder / Request" names, `{{variables}}` verbatim, bearer/basic
+auth — request-level or inherited — goes keychain-side), and **HAR
+captures** from the browser's Network tab (only XHR/fetch traffic
+imports, session cookies and opaque captured Authorization values are
+dropped and counted — recorded credentials never land in a file).
+**Copy curl** puts the exact command Send would run on your
+clipboard, and **Export collection to .http…** writes the whole
+collection for any editor or CI runner — with auth deliberately left
+in the keychain and a per-request comment saying what to re-add.
 Imports refuse what they can't represent (multipart forms, `@file`
-bodies, YAML specs, Swagger 2) instead of importing it wrong.
+bodies, YAML specs, Swagger 2, Postman v1/scripts) instead of
+importing it wrong. See the [migration
+tutorial](tutorials/migrating-from-postman.md) for the full walk.
 
 When a response is wrong and you don't know why, **Explain with
 ORACLE…** sends a redacted picture of it — method, URL with query

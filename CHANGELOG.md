@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.182.0] - 2026-07-26
+
+### The migration gauntlet: PASS — and the tutorial that proves it
+
+- **The whole import surface click-verified live in the INSTALLED
+  v1.181.0 app** (brew cask, throwaway userdir), not a dev build: a
+  realistic Postman v2.1 export imported with folder-prefixed names,
+  the script counted, the collection variable joining the Local
+  environment, `{{variables}}` verbatim, `:orderId` → `{{orderId}}`,
+  and the request-level basic auth masked in the keychain-backed Auth
+  field while the collection-level bearer was correctly inherited by
+  the requests that declared none. The HAR capture imported exactly
+  its two XHR/fetch entries (assets counted out loud, the duplicate
+  collapsed), the captured Bearer went keychain-side, and the Cookie /
+  opaque-Authorization / pseudo-header / Host rows were all gone from
+  the grid. The .http export round-trip was proven at the BYTE level:
+  a grep of the exported file and `.nmoxapi.json` found none of the
+  three planted secrets, disabled params stayed out of the query
+  string, and every authed request carried its keychain comment.
+  Zero finds; clean shutdown, no orphans.
+- **New tutorial: [Migrating from
+  Postman](docs/tutorials/migrating-from-postman.md)** — the walk
+  above as a user-facing guide, written from what actually happened
+  on screen. Joins the tutorials index; the user guide's API Studio
+  section now describes the full import family and links it.
+- One cosmetic observation recorded: at narrow tree-panel widths the
+  collections toolbar clips the Delete label to "Dele" (button still
+  works) — the v1.167.0 overflow class at minimum width, noted for a
+  future polish pass.
+
 ## [1.181.0] - 2026-07-26
 
 ### The import-arc review: two finds, both about what must not survive
@@ -6458,6 +6488,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.181.0...v1.182.0
 [1.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.180.0...v1.181.0
 [1.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.179.0...v1.180.0
 [1.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.178.0...v1.179.0
