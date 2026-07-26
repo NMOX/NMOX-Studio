@@ -150,7 +150,10 @@ public final class CurlCodec {
         if (!explicitMethod) {
             r.method = r.body.isEmpty() ? "GET" : "POST";
         }
-        r.name = r.method + " " + r.url.replaceFirst("^https?://", "");
+        // no method prefix: the collections tree renderer already shows
+        // the method, so a prefixed name displayed as "POST POST host/…"
+        // (2026-07-26 gauntlet find)
+        r.name = r.url.replaceFirst("^https?://", "");
         if (r.name.length() > 48) {
             r.name = r.name.substring(0, 48) + "…";
         }

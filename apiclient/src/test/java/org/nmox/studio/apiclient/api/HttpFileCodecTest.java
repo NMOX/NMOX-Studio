@@ -47,7 +47,7 @@ class HttpFileCodecTest {
     void bareUrl() {
         var got = HttpFileCodec.parse("https://h/x\n");
         assertThat(got.requests().get(0).method).isEqualTo("GET");
-        assertThat(got.requests().get(0).name).isEqualTo("GET h/x");
+        assertThat(got.requests().get(0).name).isEqualTo("h/x");
     }
 
     @Test

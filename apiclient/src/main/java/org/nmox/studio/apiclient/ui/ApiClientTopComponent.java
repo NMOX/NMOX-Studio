@@ -347,18 +347,26 @@ public final class ApiClientTopComponent extends TopComponent {
         addCol.addActionListener(e -> addCollection());
         JButton addReq = new JButton("+ Request");
         addReq.addActionListener(e -> addRequest());
-        JButton importCurl = new JButton("Import curl…");
-        importCurl.setToolTipText("Paste a curl command and save it as a request");
-        importCurl.addActionListener(e -> importCurl());
-        JButton importHttp = new JButton("Import .http…");
-        importHttp.setToolTipText("Import a REST Client .http/.rest request file as a collection");
-        importHttp.addActionListener(e -> importHttpFile());
+        // one Import… menu button: two separate buttons overflowed the
+        // toolbar at the default panel width and silently hid Delete
+        // (2026-07-26 gauntlet find — a JToolBar clips without a chevron)
+        JButton importBtn = new JButton("Import…");
+        importBtn.setToolTipText("Import a curl command or a .http/.rest request file");
+        importBtn.addActionListener(e -> {
+            javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+            javax.swing.JMenuItem curl = new javax.swing.JMenuItem("curl command…");
+            curl.addActionListener(a -> importCurl());
+            javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
+            http.addActionListener(a -> importHttpFile());
+            menu.add(curl);
+            menu.add(http);
+            menu.show(importBtn, 0, importBtn.getHeight());
+        });
         JButton del = new JButton("Delete");
         del.addActionListener(e -> deleteSelected());
         tools.add(addCol);
         tools.add(addReq);
-        tools.add(importCurl);
-        tools.add(importHttp);
+        tools.add(importBtn);
         tools.add(del);
         panel.add(tools, BorderLayout.SOUTH);
         return panel;

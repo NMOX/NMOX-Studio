@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.167.0] - 2026-07-26
+
+### The import surface, gauntleted
+
+- The whole curl/.http surface was click-verified LIVE in the
+  assembled app: a devtools-style curl paste imported with the Bearer
+  token landing masked in the keychain-backed Auth field and NO
+  Authorization header row; Copy curl put the byte-exact command on
+  the clipboard (status line honestly flagging the included secret);
+  requests.http imported as a named two-request collection with
+  "Imported 2 requests, 1 variable into Local." Two finds, both fixed:
+- **Imported names dropped their method prefix** — the collections
+  tree renderer already shows the method, so a generated name
+  displayed as "POST POST localhost:3000/…".
+- **The collections toolbar no longer overflows** — two import buttons
+  pushed Delete clean off the panel at the default width (a JToolBar
+  clips without a chevron); both imports now live under one Import…
+  menu button (curl command… / .http file…).
+
 ## [1.166.0] - 2026-07-26
 
 ### .http request files are citizens
