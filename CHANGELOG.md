@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.180.0] - 2026-07-26
+
+### The day's tests are locked in — floors ratchet (debt only)
+
+- All ten JaCoCo floors re-measured against the current suite and
+  raised to measured-minus-margin: core .78→.80, editor .57→.58,
+  tools .59→.62, project .73→.74, rack .69→.70, apiclient .81→.83,
+  dbstudio .85→.86, web3 .87→.88, infra .73→.74; ui stays .13
+  (measured .150 — the margin holds it). No floor lowered, no
+  exclusion changed. The import-quintet arc's tests (Postman, HAR,
+  .http render) and the AI arc's are now regression-locked: a
+  test-shedding change fails the build.
+- Housekeeping verified clean in passing: no open Dependabot PRs, and
+  the CHANGELOG link block (regenerated for all versions in v1.176.0)
+  is current.
+
 ## [1.179.0] - 2026-07-26
 
 ### Collections leave as .http files — the export half of v1.166.0
@@ -6410,6 +6426,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.179.0...v1.180.0
 [1.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.178.0...v1.179.0
 [1.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.177.0...v1.178.0
 [1.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.176.0...v1.177.0
