@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.183.0] - 2026-07-26
+
+### Image Kit (Web) — press your images (David-directed)
+
+- **File ▸ Image Kit (Web)…** finds the aimed project's JPEGs/PNGs
+  (node_modules, build outputs, and its own `.min.` outputs skipped)
+  and presses them for the web: `.min.jpg` siblings via pure
+  Java2D/ImageIO re-encoding — nothing to install — with a quality
+  choice (85/80/70) and optional downscale (2560/1600/800 px), plus
+  `.webp` siblings through the user's own `cwebp` when it's on PATH
+  (the checkbox says so and names `brew install webp` when it isn't;
+  the Environment Doctor now probes cwebp).
+- **The kit laws apply to pixels**: originals never touched, outputs
+  never clobber (skipped-and-said), transparency flattens onto white
+  not black, and a press that saves under 10% is DISCARDED and
+  reported as already-tight instead of shipping a bigger "optimized"
+  file — a resized output is kept regardless, smaller pixels being
+  the point. The report names every outcome and offers the
+  `<picture>` snippet that serves WebP where supported.
+- **Live-proven before ship on a real 17.8 MB photo**: → 347 KB
+  `.min.jpg` (2560px) and → 342 KB `.webp` via real cwebp 1.6; the
+  tiny-PNG case refused the JPEG lane honestly (already tight) while
+  WebP took it 318 → 90 bytes; the second run hit never-clobber on
+  all three outputs. `ImagePress` pure core, 7 tests; new
+  [tutorial](docs/tutorials/image-kit.md).
+
 ## [1.182.0] - 2026-07-26
 
 ### The migration gauntlet: PASS — and the tutorial that proves it
@@ -6488,6 +6514,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.182.0...v1.183.0
 [1.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.181.0...v1.182.0
 [1.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.180.0...v1.181.0
 [1.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.179.0...v1.180.0
