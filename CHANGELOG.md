@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.177.0] - 2026-07-26
+
+### API Studio speaks Postman — the incumbent's format imports whole
+
+- **Import… ▸ Postman Collection…** reads a Collection v2.0/v2.1 JSON
+  export — the file every team leaving Postman already has — into a
+  real collection. The mapping is unusually direct because Postman's
+  `{{variables}}` ARE API Studio's syntax: they import verbatim and
+  resolve against the active environment. Folders flatten into
+  "Folder / Request" names so nothing loses its identity; collection
+  variables join the active environment without clobbering; `:id`
+  path variables become `{{id}}` (ports untouched).
+- **The secrets law applies at the border**: bearer tokens and basic
+  credentials — request-level or inherited from the collection, v2.1
+  arrays or v2.0 objects — land in the keychain-backed Auth field,
+  never as a plaintext header row. An `apikey` stays a visible row
+  because the model has no keychain slot for arbitrary header names,
+  and the import says so in as many words.
+- **Honest refusals, not silent mangling**: multipart form-data and
+  file bodies are refused by name (the curl import's stance), Postman
+  scripts are counted and named as not-runnable-here, GraphQL bodies
+  become the exact JSON envelope Postman sends, and v1 collections /
+  environment files are refused with the fix spelled out.
+- `PostmanCodec` is a pure core (no IO, no network) with 12 tests
+  pinning every promise above.
+
 ## [1.176.0] - 2026-07-26
 
 ### Docs truth — the AI surface gets its tutorial (docs only)
@@ -6341,6 +6367,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.176.0...v1.177.0
 [1.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.175.0...v1.176.0
 [1.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.174.0...v1.175.0
 [1.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.173.0...v1.174.0
