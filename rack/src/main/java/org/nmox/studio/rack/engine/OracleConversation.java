@@ -58,6 +58,20 @@ public final class OracleConversation {
                 userText -> ctx == null ? "" : OracleClient.assemblePrompt(ctx));
     }
 
+    /**
+     * A conversation about text a STUDIO assembled and already redacted
+     * (the {@code core.spi.OracleAsk} flows — API Studio's response
+     * Explain, and whatever follows it). The opening turn is the caller's
+     * body plus its question, because only the caller knows what its own
+     * disclosure may contain: this class must never widen it.
+     */
+    public static OracleConversation forDisclosure(String title, String body) {
+        String text = body == null ? "" : body;
+        return new OracleConversation(title == null || title.isBlank() ? "ORACLE" : title,
+                userText -> text.isBlank() ? "" : (userText == null || userText.isBlank()
+                        ? text : text + "\n\nQuestion: " + userText));
+    }
+
     /** True when there is anything to talk about — the engine's refusal gate. */
     public boolean hasSubject() {
         return subject != null ? !subject.code().isBlank() : !openingTurn.apply("").isBlank();

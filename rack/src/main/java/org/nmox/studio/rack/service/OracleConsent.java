@@ -97,6 +97,66 @@ public final class OracleConsent {
         return false;
     }
 
+    // ---- kind-scoped consent for SPI-published flows ---------------------
+
+    /** True once this flow kind has been granted. Package-visible key shape
+     *  mirrors the two named grants above: one preference per disclosure. */
+    public static boolean isKindGranted(String kind) {
+        return PREFS.getBoolean(kindKey(kind), false);
+    }
+
+    static void grantKind(String kind) {
+        PREFS.putBoolean(kindKey(kind), true);
+    }
+
+    /** Test hook: forget one kind's grant. */
+    static void revokeKindForTest(String kind) {
+        PREFS.remove(kindKey(kind));
+    }
+
+    private static String kindKey(String kind) {
+        return "oracle.kind." + (kind == null || kind.isBlank() ? "unknown" : kind) + ".consent";
+    }
+
+    /**
+     * Ensures a kind-scoped consent, prompting once if needed. The
+     * consent-scoping law applied to studio flows reaching ORACLE through
+     * {@code core.spi.OracleAsk}: each disclosure kind earns its own yes,
+     * because a grant given for one kind of data can never authorize
+     * another. The caller supplies the "what is sent" line verbatim — it
+     * is the disclosure, so it must be the caller's own words about its
+     * own data. Blocking and Swing-safe; headless auto-allows without
+     * persisting, like the two flows above.
+     */
+    public static boolean requestKindConsent(String kind, String what) {
+        if (isKindGranted(kind)) {
+            return true;
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            return true;
+        }
+        String message = "<html><b>Send this to Anthropic's API for an explanation?</b>"
+                + "<br><br>ORACLE will send <b>only</b> the following, and nothing else:"
+                + "<ul><li>" + escape(what) + "</li></ul>"
+                + "It does <b>not</b> send your source files, environment variables, or any secret."
+                + "<br><br>Your API key is used to authenticate the request. This choice is remembered"
+                + " for this kind of request only."
+                + "</html>";
+        Object sendOption = "Send to ORACLE";
+        NotifyDescriptor nd = new NotifyDescriptor(
+                new javax.swing.JLabel(message),
+                "ORACLE — send for explanation?",
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[]{sendOption, "Keep Local"},
+                "Keep Local");
+        if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
+            grantKind(kind);
+            return true;
+        }
+        return false;
+    }
+
     // ---- the code-question flow's own consent ----------------------------
 
     /** True once the user has agreed to send SELECTED CODE to the API. */
