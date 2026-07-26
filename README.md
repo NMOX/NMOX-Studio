@@ -7,7 +7,7 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
-`53 RACK DEVICES` · `77 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `78 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
@@ -15,7 +15,7 @@ NMOX Studio is an IDE for the modern web with a twist: your tooling lives in a
 Reason-style **Task Rack**. Every task — install, build, test, serve, lint,
 deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire a
 FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
-**77-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
+**78-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
 **Ask ORACLE** — select code in any language and hold an AI conversation about
 it (consent-gated, keys keychain-only), **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
@@ -195,7 +195,7 @@ script-tag era, no build step, served as-is.
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export
 included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
-more. 70+ languages with syntax highlighting (77 TextMate grammars through NetBeans
+more. 70+ languages with syntax highlighting (78 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
