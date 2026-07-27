@@ -1,7 +1,9 @@
-# Tutorial: Migrating from Postman (and the browser)
+# Tutorial: Migrating from Postman (and Insomnia, and the browser)
 
-API Studio reads the files you already have: a Postman collection, a
-devtools HAR capture, a curl command, a `.http` file, an OpenAPI spec.
+API Studio reads the files you already have: a Postman collection or
+environment, an Insomnia v4 export (workspace structure and
+`{{ _.templates }}` translated), a devtools HAR capture, a curl
+command, a `.http` file, an OpenAPI spec.
 This walk takes a real Postman export end to end — and shows the one
 thing NMOX Studio does differently on purpose: **secrets land in your
 OS keychain, never in a committable file.**

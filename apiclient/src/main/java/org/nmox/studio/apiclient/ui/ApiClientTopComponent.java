@@ -569,6 +569,62 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /** Import an Insomnia v4 export as a whole collection. */
+    private void importInsomnia() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import Insomnia Export (v4 JSON)")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "Insomnia exports", "json"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.InsomniaCodec.Imported got;
+            try {
+                got = org.nmox.studio.apiclient.api.InsomniaCodec.parse(
+                        java.nio.file.Files.readString(file.toPath()));
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                Collection c = new Collection();
+                c.name = got.name();
+                c.requests.addAll(got.requests());
+                workspace.collections.add(c);
+                int added = 0;
+                Environment env = workspace.active();
+                if (env != null) {
+                    for (var e : got.variables().entrySet()) {
+                        if (env.variables.putIfAbsent(e.getKey(), e.getValue()) == null) {
+                            added++;
+                        }
+                    }
+                }
+                rebuildTree();
+                current = c.requests.get(0);
+                restoreSelection();
+                touch();
+                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
+                        .append("\": ").append(c.requests.size()).append(" request")
+                        .append(c.requests.size() == 1 ? "" : "s");
+                if (added > 0) {
+                    msg.append(", ").append(added).append(" variable")
+                            .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+                }
+                if (!got.notes().isEmpty()) {
+                    msg.append(" — ").append(String.join(" ", got.notes()));
+                }
+                status(msg.append('.').toString());
+            });
+        });
+    }
+
     /** Import a browser HAR capture — the Network tab becomes requests. */
     private void importHar() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
@@ -685,6 +741,8 @@ public final class ApiClientTopComponent extends TopComponent {
             postman.addActionListener(a -> importPostman());
             javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem("Postman Environment…");
             postmanEnv.addActionListener(a -> importPostmanEnv());
+            javax.swing.JMenuItem insomnia = new javax.swing.JMenuItem("Insomnia Export…");
+            insomnia.addActionListener(a -> importInsomnia());
             javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
             har.addActionListener(a -> importHar());
             javax.swing.JMenuItem export = new javax.swing.JMenuItem(
@@ -695,6 +753,7 @@ public final class ApiClientTopComponent extends TopComponent {
             menu.add(openapi);
             menu.add(postman);
             menu.add(postmanEnv);
+            menu.add(insomnia);
             menu.add(har);
             menu.addSeparator();
             menu.add(export);
