@@ -40,6 +40,14 @@ public final class PwaKitAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // DECIDED (v1.192.0, closing the ledger-29 remainder): the kit
+        // family stays always-enabled ON PURPOSE. Every kit acts on the
+        // AIMED project, not the window selection — so selection-keyed
+        // enablement would be semantically wrong, greying a valid action
+        // whenever focus sits in an editor. This runtime guard is the
+        // honest gate, applied at the only moment the answer is knowable.
+        // The same decision covers StandardsKit/ClassicKit/ContractKit/
+        // ImageKit, which share this exact shape.
         File project = RackService.getDefault().getRack().getProjectDir();
         if (project == null || !project.isDirectory()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
