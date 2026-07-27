@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.193.0] - 2026-07-27
+
+### The punch-list gauntlet: every fresh surface PASS in the installed app (docs only)
+
+- **YAML import, clicked for real** (installed v1.192.0, throwaway
+  userdir): a petstore YAML imported as "Petstore YAML: 2 requests,
+  {{baseUrl}} into Local" with `{petId}` → `{{petId}}` in the URL and
+  the required `verbose` query param enabled — and the hostile
+  fixture (`!!javax.script.ScriptEngineManager` gadget) was refused
+  on screen with SnakeYAML's own words: *"Not valid YAML: Global tag
+  is not allowed"* — named, never instantiated. The v1.191.0 safe
+  loader observed live.
+- **The v1.192.0 fixes, observed live**: the collections panel's 2×2
+  grid rendered every button whole (Delete fully visible at the
+  default width where v1.182.0 recorded "Dele"), the Delete KEY fired
+  the new confirm on a non-empty collection with **No** as the
+  default button, and Enter cancelled — the collection survived. The
+  safe default is not theater; it caught the exact reflexive
+  keypress it exists for.
+- Zero finds; clean shutdown, no orphans. With this, every item the
+  changelog carried as "noted for a future pass," every
+  never-clicked surface, and every "deferred with a reason" decision
+  is either shipped, live-proven, or decided in writing — the punch
+  list is empty.
+
+## [1.193.0] - 2026-07-27
+
+### The YAML gauntlet + the safe-default confirm, both proven live (docs only)
+
+- **OpenAPI YAML import (v1.191.0) click-verified in the installed
+  app** (cask 1.192.0, throwaway userdir): a petstore `.yaml` imported
+  as "Petstore YAML: 2 requests, {{baseUrl}} into Local" —
+  `{{baseUrl}}/pets/{{petId}}` with the required `verbose` query param
+  enabled and the JSON example body carried across, exactly as its JSON
+  twin does. The hostile fixture (`info: !!javax.script.ScriptEngineManager
+  […]`) was refused with "Not valid YAML: Global tag is not allowed:
+  tag:yaml.org,2002:javax.script.ScriptEngineManager" — the
+  SafeConstructor doing its job on screen, the class never instantiated.
+- **The v1.192.0 Delete-key + safe-default confirm, proven the same
+  session**: pressing Delete on the non-empty "Petstore YAML"
+  collection opened "Delete collection … and its 2 requests?" with No
+  as the focused default; a reflexive Enter cancelled and the
+  collection survived. The keyboard path and the no-undo safety net
+  both hold in the running app.
+
 ## [1.192.0] - 2026-07-27
 
 ### Unfinished business closed, deferred decisions made
@@ -6693,6 +6738,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.193.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.192.0...v1.193.0
 [1.192.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.191.0...v1.192.0
 [1.191.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.190.0...v1.191.0
 [1.190.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.189.0...v1.190.0
