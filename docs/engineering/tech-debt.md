@@ -20,6 +20,41 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Decided — the v1.192.0 decisions pass (2026-07-27)
+
+The changelog's three longest-standing "deferred with a reason" items
+were each converted into a written decision, so nothing in this ledger
+is waiting on an answer nobody scheduled:
+
+### Ledger 29 remainder (Kit-action context registration) — CLOSED AS DECIDED
+Always-enabled IS the correct behavior, not debt. Every kit acts on the
+AIMED project (the rack's `getProjectDir()`), never the window
+selection — so selection/focus-keyed enablement would grey a valid
+action whenever focus sat in an editor. The runtime "Aim the studio at
+a project first" guard is the honest gate at the only moment the answer
+is knowable. Decision written at the code site (PwaKitAction, the
+family exemplar). Ledger 29 is fully closed.
+
+### Ledger 33 (studios in the `editor` wsmode) — DECIDED: won't-move
+The interleaving is the v1.29.0 discovery design working as designed;
+a custom wsmode would churn every user's persisted layout for an
+aesthetic separation with zero user-visible defects on record across
+160+ releases. Re-open only with BOTH a reported user pain and a
+layout-migration story.
+
+### Ledger 38/40 (Windows Job Objects) — DECIDED: conditional won't-fix
+The guarantees that matter hold on every OS today (Stop leaves zero
+orphans; runBounded returns bounded; no shipping path spawns through an
+MSYS shell). The JNA/FFM sprint is built only when a trigger fires:
+(a) a Windows user reports an orphaned grandchild in the wild, or
+(b) the product gains a feature that launches via Git-Bash. Until then
+this is a solved-enough boundary, not open work.
+
+Also closed in the same pass: the v1.182.0 "Dele" toolbar-clip
+observation — fixed structurally (a 2×2 grid cannot clip; Delete also
+gained the tree context menu and the Delete/Backspace keys, which made
+the new safe-default confirm on non-empty collections load-bearing).
+
 ## Closed — the v1.141.0 debt sprint (2026-07-24)
 
 Three real duplications/reach-ins, each fixed with a test; plus a new

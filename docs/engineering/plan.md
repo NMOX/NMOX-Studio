@@ -340,13 +340,16 @@ left is either a settled won't-fix or a call that needs a product decision.
    channels: the daily release heads-up opens the same in-app Plugin Manager
    the platform's weekly check uses.
 
-2. **The ledger-29 remainder: Kit-action context registration** (deferred
-   with a real UX reason). The context migration is done except that the PWA
-   Kit / Standards Kit / Classic Kit actions are still always-enabled and
-   scold at runtime instead of disabling when out of context. The reason is
-   honest and unresolved: focus-keyed enablement would disable them *while the
-   editor is focused* — a UX regression masquerading as idiom. Incremental now
-   that the pattern is established, but it needs a small UX answer first.
+2. **~~The ledger-29 remainder: Kit-action context registration~~ —
+   DECIDED (v1.192.0): always-enabled IS the correct behavior, not debt.**
+   The UX answer the deferral waited on turned out to be a category
+   correction: every kit acts on the AIMED project (the rack's
+   `getProjectDir()`), not the window selection, so selection/focus-keyed
+   enablement would be semantically wrong — it would grey a valid action
+   whenever focus sat in an editor. The runtime guard ("Aim the studio at
+   a project first") is the honest gate, applied at the only moment the
+   answer is knowable. The decision is written at the code site
+   (PwaKitAction, the family exemplar). Ledger 29 is now fully closed.
 
 3. **The architectural won't-fixes (ledger 1–7).** Re-audited with fresh
    evidence and each is a decision, not laziness: faceplate "boilerplate" is a
@@ -362,14 +365,19 @@ left is either a settled won't-fix or a call that needs a product decision.
    (#7). These are "won't fix unless the premise changes," and the premises
    were re-read, not recalled.
 
-4. **The Windows Job-Objects pair (ledger 38/40).** MSYS/Git-Bash renames the
-   launched process and breaks the parent-PID chain, so `ProcessHandle.
-   descendants()` can't see grandchildren — which means killTree can't reap a
-   Git-Bash grandchild (#38) and, for browser debugging, only the product's
-   explicit Stop reaps Chrome on Windows, not a bare DAP disconnect (#40). Both
-   are honestly bounded (Stop leaves zero orphans on every OS; runBounded still
-   returns bounded) and neither ships a triggering path today. The real fix is
-   Windows Job Objects via JNA/FFM — outside pure Java, a dedicated sprint.
+4. **The Windows Job-Objects pair (ledger 38/40) — DECIDED (v1.192.0):
+   conditional won't-fix, with named triggers.** MSYS/Git-Bash breaks the
+   parent-PID chain, so `ProcessHandle.descendants()` can't see its
+   grandchildren — killTree can't reap a Git-Bash grandchild (#38) and only
+   the product's explicit Stop reaps Chrome on a bare DAP disconnect (#40).
+   The guarantees that matter HOLD today: Stop leaves zero orphans on every
+   OS, runBounded returns bounded, and no shipping path spawns through an
+   MSYS shell. A JNA/FFM Job-Objects sprint buys nothing a user can feel,
+   costs a native dependency, and can't be fully validated on this
+   project's macOS-first bench — so it is built only when one of two
+   triggers fires: (a) a Windows user reports an orphaned grandchild in the
+   wild, or (b) the product gains a feature that launches via Git-Bash.
+   Until then this is a solved-enough boundary, not open work.
 
 5. **~~FileTreePanel~~ — CLOSED (v1.64.0), stale here through two currency
    passes.** The tree became a platform citizen (BeanTreeView over the real
@@ -379,11 +387,14 @@ left is either a settled won't-fix or a call that needs a product decision.
    gap list is a claim like any other — verify against the ledger's
    headers, don't trust the last pass.
 
-6. **The seven studios live in the `editor` wsmode (ledger 33).** Documents
-   opened later interleave with the permanently-open tool tabs. A custom
-   `studios` wsmode is the idiomatic direction, but the suite-tabs-first layout
-   IS the discovery design (v1.29.0) and moving modes churns every user's
-   persisted layout — do it with migration or not at all.
+6. **The seven studios live in the `editor` wsmode (ledger 33) — DECIDED
+   (v1.192.0): won't-move.** Documents interleave with the suite tabs, and
+   that is the discovery design working as designed (v1.29.0: every major
+   surface one click away from minute one). A custom `studios` wsmode
+   would churn every existing user's persisted window layout to buy an
+   aesthetic separation that has produced zero user-visible defects in
+   160+ releases. Re-open only with BOTH a reported user pain and a
+   layout-migration story; absent those, this is a decision, not debt.
 
 7. **i18n: ~450 hardcoded UI strings (ledger 24).** A reality note, not a
    plan. The house style is deliberate English-only UI; making it localizable

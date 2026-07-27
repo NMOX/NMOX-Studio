@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.192.0] - 2026-07-27
+
+### Unfinished business closed, deferred decisions made
+
+The changelog itself was the punch list: everything still marked
+"noted for a future pass" or "deferred with a reason" was either
+finished or decided.
+
+- **The "Dele" clip is fixed structurally** (the v1.167.0/v1.182.0
+  class, closed for good): the collections panel's four buttons now
+  live in a 2×2 grid — which cannot clip at any width — instead of a
+  single-row JToolBar that four buttons could never fit. Delete also
+  gained its two platform homes: the tree's right-click menu and the
+  Delete/Backspace keys. The key binding made a latent hazard
+  load-bearing — API Studio has no undo, so deleting a NON-EMPTY
+  collection now confirms with the v1.98.0 safe default (Enter lands
+  on No); empty collections and single requests delete without
+  ceremony, matching the button's old behavior. All three laws
+  source-gated (`CollectionsToolbarSafetyTest`).
+- **Three long-standing deferrals became written decisions** (plan.md
+  + the ledger, with the reasoning attached):
+  - *Kit-action enablement (ledger 29 remainder)* — DECIDED: always-
+    enabled is CORRECT, not debt. The kits act on the aimed project,
+    not the window selection, so focus-keyed enablement would grey
+    valid actions; the runtime guard is the honest gate. Written at
+    the code site. Ledger 29 is fully closed.
+  - *Studios in the editor wsmode (ledger 33)* — DECIDED: won't-move.
+    The interleaving is the v1.29.0 discovery design; re-open only
+    with both a reported pain and a migration story.
+  - *Windows Job Objects (ledger 38/40)* — DECIDED: conditional
+    won't-fix with named triggers (a reported orphaned grandchild, or
+    a feature that spawns via Git-Bash). The orphan guarantees hold on
+    every OS today; the JNA/FFM sprint buys nothing a user can feel.
+
 ## [1.191.0] - 2026-07-27
 
 ### OpenAPI YAML imports — the family's last honest refusal, closed
@@ -6659,6 +6693,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.192.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.191.0...v1.192.0
 [1.191.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.190.0...v1.191.0
 [1.190.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.189.0...v1.190.0
 [1.189.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.188.0...v1.189.0

@@ -715,10 +715,28 @@ public final class ApiClientTopComponent extends TopComponent {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.setRootVisible(false);
         tree.addTreeSelectionListener(e -> onTreeSelect());
+        // Delete also lives where the platform puts it: the context menu
+        // and the Delete key — reachable regardless of panel geometry
+        javax.swing.JPopupMenu treeMenu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem deleteItem = new javax.swing.JMenuItem("Delete");
+        deleteItem.addActionListener(e -> deleteSelected());
+        treeMenu.add(deleteItem);
+        tree.setComponentPopupMenu(treeMenu);
+        tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("DELETE"), "nmox-delete");
+        tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("BACK_SPACE"), "nmox-delete");
+        tree.getActionMap().put("nmox-delete", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                deleteSelected();
+            }
+        });
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
 
-        JToolBar tools = new JToolBar();
-        tools.setFloatable(false);
+        // a 2x2 grid, not a JToolBar: a toolbar clips without a chevron,
+        // and four buttons cannot fit one row at minimum panel width no
+        // matter the margins — the v1.167.0/v1.182.0 "Dele" class, closed
+        // structurally. Every button is visible at every width.
+        JPanel tools = new JPanel(new java.awt.GridLayout(2, 2, 2, 2));
         JButton addCol = new JButton("+ Collection");
         addCol.addActionListener(e -> addCollection());
         JButton addReq = new JButton("+ Request");
@@ -1135,6 +1153,23 @@ public final class ApiClientTopComponent extends TopComponent {
         if (obj instanceof Request r) {
             workspace.collections.forEach(c -> c.requests.remove(r));
         } else if (obj instanceof Collection c) {
+            // there is no undo here, and Delete now rides a KEY too — a
+            // non-empty collection gets the v1.98.0 safe-default confirm
+            // (Enter lands on No); an empty one deletes without ceremony
+            if (!c.requests.isEmpty()) {
+                Object answer = org.openide.DialogDisplayer.getDefault().notify(
+                        new org.openide.NotifyDescriptor(
+                                "Delete collection \"" + c.name + "\" and its "
+                                + c.requests.size() + " request"
+                                + (c.requests.size() == 1 ? "" : "s") + "?",
+                                "Delete collection",
+                                org.openide.NotifyDescriptor.YES_NO_OPTION,
+                                org.openide.NotifyDescriptor.QUESTION_MESSAGE,
+                                null, org.openide.NotifyDescriptor.NO_OPTION));
+                if (answer != org.openide.NotifyDescriptor.YES_OPTION) {
+                    return;
+                }
+            }
             workspace.collections.remove(c);
         } else {
             return;
