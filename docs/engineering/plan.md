@@ -141,7 +141,32 @@ pipeline memory: the ship-script deriver must replace the WHOLE
 multi-line pr-create command and `bash -n` the result before launch
 (bit once, then the check caught the second attempt), and a
 Maven-Central 403 on a release lane is a rerun---failed flake, not a
-code problem. It is
+code problem.
+
+Currency pass 2026-07-27 (the night shift, v1.185–v1.189, five
+releases): the same-day review law paid twice more, both times on
+code written hours earlier by the same hands. v1.185.0 found the
+Image Kit's disk scan running ON THE EDT in actionPerformed — the
+v1.33.1/v1.115.0 class regrown in day-old code, which is exactly why
+the review lens list must always include "who walks the disk, on
+whose thread?" for any new action; the fix is source-gated by a test
+that fails on the shipped shape by construction. v1.189.0 found the
+fresh InsomniaCodec's environment merge claiming base-favoring in a
+comment while the code favored resources[] order — proven
+failing-first with a sub-env-first fixture; the method gained *a
+comment that claims an ordering property is a test that hasn't been
+written yet*. Between the reviews: Postman environment import
+(v1.186.0) turned the v1.177.0 refusal into the feature with the
+refusal message now pointing at the menu item — a refusal is a
+promise to either keep saying why or ship the feature — and
+secret-typed values never enter the committable .nmoxapi.json;
+Insomnia v4 import (v1.188.0) made the migration family
+curl/.http/OpenAPI/Postman-collections/Postman-environments/Insomnia/
+HAR in, .http out; and the night gauntlet (v1.187.0) byte-proved both
+new surfaces in the INSTALLED app, recording the brew-races-
+homebrew-job trap (verify the cask VERSION, not the upgrade's exit
+status, before gauntleting a just-shipped feature). The one honest
+refusal left in the import family is OpenAPI YAML. It is
 the current-reality companion to [tech-debt.md](tech-debt.md) (the itemized
 ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
