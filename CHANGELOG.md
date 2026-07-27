@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.186.0] - 2026-07-27
+
+### Postman environments import — and the refusal that became a feature
+
+- **Import… ▸ Postman Environment…** reads a Postman environment
+  export into an API Studio environment: same name, plain values in.
+  A same-name import MERGES without clobbering — values you already
+  set are kept and the status line counts what was added. v1.177.0's
+  honest refusal ("add these values by hand") now points at the menu
+  item instead — a refusal is a promise to either keep saying why or
+  ship the feature.
+- **The one hard law: a value Postman marks `"type":"secret"` never
+  crosses.** API Studio environments live in the COMMITTABLE
+  `.nmoxapi.json`, which is exactly where a secret must never land —
+  secret-typed values are counted out loud and the note names where
+  they belong (each request's keychain-backed Auth field). An
+  all-secrets environment refuses entirely, with the same pointer.
+- `PostmanCodec.parseEnvironment` pure core, 4 new tests including
+  the refusal-points-at-the-feature pin.
+
 ## [1.185.0] - 2026-07-26
 
 ### The night review: the Image Kit obeys the oldest EDT law
@@ -6546,6 +6566,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.185.0...v1.186.0
 [1.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.184.0...v1.185.0
 [1.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.183.0...v1.184.0
 [1.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.182.0...v1.183.0

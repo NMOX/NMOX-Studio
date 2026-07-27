@@ -54,8 +54,7 @@ public final class PostmanCodec {
         // enough to confuse, different enough to mangle
         if (root.has("values") && !root.has("item")) {
             throw new IllegalArgumentException("This is a Postman environment "
-                    + "file, not a collection. Import the collection; add these "
-                    + "values to an API Studio environment by hand.");
+                    + "file, not a collection — use Import… ▸ Postman Environment…");
         }
         // the v1 format is {id, name, requests:[...]} — long dead in
         // Postman itself, still floating around in old repos
@@ -98,6 +97,73 @@ public final class PostmanCodec {
             }
         }
         return new Imported(name, requests, variables, notes);
+    }
+
+    /** A Postman environment: its name, its importable values, notes. */
+    public record ImportedEnvironment(String name, Map<String, String> values,
+                                      List<String> notes) {
+    }
+
+    /**
+     * Reads a Postman ENVIRONMENT export ({@code {name, values:[…]}}).
+     * Two kinds of value never import: disabled rows (skipped and
+     * counted), and rows Postman marks {@code "type":"secret"} —
+     * API Studio environments live in the COMMITTABLE .nmoxapi.json,
+     * which is exactly where a secret must never land (v1.97.0). The
+     * note tells the user where secrets belong instead: each request's
+     * keychain-backed Auth field.
+     */
+    public static ImportedEnvironment parseEnvironment(String text) {
+        JSONObject root;
+        try {
+            root = new JSONObject(text);
+        } catch (JSONException ex) {
+            throw new IllegalArgumentException("Not JSON: " + ex.getMessage());
+        }
+        JSONArray values = root.optJSONArray("values");
+        if (values == null) {
+            throw new IllegalArgumentException(root.has("item")
+                    ? "This is a Postman COLLECTION — use Import… ▸ Postman Collection…"
+                    : "Not a Postman environment file — expected {name, values:[…]}.");
+        }
+        String name = root.optString("name", "").isBlank()
+                ? "Postman environment" : root.getString("name");
+        Map<String, String> out = new LinkedHashMap<>();
+        List<String> notes = new ArrayList<>();
+        int disabled = 0, secrets = 0;
+        for (int i = 0; i < values.length(); i++) {
+            JSONObject v = values.optJSONObject(i);
+            if (v == null || v.optString("key", "").isBlank()) {
+                continue;
+            }
+            if (!v.optBoolean("enabled", true)) {
+                disabled++;
+                continue;
+            }
+            if ("secret".equals(v.optString("type"))) {
+                secrets++;
+                continue;
+            }
+            out.put(v.getString("key"), v.optString("value", ""));
+        }
+        if (secrets > 0) {
+            notes.add(secrets + " secret-typed value" + (secrets == 1 ? "" : "s")
+                    + " NOT imported — environments live in the committable "
+                    + ".nmoxapi.json; put secrets in each request's Auth field "
+                    + "(OS keychain).");
+        }
+        if (disabled > 0) {
+            notes.add(disabled + " disabled value" + (disabled == 1 ? "" : "s")
+                    + " skipped.");
+        }
+        if (out.isEmpty()) {
+            throw new IllegalArgumentException("No importable values in this "
+                    + "environment" + (secrets > 0
+                    ? " — all " + secrets + " are secret-typed, and secrets "
+                    + "belong in the keychain-backed Auth field, not a "
+                    + "committable environment." : "."));
+        }
+        return new ImportedEnvironment(name, out, notes);
     }
 
     /** Depth-first over items; folders contribute their name as a prefix. */
