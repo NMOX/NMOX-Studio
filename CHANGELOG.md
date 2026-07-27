@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.191.0] - 2026-07-27
+
+### OpenAPI YAML imports — the family's last honest refusal, closed
+
+- **Import… ▸ OpenAPI 3 (JSON/YAML)…** now reads YAML specs — the
+  form most real-world OpenAPI documents actually ship in. The YAML
+  loads through SnakeYAML's `SafeConstructor` (scalars, maps and
+  lists ONLY — a hostile `!!tag` is refused with "Not valid YAML",
+  never instantiated) and feeds the SAME JSON pipeline, so the two
+  front doors cannot drift: `OpenApiYamlTest` pins that a YAML spec
+  and its JSON twin import identically, and that Swagger-2-in-YAML
+  gets the same honest refusal as Swagger-2-in-JSON.
+- SnakeYAML 2.x (Apache-2.0) joins as a regular Maven dependency of
+  the apiclient module — version held in one root property like
+  org.json's, visible to Dependabot and the SBOM.
+- Docs updated: the user guide, README, and API Studio tutorial no
+  longer list YAML among the refusals. Every import format the
+  family ever refused-with-a-pointer is now either implemented or
+  still honestly impossible (multipart, scripts, v1 formats).
+
 ## [1.190.0] - 2026-07-27
 
 ### Night docs truth (docs only)
@@ -6639,6 +6659,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.191.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.190.0...v1.191.0
 [1.190.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.189.0...v1.190.0
 [1.189.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.188.0...v1.189.0
 [1.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.187.0...v1.188.0

@@ -271,7 +271,7 @@ travels from localhost to prod, and per-request assertions (status,
 response time, body contains, JSON path, header present) that turn a
 probe into a check. The workspace persists as `.nmoxapi.json` beside the
 project. **Import what you already have**: curl commands, `.http`/`.rest`
-files, OpenAPI 3 specs, **Postman Collections**, and **HAR captures**
+files, OpenAPI 3 specs (JSON or YAML), **Postman Collections**, and **HAR captures**
 from the browser's Network tab — with every secret routed to the OS
 keychain at the border (captured cookies and opaque credentials are
 dropped and counted, never written to a committable file) — and export

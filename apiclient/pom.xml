@@ -83,6 +83,11 @@
             <artifactId>json</artifactId>
             <version>${orgjson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
 
         <!-- Quick Search providers (toolbar Cmd+I) -->
         <dependency>

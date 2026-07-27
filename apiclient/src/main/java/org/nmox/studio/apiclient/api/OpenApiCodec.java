@@ -19,11 +19,15 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * becoming the body. Pure text work — no network, no IO, no $ref
  * chasing beyond what an example field already spells out.
  *
- * <p>Honest limits, refused or noted rather than guessed: YAML
- * documents (export as JSON first), Swagger 2.0 (convert to OpenAPI 3),
- * schema-only request bodies (imported as {@code {}} with a note), and
- * security schemes (noted — a spec never carries the actual token, so
- * the Auth field is left for the user's own secret).
+ * <p>Both spec syntaxes import: JSON directly, and (since v1.191.0)
+ * YAML through SnakeYAML's SafeConstructor — scalars, maps and lists
+ * only, so a hostile {@code !!tag} is refused, never instantiated —
+ * feeding the same pipeline so the two front doors cannot drift.
+ * Honest limits, refused or noted rather than guessed: Swagger 2.0
+ * (convert to OpenAPI 3), schema-only request bodies (imported as
+ * {@code {}} with a note), and security schemes (noted — a spec never
+ * carries the actual token, so the Auth field is left for the user's
+ * own secret).
  */
 public final class OpenApiCodec {
 
@@ -40,15 +44,33 @@ public final class OpenApiCodec {
 
     public static Imported parse(String text) {
         String head = text.stripLeading();
-        if (!head.startsWith("{")) {
-            throw new IllegalArgumentException(
-                    "Only OpenAPI JSON is supported — export the YAML as JSON first.");
-        }
         JSONObject doc;
-        try {
-            doc = new JSONObject(text);
-        } catch (JSONException ex) {
-            throw new IllegalArgumentException("Not valid JSON: " + ex.getMessage());
+        if (head.startsWith("{")) {
+            try {
+                doc = new JSONObject(text);
+            } catch (JSONException ex) {
+                throw new IllegalArgumentException("Not valid JSON: " + ex.getMessage());
+            }
+        } else {
+            // v1.191.0: the family's last honest refusal, closed — YAML
+            // specs load through SnakeYAML's SafeConstructor (scalars,
+            // maps, lists ONLY; a hostile !!tag throws instead of
+            // instantiating) and join the SAME JSON pipeline below, so
+            // the two front doors cannot drift apart.
+            Object data;
+            try {
+                data = new org.yaml.snakeyaml.Yaml(
+                        new org.yaml.snakeyaml.constructor.SafeConstructor(
+                                new org.yaml.snakeyaml.LoaderOptions()))
+                        .load(text);
+            } catch (RuntimeException ex) {
+                throw new IllegalArgumentException("Not valid YAML: " + ex.getMessage());
+            }
+            if (!(data instanceof Map<?, ?> map)) {
+                throw new IllegalArgumentException(
+                        "Not an OpenAPI document — the YAML root must be a mapping.");
+            }
+            doc = new JSONObject(map);
         }
         if (doc.has("swagger")) {
             throw new IllegalArgumentException(

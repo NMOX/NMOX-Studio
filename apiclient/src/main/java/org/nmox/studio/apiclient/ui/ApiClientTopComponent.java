@@ -326,9 +326,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importOpenApi() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import OpenAPI 3 (JSON)")
+                .setTitle("Import OpenAPI 3 (JSON or YAML)")
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "OpenAPI JSON documents", "json"))
+                        "OpenAPI documents", "json", "yaml", "yml"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -735,7 +735,7 @@ public final class ApiClientTopComponent extends TopComponent {
             curl.addActionListener(a -> importCurl());
             javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
             http.addActionListener(a -> importHttpFile());
-            javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON)…");
+            javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON/YAML)…");
             openapi.addActionListener(a -> importOpenApi());
             javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
             postman.addActionListener(a -> importPostman());
