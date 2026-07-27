@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.189.0] - 2026-07-27
+
+### The Insomnia review: the comment made a promise the code didn't keep
+
+- **The environment merge claimed to favor the base but actually
+  favored whichever came first in `resources[]`.** Insomnia doesn't
+  guarantee export order, so a sub-environment listed before the base
+  would win the first-wins merge — proven failing-first on shipped
+  v1.188.0 with a sub-env-first fixture. Environments are now
+  bucketed by ancestry (base = parented by the workspace) and merged
+  base-first regardless of list order; the comment and the code say
+  the same thing again.
+- The lesson joins the review method: *a comment that claims an
+  ordering property is a test that hasn't been written yet* — when a
+  review reads "which favors X," write the fixture where X comes
+  last.
+
 ## [1.188.0] - 2026-07-27
 
 ### Insomnia exports import — the third migration source
@@ -6612,6 +6629,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.189.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.188.0...v1.189.0
 [1.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.187.0...v1.188.0
 [1.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.186.0...v1.187.0
 [1.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.185.0...v1.186.0

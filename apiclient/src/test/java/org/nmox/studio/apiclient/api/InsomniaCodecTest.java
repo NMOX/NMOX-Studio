@@ -96,6 +96,29 @@ class InsomniaCodecTest {
         assertThat(got.requests().get(0).params.get(1).enabled).isFalse();
     }
 
+    /**
+     * v1.189.0 review find, proven failing-first: the first cut merged
+     * environments in resources[] order while CLAIMING to favor the
+     * base — Insomnia doesn't guarantee export order, so a sub-env
+     * listed first won. The base (parented by the workspace) must win
+     * regardless of where it appears in the list.
+     */
+    @Test
+    @DisplayName("The base environment wins even when a sub-env is listed first")
+    void baseEnvironmentWinsRegardlessOfOrder() {
+        var got = InsomniaCodec.parse(export("""
+                {"_type":"environment","_id":"env_sub","parentId":"env_base",
+                 "data":{"baseUrl":"https://SUB.example.com"}},
+                {"_type":"workspace","_id":"wrk_1","name":"W"},
+                {"_type":"environment","_id":"env_base","parentId":"wrk_1",
+                 "data":{"baseUrl":"https://BASE.example.com","shared":"yes"}},
+                {"_type":"request","_id":"r","name":"A","method":"GET",
+                 "url":"https://x/a"}"""));
+        assertThat(got.variables())
+                .containsEntry("baseUrl", "https://BASE.example.com")
+                .containsEntry("shared", "yes");
+    }
+
     @Test
     @DisplayName("Multipart, WebSocket, and gRPC are refused by name")
     void honestRefusals() {
