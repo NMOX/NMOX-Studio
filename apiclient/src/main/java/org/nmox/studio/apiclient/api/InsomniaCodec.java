@@ -71,6 +71,8 @@ public final class InsomniaCodec {
         List<ApiModel.Request> requests = new ArrayList<>();
         Map<String, String> variables = new LinkedHashMap<>();
         List<String> notes = new ArrayList<>();
+        List<JSONObject> baseEnvs = new ArrayList<>();
+        List<JSONObject> subEnvs = new ArrayList<>();
 
         for (int i = 0; i < resources.length(); i++) {
             JSONObject r = resources.optJSONObject(i);
@@ -80,19 +82,16 @@ public final class InsomniaCodec {
             switch (r.optString("_type")) {
                 case "request" -> requests.add(request(r, byId, notes));
                 case "environment" -> {
-                    // the base environment hangs off the workspace; sub
-                    // environments hang off the base. Plain values from
-                    // ALL of them merge first-wins, which favors the base.
-                    JSONObject data = r.optJSONObject("data");
-                    if (data != null) {
-                        for (String key : data.keySet()) {
-                            Object v = data.get(key);
-                            if (v instanceof String || v instanceof Number
-                                    || v instanceof Boolean) {
-                                variables.putIfAbsent(key, String.valueOf(v));
-                            }
-                        }
-                    }
+                    // the base environment hangs off the WORKSPACE; sub
+                    // environments hang off the base. The v1.189.0 review
+                    // caught the first cut merging in resources[] order
+                    // while CLAIMING to favor the base — Insomnia doesn't
+                    // guarantee export order, so a sub-env listed first
+                    // would have won. Bucket now, merge base-first below.
+                    JSONObject parent = byId.get(r.optString("parentId"));
+                    boolean base = parent != null
+                            && "workspace".equals(parent.optString("_type"));
+                    (base ? baseEnvs : subEnvs).add(r);
                 }
                 case "websocket_request" -> note(notes,
                         "WebSocket requests not imported — API Studio speaks HTTP.");
@@ -101,6 +100,12 @@ public final class InsomniaCodec {
                 default -> {
                 }
             }
+        }
+        for (JSONObject env : baseEnvs) {
+            mergeEnv(env, variables);
+        }
+        for (JSONObject env : subEnvs) {
+            mergeEnv(env, variables);
         }
         if (requests.isEmpty()) {
             throw new IllegalArgumentException("No HTTP requests found in this export.");
@@ -211,6 +216,20 @@ public final class InsomniaCodec {
             id = parent.optString("parentId", null);
         }
         return String.join(" / ", chain);
+    }
+
+    /** Plain values only; first-wins, and callers order base before sub. */
+    private static void mergeEnv(JSONObject env, Map<String, String> variables) {
+        JSONObject data = env.optJSONObject("data");
+        if (data == null) {
+            return;
+        }
+        for (String key : data.keySet()) {
+            Object v = data.get(key);
+            if (v instanceof String || v instanceof Number || v instanceof Boolean) {
+                variables.putIfAbsent(key, String.valueOf(v));
+            }
+        }
     }
 
     /** Insomnia's {@code {{ _.name }}} becomes API Studio's {@code {{name}}}. */
