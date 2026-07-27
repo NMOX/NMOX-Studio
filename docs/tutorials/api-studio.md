@@ -38,7 +38,7 @@ every response is graded against the web's security-header standards.
 
 6. **Import what you already have.** The **Import…** button reads a
    pasted curl command (browser devtools' "Copy as cURL"), a
-   `.http`/`.rest` request file, or an OpenAPI 3 JSON spec — each
+   `.http`/`.rest` request file, or an OpenAPI 3 spec (JSON or YAML) — each
    becomes real requests, and an `Authorization` header is lifted
    straight into the keychain-backed Auth field instead of landing in
    your workspace file. **Copy curl** goes the other way: the exact

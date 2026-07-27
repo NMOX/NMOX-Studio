@@ -95,8 +95,11 @@ class OpenApiCodecTest {
     @Test
     @DisplayName("Honest refusals: YAML, Swagger 2, no operations, junk")
     void refusals() {
+        // v1.191.0: YAML is no longer refused — it parses through the
+        // same pipeline, so an operations-free YAML doc gets the same
+        // message its JSON twin always got (see OpenApiYamlTest)
         assertThatThrownBy(() -> OpenApiCodec.parse("openapi: 3.0.0\npaths: {}"))
-                .hasMessageContaining("JSON");
+                .hasMessageContaining("no operations");
         assertThatThrownBy(() -> OpenApiCodec.parse("{\"swagger\":\"2.0\"}"))
                 .hasMessageContaining("Swagger 2.0");
         assertThatThrownBy(() -> OpenApiCodec.parse("{\"openapi\":\"3.0.0\",\"paths\":{}}"))

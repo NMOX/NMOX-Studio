@@ -413,7 +413,7 @@ command (devtools' "Copy as cURL" — an `Authorization: Bearer/Basic`
 header is lifted into the Auth field so the secret lands in your OS
 keychain, never the committable workspace file), `.http`/`.rest`
 request files (the REST Client dialect — its `{{variables}}` are API
-Studio's own syntax, so they import verbatim), OpenAPI 3 JSON
+Studio's own syntax, so they import verbatim), OpenAPI 3 JSON or YAML
 documents (one request per operation, path templates becoming
 `{{variables}}`), **Postman Collections v2.x** (folders keep identity
 as "Folder / Request" names, `{{variables}}` verbatim, bearer/basic
@@ -426,7 +426,7 @@ clipboard, and **Export collection to .http…** writes the whole
 collection for any editor or CI runner — with auth deliberately left
 in the keychain and a per-request comment saying what to re-add.
 Imports refuse what they can't represent (multipart forms, `@file`
-bodies, YAML specs, Swagger 2, Postman v1/scripts) instead of
+bodies, Swagger 2, Postman v1/scripts) instead of
 importing it wrong. See the [migration
 tutorial](tutorials/migrating-from-postman.md) for the full walk.
 
