@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.190.0] - 2026-07-27
+
+### Night docs truth (docs only)
+
+- CLAUDE.md's status and version history carry the five-release night
+  arc (v1.185–v1.189); plan.md currency records the two review
+  catches with their method lessons, the refusal-becomes-feature
+  law, the byte-proven gauntlet, and the brew-race trap. The one
+  honest refusal left in the import family is named: OpenAPI YAML.
+
 ## [1.189.0] - 2026-07-27
 
 ### The Insomnia review: the comment made a promise the code didn't keep
@@ -6629,6 +6639,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.190.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.189.0...v1.190.0
 [1.189.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.188.0...v1.189.0
 [1.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.187.0...v1.188.0
 [1.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.186.0...v1.187.0
