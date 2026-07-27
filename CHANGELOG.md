@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.188.0] - 2026-07-27
+
+### Insomnia exports import — the third migration source
+
+- **Import… ▸ Insomnia Export…** reads an Insomnia v4 "Export Data"
+  JSON into a collection named after the workspace. The flat
+  `resources[]` list gets its structure back by chasing `parentId`
+  chains — request-group ancestry becomes "Folder / Request" names,
+  the same identity rule as the Postman import. Insomnia's template
+  syntax `{{ _.name }}` is rewritten to API Studio's `{{name}}`
+  everywhere it appears (URL, headers, params, body, auth), and the
+  environments' plain values ride the never-clobber offer into the
+  active environment.
+- **The secrets law at the third border**: bearer tokens and basic
+  credentials land in the keychain-backed Auth field, never a
+  plaintext header row; oauth2 and friends are named as not-imported.
+  Multipart bodies keep the curl stance; WebSocket and gRPC entries
+  are counted out as not-HTTP rather than silently dropped.
+- `InsomniaCodec` pure core, 6 tests. The migration family: curl /
+  .http / OpenAPI / Postman (collections + environments) / Insomnia /
+  HAR in — .http out.
+
 ## [1.187.0] - 2026-07-27
 
 ### The night gauntlet: both fresh surfaces PASS in the installed app (docs only)
@@ -6590,6 +6612,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.187.0...v1.188.0
 [1.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.186.0...v1.187.0
 [1.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.185.0...v1.186.0
 [1.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.184.0...v1.185.0
