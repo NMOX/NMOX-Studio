@@ -48,7 +48,21 @@ public final class ImageKitAction implements ActionListener {
             return;
         }
 
-        List<ImagePress.Candidate> found = ImagePress.scan(project);
+        // the scan is a real disk walk (depth 12, up to 500 files) and
+        // the cwebp probe stats PATH dirs — neither belongs on the EDT
+        // (the v1.33.1/v1.115.0 law; a wedged mount must not freeze the
+        // paint thread on a menu click). Probe on the RP, dialog on EDT.
+        RP.post(() -> {
+            List<ImagePress.Candidate> scanned = ImagePress.scan(project);
+            // resolve() returns the bare name when nothing on PATH matches
+            String resolved = ToolLocator.resolve("cwebp");
+            File located = new File(resolved);
+            File cwebpFound = located.isAbsolute() && located.canExecute() ? located : null;
+            java.awt.EventQueue.invokeLater(() -> showDialog(project, scanned, cwebpFound));
+        });
+    }
+
+    private void showDialog(File project, List<ImagePress.Candidate> found, File cwebp) {
         if (found.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "No .jpg/.jpeg/.png images found in " + project.getName()
@@ -56,11 +70,6 @@ public final class ImageKitAction implements ActionListener {
             return;
         }
         long totalBytes = found.stream().mapToLong(ImagePress.Candidate::bytes).sum();
-
-        // resolve() returns the bare name when nothing on PATH matches
-        String resolved = ToolLocator.resolve("cwebp");
-        File located = new File(resolved);
-        File cwebp = located.isAbsolute() && located.canExecute() ? located : null;
 
         JCheckBox jpeg = new JCheckBox(
                 "Re-encode JPEGs/PNGs → .min.jpg siblings (pure Java, kept only if smaller)", true);
