@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.185.0] - 2026-07-26
+
+### The night review: the Image Kit obeys the oldest EDT law
+
+- **The image scan ran on the EDT.** `ImageKitAction.actionPerformed`
+  called `ImagePress.scan()` — a depth-12, up-to-500-file disk walk —
+  plus the cwebp PATH probe directly on the paint thread, so a wedged
+  network mount would freeze the whole UI on a menu click. This is
+  the v1.33.1/v1.115.0 class, caught by the same-day review lens that
+  asks the house's oldest question of any fresh action: *who is
+  walking the disk, and on whose thread?* Both probes now ride the
+  Image Kit's own RP and only the dialog returns to the EDT;
+  `ImageKitActionSafetyTest` source-gates the ordering (it fails on
+  the v1.183.0 shape by construction).
+- The rest of the v1.183/v1.184 surface came through CLEAN: the
+  ImagePress core's caps, never-clobber, alpha-flatten, and
+  discard-noise-savings laws were all pinned at build time, and the
+  press dialog's OK default is blessed — its writes are additive
+  siblings, not the destructive class that demands a safe default.
+
 ## [1.184.0] - 2026-07-26
 
 ### Day docs truth — the migration-complete story (docs only)
@@ -6526,6 +6546,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.184.0...v1.185.0
 [1.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.183.0...v1.184.0
 [1.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.182.0...v1.183.0
 [1.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.181.0...v1.182.0
