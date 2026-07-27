@@ -9,8 +9,13 @@ OS keychain, never in a committable file.**
 ## Before you start
 
 Export your collection from Postman: collection ▸ … ▸ Export ▸
-**Collection v2.1**. (A v1 export or an *environment* file is refused
-with the fix spelled out — re-export as v2.1.)
+**Collection v2.1**. (A v1 export is refused with the fix spelled
+out — re-export as v2.1.) Environments export separately and import
+via **Import… ▸ Postman Environment…** — plain values come in,
+same-name imports merge without clobbering what you already set, and
+values Postman marks *secret* stay out with a note pointing at the
+keychain-backed Auth field, because API Studio environments live in
+the committable `.nmoxapi.json`.
 
 ## Steps
 

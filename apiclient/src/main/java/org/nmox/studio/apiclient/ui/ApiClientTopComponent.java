@@ -508,6 +508,67 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * Import a Postman environment's plain values into an API Studio
+     * environment. Secret-typed values never cross (the codec drops and
+     * counts them — .nmoxapi.json is committable); same-name merges
+     * never clobber values you already set.
+     */
+    private void importPostmanEnv() {
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                ApiClientTopComponent.class)
+                .setTitle("Import Postman Environment")
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        "Postman environments", "json", "postman_environment"))
+                .showOpenDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            org.nmox.studio.apiclient.api.PostmanCodec.ImportedEnvironment got;
+            try {
+                got = org.nmox.studio.apiclient.api.PostmanCodec.parseEnvironment(
+                        java.nio.file.Files.readString(file.toPath()));
+            } catch (java.io.IOException | IllegalArgumentException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.DialogDisplayer.getDefault().notify(
+                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                        org.openide.NotifyDescriptor.ERROR_MESSAGE)));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                Environment env = null;
+                for (Environment e : workspace.environments) {
+                    if (e.name.equals(got.name())) {
+                        env = e;
+                        break;
+                    }
+                }
+                boolean fresh = env == null;
+                if (fresh) {
+                    env = new Environment();
+                    env.name = got.name();
+                    workspace.environments.add(env);
+                }
+                int added = 0;
+                for (var e : got.values().entrySet()) {
+                    if (env.variables.putIfAbsent(e.getKey(), e.getValue()) == null) {
+                        added++;
+                    }
+                }
+                touch();
+                StringBuilder msg = new StringBuilder(fresh ? "Created" : "Updated")
+                        .append(" environment \"").append(env.name).append("\": ")
+                        .append(added).append(" variable").append(added == 1 ? "" : "s")
+                        .append(fresh ? "" : " added (existing values kept)");
+                if (!got.notes().isEmpty()) {
+                    msg.append(" — ").append(String.join(" ", got.notes()));
+                }
+                status(msg.append('.').toString());
+            });
+        });
+    }
+
     /** Import a browser HAR capture — the Network tab becomes requests. */
     private void importHar() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
@@ -622,6 +683,8 @@ public final class ApiClientTopComponent extends TopComponent {
             openapi.addActionListener(a -> importOpenApi());
             javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
             postman.addActionListener(a -> importPostman());
+            javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem("Postman Environment…");
+            postmanEnv.addActionListener(a -> importPostmanEnv());
             javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
             har.addActionListener(a -> importHar());
             javax.swing.JMenuItem export = new javax.swing.JMenuItem(
@@ -631,6 +694,7 @@ public final class ApiClientTopComponent extends TopComponent {
             menu.add(http);
             menu.add(openapi);
             menu.add(postman);
+            menu.add(postmanEnv);
             menu.add(har);
             menu.addSeparator();
             menu.add(export);
