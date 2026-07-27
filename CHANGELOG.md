@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.187.0] - 2026-07-27
+
+### The night gauntlet: both fresh surfaces PASS in the installed app (docs only)
+
+- **Image Kit, clicked for real** (installed app, throwaway userdir):
+  File ▸ Image Kit (Web)… found exactly the fixture's one image
+  ("1 image, 17.8 MB", node_modules skipped), cwebp detected and
+  named, and the press wrote `hero.min.jpg` (17.8 MB → 164 KB at
+  1600px) and `hero.webp` (→ 341 KB) with the original untouched on
+  disk — the report and the filesystem agree byte for byte. The UI
+  stayed responsive throughout: the v1.185.0 scan-off-EDT fix,
+  observed live.
+- **Postman environment import, clicked for real**: the staging
+  fixture produced `Created environment "Staging": 2 variables — 1
+  secret-typed value NOT imported…`, and the byte-proof holds — the
+  planted `sk-live-…` secret appears NOWHERE in `.nmoxapi.json`,
+  which carries exactly `baseUrl` and `tenant`. The disabled value
+  stayed out too. Zero finds; clean shutdown, no orphans.
+- Process note recorded: the post-ship `brew upgrade` can race the
+  release workflow's homebrew job — the first gauntlet boot came up
+  on 1.185.0 and the missing menu item was the tell; `brew update`
+  then upgrade closed it. Check the cask VERSION, not just "upgraded",
+  before gauntleting a just-shipped feature.
+
 ## [1.186.0] - 2026-07-27
 
 ### Postman environments import — and the refusal that became a feature
@@ -6566,6 +6590,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.186.0...v1.187.0
 [1.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.185.0...v1.186.0
 [1.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.184.0...v1.185.0
 [1.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.183.0...v1.184.0
