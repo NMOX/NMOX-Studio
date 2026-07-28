@@ -81,17 +81,66 @@ public final class PrettierFormatter {
         if (binary == null) {
             return null;
         }
+        String formatted = runPrettier(text, file, dir, binary);
+        return formatted == null || formatted.equals(text) ? null : formatted;
+    }
+
+    /** What an explicit Format-with-Prettier request found. */
+    public enum OnDemandOutcome {
+        FORMATTED, ALREADY_FORMATTED, TOO_LARGE, NO_PRETTIER, FAILED
+    }
+
+    /**
+     * {@code text} is non-null only for FORMATTED; {@code optedIn} says
+     * whether the project carries a Prettier config, so the caller can
+     * label a defaults-only run honestly.
+     */
+    public record OnDemand(OnDemandOutcome outcome, String text, boolean optedIn) {
+    }
+
+    /**
+     * The explicit gesture (v1.196.0): unlike the silent on-save hook,
+     * the user asked for Prettier BY NAME, so the project opt-in is not
+     * required — a config-less project formats with Prettier's defaults
+     * and the outcome says so. Everything else is identical: the same
+     * size cap, the same trust-gated binary resolution, the same capped
+     * output law.
+     */
+    public OnDemand formatOnDemand(String text, File file) {
+        if (text.length() > MAX_CHARS) {
+            return new OnDemand(OnDemandOutcome.TOO_LARGE, null, false);
+        }
+        File dir = file.getParentFile();
+        if (dir == null) {
+            return new OnDemand(OnDemandOutcome.FAILED, null, false);
+        }
+        boolean optedIn = projectOptedIn(dir);
+        String binary = resolveBinary(dir);
+        if (binary == null) {
+            return new OnDemand(OnDemandOutcome.NO_PRETTIER, null, optedIn);
+        }
+        String formatted = runPrettier(text, file, dir, binary);
+        if (formatted == null) {
+            return new OnDemand(OnDemandOutcome.FAILED, null, optedIn);
+        }
+        return formatted.equals(text)
+                ? new OnDemand(OnDemandOutcome.ALREADY_FORMATTED, null, optedIn)
+                : new OnDemand(OnDemandOutcome.FORMATTED, formatted, optedIn);
+    }
+
+    /** The one process call both entry points share; null on any failure. */
+    private String runPrettier(String text, File file, File dir, String binary) {
         try {
             Result result = runner.run(
                     List.of(binary, "--stdin-filepath", file.getAbsolutePath()), dir, text);
             if (result.exitCode() != 0) {
-                // usually a syntax error mid-edit: a normal condition, save as-is
+                // usually a syntax error mid-edit: a normal condition
                 LOG.log(Level.FINE, "prettier exited {0} for {1}",
                         new Object[]{result.exitCode(), file});
                 return null;
             }
             String formatted = result.stdout();
-            return formatted.isEmpty() || formatted.equals(text) ? null : formatted;
+            return formatted.isEmpty() ? null : formatted;
         } catch (IOException ex) {
             LOG.log(Level.INFO, "prettier failed to run: {0}", ex.getMessage());
             return null;
