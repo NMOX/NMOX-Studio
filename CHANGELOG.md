@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.198.0] - 2026-07-28
+
+### The response pack — find in body, save the raw body
+
+- **⌘F works in a response now** (Ctrl+F off macOS): a find bar under
+  the Body tab highlights every match as you type, with an honest
+  count — at the 10,000-match cap it says "10000+" instead of lying —
+  Enter cycles matches (wrapping), Escape hands focus back to the
+  body. A fresh response re-runs the find, so stale highlights cannot
+  survive a new send (source-gated on both setText paths).
+- **Save… writes the RAW response body** — `lastResponse.body()`,
+  deliberately never the pretty-printed display text (the view is a
+  rendering; saving it would corrupt any non-JSON payload) — off the
+  EDT, and a capture truncated at the 8 MB response cap is announced
+  on the status line, never silently saved as a partial file.
+- The find half is a pure, bounded core (`ResponseSearch`:
+  case-insensitive, overlapping matches counted, capped) with the
+  wiring laws source-gated beside it.
+- Third car of the worktree train: built while v1.196.0 and v1.197.0
+  were in their release pipelines.
+
 ## [1.197.0] - 2026-07-28
 
 ### API Studio remembers every send
@@ -6875,6 +6896,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.198.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.197.0...v1.198.0
 [1.197.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.196.0...v1.197.0
 [1.196.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.1...v1.196.0
 [1.195.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.0...v1.195.1

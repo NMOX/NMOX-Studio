@@ -158,6 +158,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private String lastMethod;
     private String lastUrl;
     private final JTextArea responseBody = new JTextArea();
+    // response pack (v1.198.0)
+    private final JTextField responseFind = new JTextField();
+    private final JLabel findCount = new JLabel(" ");
     private final JTextArea responseHeaders = new JTextArea();
     private final JPanel testResults = new JPanel();
     private final JPanel standardsPanel = new JPanel();
@@ -1059,7 +1062,7 @@ public final class ApiClientTopComponent extends TopComponent {
         JTabbedPane tabs = new JTabbedPane();
         responseBody.setEditable(false);
         responseBody.setFont(MONO);
-        tabs.addTab("Body", new JScrollPane(responseBody));
+        tabs.addTab("Body", buildBodyTab());
         responseHeaders.setEditable(false);
         responseHeaders.setFont(MONO);
         tabs.addTab("Headers", new JScrollPane(responseHeaders));
@@ -1069,6 +1072,118 @@ public final class ApiClientTopComponent extends TopComponent {
         tabs.addTab("Standards", new JScrollPane(standardsPanel));
         panel.add(tabs, BorderLayout.CENTER);
         return panel;
+    }
+
+    // ---- response pack: find-in-body + save (v1.198.0) ----
+
+    /** Body tab: the response text over a find bar with an honest count. */
+    private JPanel buildBodyTab() {
+        JPanel body = new JPanel(new BorderLayout());
+        body.add(new JScrollPane(responseBody), BorderLayout.CENTER);
+
+        JPanel bar = new JPanel(new BorderLayout(6, 0));
+        bar.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+        bar.add(new JLabel("Find:"), BorderLayout.WEST);
+        bar.add(responseFind, BorderLayout.CENTER);
+        JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 0));
+        east.add(findCount);
+        JButton saveBody = new JButton("Save…");
+        saveBody.setToolTipText("Save the RAW response body to a file (not the pretty-printed view)");
+        saveBody.addActionListener(e -> saveResponseBody());
+        east.add(saveBody);
+        bar.add(east, BorderLayout.EAST);
+        body.add(bar, BorderLayout.SOUTH);
+
+        responseFind.getDocument().addDocumentListener(new SimpleDoc(this::refindInBody));
+        // Enter jumps to the next match (wrapping); Escape hands focus back
+        responseFind.addActionListener(e -> jumpToNextMatch());
+        responseFind.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("ESCAPE"), "nmox-find-done");
+        responseFind.getActionMap().put("nmox-find-done", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                responseBody.requestFocusInWindow();
+            }
+        });
+        // ⌘F / Ctrl+F in the body focuses the find field — the muscle memory
+        responseBody.getInputMap().put(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_F,
+                java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "nmox-find-in-body");
+        responseBody.getActionMap().put("nmox-find-in-body", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                responseFind.requestFocusInWindow();
+                responseFind.selectAll();
+            }
+        });
+        return body;
+    }
+
+    /** EDT. Re-highlights all matches and updates the count label. */
+    private void refindInBody() {
+        responseBody.getHighlighter().removeAllHighlights();
+        String query = responseFind.getText();
+        java.util.List<Integer> matches =
+                ResponseSearch.matches(responseBody.getText(), query);
+        for (int at : matches) {
+            try {
+                responseBody.getHighlighter().addHighlight(at, at + query.length(),
+                        new javax.swing.text.DefaultHighlighter.DefaultHighlightPainter(
+                                new Color(255, 200, 0, 120)));
+            } catch (javax.swing.text.BadLocationException ex) {
+                break; // text changed under us; the next refind heals it
+            }
+        }
+        findCount.setText(query.isEmpty() ? " "
+                : matches.size() + (matches.size() >= ResponseSearch.MAX_MATCHES ? "+" : "")
+                + " match" + (matches.size() == 1 ? "" : "es"));
+    }
+
+    private void jumpToNextMatch() {
+        java.util.List<Integer> matches =
+                ResponseSearch.matches(responseBody.getText(), responseFind.getText());
+        int at = ResponseSearch.next(matches, responseBody.getCaretPosition());
+        if (at >= 0) {
+            responseBody.setCaretPosition(at);
+            responseBody.moveCaretPosition(at + responseFind.getText().length());
+            responseBody.requestFocusInWindow();
+        }
+    }
+
+    /**
+     * Saves the RAW body of the response on screen — lastResponse.body(),
+     * never the pretty-printed display text — off the EDT. A truncated
+     * capture (the 8 MB response cap) is said out loud, not hidden.
+     */
+    private void saveResponseBody() {
+        ApiResponse toSave = lastResponse;
+        if (toSave == null || !toSave.reached()) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                    "No response to save — send a request first.");
+            return;
+        }
+        java.io.File file = new org.openide.filesystems.FileChooserBuilder("api-response-save")
+                .setTitle("Save response body (raw)")
+                .setFilesOnly(true)
+                .showSaveDialog();
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            try {
+                java.nio.file.Files.write(file.toPath(),
+                        toSave.body().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                String note = toSave.truncated()
+                        ? "Saved (response was truncated at the capture cap)."
+                        : "Saved " + file.getName() + ".";
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(note));
+            } catch (java.io.IOException ex) {
+                java.awt.EventQueue.invokeLater(() ->
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                "Could not save: " + ex.getMessage()));
+            }
+        });
     }
 
     // ---- sending ----
@@ -1147,11 +1262,13 @@ public final class ApiClientTopComponent extends TopComponent {
             statusLabel.setText(cancelled ? "Cancelled  ·  " + r.millis() + "ms"
                     : "No route — " + r.error() + "  ·  " + r.millis() + "ms");
             responseBody.setText(cancelled ? "" : r.error());
+            refindInBody();
         } else {
             statusLabel.setForeground(r.ok() ? OK_GREEN : FAIL_RED);
             statusLabel.setText(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes())
                     + (r.truncated() ? "  ·  body truncated at " + humanBytes(r.bytes()) : ""));
             responseBody.setText(display == null ? r.body() : display);
+            refindInBody();
             responseBody.setCaretPosition(0);
         }
         StringBuilder h = new StringBuilder();
