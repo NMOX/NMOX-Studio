@@ -3,8 +3,6 @@ package org.nmox.studio.editor.format;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.EnumSet;
 import javax.swing.text.PlainDocument;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,7 +26,11 @@ class FormatOnDemandTest {
         Path bin = Files.createDirectories(root.resolve("node_modules/.bin"));
         Path prettier = bin.resolve("prettier");
         Files.writeString(prettier, "#!/bin/sh\ncat\n");
-        Files.setPosixFilePermissions(prettier, EnumSet.allOf(PosixFilePermission.class));
+        // portable executability (setPosixFilePermissions throws on
+        // Windows — the 1.196.0 windows-lane catch); the Runner seam
+        // means the stub never actually runs, it only needs to resolve
+        assertThat(prettier.toFile().setExecutable(true)).isTrue();
+        Files.writeString(bin.resolve("prettier.cmd"), "@echo off\r\n");
         Files.createDirectory(root.resolve(".git"));
         org.nmox.studio.rack.service.WorkspaceTrust.trust(root.toFile());
         return root.toFile();
