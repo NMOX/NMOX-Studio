@@ -130,4 +130,26 @@
             </folder>
         </folder>
     </folder>
+
+    <!-- The platform's HtmlLoader registers in text/html/Factories with
+         NO position while our WebFileSupport (generated layer) sits at
+         979 — mixed positioned/unpositioned children log the Ordering
+         "Not all children ... marked with the position attribute"
+         warning on every boot, and the relative order is formally
+         unspecified. Pinning the platform instance at 1100 keeps the
+         de-facto order (ours first — WebFileSupport has owned text/html
+         since v0.1; unpositioned entries already sorted last) and makes
+         it specified. Attribute-only merge: the instance itself still
+         comes from the html module. -->
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="html">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-html-HtmlLoader.instance">
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

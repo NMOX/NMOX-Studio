@@ -140,6 +140,8 @@ JS/TS lexer, platform YAML module). See `EmbeddedScopeGrammars`.
 | typescript.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
 | typescriptreact.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
 | html-derivative.tmLanguage.json | microsoft/vscode 1.95.0 extensions/html (textmate/html.tmbundle) | MIT-compatible |
+| xml.tmLanguage.json | sha256 bb51c7b202f20254772c88f86889e0dbcdc734e045b950fe25c0a23b591203d7 | microsoft/vscode 1.95.0 extensions/xml (atom/language-xml), embed-only scope text.xml | MIT |
+| javascriptreact.tmLanguage.json | sha256 ea4a18b3bdc9d6c85e39183104de3fa5a532480eca8013532d567017c396f751 | microsoft/vscode 1.95.0 extensions/javascript (microsoft/TypeScript-TmLanguage), embed-only scope source.js.jsx | MIT |
 
 YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
 bundled as *editors*: the NetBeans ide cluster ships native editor
