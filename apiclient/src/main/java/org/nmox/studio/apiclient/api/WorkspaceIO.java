@@ -56,6 +56,26 @@ public final class WorkspaceIO {
             envs.put(ej);
         }
         root.put("environments", envs);
+
+        // send history (v1.197.0): AUTHORED fields + outcome only. The
+        // Entry type has no token field, so the secrets law holds by
+        // construction — this loop cannot write what the model cannot hold.
+        JSONArray hist = new JSONArray();
+        for (org.nmox.studio.apiclient.model.SendHistory.Entry e : w.history) {
+            JSONObject hj = new JSONObject();
+            hj.put("timestamp", e.timestamp);
+            hj.put("name", e.name);
+            hj.put("method", e.method);
+            hj.put("url", e.url);
+            hj.put("body", e.body);
+            hj.put("authType", e.authType.name());
+            hj.put("params", pairsJson(e.params));
+            hj.put("headers", pairsJson(e.headers));
+            hj.put("status", e.status);
+            hj.put("durationMs", e.durationMs);
+            hist.put(hj);
+        }
+        root.put("history", hist);
         return root.toString(2);
     }
 
@@ -113,6 +133,29 @@ public final class WorkspaceIO {
                     }
                 }
                 w.environments.add(e);
+            }
+        }
+        JSONArray hist = root.optJSONArray("history");
+        if (hist != null) {
+            for (int i = 0; i < hist.length(); i++) {
+                JSONObject hj = hist.getJSONObject(i);
+                org.nmox.studio.apiclient.model.SendHistory.Entry e =
+                        new org.nmox.studio.apiclient.model.SendHistory.Entry();
+                e.timestamp = hj.optLong("timestamp", 0L);
+                e.name = hj.optString("name", "");
+                e.method = hj.optString("method", "GET");
+                e.url = hj.optString("url", "");
+                e.body = hj.optString("body", "");
+                try {
+                    e.authType = ApiModel.AuthType.valueOf(hj.optString("authType", "NONE"));
+                } catch (IllegalArgumentException ex) {
+                    e.authType = ApiModel.AuthType.NONE;
+                }
+                readPairs(hj.optJSONArray("params"), e.params);
+                readPairs(hj.optJSONArray("headers"), e.headers);
+                e.status = hj.optInt("status", 0);
+                e.durationMs = hj.optLong("durationMs", 0L);
+                w.history.add(e);
             }
         }
         return w;

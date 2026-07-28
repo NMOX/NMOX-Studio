@@ -131,6 +131,8 @@ public final class ApiModel {
 
         public final List<Collection> collections = new ArrayList<>();
         public final List<Environment> environments = new ArrayList<>();
+        /** Send history, newest first (v1.197.0) — see {@link SendHistory}. */
+        public final List<SendHistory.Entry> history = new ArrayList<>();
         public String activeEnvironment = "";
 
         public Environment active() {

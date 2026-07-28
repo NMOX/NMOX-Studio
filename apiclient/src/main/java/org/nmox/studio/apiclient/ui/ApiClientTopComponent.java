@@ -135,6 +135,11 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTextField urlField = new JTextField();
     private final JTextField nameField = new JTextField();
     private final JButton sendButton = new JButton("Send");
+    // send history (v1.197.0)
+    private final javax.swing.DefaultListModel<org.nmox.studio.apiclient.model.SendHistory.Entry>
+            historyModel = new javax.swing.DefaultListModel<>();
+    private final javax.swing.JList<org.nmox.studio.apiclient.model.SendHistory.Entry>
+            historyList = new javax.swing.JList<>(historyModel);
 
     private final JTable paramsTable = new JTable();
     private final JTable headersTable = new JTable();
@@ -853,7 +858,118 @@ public final class ApiClientTopComponent extends TopComponent {
         tools.add(importBtn);
         tools.add(del);
         panel.add(tools, BorderLayout.SOUTH);
+
+        // v1.197.0: the left panel is tabbed — Collections | History.
+        // History is the DB Studio parity request: every send leaves a
+        // findable row (authored model only; see SendHistory's law).
+        javax.swing.JTabbedPane leftTabs = new javax.swing.JTabbedPane();
+        leftTabs.addTab("Collections", panel);
+        leftTabs.addTab("History", buildHistoryPanel());
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.add(leftTabs, BorderLayout.CENTER);
+        return wrapper;
+    }
+
+    // ---- left panel: send history (v1.197.0) ----
+
+    private JPanel buildHistoryPanel() {
+        historyList.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list,
+                    Object value, int index, boolean selected, boolean focus) {
+                super.getListCellRendererComponent(list, value, index, selected, focus);
+                if (value instanceof org.nmox.studio.apiclient.model.SendHistory.Entry e) {
+                    String when = java.time.LocalTime.ofInstant(
+                            java.time.Instant.ofEpochMilli(e.timestamp),
+                            java.time.ZoneId.systemDefault())
+                            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+                    String outcome = e.status == 0 ? "failed" : String.valueOf(e.status);
+                    setText(when + "  " + e.method + " " + e.url
+                            + "  → " + outcome
+                            + (e.durationMs > 0 ? " (" + e.durationMs + " ms)" : ""));
+                }
+                return this;
+            }
+        });
+        historyList.setToolTipText("Double-click restores a send as a new request"
+                + " (auth token not carried — re-enter it)");
+        historyList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    restoreFromHistory(historyList.getSelectedValue());
+                }
+            }
+        });
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem restore = new javax.swing.JMenuItem("Restore as request");
+        restore.addActionListener(e -> restoreFromHistory(historyList.getSelectedValue()));
+        menu.add(restore);
+        javax.swing.JMenuItem clear = new javax.swing.JMenuItem("Clear history");
+        clear.addActionListener(e -> clearHistory());
+        menu.add(clear);
+        historyList.setComponentPopupMenu(menu);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JScrollPane(historyList), BorderLayout.CENTER);
         return panel;
+    }
+
+    /** EDT. Repopulates the list from the workspace, newest first. */
+    private void refreshHistory() {
+        historyModel.clear();
+        for (org.nmox.studio.apiclient.model.SendHistory.Entry e : workspace.history) {
+            historyModel.addElement(e);
+        }
+    }
+
+    /** EDT. Records the SENT request (not whatever is selected now). */
+    private void recordHistory(Request sent, int status, long durationMs) {
+        org.nmox.studio.apiclient.model.SendHistory.record(workspace.history,
+                org.nmox.studio.apiclient.model.SendHistory.of(
+                        System.currentTimeMillis(), sent, status, durationMs));
+        refreshHistory();
+        touch();
+    }
+
+    private void restoreFromHistory(org.nmox.studio.apiclient.model.SendHistory.Entry entry) {
+        if (entry == null) {
+            return;
+        }
+        if (workspace.collections.isEmpty()) {
+            workspace.collections.add(new ApiModel.Collection());
+        }
+        ApiModel.Collection target = selectedCollection() != null
+                ? selectedCollection() : workspace.collections.get(0);
+        Request restored = org.nmox.studio.apiclient.model.SendHistory.restore(entry);
+        target.requests.add(restored);
+        rebuildTree();
+        selectRequest(target.name, restored.name);
+        touch();
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                entry.authType == ApiModel.AuthType.NONE
+                ? "Restored from history."
+                : "Restored from history — re-enter the auth token (secrets never ride history).");
+    }
+
+    private void clearHistory() {
+        if (workspace.history.isEmpty()) {
+            return;
+        }
+        // the v1.98.0 safe-default idiom: Enter must not destroy
+        Object answer = org.openide.DialogDisplayer.getDefault().notify(
+                new org.openide.NotifyDescriptor(
+                        "Clear all " + workspace.history.size() + " history entries?",
+                        "Clear history",
+                        org.openide.NotifyDescriptor.YES_NO_OPTION,
+                        org.openide.NotifyDescriptor.QUESTION_MESSAGE,
+                        null, org.openide.NotifyDescriptor.NO_OPTION));
+        if (answer != org.openide.NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+        workspace.history.clear();
+        refreshHistory();
+        touch();
     }
 
     // ---- center: request editor over response viewer ----
@@ -990,7 +1106,13 @@ public final class ApiClientTopComponent extends TopComponent {
                 String display = response.reached()
                         ? WorkspaceIO.prettyForDisplay(response.body()) : null;
                 delivered = true;
-                SwingUtilities.invokeLater(() -> showResponse(response, results, display));
+                SwingUtilities.invokeLater(() -> {
+                    // the SENT request, not whatever is selected by now
+                    recordHistory(request,
+                            response.reached() ? response.status() : 0,
+                            response.millis());
+                    showResponse(response, results, display);
+                });
             } catch (RuntimeException ex) {
                 failure = String.valueOf(ex.getMessage());
                 java.util.logging.Logger.getLogger(ApiClientTopComponent.class.getName())
@@ -1001,6 +1123,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     // status stuck on "Sending…" until restart
                     String message = "Send failed — " + failure;
                     SwingUtilities.invokeLater(() -> {
+                        recordHistory(request, 0, 0);
                         sendButton.setText("Send");
                         statusLabel.setForeground(FAIL_RED);
                         statusLabel.setText(message);
@@ -1412,6 +1535,7 @@ public final class ApiClientTopComponent extends TopComponent {
         // the user works in a new one. Clear it with the workspace.
         clearResponse();
         selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
+        refreshHistory();
         DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
         workspace.environments.forEach(e -> envs.addElement(e.name));
         envCombo.setModel(envs);
