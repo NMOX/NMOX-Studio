@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.196.0] - 2026-07-28
+
+### Format with Prettier, on demand
+
+- The request beside format-on-save: right-click any Prettier-speaking
+  editor (the same 14 mimes the save hook serves) → **Format with
+  Prettier** — format NOW, whether or not the project opted into the
+  silent save hook. The user asked for Prettier by name, so a
+  config-less project formats with Prettier's defaults and the status
+  line says so honestly; the silent on-save path keeps its opt-in law
+  unchanged (test-pinned side by side, and the opt-in-required mutant
+  dies by name).
+- Same engine, same laws: the one `PrettierFormatter` process path
+  (size cap, trust-gated binary resolution — a cloned repo's committed
+  prettier still never runs untrusted — capped output), and the same
+  caret-preserving minimal edit as the save hook. The format runs off
+  the EDT; the result applies only if the buffer still matches the
+  snapshot the formatter saw — typing during the run refuses with
+  "run it again" rather than clobbering newer text.
+- Honest status for every outcome: formatted / formatted-with-defaults
+  / already formatted / too large / no prettier found / syntax error.
+- Registration byte-verified in the generated layer (the v1.195.0 DOM
+  idiom) for the popup homes.
+- Process note: built in a git worktree WHILE the v1.195.1 release
+  pipeline ran — the release-wait downtime David called out, converted
+  into the next unit's build time.
+
 ## [1.195.1] - 2026-07-28
 
 ### The smoke-test fixes — five findings from a fresh-install 1.195.0 run
@@ -6821,6 +6848,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.196.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.1...v1.196.0
 [1.195.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.0...v1.195.1
 [1.195.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.194.0...v1.195.0
 [1.194.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.193.0...v1.194.0

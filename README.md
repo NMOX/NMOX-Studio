@@ -201,7 +201,8 @@ files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
 HTML, CSS, SCSS and Less with tag, attribute, value and property
 completion; LSP with ordered server fallbacks; a regex-aware JavaScript
-lexer; typing intelligence; **format on save with Prettier** (opt-in via
+lexer; typing intelligence; **format on save with Prettier** (and on demand:
+right-click → Format with Prettier, config or not) (opt-in via
 the project's own Prettier config, project-pinned binary preferred, caret
 survives the save); comment-only spellcheck (your keys and values
 are never flagged as typos); a **Structure navigator** (⌘7) that outlines
