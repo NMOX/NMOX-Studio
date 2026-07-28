@@ -434,6 +434,12 @@ And when a `.http` file from your repo is already open in the editor,
 right-click it → **Open in API Studio** — it lands as a collection
 directly, same import, no chooser.
 
+The left panel is tabbed **Collections | History**: every send leaves
+a history row (time, method, the authored `{{var}}` url, status,
+duration — failed sends included, capped at 50). Double-click a row to
+restore it as a request; the auth token deliberately doesn't ride
+history, so re-enter it.
+
 The keyboard speaks fluent REST client: **⌘Enter** (Ctrl+Enter on
 Linux/Windows) sends from anywhere in the tab — and cancels while a
 send is in flight. In the collections tree, right-click for

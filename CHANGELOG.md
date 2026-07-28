@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.197.0] - 2026-07-28
+
+### API Studio remembers every send
+
+- The senior request beside v1.194.0's muscle memory: "I sent that
+  request ten minutes ago — where did it go?" The left panel is now
+  tabbed **Collections | History**: every send leaves a row — time,
+  method, the authored `{{var}}` url, status (or *failed*), duration —
+  newest first, capped at 50 like DB Studio's query history, persisted
+  in `.nmoxapi.json`, recorded on BOTH outcomes (a failed send is
+  exactly the row you go looking for) and always for the request you
+  SENT, not whatever the tree selects while the response is in flight.
+- **The secrets law is structural**: a history entry stores the
+  authored model — `{{vars}}` unresolved, params/headers rows, body,
+  auth *type* — and the Entry type has no token field at all, so no
+  serialization path can ever leak a secret into the committable file.
+  Pinned three ways: a reflection test refuses any token-shaped field
+  on the type, the round-trip test plants a real token and greps the
+  bytes, and restore mints a fresh id (the id is the keychain key —
+  the v1.194.0 duplicate law).
+- Double-click (or right-click → Restore as request) brings a row back
+  as a live request — auth token deliberately not carried, and the
+  status line says so. Clear history confirms with the safe default.
+  A re-aim repopulates the list with the new project's history — the
+  v1.172.0 cross-project-staleness class, gated at applyWorkspace.
+- Built worktree-parallel inside the v1.196.0 release window.
+
 ## [1.196.0] - 2026-07-28
 
 ### Format with Prettier, on demand
@@ -6848,6 +6875,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.197.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.196.0...v1.197.0
 [1.196.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.1...v1.196.0
 [1.195.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.0...v1.195.1
 [1.195.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.194.0...v1.195.0
