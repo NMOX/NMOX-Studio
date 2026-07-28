@@ -258,7 +258,18 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
             @Override
             protected Node copyNode(Node original) {
-                boolean folder = original.getLookup().lookup(DataFolder.class) != null;
+                // copyNode runs on the EDT when the view materializes a
+                // lazy child — and the platform hands FILES over as
+                // FolderChildren.DelayedNodes whose lookup forces
+                // DataObject.find INLINE for any DataObject-assignable
+                // template (DataFolder is one). That was the 1.195.0
+                // "Attempt to obtain DataObject ... from EDT" warning.
+                // The FileObject sits in the delayed lookup by
+                // construction and answers folder-vs-file for free.
+                FileObject fo = original.getLookup().lookup(FileObject.class);
+                boolean folder = fo != null
+                        ? fo.isFolder()
+                        : original.getLookup().lookup(DataFolder.class) != null;
                 if (folder && HEAVY_DIRS.contains(original.getName())) {
                     return new DarkNode(original);
                 }

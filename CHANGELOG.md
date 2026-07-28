@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.195.1] - 2026-07-28
+
+### The smoke-test fixes — five findings from a fresh-install 1.195.0 run
+
+- **Editor prefs can reflect again**: the platform's editor-settings
+  storage reflects into `java.util.prefs.AbstractPreferences`, and
+  `java.prefs` was the one module the `--add-opens` list never covered —
+  every editor open logged an `InaccessibleObjectException`. Added to
+  all three carriers (the packaged conf every distribution wraps, the
+  dev `run-platform` arguments, the test-JVM argLine) and gated by the
+  new `PackagedConfGateTest`, which runs at integration-test and pins
+  the full opens set on the ASSEMBLED app's conf — not the source file.
+- **The default workspace loads without touching DataObjects on the
+  EDT**: the file tree's `copyNode` classified children via
+  `lookup(DataFolder.class)` — a DataObject-assignable template, which
+  forces the platform's delayed node to run `DataObject.find` inline on
+  the paint thread ("Attempt to obtain DataObject … from EDT", once per
+  file in ~/NMOX). Root-caused by stack trace with `-ea`; now classifies
+  by the `FileObject` the delayed lookup carries for free.
+  `FileTreeEdtDataObjectLawTest` drives the REAL FolderChildren
+  machinery over a non-empty workspace fixture through the exact lazy
+  snapshot path the view paints with — proven failing-first with the
+  same three warnings the smoke test saw. (`getNodes(true)` was tried
+  and rejected as unfaithful: its optimal path waits delayed nodes into
+  real DataNodes first, which the paint path never does.)
+- **text/html loader order is now specified**: the platform's
+  HtmlLoader registers unpositioned beside our WebFileSupport at 979 —
+  the Ordering warning on every boot, and formally unspecified order.
+  An attribute-only layer merge pins HtmlLoader at 1100: same de-facto
+  winner (ours), now deterministic.
+- **Two more embed-only scopes**: `text.xml` (included by the
+  http/nim/ruby/php/perl/cobol grammars) and `source.js.jsx` (vue,
+  graphql) now resolve — the "No grammar source for scope" warnings on
+  opening a `.http` file are gone, and embedded XML/JSX fragments
+  actually colorize. Both vendored sha256-pinned from VS Code 1.95.0
+  (MIT), registered under synthetic `text/x-nmox-embed-*` mimes per the
+  EmbeddedScopeGrammars law — no editor bindings, the platform's XML
+  editor and the custom JS lexer keep their mimes.
+- **The project is MIT, everywhere it speaks**: the README badge and
+  License section claimed Apache-2.0 while LICENSE and the NBM metadata
+  say MIT — badge and section corrected, third-party notices untouched,
+  `LicenseConsistencyGateTest` pins all three statements together.
+- **Homebrew trust documented consistently**: `brew info` refusing an
+  untrusted third-party tap is standard Homebrew policy (`brew trust`,
+  per-user `~/.homebrew/trust.json`) — not bypassable, not a defect.
+  README and the user guide already taught the one-time
+  `brew trust --cask` step; docs/tour.md was the straggler still
+  showing a bare `brew install`, now aligned.
+
 ## [1.195.0] - 2026-07-28
 
 ### Open in API Studio — the .http editor gesture
@@ -6772,6 +6821,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.195.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.0...v1.195.1
 [1.195.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.194.0...v1.195.0
 [1.194.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.193.0...v1.194.0
 [1.193.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.192.0...v1.193.0

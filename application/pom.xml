@@ -204,6 +204,7 @@
                         <additionalArgument>--add-opens=java.base/java.io=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.base/java.security=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.base/java.util=ALL-UNNAMED</additionalArgument>
+                        <additionalArgument>--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.desktop/javax.swing.text=ALL-UNNAMED</additionalArgument>
                         <additionalArgument>--add-opens=java.desktop/java.awt=ALL-UNNAMED</additionalArgument>
@@ -234,6 +235,28 @@
                         <goals>
                             <goal>test</goal>
                         </goals>
+                        <configuration>
+                            <!-- gated on the packaged app, which does not
+                                 exist until package: runs below instead -->
+                            <excludes>
+                                <exclude>**/PackagedConfGateTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <!-- the packaged-result gates: target/nmoxstudio exists
+                         only after package, so these run at integration-test
+                         (mvn verify reaches it; mvn test deliberately not) -->
+                    <execution>
+                        <id>packaged-app-gates</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/PackagedConfGateTest.java</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

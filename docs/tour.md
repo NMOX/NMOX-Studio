@@ -199,6 +199,6 @@ connections, infra nodes — one search field reaches all of it, and the
 - Quit leaves zero orphan processes; `kill -9` resurrects your session
 - Destructive dialogs default to the safe button, everywhere
 
-**Install:** `brew install nmox/nmox-studio/nmox-studio` — macOS /
+**Install:** `brew tap NMOX/NMOX-Studio https://github.com/NMOX/NMOX-Studio`, then the one-time `brew trust --cask nmox/nmox-studio/nmox-studio`, then `brew install --cask nmox-studio` — macOS /
 Linux / Windows installers with bundled runtimes on
 [every release](https://github.com/NMOX/NMOX-Studio/releases/latest).

@@ -63,4 +63,30 @@ public final class EmbeddedScopeGrammars {
         private HtmlDerivative() {
         }
     }
+
+    /**
+     * text.xml — included by the http/nim/ruby/php/perl/cobol grammars
+     * for embedded XML (heredocs, request bodies). The 1.195.0 smoke
+     * test saw "No grammar source for scope [text.xml]" on opening a
+     * .http file. The platform's own XML editor keeps text/xml; this
+     * registration exists only to resolve the scope.
+     */
+    @GrammarRegistration(grammar = "xml.tmLanguage.json", mimeType = "text/x-nmox-embed-xml")
+    public static final class Xml {
+
+        private Xml() {
+        }
+    }
+
+    /**
+     * source.js.jsx — included by the vue and graphql grammars (and
+     * markdown ```jsx fences). .jsx FILES stay on the custom JS lexer;
+     * this registration exists only to resolve the scope.
+     */
+    @GrammarRegistration(grammar = "javascriptreact.tmLanguage.json", mimeType = "text/x-nmox-embed-jsx")
+    public static final class JavaScriptReact {
+
+        private JavaScriptReact() {
+        }
+    }
 }

@@ -29,7 +29,11 @@ class EmbeddedScopeGrammarsTest {
     /** The scopes the platform markdown grammar includes that we must supply. */
     private static final Set<String> REQUIRED_EMBED_SCOPES = Set.of(
             "source.yaml", "source.js", "source.ts", "source.tsx",
-            "text.html.derivative");
+            "text.html.derivative",
+            // v1.195.1: the 1.195.0 smoke test's "No grammar source for
+            // scope" pair — text.xml (http/ruby/php/perl heredoc embeds)
+            // and source.js.jsx (vue/graphql embeds)
+            "text.xml", "source.js.jsx");
 
     @Test
     @DisplayName("The generated layer registers a grammar for every markdown-embedded scope")
@@ -120,7 +124,9 @@ class EmbeddedScopeGrammarsTest {
                 embedFolders.add(folder);
             }
         }
-        assertThat(embedFolders).hasSize(5);
+        // yaml, js, ts, tsx, html-derivative + the v1.195.1 pair
+        // (xml for text.xml, jsx for source.js.jsx)
+        assertThat(embedFolders).hasSize(7);
         try (InputStream layer = EmbeddedScopeGrammars.class
                 .getResourceAsStream("/META-INF/generated-layer.xml")) {
             String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);
