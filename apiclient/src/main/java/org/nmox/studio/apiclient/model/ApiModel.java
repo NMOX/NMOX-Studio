@@ -79,6 +79,37 @@ public final class ApiModel {
          *  {@code ApiSecrets}, keyed by {@link #id}. Never written to disk. */
         public String authToken = "";  // bearer token, or "user:password" for basic
         public final List<Assertion> tests = new ArrayList<>();
+
+        /**
+         * A deep copy for the duplicate-and-tweak workflow: every field
+         * the user authored, under a FRESH id — the id is a keychain
+         * key, and two requests must never share one. The in-memory
+         * authToken rides along; persisting it under the new id is the
+         * caller's job (a keyring write does not belong in the model).
+         */
+        public static Request duplicate(Request src) {
+            Request copy = new Request();
+            copy.name = src.name + " (copy)";
+            copy.method = src.method;
+            copy.url = src.url;
+            for (Pair p : src.params) {
+                Pair q = new Pair(p.name, p.value);
+                q.enabled = p.enabled;
+                copy.params.add(q);
+            }
+            for (Pair p : src.headers) {
+                Pair q = new Pair(p.name, p.value);
+                q.enabled = p.enabled;
+                copy.headers.add(q);
+            }
+            copy.body = src.body;
+            copy.authType = src.authType;
+            copy.authToken = src.authToken;
+            for (Assertion a : src.tests) {
+                copy.tests.add(new Assertion(a.kind, a.target));
+            }
+            return copy;
+        }
     }
 
     /** A named group of requests - Postman's "collection". */
