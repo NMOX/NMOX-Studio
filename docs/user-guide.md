@@ -430,6 +430,14 @@ bodies, Swagger 2, Postman v1/scripts) instead of
 importing it wrong. See the [migration
 tutorial](tutorials/migrating-from-postman.md) for the full walk.
 
+The keyboard speaks fluent REST client: **⌘Enter** (Ctrl+Enter on
+Linux/Windows) sends from anywhere in the tab — and cancels while a
+send is in flight. In the collections tree, right-click for
+**Duplicate** (⌘D — the copy lands right after its source with working
+auth, under its own keychain id), **Rename…** for collections and
+requests alike, and **Delete** (also the Delete key; deleting a
+non-empty collection asks first, with No as the default).
+
 When a response is wrong and you don't know why, **Explain with
 ORACLE…** sends a redacted picture of it — method, URL with query
 values masked, status, headers with credential headers dropped and

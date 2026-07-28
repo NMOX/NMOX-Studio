@@ -4,30 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [1.193.0] - 2026-07-27
+## [1.194.0] - 2026-07-28
 
-### The punch-list gauntlet: every fresh surface PASS in the installed app (docs only)
+### The muscle-memory pack: the requests a senior web dev files after a week
 
-- **YAML import, clicked for real** (installed v1.192.0, throwaway
-  userdir): a petstore YAML imported as "Petstore YAML: 2 requests,
-  {{baseUrl}} into Local" with `{petId}` → `{{petId}}` in the URL and
-  the required `verbose` query param enabled — and the hostile
-  fixture (`!!javax.script.ScriptEngineManager` gadget) was refused
-  on screen with SnakeYAML's own words: *"Not valid YAML: Global tag
-  is not allowed"* — named, never instantiated. The v1.191.0 safe
-  loader observed live.
-- **The v1.192.0 fixes, observed live**: the collections panel's 2×2
-  grid rendered every button whole (Delete fully visible at the
-  default width where v1.182.0 recorded "Dele"), the Delete KEY fired
-  the new confirm on a non-empty collection with **No** as the
-  default button, and Enter cancelled — the collection survived. The
-  safe default is not theater; it caught the exact reflexive
-  keypress it exists for.
-- Zero finds; clean shutdown, no orphans. With this, every item the
-  changelog carried as "noted for a future pass," every
-  never-clicked surface, and every "deferred with a reason" decision
-  is either shipped, live-proven, or decided in writing — the punch
-  list is empty.
+- **⌘Enter sends** (Ctrl+Enter off macOS): the chord every REST client
+  binds, from anywhere in the API Studio tab — including mid-typing in
+  the URL or body field. It mirrors the Send button exactly, so while a
+  send is in flight the same chord cancels it. Bound at the component
+  level, where the platform Keymaps profile (the v1.38.1 shortcut-theft
+  class) cannot reach; the Send button's tooltip advertises it.
+- **Duplicate request**: right-click a request → Duplicate (or ⌘D with
+  the tree focused) — the Postman duplicate-and-tweak workflow. The
+  copy carries every authored field and is inserted right after its
+  source, under a FRESH id: the id is the keychain key (v1.97.0), and
+  two requests must never share one. The auth secret deliberately rides
+  along — written to the keychain under the copy's own id, off the EDT
+  — because a duplicate with broken auth is a trap, and the secrets law
+  is about the committable file, not the keychain. `Request.duplicate`
+  is a pure model core; the fresh-id and deep-copy laws are test-pinned
+  (mutation-proven: a shared id fails `mintsAFreshId` by name).
+- **Rename…** on the tree for collections AND requests — imports name
+  collections after files, and there was no way to fix
+  `session-capture.har` short of the JSON. Requests keep their Name
+  field; the tree item is a second home.
+- New `MuscleMemoryTest` source-gates all three grants;
+  `RequestDuplicateTest` pins the copy contract (3 tests).
+
+### Fixed
+
+- The changelog carried the 1.193.0 entry TWICE (the release-notes
+  step and the docs pass each prepended one); merged to a single
+  entry, no content lost.
 
 ## [1.193.0] - 2026-07-27
 
@@ -48,6 +56,11 @@ All notable changes to NMOX Studio are documented here. The format follows
   as the focused default; a reflexive Enter cancelled and the
   collection survived. The keyboard path and the no-undo safety net
   both hold in the running app.
+- Zero finds; clean shutdown, no orphans. With this, every item the
+  changelog carried as "noted for a future pass," every never-clicked
+  surface, and every "deferred with a reason" decision is either
+  shipped, live-proven, or decided in writing — the punch list is
+  empty.
 
 ## [1.192.0] - 2026-07-27
 
@@ -6738,6 +6751,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.194.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.193.0...v1.194.0
 [1.193.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.192.0...v1.193.0
 [1.192.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.191.0...v1.192.0
 [1.191.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.190.0...v1.191.0

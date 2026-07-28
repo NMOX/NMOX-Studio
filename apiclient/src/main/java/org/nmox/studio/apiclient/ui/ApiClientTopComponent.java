@@ -171,6 +171,27 @@ public final class ApiClientTopComponent extends TopComponent {
         center.setDividerLocation(240);
         add(center, BorderLayout.CENTER);
 
+        // ⌘Enter (Ctrl+Enter elsewhere) = the Send button, from anywhere
+        // in the tab — including mid-typing in the URL or body field.
+        // A component-level InputMap, so it cannot collide with the
+        // platform Keymaps profile (the v1.38.1 shortcut-theft class
+        // lives in Shortcuts/, not here). It mirrors the button exactly:
+        // while a send is in flight the same chord cancels it.
+        int menuMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                javax.swing.KeyStroke.getKeyStroke(
+                        java.awt.event.KeyEvent.VK_ENTER, menuMask),
+                "nmox-send");
+        getActionMap().put("nmox-send", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                send();
+            }
+        });
+        String mod = java.awt.event.InputEvent.getModifiersExText(menuMask);
+        sendButton.setToolTipText("Send the request  ("
+                + mod + (mod.length() > 1 ? "+" : "") + "Enter)");
+
         rebind = new org.nmox.studio.apiclient.api.ProjectRebind(projectDir());
         rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
             @Override
@@ -718,6 +739,13 @@ public final class ApiClientTopComponent extends TopComponent {
         // Delete also lives where the platform puts it: the context menu
         // and the Delete key — reachable regardless of panel geometry
         javax.swing.JPopupMenu treeMenu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem duplicateItem = new javax.swing.JMenuItem("Duplicate");
+        duplicateItem.addActionListener(e -> duplicateSelected());
+        treeMenu.add(duplicateItem);
+        javax.swing.JMenuItem renameItem = new javax.swing.JMenuItem("Rename…");
+        renameItem.addActionListener(e -> renameSelected());
+        treeMenu.add(renameItem);
+        treeMenu.addSeparator();
         javax.swing.JMenuItem deleteItem = new javax.swing.JMenuItem("Delete");
         deleteItem.addActionListener(e -> deleteSelected());
         treeMenu.add(deleteItem);
@@ -728,6 +756,18 @@ public final class ApiClientTopComponent extends TopComponent {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 deleteSelected();
+            }
+        });
+        // ⌘D / Ctrl+D duplicates — the Postman muscle memory, scoped to
+        // the tree so it can't shadow an editor binding elsewhere
+        tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_D,
+                java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                "nmox-duplicate");
+        tree.getActionMap().put("nmox-duplicate", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                duplicateSelected();
             }
         });
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
@@ -1140,6 +1180,64 @@ public final class ApiClientTopComponent extends TopComponent {
         c.requests.add(r);
         rebuildTree();
         current = r;
+        restoreSelection();
+        touch();
+    }
+
+    private void duplicateSelected() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+        if (node == null || !(node.getUserObject() instanceof Request r)) {
+            status("Select a request to duplicate.");
+            return;
+        }
+        Request copy = Request.duplicate(r);
+        for (Collection c : workspace.collections) {
+            int at = c.requests.indexOf(r);
+            if (at >= 0) {
+                c.requests.add(at + 1, copy);
+                break;
+            }
+        }
+        // the copy's auth secret goes to the keychain under ITS fresh id
+        // — deliberately: duplicate-and-tweak expects working auth, and
+        // the secrets law is about the FILE, not the keychain. Off the
+        // EDT, keyring calls may block on OS prompts.
+        if (copy.authToken != null && !copy.authToken.isEmpty()) {
+            final String id = copy.id;
+            final String token = copy.authToken;
+            RP.post(() -> org.nmox.studio.apiclient.api.ApiSecrets.save(id, token));
+        }
+        rebuildTree();
+        current = copy;
+        restoreSelection();
+        touch();
+        status("Duplicated as \"" + copy.name + "\".");
+    }
+
+    private void renameSelected() {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+        if (node == null) {
+            return;
+        }
+        Object obj = node.getUserObject();
+        String existing = obj instanceof Collection c ? c.name
+                : obj instanceof Request r ? r.name : null;
+        if (existing == null) {
+            return;
+        }
+        NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine("Name:", "Rename");
+        in.setInputText(existing);
+        if (DialogDisplayer.getDefault().notify(in) != NotifyDescriptor.OK_OPTION
+                || in.getInputText().isBlank()) {
+            return;
+        }
+        String name = in.getInputText().trim();
+        if (obj instanceof Collection c) {
+            c.name = name;
+        } else {
+            ((Request) obj).name = name;
+        }
+        rebuildTree();
         restoreSelection();
         touch();
     }
