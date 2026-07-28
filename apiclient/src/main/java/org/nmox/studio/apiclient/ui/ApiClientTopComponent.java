@@ -937,9 +937,9 @@ public final class ApiClientTopComponent extends TopComponent {
             return;
         }
         if (workspace.collections.isEmpty()) {
-            workspace.collections.add(new ApiModel.Collection());
+            workspace.collections.add(new Collection());
         }
-        ApiModel.Collection target = selectedCollection() != null
+        Collection target = selectedCollection() != null
                 ? selectedCollection() : workspace.collections.get(0);
         Request restored = org.nmox.studio.apiclient.model.SendHistory.restore(entry);
         target.requests.add(restored);
@@ -947,7 +947,7 @@ public final class ApiClientTopComponent extends TopComponent {
         selectRequest(target.name, restored.name);
         touch();
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                entry.authType == ApiModel.AuthType.NONE
+                entry.authType == AuthType.NONE
                 ? "Restored from history."
                 : "Restored from history — re-enter the auth token (secrets never ride history).");
     }

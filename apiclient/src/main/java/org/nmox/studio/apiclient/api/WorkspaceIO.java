@@ -147,9 +147,9 @@ public final class WorkspaceIO {
                 e.url = hj.optString("url", "");
                 e.body = hj.optString("body", "");
                 try {
-                    e.authType = ApiModel.AuthType.valueOf(hj.optString("authType", "NONE"));
+                    e.authType = AuthType.valueOf(hj.optString("authType", "NONE"));
                 } catch (IllegalArgumentException ex) {
-                    e.authType = ApiModel.AuthType.NONE;
+                    e.authType = AuthType.NONE;
                 }
                 readPairs(hj.optJSONArray("params"), e.params);
                 readPairs(hj.optJSONArray("headers"), e.headers);
