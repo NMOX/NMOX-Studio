@@ -430,6 +430,10 @@ bodies, Swagger 2, Postman v1/scripts) instead of
 importing it wrong. See the [migration
 tutorial](tutorials/migrating-from-postman.md) for the full walk.
 
+And when a `.http` file from your repo is already open in the editor,
+right-click it → **Open in API Studio** — it lands as a collection
+directly, same import, no chooser.
+
 The keyboard speaks fluent REST client: **⌘Enter** (Ctrl+Enter on
 Linux/Windows) sends from anywhere in the tab — and cancels while a
 send is in flight. In the collections tree, right-click for

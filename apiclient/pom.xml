@@ -67,6 +67,21 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- DataObject context injection for the .http editor
+                 gesture (v1.195.0, OpenInApiStudioAction) -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-loaders</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <!-- FileObject/FileUtil (the gesture's disk-path resolve);
+                 the nbm manifest goal demands the direct dep — the
+                 transitive one via filesystems-nb does not count -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <version>${netbeans.version}</version>

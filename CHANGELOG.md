@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.195.0] - 2026-07-28
+
+### Open in API Studio — the .http editor gesture
+
+- A repo's `.http`/`.rest` file is already open in the editor —
+  right-click it (editor popup or the file's node menu) → **Open in
+  API Studio**, and it lands as a collection: no Import… menu, no
+  file chooser re-finding a file that's on screen. The VS Code
+  REST-Client gesture, granted.
+- One implementation, two callers: the gesture delegates to the EXACT
+  chooser path (`importHttpFrom`), so the off-EDT read law
+  (v1.108.0/v1.168.0), the honest refusals (`< ./file` bodies), and
+  the secrets-law Authorization lift reach both by construction —
+  test-pinned. Fronting the tab first is race-free:
+  `componentOpened`'s workspace load is synchronous, so the import
+  can never land on an unbound workspace.
+- The registration is byte-verified in the GENERATED layer
+  (`Editors/text/x-http-request/Popup` + `Loaders/.../Actions`), not
+  just the annotation source — a wrong path compiles fine and simply
+  appears in no menu (`HttpEditorGestureTest`).
+
 ## [1.194.0] - 2026-07-28
 
 ### The muscle-memory pack: the requests a senior web dev files after a week
@@ -6751,6 +6772,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.195.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.194.0...v1.195.0
 [1.194.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.193.0...v1.194.0
 [1.193.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.192.0...v1.193.0
 [1.192.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.191.0...v1.192.0

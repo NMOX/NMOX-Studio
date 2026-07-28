@@ -326,6 +326,16 @@ public final class ApiClientTopComponent extends TopComponent {
         if (file == null) {
             return;
         }
+        importHttpFrom(file);
+    }
+
+    /**
+     * The one .http import implementation, shared by the chooser path
+     * above and the editor gesture ({@link #importHttpFileFromEditor}) —
+     * a fix to either (the off-EDT read law, refusals, the secrets-law
+     * Authorization lift in the codec) reaches both by construction.
+     */
+    private void importHttpFrom(java.io.File file) {
         // read + parse off the EDT (the v1.108.0 Load-Patch law), apply on it
         RP.post(() -> {
             org.nmox.studio.apiclient.api.HttpFileCodec.Imported got;
@@ -340,6 +350,25 @@ public final class ApiClientTopComponent extends TopComponent {
                 return;
             }
             java.awt.EventQueue.invokeLater(() -> applyHttpImport(file, got));
+        });
+    }
+
+    /**
+     * The editor gesture (v1.195.0): front the tab and import this
+     * on-disk .http file — no chooser. Safe against an unopened tab:
+     * {@code open()} runs {@code componentOpened}, whose workspace load
+     * is synchronous, so the import can never land on an unbound
+     * workspace and be clobbered by the initial load.
+     */
+    public static void importHttpFileFromEditor(java.io.File file) {
+        SwingUtilities.invokeLater(() -> {
+            org.openide.windows.TopComponent tc = org.openide.windows.WindowManager
+                    .getDefault().findTopComponent("ApiClientTopComponent");
+            if (tc instanceof ApiClientTopComponent api) {
+                api.open();
+                api.requestActive();
+                api.importHttpFrom(file);
+            }
         });
     }
 
