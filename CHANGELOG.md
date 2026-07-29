@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.201.0] - 2026-07-29
+
+### Keychain prompts only when you use the secret — lazy token hydration (David-approved)
+
+- **The upgrade-day password prompt is gone**: API Studio used to read
+  EVERY request's auth token from the OS keychain the moment the tab
+  opened (`reconcileSecrets`, v1.97.0). After any binary change —
+  which is every upgrade, since the app bundle is replaced — macOS
+  re-verifies the keychain ACL and asks for your password, so the
+  bulk read meant a prompt at startup for data you weren't using.
+  Tokens now hydrate LAZILY, one request at a time, at the moment
+  they're actually needed: first display in the editor, a send (on
+  the send lane, already off the EDT), duplicating (the source loads
+  inside the copy task so the secret still rides along), and Copy
+  curl (which renders what Send would run, auth included).
+- **A denied prompt stays denied**: each request id is consulted at
+  most once per session — declining the OS prompt doesn't re-fire it
+  on every selection. A typed value marks its request consulted too,
+  so a deliberately cleared field is never silently refilled from
+  the keychain.
+- **The dangerous half was in `save()`**: the autosave pushed every
+  request's in-memory token to the keychain — with lazy hydration
+  that would have overwritten every not-yet-consulted entry with ""
+  on the first keystroke, silently destroying stored secrets. The
+  push now covers only hydrated-or-edited requests. Caught in design
+  recon, before a line ran.
+- The pre-v1.97.0 plaintext migration is unchanged — legacy files
+  still move their tokens into the keychain at load (writes don't
+  prompt; reads do). `LazyHydrationGateTest` pins all four laws
+  (no-bulk-read, per-consumer hydration, save-skips-unhydrated,
+  denied-stays-denied), three of them mutation-proven; the v1.194.0
+  duplicate gate updated to the hydrate-then-save shape.
+
 ## [1.200.1] - 2026-07-29
 
 ### Nim highlights again — a mangled vendored grammar was killing every grammar that included it
@@ -7030,6 +7063,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.201.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.1...v1.201.0
 [1.200.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.0...v1.200.1
 [1.200.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.199.0...v1.200.0
 [1.199.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.1...v1.199.0

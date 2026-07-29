@@ -51,8 +51,12 @@ class MuscleMemoryTest {
         assertThat(start).isGreaterThan(-1);
         String body = s.substring(start, s.indexOf("\n    }", start));
         assertThat(body).contains("Request.duplicate(");
-        assertThat(body).contains("ApiSecrets.save(id, token)");
-        assertThat(body).as("keyring writes ride the RP, never the EDT")
+        // v1.201.0: the source hydrates lazily, so the copy task loads
+        // the source token first, then persists under the COPY's own id
+        assertThat(body).as("an unhydrated source must still hand its secret over")
+                .contains("hydrateAuthNow(source)");
+        assertThat(body).contains("ApiSecrets.save(copy.id, copy.authToken)");
+        assertThat(body).as("keyring calls ride the RP, never the EDT")
                 .contains("RP.post(");
     }
 }
