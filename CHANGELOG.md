@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.199.0] - 2026-07-29
+
+### The in-app web browser — real WebKit, ⌥⌘4
+
+- **Browser** joins the window family (⌥⌘4, Window menu, Welcome
+  TOOLING): a real embedded WebKit — JavaScript, CSS, images, HTTPS,
+  forms, history — in the standard URL-bar/back/forward/reload chrome.
+  Engine decision made by evidence, not preference: the platform
+  already ships `org.netbeans.core.browser.webview` (a JavaFX WebView
+  browser that hides itself when JavaFX is absent), so the missing
+  ingredient was JavaFX itself — not a Chromium-native bolt-on that
+  would have broken the one-catalog update center with per-OS NBMs.
+- **The bundled runtimes now carry OpenJFX 21.0.5**: Gluon's official
+  jmods join every jlink site — the shared `bundle-jre.sh` (macOS DMG,
+  linux tar.gz/deb) and the Windows lane's inline step — pinned by
+  version and per-platform sha256, verified before unpacking, and each
+  image is gated on actually containing `javafx.web`
+  (`BundledRuntimeGateTest` pins all of it). Runtime cost ≈ +40 MB.
+  Modules resolve automatically for the classpath app per JEP 261 —
+  zero launcher-flag changes.
+- **SCOPE grows a TARGET knob** (SYSTEM / IN-APP, appended per the
+  knob law): dial IN-APP and the dev-server-pops-a-browser cable
+  opens the page inside the IDE; unavailable engines fall through to
+  the system browser — an OPEN press is never a dead click. Routed
+  through the new `core.spi.EmbeddedBrowser` facade (the OracleAsk
+  idiom), so the rack gained no dependency on the ui module.
+- **Honest degradation**: a dev build on a plain JDK (no JavaFX) shows
+  an in-window explanation and keeps opening pages in the system
+  browser; the availability probe is the platform's own — reading the
+  hidden attribute on `Services/Browsers/webviewBrowser.settings`
+  runs `BrowserFactory.isHidden()`.
+- **Live-proven before ship** on a runtime built by the real
+  bundle-jre.sh: Browser opened via the Welcome link, example.com
+  rendered over HTTPS, the page's link navigated to iana.org (full
+  render — images, styles, nav), Back returned with history intact,
+  quit left zero orphan processes. Zero boot cost held: the JavaFX
+  platform initializes on first open, not at startup.
+
 ## [1.198.1] - 2026-07-28
 
 ### Gatekeeper, the honest interim answer (no Apple Developer ID for months)
@@ -6924,6 +6962,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.199.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.1...v1.199.0
 [1.198.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.0...v1.198.1
 [1.198.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.197.0...v1.198.0
 [1.197.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.196.0...v1.197.0

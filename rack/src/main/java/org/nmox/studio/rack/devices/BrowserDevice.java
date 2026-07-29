@@ -21,6 +21,7 @@ public class BrowserDevice extends RackDevice {
 
     private final LcdDisplay urlLcd;
     private final Led openedLed;
+    private final org.nmox.studio.rack.ui.controls.Knob targetKnob;
 
     public BrowserDevice() {
         super("browser", "SCOPE", "BROWSER LINK", new Color(54, 174, 222), 2);
@@ -30,6 +31,11 @@ public class BrowserDevice extends RackDevice {
         urlLcd.setEditable("URL to open");
         RackButton open = place(new RackButton("OPEN", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         openedLed = place(new Led("SENT", new Color(64, 200, 255)), 424, 52);
+        // TARGET appended at the END (knob options persist by index —
+        // the append-only law): SYSTEM keeps the historic behavior as
+        // position 0 so every saved patch means what it always meant.
+        targetKnob = place(new org.nmox.studio.rack.ui.controls.Knob(
+                "TARGET", new String[]{"SYSTEM", "IN-APP"}, 0), 470, 40);
 
         open.addActionListener(e -> openBrowser());
 
@@ -38,6 +44,7 @@ public class BrowserDevice extends RackDevice {
         addOutPort("opened", "OPENED", SignalType.TRIGGER);
 
         param("url", urlLcd);
+        param("target", targetKnob);
     }
 
     private void openBrowser() {
@@ -46,8 +53,22 @@ public class BrowserDevice extends RackDevice {
             return;
         }
         try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            boolean opened = false;
+            if (targetKnob.getSelectedIndex() == 1) {
+                // IN-APP: the embedded browser via the soft-dependency
+                // seam (v1.199.0); unavailable (dev JDK without JavaFX,
+                // or no ui module) falls through to the system browser —
+                // the OPEN press must never be a dead click
+                org.nmox.studio.core.spi.EmbeddedBrowser embedded =
+                        org.nmox.studio.core.spi.EmbeddedBrowser.find();
+                opened = embedded != null && embedded.open(url);
+            }
+            if (!opened && Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
                 Desktop.getDesktop().browse(URI.create(url));
+                opened = true;
+            }
+            if (opened) {
                 onEdt(() -> {
                     // momentary: SENT means "just sent", not "sent once ever"
                     openedLed.setOn(true);

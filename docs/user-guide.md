@@ -76,6 +76,7 @@ the Welcome tab):
 | **⌘I** | Quick Search — reaches everything (see §9) |
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
+| **⌥⌘4** | Browser (in-app WebKit) |
 | **⌥⌘5** | Block Studio |
 | **⌥⌘6** | Contract Studio (Web3) |
 | **⌥⌘7** | DB Studio |
