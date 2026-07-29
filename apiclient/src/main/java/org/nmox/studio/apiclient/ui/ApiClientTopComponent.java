@@ -290,6 +290,11 @@ public final class ApiClientTopComponent extends TopComponent {
         statusLabel.setText(" ");
         testResults.removeAll();
         standardsPanel.removeAll();
+        // the find bar counts matches in the body just wiped — leaving
+        // the old count up would claim matches in a response that no
+        // longer exists (v1.200.0; the v1.198.0 refind sites covered the
+        // send paths, this is the clearing path)
+        refindInBody();
     }
 
     /** Test seam: what Explain would send right now, or null when disarmed. */
@@ -1517,8 +1522,15 @@ public final class ApiClientTopComponent extends TopComponent {
             return;
         }
         Object obj = node.getUserObject();
+        // a deleted request's auth token must leave the OS keychain with
+        // it (v1.200.0, the DB Studio remove-connection parity) — the id
+        // is gone from the file forever, so a kept entry is an orphaned
+        // secret nothing can ever read again. Off the EDT: keyring calls
+        // may block on OS prompts.
+        java.util.List<String> forget = new java.util.ArrayList<>();
         if (obj instanceof Request r) {
             workspace.collections.forEach(c -> c.requests.remove(r));
+            forget.add(r.id);
         } else if (obj instanceof Collection c) {
             // there is no undo here, and Delete now rides a KEY too — a
             // non-empty collection gets the v1.98.0 safe-default confirm
@@ -1537,9 +1549,14 @@ public final class ApiClientTopComponent extends TopComponent {
                     return;
                 }
             }
+            c.requests.forEach(r -> forget.add(r.id));
             workspace.collections.remove(c);
         } else {
             return;
+        }
+        if (!forget.isEmpty()) {
+            RP.post(() -> forget.forEach(
+                    org.nmox.studio.apiclient.api.ApiSecrets::delete));
         }
         rebuildTree();
         touch();
