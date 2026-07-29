@@ -32,7 +32,7 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | gleam.tmLanguage.json | sha256 837c3a234a4a8fd11e1b6942f0c15c323fefbbbaa7ed0ebdf4c8cc0c7a7d9388 | gleam-lang/vscode-gleam (Apache-2.0) |
 | nim.tmLanguage.json | sha256 c13fd45c842aa738fdc003c9c6f09b3d64667e76e4ce3a17d5d9a0f24726e428 | nim-lang/vscode-nim syntaxes/nim.json (MIT) |
 | d.tmLanguage.json | sha256 66824108f51fadc7104619379116254d1c352cb306b654514af23a7b4b83df2a | Pure-D/code-d syntaxes/d.json (MIT) |
-| racket.tmLanguage.json | sha256 e57ecf8b2cd382c6286d3b2e82c5664fe3bf8683d300bd3875f1bc4a9bb818c7 | Eugleo/magic-racket syntaxes/racket.tmLanguage.json (MIT) |
+| racket.tmLanguage.json | sha256 b6ddad8ec4b1433efac889fbd22b64c5fb683c1e769b1332b50c9410fbd8b308 | Eugleo/magic-racket syntaxes/racket.tmLanguage.json (MIT); patched v1.200.1: 20 shorthand/list capture values normalized to rule objects (upstream sha256 e57ecf8b2cd382c6286d3b2e82c5664fe3bf8683d300bd3875f1bc4a9bb818c7) |
 | elm.tmLanguage.json | sha256 0f027bc8fe13fab9051f0438848883f23f4f3ba6c28973b3811693805495b6b4 | elm-tooling/elm-language-client-vscode syntaxes/elm-syntax.json (MIT) |
 | rescript.tmLanguage.json | sha256 55230309058f73615085ff4493fe3e348f443159851d9f108730472345e7f662 | rescript-lang/rescript-vscode grammars/rescript.tmLanguage.json (MIT) |
 | purescript.tmLanguage.json | sha256 e99c6695bafa5585022f493ab69b0276997a918ee128079c0346ab166f3e7f97 | nwolverson/vscode-language-purescript syntaxes/purescript.json (MIT) |
@@ -140,7 +140,7 @@ JS/TS lexer, platform YAML module). See `EmbeddedScopeGrammars`.
 | typescript.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
 | typescriptreact.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
 | html-derivative.tmLanguage.json | microsoft/vscode 1.95.0 extensions/html (textmate/html.tmbundle) | MIT-compatible |
-| xml.tmLanguage.json | sha256 bb51c7b202f20254772c88f86889e0dbcdc734e045b950fe25c0a23b591203d7 | microsoft/vscode 1.95.0 extensions/xml (atom/language-xml), embed-only scope text.xml | MIT |
+| xml.tmLanguage.json | sha256 98216b32694f2c0c5d2370aff37dcf8223daa61144fa18209678a8b214580c92 | microsoft/vscode 1.95.0 extensions/xml (atom/language-xml), embed-only scope text.xml; patched v1.200.1: comments rule had end/name nested inside captures (upstream sha256 bb51c7b202f20254772c88f86889e0dbcdc734e045b950fe25c0a23b591203d7) — TM4E CCE killed every including grammar | MIT |
 | javascriptreact.tmLanguage.json | sha256 ea4a18b3bdc9d6c85e39183104de3fa5a532480eca8013532d567017c396f751 | microsoft/vscode 1.95.0 extensions/javascript (microsoft/TypeScript-TmLanguage), embed-only scope source.js.jsx | MIT |
 
 YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
