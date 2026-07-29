@@ -260,14 +260,28 @@ public final class ApiClientTopComponent extends TopComponent {
             return;
         }
         Environment env = workspace.active();
-        String curl = org.nmox.studio.apiclient.api.CurlCodec.render(
-                current, env != null ? env.variables : Map.of());
-        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                new java.awt.datatransfer.StringSelection(curl), null);
-        status("curl command copied"
-                + (current.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
-                        && !current.authToken.isBlank()
-                        ? " — includes the auth secret" : "") + ".");
+        Map<String, String> vars = env != null ? env.variables : Map.of();
+        Request target = current;
+        // the rendered command is what Send would run, auth included —
+        // a lazily-unhydrated token loads NOW, for this request only
+        // (v1.201.0), then the render and clipboard land back on the EDT
+        RP.post(() -> {
+            hydrateAuthNow(target);
+            String curl = org.nmox.studio.apiclient.api.CurlCodec.render(target, vars);
+            SwingUtilities.invokeLater(() -> {
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                        new java.awt.datatransfer.StringSelection(curl), null);
+                status("curl command copied"
+                        + (target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
+                                && target.authToken != null && !target.authToken.isBlank()
+                                ? " — includes the auth secret" : "") + ".");
+                if (current == target) {
+                    loading = true;
+                    authField.setText(target.authToken);
+                    loading = false;
+                }
+            });
+        });
     }
 
     private void status(String text) {
@@ -1039,6 +1053,9 @@ public final class ApiClientTopComponent extends TopComponent {
         authField.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
                 current.authToken = new String(authField.getPassword());
+                // typed value is the truth — a later lazy hydration must
+                // not refill a deliberately cleared field from the keychain
+                hydratedAuth.add(current.id);
                 touch();
             }
         }));
@@ -1219,6 +1236,9 @@ public final class ApiClientTopComponent extends TopComponent {
             boolean delivered = false;
             String failure = "unexpected error";
             try {
+                // already off the EDT — a first use of this request's
+                // auth loads its token here, right where it's needed
+                hydrateAuthNow(request);
                 ApiResponse response = client.send(request, vars);
                 List<TestRunner.Result> results = TestRunner.run(request, response);
                 // the pretty re-parse belongs HERE: on the EDT it froze
@@ -1364,6 +1384,55 @@ public final class ApiClientTopComponent extends TopComponent {
         testsTable.setModel(new TestsTableModel(r.tests, this::touch));
         TestsTableModel.install(testsTable);
         loading = false;
+        hydrateAuth(r, () -> {
+            if (current == r) {
+                loading = true;
+                authField.setText(r.authToken);
+                loading = false;
+            }
+        });
+    }
+
+    /**
+     * Requests whose keychain entry was consulted (or made moot by an
+     * edit/migration) this session. v1.201.0: tokens hydrate LAZILY,
+     * per request, on first display or use — the old bulk read at tab
+     * open consulted every entry at once, which after any binary change
+     * (every upgrade) meant a macOS password prompt at startup. A
+     * consulted id is never re-read, so a denied prompt stays denied
+     * for the session instead of re-firing on every selection.
+     */
+    private final java.util.Set<String> hydratedAuth
+            = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Any thread → keychain read on RP → {@code onDoneEdt} on the EDT. */
+    private void hydrateAuth(Request r, Runnable onDoneEdt) {
+        if (r == null || hydratedAuth.contains(r.id)) {
+            return;
+        }
+        RP.post(() -> {
+            hydrateAuthNow(r);
+            if (onDoneEdt != null) {
+                SwingUtilities.invokeLater(onDoneEdt);
+            }
+        });
+    }
+
+    /**
+     * Off-EDT only (keyring calls may block on OS prompts). Fills the
+     * in-memory token from the keychain — but only a BLANK one, so a
+     * value the user typed or an import carried is never clobbered.
+     */
+    private void hydrateAuthNow(Request r) {
+        if (r == null || !hydratedAuth.add(r.id)) {
+            return;
+        }
+        if (r.authToken == null || r.authToken.isBlank()) {
+            String tok = org.nmox.studio.apiclient.api.ApiSecrets.read(r.id);
+            if (tok != null && !tok.isEmpty()) {
+                r.authToken = tok;
+            }
+        }
     }
 
     private void restoreSelection() {
@@ -1475,12 +1544,18 @@ public final class ApiClientTopComponent extends TopComponent {
         // the copy's auth secret goes to the keychain under ITS fresh id
         // — deliberately: duplicate-and-tweak expects working auth, and
         // the secrets law is about the FILE, not the keychain. Off the
-        // EDT, keyring calls may block on OS prompts.
-        if (copy.authToken != null && !copy.authToken.isEmpty()) {
-            final String id = copy.id;
-            final String token = copy.authToken;
-            RP.post(() -> org.nmox.studio.apiclient.api.ApiSecrets.save(id, token));
-        }
+        // EDT, keyring calls may block on OS prompts. v1.201.0: the
+        // SOURCE may not be hydrated yet — load it here, in the same
+        // task, so the copy carries the real token.
+        final Request source = r;
+        RP.post(() -> {
+            hydrateAuthNow(source);
+            if (source.authToken != null && !source.authToken.isEmpty()) {
+                copy.authToken = source.authToken;
+                org.nmox.studio.apiclient.api.ApiSecrets.save(copy.id, copy.authToken);
+                hydratedAuth.add(copy.id);
+            }
+        });
         rebuildTree();
         current = copy;
         restoreSelection();
@@ -1668,6 +1743,8 @@ public final class ApiClientTopComponent extends TopComponent {
         // still be armed with the PREVIOUS project's response body while
         // the user works in a new one. Clear it with the workspace.
         clearResponse();
+        // hydration state belongs to the workspace whose ids it names
+        hydratedAuth.clear();
         selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
         refreshHistory();
         DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
@@ -1706,9 +1783,13 @@ public final class ApiClientTopComponent extends TopComponent {
                 if (r.authToken != null && !r.authToken.isEmpty()) {
                     org.nmox.studio.apiclient.api.ApiSecrets.save(r.id, r.authToken);
                     migrated = true; // legacy plaintext just moved to the keychain
-                } else {
-                    r.authToken = org.nmox.studio.apiclient.api.ApiSecrets.read(r.id);
+                    // the in-memory value IS the truth now — no read needed
+                    hydratedAuth.add(r.id);
                 }
+                // v1.201.0: everyone else hydrates LAZILY on first
+                // display/use — the old bulk read here consulted every
+                // keychain entry at tab open, firing a macOS password
+                // prompt at startup after any binary change (upgrades)
             }
             final boolean rewrite = migrated;
             SwingUtilities.invokeLater(() -> {
@@ -1749,7 +1830,14 @@ public final class ApiClientTopComponent extends TopComponent {
         java.util.List<String[]> secrets = new java.util.ArrayList<>();
         for (var c : workspace.collections) {
             for (Request r : c.requests) {
-                secrets.add(new String[]{r.id, r.authToken == null ? "" : r.authToken});
+                // only requests whose token this session actually loaded
+                // or edited — pushing a never-hydrated request would
+                // overwrite its keychain entry with "" (v1.201.0: with
+                // lazy hydration, most requests are never consulted)
+                if (hydratedAuth.contains(r.id)
+                        || (r.authToken != null && !r.authToken.isEmpty())) {
+                    secrets.add(new String[]{r.id, r.authToken == null ? "" : r.authToken});
+                }
             }
         }
         SAVES.save(() -> {
