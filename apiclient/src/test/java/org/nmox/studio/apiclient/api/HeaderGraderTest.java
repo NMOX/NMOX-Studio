@@ -102,4 +102,54 @@ class HeaderGraderTest {
                 .filteredOn(c -> c.standard().equals("Content-Security-Policy"))
                 .allMatch(c -> c.verdict() == HeaderGrader.Verdict.WARN);
     }
+
+    @Test
+    @DisplayName("X-Frame-Options DENY passes the clickjacking check when CSP has no frame-ancestors")
+    void xfoDenyPasses() {
+        var report = HeaderGrader.grade(Map.of(
+                "X-Frame-Options", List.of("DENY")));
+        assertThat(report.checks())
+                .filteredOn(c -> c.standard().contains("Clickjacking"))
+                .allMatch(c -> c.verdict() == HeaderGrader.Verdict.PASS);
+    }
+
+    @Test
+    @DisplayName("Referrer-Policy: unsafe-url is a WARN, not a pass")
+    void unsafeUrlReferrerWarns() {
+        var report = HeaderGrader.grade(Map.of(
+                "Referrer-Policy", List.of("unsafe-url")));
+        assertThat(report.checks())
+                .filteredOn(c -> c.standard().equals("Referrer-Policy"))
+                .allMatch(c -> c.verdict() == HeaderGrader.Verdict.WARN
+                        && c.detail().contains("unsafe-url"));
+    }
+
+    @Test
+    @DisplayName("an unparseable max-age reads as 0 — no credit for a broken HSTS")
+    void unparseableMaxAge() {
+        assertThat(HeaderGrader.maxAge("max-age=banana; includeSubDomains")).isZero();
+        assertThat(HeaderGrader.maxAge("includeSubDomains")).isZero();
+    }
+
+    @Test
+    @DisplayName("the letter scale is deterministic at every threshold")
+    void letterThresholds() {
+        assertThat(HeaderGrader.letter(checks(13))).isEqualTo("A");
+        assertThat(HeaderGrader.letter(checks(11))).isEqualTo("B");
+        assertThat(HeaderGrader.letter(checks(8))).isEqualTo("C");
+        assertThat(HeaderGrader.letter(checks(5))).isEqualTo("D");
+        assertThat(HeaderGrader.letter(checks(4))).isEqualTo("F");
+    }
+
+    /** A check list scoring exactly {@code score} (PASS=2, WARN=1). */
+    private static List<HeaderGrader.Check> checks(int score) {
+        var list = new java.util.ArrayList<HeaderGrader.Check>();
+        for (int i = 0; i < score / 2; i++) {
+            list.add(new HeaderGrader.Check("c" + i, HeaderGrader.Verdict.PASS, ""));
+        }
+        if (score % 2 == 1) {
+            list.add(new HeaderGrader.Check("w", HeaderGrader.Verdict.WARN, ""));
+        }
+        return list;
+    }
 }

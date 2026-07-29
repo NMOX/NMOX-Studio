@@ -97,4 +97,34 @@ class CloudTokensTest {
         CloudTokens.store(key, "tok-after", "test");
         assertThat(CloudTokens.readCached(key, "test")).isEqualTo("tok-after");
     }
+
+    @Test
+    @DisplayName("a null store is a delete, same as blank")
+    void nullStoreDeletes() {
+        CloudTokens.store(key, "tok-to-null", "test");
+        CloudTokens.store(key, null, "test");
+
+        assertThat(CloudTokens.read(key, "test")).isEmpty();
+        assertThat(CloudTokens.readCached(key, "test")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("degrading flips the seam exactly once and warns without throwing (headless)")
+    void degradeFlipsSeamOnceAndStaysQuiet() throws Exception {
+        // degrade() is the seam's own flip switch; it never touches the
+        // keyring itself, so invoking it directly (reflection — it is
+        // deliberately private) exercises the degradation path without
+        // going anywhere near a real keychain backend
+        var degrade = CloudTokens.class.getDeclaredMethod("degrade", Throwable.class);
+        degrade.setAccessible(true);
+
+        CloudTokens.keyringUsable = true; // simulate the first-ever failure
+        degrade.invoke(null, new IllegalStateException("no backend (test)"));
+        assertThat(CloudTokens.keyringUsable)
+                .as("first failure flips the probe off").isFalse();
+
+        degrade.invoke(null, new IllegalStateException("again"));
+        assertThat(CloudTokens.keyringUsable)
+                .as("later failures stay degraded, quietly").isFalse();
+    }
 }

@@ -88,4 +88,27 @@ class PasswordsTest {
         Passwords.delete(null);
         assertThat(Passwords.read(null)).isNull();
     }
+
+    @Test
+    @DisplayName("degrading flips the seam exactly once and warns without throwing (headless)")
+    void degradeFlipsSeamOnceAndStaysQuiet() throws Exception {
+        // degrade() is the seam's own flip switch; it never touches the
+        // keyring itself, so invoking it directly (reflection — it is
+        // deliberately private) exercises the degradation path without
+        // going anywhere near a real keychain backend
+        var degrade = Passwords.class.getDeclaredMethod("degrade", Throwable.class);
+        degrade.setAccessible(true);
+        try {
+            Passwords.keyringUsable = true; // simulate the first-ever failure
+            degrade.invoke(null, new IllegalStateException("no backend (test)"));
+            assertThat(Passwords.keyringUsable)
+                    .as("first failure flips the probe off").isFalse();
+
+            degrade.invoke(null, new IllegalStateException("again"));
+            assertThat(Passwords.keyringUsable)
+                    .as("later failures stay degraded, quietly").isFalse();
+        } finally {
+            Passwords.keyringUsable = false; // the posture every other test forces
+        }
+    }
 }

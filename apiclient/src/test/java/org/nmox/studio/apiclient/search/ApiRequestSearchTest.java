@@ -79,4 +79,42 @@ class ApiRequestSearchTest {
         assertThat(ApiRequestSearchProvider.match(fixture(), "   ")).isEmpty();
         assertThat(ApiRequestSearchProvider.match(null, "get")).isEmpty();
     }
+
+    // ---- the evaluate seam: what Quick Search actually receives ----
+
+    @Test
+    @DisplayName("evaluate labels hits as 'METHOD name — url'")
+    void evaluateLabelsHits() {
+        var labels = new java.util.ArrayList<String>();
+        new ApiRequestSearchProvider().evaluate("invoice", fixture(), (action, label) -> {
+            labels.add(label);
+            return true;
+        });
+
+        assertThat(labels).containsExactly(
+                "GET Fetch invoice  —  https://pay.example.com/invoices/42");
+    }
+
+    @Test
+    @DisplayName("evaluate stops when the response refuses more results")
+    void evaluateHonorsStop() {
+        var labels = new java.util.ArrayList<String>();
+        new ApiRequestSearchProvider().evaluate("users", fixture(), (action, label) -> {
+            labels.add(label);
+            return false; // the platform saying "list is full"
+        });
+
+        assertThat(labels).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("evaluate is quiet on blank text or a missing workspace")
+    void evaluateDegenerate() {
+        var labels = new java.util.ArrayList<String>();
+        ApiRequestSearchProvider provider = new ApiRequestSearchProvider();
+        provider.evaluate("  ", fixture(), (a, l) -> labels.add(l));
+        provider.evaluate("users", null, (a, l) -> labels.add(l));
+
+        assertThat(labels).isEmpty();
+    }
 }

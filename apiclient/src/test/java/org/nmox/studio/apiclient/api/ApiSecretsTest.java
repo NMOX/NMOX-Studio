@@ -56,4 +56,35 @@ class ApiSecretsTest {
         ApiSecrets.delete("req-1");
         assertThat(ApiSecrets.read("req-1")).isEmpty();
     }
+
+    @Test
+    @DisplayName("null request ids are ignored everywhere, never a crash")
+    void nullIdsSafe() {
+        ApiSecrets.save(null, "tok");
+        ApiSecrets.delete(null);
+        assertThat(ApiSecrets.read(null)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("degrading flips the seam exactly once and warns without throwing (headless)")
+    void degradeFlipsSeamOnceAndStaysQuiet() throws Exception {
+        // degrade() is the seam's own flip switch; it never touches the
+        // keyring itself, so invoking it directly (reflection — it is
+        // deliberately private) exercises the degradation path without
+        // going anywhere near a real keychain backend
+        var degrade = ApiSecrets.class.getDeclaredMethod("degrade", Throwable.class);
+        degrade.setAccessible(true);
+        try {
+            ApiSecrets.keyringUsable = true; // simulate the first-ever failure
+            degrade.invoke(null, new IllegalStateException("no backend (test)"));
+            assertThat(ApiSecrets.keyringUsable)
+                    .as("first failure flips the probe off").isFalse();
+
+            degrade.invoke(null, new IllegalStateException("again"));
+            assertThat(ApiSecrets.keyringUsable)
+                    .as("later failures stay degraded, quietly").isFalse();
+        } finally {
+            ApiSecrets.keyringUsable = false; // the posture every other test forces
+        }
+    }
 }

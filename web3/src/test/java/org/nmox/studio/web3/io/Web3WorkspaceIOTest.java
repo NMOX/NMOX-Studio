@@ -232,4 +232,67 @@ class Web3WorkspaceIOTest {
         assertThat(Web3WorkspaceIO.fromJson(json))
                 .isEqualTo(Web3WorkspaceIO.Workspace.empty());
     }
+
+    @Test
+    @DisplayName("an unreadable workspace file loads as empty — the studio opens either way")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void unreadableFileLoadsEmpty(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.io.File file = new java.io.File(dir, Web3WorkspaceIO.FILENAME);
+        java.nio.file.Files.writeString(file.toPath(), "{\"version\": 1}");
+        // strip every permission so the read itself (not the parse) fails
+        java.nio.file.Files.setPosixFilePermissions(file.toPath(), java.util.Set.of());
+        try {
+            assertThat(Web3WorkspaceIO.load(dir))
+                    .isEqualTo(Web3WorkspaceIO.Workspace.empty());
+            Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+            assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+            assertThat(outcome.backup()).isNull();
+        } finally {
+            java.nio.file.Files.setPosixFilePermissions(file.toPath(),
+                    java.nio.file.attribute.PosixFilePermissions.fromString("rw-------"));
+        }
+    }
+
+    @Test
+    @DisplayName("a blank workspace file is nothing-to-lose: empty, no .bak")
+    void blankFileLoadsEmpty(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.nio.file.Files.writeString(
+                new java.io.File(dir, Web3WorkspaceIO.FILENAME).toPath(), "   \n");
+
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+        assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+        assertThat(outcome.backup()).isNull();
+    }
+
+    @Test
+    @DisplayName("when even the corrupt-file backup fails, the load still degrades gracefully")
+    void unbackupableCorruptFile(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.nio.file.Files.writeString(
+                new java.io.File(dir, Web3WorkspaceIO.FILENAME).toPath(), "{not json");
+        // a NON-EMPTY directory squatting on the .bak name makes the backup
+        // copy fail (an empty one would be silently replaced)
+        java.io.File bakDir = new java.io.File(dir, Web3WorkspaceIO.FILENAME + ".bak");
+        assertThat(bakDir.mkdir()).isTrue();
+        java.nio.file.Files.writeString(new java.io.File(bakDir, "occupant").toPath(), "x");
+
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+        assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+        assertThat(outcome.backup())
+                .as("no backup could be made, and the outcome says so").isNull();
+    }
+
+    @Test
+    @DisplayName("non-object entries inside the arrays are skipped, not fatal")
+    void nonObjectEntriesSkipped() {
+        Web3WorkspaceIO.Workspace loaded = Web3WorkspaceIO.fromJson("""
+                {"version": 1,
+                 "networks": ["stray", {"name": "Good", "chainId": 5}],
+                 "deployments": [42, {"address": "0xgood", "contractName": "Kept"}]}""");
+        assertThat(loaded.networks()).extracting(Network::name).containsExactly("Good");
+        assertThat(loaded.deployments()).extracting(DeploymentRecord::contractName)
+                .containsExactly("Kept");
+    }
 }

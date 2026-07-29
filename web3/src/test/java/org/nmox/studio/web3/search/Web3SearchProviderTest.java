@@ -74,4 +74,48 @@ class Web3SearchProviderTest {
         assertThat(Web3SearchProvider.currentIndex()).isNotNull();
         assertThat(Web3SearchProvider.currentIndex().matches("")).isEmpty();
     }
+
+    // ---- the evaluate seam: what Quick Search actually receives ----
+
+    @Test
+    @DisplayName("evaluate hands each hit's label to the response, in index order")
+    void evaluateListsHits() {
+        Web3SearchProvider.publish(List.of(COUNTER), List.of(DEPLOYED));
+
+        var labels = new java.util.ArrayList<String>();
+        new Web3SearchProvider().evaluate("counter", (action, label) -> {
+            labels.add(label);
+            return true;
+        });
+
+        assertThat(labels).isNotEmpty();
+        assertThat(labels).anySatisfy(l -> assertThat(l).contains("Counter"));
+    }
+
+    @Test
+    @DisplayName("evaluate stops when the response refuses more results")
+    void evaluateHonorsStop() {
+        Web3SearchProvider.publish(List.of(COUNTER), List.of(DEPLOYED));
+
+        var labels = new java.util.ArrayList<String>();
+        new Web3SearchProvider().evaluate("counter", (action, label) -> {
+            labels.add(label);
+            return false; // the platform saying "list is full"
+        });
+
+        assertThat(labels).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a blank or null query is quiet — no disk read, no hits")
+    void evaluateBlankIsQuiet() {
+        Web3SearchProvider.publish(List.of(COUNTER), List.of());
+
+        var labels = new java.util.ArrayList<String>();
+        Web3SearchProvider provider = new Web3SearchProvider();
+        provider.evaluate("  ", (a, l) -> labels.add(l));
+        provider.evaluate(null, (a, l) -> labels.add(l));
+
+        assertThat(labels).isEmpty();
+    }
 }

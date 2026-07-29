@@ -299,6 +299,15 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
     }
 
+    /**
+     * The per-device mouse handler behind selection, drag-reorder, and
+     * rear-view cable patching. One instance is installed on each racked
+     * device by this panel; because devices are shared Swing components
+     * that can outlive a panel, the handler carries its {@link #owner()}
+     * so install/uninstall stay identity-aware (the v1.108.0 review: a
+     * bare {@code instanceof} guard matched a DIFFERENT panel's handler,
+     * leaking the old panel and leaving the new one unwired).
+     */
     private final class DeviceMouse extends MouseAdapter {
 
         private final RackDevice device;
@@ -750,6 +759,14 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
     // ---- palette drop ----
 
+    /**
+     * The Swing {@link TransferHandler} that accepts drags from the
+     * device palette: while a drag hovers, it lights the rack slot the
+     * device would land in; on drop it asks {@code DeviceCatalog} to
+     * build the device and mounts it at that slot. This is how new
+     * devices enter the rack — the palette only ever hands over a
+     * type-id string, never a live component.
+     */
     private final class PaletteDropHandler extends TransferHandler {
 
         @Override

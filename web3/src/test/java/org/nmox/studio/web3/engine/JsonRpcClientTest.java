@@ -342,4 +342,52 @@ class JsonRpcClientTest {
         assertThat(transport.requests.get(0).getLong("id"))
                 .isLessThan(transport.requests.get(1).getLong("id"));
     }
+
+    @Test
+    @DisplayName("a response with neither result nor error is called out, redacted")
+    void resultlessResponse() {
+        JsonRpcClient client = new JsonRpcClient(URL,
+                new CannedTransport("{\"jsonrpc\":\"2.0\",\"id\":1}"));
+        assertThatThrownBy(client::blockNumber)
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("answered without a result")
+                .satisfies(e -> assertThat(e.getMessage()).doesNotContain("TOPSECRETKEY"));
+    }
+
+    @Test
+    @DisplayName("an RPC error without data still carries an empty data(), never null")
+    void rpcErrorWithoutData() {
+        JsonRpcClient client = new JsonRpcClient(URL, new CannedTransport(
+                "{\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":-32000,"
+                + "\"message\":\"boom\"}}"));
+        assertThatThrownBy(client::blockNumber)
+                .isInstanceOf(JsonRpcClient.RpcException.class)
+                .satisfies(e -> {
+                    assertThat(((JsonRpcClient.RpcException) e).code()).isEqualTo(-32000);
+                    assertThat(((JsonRpcClient.RpcException) e).data()).isEmpty();
+                });
+    }
+
+    @Test
+    @DisplayName("a receipt without logs and a log list with stray entries both parse")
+    void tolerantLogParsing() throws IOException {
+        JsonRpcClient client = new JsonRpcClient(URL, new CannedTransport(
+                result("{\"transactionHash\":\"0xt\",\"status\":\"0x1\"}"),
+                result("[\"stray\", {\"address\":\"0xa\",\"topics\":[],\"data\":\"0x\"}]")));
+
+        JsonRpcClient.Receipt receipt = client.getTransactionReceipt("0xt");
+        assertThat(receipt.logs()).isEmpty();
+
+        List<JsonRpcClient.LogEntry> logs = client.getLogs("0xa", "1", "2");
+        assertThat(logs).hasSize(1);
+        assertThat(logs.get(0).address()).isEqualTo("0xa");
+    }
+
+    @Test
+    @DisplayName("loopback detection: 127.0.0.1 and localhost are frictionless, the internet is not")
+    void loopbackDetection() {
+        assertThat(new JsonRpcClient("http://127.0.0.1:8545").isLoopbackEndpoint()).isTrue();
+        assertThat(new JsonRpcClient("http://localhost:8545").isLoopbackEndpoint()).isTrue();
+        assertThat(new JsonRpcClient(URL).isLoopbackEndpoint()).isFalse();
+    }
 }

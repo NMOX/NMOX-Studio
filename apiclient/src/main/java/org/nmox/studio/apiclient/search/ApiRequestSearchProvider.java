@@ -24,10 +24,9 @@ public class ApiRequestSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        String needle = request.getText() == null ? ""
-                : request.getText().toLowerCase(Locale.ROOT);
-        if (needle.isBlank()) {
-            return;
+        String text = request.getText();
+        if (text == null || text.isBlank()) {
+            return; // nothing typed: don't even read the workspace file
         }
         Workspace ws;
         try {
@@ -35,7 +34,19 @@ public class ApiRequestSearchProvider implements SearchProvider {
         } catch (Exception ex) {
             return;
         }
-        if (ws == null) {
+        evaluate(text, ws, (action, label) -> response.addResult(action, label));
+    }
+
+    /**
+     * The search behavior, seamed off the platform types: the quicksearch
+     * SPI's {@code SearchRequest}/{@code SearchResponse} are constructible
+     * only inside the platform module, so tests drive this package-private
+     * form with a plain sink (returning false = stop, the SPI contract).
+     */
+    void evaluate(String text, Workspace ws,
+            java.util.function.BiPredicate<Runnable, String> addResult) {
+        String needle = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        if (needle.isBlank() || ws == null) {
             return;
         }
         for (Collection c : ws.collections) {
@@ -45,9 +56,7 @@ public class ApiRequestSearchProvider implements SearchProvider {
                 }
                 String collectionName = c.name;
                 String requestName = r.name;
-                boolean more = response.addResult(() -> open(collectionName, requestName),
-                        label(r));
-                if (!more) {
+                if (!addResult.test(() -> open(collectionName, requestName), label(r))) {
                     return;
                 }
             }

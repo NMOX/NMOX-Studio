@@ -66,6 +66,17 @@ final class CloudTokens {
     }
 
     /**
+     * Test seam: forget one key's session state (cache + degraded store)
+     * WITHOUT the legacy-pref removal a real delete performs — tests that
+     * primed a degraded token for a real provider key must be able to
+     * clean up without touching a genuine install's preferences.
+     */
+    static void forgetForTest(String prefKey) {
+        CACHE.remove(prefKey);
+        MEMORY.remove(KEY_PREFIX + prefKey);
+    }
+
+    /**
      * {@link #read} through the session cache: the keychain is asked
      * once per key per session; stores refresh the cache in place.
      */
