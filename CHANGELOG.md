@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.200.0] - 2026-07-29
+
+### The arc review — two lenses over v1.194–v1.199, three finds, rest CLEAN
+
+- **Deleted requests no longer orphan their keychain secrets** (the
+  secrets-lifecycle lens): deleting a request — or a whole collection —
+  removed the ids from `.nmoxapi.json` forever but left every auth
+  token in the OS keychain, unreadable and immortal. `deleteSelected`
+  now forgets each deleted request's secret via `ApiSecrets.delete`,
+  off the EDT (keyring calls may block on OS prompts), covering both
+  the single-request and whole-collection branches — the DB Studio
+  remove-connection parity. Source-gated + mutation-proven.
+- **The find bar can no longer claim matches in a vanished response**
+  (the stale-state lens): the v1.198.0 refind sites covered the send
+  paths, but `clearResponse()` — the re-aim path — wiped the body and
+  left the old match count up, an echo of the v1.172.0 class in
+  cosmetic form. The clearing path now refinds too. Mutation-proven.
+- **The embedded-browser facade honors the never-a-dead-click law in
+  its asynchronous half**: `open()` answers true before the EDT window
+  lookup runs; if the window registration ever drifted, the URL would
+  have vanished silently. A lookup miss now falls back to the system
+  browser through a testable seam — proven behaviorally (headless
+  tests have no registered browser window, which IS the drifted
+  state). Mutation-proven.
+- Verified CLEAN across the arc: Prettier-on-demand rides the same
+  trust-gated binary resolution as on-save (the v1.102.0 RCE class
+  guarded); Duplicate saves the copy's secret under its fresh id with
+  tokens hydrated off-EDT at load; the History panel re-renders per
+  workspace on re-aim (`applyWorkspace` → `refreshHistory` beside the
+  v1.175.0 `clearResponse`); SCOPE's TARGET knob falls through to the
+  system browser with the SENT LED honest in both paths; the Gatekeeper
+  cask postflight says what it does at every install.
+- Blessed in writing: duplicating a request in the instant before the
+  off-EDT keychain reconciliation finishes can copy an empty token —
+  a sub-second window on first load, self-healing on next open, not
+  worth a synchronization edge on the EDT.
+
 ## [1.199.0] - 2026-07-29
 
 ### The in-app web browser — real WebKit, ⌥⌘4
@@ -6962,6 +6999,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.200.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.199.0...v1.200.0
 [1.199.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.1...v1.199.0
 [1.198.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.0...v1.198.1
 [1.198.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.197.0...v1.198.0
