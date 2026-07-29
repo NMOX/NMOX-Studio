@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.200.1] - 2026-07-29
+
+### Nim highlights again — a mangled vendored grammar was killing every grammar that included it
+
+- **David's live find**: `.nim` files rendered as plain text in 1.200.0.
+  The regression came in v1.195.1: the newly vendored
+  `xml.tmLanguage.json` (the `text.xml` embed scope) carries an
+  upstream brace bug — the JSP-comment rule's `end` and `name` sit
+  INSIDE its `captures` map. vscode-textmate shrugs that off; TM4E
+  throws `ClassCastException` in `RawCaptures.getCapture`, corrupts the
+  rule table ("No rule with index 1 found"), and kills tokenization for
+  EVERY grammar whose include graph touches the file — the Nim grammar
+  includes `text.xml` for doc blocks, so vendoring the xml grammar
+  un-highlighted Nim two releases later. The rule is restructured
+  (`end`/`name` back beside `begin`), and the log's exception chain was
+  the diagnosis: registrations were all byte-present, the engine died
+  at tokenize time.
+- **Racket carried 20 sibling quirks** — shorthand string captures
+  (`"0": "scope"`) and single-element list captures — the same TM4E
+  crash class on paths Racket's own repository exercises. All
+  normalized to rule objects.
+- **NEW `GrammarCapturesShapeTest`**: every vendored grammar's
+  capture values must be rule objects TM4E can compile — proven
+  failing-first against the un-fixed xml grammar, naming the exact
+  JSON path. A vendor drop now fails the build, not a user's editor.
+  NOTICE records both patches with upstream provenance shas.
+- Lesson recorded: *vscode-textmate tolerance is not TM4E tolerance —
+  a vendored grammar can break languages it never names, through the
+  include graph; the log's tokenizer exceptions, not the registration
+  bytes, are where highlighting bugs live.*
+
 ## [1.200.0] - 2026-07-29
 
 ### The arc review — two lenses over v1.194–v1.199, three finds, rest CLEAN
@@ -6999,6 +7030,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.200.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.0...v1.200.1
 [1.200.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.199.0...v1.200.0
 [1.199.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.1...v1.199.0
 [1.198.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.0...v1.198.1
