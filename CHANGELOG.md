@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.203.0] - 2026-07-29
+
+### Coverage-and-comments tranche 2 — the rack and every studio, floors ratcheted across the board
+
+- **The coverage arc closes its second tranche** (seven modules):
+  rack **72.3% -> 78.0%** (+785 lines: PREFLIGHT's full per-kind plan
+  table, CRATE/IGNITION/VERITAS/FORGE/INSPECTOR verb matrices across
+  all ~39 toolchain positions, PING live against an in-JVM HTTP
+  fixture, the six web consoles' serve/stop/enable jacks, TAIL
+  rotation, DB-9000's verb table, TYPEGUARD's three parsers, ORACLE's
+  cable path through a spy transport, kind/code-scoped consent);
+  apiclient **86.6 -> 93.8**; dbstudio **88.3 -> 92.3**;
+  web3 **90.2 -> 95.8**; infra **76.4 -> 86.6**; core **82.1 -> 95.0**;
+  project **76.5 -> 87.1**. With tranche 1 (editor 68.8, tools 78.3,
+  ui 20.5) the testable-surface total moved **72.1% -> ~83%** in one
+  day, every line of it behavior tests — verb tables, codec fixtures,
+  secrets-fallback paths, live fixture servers — never assertion
+  padding.
+- **Seven floors ratcheted** to measured-minus-margin: rack .70->.75,
+  apiclient .83->.90, core .80->.88 (extra margin: Windows skips five
+  POSIX-only core tests — the v1.199.0 lane incident), dbstudio
+  .86->.89, infra .74->.83, project .74->.83, web3 .88->.93. All ten
+  modules now hold their new water line in CI.
+- **The comments arc completes its class sweep**: the rack's three
+  substantial nested classes (RackPanel.DeviceMouse — the v1.108.0
+  identity-aware handler story, RackPanel.PaletteDropHandler,
+  BlockCanvas.Host) and the studios' last bare classes now carry
+  beginner-oriented javadoc; with tranche 1's 23 and the codebase
+  guide, every top-level class in the product explains itself.
+- Honestly skipped, with reasons recorded: Graphics2D painting, modal
+  dialog/timeline surfaces, status-line widgets wired to platform
+  actions, and paths that would spawn real chains or the Docker
+  daemon — the excluded-by-reason surface the coverage numbers
+  deliberately do not count.
+
 ## [1.202.0] - 2026-07-29
 
 ### Coverage-and-comments tranche 1 — editor/ui/tools tested deeper, every class documented, and a beginner's guide (David-directed)
@@ -7112,6 +7147,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.203.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.202.0...v1.203.0
 [1.202.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.201.0...v1.202.0
 [1.201.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.1...v1.201.0
 [1.200.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.0...v1.200.1
