@@ -103,6 +103,60 @@ class WebProjectTest {
     }
 
     @Test
+    @DisplayName("A second display-name read within the same mtime hits the cache, not the disk")
+    void displayNameIsCachedByMtime(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"cached-app\"}");
+        ProjectInformation info = projectFor(dir).getLookup().lookup(ProjectInformation.class);
+
+        assertThat(info.getDisplayName()).isEqualTo("cached-app");
+        // same stamp → the cached value answers (the EDT-paint path)
+        assertThat(info.getDisplayName()).isEqualTo("cached-app");
+    }
+
+    @Test
+    @DisplayName("A malformed package.json falls back to the directory name instead of breaking the tree label")
+    void displayNameSurvivesMalformedManifest(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{\"name\": oops not json");
+        ProjectInformation info = projectFor(dir).getLookup().lookup(ProjectInformation.class);
+
+        assertThat(info.getDisplayName()).isEqualTo(dir.toFile().getName());
+    }
+
+    @Test
+    @DisplayName("Project information carries the web icon and tolerates listener registration")
+    void infoIconAndListenersAreSafe(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{}");
+        ProjectInformation info = projectFor(dir).getLookup().lookup(ProjectInformation.class);
+
+        assertThat(info.getIcon()).as("the bundled web-project icon resolves").isNotNull();
+        // the info is immutable, so listeners are accepted and ignored
+        java.beans.PropertyChangeListener listener = evt -> {
+        };
+        info.addPropertyChangeListener(listener);
+        info.removePropertyChangeListener(listener);
+    }
+
+    @Test
+    @DisplayName("The logical view is the project folder's node wearing the project's name and icon")
+    void logicalViewWrapsTheFolderNode(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"viewed\"}");
+        WebProject project = projectFor(dir);
+        org.netbeans.spi.project.ui.LogicalViewProvider view =
+                project.getLookup().lookup(org.netbeans.spi.project.ui.LogicalViewProvider.class);
+        assertThat(view).isNotNull();
+
+        org.openide.nodes.Node root = view.createLogicalView();
+        assertThat(root.getDisplayName()).isEqualTo(project.getName());
+        assertThat(root.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16)).isNotNull();
+        assertThat(root.getOpenedIcon(java.beans.BeanInfo.ICON_COLOR_16x16)).isNotNull();
+        // the wrapped node's Lookup surfaces the project itself
+        assertThat(root.getLookup().lookup(org.netbeans.api.project.Project.class))
+                .isSameAs(project);
+        // findPath is honestly unimplemented
+        assertThat(view.findPath(root, project)).isNull();
+    }
+
+    @Test
     @DisplayName("The Lookup wires up the action provider and the recommended-template scoping")
     void lookupCarriesPlatformCollaborators(@TempDir Path dir) throws IOException {
         Files.writeString(dir.resolve("package.json"), "{\"scripts\":{\"build\":\"x\"}}");

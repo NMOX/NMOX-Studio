@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.202.0] - 2026-07-29
+
+### Coverage-and-comments tranche 1 — editor/ui/tools tested deeper, every class documented, and a beginner's guide (David-directed)
+
+- **The coverage arc opens** (the honest reading of "100% test
+  coverage": drive the TESTABLE surface toward full, keep pure-Swing
+  paint/layout excluded with named reasons — the v1.27.0 law).
+  Tranche 1 takes the three weakest modules:
+  - **editor 60.2% → 68.8%** (+363 lines): `OutlineModel` from 148
+    missed lines to 4 (mime-routing table + eight extractor families
+    + stray-brace clamping + truncation edges), all three completion
+    queries driven end-to-end against real documents (keyword/global/
+    snippet/identifier-harvest mixes, member mode, HTML void-element
+    law, CSS property/value/selector), `JavaScriptLexer` edge tests
+    (regex backout, template shapes, ERROR recovery),
+    `ConfigFileResolver` full name table, `RackSquiggler.describe`.
+  - **tools 65.0% → 78.3%**: the wizard panel headless against a real
+    `WizardDescriptor` (round trip, validation refusals), `WebProject`
+    display-name cache + logical view, action-provider no-op-before-
+    trust-gate law, factory mint/refuse, npm global-list parsing.
+  - **ui 15.3% → 20.5%** (mostly Swing by construction): Image Kit
+    quality/downscale maps + report lines, Contract Kit report
+    rendering, `UpdateCheck`'s four run-decision gates (shots-forge
+    silence, opt-out, daily throttle, dev-build never schedules).
+  - Five tiny test seams (visibility widenings only, the v1.102.0
+    `clearForTest` precedent), zero semantic changes to main code —
+    verified by diff audit. **Floors ratcheted**: editor .58→.66,
+    tools .62→.74, ui .13→.18; a test-shedding regression now fails
+    the build at the new water line.
+- **The comments arc opens**: 23 classes that lacked any class-level
+  javadoc now explain what they are and WHICH platform mechanism
+  carries them (`@MimeRegistration` lazy lookup, DataObject loader
+  contracts, `CompletionItem`'s performs-its-own-edit contract,
+  Lookup/`@ServiceProvider`, RequestProcessor-vs-EDT) — the editor
+  completion family, the tools project/wizard family, and the ui
+  action trio.
+- **NEW [docs/engineering/codebase-guide.md](docs/engineering/codebase-guide.md)**:
+  a beginner's walk through the codebase — the five RCP ideas
+  everything rides on (layer registrations, Lookup, TopComponents,
+  DataObjects/MIME, the EDT law), four real flows traced file-by-file
+  (boot, opening `hello.nim`, pressing GO on a device, sending an API
+  request), and the nine house laws with the incidents that earned
+  them. Linked from CLAUDE.md.
+- Honestly skipped, with reasons in the agents' reports: DAP/browser
+  debug action wiring (integration-tested at the core instead),
+  DocsShots' paint loop, modal dialog flows, process-spawn halves —
+  GUI- or environment-bound lines where a unit test would assert
+  nothing real.
+
 ## [1.201.0] - 2026-07-29
 
 ### Keychain prompts only when you use the secret — lazy token hydration (David-approved)
@@ -7063,6 +7112,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.202.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.201.0...v1.202.0
 [1.201.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.1...v1.201.0
 [1.200.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.0...v1.200.1
 [1.200.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.199.0...v1.200.0

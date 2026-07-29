@@ -10,6 +10,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the CSS completion popup offering a property name. A
+ * {@link CompletionItem} is the platform's contract for a popup entry:
+ * it paints itself in the list and, on Enter, performs its own edit —
+ * here {@code defaultAction} replaces the typed prefix with
+ * "{@code property: }" and parks the caret after the colon, ready for
+ * the value. Plain data plus one edit; never constructed at boot, only
+ * per query by {@link CssCompletionProvider}.
+ */
 public class CssPropertyCompletionItem implements CompletionItem {
     
     private final String property;

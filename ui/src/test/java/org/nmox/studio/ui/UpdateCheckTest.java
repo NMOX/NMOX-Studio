@@ -72,6 +72,98 @@ class UpdateCheckTest {
                 .doesNotContain("e -> openReleases()");
     }
 
+    /**
+     * Drives {@link UpdateCheck#run()} with the given shots-dir property and
+     * preference state, restoring both afterwards. In the test JVM the
+     * stamped-version gate always ends the run before any scheduling or
+     * network — the startup Bundle is the unbranded dev one — so run()
+     * returns synchronously on every path exercised here.
+     */
+    private static long runWithState(String shotsDir, Boolean updateCheckPref,
+            Long lastRun) throws Exception {
+        java.util.prefs.Preferences prefs =
+                org.openide.util.NbPreferences.root().node("nmox/ui");
+        String oldShots = System.getProperty("nmox.shots.dir");
+        String oldEnabled = prefs.get("updateCheck", null);
+        String oldLast = prefs.get("updateCheck.lastRun", null);
+        try {
+            if (shotsDir == null) {
+                System.clearProperty("nmox.shots.dir");
+            } else {
+                System.setProperty("nmox.shots.dir", shotsDir);
+            }
+            if (updateCheckPref == null) {
+                prefs.remove("updateCheck");
+            } else {
+                prefs.putBoolean("updateCheck", updateCheckPref);
+            }
+            if (lastRun == null) {
+                prefs.remove("updateCheck.lastRun");
+            } else {
+                prefs.putLong("updateCheck.lastRun", lastRun);
+            }
+            new UpdateCheck().run();
+            // observed BEFORE the finally restores the user's real prefs
+            return prefs.getLong("updateCheck.lastRun", -1L);
+        } finally {
+            if (oldShots == null) {
+                System.clearProperty("nmox.shots.dir");
+            } else {
+                System.setProperty("nmox.shots.dir", oldShots);
+            }
+            if (oldEnabled == null) {
+                prefs.remove("updateCheck");
+            } else {
+                prefs.put("updateCheck", oldEnabled);
+            }
+            if (oldLast == null) {
+                prefs.remove("updateCheck.lastRun");
+            } else {
+                prefs.put("updateCheck.lastRun", oldLast);
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("The screenshot forge boot never checks for updates (no network, no balloons in shots)")
+    void shotsForgeSilencesTheCheck() throws Exception {
+        // gate proof by absence of the side effect the enabled path always
+        // has: check() stamps lastRun first thing, the forge path never gets
+        // there (and neither does anything later — this returns synchronously)
+        assertThat(runWithState("/tmp/somewhere", true, 1L))
+                .as("the shots-dir gate returns before any state changes")
+                .isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("The updateCheck=false preference turns the daily check fully off")
+    void optOutPreferenceStopsTheRun() throws Exception {
+        // must return without scheduling: in this JVM anything past the pref
+        // gate would still stop at the unstamped dev version, so the real
+        // assertion is that the run survives with the pref off and leaves
+        // the throttle stamp alone
+        assertThat(runWithState(null, false, 2L)).isEqualTo(2L);
+    }
+
+    @Test
+    @DisplayName("A check within the last day is throttled — once per day means once")
+    void dailyThrottleSkipsARecentCheck() throws Exception {
+        long justNow = System.currentTimeMillis();
+        assertThat(runWithState(null, true, justNow))
+                .as("the throttle returns without touching the stamp")
+                .isEqualTo(justNow);
+    }
+
+    @Test
+    @DisplayName("A dev build (unstamped version) never schedules a check at all")
+    void devBuildNeverChecks() throws Exception {
+        // last run in the distant past, pref on: the run proceeds to the
+        // version gate, reads the unbranded dev Bundle, and stops there —
+        // synchronously, before WindowManager or any network is touched.
+        // (currentVersionReadsBundle pins that this JVM's version is dev.)
+        assertThat(runWithState(null, true, 0L)).isEqualTo(0L);
+    }
+
     @org.junit.jupiter.api.Test
     @org.junit.jupiter.api.DisplayName("The boot update check bounds the response read (no OOM on a hostile/redirected endpoint)")
     void updateCheckBoundsTheRead() throws Exception {

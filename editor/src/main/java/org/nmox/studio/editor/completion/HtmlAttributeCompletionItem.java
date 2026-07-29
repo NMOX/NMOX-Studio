@@ -10,6 +10,14 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the HTML completion popup offering an attribute name inside
+ * a tag. Per the platform's {@link CompletionItem} contract the item
+ * performs its own edit on accept: {@code defaultAction} inserts
+ * {@code name=""} and parks the caret between the quotes, so the value
+ * (and its own completion popup) comes next. Constructed per query by
+ * {@link HtmlCompletionProvider} from its per-tag attribute tables.
+ */
 public class HtmlAttributeCompletionItem implements CompletionItem {
     
     private final String attributeName;

@@ -385,8 +385,9 @@ public class PolyglotCompletionProvider implements CompletionProvider {
         return 0; // explicit Ctrl+Space only; auto-popup stays a JS/TS feature
     }
 
-    /** Runs off the EDT: AsyncCompletionTask posts the query to a worker. */
-    private static final class Query extends AsyncCompletionQuery {
+    /** Runs off the EDT: AsyncCompletionTask posts the query to a worker.
+     * Package-private (not private) so tests can drive query() directly. */
+    static final class Query extends AsyncCompletionQuery {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {

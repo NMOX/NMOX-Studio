@@ -20,6 +20,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
+/**
+ * The engine behind File ▸ New Project ▸ Web: three {@code
+ * @TemplateRegistration}s (React, Vue, Vanilla) all funnel into this one
+ * iterator, which shows the single {@link WebProjectWizardPanel} step
+ * and, on Finish, writes the chosen template's files with the project
+ * name interpolated ({@code ${projectName}} in the bundled resources).
+ * It is the <em>Asynchronous</em> flavor on purpose: the platform calls
+ * {@code instantiate()} off the EDT with wizard progress showing, so
+ * scaffolding never blocks the paint thread (ledger 62). The returned
+ * FileObject set is what the platform opens as the new project.
+ */
 @TemplateRegistrations({
     @TemplateRegistration(
             folder = "Project/Web",

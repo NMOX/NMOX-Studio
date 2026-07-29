@@ -1,0 +1,258 @@
+# A Beginner's Guide to the NMOX Studio Codebase
+
+This guide is for someone who knows some Java but has never seen a
+NetBeans Rich Client Platform (RCP) application. It explains the ideas
+the whole codebase leans on, then traces four real user actions through
+the actual files, so you can follow any flow in the product the same
+way.
+
+Companion documents: [CLAUDE.md](../../CLAUDE.md) (module table, build
+commands, how-to-add recipes), [plan.md](plan.md) (current state and
+house laws), [devices.md](../devices.md) (the rack device reference).
+
+---
+
+## 1. The 30-second map
+
+NMOX Studio is a **NetBeans Platform application**: we did not write a
+window system, an editor framework, or a plugin loader — the platform
+ships those, and our eleven Maven modules plug features into them.
+
+| Module | What it owns |
+|---|---|
+| `core` | Shared plumbing every module uses: process spawning (`ProcessSupport`), tool discovery (`ToolLocator`), atomic file writes (`AtomicFiles`), capped HTTP reads (`HttpBodies`), and the **SPI seams** other modules discover at runtime (`core.spi.*`) |
+| `editor` | Everything about editing text: 78 TextMate grammars, lexers, completion, the Navigator outline, LSP clients, the JS/TS debugger |
+| `tools` | Project recognition (58 manifest types) and the NPM explorer |
+| `rack` | The signature UI: a synth-style rack of 53 "devices" that run real dev tools, wired with patch cables |
+| `apiclient` / `dbstudio` / `web3` / `infra` | The studios: Postman-style API client, database suite, smart-contract suite, cloud-infra designer |
+| `project` / `ui` | Project Explorer/Workbench windows; the Welcome launchpad, wizards ("Kits"), Options panels, update checking |
+| `branding` / `application` | Icons/splash/name; the final assembly that packages everything into one installable app |
+
+## 2. The five RCP ideas everything rides on
+
+### 2.1 Modules and the layer (how features get registered)
+
+The platform boots by reading **registration metadata**, not by our
+code calling `new`. Each module contributes entries to a virtual
+filesystem called the *system filesystem* (the "layer"). An entry can
+say "there is a menu item here", "this class handles `.nim` files",
+"this window opens with ⌥⌘4".
+
+You will see two ways of writing registrations:
+
+- **Annotations** (the common way). For example
+  [NimGrammar.java](../../editor/src/main/java/org/nmox/studio/editor/grammars/NimGrammar.java)
+  carries `@MIMEResolver.ExtensionRegistration(extension = {"nim", …})`.
+  At **compile time** an annotation processor turns that into XML in
+  `META-INF/generated-layer.xml` inside the module's jar. The app never
+  reflects over your classes at startup — it reads that XML.
+  (Consequence: if annotation processing is misconfigured, features
+  *silently vanish*; our root `pom.xml` pins `-proc:full` for exactly
+  this reason.)
+- **Hand-written `layer.xml`** for things annotations don't cover, e.g.
+  [ui/layer.xml](../../ui/src/main/resources/org/nmox/studio/ui/layer.xml)
+  registers keyboard-shortcut "shadows" and the update center.
+
+When a test needs to prove a registration exists, we assert against the
+**built jar's generated layer** (see `HttpEditorGestureTest`) — the
+bytes the platform will actually read, not the annotation we hope it
+read.
+
+### 2.2 Lookup (how modules find each other without depending on each other)
+
+`Lookup` is the platform's service registry — think "dependency
+injection, but discovery-based". A module *publishes* an implementation:
+
+```java
+@ServiceProvider(service = EmbeddedBrowser.class)
+public final class EmbeddedBrowserProvider implements EmbeddedBrowser { … }
+```
+
+and any module *finds* it without compiling against the publisher:
+
+```java
+EmbeddedBrowser b = Lookup.getDefault().lookup(EmbeddedBrowser.class);
+if (b == null) { /* feature absent — degrade gracefully */ }
+```
+
+This is how the rack's SCOPE device opens the in-app browser
+([BrowserDevice.java](../../rack/src/main/java/org/nmox/studio/rack/devices/BrowserDevice.java))
+without the rack module depending on the ui module: the *interface*
+lives in `core.spi`
+([EmbeddedBrowser.java](../../core/src/main/java/org/nmox/studio/core/spi/EmbeddedBrowser.java)),
+the *implementation* in ui, and a null lookup simply means "fall back
+to the system browser". We call these **soft-dependency seams**; the
+other big ones are `OracleAsk` (AI), `ProjectAim`, and `LiveServings`.
+
+### 2.3 TopComponents (windows)
+
+Every dockable window — the rack, each studio, the browser — is a
+`TopComponent` subclass. Its annotations declare where it docks and how
+it opens:
+
+```java
+@TopComponent.Registration(mode = "editor", openAtStartup = false)
+@ActionReference(path = "Shortcuts", name = "DA-4")   // ⌥⌘4
+```
+
+Two lifecycle rules the codebase enforces everywhere:
+
+- **Zero boot cost**: constructors do nothing expensive. Real work
+  waits for `componentOpened()` or, stricter, `componentShowing()` —
+  a tab that is open-but-hidden must not spawn processes or walk disks.
+  (Measured law: a fresh boot starts *zero* child processes.)
+- **Symmetric listeners**: whatever `componentOpened()` subscribes,
+  `componentClosed()` unsubscribes, or a closed window keeps reacting
+  to events forever (a real bug class we've fixed more than once).
+
+### 2.4 DataObjects and MIME types (how files become features)
+
+When you open a file, the platform resolves its **MIME type** (our
+resolvers map `.nim` → `text/x-nim`), finds the registered
+**DataObject** type for it, and builds an editor with every feature
+registered *for that MIME*: the TextMate grammar colors it, the CSL
+language config
+([NimLanguage.java](../../editor/src/main/java/org/nmox/studio/editor/languages/NimLanguage.java))
+gives it comment-toggling and brace logic, completion providers and
+spellcheckers attach — all discovered from registrations, none of it
+hard-wired.
+
+### 2.5 The EDT and RequestProcessors (the threading law)
+
+Swing has **one** UI thread: the Event Dispatch Thread. The iron rules:
+
+- **Never block the EDT.** No disk reads, no process spawns, no
+  network, no keychain calls on it — any of those freezes the whole UI.
+- Background work runs on a **`RequestProcessor`** (the platform's
+  named thread pool). You'll see dedicated lanes everywhere:
+  `RequestProcessor("API Studio")`, save lanes, send lanes.
+- Results come **back to the EDT** via `SwingUtilities.invokeLater`
+  before touching any component.
+
+A typical round-trip, from
+[ApiClientTopComponent.java](../../apiclient/src/main/java/org/nmox/studio/apiclient/ui/ApiClientTopComponent.java):
+
+```java
+RP.post(() -> {                       // 1. hop OFF the EDT
+    hydrateAuthNow(r);                // 2. keychain read (may block on an OS prompt)
+    SwingUtilities.invokeLater(() ->  // 3. hop BACK to the EDT
+        authField.setText(r.authToken)); // 4. now it's safe to touch Swing
+});
+```
+
+When you read any class in this codebase and wonder "why the dance?",
+it is almost always this law.
+
+## 3. Four flows, traced through real files
+
+### 3.1 Boot
+
+1. The launcher starts the platform, which scans every module jar's
+   manifest + layer (~90% of measured startup time — the price of the
+   feature set, by design).
+2. The window system restores the last layout; on first run the suite
+   tabs (Workbench → Rack → DB → Web3 → Infra → API → Docker) open by
+   default, but each one defers its real work per §2.3.
+3. [MainWindow](../../ui/src/main/java/org/nmox/studio/ui/MainWindow.java)
+   renders the Welcome launchpad.
+4. The rack aims at your most recent project — or, on a truly fresh
+   machine, a created-on-first-run `~/NMOX` folder (never `$HOME`:
+   walking the home directory triggers macOS privacy prompts, a bug we
+   fixed in v1.33.1).
+5. Nothing spawns, nothing hits the network. The update check runs
+   post-UI on the platform's schedule.
+
+### 3.2 Opening `hello.nim`
+
+1. MIME resolution: the generated-layer entry from `NimGrammar`'s
+   annotation maps the `nim` extension to `text/x-nim`.
+2. The platform builds the editor; the TextMate engine (TM4E) loads
+   [nim.tmLanguage.json](../../editor/src/main/resources/org/nmox/studio/editor/grammars/nim.tmLanguage.json)
+   and tokenizes each line into colored spans.
+3. `NimLanguage` (a CSL config registered for the same MIME) supplies
+   `#` comment toggling; `PolyglotCompletionProvider` supplies keyword
+   completion; the Navigator outline attaches.
+4. Failure mode worth knowing: a *broken grammar anywhere in the
+   include graph* kills tokenization for every grammar that includes
+   it — colors vanish while every registration still looks perfect.
+   Diagnose in `messages.log` (look for `TextmateLexer` exceptions),
+   not in the registrations. `GrammarCapturesShapeTest` gates the known
+   shape of this failure.
+
+### 3.3 Pressing GO on a rack device
+
+1. Every device is a
+   [RackDevice](../../rack/src/main/java/org/nmox/studio/rack/model/RackDevice.java)
+   subclass; its GO button calls `exec(...)`.
+2. `exec` hops off the EDT onto a RequestProcessor lane, then asks
+   **Workspace Trust**: running a cloned repo's `package.json` scripts
+   is arbitrary code execution, so the first run in a project prompts
+   ("Keep Safe" refuses and *no process starts* — and the device's
+   serving lights are wired to tell the truth about that).
+3. `CommandExecutor` spawns the process and pumps its output
+   line-by-line (bounded — a single endless line cannot eat the heap)
+   onto the **RackBus**, where MONITOR displays it and the
+   **FlightRecorder** journals it.
+4. Exit fires the device's `onFinished`: LEDs update, gates drop, and a
+   failure becomes structured context ORACLE's EXPLAIN can send to the
+   Anthropic API — but only after its own explicit consent dialog,
+   because *outbound data* needs a different permission than *inbound
+   execution*.
+
+### 3.4 Sending a request in API Studio
+
+1. Send buttons must never wedge the UI: `send()` posts the work to a
+   dedicated, interruptible send lane (the button becomes **Cancel**).
+2. On that lane, the request's auth token is **lazily hydrated** from
+   the OS keychain — first use only, once per session (v1.201.0; bulk
+   reads at startup caused macOS password prompts after every upgrade).
+   Secrets live *only* in the keychain; the committable
+   `.nmoxapi.json` never contains them (the secrets law, and tests
+   assert it structurally — the history entry *has no token field*).
+3. `ApiClient` resolves `{{variables}}`, sends over the shared HTTP
+   client, and **reads the response through a capped stream** — a
+   runaway endpoint cannot out-of-memory the IDE; truncation is flagged
+   on the status line, never silent.
+4. Back on the EDT: response grids, security-header grades, history.
+   When you later switch projects, `applyWorkspace` clears the
+   response, the find bar, and the hydration cache — **a result
+   belongs to the workspace that produced it** (a disclosure bug class
+   we closed twice before writing it into law).
+
+## 4. The house laws (why the code looks the way it does)
+
+Recurring rules you will meet in comments; each earned its place from a
+real bug, and most are pinned by a test that fails the build if broken:
+
+1. **Never block the EDT** (§2.5) — and mutate Swing *only* on it.
+2. **Zero boot cost** — deferred to `componentShowing()`, measured at
+   zero child processes per fresh boot.
+3. **Secrets are keychain-only** — never in a committable file, never
+   in logs; deleting the owner deletes the secret.
+4. **Every outside read is bounded** — HTTP bodies, process output,
+   even single lines, all capped with honest truncation markers.
+5. **Workspace writes are atomic** — temp sibling + atomic move via
+   `AtomicFiles`; a crash mid-save can't leave a torn file. Corrupt
+   files are `.bak`'d, never clobbered.
+6. **Trust gates before spawns** — a cloned repo's code never runs
+   without the user saying so, in any of the ~six places that spawn.
+7. **Honest degradation** — a missing tool/engine/key produces a plain
+   status ("NO DEBUGGER FOR <KIND>"), never a dead click, a lie, or a
+   crash dialog.
+8. **Registrations are byte-verified** — tests read the built jar's
+   generated layer, not the source annotation.
+9. **Fixes are mutation-proven** — after writing a test for a fix, we
+   re-break the code to watch the test fail; a test that can't fail
+   proves nothing. You'll see "mutation-proven" throughout the
+   changelog meaning exactly this.
+
+## 5. Where to go next
+
+- Add a window / device / grammar / service: recipes in
+  [CLAUDE.md §Development Workflow](../../CLAUDE.md).
+- The rack's device catalog and what each jack does:
+  [devices.md](../devices.md).
+- Current priorities and the full law list:
+  [plan.md](plan.md).
+- The platform's own docs:
+  [NetBeans Platform Developer Guide](https://netbeans.apache.org/kb/docs/platform/).

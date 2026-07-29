@@ -10,6 +10,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the JS/TS completion popup offering a bare identifier — a
+ * built-in global (console, Math) or a name harvested from the document
+ * itself. Per the {@link CompletionItem} contract it replaces the typed
+ * prefix with the name, nothing more: the item cannot know whether the
+ * identifier is a value or a function, so it adds no punctuation.
+ * Constructed per query by {@link JavaScriptCompletionProvider} and the
+ * polyglot provider's buffer-identifier lane.
+ */
 public class JavaScriptObjectCompletionItem implements CompletionItem {
     
     private final String objectName;

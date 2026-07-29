@@ -12,6 +12,18 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
+/**
+ * Code completion for HTML: tag names after {@code <}, attributes inside
+ * a tag, enumerated attribute values inside quotes, and closing tags
+ * after {@code </}. The vocabulary is a static HTML5 table; no DOM parse
+ * runs — {@link #analyzeContext} classifies the caret from the raw text
+ * before it (quote parity decides value-vs-attribute mode), which keeps
+ * the rules pure and unit-testable.
+ *
+ * Registered via {@code @MimeRegistration} for text/html, so the
+ * platform's completion infrastructure instantiates it lazily and runs
+ * the query off the EDT through {@link AsyncCompletionTask}.
+ */
 @org.netbeans.api.editor.mimelookup.MimeRegistration(
         mimeType = "text/html", service = CompletionProvider.class)
 public class HtmlCompletionProvider implements CompletionProvider {
@@ -198,7 +210,8 @@ public class HtmlCompletionProvider implements CompletionProvider {
         return ATTRIBUTE_VALUES.get(attributeName);
     }
 
-    private static class HtmlCompletionQuery extends AsyncCompletionQuery {
+    // package-private (not private) so tests can drive query() directly
+    static class HtmlCompletionQuery extends AsyncCompletionQuery {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {

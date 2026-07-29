@@ -10,6 +10,16 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the JS/TS completion popup that expands a snippet (for,
+ * try, promise, …). The snippet body carries {@code ${n:placeholder}}
+ * markers; on accept the item strips the markers (keeping each
+ * placeholder's default text), inserts the expansion, and parks the
+ * caret at the first placeholder's position —
+ * a template engine's behaviour without the template engine dependency.
+ * Constructed per query by {@link JavaScriptCompletionProvider} from
+ * its static snippet list.
+ */
 public class JavaScriptSnippetCompletionItem implements CompletionItem {
     
     private final JavaScriptCompletionProvider.JavaScriptSnippet snippet;

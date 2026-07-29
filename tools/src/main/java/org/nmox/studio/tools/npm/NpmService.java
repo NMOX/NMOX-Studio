@@ -15,6 +15,23 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
+/**
+ * The one place the IDE talks to Node package managers. Detects the
+ * project's own manager (corepack pin, then lockfile — delegated to the
+ * rack's {@code ProjectInspector} so every lane agrees), runs
+ * install/script commands, and lists globally installed packages for the
+ * no-project NPM Explorer view.
+ *
+ * <p>Registered as a {@code @ServiceProvider}, so consumers resolve the
+ * Lookup-owned instance via {@link #getDefault()} — the platform idiom,
+ * not a hand-rolled singleton. All subprocess work rides the module's
+ * own {@link RequestProcessor} (never the JVM-shared commonPool, never
+ * the EDT), and anything that executes PROJECT-controlled code — npm
+ * lifecycle scripts, package.json script bodies — asks Workspace Trust
+ * first; the fixed-tool probes ({@code npm --version}, {@code npm ls -g})
+ * deliberately do not prompt. Output accumulators are capped so a
+ * runaway build cannot OOM the IDE.
+ */
 @ServiceProvider(service = NpmService.class)
 public class NpmService {
 

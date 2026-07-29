@@ -127,4 +127,25 @@ class WebProjectActionProviderTest {
         Files.writeString(dir.resolve("Cargo.toml"), "[package]\nname = \"app\"\n");
         assertThat(providerFor(dir).isActionEnabled("compile-the-universe", Lookup.EMPTY)).isFalse();
     }
+
+    @Test
+    @DisplayName("Invoking an action the toolchain cannot express is a quiet no-op — no trust prompt, no spawn")
+    void invokeUnresolvableActionReturnsQuietly(@TempDir Path dir) throws IOException {
+        // Maven has no single Run mapping; the resolve-null early return
+        // must fire BEFORE the trust gate and the CommandExecutor spawn
+        Files.writeString(dir.resolve("pom.xml"),
+                "<project><artifactId>app</artifactId></project>");
+        providerFor(dir).invokeAction(ActionProvider.COMMAND_RUN, Lookup.EMPTY);
+        // reaching here without a process or dialog IS the assertion
+    }
+
+    @Test
+    @DisplayName("The four standard commands carry their human progress labels; strangers pass through")
+    void labelsNameTheStandardCommands() {
+        assertThat(WebProjectActionProvider.labelFor(ActionProvider.COMMAND_RUN)).isEqualTo("Run");
+        assertThat(WebProjectActionProvider.labelFor(ActionProvider.COMMAND_BUILD)).isEqualTo("Build");
+        assertThat(WebProjectActionProvider.labelFor(ActionProvider.COMMAND_TEST)).isEqualTo("Test");
+        assertThat(WebProjectActionProvider.labelFor(ActionProvider.COMMAND_CLEAN)).isEqualTo("Clean");
+        assertThat(WebProjectActionProvider.labelFor("custom.thing")).isEqualTo("custom.thing");
+    }
 }

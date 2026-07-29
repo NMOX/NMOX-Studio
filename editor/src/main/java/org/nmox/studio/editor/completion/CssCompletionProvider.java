@@ -12,6 +12,17 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
+/**
+ * Code completion for stylesheets (CSS, SCSS, Less): property names after
+ * a selector's brace, enumerated values after a colon, and common element
+ * selectors at top level. The dictionaries are static tables — no CSS
+ * parser runs; {@link #analyzeContext} classifies the caret from the raw
+ * text before it, which keeps the logic pure and unit-testable.
+ *
+ * Registered via {@code @MimeRegistration}, so the platform's completion
+ * infrastructure looks this provider up lazily per MIME type and runs the
+ * query off the EDT through {@link AsyncCompletionTask}.
+ */
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
             mimeType = "text/css", service = CompletionProvider.class),
@@ -382,7 +393,8 @@ public class CssCompletionProvider implements CompletionProvider {
         return out;
     }
 
-    private static class CssCompletionQuery extends AsyncCompletionQuery {
+    // package-private (not private) so tests can drive query() directly
+    static class CssCompletionQuery extends AsyncCompletionQuery {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {

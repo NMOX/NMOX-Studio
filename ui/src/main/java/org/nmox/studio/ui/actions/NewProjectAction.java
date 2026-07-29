@@ -10,6 +10,18 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+/**
+ * File ▸ New Project… (⇧⌘N, and the toolbar button): opens the rack's
+ * {@code NewProjectDialog} — template picker, name, location — and, when
+ * a project was actually created, surfaces Project Studio for step two.
+ * The dialog itself aims the rack at the new project; this action only
+ * front-and-centers the studio window afterwards.
+ *
+ * <p>A stateless {@link ActionListener} the platform instantiates from
+ * the {@code @ActionID}/{@code @ActionReference} registrations (menu +
+ * toolbar entries in the generated layer). It runs on the EDT by
+ * definition — the dialog is modal and does its own off-EDT scaffolding.
+ */
 @ActionID(
         category = "File",
         id = "org.nmox.studio.ui.actions.NewProjectAction"
