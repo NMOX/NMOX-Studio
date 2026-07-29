@@ -10,6 +10,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the CSS completion popup offering an element selector at
+ * top level. Per the platform's {@link CompletionItem} contract the item
+ * performs its own edit on accept: {@code defaultAction} inserts the
+ * selector with an opened rule block ("{@code sel { ... }}") and places
+ * the caret on the indented body line, so accepting a selector leaves
+ * the developer typing declarations immediately. Constructed per query
+ * by {@link CssCompletionProvider}.
+ */
 public class CssSelectorCompletionItem implements CompletionItem {
     
     private final String selector;

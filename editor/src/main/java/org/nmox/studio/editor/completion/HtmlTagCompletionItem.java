@@ -10,6 +10,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the HTML completion popup offering a tag after {@code <}.
+ * Per the platform's {@link CompletionItem} contract the item performs
+ * its own edit on accept, and it knows whether its element is void: a
+ * void element self-closes ({@code br />}) while a normal element gets
+ * its closing pair ({@code div></div>}), the caret landing just past the
+ * tag name either way so attributes can follow. Constructed per
+ * query by {@link HtmlCompletionProvider} from the HTML5 tag table.
+ */
 public class HtmlTagCompletionItem implements CompletionItem {
     
     private final String tagName;

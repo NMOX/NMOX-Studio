@@ -10,6 +10,14 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the CSS completion popup offering an enumerated property
+ * value (e.g. {@code flex} for display). Per the {@link CompletionItem}
+ * contract the item performs its own edit on accept: {@code
+ * defaultAction} inserts "{@code value;}" and lands the caret after the
+ * semicolon — the declaration is finished in one keypress. Constructed
+ * per query by {@link CssCompletionProvider} from its value tables.
+ */
 public class CssValueCompletionItem implements CompletionItem {
     
     private final String value;

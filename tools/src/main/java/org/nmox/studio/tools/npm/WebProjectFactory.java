@@ -9,6 +9,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.ServiceProvider;
 
+/**
+ * Teaches the platform what counts as a project: a {@code
+ * @ServiceProvider}-registered {@link ProjectFactory} the global
+ * ProjectManager consults for every directory it is asked about. Any of
+ * the ~58 recognized manifests (package.json through Clarinet.toml) —
+ * or, as the deliberate last resort, a bare index.html — makes the
+ * directory a {@link WebProject}. Recognition here is only the boolean;
+ * kind precedence (which toolchain wins when several manifests coexist)
+ * lives in the rack's {@code ProjectInspector}. {@code saveProject} is
+ * a no-op because these projects carry no IDE-owned metadata to write.
+ */
 @ServiceProvider(service = ProjectFactory.class)
 public class WebProjectFactory implements ProjectFactory {
 

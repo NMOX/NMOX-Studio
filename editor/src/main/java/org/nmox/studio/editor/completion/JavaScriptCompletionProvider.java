@@ -12,6 +12,19 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
+/**
+ * Code completion for JS/TS without a type checker: keywords, a table of
+ * browser globals with their methods (console, document, Array, …),
+ * insertable snippets, and — the part that makes it feel alive — every
+ * identifier already present near the caret, harvested through the real
+ * lexer so strings and comments contribute nothing. After a dot the query
+ * switches to member mode and offers the dotted object's known methods.
+ *
+ * Registered via {@code @MimeRegistration} for both mimes; the platform
+ * instantiates it lazily and {@link AsyncCompletionTask} runs each query
+ * off the EDT. The context classifier and matchers are static and pure so
+ * the rules stay unit-testable without an editor.
+ */
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
     @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
     @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class)
@@ -194,7 +207,8 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         return 0;
     }
     
-    private static class JavaScriptCompletionQuery extends AsyncCompletionQuery {
+    // package-private (not private) so tests can drive query() directly
+    static class JavaScriptCompletionQuery extends AsyncCompletionQuery {
         
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {

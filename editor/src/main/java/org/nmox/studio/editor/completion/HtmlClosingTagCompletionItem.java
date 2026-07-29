@@ -10,6 +10,14 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the HTML completion popup completing a {@code </...} closing
+ * tag. Per the {@link CompletionItem} contract the item performs its own
+ * edit on accept: {@code defaultAction} finishes "{@code tag>}" and puts
+ * the caret after the {@code >}. Void elements (br, img, …) never get one
+ * of these — {@link HtmlCompletionProvider} filters them out because they
+ * have no closing form to offer.
+ */
 public class HtmlClosingTagCompletionItem implements CompletionItem {
     
     private final String tagName;

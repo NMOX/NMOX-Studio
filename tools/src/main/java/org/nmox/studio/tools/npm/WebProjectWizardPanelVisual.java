@@ -12,6 +12,17 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
+/**
+ * The Swing form of the New Web Project wizard step: name, location
+ * (with a directory chooser), the derived created-folder preview, and
+ * the Vanilla/React/Vue type combo. Pure view — validation rules and
+ * property I/O live in package-private {@code valid}/{@code read}/
+ * {@code store} methods its controller ({@link WebProjectWizardPanel})
+ * calls; the {@link DocumentListener} half keeps the folder preview in
+ * sync and pokes the controller's change support so the wizard re-checks
+ * validity as the user types. Everything here runs on the EDT, as all
+ * wizard UI does.
+ */
 public class WebProjectWizardPanelVisual extends JPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";

@@ -176,4 +176,22 @@ class WebProjectFactoryTest {
         Files.writeString(dir.resolve("about.html"), "<html></html>");
         assertThat(factory.isProject(mount(dir))).isFalse();
     }
+
+    @Test
+    @DisplayName("loadProject mints a WebProject for a recognized directory and null for a stranger")
+    void loadProjectFollowsRecognition(@TempDir Path yes, @TempDir Path no) throws IOException {
+        Files.writeString(yes.resolve("package.json"), "{}");
+        assertThat(factory.loadProject(mount(yes), NO_OP_STATE))
+                .isInstanceOf(WebProject.class);
+        assertThat(factory.loadProject(mount(no), NO_OP_STATE)).isNull();
+    }
+
+    @Test
+    @DisplayName("saveProject is a documented no-op — these projects carry no IDE metadata")
+    void saveProjectIsANoOp(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve("package.json"), "{}");
+        factory.saveProject(factory.loadProject(mount(dir), NO_OP_STATE));
+        // no exception, no files written — the manifest is the only truth
+        assertThat(dir.toFile().list()).containsExactly("package.json");
+    }
 }

@@ -108,17 +108,8 @@ public final class ImageKitAction implements ActionListener {
         if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
             return;
         }
-        float q = switch (quality.getSelectedIndex()) {
-            case 0 -> 0.85f;
-            case 2 -> 0.70f;
-            default -> 0.80f;
-        };
-        int width = switch (maxWidth.getSelectedIndex()) {
-            case 1 -> 2560;
-            case 2 -> 1600;
-            case 3 -> 800;
-            default -> 0;
-        };
+        float q = qualityFor(quality.getSelectedIndex());
+        int width = maxWidthFor(maxWidth.getSelectedIndex());
         boolean doJpeg = jpeg.isSelected();
         boolean doWebp = webp.isSelected() && cwebp != null;
         File cwebpFinal = cwebp;
@@ -170,14 +161,35 @@ public final class ImageKitAction implements ActionListener {
         });
     }
 
-    private static String line(ImagePress.Candidate c, ImagePress.Result r) {
+    /** The dialog's quality choices, index → JPEG quality (85/80/70). */
+    static float qualityFor(int selectedIndex) {
+        return switch (selectedIndex) {
+            case 0 -> 0.85f;
+            case 2 -> 0.70f;
+            default -> 0.80f;
+        };
+    }
+
+    /** The dialog's downscale choices, index → max width px (0 = no resize). */
+    static int maxWidthFor(int selectedIndex) {
+        return switch (selectedIndex) {
+            case 1 -> 2560;
+            case 2 -> 1600;
+            case 3 -> 800;
+            default -> 0;
+        };
+    }
+
+    /** One report row: the written sibling with sizes, or the honest refusal note. */
+    static String line(ImagePress.Candidate c, ImagePress.Result r) {
         return c.file().getName() + " → "
                 + (r.output() == null ? r.note()
                         : r.output().getName() + " (" + mb(r.before()) + " → "
                         + mb(r.after()) + ")") + "\n";
     }
 
-    private static String mb(long bytes) {
+    /** Human sizes: MB with one decimal above a megabyte, else KB (floor 1). */
+    static String mb(long bytes) {
         return bytes >= 1_000_000 ? String.format("%.1f MB", bytes / 1_000_000.0)
                 : String.format("%d KB", Math.max(1, bytes / 1_000));
     }

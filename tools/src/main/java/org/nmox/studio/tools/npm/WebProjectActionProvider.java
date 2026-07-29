@@ -135,7 +135,8 @@ final class WebProjectActionProvider implements ActionProvider {
         return WebProjectCommands.commandFor(dir, kind, command);
     }
 
-    private static String labelFor(String command) {
+    /** Progress/Output-window label for the four standard commands. */
+    static String labelFor(String command) {
         switch (command) {
             case COMMAND_RUN:
                 return "Run";

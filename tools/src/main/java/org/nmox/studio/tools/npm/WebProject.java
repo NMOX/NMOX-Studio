@@ -31,6 +31,19 @@ import org.openide.util.lookup.ProxyLookup;
 import java.awt.Image;
 import javax.swing.Action;
 
+/**
+ * The platform {@link Project} for every directory {@link
+ * WebProjectFactory} recognizes. Identity is the directory; everything
+ * else the platform needs rides the project's {@link Lookup}, fixed at
+ * construction: {@code ProjectInformation} (display name prefers the
+ * package.json {@code name}, cached by mtime because the Projects
+ * window asks during EDT painting), the logical view (the real folder
+ * node wrapped so it shows the web icon and the Run/Build/Test/Clean +
+ * common project actions), {@link WebProjectActionProvider} (the
+ * toolchain-aware command routing), the opened hook that aims the rack,
+ * and the recommended-template scoping. No mutable state — a project
+ * instance is a value the platform caches per directory.
+ */
 public class WebProject implements Project {
 
     private final FileObject projectDir;

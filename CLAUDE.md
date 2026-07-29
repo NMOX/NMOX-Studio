@@ -484,6 +484,7 @@ See `docs/hack/technical-debt.md` for comprehensive list. Key items:
 - `docs/making-a-smart-contract.md` - Worked tutorial: a real escrow contract built the Contract Studio way (code, tests, gas gate, live ANVIL loop) — all output real
 - `docs/devices.md` - The 53-device reference (GENERATED from DeviceType by DeviceDocsTest; CI fails on drift)
 - `docs/engineering/tech-debt.md` - The CURRENT debt ledger: open items with deferral reasons, closed items by version
+- `docs/engineering/codebase-guide.md` - A beginner's guide to the codebase: the five RCP ideas everything rides on, four traced flows (boot / open-a-file / press-GO / send-a-request) with real file links, and the house laws with their origins — start here before reading code
 - `docs/engineering/plan.md` - The CURRENT plan: where the project stands, honest gaps, ranked opportunities, the working method + house laws + failure patterns — read this first when deciding what to do next
 - `CONTRIBUTING.md` - Contribution guidelines
 - `docs/hack/` and `docs/product/` and most of `docs/engineering/` - v0.x-era documents kept for archaeology; every one carries a "Historical document" banner and none describes the shipping product

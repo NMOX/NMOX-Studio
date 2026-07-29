@@ -10,6 +10,14 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the JS/TS completion popup offering a language keyword.
+ * The simplest of the item family: per the {@link CompletionItem}
+ * contract it replaces the typed prefix with the keyword and hides the
+ * popup — no trailing punctuation, since what follows a keyword varies.
+ * Constructed per query by {@link JavaScriptCompletionProvider} (and
+ * reused by the polyglot provider for its keyword lists).
+ */
 public class JavaScriptKeywordCompletionItem implements CompletionItem {
     
     private final String keyword;

@@ -58,6 +58,36 @@ class NpmServiceTest {
     }
 
     @Test
+    @DisplayName("parseGlobalList keeps a package whose dependency entry is not an object, with an empty version")
+    void parseGlobalListNonObjectEntry() {
+        // npm can print terse entries; a non-object value still names a package
+        assertThat(NpmService.parseGlobalList("{\"dependencies\": {\"terse\": \"1.2.3\"}}"))
+                .singleElement()
+                .satisfies(p -> {
+                    assertThat(p.name()).isEqualTo("terse");
+                    assertThat(p.version()).isEmpty();
+                });
+    }
+
+    @Test
+    @DisplayName("listGlobalPackages completes with a listing when npm exists, or fails honestly when it doesn't")
+    void listGlobalPackagesCompletesEitherWay() throws Exception {
+        // a fixed-tool probe (no trust prompt, no output window): with npm on
+        // PATH the future completes with the parsed (possibly empty) listing;
+        // without it, the launch failure surfaces as the documented
+        // UncheckedIOException — never a hang, never a null
+        try {
+            var packages = npmService.listGlobalPackages()
+                    .get(90, java.util.concurrent.TimeUnit.SECONDS);
+            assertThat(packages).isNotNull();
+            assertThat(packages).allSatisfy(p -> assertThat(p.name()).isNotBlank());
+        } catch (java.util.concurrent.ExecutionException launchFailed) {
+            assertThat(launchFailed.getCause())
+                    .isInstanceOf(java.io.UncheckedIOException.class);
+        }
+    }
+
+    @Test
     @DisplayName("Should detect NPM package manager from package-lock.json")
     void testDetectNpmPackageManager() throws IOException {
         File projectDir = tempDir.toFile();

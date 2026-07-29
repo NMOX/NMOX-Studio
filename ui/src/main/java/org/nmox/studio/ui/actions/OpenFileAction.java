@@ -17,6 +17,15 @@ import org.openide.loaders.DataObject;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.NbBundle.Messages;
 
+/**
+ * File ▸ Open File… (⌘O): a plain multi-select file chooser whose picks
+ * open in the editor through the platform's own machinery — File →
+ * {@code FileObject} → {@link DataObject} → {@link OpenCookie} — so the
+ * right editor kit answers for each MIME type and files with no
+ * registered editor get an honest warning dialog instead of a silent
+ * no-op. Registered via {@code @ActionID} under Menu/File with the
+ * standard shortcut; stateless, EDT-invoked like every menu action.
+ */
 @ActionID(
         category = "File",
         id = "org.nmox.studio.ui.actions.OpenFileAction"

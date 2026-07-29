@@ -12,6 +12,16 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
+/**
+ * File ▸ Open Folder… (⌥⌘O): the everyday "point the IDE at a
+ * directory" gesture. The chooser starts in the ~/NMOX workspace (not
+ * $HOME — see {@code startDirectory()}), and the pick aims the whole IDE
+ * — rack, studios, workbench — through the {@code core.spi.ProjectAim}
+ * facade, a soft Lookup seam so the action still works (minus the aim)
+ * on a stripped platform or in plain tests. The chord is ⌥⌘O because
+ * ⇧⌘O belongs to the platform's own Open Project action, which always
+ * wins the Keymaps race (see WindowShortcutsTest).
+ */
 @ActionID(
         category = "File",
         id = "org.nmox.studio.ui.actions.OpenFolderAction"

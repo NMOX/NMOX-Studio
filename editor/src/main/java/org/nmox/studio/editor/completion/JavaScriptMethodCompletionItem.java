@@ -10,6 +10,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
+/**
+ * One row in the JS/TS completion popup offering a known method after a
+ * dot ({@code console.} → log, error, …). Carries the method's signature
+ * and one-line description for the popup's right-hand column, and per
+ * the {@link CompletionItem} contract performs its own edit on accept:
+ * the name plus call parentheses, caret placed between them ready for
+ * arguments. Constructed per member-mode query by
+ * {@link JavaScriptCompletionProvider} from its global-object tables.
+ */
 public class JavaScriptMethodCompletionItem implements CompletionItem {
     
     private final JavaScriptCompletionProvider.JavaScriptMethod method;

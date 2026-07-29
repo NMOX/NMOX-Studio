@@ -49,6 +49,15 @@ class NewLearningSpaceActionTest {
     }
 
     @Test
+    @DisplayName("A space with no driver at all has nothing to probe")
+    void requiredToolNullWithoutDriver() {
+        assertThat(NewLearningSpaceAction.requiredTool(
+                new LearningCatalog.Space("x", "X", LearningCatalog.Category.LANGUAGE,
+                        "Family", "blurb", null, Map.of(), List.of(), "tutorial")))
+                .isNull();
+    }
+
+    @Test
     @DisplayName("The availability line: found is a plain checkmark verdict")
     void availabilityTextFound() {
         assertThat(NewLearningSpaceAction.availabilityText("clisp", true, "brew install clisp"))

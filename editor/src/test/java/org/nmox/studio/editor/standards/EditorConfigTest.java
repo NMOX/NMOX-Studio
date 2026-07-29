@@ -35,6 +35,22 @@ class EditorConfigTest {
     }
 
     @Test
+    @DisplayName("Glob edges: negated classes, anchored slash, and unclosed brackets stay literal")
+    void globEdges() {
+        // [!seq] negates the class
+        assertThat(EditorConfig.globToRegex("[!c]").matcher("h").matches()).isTrue();
+        assertThat(EditorConfig.globToRegex("[!c]").matcher("c").matches()).isFalse();
+        // a leading slash anchors to the .editorconfig's own directory
+        assertThat(EditorConfig.globToRegex("/root.js").matcher("root.js").matches()).isTrue();
+        assertThat(EditorConfig.globToRegex("/root.js").matcher("sub/root.js").matches()).isFalse();
+        // unclosed [ and { are literal characters, not malformed regex
+        assertThat(EditorConfig.globToRegex("a[b").matcher("a[b").matches()).isTrue();
+        assertThat(EditorConfig.globToRegex("a{b").matcher("a{b").matches()).isTrue();
+        assertThat(EditorConfig.globToRegex("a{b").matcher("x/a{b").matches()).isTrue();
+        assertThat(EditorConfig.globToRegex("a{b").matcher("a-b").matches()).isFalse();
+    }
+
+    @Test
     @DisplayName("Closer .editorconfig wins; root=true stops the upward walk")
     void precedenceAndRoot(@TempDir Path tmp) throws Exception {
         Files.writeString(tmp.resolve(".editorconfig"), """

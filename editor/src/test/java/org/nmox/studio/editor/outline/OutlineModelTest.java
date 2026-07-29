@@ -810,6 +810,403 @@ class OutlineModelTest {
                 .contains("greet", "pi");
     }
 
+    @Test
+    @DisplayName("Mime-to-family routing: every alias lands on its extractor family")
+    void familyRouting() {
+        // the JS family covers the component dialects too
+        for (String m : new String[]{"text/javascript", "text/typescript", "text/jsx",
+                "text/tsx", "text/x-vue", "text/x-svelte", "text/x-astro"}) {
+            assertThat(OutlineModel.family(m)).as(m).isEqualTo("js");
+        }
+        // brace languages all share the generic C-shaped extractor
+        for (String m : new String[]{"text/x-java", "text/x-kotlin", "text/x-scala",
+                "text/x-csharp", "text/x-swift", "text/x-c", "text/x-cpp", "text/x-dart",
+                "text/x-groovy", "text/x-php5", "text/x-d", "text/x-rescript",
+                "text/x-vlang", "text/x-cairo", "text/x-aiken", "text/x-tact",
+                "text/x-move", "text/x-odin", "text/x-haxe"}) {
+            assertThat(OutlineModel.family(m)).as(m).isEqualTo("brace");
+        }
+        // shape-sharing languages ride a sibling's extractor
+        assertThat(OutlineModel.family("text/x-scheme")).isEqualTo("racket");
+        assertThat(OutlineModel.family("text/x-janet")).isEqualTo("clojure");
+        assertThat(OutlineModel.family("text/x-purescript")).isEqualTo("haskell");
+        // own-family languages
+        assertThat(OutlineModel.family("text/x-nim")).isEqualTo("nim");
+        assertThat(OutlineModel.family("text/x-elm")).isEqualTo("elm");
+        assertThat(OutlineModel.family("text/x-fortran")).isEqualTo("fortran");
+        assertThat(OutlineModel.family("text/x-fsharp")).isEqualTo("fsharp");
+        assertThat(OutlineModel.family("text/x-crystal")).isEqualTo("crystal");
+        assertThat(OutlineModel.family("text/x-zig")).isEqualTo("zig");
+        assertThat(OutlineModel.family("text/x-solidity")).isEqualTo("solidity");
+        assertThat(OutlineModel.family("text/coffeescript")).isEqualTo("coffeescript");
+        assertThat(OutlineModel.family("text/sh")).isEqualTo("shell");
+        assertThat(OutlineModel.family("text/x-graphql")).isEqualTo("graphql");
+        assertThat(OutlineModel.family("text/x-sql")).isEqualTo("sql");
+        assertThat(OutlineModel.family("text/x-makefile")).isEqualTo("make");
+        assertThat(OutlineModel.family("text/x-protobuf")).isEqualTo("proto");
+        assertThat(OutlineModel.family("text/html")).isEqualTo("html");
+        // Clarity deliberately has no outline: junk beats absence
+        assertThat(OutlineModel.family("text/x-clarity")).isEqualTo("generic");
+        assertThat(OutlineModel.family("application/octet-stream")).isEqualTo("generic");
+    }
+
+    @Test
+    @DisplayName("HTML: headings surface their text, landmarks surface with their id")
+    void html() {
+        String src = """
+                <body>
+                <header id="top"><h1>Site Title</h1></header>
+                <nav></nav>
+                <main>
+                  <section id="intro"><h2></h2></section>
+                </main>
+                <footer></footer>
+                </body>
+                """;
+        List<Item> items = outline("text/html", src);
+        // heading text becomes the name; an empty heading falls back to its tag
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.HEADING, "Site Title"),
+                tuple(OutlineKind.HEADING, "h2"),
+                tuple(OutlineKind.SECTION, "header #top"),
+                tuple(OutlineKind.SECTION, "nav"),
+                tuple(OutlineKind.SECTION, "main"),
+                tuple(OutlineKind.SECTION, "section #intro"),
+                tuple(OutlineKind.SECTION, "footer"));
+        // the h1 carries its level as detail
+        assertThat(items).anyMatch(i -> "Site Title".equals(i.name()) && "h1".equals(i.detail()));
+        // body is not a landmark
+        assertThat(items).extracting(Item::name).doesNotContain("body");
+    }
+
+    @Test
+    @DisplayName("Nim: routines by keyword, exported types inside type blocks; macros/templates badge as modules")
+    void nim() {
+        String src = """
+                type
+                  Device* = object
+                    id: int
+                  Signal = enum
+                    trigger, data
+
+                proc wire(a, b: Device) =
+                  discard
+
+                func gain(x: int): int = x * 2
+
+                iterator items(d: Device): int =
+                  yield d.id
+
+                template withRack(body: untyped) =
+                  body
+
+                macro trace(ex: untyped): untyped =
+                  ex
+                """;
+        List<Item> items = outline("text/x-nim", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.TYPE, "Signal"),
+                tuple(OutlineKind.FUNCTION, "wire"),
+                tuple(OutlineKind.FUNCTION, "gain"),
+                tuple(OutlineKind.FUNCTION, "items"),
+                tuple(OutlineKind.MODULE, "withRack"),
+                tuple(OutlineKind.MODULE, "trace"));
+        assertThat(items).allMatch(i -> i.depth() == 0);
+    }
+
+    @Test
+    @DisplayName("Elm: module header, type/type alias, and top-level annotated values")
+    void elm() {
+        String src = """
+                module Rack.Wire exposing (connect)
+
+                type Signal = Trigger | Data
+
+                type alias Patch =
+                    { from : Int, to : Int }
+
+                connect : Int -> Int -> Patch
+                connect a b =
+                    { from = a, to = b }
+                """;
+        List<Item> items = outline("text/x-elm", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.MODULE, "Rack"),
+                tuple(OutlineKind.TYPE, "Signal"),
+                tuple(OutlineKind.TYPE, "Patch"),
+                tuple(OutlineKind.FUNCTION, "connect"));
+        // the indented record fields never surface
+        assertThat(items).extracting(Item::name).doesNotContain("from", "to");
+    }
+
+    @Test
+    @DisplayName("Racket: struct, define-struct, define-syntax, module+ and plain defines classify")
+    void racketForms() {
+        String src = """
+                (struct device (id))
+                (define-struct cable (from to))
+                (define-syntax swap! (syntax-rules () ((_ a b) (void))))
+                (module+ test (check-equal? 1 1))
+                (define pi 3.14159)
+                (define (wire a b) (cons a b))
+                """;
+        List<Item> items = outline("text/x-racket", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.TYPE, "device"),
+                tuple(OutlineKind.TYPE, "cable"),
+                tuple(OutlineKind.MODULE, "swap!"),
+                tuple(OutlineKind.MODULE, "test"),
+                tuple(OutlineKind.FIELD, "pi"),
+                tuple(OutlineKind.FUNCTION, "wire"));
+    }
+
+    @Test
+    @DisplayName("Shell: function definitions in both spellings, flat")
+    void shell() {
+        String src = """
+                #!/bin/sh
+                set -e
+
+                build() {
+                    make all
+                }
+
+                function deploy {
+                    scp out remote:
+                }
+                """;
+        List<Item> items = outline("text/sh", src);
+        assertThat(items).extracting(Item::kind, Item::name)
+                .contains(tuple(OutlineKind.FUNCTION, "build"));
+        // `function deploy` without () is not matched by the ()-anchored
+        // pattern; the paren spelling is the one the outline reads
+        assertThat(items).allMatch(i -> i.kind() == OutlineKind.FUNCTION);
+    }
+
+    @Test
+    @DisplayName("SQL: CREATE statements name their object, kind in the detail")
+    void sql() {
+        String src = """
+                CREATE TABLE users (id INT);
+                create or replace view v_active as select * from users;
+                CREATE INDEX idx_users ON users(id);
+                CREATE FUNCTION add_one(i INT) RETURNS INT AS $$ SELECT i + 1 $$;
+                SELECT * FROM users;
+                """;
+        List<Item> items = outline("text/x-sql", src);
+        assertThat(items).extracting(Item::name, Item::detail).containsExactly(
+                tuple("users", "table"),
+                tuple("v_active", "view"),
+                tuple("idx_users", "index"),
+                tuple("add_one", "function"));
+    }
+
+    @Test
+    @DisplayName("Protobuf: messages nest by braces; enums, services and rpcs classify")
+    void proto() {
+        String src = """
+                syntax = "proto3";
+
+                message Device {
+                  message Port {
+                    int32 index = 1;
+                  }
+                  int32 id = 1;
+                }
+
+                enum Signal {
+                  TRIGGER = 0;
+                }
+
+                service Rack {
+                  rpc Wire (Device) returns (Device);
+                }
+                """;
+        List<Item> items = outline("text/x-protobuf", src);
+        assertThat(items).extracting(Item::kind, Item::name).containsExactly(
+                tuple(OutlineKind.TYPE, "Device"),
+                tuple(OutlineKind.TYPE, "Port"),
+                tuple(OutlineKind.ENUM, "Signal"),
+                tuple(OutlineKind.INTERFACE, "Rack"),
+                tuple(OutlineKind.METHOD, "Wire"));
+        Item device = items.get(0);
+        Item port = items.get(1);
+        assertThat(port.depth()).as("nested message sits under its parent").isGreaterThan(device.depth());
+        Item rpc = items.get(4);
+        assertThat(rpc.depth()).isGreaterThan(0);
+    }
+
+    @Test
+    @DisplayName("Brace languages (Java shape): classes, interfaces, enums and methods nest by braces")
+    void braceLanguages() {
+        String src = """
+                public class Rack {
+                    private int size;
+
+                    public void wire(Device a, Device b) {
+                        connect(a, b);
+                    }
+
+                    public int size() {
+                        return size;
+                    }
+                }
+
+                interface Device {
+                }
+
+                enum Signal {
+                    TRIGGER, DATA
+                }
+
+                namespace Studio {
+                }
+                """;
+        List<Item> items = outline("text/x-java", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.CLASS, "Rack"),
+                tuple(OutlineKind.METHOD, "wire"),
+                tuple(OutlineKind.METHOD, "size"),
+                tuple(OutlineKind.INTERFACE, "Device"),
+                tuple(OutlineKind.ENUM, "Signal"),
+                tuple(OutlineKind.MODULE, "Studio"));
+        Item rack = items.stream().filter(i -> i.name().equals("Rack")).findFirst().orElseThrow();
+        Item wire = items.stream().filter(i -> i.name().equals("wire")).findFirst().orElseThrow();
+        assertThat(wire.depth()).as("method nests under its class").isGreaterThan(rack.depth());
+        // a control-flow keyword heading a parenthesised block is not a method
+        assertThat(items).extracting(Item::name).doesNotContain("if", "for", "while", "connect");
+    }
+
+    @Test
+    @DisplayName("TS: interface, enum and type alias declarations classify")
+    void tsDeclarations() {
+        String src = """
+                export interface Wire {
+                  from: number;
+                }
+                export enum Signal { Trigger, Data }
+                export type Patch = [number, number];
+                const enum Mode { A, B }
+                """;
+        List<Item> items = outline("text/typescript", src);
+        assertThat(items).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.INTERFACE, "Wire"),
+                tuple(OutlineKind.ENUM, "Signal"),
+                tuple(OutlineKind.TYPE, "Patch"),
+                tuple(OutlineKind.ENUM, "Mode"));
+    }
+
+    @Test
+    @DisplayName("Stray closing braces clamp to depth 0 instead of going negative")
+    void strayClosersClamp() {
+        // JS: an extra closer, then a top-level function — still depth 0
+        List<Item> js = outline("text/javascript", "}\n}\nfunction after() {}\n");
+        assertThat(js).extracting(Item::name).containsExactly("after");
+        assertThat(js.get(0).depth()).isEqualTo(0);
+        // Go, Solidity, Rust (shared braceKeyword loop), CSS and JSON all clamp too
+        assertThat(outline("text/x-go", "}\nfunc main() {}\n"))
+                .anyMatch(i -> i.name().equals("main") && i.depth() == 0);
+        assertThat(outline("text/x-solidity", "}\ncontract T {}\n"))
+                .anyMatch(i -> i.name().equals("T") && i.depth() == 0);
+        assertThat(outline("text/x-rust", "}\nfn top() {}\n"))
+                .anyMatch(i -> i.name().equals("top") && i.depth() == 0);
+        assertThat(outline("text/css", "}\n.card {\n}\n"))
+                .anyMatch(i -> i.name().equals(".card") && i.depth() == 0);
+        assertThat(outline("text/x-json", "}\n{\n\"name\": \"x\"\n}\n"))
+                .anyMatch(i -> i.name().equals("name"));
+    }
+
+    @Test
+    @DisplayName("JS block comment closing mid-line yields the rest of the line as code")
+    void blockCommentClosesMidLine() {
+        String src = String.join("\n",
+                "/* spans",
+                "lines */ function visible() {}",
+                "function last() {}");
+        assertThat(outline("text/javascript", src)).extracting(Item::name)
+                .containsExactly("visible", "last");
+    }
+
+    @Test
+    @DisplayName("CSS comments spanning lines hide the selectors inside them")
+    void cssMultiLineComment() {
+        String src = """
+                /* disabled styles
+                .hidden {
+                  color: red;
+                }
+                end of comment */ .after {
+                }
+                .top {
+                }
+                """;
+        List<Item> items = outline("text/css", src);
+        assertThat(items).extracting(Item::name).contains(".top");
+        assertThat(items).extracting(Item::name).doesNotContain(".hidden");
+    }
+
+    @Test
+    @DisplayName("Rust: trait, type alias, const and static classify")
+    void rustDeclKinds() {
+        String src = """
+                pub trait Wired {
+                    fn wire(&self);
+                }
+                type Patch = (u32, u32);
+                const MAX: u32 = 8;
+                static NAME: &str = "rack";
+                """;
+        assertThat(outline("text/x-rust", src)).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.INTERFACE, "Wired"),
+                tuple(OutlineKind.TYPE, "Patch"),
+                tuple(OutlineKind.FIELD, "MAX"),
+                tuple(OutlineKind.FIELD, "NAME"));
+    }
+
+    @Test
+    @DisplayName("OCaml: class and exception declarations classify")
+    void ocamlClassAndException() {
+        String src = "class widget = object end\nexception Overflow\n";
+        assertThat(outline("text/x-ocaml", src)).extracting(Item::kind, Item::name).contains(
+                tuple(OutlineKind.CLASS, "widget"),
+                tuple(OutlineKind.ENUM, "Overflow"));
+    }
+
+    @Test
+    @DisplayName("Crystal enum classifies; Haskell comment lines at column 0 are skipped")
+    void crystalEnumAndHaskellComment() {
+        assertThat(outline("text/x-crystal", "enum Signal\n  Trigger\nend\n"))
+                .extracting(Item::kind, Item::name)
+                .contains(tuple(OutlineKind.ENUM, "Signal"));
+        // `-- commented = binding` at column 0 must not surface as a binding
+        String hs = "-- helper = id\nreal :: Int\nreal = 1\n";
+        assertThat(outline("text/x-haskell", hs)).extracting(Item::name)
+                .containsExactly("real", "real")
+                .doesNotContain("helper");
+    }
+
+    @Test
+    @DisplayName("A pathologically long line is truncated before the regexes see it")
+    void longLinesAreBounded() {
+        String pad = "x".repeat(2_500);
+        String[] lines = OutlineModel.splitLines("short\n" + pad);
+        assertThat(lines[0]).isEqualTo("short");
+        assertThat(lines[1]).hasSize(2_000);
+        // a marker past the 2000-char cap can never surface
+        String src = " ".repeat(2_100) + "TODO too far right";
+        assertThat(OutlineModel.extract("text/x-unknown", src)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("netBraces: escaped quotes and '#' comments do not confuse the count")
+    void netBracesEdges() {
+        // the \" stays inside the string; the { after it must not count
+        assertThat(OutlineModel.netBraces("const s = \"a\\\"{\";")).isEqualTo(0);
+        // a '#' comment hides the brace after it (shell/python-style lines)
+        assertThat(OutlineModel.netBraces("value # { not code")).isEqualTo(0);
+    }
+
     private static org.assertj.core.groups.Tuple tuple(Object... values) {
         return org.assertj.core.api.Assertions.tuple(values);
     }

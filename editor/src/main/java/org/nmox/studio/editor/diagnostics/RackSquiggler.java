@@ -64,7 +64,8 @@ public class RackSquiggler implements Runnable {
         }
     }
 
-    private static List<ErrorDescription> describe(javax.swing.text.Document doc,
+    // package-private (not private) so the severity/prefix/line mapping is testable
+    static List<ErrorDescription> describe(javax.swing.text.Document doc,
             String prefix, List<DiagnosticsBus.Problem> problems) {
         List<ErrorDescription> descriptions = new ArrayList<>();
         for (DiagnosticsBus.Problem p : problems) {
