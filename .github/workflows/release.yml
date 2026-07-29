@@ -156,11 +156,23 @@ jobs:
       - name: Bundle Java runtime
         shell: pwsh
         run: |
+          # OpenJFX jmods join the runtime (v1.199.0: the embedded
+          # browser's engine) — same pin + sha256 law as bundle-jre.sh.
+          $fxVersion = "21.0.5"
+          $fxSha256 = "693c04e2bf16ad26dc803d384500aab7593921e6e3dc8aaac3b10b0613feaa1f"
+          $fxZip = "$env:RUNNER_TEMP\openjfx-jmods.zip"
+          Invoke-WebRequest -Uri "https://download2.gluonhq.com/openjfx/$fxVersion/openjfx-${fxVersion}_windows-x64_bin-jmods.zip" -OutFile $fxZip
+          $actual = (Get-FileHash $fxZip -Algorithm SHA256).Hash.ToLower()
+          if ($actual -ne $fxSha256) { throw "OpenJFX jmods sha256 mismatch: $actual" }
+          Expand-Archive $fxZip -DestinationPath "$env:RUNNER_TEMP\openjfx"
+          $fxJmods = "$env:RUNNER_TEMP\openjfx\javafx-jmods-$fxVersion"
           & "$env:JAVA_HOME\bin\jlink.exe" `
-            --module-path "$env:JAVA_HOME\jmods" `
+            --module-path "$env:JAVA_HOME\jmods;$fxJmods" `
             --add-modules ALL-MODULE-PATH `
             --strip-debug --no-header-files --no-man-pages `
             --output application\target\nmoxstudio\jre
+          & application\target\nmoxstudio\jre\bin\java.exe --list-modules | Select-String "javafx.web" | Out-Null
+          if (-not $?) { throw "bundled runtime is missing javafx.web" }
           Add-Content application\target\nmoxstudio\etc\nmoxstudio.conf "`n# bundled runtime: the app runs on its own Java, whatever the host has`njdkhome=`"jre`""
       - name: Brand launcher icons
         # The nbm-maven-plugin launcher stubs ship with the stock NetBeans

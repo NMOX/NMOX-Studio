@@ -61,6 +61,8 @@ class WindowShortcutsTest {
                 new String[] {"D-8", "Docker Panel  ⌘8"});
         WINDOWS.put("../rack/src/main/java/org/nmox/studio/rack/blockstudio/BlockStudioTopComponent.java",
                 new String[] {"DA-5", "Block Studio  ⌥⌘5"});
+        WINDOWS.put("src/main/java/org/nmox/studio/ui/browser/WebBrowserTopComponent.java",
+                new String[] {"DA-4", "Browser  ⌥⌘4"});
     }
 
     /**
@@ -88,6 +90,8 @@ class WindowShortcutsTest {
         KEYMAP_LAYERS.put("../rack/src/main/java/org/nmox/studio/rack/docker/DockerPanelTopComponent.java",
                 "src/main/resources/org/nmox/studio/ui/layer.xml");
         KEYMAP_LAYERS.put("../rack/src/main/java/org/nmox/studio/rack/blockstudio/BlockStudioTopComponent.java",
+                "src/main/resources/org/nmox/studio/ui/layer.xml");
+        KEYMAP_LAYERS.put("src/main/java/org/nmox/studio/ui/browser/WebBrowserTopComponent.java",
                 "src/main/resources/org/nmox/studio/ui/layer.xml");
     }
 

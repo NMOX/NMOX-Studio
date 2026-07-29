@@ -114,6 +114,14 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- InstanceCookie on .settings files (the embedded-browser
+                 factory lives at Services/Browsers/webviewBrowser.settings;
+                 v1.199.0) -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-settings</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-loaders</artifactId>
             <version>${netbeans.version}</version>
