@@ -55,7 +55,9 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install --cask nmox-studio
 ```
 
-The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install). The app is ad-hoc signed but not yet notarized, so the first launch needs one extra step: right-click the app → *Open* once and confirm, or `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`.
+The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install), downloaded over HTTPS from this repo's releases and pinned by sha256.
+
+**About Gatekeeper:** the app is ad-hoc signed but not notarized (no Apple Developer ID yet), so a quarantined copy is refused on first launch. The cask handles this itself — it clears the quarantine attribute on the installed app in a `postflight` step and **prints exactly that at install time**, so nothing happens behind your back (you already consented to this third-party tap with `brew trust`; the DMG arrives over HTTPS and is pinned by sha256). Installing from the DMG by hand instead? First launch needs right-click → *Open* once, or `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`. After first launch, the in-app updater keeps you current with no Gatekeeper involvement at all.
 
 Update later with `brew update && brew upgrade --cask nmox-studio`; remove cleanly with `brew uninstall --cask --zap nmox-studio`. Since v1.51.0 the IDE also updates itself in-app: **Tools ▸ Plugins ▸ Updates** offers the product modules of any newer release (fed from the latest GitHub release's update catalog).
 

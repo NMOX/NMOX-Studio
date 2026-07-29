@@ -21,8 +21,12 @@ brew install --cask nmox-studio
 
 The `brew trust` line is Homebrew's one-time acknowledgment for any
 third-party tap — you won't be asked again for updates. The app is
-ad-hoc signed but not yet notarized, so the first launch needs one
-extra step — see the note below.
+ad-hoc signed but not notarized (no Apple Developer ID yet), so a
+quarantined copy would be refused by Gatekeeper on first launch: the
+cask clears the quarantine attribute itself in a `postflight` step and
+prints that it did, right in the install output. Nothing silent. If you
+install from the DMG by hand instead, see the note below — one command
+(or right-click → Open) clears it.
 
 **Everything else:** grab an asset from the
 [latest release](https://github.com/NMOX/NMOX-Studio/releases/latest) —
