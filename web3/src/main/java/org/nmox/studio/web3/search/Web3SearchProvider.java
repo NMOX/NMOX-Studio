@@ -52,12 +52,21 @@ public class Web3SearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        String text = request.getText();
+        evaluate(request.getText(), (action, label) -> response.addResult(action, label));
+    }
+
+    /**
+     * The search behavior, seamed off the platform types: the quicksearch
+     * SPI's {@code SearchRequest}/{@code SearchResponse} are constructible
+     * only inside the platform module, so tests drive this package-private
+     * form with a plain sink (returning false = stop, the SPI contract).
+     */
+    void evaluate(String text, java.util.function.BiPredicate<Runnable, String> addResult) {
         if (text == null || text.isBlank()) {
             return;
         }
         for (Web3SearchIndex.Hit hit : currentIndex().matches(text)) {
-            if (!response.addResult(() -> open(hit), hit.label())) {
+            if (!addResult.test(() -> open(hit), hit.label())) {
                 return;
             }
         }

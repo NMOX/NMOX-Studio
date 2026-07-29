@@ -93,6 +93,37 @@ class HttpTransportRobustnessTest {
     }
 
     @Test
+    @DisplayName("An HTTP error status is surfaced by code, with the URL redacted")
+    void httpErrorStatusRedacted() {
+        server.createContext("/down", ex -> {
+            ex.sendResponseHeaders(503, -1);
+            ex.close();
+        });
+        assertThatThrownBy(() -> JsonRpcClient.httpTransport()
+                .post("http://127.0.0.1:" + port + "/down?apikey=SECRET_TOKEN", "{}"))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("HTTP 503")
+                .satisfies(e -> assertThat(e.getMessage()).doesNotContain("SECRET_TOKEN"));
+    }
+
+    @Test
+    @DisplayName("An interrupted caller gets a redacted IOException and keeps its flag")
+    void interruptedCallRedacted() {
+        Thread.currentThread().interrupt();
+        try {
+            assertThatThrownBy(() -> JsonRpcClient.httpTransport()
+                    .post("http://127.0.0.1:" + port + "/ok?apikey=SECRET_TOKEN", "{}"))
+                    .isInstanceOf(IOException.class)
+                    .hasMessageContaining("Interrupted while calling")
+                    .satisfies(e -> assertThat(e.getMessage()).doesNotContain("SECRET_TOKEN"));
+            assertThat(Thread.interrupted())
+                    .as("the interrupt is restored for the caller").isTrue();
+        } finally {
+            Thread.interrupted(); // leave the worker clean either way
+        }
+    }
+
+    @Test
     @DisplayName("loopback() recognizes the devnet hosts and refuses everything else")
     void loopbackClassification() {
         assertThat(JsonRpcClient.loopback("http://127.0.0.1:8545")).isTrue();

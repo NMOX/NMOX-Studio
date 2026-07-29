@@ -80,4 +80,49 @@ class DbSearchProviderTest {
         assertThat(DbSearchProvider.currentIndex()).isNotNull();
         assertThat(DbSearchProvider.currentIndex().matches("")).isEmpty();
     }
+
+    // ---- the evaluate seam: what Quick Search actually receives ----
+
+    @Test
+    @DisplayName("evaluate hands each hit's label to the response")
+    void evaluateListsHits() {
+        DbSearchProvider.publish(List.of(STAGING),
+                Map.of(STAGING.id(), List.of(new TableInfo("", "public", "users", "TABLE"))));
+
+        var labels = new java.util.ArrayList<String>();
+        new DbSearchProvider().evaluate("users", (action, label) -> {
+            labels.add(label);
+            return true;
+        });
+
+        assertThat(labels).isNotEmpty();
+        assertThat(labels).anySatisfy(l -> assertThat(l).contains("users"));
+    }
+
+    @Test
+    @DisplayName("evaluate stops when the response refuses more results")
+    void evaluateHonorsStop() {
+        DbSearchProvider.publish(List.of(STAGING, MONGO), Map.of());
+
+        var labels = new java.util.ArrayList<String>();
+        new DbSearchProvider().evaluate("example.com", (action, label) -> {
+            labels.add(label);
+            return false; // the platform saying "list is full"
+        });
+
+        assertThat(labels).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a blank or null query is quiet")
+    void evaluateBlankIsQuiet() {
+        DbSearchProvider.publish(List.of(STAGING), Map.of());
+
+        var labels = new java.util.ArrayList<String>();
+        DbSearchProvider provider = new DbSearchProvider();
+        provider.evaluate("  ", (a, l) -> labels.add(l));
+        provider.evaluate(null, (a, l) -> labels.add(l));
+
+        assertThat(labels).isEmpty();
+    }
 }

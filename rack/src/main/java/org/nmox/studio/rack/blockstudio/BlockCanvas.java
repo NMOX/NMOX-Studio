@@ -34,6 +34,14 @@ import javax.swing.TransferHandler;
  */
 final class BlockCanvas extends JComponent {
 
+    /**
+     * The canvas's one line back to Block Studio: every mutation the
+     * canvas performs (drag, drop, insert, delete, param edit) is
+     * bracketed by these callbacks so the studio owns undo snapshots,
+     * dirty tracking, and selection — the canvas itself stays a pure
+     * view over the {@code BlockDoc}. The studio window implements
+     * this; tests implement it with a recording stub.
+     */
     interface Host {
 
         /** Called before any mutation — push an undo snapshot. */

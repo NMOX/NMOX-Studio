@@ -164,4 +164,66 @@ class GitFactsTest {
                 "gitdir: ../../escape\n", StandardCharsets.UTF_8);
         assertThat(GitFacts.branch(victim.toFile())).isNull();
     }
+
+    // ---- unreadable / unrecognized states hide rather than lie ----
+
+    @Test
+    @DisplayName("branch is null for a directory that has no .git at all")
+    void branchNullWithoutDotGit() throws Exception {
+        Path plain = dir.resolve("no-repo");
+        Files.createDirectories(plain);
+        assertThat(GitFacts.branch(plain.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("an empty ref name after the prefix is refused, not shown as blank")
+    void branchNullOnEmptyRefName() throws Exception {
+        assertThat(GitFacts.branch(repoWithHead("ref: refs/heads/\n"))).isNull();
+    }
+
+    @Test
+    @DisplayName("a .git FILE that is not a gitdir: pointer yields no branch")
+    void branchNullOnNonPointerGitFile() throws Exception {
+        Path odd = dir.resolve("odd");
+        Files.createDirectories(odd);
+        Files.writeString(odd.resolve(".git"), "this is not a pointer\n",
+                StandardCharsets.UTF_8);
+        assertThat(GitFacts.branch(odd.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("a gitdir: pointer with an empty path is refused")
+    void branchNullOnEmptyGitdirPath() throws Exception {
+        Path odd = dir.resolve("empty-pointer");
+        Files.createDirectories(odd);
+        Files.writeString(odd.resolve(".git"), "gitdir:   \n", StandardCharsets.UTF_8);
+        assertThat(GitFacts.branch(odd.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("a whitespace-only HEAD yields no branch")
+    void branchNullOnBlankHead() throws Exception {
+        assertThat(GitFacts.branch(repoWithHead("   \n"))).isNull();
+    }
+
+    @Test
+    @DisplayName("a HEAD without a trailing newline still parses (small file, no terminator)")
+    void branchParsesHeadWithoutNewline() throws Exception {
+        assertThat(GitFacts.branch(repoWithHead("ref: refs/heads/main")))
+                .isEqualTo("main");
+    }
+
+    @Test
+    @DisplayName("a detached SHA-256 HEAD (64 hex chars) abbreviates like SHA-1 does")
+    void branchDetachedSha256() throws Exception {
+        String sha256 = "a1b2c3d4".repeat(8); // 64 hex chars
+        assertThat(GitFacts.branch(repoWithHead(sha256 + "\n")))
+                .isEqualTo(sha256.substring(0, 7));
+    }
+
+    @Test
+    @DisplayName("a 40-char HEAD with non-hex characters is not a commit — null, not a fake branch")
+    void branchRefusesNonHexSha() throws Exception {
+        assertThat(GitFacts.branch(repoWithHead("z".repeat(40) + "\n"))).isNull();
+    }
 }

@@ -195,4 +195,83 @@ class ProcessSupportTest {
         assertThat(r.ok()).isTrue();
         assertThat(new java.io.File(dir, "cwd-marker")).exists();
     }
+
+    @Test
+    @DisplayName("the null device matches this OS")
+    void nullDeviceMatchesOs() {
+        String name = ProcessSupport.nullDevice().getPath();
+        assertThat(name).isIn("/dev/null", "NUL");
+    }
+
+    @Test
+    @DisplayName("an interrupted caller gets an IOException, a killed child, and its flag back")
+    @Timeout(15)
+    void shouldFailFastWhenCallerInterrupted() {
+        Thread.currentThread().interrupt();
+        try {
+            org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                    ProcessSupport.runBounded(List.of("sh", "-c", "sleep 30"),
+                            null, Duration.ofSeconds(20)))
+                    .isInstanceOf(java.io.IOException.class)
+                    .hasMessageContaining("Interrupted waiting for sh");
+            assertThat(Thread.interrupted())
+                    .as("the interrupt is restored for the caller's own handling")
+                    .isTrue();
+        } finally {
+            Thread.interrupted(); // leave the worker thread clean
+        }
+    }
+
+    @Test
+    @DisplayName("killTreeAndWait with no time budget reports honestly instead of blocking")
+    @Timeout(15)
+    void killTreeAndWaitZeroBudgetIsHonest() throws Exception {
+        Process p = ProcessSupport.builder(List.of("sh", "-c", "sleep 30")).start();
+        try {
+            // zero budget: the kill is issued but nothing waits — the verdict
+            // must be "not confirmed dead", never a hang
+            ProcessSupport.killTreeAndWait(p, Duration.ZERO);
+            assertThat(ProcessSupport.killTreeAndWait(p, Duration.ofSeconds(10)))
+                    .as("a real budget confirms the tree is gone")
+                    .isTrue();
+            assertThat(p.isAlive()).isFalse();
+        } finally {
+            ProcessSupport.killTree(p);
+        }
+    }
+
+    @Test
+    @DisplayName("an interrupted killTreeAndWait still kills, then returns with the flag set")
+    @Timeout(15)
+    void killTreeAndWaitInterruptedStillKills() throws Exception {
+        Process p = ProcessSupport.builder(List.of("sh", "-c", "sleep 30")).start();
+        try {
+            Thread.currentThread().interrupt();
+            ProcessSupport.killTreeAndWait(p, Duration.ofSeconds(10));
+            assertThat(Thread.interrupted())
+                    .as("the interrupt survives the bounded wait").isTrue();
+            // the kill itself was issued regardless of the early return
+            assertThat(ProcessSupport.killTreeAndWait(p, Duration.ofSeconds(10))).isTrue();
+        } finally {
+            Thread.interrupted();
+            ProcessSupport.killTree(p);
+        }
+    }
+
+    @Test
+    @DisplayName("a flood arriving after unaligned output still lands exactly at the ceiling")
+    @Timeout(40)
+    void shouldCapUnalignedFlood() throws Exception {
+        // the first write leaves the capture at a non-chunk-aligned length, so
+        // the ceiling is reached mid-read — the partial-append edge of the cap
+        ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                List.of("sh", "-c", "head -c 1000 /dev/zero | tr '\\0' 'a'; sleep 1; "
+                        + "yes | head -c 10000000"),
+                null, Duration.ofSeconds(30));
+
+        assertThat(r.truncated()).isTrue();
+        assertThat(r.stdout().length())
+                .as("whatever the read alignment, the capture stops exactly at the cap")
+                .isEqualTo(ProcessSupport.MAX_CAPTURE_CHARS);
+    }
 }

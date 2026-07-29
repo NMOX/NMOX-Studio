@@ -57,4 +57,44 @@ class ToolLocatorTest {
             }
         }
     }
+
+    @Test
+    @DisplayName("An empty command list resolves to itself")
+    void emptyCommandListUnchanged() {
+        assertThat(ToolLocator.resolveCommand(java.util.List.of())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Windows-style .exe/.cmd names resolve, and the newest version-manager dir wins")
+    void resolvesPathextAndVersionDirs(@org.junit.jupiter.api.io.TempDir java.io.File home)
+            throws Exception {
+        // searchDirs reads user.home live: point it at a fixture home carrying
+        // a volta bin (with .exe/.cmd tools) and an nvm versions tree where the
+        // newest version has a bin dir and a newer-named empty one does not
+        java.io.File volta = new java.io.File(home, ".volta/bin");
+        assertThat(volta.mkdirs()).isTrue();
+        assertThat(new java.io.File(volta, "faketool.exe").createNewFile()).isTrue();
+        assertThat(new java.io.File(volta, "otherfake.cmd").createNewFile()).isTrue();
+        java.io.File nvmWithBin = new java.io.File(home, ".nvm/versions/node/v20.1.0/bin");
+        assertThat(nvmWithBin.mkdirs()).isTrue();
+        // sorts AFTER v20.1.0 reversed (v9 > v2 lexicographically) but has no
+        // bin dir, so the locator must fall through to the one that does
+        assertThat(new java.io.File(home, ".nvm/versions/node/v9-empty").mkdirs()).isTrue();
+
+        String realHome = System.getProperty("user.home");
+        try {
+            System.setProperty("user.home", home.getAbsolutePath());
+            ToolLocator.reset();
+
+            assertThat(ToolLocator.resolve("faketool"))
+                    .isEqualTo(new java.io.File(volta, "faketool.exe").getAbsolutePath());
+            assertThat(ToolLocator.resolve("otherfake"))
+                    .isEqualTo(new java.io.File(volta, "otherfake.cmd").getAbsolutePath());
+            assertThat(ToolLocator.augmentedPath())
+                    .contains(nvmWithBin.getAbsolutePath());
+        } finally {
+            System.setProperty("user.home", realHome);
+            ToolLocator.reset(); // forget every fixture-home lookup
+        }
+    }
 }

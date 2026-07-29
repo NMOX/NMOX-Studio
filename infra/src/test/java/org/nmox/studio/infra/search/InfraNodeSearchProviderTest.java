@@ -78,4 +78,58 @@ class InfraNodeSearchProviderTest {
         node.label = label;
         return node;
     }
+
+    // ---- the evaluate seam: what Quick Search actually receives ----
+
+    @Test
+    @DisplayName("Evaluate lists matching nodes, marking deployed ones (live)")
+    void evaluateListsMatches() {
+        InfraGraph graph = new InfraGraph();
+        InfraNode designed = graph.addNode(NodeKind.DROPLET, 0, 0);
+        designed.label = "api-server";
+        InfraNode deployed = graph.addNode(NodeKind.DROPLET, 100, 0);
+        deployed.label = "web-server";
+        deployed.doId = "123";
+        graph.addNode(NodeKind.VPC, 200, 0).label = "backbone";
+
+        var displays = new java.util.ArrayList<String>();
+        new InfraNodeSearchProvider().evaluate("server", graph, (action, display) -> {
+            displays.add(display);
+            return true;
+        });
+
+        assertThat(displays).hasSize(2);
+        assertThat(displays.get(0)).contains("api-server").doesNotContain("(live)");
+        assertThat(displays.get(1)).contains("web-server").contains("(live)");
+    }
+
+    @Test
+    @DisplayName("Evaluate stops as soon as the response refuses more results")
+    void evaluateHonorsStop() {
+        InfraGraph graph = new InfraGraph();
+        graph.addNode(NodeKind.DROPLET, 0, 0).label = "web-1";
+        graph.addNode(NodeKind.DROPLET, 100, 0).label = "web-2";
+
+        var displays = new java.util.ArrayList<String>();
+        new InfraNodeSearchProvider().evaluate("web", graph, (action, display) -> {
+            displays.add(display);
+            return false; // the platform saying "list is full"
+        });
+
+        assertThat(displays).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("A blank or null query yields nothing, not everything")
+    void evaluateBlankIsQuiet() {
+        InfraGraph graph = new InfraGraph();
+        graph.addNode(NodeKind.DROPLET, 0, 0).label = "web-1";
+
+        var displays = new java.util.ArrayList<String>();
+        InfraNodeSearchProvider provider = new InfraNodeSearchProvider();
+        provider.evaluate("   ", graph, (a, d) -> displays.add(d));
+        provider.evaluate(null, graph, (a, d) -> displays.add(d));
+
+        assertThat(displays).isEmpty();
+    }
 }

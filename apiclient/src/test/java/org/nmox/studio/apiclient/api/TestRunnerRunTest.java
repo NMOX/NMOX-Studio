@@ -63,4 +63,33 @@ class TestRunnerRunTest {
             assertThat(result.detail()).contains("no target");
         });
     }
+
+    @Test
+    @DisplayName("BODY_CONTAINS reports found and not-found honestly")
+    void bodyContains() {
+        assertThat(TestRunner.evaluate(
+                new Assertion(Assertion.Kind.BODY_CONTAINS, "\"id\":7"), response()).passed())
+                .isTrue();
+        TestRunner.Result miss = TestRunner.evaluate(
+                new Assertion(Assertion.Kind.BODY_CONTAINS, "absent"), response());
+        assertThat(miss.passed()).isFalse();
+        assertThat(miss.detail()).isEqualTo("not found");
+    }
+
+    @Test
+    @DisplayName("TIME_UNDER_MS with a junk target falls back to never-failing-on-time")
+    void junkTimeTarget() {
+        assertThat(TestRunner.evaluate(
+                new Assertion(Assertion.Kind.TIME_UNDER_MS, "soon"), response()).passed())
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("jsonHasPath walks array roots and indices, and refuses non-JSON")
+    void jsonPathEdges() {
+        assertThat(TestRunner.jsonHasPath("[{\"id\": 1}]", "0.id")).isTrue();
+        assertThat(TestRunner.jsonHasPath("[{\"id\": 1}]", "2")).isFalse();
+        assertThat(TestRunner.jsonHasPath("[{\"id\": 1}]", "x.id")).isFalse();
+        assertThat(TestRunner.jsonHasPath("not json at all", "a")).isFalse();
+    }
 }
