@@ -61,6 +61,23 @@ class EmbeddedBrowserProviderTest {
     }
 
     @Test
+    @DisplayName("window lookup miss → the URL falls back to the system browser, never dropped")
+    void lookupMissFallsBackInsteadOfDropping() throws Exception {
+        // open() answers true BEFORE the EDT lookup runs; if the window
+        // registration ever drifts, the queued half must still land the
+        // URL somewhere (v1.200.0). Headless tests have no registered
+        // WebBrowserTopComponent, which IS the drifted state.
+        java.util.concurrent.atomic.AtomicReference<String> fell =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        EmbeddedBrowserProvider p = new EmbeddedBrowserProvider(fell::set);
+        javax.swing.SwingUtilities.invokeAndWait(
+                () -> p.showOrFallback("https://example.com"));
+        assertThat(fell.get())
+                .as("a miss must route to the fallback, not vanish")
+                .isEqualTo("https://example.com");
+    }
+
+    @Test
     @DisplayName("a settings file that cannot instantiate a factory is an absent engine, not an error")
     void unparsableSettingsDegradesToNull() throws Exception {
         FileObject settings = FileUtil.createData(

@@ -26,24 +26,54 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service = EmbeddedBrowser.class)
 public final class EmbeddedBrowserProvider implements EmbeddedBrowser {
 
+    private final java.util.function.Consumer<String> fallback;
+
+    public EmbeddedBrowserProvider() {
+        this(EmbeddedBrowserProvider::systemBrowser);
+    }
+
+    EmbeddedBrowserProvider(java.util.function.Consumer<String> fallback) {
+        this.fallback = fallback;
+    }
+
     @Override
     public boolean open(String url) {
         if (embeddedFactory() == null) {
             return false;
         }
-        Runnable show = () -> {
-            TopComponent tc = WindowManager.getDefault()
-                    .findTopComponent("WebBrowserTopComponent");
-            if (tc instanceof WebBrowserTopComponent web) {
-                web.showUrl(url);
-            }
-        };
         if (EventQueue.isDispatchThread()) {
-            show.run();
+            showOrFallback(url);
         } else {
-            EventQueue.invokeLater(show);
+            EventQueue.invokeLater(() -> showOrFallback(url));
         }
         return true;
+    }
+
+    /**
+     * EDT. {@code open()} answered true before this runs, so the URL
+     * must land SOMEWHERE — if the window registration ever drifts and
+     * the lookup misses, fall back to the system browser rather than
+     * silently dropping the click (v1.200.0 arc-review hardening; the
+     * never-a-dead-click law, applied to the asynchronous half).
+     */
+    void showOrFallback(String url) {
+        TopComponent tc = WindowManager.getDefault()
+                .findTopComponent("WebBrowserTopComponent");
+        if (tc instanceof WebBrowserTopComponent web) {
+            web.showUrl(url);
+        } else {
+            fallback.accept(url);
+        }
+    }
+
+    private static void systemBrowser(String url) {
+        org.openide.util.RequestProcessor.getDefault().post(() -> {
+            try {
+                java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+            } catch (Exception ex) {
+                // an engine problem is an absent engine, not a dialog
+            }
+        });
     }
 
     /** The embedded WebKit factory, or null when JavaFX is absent. */
