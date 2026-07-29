@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.204.0] - 2026-07-29
+
+### An IRC client in the IDE (⌥⌘3, freenode by default) + the Browser gets a home page (David-directed)
+
+- **IRC** joins the window family (⌥⌘3, Window menu, Welcome TOOLING):
+  a real client — network tree, styled transcript (timestamps,
+  hash-colored nicks, mIRC bold/color codes rendered, `* nick does x`
+  actions), sorted nick list (@ % + then alpha), topic bar, and the
+  full command set: `/connect /join /part /msg /query /me /nick
+  /topic /whois /quit /raw`, plain text to the active channel, and an
+  honest status line for anything it doesn't speak. Unread channels
+  bold their tree node. Connections outlive the window (a chat client
+  should); closing detaches listeners, reopening re-attaches without
+  double-delivery — test-pinned.
+- **Built the house way, three layers**: a pure protocol core
+  (RFC 1459/2812 + IRCv3 message-tags codec with byte-identical
+  round-trip, CTCP, mIRC-format spans, numerics classifier — 42
+  tests); a TLS engine on its own thread lane with BOUNDED line reads
+  (a 100k-char flood truncates with a marker and the connection
+  survives — proven against an in-JVM fake IRC server), auto
+  PING/PONG and CTCP VERSION/PING replies, 433 nick fallback,
+  reconnect with 2s→60s backoff + auto-rejoin, and a CLOSED state
+  announced exactly once with the reader task proven finished;
+  NickServ passwords are OS-keychain-only (`IrcSecrets`, the
+  ApiSecrets idiom) — identified after 001, never logged or echoed,
+  asserted by test. 63 new tests; ui module coverage 20.5% → 50.7%,
+  floor ratcheted .18 → .45.
+- **freenode is the shipped default** (`chat.freenode.net:6697` TLS,
+  David's explicit call — probed answering TLS 1.3 before build),
+  with Libera.Chat and OFTC as one-click presets. NO auto-connect:
+  connecting is an explicit gesture, per the no-network-without-a-
+  button-press law. Zero boot cost held.
+- **The Browser opens on Hacker News** when nothing is being served —
+  a home page beats an empty pane. A live dev server still wins (the
+  IDE-integrated behavior SCOPE's IN-APP target rides), and
+  facade-routed opens land on their own URL as before.
+
 ## [1.203.0] - 2026-07-29
 
 ### Coverage-and-comments tranche 2 — the rack and every studio, floors ratcheted across the board
@@ -7147,6 +7184,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.204.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.203.0...v1.204.0
 [1.203.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.202.0...v1.203.0
 [1.202.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.201.0...v1.202.0
 [1.201.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.200.1...v1.201.0

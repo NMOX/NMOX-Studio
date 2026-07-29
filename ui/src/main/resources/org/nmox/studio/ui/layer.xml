@@ -102,6 +102,9 @@
             <file name="DA-4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
             </file>
+            <file name="DA-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>
+            </file>
             <file name="DA-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
             </file>
