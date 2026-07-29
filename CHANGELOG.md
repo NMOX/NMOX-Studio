@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.198.1] - 2026-07-28
+
+### Gatekeeper, the honest interim answer (no Apple Developer ID for months)
+
+- Notarization is parked by decision — the Developer ID is months out —
+  so the first-launch friction gets the best no-cert mitigation that
+  exists, and it is stated out loud rather than worked around silently.
+  The cask now **clears the quarantine attribute in a `postflight`
+  step** and **prints a caveats block saying exactly that at every
+  install**. `brew install --cask nmox-studio` now just works on a
+  fresh Mac: no Gatekeeper refusal, no right-click ritual, no silent
+  behavior — the trust decision was already made explicitly at
+  `brew trust`, the DMG still arrives over HTTPS pinned by sha256.
+- The release workflow's cask template emits the same postflight +
+  caveats every release, so a future release can't quietly drop it.
+- Recon corrected a wrong first answer before it shipped: the obvious
+  fix, `brew install --cask --no-quarantine`, **does not exist in
+  Homebrew 6** (`Error: invalid option`) — the flag was removed. The
+  docs had already been written against it; measuring beat remembering.
+- Evidence, all measured on macOS 26.5.2: before, the brew-installed
+  app carried `com.apple.quarantine` and `spctl -a` returned
+  **rejected** (`Signature=adhoc`, `TeamIdentifier=not set`); after a
+  plain `brew reinstall --cask` with the new cask, the caveats printed
+  and `xattr -l` shows **no quarantine attribute**.
+- Unchanged and still true: hand-installing from the DMG needs
+  right-click → *Open* once (documented), and after first launch the
+  in-app updater involves Gatekeeper not at all.
+
 ## [1.198.0] - 2026-07-28
 
 ### The response pack — find in body, save the raw body
@@ -6896,6 +6924,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.198.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.198.0...v1.198.1
 [1.198.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.197.0...v1.198.0
 [1.197.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.196.0...v1.197.0
 [1.196.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.195.1...v1.196.0
