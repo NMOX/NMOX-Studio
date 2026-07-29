@@ -132,6 +132,14 @@
             <artifactId>org-netbeans-api-progress</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- The IRC client's NickServ passwords live in the OS keychain
+             (irc.engine.IrcSecrets — the Keyring-only law, the ApiSecrets
+             idiom; v1.204.0) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <!-- Testing dependencies -->
         <dependency>
@@ -202,7 +210,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.18</minimum>
+                                            <minimum>0.45</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

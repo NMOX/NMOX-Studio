@@ -1,0 +1,145 @@
+package org.nmox.studio.ui.irc.engine;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * An in-JVM fake IRC server on a loopback {@link ServerSocket}: it
+ * accepts connections (repeatedly — the reconnect tests need a second
+ * accept), queues every line the client sends, and lets a test script
+ * the server side ({@link #send}) line by line. Plaintext on purpose:
+ * TLS would only test the JDK, and the client's plaintext mode is the
+ * seam the engine tests ride.
+ */
+final class FakeIrcServer implements AutoCloseable {
+
+    private final ServerSocket server;
+    private final BlockingQueue<String> received = new LinkedBlockingQueue<>();
+    private final AtomicInteger accepts = new AtomicInteger();
+    private volatile Socket client;
+    private volatile BufferedWriter out;
+    private volatile boolean closed;
+
+    FakeIrcServer() throws IOException {
+        server = new ServerSocket(0, 5, InetAddress.getLoopbackAddress());
+        Thread acceptor = new Thread(this::acceptLoop, "fake-irc-acceptor");
+        acceptor.setDaemon(true);
+        acceptor.start();
+    }
+
+    int port() {
+        return server.getLocalPort();
+    }
+
+    int acceptCount() {
+        return accepts.get();
+    }
+
+    private void acceptLoop() {
+        while (!closed) {
+            try {
+                Socket s = server.accept();
+                accepts.incrementAndGet();
+                client = s;
+                out = new BufferedWriter(
+                        new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8));
+                Thread reader = new Thread(() -> readLoop(s), "fake-irc-reader");
+                reader.setDaemon(true);
+                reader.start();
+            } catch (IOException ex) {
+                return; // server socket closed: test over
+            }
+        }
+    }
+
+    private void readLoop(Socket s) {
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                received.add(line);
+            }
+        } catch (IOException ignored) {
+            // client dropped: fine
+        }
+    }
+
+    /** Sends one server line (CRLF appended) to the CURRENT client. */
+    void send(String line) throws IOException {
+        BufferedWriter w = out;
+        if (w == null) {
+            throw new IOException("no client connected");
+        }
+        synchronized (this) {
+            w.write(line);
+            w.write("\r\n");
+            w.flush();
+        }
+    }
+
+    /**
+     * Waits for the next client line starting with {@code prefix},
+     * discarding non-matching lines (tests are sequential scripts).
+     * Fails loudly on timeout so a hang has a name.
+     */
+    String awaitLine(String prefix, long timeoutMs) throws InterruptedException {
+        long deadline = System.nanoTime() + timeoutMs * 1_000_000L;
+        while (true) {
+            long left = (deadline - System.nanoTime()) / 1_000_000L;
+            if (left <= 0) {
+                throw new AssertionError("timed out waiting for a line starting with: " + prefix);
+            }
+            String line = received.poll(left, TimeUnit.MILLISECONDS);
+            if (line == null) {
+                throw new AssertionError("timed out waiting for a line starting with: " + prefix);
+            }
+            if (line.startsWith(prefix)) {
+                return line;
+            }
+        }
+    }
+
+    /** True when a line starting with {@code prefix} arrives before the deadline. */
+    boolean sawLine(String prefix, long timeoutMs) {
+        try {
+            awaitLine(prefix, timeoutMs);
+            return true;
+        } catch (AssertionError | InterruptedException ex) {
+            return false;
+        }
+    }
+
+    /** Drops the current client connection (the reconnect trigger). */
+    void dropClient() throws IOException {
+        Socket s = client;
+        if (s != null) {
+            s.close();
+        }
+    }
+
+    /** Standard registration script: expect NICK+USER, answer 001. */
+    void completeRegistration(String acceptedNick, long timeoutMs)
+            throws IOException, InterruptedException {
+        awaitLine("NICK ", timeoutMs);
+        awaitLine("USER ", timeoutMs);
+        send(":fake.server 001 " + acceptedNick + " :Welcome to the fake network");
+    }
+
+    @Override
+    public void close() throws IOException {
+        closed = true;
+        dropClient();
+        server.close();
+    }
+}

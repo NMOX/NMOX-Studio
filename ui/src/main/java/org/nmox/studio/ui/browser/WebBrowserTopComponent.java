@@ -93,6 +93,9 @@ public final class WebBrowserTopComponent extends TopComponent {
      * null without the rack), else nothing (the HtmlBrowser shows its
      * empty state and the URL bar invites typing).
      */
+    /** The home page a bare open lands on (v1.204.0, David's pick). */
+    static final String HOME_URL = "https://news.ycombinator.com/";
+
     private static String startUrl() {
         LiveServings servings = LiveServings.find();
         if (servings != null) {
@@ -102,7 +105,10 @@ public final class WebBrowserTopComponent extends TopComponent {
                 }
             }
         }
-        return null;
+        // no dev server running: a home page beats an empty pane —
+        // SCOPE/facade-routed opens still land on their own URL via
+        // showUrl, so this only decides what a bare ⌥⌘4 shows
+        return HOME_URL;
     }
 
     private static java.net.URL safeUrl(String url) {
