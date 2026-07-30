@@ -40,7 +40,16 @@ if [ ! -d "$FX_DIR" ] || [ -z "$(ls "$FX_DIR"/*.jmod 2>/dev/null)" ]; then
     echo "==> fetching OpenJFX $FX_VERSION jmods ($FX_PLATFORM)"
     mkdir -p "$FX_CACHE"
     FX_ZIP="$FX_CACHE/openjfx-$FX_VERSION-$FX_PLATFORM.zip"
-    curl -sfL -o "$FX_ZIP" \
+    # --retry covers the transient CDN failures a release must survive:
+    # v1.207.0's first release run died on curl exit 18 (partial file)
+    # 44s into this very download, taking the whole linux artifact with
+    # it. Retry transient errors AND connection resets, and demand a
+    # minimum trickle so a stalled socket fails fast instead of hanging
+    # the job. The sha256 check below is still the correctness gate — a
+    # retry that returns a corrupt file is caught there, not here.
+    curl -sfL --retry 5 --retry-delay 3 --retry-all-errors \
+        --connect-timeout 20 --speed-time 60 --speed-limit 1024 \
+        -o "$FX_ZIP" \
         "https://download2.gluonhq.com/openjfx/$FX_VERSION/openjfx-${FX_VERSION}_${FX_PLATFORM}_bin-jmods.zip"
     ACTUAL="$(shasum -a 256 "$FX_ZIP" | cut -d' ' -f1)"
     [ "$ACTUAL" = "$FX_SHA256" ] || {
