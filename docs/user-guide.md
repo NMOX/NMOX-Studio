@@ -77,7 +77,7 @@ the Welcome tab):
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
 | **⌥⌘3** | IRC chat client |
-| **⌥⌘4** | Browser (in-app WebKit) |
+| **⌥⌘4** | Browser (in-app WebKit, with DevTools) |
 | **⌥⌘5** | Block Studio |
 | **⌥⌘6** | Contract Studio (Web3) |
 | **⌥⌘7** | DB Studio |
@@ -587,6 +587,48 @@ ChanServ traffic is **never** written to disk.
 Closing the tab does **not** disconnect — a chat client outlives its
 window; reopen the tab and you're still in every channel. Only
 Disconnect or `/quit` ends a session.
+
+### Browser (⌥⌘4)
+
+The in-app browser is a real WebKit engine (JavaFX WebView, shipped in
+the bundled runtime) with the chrome you expect — URL bar (a bare
+`example.com` gets `https://`), back/forward, reload/stop, load
+progress, zoom buttons — and, since v1.206.0, **developer tools**: the
+**DevTools** button in the toolbar opens a bottom pane with five tabs.
+A bare open lands on your project's live dev server when one is
+running, else a home page; the rack's SCOPE device and every
+Open-in-Browser action route here too.
+
+- **Console** — the page's `console.log/info/warn/error/debug` output
+  (the originals still fire), plus `window.onerror` and unhandled
+  promise rejections, level-colored with timestamps. The input line at
+  the bottom is a REPL: type an expression, see the result (errors
+  render red, never a dialog). Entries are bounded — 1000 rows, 8k
+  chars each; when older rows are evicted an honest "N older entries
+  dropped" line says so.
+- **DOM** — press Refresh for a tree of the live document (bounded:
+  depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
+  a node outlines it in the page and shows its attributes plus a
+  curated 15-property computed-style summary.
+- **Network** — requests the page makes via `fetch` or
+  `XMLHttpRequest` **after** the DevTools instrumentation injects (on
+  page load): method, URL, status, duration, size when the response
+  declares one. Requests from before the injection are not visible,
+  and bodies are deliberately not captured (v1) — the row list is
+  bounded at 500.
+- **Storage** — a read-only (v1) table of localStorage,
+  sessionStorage, and cookies, refreshed on demand, values capped at
+  500 chars.
+- **Vue** — the component tree of a running **Vue 2 or Vue 3** app:
+  select a component to see its props and state and outline its root
+  element in the page. No Vue on the page is an honest empty state;
+  React/Angular are not inspected (v1).
+
+Everything the page hands the tools is treated as untrusted: strings
+are capped, lists are bounded, and a hostile page can fill a ring
+buffer but never the IDE's memory. A dev build on a plain JDK (no
+JavaFX) shows an honest explanation in the tab and routes pages to
+your system browser instead.
 
 ## 7. Docker
 

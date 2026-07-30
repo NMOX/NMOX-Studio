@@ -141,6 +141,28 @@
             <version>${netbeans.version}</version>
         </dependency>
 
+        <!-- JavaFX (v1.206.0, the Browser DevTools engine): the bundled
+             runtimes have carried the OpenJFX jmods since v1.199.0, and
+             classpath code reaches javafx.* per JEP 261 (the platform's
+             own webview module proved it). These two deps exist for
+             COMPILATION ONLY — <scope>provided</scope> keeps them OUT of
+             the built NBM (verified: unzip -l shows no javafx jars), so
+             at runtime the classes come from the jlinked image exactly
+             as before. A dev JDK without JavaFX degrades to the honest
+             unavailable panel via the FxAvailability probe. -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>21.0.5</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
