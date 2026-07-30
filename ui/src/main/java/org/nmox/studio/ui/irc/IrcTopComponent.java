@@ -8,6 +8,7 @@ import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -835,11 +836,33 @@ public final class IrcTopComponent extends TopComponent {
 
     /**
      * Tab completes/cycles nicks, Up/Down walk this target's history,
-     * Escape clears the line; any other key resets the completion cycle
-     * (the WeeChat contract).
+     * Ctrl+U clears the line (the readline chord); any other key resets
+     * the completion cycle (the WeeChat contract).
      */
     private void installInputKeys() {
         input.setFocusTraversalKeysEnabled(false); // Tab is ours now
+        // Ctrl+U clears the line — the readline/terminal "kill line"
+        // chord IRC users already have in their fingers.
+        //
+        // Escape is NOT the clear key, and the v1.205.0 live gauntlet is
+        // why: the platform consumes ESC above this component in a docked
+        // TopComponent — neither a KeyListener nor a WHEN_FOCUSED key
+        // binding ever sees it (both were tried against the assembled
+        // app). The Escape case in the listener below stays as a no-cost
+        // fallback for window modes that DO deliver it, but nothing
+        // advertises Escape, because a documented key that does nothing
+        // is worse than no key at all.
+        input.getInputMap(JComponent.WHEN_FOCUSED).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "nmox-irc-clear");
+        input.getInputMap(JComponent.WHEN_FOCUSED).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK),
+                "nmox-irc-clear");
+        input.getActionMap().put("nmox-irc-clear", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                clearInput();
+            }
+        });
         input.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -870,9 +893,10 @@ public final class IrcTopComponent extends TopComponent {
                         e.consume();
                     }
                     case KeyEvent.VK_ESCAPE -> {
-                        input.setText("");
-                        completer.reset();
-                        historyFor(activeHistoryKey()).resetCursor();
+                        // kept for window modes that DO deliver Escape to
+                        // listeners; the InputMap binding above is what
+                        // actually fires in the docked case
+                        clearInput();
                         e.consume();
                     }
                     default ->
@@ -880,6 +904,17 @@ public final class IrcTopComponent extends TopComponent {
                 }
             }
         });
+    }
+
+    /**
+     * Abandons the half-typed line: the text, the completion cycle, and
+     * the history cursor all go back to their resting state. One method
+     * so every clear path stays identical.
+     */
+    private void clearInput() {
+        input.setText("");
+        completer.reset();
+        historyFor(activeHistoryKey()).resetCursor();
     }
 
     /** The active channel's bare nicks (prefixes stripped), list order. */
@@ -1550,7 +1585,8 @@ public final class IrcTopComponent extends TopComponent {
             "  /away [message] — mark away / back",
             "  /log [on|off] — per-channel logging (~/.nmox/irc-logs)",
             "  /raw LINE — send a raw IRC line   /quit [message] — disconnect for good",
-            "Tab completes nicks · Up/Down recall input · ⌘F finds in the transcript"
+            "Tab completes nicks · Up/Down recall input · Ctrl+U clears the line",
+            "⌘F finds in the transcript (⌘F again closes)"
         };
         for (String line : lines) {
             appendStatus(statusKey, line);

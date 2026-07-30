@@ -533,7 +533,9 @@ A real IRC client in a tab: networks and channels in a tree on the
 left, a styled transcript (mIRC colors, `/me` actions, clickable links
 that open in the in-app Browser), the channel's nick list on the right
 (away users dimmed), and an input line with **Tab nick completion**
-(repeat Tab to cycle) and **Up/Down input history**. **Nothing connects
+(repeat Tab to cycle), **Up/Down input history**, and **Ctrl+U** to
+clear the line (the readline chord — Escape belongs to the window
+system in a docked tab and never reaches the input). **Nothing connects
 at boot** — the first connection is always your Connect button press.
 
 **Connecting.** freenode ships as the default network (Libera.Chat and
@@ -557,7 +559,8 @@ when the server offers them.
 the config) gets a highlighted background, a red badge count on the
 channel's tree row, and — when the IRC tab is hidden — a desktop
 notification that clicks through to the channel. **⌘F** opens a find
-bar over the transcript (highlight-all, Enter cycles, Esc closes).
+bar over the transcript (highlight-all, Enter cycles, ⌘F again
+closes).
 
 **Logging.** Conversations log to plain text under
 `~/.nmox/irc-logs/<network>/<channel>/YYYY-MM-DD.log`, one file per

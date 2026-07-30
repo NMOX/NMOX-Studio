@@ -27,6 +27,15 @@ All notable changes to NMOX Studio are documented here. The format follows
   line files under the peer, not under your own nick.
   **multi-prefix**: stacked NAMES sigils (`@+nick`) strip and rank
   whole (`NickPrefix`, shared by list/completer/away bookkeeping).
+- **Ctrl+U clears the input line** (the readline chord), and the live
+  gauntlet is why it exists: **Escape never reaches the IRC input** in
+  a docked window — the window system consumes it above the component,
+  so a half-typed line survived and turned a `/query` into a public
+  message. A `KeyListener` and a `WHEN_FOCUSED` key binding were both
+  tried against the assembled app and both lost; Ctrl+U arrives.
+  `/help`, the user guide, and the find bar's close hint (⌘F again)
+  now name only chords that work, and `InputClearGateTest` keeps it
+  that way — *a documented key that does nothing is worse than no key*.
 - **Tab nick completion + input history**: prefix-cycling completion
   (`nick: ` at line start, `nick ` mid-line, any other key resets —
   `NickCompleter`, exhaustively tested), per-target Up/Down recall
