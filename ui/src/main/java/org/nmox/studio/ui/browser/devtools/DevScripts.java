@@ -14,10 +14,12 @@ import java.util.List;
  * original, that the caps ({@code 8000} chars per console line,
  * {@code 500} URL chars, DOM depth {@code 30} / {@code 5000} nodes /
  * {@code 200} attr chars, Vue depth {@code 25} / {@code 2000}
- * components / {@code 2000} value chars, storage {@code 500}) are
- * embedded as literals, and that the Vue walker recognizes both
+ * components / {@code 2000} value chars, Svelte scan {@code 20000}
+ * elements / {@code 200} locations per file, storage {@code 500}) are
+ * embedded as literals, that the Vue walker recognizes both
  * version markers ({@code __vue_app__}/{@code __vueParentComponent}
- * for Vue 3, {@code __vue__} for Vue 2).
+ * for Vue 3, {@code __vue__} for Vue 2), and that the Svelte scan
+ * reads the dev-mode {@code __svelte_meta} marker.
  *
  * <p>Everything is ES5-shaped (WebKit in WebView is modern, but ES5
  * keeps us off the edge) and every script is a single self-invoking
@@ -227,6 +229,42 @@ public final class DevScripts {
             // same way)
             + "return JSON.stringify({v:version,r:roots,"
             + "prod:(roots.length===0?appSeen:'')});})()";
+
+    /**
+     * Maps a running dev-build Svelte app back to its sources: dev mode
+     * plants {@code __svelte_meta} ({@code {loc:{file,line,column}}}) on
+     * every element a component renders — that source mapping is ALL a
+     * runtime inspector can offer, because the Svelte compiler compiles
+     * components away (no instances, props, or state exist at runtime,
+     * and a production build carries no marker at all). Scans up to
+     * {@code 20000} elements, groups them by {@code loc.file}, and
+     * returns JSON {@code {files:[{file,count,locs:[{line,column,
+     * path:[childIndexPath]}]}],total:N}} with locations capped at
+     * {@code 200} per file (count keeps the honest total). No marker
+     * found is the empty answer {@code {files:[],total:0}}.
+     */
+    public static final String SVELTE_SNAPSHOT =
+            "(function(){\n"
+            + "var MAX_SCAN=20000,LOC_CAP=200;\n"
+            + "function domPath(el){var p=[];\n"
+            + " while(el&&el.parentElement){\n"
+            + "  var idx=Array.prototype.indexOf.call(el.parentElement.children,el);\n"
+            + "  if(idx<0){return [];}\n"
+            + "  p.unshift(idx);el=el.parentElement;}\n"
+            + " return p;}\n"
+            + "var all=document.querySelectorAll('*');\n"
+            + "var files=[];var byFile={};var total=0;\n"
+            + "for(var i=0;i<all.length&&i<MAX_SCAN;i++){var el=all[i];\n"
+            + " var m=el.__svelte_meta;\n"
+            + " if(!m||!m.loc||!m.loc.file){continue;}\n"
+            + " total++;\n"
+            + " var f=(''+m.loc.file).slice(0,500);\n"
+            + " var g=byFile[f];\n"
+            + " if(!g){g={file:f,count:0,locs:[]};byFile[f]=g;files.push(g);}\n"
+            + " g.count++;\n"
+            + " if(g.locs.length<LOC_CAP){\n"
+            + "  g.locs.push({line:+m.loc.line||0,column:+m.loc.column||0,path:domPath(el)});}}\n"
+            + "return JSON.stringify({files:files,total:total});})()";
 
     /**
      * Reads localStorage, sessionStorage, and document.cookie into one

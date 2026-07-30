@@ -53,7 +53,7 @@
                              Manager's install dialog shows real terms
                              instead of "License terms: Unknown" (each
                              module sits one level below the repo root). -->
-                        <licenseName>MIT License</licenseName>
+                        <licenseName>Apache License, Version 2.0</licenseName>
                         <licenseFile>../LICENSE</licenseFile>
                         <!-- The update-center catalog is built by
                              scripts/build-update-site.sh (nbm:autoupdate).

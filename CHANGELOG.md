@@ -4,6 +4,74 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.207.0] - 2026-07-30
+
+### Relicensed: MIT → Apache License 2.0 (David's decision)
+
+- **The project license is now Apache-2.0**, matching the Apache
+  NetBeans Platform it builds on. (For the record: Apache-2.0 is
+  permissive and did not *require* this — RCP apps may carry any
+  license — but sharing the platform's license is a clean, deliberate
+  choice, made explicitly.) Converted in one pass: `LICENSE` is the
+  canonical Apache-2.0 text; a root `NOTICE` carries the project
+  copyright and attributes the NetBeans Platform; the README badge and
+  license section, the NBM metadata (`licenseName`/`licenseFile`, so
+  the update center now shows Apache terms), and the published SBOM's
+  license id all agree. `LicenseConsistencyGateTest` rewritten to pin
+  every public statement to Apache-2.0 — **including the docs**, since
+  a stale "Apache 2.0" line in the user guide (vs. the then-MIT
+  LICENSE) is what surfaced this decision. Releases up to v1.206.0
+  were published under MIT and remain so; Apache-2.0 applies from this
+  release forward. Honest follow-up noted: the installer bundles
+  should carry the root LICENSE/NOTICE files alongside the app.
+
+### Svelte becomes a first-class citizen — the editor, the wizard, the Doctor, and the new DevTools all speak it
+
+- **What a Svelte developer can now do**: open a `.svelte` file and
+  get comment toggling (⌘/ wraps each line `<!-- like this -->` —
+  markup has no line comment, so the toggle speaks the block pair),
+  bracket/quote typing intelligence, and Ctrl+Space completion for
+  the whole Svelte 5 surface — runes (`$state`, `$derived`,
+  `$derived.by`, `$effect`, `$props`, `$bindable`, `$inspect`,
+  `$host`), template blocks (`#if`/`:else`/`/if`, `#each`, `#await`/
+  `:then`/`:catch`, `#key`, `#snippet`, `@render`, `@html`, `@const`,
+  `@debug`, `@attach`), directives (`bind:`, `on:`, `use:`,
+  `transition:`, `in:`/`out:`, `animate:`, `class:`, `style:`), and
+  the lifecycle imports (`onMount`, `onDestroy`, `tick`, `untrack`) —
+  on top of the grammar, LSP, outline, spellcheck, Prettier, and
+  KINETIC console that already shipped.
+- **Vue rides along**: `.vue` files gain the same block-pair comment
+  toggle — the two component-markup dialects had no toggle at all
+  (the line-prefix map couldn't express `<!-- -->`; `LanguageComments`
+  now carries a block-pair map beside it, and the toggle action wraps
+  or unwraps per line with the same symmetry laws as the prefix form).
+- **The Vite + Svelte template is Svelte 5**: `let count = $state(0)`
+  runes syntax in `App.svelte`, `mount()` (the Svelte-5 API — `new
+  App()` was removed) in `main.js`, `svelte ^5` with
+  `@sveltejs/vite-plugin-svelte ^4` in package.json — the scaffold no
+  longer teaches the Svelte-4 idiom the framework has moved past.
+- **The Browser DevTools gain a Svelte tab** beside Vue: a dev-served
+  Svelte app (`vite dev`) stamps every rendered element with the
+  `.svelte` file, line, and column that produced it (`__svelte_meta`),
+  and the tab groups those by source file — select a line to outline
+  its element in the page. The honest limitation, stated plainly in
+  the pane and the user guide: **Svelte compiles components away**, so
+  no component instances, props, or state exist at runtime for ANY
+  inspector to walk; source mapping is everything dev mode offers, and
+  a production build offers nothing (the empty state says "dev builds
+  only" rather than pretending no Svelte is present). Scan bounded at
+  20,000 elements, 200 locations per file with the honest total kept;
+  the parser re-caps every string and list Java-side.
+- **Environment Doctor probes `svelteserver`** (the
+  svelte-language-server binary the editor's LSP lane launches), with
+  the install hint spelled exactly: `npm install -g
+  svelte-language-server`.
+- Tests: block-pair comment round-trip/mixed/degenerate cases, the
+  Svelte keyword table, the Svelte-5 template pins (runes present,
+  `on:click`/`new App()` absent), `SvelteSnapshotParser` hostile-input
+  suite (malformed, floods, negative values re-capped), the
+  `SVELTE_SNAPSHOT` cap/marker literals, and the Doctor roster row.
+
 ## [1.206.0] - 2026-07-30
 
 ### The Browser grows DevTools — a Vue developer can debug their served project inside the IDE
@@ -7337,6 +7405,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.207.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.206.0...v1.207.0
 [1.206.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.205.0...v1.206.0
 [1.205.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.204.0...v1.205.0
 [1.204.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.203.0...v1.204.0

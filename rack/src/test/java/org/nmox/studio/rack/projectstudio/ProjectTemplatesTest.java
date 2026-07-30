@@ -159,6 +159,41 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("Vite + Svelte is Svelte 5: runes in App.svelte, mount() in main.js")
+    void viteSvelteIsSvelte5() throws Exception {
+        File dir = parent.resolve("vite-svelte").toFile();
+
+        ProjectTemplates.VITE_SVELTE.generate(dir, "demo-app");
+
+        // package.json parses and pins the Svelte 5 toolchain: svelte ^5
+        // with the matching vite-plugin-svelte major (4 is the Svelte-5 +
+        // Vite-5 line; the template's vite major matches Vite + Solid's)
+        JSONObject pkg = new JSONObject(
+                Files.readString(dir.toPath().resolve("package.json")));
+        JSONObject dev = pkg.getJSONObject("devDependencies");
+        assertThat(dev.getString("svelte")).startsWith("^5.");
+        assertThat(dev.getString("@sveltejs/vite-plugin-svelte")).startsWith("^4.");
+        assertThat(dev.getString("vite")).startsWith("^5.");
+        assertThat(pkg.getJSONObject("scripts").getString("dev")).isEqualTo("vite");
+
+        // the component speaks runes, not the Svelte-4 idiom
+        String app = Files.readString(dir.toPath().resolve("src/App.svelte"));
+        assertThat(app).contains("let count = $state(0);");
+        assertThat(app).contains("onclick=");
+        assertThat(app).doesNotContain("on:click");
+
+        // Svelte 5 mounts via mount(), not `new App(...)` (removed in 5)
+        String main = Files.readString(dir.toPath().resolve("src/main.js"));
+        assertThat(main).contains("import { mount } from 'svelte';");
+        assertThat(main).contains("mount(App, { target:");
+        assertThat(main).doesNotContain("new App(");
+
+        // the vite config wires the svelte plugin
+        assertThat(Files.readString(dir.toPath().resolve("vite.config.js")))
+                .contains("@sveltejs/vite-plugin-svelte");
+    }
+
+    @Test
     @DisplayName("Should refuse to generate into a non-empty directory")
     void shouldRefuseNonEmptyDirectory() throws Exception {
         File dir = parent.resolve("occupied").toFile();

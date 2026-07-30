@@ -1,0 +1,10 @@
+NMOX Studio
+Copyright 2024-2026 New Media On X
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/):
+the Apache NetBeans Platform, which this application builds upon.
+
+Vendored third-party components (TextMate grammars, the js-debug
+adapter, classic web libraries) keep their own licenses, recorded in
+the NOTICE files beside them in the source tree.

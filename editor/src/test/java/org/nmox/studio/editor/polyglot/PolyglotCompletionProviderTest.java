@@ -28,6 +28,24 @@ class PolyglotCompletionProviderTest {
         assertThat(PolyglotCompletionProvider.KEYWORDS.get("text/x-go")).contains("func", "chan", "go", "defer");
     }
 
+    @Test
+    @DisplayName("Svelte offers runes, template blocks, directives, and lifecycle imports")
+    void svelteKeywords() {
+        Set<String> svelte = PolyglotCompletionProvider.KEYWORDS.get("text/x-svelte");
+        // Svelte 5 runes
+        assertThat(svelte).contains("$state", "$derived", "$derived.by", "$effect",
+                "$props", "$bindable", "$inspect", "$host");
+        // template blocks and tags
+        assertThat(svelte).contains("#if", ":else", "/if", "#each", "/each",
+                "#await", ":then", ":catch", "/await", "#key", "/key",
+                "#snippet", "/snippet", "@render", "@html", "@const", "@debug", "@attach");
+        // directives
+        assertThat(svelte).contains("bind:", "on:", "use:", "transition:",
+                "in:", "out:", "animate:", "class:", "style:");
+        // component lifecycle imports
+        assertThat(svelte).contains("onMount", "onDestroy", "tick", "untrack");
+    }
+
     // ---- prefix walk -------------------------------------------------------
 
     @Test

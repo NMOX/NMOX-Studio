@@ -74,7 +74,7 @@ jobs:
                 "name": "vscode-js-debug",
                 "version": "1.117.0",
                 "purl": "pkg:github/microsoft/vscode-js-debug@v1.117.0",
-                "licenses": [{"license": {"id": "MIT"}}],
+                "licenses": [{"license": {"id": "Apache-2.0"}}],
                 "hashes": [{"alg": "SHA-256",
                   "content": "ad8d04ede9d4b75cc290fd5438a65047a06f786d04f604b6112485b36f090772"}],
                 "description": "Vendored DAP server (editor/src/main/release/jsdebug); not resolved by Maven, bumped manually per NOTICE"

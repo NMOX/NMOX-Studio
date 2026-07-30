@@ -112,4 +112,41 @@ class ToggleLineCommentActionTest {
         toggleAll(d, "//");
         assertThat(text(d)).isEqualTo("        // deeplyIndented();");
     }
+
+    // ---- block pair (Svelte/Vue markup: <!-- -->) ----------------------
+
+    /** Block-toggle over the whole buffer. */
+    private static void toggleBlockAll(PlainDocument d) throws BadLocationException {
+        ToggleLineCommentAction.toggleBlock(d, 0, d.getLength(), "<!--", "-->");
+    }
+
+    @Test
+    @DisplayName("Block pair: each line wraps at its indent and round-trips back")
+    void blockPairRoundTrips() throws BadLocationException {
+        String original = "<main>\n  <p>hi</p>\n</main>";
+        PlainDocument d = doc(original);
+        toggleBlockAll(d);
+        assertThat(text(d)).isEqualTo(
+                "<!-- <main> -->\n  <!-- <p>hi</p> -->\n<!-- </main> -->");
+        toggleBlockAll(d);
+        assertThat(text(d)).isEqualTo(original);
+    }
+
+    @Test
+    @DisplayName("Block pair: blank lines are skipped and a mixed block comments the rest")
+    void blockPairBlankAndMixed() throws BadLocationException {
+        PlainDocument d = doc("<a></a>\n\n<!-- done -->");
+        toggleBlockAll(d);
+        // not all-commented, so everything non-blank wraps (the already
+        // wrapped line double-wraps — the line-prefix rule, same shape)
+        assertThat(text(d)).isEqualTo("<!-- <a></a> -->\n\n<!-- <!-- done --> -->");
+    }
+
+    @Test
+    @DisplayName("Block pair: unwrap tolerates tight markers and trailing spaces")
+    void blockPairTightUnwrap() throws BadLocationException {
+        PlainDocument d = doc("<!--tight-->");
+        toggleBlockAll(d);
+        assertThat(text(d)).isEqualTo("tight");
+    }
 }

@@ -3,11 +3,18 @@ package org.nmox.studio.editor.polyglot;
 import java.util.Map;
 
 /**
- * Line-comment syntax per MIME type - the one piece of language
- * knowledge the typing tools need. Mimes not listed here don't get
- * comment toggling.
+ * Comment syntax per MIME type - the one piece of language knowledge
+ * the typing tools need. Most languages carry a line-comment prefix;
+ * the markup component dialects (Svelte, Vue) have only the HTML
+ * block pair, kept in their own map so the toggle action can wrap
+ * lines instead of prefixing them. Mimes listed in neither map don't
+ * get comment toggling.
  */
 public final class LanguageComments {
+
+    /** A block-comment pair for languages with no line comment. */
+    public record BlockComment(String open, String close) {
+    }
 
     private static final Map<String, String> LINE_COMMENT = Map.ofEntries(
             Map.entry("text/javascript", "//"),
@@ -85,11 +92,22 @@ public final class LanguageComments {
             Map.entry("text/x-dockerfile", "#"),
             Map.entry("text/x-sql", "--"));
 
+    // Component markup dialects: a .svelte/.vue file is markup at the
+    // top level, and HTML has no line comment — only the block pair.
+    private static final Map<String, BlockComment> BLOCK_COMMENT = Map.ofEntries(
+            Map.entry("text/x-svelte", new BlockComment("<!--", "-->")),
+            Map.entry("text/x-vue", new BlockComment("<!--", "-->")));
+
     private LanguageComments() {
     }
 
     /** The line-comment prefix for a mime, or null when unknown. */
     public static String lineCommentFor(String mimeType) {
         return mimeType == null ? null : LINE_COMMENT.get(mimeType);
+    }
+
+    /** The block-comment pair for a mime with no line comment, or null. */
+    public static BlockComment blockCommentFor(String mimeType) {
+        return mimeType == null ? null : BLOCK_COMMENT.get(mimeType);
     }
 }

@@ -75,6 +75,7 @@ public final class EnvironmentDoctor {
                 new String[]{"fortls", "Fortran language server — completion/hover in the editor", "pip install fortls"},
                 new String[]{"v-analyzer", "V language server — completion/hover in the editor", "v install v-analyzer"},
                 new String[]{"ada_language_server", "Ada language server — ships with GNAT/Alire toolchains", "alr toolchain --select"},
+                new String[]{"svelteserver", "Svelte language server — completion/hover in .svelte files", "npm install -g svelte-language-server"},
                 new String[]{"gst", "GNU Smalltalk — the classic live-object language, REPL space", "brew install gnu-smalltalk"},
                 new String[]{"swipl", "SWI-Prolog — logic programming, REPL space", "brew install swi-prolog"},
                 new String[]{"tclsh", "Tcl — the embeddable scripting classic, REPL space", "ships with macOS / brew install tcl-tk"},
