@@ -76,6 +76,7 @@ the Welcome tab):
 | **⌘I** | Quick Search — reaches everything (see §9) |
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
+| **⌥⌘3** | IRC chat client |
 | **⌥⌘4** | Browser (in-app WebKit) |
 | **⌥⌘5** | Block Studio |
 | **⌥⌘6** | Contract Studio (Web3) |
@@ -525,6 +526,64 @@ cloud-init user data on nodes that take it); **Destroy stack** tears down
 with the monthly cost of what you're destroying framed in the confirm
 dialog. Right-click a deployed node to copy its ssh command. The design
 persists to `.nmoxinfra.json`.
+
+### IRC (⌥⌘3)
+
+A real IRC client in a tab: networks and channels in a tree on the
+left, a styled transcript (mIRC colors, `/me` actions, clickable links
+that open in the in-app Browser), the channel's nick list on the right
+(away users dimmed), and an input line with **Tab nick completion**
+(repeat Tab to cycle) and **Up/Down input history**. **Nothing connects
+at boot** — the first connection is always your Connect button press.
+
+**Connecting.** freenode ships as the default network (Libera.Chat and
+OFTC as presets). Select a network in the tree and press **Connect**,
+or `/connect host [port]` for an ad-hoc server. Right-click the tree
+for **Add / Edit / Delete Network…** — the form takes host, port, TLS,
+nick, SASL account, password, and autojoin channels. The password goes
+**only to your OS keychain**, never to a settings file; deleting a
+network deletes its keychain entry with it.
+
+**SASL and NickServ.** With a SASL account set, the client
+authenticates in-registration (IRCv3 SASL PLAIN — what Libera.Chat
+expects); a failure shows an honest transcript line and never retries
+your password. Without one, the same keychain password identifies to
+NickServ after connect. The client also negotiates `server-time`
+(replayed history keeps its real timestamps), `echo-message`,
+`multi-prefix`, `away-notify`, `account-notify`, and `message-tags`
+when the server offers them.
+
+**Mentions.** A message containing your nick (or any keyword you add to
+the config) gets a highlighted background, a red badge count on the
+channel's tree row, and — when the IRC tab is hidden — a desktop
+notification that clicks through to the channel. **⌘F** opens a find
+bar over the transcript (highlight-all, Enter cycles, Esc closes).
+
+**Logging.** Conversations log to plain text under
+`~/.nmox/irc-logs/<network>/<channel>/YYYY-MM-DD.log`, one file per
+day. `/log off` and `/log on` toggle it (persisted); NickServ and
+ChanServ traffic is **never** written to disk.
+
+**Commands** (`/help` lists these in-app):
+
+| Command | Does |
+|---|---|
+| `/connect [host [port]]` | connect the selected (or an ad-hoc) network |
+| `/join #chan` · `/part [#chan]` | enter / leave a channel |
+| `/msg nick text` · `/query nick` | private message / open a query tab |
+| `/me action` · `/notice target text` | action line / NOTICE |
+| `/nick newnick` · `/topic [text]` | change nick / show or set topic |
+| `/whois nick` | a tidy card: user@host, server, channels, idle, account |
+| `/list [pattern]` | channel browser — filter, sort, double-click to join |
+| `/ignore [nick]` · `/unignore nick` | drop someone's messages silently (per network, persisted) |
+| `/away [message]` | mark yourself away / back |
+| `/log [on\|off]` | per-channel logging |
+| `/ctcp nick VERSION\|PING` | CTCP query |
+| `/raw LINE` · `/quit [message]` | raw protocol line / disconnect for good |
+
+Closing the tab does **not** disconnect — a chat client outlives its
+window; reopen the tab and you're still in every channel. Only
+Disconnect or `/quit` ends a session.
 
 ## 7. Docker
 

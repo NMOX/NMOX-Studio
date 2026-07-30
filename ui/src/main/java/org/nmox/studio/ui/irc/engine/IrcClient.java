@@ -10,7 +10,9 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -57,6 +59,14 @@ import org.openide.util.RequestProcessor;
  * keychain at that moment, never stored on this object, never logged,
  * and never echoed to listeners (outgoing lines don't fire
  * {@link Listener#lineReceived}).
+ *
+ * <p><b>IRCv3 (v1.205.0):</b> registration opens with {@code CAP LS
+ * 302} and requests {@link #SUPPORTED_CAPS} ∩ offered; when the profile
+ * names a SASL account and the keychain holds a password, SASL PLAIN
+ * runs BEFORE {@code CAP END} (so a services-gated network sees an
+ * authenticated registration), with 904-style failures surfacing as
+ * honest lines and never a password retry loop. A pre-IRCv3 server
+ * simply ignores the CAP line and its 001 clears the negotiation state.
  */
 public final class IrcClient {
 
@@ -120,21 +130,44 @@ public final class IrcClient {
      * @param realName       the USER real-name field; null falls back to nick
      * @param serverPassword optional PASS value, or null; callers should
      *                       source one from a keychain, never from prefs
+     * @param saslAccount    SASL PLAIN account name, or null/empty for
+     *                       none (the NickServ-after-001 fallback runs
+     *                       instead); the password is read from
+     *                       {@link IrcSecrets} at authenticate time
      */
     public record Profile(String network, String host, int port, boolean tls,
-            String nick, String realName, String serverPassword) {
+            String nick, String realName, String serverPassword, String saslAccount) {
 
-        /** The common shape: no server password, real name = nick. */
+        /** The common shape: no server password, no SASL, real name = nick. */
         public Profile(String network, String host, int port, boolean tls, String nick) {
-            this(network, host, port, tls, nick, null, null);
+            this(network, host, port, tls, nick, null, null, null);
         }
     }
+
+    /**
+     * The IRCv3 capabilities this client understands and will request
+     * when the server offers them. {@code sasl} is requested only when
+     * the profile carries a SASL account AND the keychain a password.
+     */
+    static final Set<String> SUPPORTED_CAPS = Set.of(
+            "sasl", "server-time", "message-tags", "multi-prefix",
+            "away-notify", "account-notify", "echo-message");
 
     private final Profile profile;
     private final RequestProcessor rp;
     private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
     /** lowercase channel → original-case channel, for auto-rejoin. */
     private final Map<String, String> joinedChannels = new ConcurrentHashMap<>();
+
+    /** Caps the server ACKed this session; cleared on every (re)dial. */
+    private final Set<String> enabledCaps = ConcurrentHashMap.newKeySet();
+    /** Caps the server's CAP LS offered (engine thread only). */
+    private final Set<String> offeredCaps = new java.util.HashSet<>();
+    /** True from CAP LS until CAP END/001 (engine thread only). */
+    private boolean capNegotiating;
+
+    /** Lowercased nicks whose PRIVMSG/NOTICE are dropped before listeners. */
+    private volatile Set<String> ignoredNicks = Set.of();
 
     private final Object writeLock = new Object();
     private BufferedWriter out; // guarded by writeLock
@@ -178,6 +211,30 @@ public final class IrcClient {
     /** Channels we consider ourselves in (used for auto-rejoin). */
     public List<String> joinedChannels() {
         return new ArrayList<>(joinedChannels.values());
+    }
+
+    /**
+     * True when the server ACKed the named IRCv3 capability this
+     * session. The UI keys behavior off this — e.g. with
+     * {@code echo-message} active it skips the local echo of a sent
+     * PRIVMSG, because the server will echo it back.
+     */
+    public boolean capEnabled(String cap) {
+        return enabledCaps.contains(cap);
+    }
+
+    /**
+     * Replaces the ignore set: PRIVMSG/NOTICE (including CTCP) from
+     * these nicks are dropped BEFORE listeners fire — no transcript, no
+     * log, no auto-reply. JOIN/PART/QUIT still flow (presence isn't
+     * speech). Case-insensitive; callable from any thread.
+     */
+    public void setIgnoredNicks(java.util.Collection<String> nicks) {
+        Set<String> lower = new java.util.HashSet<>();
+        for (String n : nicks) {
+            lower.add(n.toLowerCase(Locale.ROOT));
+        }
+        this.ignoredNicks = Set.copyOf(lower);
     }
 
     /**
@@ -318,6 +375,14 @@ public final class IrcClient {
     }
 
     private void register() {
+        // IRCv3 first: a capable server holds 001 until CAP END; a
+        // pre-CAP server silently ignores this line and sends 001, which
+        // clears the negotiation state (honest degradation, no timeout
+        // machinery needed)
+        capNegotiating = true;
+        offeredCaps.clear();
+        enabledCaps.clear();
+        sendNow("CAP LS 302");
         String pass = profile.serverPassword();
         if (pass != null && !pass.isEmpty()) {
             sendNow("PASS " + pass);
@@ -325,6 +390,108 @@ public final class IrcClient {
         sendNow("NICK " + currentNick);
         sendNow("USER " + userName(profile.nick()) + " 0 * :"
                 + (profile.realName() == null ? profile.nick() : profile.realName()));
+    }
+
+    // ---- IRCv3 capability negotiation + SASL PLAIN -----------------------
+
+    /** True when the profile names a SASL account and the keychain has a password. */
+    private boolean wantsSasl() {
+        return profile.saslAccount() != null && !profile.saslAccount().isEmpty()
+                && !IrcSecrets.read(profile.network()).isEmpty();
+    }
+
+    /**
+     * One {@code CAP} subcommand from the server (engine thread).
+     * LS may span lines ({@code CAP * LS * :…} continuations); the REQ
+     * goes out when the last LS line lands, asking for exactly
+     * {@link #SUPPORTED_CAPS} ∩ offered (sasl only when usable).
+     */
+    private void handleCap(IrcMessage msg) {
+        String sub = msg.param(1);
+        String blob = msg.trailing() == null ? "" : msg.trailing();
+        switch (sub) {
+            case "LS" -> {
+                for (String token : blob.split(" ")) {
+                    if (token.isEmpty()) {
+                        continue;
+                    }
+                    int eq = token.indexOf('='); // sasl=PLAIN,EXTERNAL → sasl
+                    offeredCaps.add(eq < 0 ? token : token.substring(0, eq));
+                }
+                boolean moreComing = "*".equals(msg.param(2)) && msg.params().size() > 3;
+                if (moreComing || !capNegotiating) {
+                    return;
+                }
+                List<String> want = new ArrayList<>();
+                for (String cap : SUPPORTED_CAPS) {
+                    if (!offeredCaps.contains(cap)) {
+                        continue;
+                    }
+                    if ("sasl".equals(cap) && !wantsSasl()) {
+                        continue; // requesting sasl we won't use just stalls registration
+                    }
+                    want.add(cap);
+                }
+                if (want.isEmpty()) {
+                    capEnd();
+                } else {
+                    want.sort(null); // deterministic wire order (tests pin it)
+                    sendNow("CAP REQ :" + String.join(" ", want));
+                }
+            }
+            case "ACK" -> {
+                for (String token : blob.split(" ")) {
+                    if (token.isEmpty()) {
+                        continue;
+                    }
+                    if (token.startsWith("-")) {
+                        enabledCaps.remove(token.substring(1));
+                    } else {
+                        enabledCaps.add(token);
+                    }
+                }
+                if (capNegotiating) {
+                    if (enabledCaps.contains("sasl") && wantsSasl()) {
+                        sendNow("AUTHENTICATE PLAIN"); // 903/904-907 end negotiation
+                    } else {
+                        capEnd();
+                    }
+                }
+            }
+            case "NAK" ->
+                capEnd(); // the server refused the set; register without extras
+            case "DEL" -> {
+                for (String token : blob.split(" ")) {
+                    enabledCaps.remove(token);
+                }
+            }
+            default -> {
+                // NEW and friends: nothing to do mid-session
+            }
+        }
+    }
+
+    /**
+     * The server's {@code AUTHENTICATE +} go-ahead: read the password
+     * from the keychain NOW (never held on a field), send the PLAIN
+     * payload in spec-sized chunks, and let the credential go.
+     */
+    private void handleAuthenticate(IrcMessage msg) {
+        if (!"+".equals(msg.param(0)) && !"+".equals(msg.trailing())) {
+            return; // not the empty-challenge go-ahead PLAIN expects
+        }
+        String password = IrcSecrets.read(profile.network());
+        for (String chunk : SaslPlain.chunks(profile.saslAccount(), password)) {
+            sendNow("AUTHENTICATE " + chunk);
+        }
+    }
+
+    /** Ends capability negotiation exactly once; registration resumes. */
+    private void capEnd() {
+        if (capNegotiating) {
+            capNegotiating = false;
+            sendNow("CAP END");
+        }
     }
 
     /** The USER field must be a simple word; derive one from the nick. */
@@ -347,10 +514,31 @@ public final class IrcClient {
             LOG.log(Level.FINE, "unparseable IRC line dropped: {0}", ex.getMessage());
             return;
         }
+        // the ignore law: an ignored nick's speech (and only speech —
+        // presence still flows) is dropped before ANY listener, log, or
+        // auto-reply sees it
+        if (("PRIVMSG".equals(msg.command()) || "NOTICE".equals(msg.command()))
+                && msg.nick() != null
+                && ignoredNicks.contains(msg.nick().toLowerCase(Locale.ROOT))) {
+            return;
+        }
         switch (msg.command()) {
             case "PING" ->
                 sendNow("PONG :" + msg.param(0));
+            case "CAP" ->
+                handleCap(msg);
+            case "AUTHENTICATE" ->
+                handleAuthenticate(msg);
+            case "903" ->
+                capEnd(); // SASL success; registration resumes
+            case "904", "905", "906", "907" ->
+                // SASL failure: honest line reaches the UI via the fan-out
+                // below; registration continues WITHOUT retrying the
+                // password (a retry loop against a wrong credential is a
+                // lockout machine)
+                capEnd();
             case "001" -> {
+                capNegotiating = false; // a pre-CAP server never answered CAP LS
                 currentNick = msg.param(0).isEmpty() ? currentNick : msg.param(0);
                 backoffMs = baseBackoffMs; // a good registration resets the clock
                 setState(State.READY);
@@ -427,9 +615,15 @@ public final class IrcClient {
     /**
      * The one place a NickServ password is used: read from the keychain
      * (or its in-memory fallback) at identify time, sent, and let go.
-     * Never logged, never kept on a field.
+     * Never logged, never kept on a field. Runs only for profiles
+     * WITHOUT a SASL account — with one, the same keychain entry was
+     * already spent on AUTHENTICATE before registration completed, and
+     * identifying twice would just wake NickServ for nothing.
      */
     private void identifyWithNickServ() {
+        if (profile.saslAccount() != null && !profile.saslAccount().isEmpty()) {
+            return;
+        }
         String password = IrcSecrets.read(profile.network());
         if (!password.isEmpty()) {
             sendNow("PRIVMSG NickServ :IDENTIFY " + password);

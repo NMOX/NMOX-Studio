@@ -3,8 +3,17 @@ package org.nmox.studio.ui.irc;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.net.URI;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -17,19 +26,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -39,23 +56,34 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.nmox.studio.core.spi.EmbeddedBrowser;
 import org.nmox.studio.ui.irc.engine.IrcClient;
 import org.nmox.studio.ui.irc.engine.IrcConfig;
+import org.nmox.studio.ui.irc.engine.IrcLogger;
 import org.nmox.studio.ui.irc.protocol.Ctcp;
 import org.nmox.studio.ui.irc.protocol.IrcMessage;
 import org.nmox.studio.ui.irc.protocol.MircFormat;
+import org.nmox.studio.ui.irc.protocol.NickPrefix;
 import org.nmox.studio.ui.irc.protocol.Numerics;
+import org.nmox.studio.ui.irc.protocol.ServerTime;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
- * The IRC client window (⌥⌘3, v1.204.0): networks and channels in a
- * tree on the left, a styled transcript in the middle (timestamps,
- * colored nicks, mIRC formatting, {@code /me} actions), the channel's
- * nick list on the right, topic on top, input line + Connect button on
- * the bottom. A real chat client, docked like every other studio tab.
+ * The IRC client window (⌥⌘3, v1.204.0; grown advanced in v1.205.0):
+ * networks and channels in a tree on the left, a styled transcript in
+ * the middle (timestamps — server-time-honest when the network sends
+ * {@code @time} tags — colored nicks, mIRC formatting, {@code /me}
+ * actions, clickable URLs into the in-app Browser), the channel's nick
+ * list on the right (away nicks dimmed), topic on top, input line with
+ * Tab nick completion and Up/Down history + Connect button on the
+ * bottom. Mentions highlight, badge the tree, and post a platform
+ * notification when the window is hidden; ⌘F opens a find bar; per-
+ * channel daily logs land under {@code ~/.nmox/irc-logs}. A real chat
+ * client, docked like every other studio tab.
  *
  * <p><b>House laws it lives by:</b>
  * <ul>
@@ -68,14 +96,15 @@ import org.openide.windows.TopComponent;
  *     callbacks on its own RequestProcessor thread; the {@link Bridge}
  *     adapter marshals every one through
  *     {@code SwingUtilities.invokeLater} before any component is
- *     touched.</li>
+ *     touched. Log writes ride {@link IrcLogger}'s own lane.</li>
  * <li><b>Connections outlive the window</b> — clients live in a static
  *     registry; closing the tab detaches this window's listeners
  *     (symmetry law) but leaves the chat connected, and a reopen
  *     re-attaches without double-delivery (one bridge per network per
  *     window, plus the engine's equality-guarded add).</li>
- * <li><b>Secrets</b> — NickServ passwords ride the OS keychain via
- *     {@code IrcSecrets}; nothing here echoes one.</li>
+ * <li><b>Secrets</b> — NickServ/SASL passwords ride the OS keychain via
+ *     {@code IrcSecrets}; nothing here echoes one, and services queries
+ *     are never logged.</li>
  * </ul>
  */
 @TopComponent.Description(preferredID = "IrcTopComponent",
@@ -121,6 +150,17 @@ public final class IrcTopComponent extends TopComponent {
 
     private static final Color STATUS_COLOR = new Color(0x8A9BA8);
     private static final Color STAMP_COLOR = new Color(0x607D8B);
+    /** Background wash behind a line that mentioned you. */
+    private static final Color HIGHLIGHT_BG = new Color(0x4A3320);
+    /** Link blue for detected URLs. */
+    private static final Color LINK_COLOR = new Color(0x64B5F6);
+    /** Tree badge red for unread mentions. */
+    private static final Color MENTION_COLOR = new Color(0xEF5350);
+    /** Find-bar highlight-all wash. */
+    private static final Color FIND_MATCH = new Color(0x5A5220);
+
+    /** Style attribute carrying a clickable URL on a transcript run. */
+    private static final String ATTR_URL = "nmox.irc.url";
 
     /** A tree row: a network ({@code target == ""}) or one of its targets. */
     private record TargetRef(String network, String target) {
@@ -135,6 +175,19 @@ public final class IrcTopComponent extends TopComponent {
     private final Map<String, Map<String, String>> nickLists = new HashMap<>();
     private final Map<String, Set<String>> pendingNames = new HashMap<>();
     private final Set<String> unread = new HashSet<>();
+    /** key → unread MENTION count (distinct from the plain-unread bold). */
+    private final Map<String, Integer> mentions = new HashMap<>();
+    /** network → lowercased nicks currently marked away (away-notify + 301). */
+    private final Map<String, Set<String>> awayNicks = new HashMap<>();
+    /** per-target input recall (never persisted). */
+    private final Map<String, InputHistory> histories = new HashMap<>();
+    /** network → the collector armed by an in-flight {@code /list}. */
+    private final Map<String, ChannelListCollector> listCollectors = new HashMap<>();
+    /** network → WHOIS assembler (card rendered on 318). */
+    private final Map<String, WhoisCollector> whoisCollectors = new HashMap<>();
+
+    private final NickCompleter completer = new NickCompleter();
+    private final IrcLogger logger = IrcLogger.getDefault();
 
     private DefaultMutableTreeNode rootNode;
     private DefaultTreeModel treeModel;
@@ -148,6 +201,13 @@ public final class IrcTopComponent extends TopComponent {
     private JLabel topicLabel;
     private JTextField input;
     private JButton connectButton;
+
+    // ---- find bar (⌘F) ----
+    private JPanel findBar;
+    private JTextField findField;
+    private JLabel findCount;
+    private List<Integer> findMatches = List.of();
+    private int lastFindPos = -1;
 
     private String activeKey;
 
@@ -166,6 +226,7 @@ public final class IrcTopComponent extends TopComponent {
             buildUi();
             IrcConfig config = IrcConfig.getDefault();
             config.ensureDefaults();
+            logger.setEnabled(config.isLoggingEnabled());
             for (IrcConfig.Network n : config.networks()) {
                 ensureNetworkNode(n.name());
             }
@@ -207,19 +268,49 @@ public final class IrcTopComponent extends TopComponent {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         tree.setCellRenderer(new UnreadBoldRenderer());
         tree.addTreeSelectionListener(e -> onTreeSelection());
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                maybeTreePopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                maybeTreePopup(e);
+            }
+        });
 
         transcript = new JTextPane();
         transcript.setEditable(false);
         transcript.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+        transcript.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String url = urlAt(e);
+                if (url != null) {
+                    openUrl(url);
+                }
+            }
+        });
+        transcript.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                transcript.setCursor(urlAt(e) != null
+                        ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                        : Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+            }
+        });
 
         nickList = new JList<>(nickModel);
         nickList.setPrototypeCellValue("@a-rather-long-nickname");
+        nickList.setCellRenderer(new AwayAwareNickRenderer());
 
         topicLabel = new JLabel(" ");
         topicLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
         input = new JTextField();
         input.addActionListener(e -> onInput());
+        installInputKeys();
         connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> onConnectButton());
 
@@ -228,8 +319,13 @@ public final class IrcTopComponent extends TopComponent {
         bottom.add(input, BorderLayout.CENTER);
         bottom.add(connectButton, BorderLayout.EAST);
 
+        buildFindBar();
+        JPanel north = new JPanel(new BorderLayout());
+        north.add(topicLabel, BorderLayout.NORTH);
+        north.add(findBar, BorderLayout.SOUTH);
+
         JPanel center = new JPanel(new BorderLayout());
-        center.add(topicLabel, BorderLayout.NORTH);
+        center.add(north, BorderLayout.NORTH);
         center.add(new JScrollPane(transcript), BorderLayout.CENTER);
 
         JScrollPane treeScroll = new JScrollPane(tree);
@@ -245,9 +341,24 @@ public final class IrcTopComponent extends TopComponent {
 
         add(main, BorderLayout.CENTER);
         add(bottom, BorderLayout.SOUTH);
+
+        // ⌘F anywhere in the tab toggles the find bar
+        KeyStroke find = KeyStroke.getKeyStroke(KeyEvent.VK_F,
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(find, "irc-find");
+        getActionMap().put("irc-find", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                toggleFindBar();
+            }
+        });
     }
 
-    /** Bolds tree rows with unread activity (the simple unread marker). */
+    /**
+     * Bolds tree rows with unread activity; rows with unread MENTIONS
+     * additionally go red with a count — "someone said my name" must
+     * read differently from "someone said something".
+     */
     private final class UnreadBoldRenderer extends DefaultTreeCellRenderer {
 
         @Override
@@ -257,10 +368,43 @@ public final class IrcTopComponent extends TopComponent {
             Object user = value instanceof DefaultMutableTreeNode n ? n.getUserObject() : null;
             boolean bold = false;
             if (user instanceof TargetRef ref) {
-                setText(ref.target().isEmpty() ? ref.network() : ref.target());
-                bold = unread.contains(key(ref.network(), ref.target()));
+                String k = key(ref.network(), ref.target());
+                String label = ref.target().isEmpty() ? ref.network() : ref.target();
+                int mentionCount = mentions.getOrDefault(k, 0);
+                if (mentionCount > 0) {
+                    setText(label + " (" + mentionCount + ")");
+                    if (!sel) {
+                        setForeground(MENTION_COLOR);
+                    }
+                    bold = true;
+                } else {
+                    setText(label);
+                    bold = unread.contains(k);
+                }
             }
             c.setFont(c.getFont().deriveFont(bold ? Font.BOLD : Font.PLAIN));
+            return c;
+        }
+    }
+
+    /** Away nicks render dim italic (away-notify keeps the set fresh). */
+    private final class AwayAwareNickRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            Component c = super.getListCellRendererComponent(list, value, index,
+                    isSelected, cellHasFocus);
+            String display = String.valueOf(value);
+            Set<String> away = awayNicks.get(activeNetwork());
+            boolean isAway = away != null
+                    && away.contains(NickPrefix.strip(display).toLowerCase(Locale.ROOT));
+            if (isAway) {
+                c.setFont(c.getFont().deriveFont(Font.ITALIC));
+                if (!isSelected) {
+                    c.setForeground(STATUS_COLOR);
+                }
+            }
             return c;
         }
     }
@@ -323,10 +467,12 @@ public final class IrcTopComponent extends TopComponent {
         }
         activeKey = key(ref.network(), ref.target());
         unread.remove(activeKey);
+        mentions.remove(activeKey); // looking at it clears the badge
         transcript.setDocument(docForKey(activeKey));
         transcript.setCaretPosition(transcript.getDocument().getLength());
         topicLabel.setText(topics.getOrDefault(activeKey, " "));
         rebuildNickModel();
+        completer.reset();
         IrcConfig.getDefault().setLastSelected(ref.network());
         refreshConnectButton();
         tree.repaint();
@@ -340,31 +486,66 @@ public final class IrcTopComponent extends TopComponent {
         }
         List<String> sorted = new ArrayList<>(nicks.values());
         sorted.sort(Comparator
-                .comparingInt((String s) -> prefixRank(s))
-                .thenComparing(s -> stripPrefix(s).toLowerCase(Locale.ROOT)));
+                .comparingInt((String s) -> NickPrefix.rank(s))
+                .thenComparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
         for (String n : sorted) {
             nickModel.addElement(n);
         }
     }
 
-    private static int prefixRank(String display) {
-        if (display.isEmpty()) {
-            return 3;
+    // ------------------------------------------------------ tree popup
+
+    private void maybeTreePopup(MouseEvent e) {
+        if (!e.isPopupTrigger()) {
+            return;
         }
-        return switch (display.charAt(0)) {
-            case '~', '&', '@' -> 0;   // ops (owner/admin fold in with ops)
-            case '%' -> 1;             // half-op
-            case '+' -> 2;             // voice
-            default -> 3;
-        };
+        TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+        if (path != null) {
+            tree.setSelectionPath(path);
+        }
+        TargetRef ref = selectedRef();
+        JPopupMenu menu = new JPopupMenu();
+        JMenuItem add = new JMenuItem("Add Network…");
+        add.addActionListener(a -> {
+            String name = NetworkEditorDialog.show(IrcConfig.getDefault(), null);
+            if (name != null) {
+                ensureNetworkNode(name);
+                selectNetwork(name);
+            }
+        });
+        menu.add(add);
+        if (ref != null) {
+            String network = ref.network();
+            JMenuItem edit = new JMenuItem("Edit Network…");
+            edit.addActionListener(a -> {
+                IrcConfig config = IrcConfig.getDefault();
+                IrcConfig.Network existing = config.network(network);
+                if (existing != null) {
+                    NetworkEditorDialog.show(config, existing);
+                }
+            });
+            menu.add(edit);
+            JMenuItem delete = new JMenuItem("Delete Network…");
+            delete.addActionListener(a -> deleteNetwork(network));
+            menu.add(delete);
+        }
+        menu.show(tree, e.getX(), e.getY());
     }
 
-    private static String stripPrefix(String display) {
-        int i = 0;
-        while (i < display.length() && "~&@%+".indexOf(display.charAt(i)) >= 0) {
-            i++;
+    private void deleteNetwork(String network) {
+        if (!NetworkEditorDialog.confirmAndDelete(IrcConfig.getDefault(), network)) {
+            return;
         }
-        return display.substring(i);
+        IrcClient client = SESSIONS.remove(network);
+        if (client != null) {
+            client.quitAndClose("network removed");
+        }
+        DefaultMutableTreeNode node = networkNodes.remove(network);
+        if (node != null) {
+            treeModel.removeNodeFromParent(node);
+        }
+        targetNodes.keySet().removeIf(k -> k.startsWith(network + '\u0000'));
+        refreshConnectButton();
     }
 
     // ------------------------------------------------------ transcript
@@ -373,7 +554,7 @@ public final class IrcTopComponent extends TopComponent {
         return docs.computeIfAbsent(k, x -> new DefaultStyledDocument());
     }
 
-    private void append(String k, List<Object[]> runs) {
+    private void append(String k, List<Object[]> runs, boolean mention) {
         StyledDocument doc = docForKey(k);
         try {
             for (Object[] run : runs) {
@@ -387,6 +568,9 @@ public final class IrcTopComponent extends TopComponent {
             transcript.setCaretPosition(doc.getLength());
         } else {
             unread.add(k);
+            if (mention) {
+                mentions.merge(k, 1, Integer::sum);
+            }
             tree.repaint();
         }
     }
@@ -410,41 +594,314 @@ public final class IrcTopComponent extends TopComponent {
         return index >= 0 && index < MIRC_COLORS.length ? MIRC_COLORS[index] : null;
     }
 
-    private List<Object[]> stampedRuns() {
+    /** The transcript timestamp: the server's {@code @time} tag when present, else now. */
+    private static String stampOf(IrcMessage msg) {
+        return ServerTime.localTime(msg.tags().get("time"))
+                .map(STAMP::format)
+                .orElseGet(() -> STAMP.format(LocalTime.now()));
+    }
+
+    private static String stampNow() {
+        return STAMP.format(LocalTime.now());
+    }
+
+    private List<Object[]> stampedRuns(String stamp) {
         List<Object[]> runs = new ArrayList<>(6);
-        runs.add(new Object[] {"[" + STAMP.format(LocalTime.now()) + "] ",
-            attrs(STAMP_COLOR, false, false, false)});
+        runs.add(new Object[] {"[" + stamp + "] ", attrs(STAMP_COLOR, false, false, false)});
         return runs;
     }
 
     /** A chat line: {@code [HH:mm] <nick> text} or {@code [HH:mm] * nick text}. */
     private void appendChat(String k, String nick, String body, boolean action) {
-        List<Object[]> runs = stampedRuns();
-        if (action) {
-            runs.add(new Object[] {"* " + nick + " ", attrs(nickColor(nick), false, true, false)});
-        } else {
-            runs.add(new Object[] {"<" + nick + "> ", attrs(nickColor(nick), true, false, false)});
+        appendChat(k, nick, body, action, stampNow(), false);
+    }
+
+    /**
+     * A chat line with an explicit timestamp and highlight flag. URLs
+     * inside the body become underlined link-colored runs carrying
+     * {@link #ATTR_URL}; a highlighted (mention) line gets a warm
+     * background wash and, off-screen, a tree badge.
+     */
+    private void appendChat(String k, String nick, String body, boolean action,
+            String stamp, boolean highlight) {
+        List<Object[]> runs = stampedRuns(stamp);
+        SimpleAttributeSet nickAttrs = action
+                ? attrs(nickColor(nick), false, true, false)
+                : attrs(nickColor(nick), true, false, false);
+        if (highlight) {
+            StyleConstants.setBackground(nickAttrs, HIGHLIGHT_BG);
         }
+        runs.add(new Object[] {action ? "* " + nick + " " : "<" + nick + "> ", nickAttrs});
         for (MircFormat.Span span : MircFormat.parse(body)) {
             if (span.text().isEmpty()) {
                 continue;
             }
-            SimpleAttributeSet a = attrs(mircColor(span.foreground()),
-                    span.bold(), span.italic() || action, span.underline());
-            Color bg = mircColor(span.background());
-            if (bg != null) {
-                StyleConstants.setBackground(a, bg);
-            }
-            runs.add(new Object[] {span.text(), a});
+            appendSpanRuns(runs, span, action, highlight);
         }
-        append(k, runs);
+        append(k, runs, highlight);
+    }
+
+    /** One mIRC span, split further around any URLs it contains. */
+    private void appendSpanRuns(List<Object[]> runs, MircFormat.Span span,
+            boolean action, boolean highlight) {
+        String text = span.text();
+        List<UrlDetector.Range> urls = UrlDetector.find(text);
+        int at = 0;
+        for (UrlDetector.Range r : urls) {
+            if (r.start() > at) {
+                runs.add(new Object[] {text.substring(at, r.start()),
+                    spanAttrs(span, action, highlight)});
+            }
+            String url = r.of(text);
+            SimpleAttributeSet a = attrs(LINK_COLOR, span.bold(),
+                    span.italic() || action, true);
+            if (highlight) {
+                StyleConstants.setBackground(a, HIGHLIGHT_BG);
+            }
+            a.addAttribute(ATTR_URL, url);
+            runs.add(new Object[] {url, a});
+            at = r.end();
+        }
+        if (at < text.length()) {
+            runs.add(new Object[] {text.substring(at), spanAttrs(span, action, highlight)});
+        }
+    }
+
+    private SimpleAttributeSet spanAttrs(MircFormat.Span span, boolean action, boolean highlight) {
+        SimpleAttributeSet a = attrs(mircColor(span.foreground()),
+                span.bold(), span.italic() || action, span.underline());
+        Color bg = mircColor(span.background());
+        if (bg != null) {
+            StyleConstants.setBackground(a, bg);
+        } else if (highlight) {
+            StyleConstants.setBackground(a, HIGHLIGHT_BG);
+        }
+        return a;
     }
 
     /** A grey status line ({@code [HH:mm] text}). */
     private void appendStatus(String k, String text) {
-        List<Object[]> runs = stampedRuns();
+        appendStatus(k, text, stampNow());
+    }
+
+    private void appendStatus(String k, String text, String stamp) {
+        List<Object[]> runs = stampedRuns(stamp);
         runs.add(new Object[] {MircFormat.stripToText(text), attrs(STATUS_COLOR, false, true, false)});
-        append(k, runs);
+        append(k, runs, false);
+    }
+
+    // ------------------------------------------------------ URLs
+
+    /** The URL under the mouse, or null. */
+    private String urlAt(MouseEvent e) {
+        int pos = transcript.viewToModel2D(e.getPoint());
+        if (pos < 0) {
+            return null;
+        }
+        StyledDocument doc = (StyledDocument) transcript.getDocument();
+        Object url = doc.getCharacterElement(pos).getAttributes().getAttribute(ATTR_URL);
+        return url instanceof String s ? s : null;
+    }
+
+    /**
+     * Opens a clicked link: the in-app Browser via the
+     * {@link EmbeddedBrowser} seam when available, the system browser
+     * otherwise — a click on a link must never be dead (the BrowserDevice
+     * idiom).
+     */
+    private void openUrl(String url) {
+        try {
+            EmbeddedBrowser embedded = EmbeddedBrowser.find();
+            if (embedded != null && embedded.open(url)) {
+                return;
+            }
+            if (Desktop.isDesktopSupported()
+                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI.create(url));
+            }
+        } catch (Exception ex) {
+            appendStatus(activeKey != null ? activeKey : key(activeNetwork(), ""),
+                    "Could not open " + url);
+        }
+    }
+
+    // ------------------------------------------------------ find bar (⌘F)
+
+    private void buildFindBar() {
+        findBar = new JPanel(new BorderLayout(6, 0));
+        findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
+        findField = new JTextField();
+        findCount = new JLabel(" ");
+        findBar.add(new JLabel("Find:"), BorderLayout.WEST);
+        findBar.add(findField, BorderLayout.CENTER);
+        findBar.add(findCount, BorderLayout.EAST);
+        findBar.setVisible(false);
+        findField.addActionListener(e -> findNext());
+        findField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                refreshFind();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                refreshFind();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                refreshFind();
+            }
+        });
+        findField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    closeFindBar();
+                    e.consume();
+                }
+            }
+        });
+    }
+
+    private void toggleFindBar() {
+        if (findBar.isVisible()) {
+            closeFindBar();
+        } else {
+            findBar.setVisible(true);
+            findField.requestFocusInWindow();
+            refreshFind();
+        }
+    }
+
+    private void closeFindBar() {
+        findBar.setVisible(false);
+        transcript.getHighlighter().removeAllHighlights();
+        findMatches = List.of();
+        lastFindPos = -1;
+        findCount.setText(" ");
+        input.requestFocusInWindow();
+    }
+
+    /** Recomputes matches + highlight-all for the current query. */
+    private void refreshFind() {
+        transcript.getHighlighter().removeAllHighlights();
+        lastFindPos = -1;
+        String query = findField.getText();
+        String text = transcriptText();
+        findMatches = IrcSearch.matches(text, query);
+        if (query.isEmpty()) {
+            findCount.setText(" ");
+            return;
+        }
+        DefaultHighlighter.DefaultHighlightPainter painter
+                = new DefaultHighlighter.DefaultHighlightPainter(FIND_MATCH);
+        for (int m : findMatches) {
+            try {
+                transcript.getHighlighter().addHighlight(m, m + query.length(), painter);
+            } catch (BadLocationException ex) {
+                // stale offset after concurrent append: skip
+            }
+        }
+        boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
+        findCount.setText(findMatches.size() + (capped ? "+" : "") + " matches");
+        findNext();
+    }
+
+    /** Enter cycles: jump the caret to the next match, wrapping. */
+    private void findNext() {
+        int next = IrcSearch.next(findMatches, lastFindPos);
+        if (next < 0) {
+            return;
+        }
+        lastFindPos = next;
+        int end = Math.min(next + findField.getText().length(),
+                transcript.getDocument().getLength());
+        transcript.setCaretPosition(end);
+        int idx = findMatches.indexOf(next) + 1;
+        boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
+        findCount.setText(idx + " of " + findMatches.size() + (capped ? "+" : ""));
+    }
+
+    private String transcriptText() {
+        try {
+            return transcript.getDocument().getText(0, transcript.getDocument().getLength());
+        } catch (BadLocationException ex) {
+            return "";
+        }
+    }
+
+    // ------------------------------------------------------ input keys
+
+    /**
+     * Tab completes/cycles nicks, Up/Down walk this target's history,
+     * Escape clears the line; any other key resets the completion cycle
+     * (the WeeChat contract).
+     */
+    private void installInputKeys() {
+        input.setFocusTraversalKeysEnabled(false); // Tab is ours now
+        input.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_TAB -> {
+                        NickCompleter.Result r = completer.complete(
+                                input.getText(), input.getCaretPosition(), activeNickNames());
+                        if (r != null) {
+                            input.setText(r.text());
+                            input.setCaretPosition(r.caret());
+                        }
+                        e.consume();
+                    }
+                    case KeyEvent.VK_UP -> {
+                        String prev = historyFor(activeHistoryKey()).up(input.getText());
+                        if (prev != null) {
+                            input.setText(prev);
+                        }
+                        completer.reset();
+                        e.consume();
+                    }
+                    case KeyEvent.VK_DOWN -> {
+                        String next = historyFor(activeHistoryKey()).down();
+                        if (next != null) {
+                            input.setText(next);
+                        }
+                        completer.reset();
+                        e.consume();
+                    }
+                    case KeyEvent.VK_ESCAPE -> {
+                        input.setText("");
+                        completer.reset();
+                        historyFor(activeHistoryKey()).resetCursor();
+                        e.consume();
+                    }
+                    default ->
+                        completer.reset();
+                }
+            }
+        });
+    }
+
+    /** The active channel's bare nicks (prefixes stripped), list order. */
+    private List<String> activeNickNames() {
+        List<String> out = new ArrayList<>();
+        Map<String, String> nicks = nickLists.get(activeKey);
+        if (nicks != null) {
+            List<String> sorted = new ArrayList<>(nicks.values());
+            sorted.sort(Comparator.comparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
+            for (String display : sorted) {
+                out.add(NickPrefix.strip(display));
+            }
+        }
+        return out;
+    }
+
+    private String activeHistoryKey() {
+        return activeKey == null ? key(activeNetwork(), "") : activeKey;
+    }
+
+    private InputHistory historyFor(String k) {
+        return histories.computeIfAbsent(k, x -> new InputHistory());
     }
 
     // ------------------------------------------------------ engine bridge
@@ -509,6 +966,7 @@ public final class IrcTopComponent extends TopComponent {
         String statusKey = key(network, "");
         IrcClient client = SESSIONS.get(network);
         String me = client == null ? "" : client.currentNick();
+        String stamp = stampOf(msg);
         switch (msg.command()) {
             case "PRIVMSG" -> {
                 String sender = msg.nick() == null ? "?" : msg.nick();
@@ -525,22 +983,37 @@ public final class IrcTopComponent extends TopComponent {
                         return;
                     }
                 }
-                String k = isChannel(target)
-                        ? key(network, target)
-                        : key(network, sender); // a query lands under the sender
-                if (!isChannel(target)) {
-                    ensureTargetNode(network, sender);
+                boolean fromSelf = sender.equalsIgnoreCase(me);
+                String targetName;
+                if (isChannel(target)) {
+                    targetName = target;
+                } else if (fromSelf) {
+                    // echo-message: our own line echoed back files under
+                    // the PEER's query, not under our own nick
+                    targetName = target;
                 } else {
-                    ensureTargetNode(network, target);
+                    targetName = sender;
                 }
-                appendChat(k, sender, body, action);
+                String k = key(network, targetName);
+                ensureTargetNode(network, targetName);
+                boolean highlight = !fromSelf && Highlights.matches(me,
+                        IrcConfig.getDefault().highlightKeywords(), body);
+                appendChat(k, sender, body, action, stamp, highlight);
+                if (action) {
+                    logger.action(network, targetName, sender, body);
+                } else {
+                    logger.chat(network, targetName, sender, body);
+                }
+                if (highlight) {
+                    notifyMention(network, targetName, sender, body);
+                }
             }
             case "NOTICE" -> {
                 String sender = msg.nick() == null ? network : msg.nick();
                 String target = msg.param(0);
                 String body = msg.trailing() == null ? "" : msg.trailing();
                 String k = isChannel(target) ? key(network, target) : statusKey;
-                appendStatus(k, "-" + sender + "- " + body);
+                appendStatus(k, "-" + sender + "- " + body, stamp);
             }
             case "JOIN" -> {
                 String chan = msg.trailing() != null ? msg.trailing() : msg.param(0);
@@ -549,15 +1022,16 @@ public final class IrcTopComponent extends TopComponent {
                 if (who.equalsIgnoreCase(me)) {
                     ensureTargetNode(network, chan);
                     selectTarget(network, chan);
-                    appendStatus(k, "You joined " + chan);
+                    appendStatus(k, "You joined " + chan, stamp);
                 } else {
                     nickLists.computeIfAbsent(k, x -> new HashMap<>())
                             .put(who.toLowerCase(Locale.ROOT), who);
                     if (k.equals(activeKey)) {
                         rebuildNickModel();
                     }
-                    appendStatus(k, "→ " + who + " joined");
+                    appendStatus(k, "→ " + who + " joined", stamp);
                 }
+                logger.event(network, chan, who + " joined");
             }
             case "PART" -> {
                 String chan = msg.param(0);
@@ -566,7 +1040,8 @@ public final class IrcTopComponent extends TopComponent {
                 removeNick(k, who);
                 appendStatus(k, who.equalsIgnoreCase(me)
                         ? "You left " + chan
-                        : "← " + who + " left");
+                        : "← " + who + " left", stamp);
+                logger.event(network, chan, who + " left");
             }
             case "KICK" -> {
                 String chan = msg.param(0);
@@ -574,7 +1049,8 @@ public final class IrcTopComponent extends TopComponent {
                 String k = key(network, chan);
                 removeNick(k, victim);
                 appendStatus(k, victim + " was kicked by "
-                        + (msg.nick() == null ? "?" : msg.nick()));
+                        + (msg.nick() == null ? "?" : msg.nick()), stamp);
+                logger.event(network, chan, victim + " was kicked");
             }
             case "QUIT" -> {
                 String who = msg.nick() == null ? "?" : msg.nick();
@@ -582,7 +1058,8 @@ public final class IrcTopComponent extends TopComponent {
                 for (Map.Entry<String, Map<String, String>> e : nickLists.entrySet()) {
                     if (e.getKey().startsWith(network + '\u0000')
                             && e.getValue().remove(lowerWho) != null) {
-                        appendStatus(e.getKey(), "← " + who + " quit");
+                        appendStatus(e.getKey(), "← " + who + " quit", stamp);
+                        logger.event(network, targetOfKey(e.getKey()), who + " quit");
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
                         }
@@ -601,12 +1078,23 @@ public final class IrcTopComponent extends TopComponent {
                     if (display != null) {
                         String prefix = display.substring(0, display.length() - who.length());
                         e.getValue().put(now.toLowerCase(Locale.ROOT), prefix + now);
-                        appendStatus(e.getKey(), who + " is now known as " + now);
+                        appendStatus(e.getKey(), who + " is now known as " + now, stamp);
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
                         }
                     }
                 }
+            }
+            case "AWAY" -> {
+                // away-notify: a tagged-cap server tells us who stepped out
+                String who = msg.nick() == null ? "?" : msg.nick();
+                Set<String> away = awayNicks.computeIfAbsent(network, x -> new HashSet<>());
+                if (msg.trailing() == null || msg.trailing().isEmpty()) {
+                    away.remove(who.toLowerCase(Locale.ROOT));
+                } else {
+                    away.add(who.toLowerCase(Locale.ROOT));
+                }
+                nickList.repaint();
             }
             case "TOPIC" -> {
                 String chan = msg.param(0);
@@ -617,14 +1105,85 @@ public final class IrcTopComponent extends TopComponent {
                     topicLabel.setText(topics.get(k));
                 }
                 appendStatus(k, (msg.nick() == null ? "?" : msg.nick())
-                        + " set the topic: " + topicText);
+                        + " set the topic: " + topicText, stamp);
             }
             default ->
                 handleNumeric(network, statusKey, msg);
         }
     }
 
+    /** The target half of a view key (for log paths). */
+    private static String targetOfKey(String k) {
+        int sep = k.indexOf('\u0000');
+        return sep < 0 ? k : k.substring(sep + 1);
+    }
+
+    /**
+     * A mention while the IRC tab is hidden becomes a platform
+     * notification (the UpdateCheck idiom); clicking it opens and
+     * fronts this window on the right channel.
+     */
+    private void notifyMention(String network, String target, String sender, String body) {
+        if (isShowing()) {
+            return;
+        }
+        String title = sender + " mentioned you in " + target;
+        NotificationDisplayer.getDefault().notify(title,
+                UIManager.getIcon("OptionPane.informationIcon"),
+                MircFormat.stripToText(body),
+                e -> SwingUtilities.invokeLater(() -> {
+                    open();
+                    requestActive();
+                    selectTarget(network, target);
+                }));
+    }
+
     private void handleNumeric(String network, String statusKey, IrcMessage msg) {
+        // LIST replies feed the armed collector (the /list browser)
+        ChannelListCollector listCollector = listCollectors.get(network);
+        if (listCollector != null
+                && ("321".equals(msg.command()) || "322".equals(msg.command())
+                || "323".equals(msg.command()))) {
+            if (listCollector.accept(msg)) {
+                listCollectors.remove(network);
+                IrcClient client = SESSIONS.get(network);
+                ChannelListDialog.show(network, listCollector.rows(),
+                        listCollector.totalSeen(),
+                        chan -> {
+                            if (client != null) {
+                                client.join(chan);
+                            }
+                        });
+            }
+            return;
+        }
+        // WHOIS numerics assemble into one card, rendered on 318
+        if (isWhoisNumeric(msg.command())) {
+            WhoisCollector wc = whoisCollectors.computeIfAbsent(network,
+                    x -> new WhoisCollector());
+            WhoisCollector.WhoisInfo info = wc.accept(msg);
+            if (info != null) {
+                String k = activeKey != null && activeKey.startsWith(network + '\u0000')
+                        ? activeKey : statusKey;
+                for (String line : WhoisCollector.cardLines(info)) {
+                    appendStatus(k, line);
+                }
+            }
+            if (wc.collecting() || info != null) {
+                return; // suppress the raw scatter while the card assembles
+            }
+        }
+        // 301: someone we messaged (or whois'd) is away
+        if ("301".equals(msg.command())) {
+            String k = activeKey != null && activeKey.startsWith(network + '\u0000')
+                    ? activeKey : statusKey;
+            appendStatus(k, msg.param(1) + " is away: "
+                    + (msg.trailing() == null ? "" : msg.trailing()));
+            Set<String> away = awayNicks.computeIfAbsent(network, x -> new HashSet<>());
+            away.add(msg.param(1).toLowerCase(Locale.ROOT));
+            nickList.repaint();
+            return;
+        }
         switch (Numerics.classify(msg.command())) {
             case WELCOME ->
                 appendStatus(statusKey, msg.trailing() == null ? "Welcome" : msg.trailing());
@@ -647,7 +1206,8 @@ public final class IrcTopComponent extends TopComponent {
                 if (pending != null) {
                     Map<String, String> nicks = new HashMap<>();
                     for (String display : pending) {
-                        nicks.put(stripPrefix(display).toLowerCase(Locale.ROOT), display);
+                        // multi-prefix: strip the WHOLE stacked run (@+nick)
+                        nicks.put(NickPrefix.strip(display).toLowerCase(Locale.ROOT), display);
                     }
                     nickLists.put(k, nicks);
                     if (k.equals(activeKey)) {
@@ -672,9 +1232,16 @@ public final class IrcTopComponent extends TopComponent {
             case MOTD, WHOIS, ERROR, OTHER ->
                 appendStatus(statusKey, tailOf(msg));
             case NOT_NUMERIC -> {
-                // PING/PONG/MODE and friends: no rendering needed
+                // PING/PONG/MODE/CAP/AUTHENTICATE and friends: no rendering
             }
         }
+    }
+
+    private static boolean isWhoisNumeric(String command) {
+        return switch (command) {
+            case "311", "312", "317", "318", "319", "330" -> true;
+            default -> false;
+        };
     }
 
     /** Numeric params minus our own nick (param 0), joined for status display. */
@@ -737,7 +1304,8 @@ public final class IrcTopComponent extends TopComponent {
 
     /** The one road to a new connection — always a user gesture. */
     private void connectNetwork(String network) {
-        IrcConfig.Network saved = IrcConfig.getDefault().network(network);
+        IrcConfig config = IrcConfig.getDefault();
+        IrcConfig.Network saved = config.network(network);
         if (saved == null) {
             appendStatus(key(network, ""), "No saved network named " + network);
             return;
@@ -745,9 +1313,11 @@ public final class IrcTopComponent extends TopComponent {
         IrcClient client = SESSIONS.get(network);
         if (client == null || client.state() == IrcClient.State.CLOSED) {
             client = new IrcClient(new IrcClient.Profile(saved.name(), saved.host(),
-                    saved.port(), saved.tls(), saved.nick()));
+                    saved.port(), saved.tls(), saved.nick(), null, null,
+                    saved.saslAccount()));
             SESSIONS.put(network, client);
         }
+        client.setIgnoredNicks(config.ignoredNicks(network));
         attachBridge(network, client);
         ensureNetworkNode(network);
         appendStatus(key(network, ""), "Connecting to " + saved.host() + ":" + saved.port()
@@ -774,6 +1344,8 @@ public final class IrcTopComponent extends TopComponent {
             return;
         }
         input.setText("");
+        completer.reset();
+        historyFor(activeHistoryKey()).add(raw);
         if (!raw.startsWith("/")) {
             sayToActive(raw, false);
             return;
@@ -807,7 +1379,10 @@ public final class IrcTopComponent extends TopComponent {
                     if (c != null) {
                         c.privmsg(to, text);
                         ensureTargetNode(activeNetwork(), to);
-                        appendChat(key(activeNetwork(), to), c.currentNick(), text, false);
+                        if (!c.capEnabled("echo-message")) {
+                            appendChat(key(activeNetwork(), to), c.currentNick(), text, false);
+                            logger.chat(activeNetwork(), to, c.currentNick(), text);
+                        }
                     }
                 }
             }
@@ -836,6 +1411,41 @@ public final class IrcTopComponent extends TopComponent {
                     c.whois(args.split(" ")[0]);
                 }
             }
+            case "list" -> commandList(args);
+            case "ignore" -> commandIgnore(args);
+            case "unignore" -> commandUnignore(args);
+            case "away" -> {
+                IrcClient c = liveClient();
+                if (c != null) {
+                    c.sendRaw(args.isEmpty() ? "AWAY" : "AWAY :" + args);
+                    appendStatus(key(activeNetwork(), ""), args.isEmpty()
+                            ? "You are no longer marked away"
+                            : "You are now marked away: " + args);
+                }
+            }
+            case "log" -> commandLog(args);
+            case "notice" -> {
+                int sp2 = args.indexOf(' ');
+                IrcClient c = liveClient();
+                if (c != null && sp2 > 0) {
+                    String to = args.substring(0, sp2);
+                    String text = args.substring(sp2 + 1);
+                    c.notice(to, text);
+                    appendStatus(key(activeNetwork(), ""), "-" + c.currentNick()
+                            + " → " + to + "- " + text);
+                }
+            }
+            case "ctcp" -> {
+                String[] parts = args.split(" ", 3);
+                IrcClient c = liveClient();
+                if (c != null && parts.length >= 2) {
+                    String verb = parts[1].toUpperCase(Locale.ROOT);
+                    String arg = parts.length > 2 ? parts[2] : "";
+                    c.privmsg(parts[0], Ctcp.wrap(verb, arg));
+                    appendStatus(key(activeNetwork(), ""),
+                            "CTCP " + verb + " sent to " + parts[0]);
+                }
+            }
             case "quit" -> {
                 IrcClient c = SESSIONS.get(activeNetwork());
                 if (c != null) {
@@ -848,9 +1458,102 @@ public final class IrcTopComponent extends TopComponent {
                     c.sendRaw(args);
                 }
             }
+            case "help" -> commandHelp();
             default ->
                 appendStatus(key(activeNetwork(), ""), "Unknown command: /" + cmd
-                        + " (try /connect /join /part /msg /query /me /nick /topic /whois /quit /raw)");
+                        + " — /help lists everything");
+        }
+    }
+
+    /** {@code /list [pattern]}: arm a collector, ask, browse on 323. */
+    private void commandList(String args) {
+        IrcClient c = liveClient();
+        if (c == null) {
+            return;
+        }
+        listCollectors.put(activeNetwork(), new ChannelListCollector());
+        c.sendRaw(args.isEmpty() ? "LIST" : "LIST " + args);
+        appendStatus(key(activeNetwork(), ""), "Fetching channel list…");
+    }
+
+    /** {@code /ignore} lists; {@code /ignore nick} adds + applies live. */
+    private void commandIgnore(String args) {
+        IrcConfig config = IrcConfig.getDefault();
+        String network = activeNetwork();
+        String statusKey = key(network, "");
+        if (args.isEmpty()) {
+            List<String> ignored = config.ignoredNicks(network);
+            appendStatus(statusKey, ignored.isEmpty()
+                    ? "Nobody is ignored on " + network
+                    : "Ignored on " + network + ": " + String.join(", ", ignored));
+            return;
+        }
+        String nick = args.split(" ")[0];
+        config.addIgnored(network, nick);
+        applyIgnores(network);
+        appendStatus(statusKey, "Ignoring " + nick
+                + " — messages are dropped silently (/unignore " + nick + " to undo)");
+    }
+
+    private void commandUnignore(String args) {
+        if (args.isEmpty()) {
+            return;
+        }
+        IrcConfig config = IrcConfig.getDefault();
+        String network = activeNetwork();
+        String nick = args.split(" ")[0];
+        config.removeIgnored(network, nick);
+        applyIgnores(network);
+        appendStatus(key(network, ""), "No longer ignoring " + nick);
+    }
+
+    private void applyIgnores(String network) {
+        IrcClient client = SESSIONS.get(network);
+        if (client != null) {
+            client.setIgnoredNicks(IrcConfig.getDefault().ignoredNicks(network));
+        }
+    }
+
+    /** {@code /log [on|off]}: session toggle, persisted as the global default. */
+    private void commandLog(String args) {
+        String statusKey = key(activeNetwork(), "");
+        switch (args.toLowerCase(Locale.ROOT)) {
+            case "on" -> {
+                logger.setEnabled(true);
+                IrcConfig.getDefault().setLoggingEnabled(true);
+                appendStatus(statusKey, "Logging ON → " + logger.root());
+            }
+            case "off" -> {
+                logger.setEnabled(false);
+                IrcConfig.getDefault().setLoggingEnabled(false);
+                appendStatus(statusKey, "Logging OFF");
+            }
+            default ->
+                appendStatus(statusKey, "Logging is " + (logger.isEnabled() ? "ON" : "OFF")
+                        + " — files under " + logger.root()
+                        + " (services queries are never logged)");
+        }
+    }
+
+    private void commandHelp() {
+        String statusKey = key(activeNetwork(), "");
+        String[] lines = {
+            "Commands:",
+            "  /connect [host [port]] — connect the selected (or an ad-hoc) network",
+            "  /join #chan — join a channel      /part [#chan] — leave one",
+            "  /msg nick text — private message  /query nick — open a query tab",
+            "  /me does something — action       /notice target text — send a NOTICE",
+            "  /nick newnick — change nickname   /topic [text] — show or set the topic",
+            "  /whois nick — who is that (card)  /ctcp nick VERSION|PING [arg]",
+            "  /list [pattern] — browse channels (double-click to join)",
+            "  /ignore [nick] — list or add      /unignore nick — remove",
+            "  /away [message] — mark away / back",
+            "  /log [on|off] — per-channel logging (~/.nmox/irc-logs)",
+            "  /raw LINE — send a raw IRC line   /quit [message] — disconnect for good",
+            "Tab completes nicks · Up/Down recall input · ⌘F finds in the transcript"
+        };
+        for (String line : lines) {
+            appendStatus(statusKey, line);
         }
     }
 
@@ -892,6 +1595,15 @@ public final class IrcTopComponent extends TopComponent {
             return;
         }
         c.privmsg(target, action ? Ctcp.action(text) : text);
-        appendChat(key(activeNetwork(), target), c.currentNick(), text, action);
+        // echo-message: when the cap is active the server echoes our own
+        // line back and THAT renders — a local echo would double it
+        if (!c.capEnabled("echo-message")) {
+            appendChat(key(activeNetwork(), target), c.currentNick(), text, action);
+            if (action) {
+                logger.action(activeNetwork(), target, c.currentNick(), text);
+            } else {
+                logger.chat(activeNetwork(), target, c.currentNick(), text);
+            }
+        }
     }
 }
