@@ -41,23 +41,38 @@ public final class IrcConfig {
     private static final String KEY_PORT = "port";
     private static final String KEY_TLS = "tls";
     private static final String KEY_NICK = "nick";
+    private static final String KEY_SASL = "saslAccount";
     private static final String KEY_LAST = "lastSelected";
+    private static final String KEY_LOGGING = "logging";
     private static final String CHANNEL_PREFIX = "channel.";
+    private static final String IGNORE_PREFIX = "ignore.";
+    private static final String HIGHLIGHT_PREFIX = "highlight.";
 
     /**
      * One saved network.
      *
-     * @param name     the display name and preferences key ("freenode")
-     * @param host     server hostname
-     * @param port     server port (6697 is the conventional TLS port)
-     * @param tls      connect with TLS
-     * @param nick     the nickname to register with
-     * @param autojoin channels to join after registration, may be empty
+     * @param name        the display name and preferences key ("freenode")
+     * @param host        server hostname
+     * @param port        server port (6697 is the conventional TLS port)
+     * @param tls         connect with TLS
+     * @param nick        the nickname to register with
+     * @param saslAccount the SASL PLAIN account name; {@code ""} means
+     *                    "no SASL" (the NickServ-after-001 fallback runs
+     *                    instead). The password itself is NEVER here —
+     *                    it lives in the keychain via {@link IrcSecrets}
+     * @param autojoin    channels to join after registration, may be empty
      */
     public record Network(String name, String host, int port, boolean tls,
-            String nick, List<String> autojoin) {
+            String nick, String saslAccount, List<String> autojoin) {
         public Network {
+            saslAccount = saslAccount == null ? "" : saslAccount;
             autojoin = List.copyOf(autojoin);
+        }
+
+        /** The pre-SASL shape (v1.204.0 callers): no SASL account. */
+        public Network(String name, String host, int port, boolean tls,
+                String nick, List<String> autojoin) {
+            this(name, host, port, tls, nick, "", autojoin);
         }
     }
 
@@ -136,16 +151,22 @@ public final class IrcConfig {
                 n.getInt(KEY_PORT, 6697),
                 n.getBoolean(KEY_TLS, true),
                 n.get(KEY_NICK, "nmox-user"),
+                n.get(KEY_SASL, ""),
                 channels);
     }
 
-    /** Saves (or overwrites) a network; channels are one entry per item. */
+    /** Saves (creates or overwrites) a network; channels are one entry per item. */
     public void save(Network network) {
         Preferences n = root.node(NETWORKS).node(network.name());
         n.put(KEY_HOST, network.host());
         n.putInt(KEY_PORT, network.port());
         n.putBoolean(KEY_TLS, network.tls());
         n.put(KEY_NICK, network.nick());
+        if (network.saslAccount().isEmpty()) {
+            n.remove(KEY_SASL);
+        } else {
+            n.put(KEY_SASL, network.saslAccount());
+        }
         // clear stale channel.N entries past the new list's end
         for (int i = network.autojoin().size(); n.get(CHANNEL_PREFIX + i, null) != null; i++) {
             n.remove(CHANNEL_PREFIX + i);
@@ -164,6 +185,85 @@ public final class IrcConfig {
         } catch (BackingStoreException ex) {
             LOG.log(Level.WARNING, "could not remove IRC network " + name, ex);
         }
+    }
+
+    // ---- per-network ignore list (one entry per nick, the 8 KB law) ----
+
+    /** The nicks ignored on {@code network}, lower-cased, in saved order. */
+    public List<String> ignoredNicks(String network) {
+        List<String> out = new ArrayList<>();
+        Preferences n = root.node(NETWORKS).node(network);
+        for (int i = 0; ; i++) {
+            String nick = n.get(IGNORE_PREFIX + i, null);
+            if (nick == null) {
+                break;
+            }
+            out.add(nick);
+        }
+        return out;
+    }
+
+    /** Adds a nick to the network's ignore list (idempotent, case-insensitive). */
+    public void addIgnored(String network, String nick) {
+        String lower = nick.toLowerCase(java.util.Locale.ROOT);
+        List<String> current = ignoredNicks(network);
+        if (current.contains(lower)) {
+            return;
+        }
+        root.node(NETWORKS).node(network).put(IGNORE_PREFIX + current.size(), lower);
+    }
+
+    /** Removes a nick from the network's ignore list, re-packing indices. */
+    public void removeIgnored(String network, String nick) {
+        String lower = nick.toLowerCase(java.util.Locale.ROOT);
+        List<String> current = new ArrayList<>(ignoredNicks(network));
+        if (!current.remove(lower)) {
+            return;
+        }
+        Preferences n = root.node(NETWORKS).node(network);
+        for (int i = current.size(); n.get(IGNORE_PREFIX + i, null) != null; i++) {
+            n.remove(IGNORE_PREFIX + i);
+        }
+        for (int i = 0; i < current.size(); i++) {
+            n.put(IGNORE_PREFIX + i, current.get(i));
+        }
+    }
+
+    // ---- global highlight keywords (one entry per keyword) ----
+
+    /** Extra words that highlight like the nick does, in saved order. */
+    public List<String> highlightKeywords() {
+        List<String> out = new ArrayList<>();
+        for (int i = 0; ; i++) {
+            String kw = root.get(HIGHLIGHT_PREFIX + i, null);
+            if (kw == null) {
+                break;
+            }
+            out.add(kw);
+        }
+        return out;
+    }
+
+    /** Replaces the highlight keyword list; one preference entry per word. */
+    public void setHighlightKeywords(List<String> keywords) {
+        for (int i = keywords.size(); root.get(HIGHLIGHT_PREFIX + i, null) != null; i++) {
+            root.remove(HIGHLIGHT_PREFIX + i);
+        }
+        for (int i = 0; i < keywords.size(); i++) {
+            root.put(HIGHLIGHT_PREFIX + i, keywords.get(i));
+        }
+    }
+
+    // ---- global logging toggle ----
+
+    /** Whether per-channel logging is on (the persisted default; true on fresh installs). */
+    public boolean isLoggingEnabled() {
+        return root.getBoolean(KEY_LOGGING, true);
+    }
+
+    /** Persists the logging default ({@code /log on|off} writes through here). */
+    public void setLoggingEnabled(boolean on) {
+        root.putBoolean(KEY_LOGGING, on);
     }
 
     /** The network the UI selects on open; defaults to freenode. */

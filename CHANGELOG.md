@@ -4,6 +4,83 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.205.0] - 2026-07-29
+
+### The IRC client grows up — IRCv3, SASL, and the features WeeChat users expect
+
+- **IRCv3 capability negotiation + SASL PLAIN**: registration now opens
+  with `CAP LS 302` and requests exactly supported∩offered from `sasl`,
+  `server-time`, `message-tags`, `multi-prefix`, `away-notify`,
+  `account-notify`, `echo-message`; SASL PLAIN runs BEFORE `CAP END`
+  (chunked at the spec's 400 bytes, exactly-full-chunk `+` terminator
+  pinned) when the network's profile carries a SASL account and the
+  keychain a password — a 904 failure is an honest transcript line and
+  NEVER a password retry; a pre-CAP server's 001 clears the dance. The
+  NickServ-after-001 identify stays as the no-SASL fallback. All
+  fake-server-proven (happy path, NAK, 904, multiline LS,
+  sasl-only-when-usable, pre-CAP; suites run 3× for races).
+- **server-time honesty**: an `@time=` tagged message renders with the
+  time it HAPPENED (local HH:mm), not the time the socket read it —
+  replayed bouncer backlog stops wearing the reconnect minute.
+  **echo-message**: with the cap active the client stops local-echoing
+  sent PRIVMSGs (the server's echo renders, once), and an echoed query
+  line files under the peer, not under your own nick.
+  **multi-prefix**: stacked NAMES sigils (`@+nick`) strip and rank
+  whole (`NickPrefix`, shared by list/completer/away bookkeeping).
+- **Ctrl+U clears the input line** (the readline chord), and the live
+  gauntlet is why it exists: **Escape never reaches the IRC input** in
+  a docked window — the window system consumes it above the component,
+  so a half-typed line survived and turned a `/query` into a public
+  message. A `KeyListener` and a `WHEN_FOCUSED` key binding were both
+  tried against the assembled app and both lost; Ctrl+U arrives.
+  `/help`, the user guide, and the find bar's close hint (⌘F again)
+  now name only chords that work, and `InputClearGateTest` keeps it
+  that way — *a documented key that does nothing is worse than no key*.
+- **Tab nick completion + input history**: prefix-cycling completion
+  (`nick: ` at line start, `nick ` mid-line, any other key resets —
+  `NickCompleter`, exhaustively tested), per-target Up/Down recall
+  (cap 100, never persisted), Escape clears the line.
+- **Highlights + notifications**: word-boundary nick matching with
+  IRC-nick-shaped boundaries (`davenport` never pages dave;
+  user-defined extra keywords in the config) — highlighted lines get a
+  background wash, channels a red mention-count badge distinct from
+  plain-unread bold, and a hidden window posts a platform notification
+  that clicks through to the channel.
+- **Clickable URLs**: `http(s)://` links (trailing sentence punctuation
+  shed) render underlined and open in the in-app Browser via the
+  `EmbeddedBrowser` seam, system browser fallback — never a dead click.
+- **Per-channel logging**: daily plain-text files under
+  `~/.nmox/irc-logs/<network>/<channel>/YYYY-MM-DD.log` (`[HH:mm:ss]
+  <nick> text`, `* nick action`, `-- nick joined`), mIRC-stripped,
+  written on a dedicated RP lane, lines bounded at 2000 chars with an
+  honest marker — and NOTHING is ever logged for NickServ/ChanServ
+  (credentials transit there). `/log on|off` toggles, persisted.
+- **`/list` channel browser**: a modeless filterable/sortable dialog,
+  double-click joins; the collector is BOUNDED — first 2000 rows kept,
+  the rest counted, the title says "showing first 2000 of N".
+- **Structured WHOIS**: 311/312/317/319/330 assemble into one card on
+  318 — user@host, realname, server, channels, idle as h m s,
+  logged-in-as — instead of five raw status lines.
+- **`/ignore`**: per-network persisted ignore list (one pref entry per
+  nick, the 8 KB law); ignored nicks' PRIVMSG/NOTICE (CTCP included)
+  drop in the ENGINE before any transcript, log, or auto-reply —
+  JOIN/PART still show (presence isn't speech). `/away` + away-notify
+  dim away nicks in the list; RPL 301 renders.
+- **Network editor**: tree right-click Add/Edit/Delete Network — host,
+  port, TLS, nick, SASL account, password (JPasswordField →
+  keychain-only, existing secret masked and re-saved only if changed,
+  probed off the EDT), autojoin; Delete uses the v1.98.0 safe-default
+  confirm and deletes the keychain entry too (the delete-hygiene law).
+- **⌘F transcript search**: find bar with highlight-all + honest
+  bounded count + Enter cycling + Esc (the API Studio v1.198.0 idiom).
+- **New commands**: `/list /ignore /unignore /away /log /notice /ctcp`,
+  and `/help` lists everything with one-liners.
+- 71 new tests across 13 new/extended classes (engine CAP/SASL vs the
+  CAP-aware fake server; every pure helper exhaustively); ui 207 green,
+  coverage 50.7% → 61.2% on the 0.45 floor, SpotBugs/find-sec-bugs
+  clean; user guide gains the IRC section (§6, commands table, SASL
+  setup, logging location).
+
 ## [1.204.0] - 2026-07-29
 
 ### An IRC client in the IDE (⌥⌘3, freenode by default) + the Browser gets a home page (David-directed)
@@ -7184,6 +7261,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.205.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.204.0...v1.205.0
 [1.204.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.203.0...v1.204.0
 [1.203.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.202.0...v1.203.0
 [1.202.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.201.0...v1.202.0

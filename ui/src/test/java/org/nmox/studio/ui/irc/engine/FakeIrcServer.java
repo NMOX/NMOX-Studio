@@ -136,6 +136,43 @@ final class FakeIrcServer implements AutoCloseable {
         send(":fake.server 001 " + acceptedNick + " :Welcome to the fake network");
     }
 
+    /**
+     * IRCv3 registration script: expect {@code CAP LS 302} + NICK +
+     * USER, offer {@code offeredCaps}, ACK whatever the client REQs
+     * (returned so the test can pin the exact set), wait for
+     * {@code CAP END}, then 001. For SASL flows use the finer-grained
+     * {@link #awaitLine}/{@link #send} directly between ACK and END.
+     */
+    String completeCapRegistration(String acceptedNick, String offeredCaps, long timeoutMs)
+            throws IOException, InterruptedException {
+        awaitLine("CAP LS", timeoutMs);
+        awaitLine("NICK ", timeoutMs);
+        awaitLine("USER ", timeoutMs);
+        send(":fake.server CAP * LS :" + offeredCaps);
+        String req = awaitLine("CAP REQ :", timeoutMs);
+        String requested = req.substring("CAP REQ :".length());
+        send(":fake.server CAP " + acceptedNick + " ACK :" + requested);
+        return requested;
+    }
+
+    /** After an ACK containing sasl: run the PLAIN dance, return the payload. */
+    String completeSaslPlain(String acceptedNick, long timeoutMs)
+            throws IOException, InterruptedException {
+        awaitLine("AUTHENTICATE PLAIN", timeoutMs);
+        send("AUTHENTICATE +");
+        String payload = awaitLine("AUTHENTICATE ", timeoutMs)
+                .substring("AUTHENTICATE ".length());
+        send(":fake.server 903 " + acceptedNick + " :SASL authentication successful");
+        return payload;
+    }
+
+    /** The registration tail every CAP script ends with: CAP END then 001. */
+    void finishCapRegistration(String acceptedNick, long timeoutMs)
+            throws IOException, InterruptedException {
+        awaitLine("CAP END", timeoutMs);
+        send(":fake.server 001 " + acceptedNick + " :Welcome to the fake network");
+    }
+
     @Override
     public void close() throws IOException {
         closed = true;

@@ -136,4 +136,68 @@ class IrcConfigTest {
         config.setLastSelected("OFTC");
         assertThat(config.lastSelected()).isEqualTo("OFTC");
     }
+
+    @Test
+    @DisplayName("The SASL account round-trips; a v1.204 network reads as no-SASL")
+    void saslAccountRoundTrip() {
+        config.save(new IrcConfig.Network("work", "irc.example.org", 6697, true,
+                "dave", "daveacct", List.of()));
+        assertThat(config.network("work").saslAccount()).isEqualTo("daveacct");
+
+        // the pre-SASL constructor (and pre-SASL stores) default to ""
+        config.save(new IrcConfig.Network("old", "irc.old.org", 6697, true,
+                "dave", List.of()));
+        assertThat(config.network("old").saslAccount()).isEmpty();
+
+        // clearing the account removes the key
+        config.save(new IrcConfig.Network("work", "irc.example.org", 6697, true,
+                "dave", "", List.of()));
+        assertThat(config.network("work").saslAccount()).isEmpty();
+        assertThat(root.node("networks").node("work").get("saslAccount", null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Ignore list: one entry per nick, idempotent add, re-packing remove")
+    void ignoreListRoundTrip() {
+        config.save(new IrcConfig.Network("net", "h", 6697, true, "n", List.of()));
+        config.addIgnored("net", "Troll");
+        config.addIgnored("net", "TROLL"); // case-insensitive dedupe
+        config.addIgnored("net", "spammer");
+        config.addIgnored("net", "bore");
+        assertThat(config.ignoredNicks("net")).containsExactly("troll", "spammer", "bore");
+        assertThat(root.node("networks").node("net").get("ignore.0", null))
+                .as("one preference entry per nick — the 8 KB law")
+                .isEqualTo("troll");
+
+        config.removeIgnored("net", "SPAMMER");
+        assertThat(config.ignoredNicks("net")).containsExactly("troll", "bore");
+        assertThat(root.node("networks").node("net").get("ignore.2", null))
+                .as("the stale tail entry is cleared, not resurrected")
+                .isNull();
+        config.removeIgnored("net", "nobody"); // quiet no-op
+        assertThat(config.ignoredNicks("net")).containsExactly("troll", "bore");
+    }
+
+    @Test
+    @DisplayName("Highlight keywords replace as a list, one entry per word, shrink cleans up")
+    void highlightKeywordsRoundTrip() {
+        assertThat(config.highlightKeywords()).isEmpty();
+        config.setHighlightKeywords(List.of("nmox", "release", "urgent"));
+        assertThat(config.highlightKeywords()).containsExactly("nmox", "release", "urgent");
+        config.setHighlightKeywords(List.of("nmox"));
+        assertThat(config.highlightKeywords())
+                .as("shrinking clears the stale entries")
+                .containsExactly("nmox");
+        assertThat(root.get("highlight.1", null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Logging defaults ON and the toggle persists")
+    void loggingToggle() {
+        assertThat(config.isLoggingEnabled()).as("fresh installs log by default").isTrue();
+        config.setLoggingEnabled(false);
+        assertThat(config.isLoggingEnabled()).isFalse();
+        config.setLoggingEnabled(true);
+        assertThat(config.isLoggingEnabled()).isTrue();
+    }
 }
