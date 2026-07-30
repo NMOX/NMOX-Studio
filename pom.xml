@@ -322,7 +322,7 @@
              centralizes the VERSION STRING so Dependabot bumps all eight in one
              PR. Every module pom references ${orgjson.version}. -->
         <orgjson.version>20260719</orgjson.version>
-        <snakeyaml.version>2.2</snakeyaml.version>
+        <snakeyaml.version>2.6</snakeyaml.version>
     </properties>
 
     <profiles>
