@@ -67,6 +67,19 @@ All notable changes to NMOX Studio are documented here. The format follows
   image (v1.199.0) exactly as before, and a dev JDK without JavaFX
   still gets the honest unavailable panel.
 
+- **The Vue pane tells the truth about production builds** — the
+  gauntlet's own find: a prod Vue build exposes neither
+  `app._instance` nor `__vueParentComponent` (both are dev-gated), so
+  NO inspector can walk its components — the official Vue DevTools is
+  limited the same way. Saying "No Vue detected" there sends a
+  developer hunting a bug that isn't theirs; the pane now reads
+  "Vue 3.4.38 — production build, no component tree" with the full
+  explanation on the tooltip. Live-proven against both a dev-build and
+  a prod-build page. (Second find, same run: an over-long status label
+  vanished entirely rather than clipping — that row is a FlowLayout,
+  which wraps a too-wide label to a hidden second row. Status text is
+  now short by construction, with detail in the tooltip.)
+
 ## [1.205.0] - 2026-07-29
 
 ### The IRC client grows up — IRCv3, SASL, and the features WeeChat users expect

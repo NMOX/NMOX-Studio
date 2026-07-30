@@ -44,10 +44,20 @@ public final class VueSnapshotParser {
 
         public final int version;
         public final List<VueNode> roots;
+        /**
+         * Non-empty when Vue is ON the page but its component tree is
+         * unreachable: a PRODUCTION build exposes neither
+         * {@code app._instance} nor {@code __vueParentComponent} (both
+         * are dev/devtools-gated), so there is nothing to walk. Carries
+         * the app's version string so the pane can say so precisely
+         * instead of claiming no Vue at all.
+         */
+        public final String productionOnly;
 
-        VueTree(int version, List<VueNode> roots) {
+        VueTree(int version, List<VueNode> roots, String productionOnly) {
             this.version = version;
             this.roots = Collections.unmodifiableList(roots);
+            this.productionOnly = productionOnly == null ? "" : productionOnly;
         }
 
         /** True when no Vue (2 or 3) was detected on the page. */
@@ -63,7 +73,7 @@ public final class VueSnapshotParser {
     public static VueTree parse(String json) {
         Object v = JsonLite.parse(json);
         if (!(v instanceof Map)) {
-            return new VueTree(0, List.of());
+            return new VueTree(0, List.of(), "");
         }
         Map<String, Object> o = JsonLite.asObject(v);
         int version = JsonLite.num(o, "v", 0);
@@ -89,7 +99,8 @@ public final class VueSnapshotParser {
                 }
             }
         }
-        return new VueTree(roots.isEmpty() ? 0 : version, roots);
+        return new VueTree(roots.isEmpty() ? 0 : version, roots,
+                JsonLite.str(o, "prod", ""));
     }
 
     private static VueNode shallow(Map<String, Object> o) {

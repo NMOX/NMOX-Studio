@@ -204,7 +204,9 @@ public final class DevScripts {
             + " return node;}\n"
             + "var roots=[];var version=null;\n"
             + "var all=document.querySelectorAll('*');\n"
+            + "var appSeen='';\n"
             + "for(var i=0;i<all.length&&i<MAX_SCAN;i++){var el=all[i];\n"
+            + " if(el.__vue_app__&&!appSeen){appSeen=''+(el.__vue_app__.version||'3');}\n"
             + " if(el.__vue_app__&&el.__vue_app__._instance){\n"
             + "  version=3;var r=walk3(el.__vue_app__._instance,0);if(r){roots.push(r);}}\n"
             + " else if(el.__vue__&&!el.__vue__.$parent){\n"
@@ -217,7 +219,14 @@ public final class DevScripts {
             + "   while(top.parent&&hop<200){top=top.parent;hop++;}\n"
             + "   if(seenTop.indexOf(top)<0){seenTop.push(top);version=3;\n"
             + "    var r3=walk3(top,0);if(r3){roots.push(r3);}}}}}\n"
-            + "return JSON.stringify({v:version,r:roots});})()";
+            // a PRODUCTION Vue build exposes neither app._instance nor
+            // __vueParentComponent (both are dev/devtools-gated), so the
+            // tree is genuinely unreachable — report the app we DID see so
+            // the pane can say "prod build" instead of "no Vue" (the
+            // v1.206.0 gauntlet find; official Vue DevTools is limited the
+            // same way)
+            + "return JSON.stringify({v:version,r:roots,"
+            + "prod:(roots.length===0?appSeen:'')});})()";
 
     /**
      * Reads localStorage, sessionStorage, and document.cookie into one

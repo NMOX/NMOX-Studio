@@ -352,8 +352,25 @@ public final class DevToolsPanel extends JPanel {
         vueDetails.setRowCount(0);
         if (parsed.empty()) {
             vueTree.setRoot(new DefaultMutableTreeNode("(no components)"));
-            vueStatus.setText("No Vue detected on this page — Vue 2 and 3 are supported; "
-                    + "React/Angular are not inspected (v1)");
+            if (!parsed.productionOnly.isEmpty()) {
+                // Vue IS here, but a production build hides its component
+                // tree from every inspector — say that instead of "no Vue",
+                // which sends a developer hunting a bug that isn't theirs.
+                // Keep it SHORT: this row is a FlowLayout, so a label wider
+                // than the panel wraps to a second row that the fixed row
+                // height hides — an over-long status reads as no status at
+                // all (found live in the v1.206.0 gauntlet). The full
+                // explanation rides the tooltip.
+                vueStatus.setText("Vue " + parsed.productionOnly
+                        + " — production build, no component tree");
+                vueStatus.setToolTipText("A production Vue build exposes neither "
+                        + "app._instance nor __vueParentComponent, so no inspector "
+                        + "can walk its components — the official Vue DevTools is "
+                        + "limited the same way. Run a development build to inspect.");
+            } else {
+                vueStatus.setText("No Vue detected — Vue 2 and 3 supported");
+                vueStatus.setToolTipText("React and Angular are not inspected in v1.");
+            }
             return;
         }
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Vue " + parsed.version + " app");

@@ -110,4 +110,25 @@ class VueSnapshotParserTest {
         assertThat(key).hasSize(200);
         assertThat(n.state.get(key)).hasSize(2000);
     }
+
+    @Test
+    @DisplayName("Vue present but a production build reports itself, not \"no Vue\"")
+    void productionBuildIsNamed() {
+        // what a prod page actually yields: an app was seen (version
+        // string) but no roots are reachable — the v1.206.0 gauntlet find
+        VueSnapshotParser.VueTree t = VueSnapshotParser.parse(
+                "{\"v\":null,\"r\":[],\"prod\":\"3.4.38\"}");
+        assertThat(t.empty()).isTrue();
+        assertThat(t.productionOnly)
+                .as("the pane needs this to explain itself precisely")
+                .isEqualTo("3.4.38");
+    }
+
+    @Test
+    @DisplayName("A genuinely Vue-less page carries no production marker")
+    void noVueHasNoProductionMarker() {
+        VueSnapshotParser.VueTree t = VueSnapshotParser.parse("{\"v\":null,\"r\":[],\"prod\":\"\"}");
+        assertThat(t.empty()).isTrue();
+        assertThat(t.productionOnly).isEmpty();
+    }
 }
