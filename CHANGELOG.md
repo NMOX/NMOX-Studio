@@ -4,6 +4,69 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.206.0] - 2026-07-30
+
+### The Browser grows DevTools — a Vue developer can debug their served project inside the IDE
+
+- **The architecture decision, stated up front**: JavaFX WebView
+  exposes NO built-in inspector and no remote-debug protocol, so the
+  Browser tab now owns its engine directly — `FxBrowserPanel` (a
+  JFXPanel hosting WebView) replaces the platform's HtmlBrowser
+  embed, and the developer tools are built on `executeScript` plus an
+  injected JS instrumentation bridge installed on every successful
+  page load. The chrome is real: URL bar (bare hosts get `https://`,
+  `localhost:3000` is a port not a scheme), back/forward over
+  WebHistory, reload/stop, load progress, zoom, and the page title
+  names the tab (untrusted, capped at 30 code-point-safe chars).
+- **Five DevTools tabs** behind a collapsible bottom split (the
+  toolbar **DevTools** button is the contract): **Console** (wrapped
+  console.* with the originals preserved, window.onerror +
+  unhandledrejection, level-colored rows, and a REPL whose results
+  are safe-stringified with a cycle guard and whose errors render red,
+  never thrown); **DOM** (a Refresh-driven bounded tree — depth 30,
+  5000 nodes, "…N more" past a cap — where selecting a node outlines
+  it in the page via one reusable overlay and shows attributes plus a
+  curated 15-property computed-style summary); **Network** (fetch/XHR
+  wrapper rows — method, URL, status, duration, size-when-declared —
+  honestly labeled "after DevTools injection", bodies deliberately
+  out of scope v1); **Storage** (read-only localStorage /
+  sessionStorage / cookies, v1); and **Vue**, the marquee: the
+  component tree of a running Vue 3 (`__vue_app__` /
+  `__vueParentComponent`) or Vue 2 (`__vue__`) app with per-component
+  props and state and click-to-highlight of the component's root
+  element — no Vue detected is an honest empty state, React/Angular
+  are named as not inspected.
+- **The hostile-page laws**: every string arriving from the page is
+  UNTRUSTED — capped (8k console chars, 500-char URLs, 2k Vue values,
+  500-char storage values) BEFORE storing, never interpreted in Java;
+  rings are bounded (console 1000, network 500) with evicted rows
+  counted and shown as an honest "N older dropped" line; snapshot
+  JSON is read by a depth-capped never-throwing parser (`JsonLite`) so
+  a 10k-deep nesting bomb is a null, not a StackOverflowError; and
+  bridge upcalls arrive on the FX thread and are marshaled to the EDT
+  before touching any model. The bridge object is held by a STRONG
+  reference on purpose — `JSObject.setMember` holds weakly, and a
+  GC'd bridge would silently kill the tools (the WebView gotcha,
+  documented where it lives).
+- **Three-thread contract documented in code**: EDT (all Swing) ↔ FX
+  Application Thread (all WebEngine access, via Platform.runLater) ↔
+  page JS (talks back only through the bridge). `Platform.setImplicitExit(false)`
+  keeps the FX runtime alive across tab closes.
+- **Pure cores carry the logic** (and the tests): `DevScripts` (the
+  injected JS as pinned constants — idempotence guard,
+  original-console preservation, cap literals, both Vue version
+  markers), `ConsoleModel`/`NetworkModel` (bounded rings),
+  `DomSnapshotParser`/`VueSnapshotParser`/`StorageSnapshotParser`/
+  `StyleSummary` (typed, malformed-input-safe), `JsBridge` (executor
+  seam — marshaling proven headless), `BrowserUrls`, `JsonLite`.
+  61 new tests across 10 classes; the FX/Swing shells stay thin and
+  are never initialized in unit tests (headless CI).
+- **Compile-only OpenJFX**: ui gains `javafx-web` + `javafx-swing`
+  21.0.5 at `provided` scope — the built NBM verified to contain zero
+  javafx jars; at runtime the classes come from the bundled jlinked
+  image (v1.199.0) exactly as before, and a dev JDK without JavaFX
+  still gets the honest unavailable panel.
+
 ## [1.205.0] - 2026-07-29
 
 ### The IRC client grows up — IRCv3, SASL, and the features WeeChat users expect
@@ -7261,6 +7324,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.206.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.205.0...v1.206.0
 [1.205.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.204.0...v1.205.0
 [1.204.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.203.0...v1.204.0
 [1.203.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.202.0...v1.203.0
