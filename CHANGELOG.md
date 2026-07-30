@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.207.1] - 2026-07-30
+
+### The release survives a flaky CDN
+
+- **Both OpenJFX jmods downloads now retry.** v1.207.0's first release
+  run died 44 seconds into the linux fetch with `curl` exit 18
+  (partial file) from Gluon's CDN, taking the whole artifact with it;
+  a targeted rerun healed it, but one un-retried download should never
+  be able to fail a release. `bundle-jre.sh` (macOS + linux) now uses
+  `--retry 5 --retry-all-errors --retry-delay 3` plus
+  `--speed-time 60 --speed-limit 1024` so a stalled socket fails fast
+  instead of hanging the job, and the Windows lane's
+  `Invoke-WebRequest` got a 5-attempt loop with the same intent. The
+  **sha256 check remains the correctness gate** — a retry that returns
+  a corrupt file is still caught there, not papered over.
+- Recorded honestly: the same run also hit an unrelated Maven Central
+  resolution failure on the Windows lane. That one is not ours to fix;
+  the rerun-the-failed-lanes recipe stays the remedy. **A published
+  tag is never moved to absorb a fix** — this is why the hardening
+  ships as its own release instead of being back-dated into v1.207.0.
+
 ## [1.207.0] - 2026-07-30
 
 ### Relicensed: MIT → Apache License 2.0 (David's decision)
@@ -7405,6 +7426,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.207.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.0...v1.207.1
 [1.207.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.206.0...v1.207.0
 [1.206.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.205.0...v1.206.0
 [1.205.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.204.0...v1.205.0

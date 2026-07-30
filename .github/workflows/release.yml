@@ -161,7 +161,20 @@ jobs:
           $fxVersion = "21.0.5"
           $fxSha256 = "693c04e2bf16ad26dc803d384500aab7593921e6e3dc8aaac3b10b0613feaa1f"
           $fxZip = "$env:RUNNER_TEMP\openjfx-jmods.zip"
-          Invoke-WebRequest -Uri "https://download2.gluonhq.com/openjfx/$fxVersion/openjfx-${fxVersion}_windows-x64_bin-jmods.zip" -OutFile $fxZip
+          # same retry law as bundle-jre.sh: a truncated CDN transfer
+          # must not take the release with it (v1.207.0 run 1)
+          $attempt = 0
+          while ($true) {
+            $attempt++
+            try {
+              Invoke-WebRequest -Uri "https://download2.gluonhq.com/openjfx/$fxVersion/openjfx-${fxVersion}_windows-x64_bin-jmods.zip" -OutFile $fxZip
+              break
+            } catch {
+              if ($attempt -ge 5) { throw "OpenJFX jmods download failed after $attempt attempts: $_" }
+              Write-Host "jmods download attempt $attempt failed, retrying: $_"
+              Start-Sleep -Seconds 3
+            }
+          }
           $actual = (Get-FileHash $fxZip -Algorithm SHA256).Hash.ToLower()
           if ($actual -ne $fxSha256) { throw "OpenJFX jmods sha256 mismatch: $actual" }
           Expand-Archive $fxZip -DestinationPath "$env:RUNNER_TEMP\openjfx"
