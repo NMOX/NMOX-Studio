@@ -50,4 +50,24 @@ class LanguageCommentsTest {
         assertThat(LanguageComments.lineCommentFor("text/x-nonesuch")).isNull();
         assertThat(LanguageComments.lineCommentFor(null)).isNull();
     }
+
+    @Test
+    @DisplayName("Svelte and Vue carry the HTML block pair, not a line prefix")
+    void markupDialectsUseBlockPair() {
+        for (String mime : new String[]{"text/x-svelte", "text/x-vue"}) {
+            assertThat(LanguageComments.lineCommentFor(mime)).as(mime).isNull();
+            LanguageComments.BlockComment block = LanguageComments.blockCommentFor(mime);
+            assertThat(block).as(mime).isNotNull();
+            assertThat(block.open()).isEqualTo("<!--");
+            assertThat(block.close()).isEqualTo("-->");
+        }
+    }
+
+    @Test
+    @DisplayName("An unknown or null mime has no block pair either")
+    void unknownHasNoBlockPair() {
+        assertThat(LanguageComments.blockCommentFor("text/x-nonesuch")).isNull();
+        assertThat(LanguageComments.blockCommentFor("text/javascript")).isNull();
+        assertThat(LanguageComments.blockCommentFor(null)).isNull();
+    }
 }

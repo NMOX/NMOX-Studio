@@ -84,6 +84,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-janet", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
     @MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class)
@@ -366,7 +367,14 @@ public class PolyglotCompletionProvider implements CompletionProvider {
             Map.entry("text/coffeescript", set("if unless then else switch when for while until loop by "
                     + "class extends super this new return try catch finally throw break continue do "
                     + "yield await typeof instanceof delete in of not and or is isnt true false yes no "
-                    + "on off null undefined require module exports -> =>")));
+                    + "on off null undefined require module exports -> =>")),
+            // Svelte 5: runes, template blocks/tags, directives, lifecycle
+            Map.entry("text/x-svelte", set("$state $derived $derived.by $effect $props $bindable "
+                    + "$inspect $host "
+                    + "#if :else /if #each /each #await :then :catch /await #key /key "
+                    + "#snippet /snippet @render @html @const @debug @attach "
+                    + "bind: on: use: transition: in: out: animate: class: style: "
+                    + "onMount onDestroy tick untrack")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));

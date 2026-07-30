@@ -33,6 +33,7 @@ import org.nmox.studio.ui.browser.devtools.NetworkModel;
 import org.nmox.studio.ui.browser.devtools.ScriptRunner;
 import org.nmox.studio.ui.browser.devtools.StorageSnapshotParser;
 import org.nmox.studio.ui.browser.devtools.StyleSummary;
+import org.nmox.studio.ui.browser.devtools.SvelteSnapshotParser;
 import org.nmox.studio.ui.browser.devtools.VueSnapshotParser;
 import org.nmox.studio.ui.browser.devtools.VueSnapshotParser.VueNode;
 import org.nmox.studio.ui.browser.devtools.VueSnapshotParser.VueTree;
@@ -40,7 +41,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  * The Browser's developer-tools pane: Console / DOM / Network /
- * Storage / Vue tabs in a collapsible bottom split. Pure Swing shell —
+ * Storage / Vue / Svelte tabs in a collapsible bottom split. Pure Swing shell —
  * ALL logic lives in the tested devtools cores (models, parsers,
  * scripts); this class only renders them and talks to the page
  * through the {@link ScriptRunner} seam (so it has zero JavaFX
@@ -82,6 +83,11 @@ public final class DevToolsPanel extends JPanel {
     private final DefaultTableModel vueDetails = readOnlyTable("Kind", "Name", "Value");
     private final JLabel vueStatus = new JLabel(" ");
 
+    // Svelte tab
+    private final DefaultTreeModel svelteTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
+    private final JTextArea svelteDetails = readOnlyArea();
+    private final JLabel svelteStatus = new JLabel(" ");
+
     public DevToolsPanel(ConsoleModel console, NetworkModel network, ScriptRunner runner) {
         super(new BorderLayout());
         this.console = console;
@@ -97,6 +103,7 @@ public final class DevToolsPanel extends JPanel {
         tabs.addTab("Network", networkTab());
         tabs.addTab("Storage", storageTab());
         tabs.addTab("Vue", vueTab());
+        tabs.addTab("Svelte", svelteTab());
         add(tabs, BorderLayout.CENTER);
     }
 
@@ -390,6 +397,84 @@ public final class DevToolsPanel extends JPanel {
             swing.add(toSwing(child, count));
         }
         return swing;
+    }
+
+    // ---- Svelte --------------------------------------------------------
+
+    private JPanel svelteTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JTree tree = new JTree(svelteTree);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        JButton refresh = new JButton("Refresh");
+        refresh.addActionListener(e -> refreshSvelte());
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        bar.add(refresh);
+        bar.add(svelteStatus);
+        panel.add(bar, BorderLayout.NORTH);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(svelteDetails));
+        split.setResizeWeight(0.5);
+        panel.add(split, BorderLayout.CENTER);
+        tree.addTreeSelectionListener(e -> {
+            Object last = tree.getLastSelectedPathComponent();
+            if (!(last instanceof DefaultMutableTreeNode n)) {
+                return;
+            }
+            if (n.getUserObject() instanceof SvelteSnapshotParser.Loc loc) {
+                Object parent = ((DefaultMutableTreeNode) n.getParent()).getUserObject();
+                String file = parent instanceof SvelteSnapshotParser.SvelteFile sf
+                        ? sf.file : "";
+                svelteDetails.setText(file + "\nline " + loc.line + ":" + loc.column);
+                if (!loc.path.isEmpty()) {
+                    runner.run(DevScripts.highlight(loc.path), r -> { }, err -> { });
+                }
+            } else if (n.getUserObject() instanceof SvelteSnapshotParser.SvelteFile sf) {
+                svelteDetails.setText(sf.file + "\n" + sf.count + " element"
+                        + (sf.count == 1 ? "" : "s"));
+            }
+        });
+        return panel;
+    }
+
+    private void refreshSvelte() {
+        runner.run(DevScripts.SVELTE_SNAPSHOT, json -> RP.post(() -> {
+            SvelteSnapshotParser.SvelteTree parsed = SvelteSnapshotParser.parse(json);
+            SwingUtilities.invokeLater(() -> applySvelte(parsed));
+        }), err -> svelteStatus.setText("(no page: " + err + ")"));
+    }
+
+    private void applySvelte(SvelteSnapshotParser.SvelteTree parsed) {
+        svelteDetails.setText("");
+        if (parsed.empty()) {
+            svelteTree.setRoot(new DefaultMutableTreeNode("(no Svelte)"));
+            // Keep the status SHORT (a FlowLayout label wider than the
+            // panel wraps to a hidden second row — the v1.206.0 Vue-tab
+            // lesson); the honest limits ride the tooltip.
+            svelteStatus.setText("No Svelte detected (dev builds only)");
+            svelteStatus.setToolTipText("Svelte compiles components away — no "
+                    + "component instances, props, or state exist at runtime. "
+                    + "A DEV build (vite dev) plants __svelte_meta source "
+                    + "locations on rendered elements, which is what this pane "
+                    + "shows; a production build offers nothing to inspect.");
+            return;
+        }
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Svelte sources");
+        for (SvelteSnapshotParser.SvelteFile f : parsed.files) {
+            DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(f);
+            for (SvelteSnapshotParser.Loc loc : f.locs) {
+                fileNode.add(new DefaultMutableTreeNode(loc));
+            }
+            root.add(fileNode);
+        }
+        svelteTree.setRoot(root);
+        svelteStatus.setText("Svelte — " + parsed.total + " element"
+                + (parsed.total == 1 ? "" : "s") + " from " + parsed.files.size()
+                + " file" + (parsed.files.size() == 1 ? "" : "s"));
+        svelteStatus.setToolTipText("Source mapping from dev-mode __svelte_meta: "
+                + "which .svelte file and line rendered each element. Svelte "
+                + "compiles components away, so file/line mapping is all a "
+                + "runtime inspector can offer — select a line to highlight "
+                + "its element in the page.");
     }
 
     // ---- shared --------------------------------------------------------

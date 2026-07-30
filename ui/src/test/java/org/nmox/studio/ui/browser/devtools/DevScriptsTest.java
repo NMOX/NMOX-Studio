@@ -89,6 +89,27 @@ class DevScriptsTest {
     }
 
     @Test
+    @DisplayName("Svelte snapshot embeds the 20000-element scan and 200-loc caps")
+    void svelteSnapshotCaps() {
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("MAX_SCAN=20000");
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("LOC_CAP=200");
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("g.locs.length<LOC_CAP");
+    }
+
+    @Test
+    @DisplayName("Svelte snapshot reads the dev-mode marker and groups by source file")
+    void svelteSnapshotMarker() {
+        // dev mode plants __svelte_meta {loc:{file,line,column}} on every
+        // element — the ONLY runtime trace a compiled Svelte app leaves
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("__svelte_meta");
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("m.loc.file");
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("m.loc.line");
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("m.loc.column");
+        // the output shape the parser pins on the other side
+        assertThat(DevScripts.SVELTE_SNAPSHOT).contains("{files:files,total:total}");
+    }
+
+    @Test
     @DisplayName("storage snapshot embeds the 500-char cap and all three areas")
     void storageSnapshot() {
         assertThat(DevScripts.STORAGE_SNAPSHOT).contains("CAP=500");

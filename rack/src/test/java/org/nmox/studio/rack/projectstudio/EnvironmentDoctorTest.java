@@ -29,6 +29,8 @@ class EnvironmentDoctorTest {
                 .contains("forge", "anvil", "cast", "chisel", "solc", "slither", "solhint");
         assertThat(tools).as("the classic web toolbelt is swept")
                 .contains("webpack", "grunt", "gulp", "bower", "coffee");
+        assertThat(tools).as("the Svelte language server is swept")
+                .contains("svelteserver");
         // the classics install from npm, and the hints say exactly how
         for (String[] check : checks) {
             switch (check[0]) {
@@ -37,6 +39,7 @@ class EnvironmentDoctorTest {
                 case "gulp" -> assertThat(check[2]).isEqualTo("npm install -g gulp-cli");
                 case "bower" -> assertThat(check[2]).isEqualTo("npm install -g bower");
                 case "coffee" -> assertThat(check[2]).isEqualTo("npm install -g coffeescript");
+                case "svelteserver" -> assertThat(check[2]).isEqualTo("npm install -g svelte-language-server");
                 default -> { }
             }
         }

@@ -100,10 +100,11 @@ repo (`Clarinet.toml`) opens with its real lanes (`aiken check`,
 with script tags and **no** manifest opens too, as a STATIC project — the
 classic web is first-class, not an error.
 
-**Creating:** *New Project…* offers real scaffolds — React, Vue, Svelte,
-Angular, Vanilla JS, Elixir/Phoenix, PHP Web (LEMP, with compose file and
-front controller), and Classic Web (jQuery). Each template arrives with
-lint/format/test configs wired and a git repo initialized.
+**Creating:** *New Project…* offers real scaffolds — React, Vue, Svelte
+(Vite + Svelte 5, runes syntax), Angular, Vanilla JS, Elixir/Phoenix,
+PHP Web (LEMP, with compose file and front controller), and Classic Web
+(jQuery). Each template arrives with lint/format/test configs wired and
+a git repo initialized.
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.
@@ -594,7 +595,7 @@ The in-app browser is a real WebKit engine (JavaFX WebView, shipped in
 the bundled runtime) with the chrome you expect — URL bar (a bare
 `example.com` gets `https://`), back/forward, reload/stop, load
 progress, zoom buttons — and, since v1.206.0, **developer tools**: the
-**DevTools** button in the toolbar opens a bottom pane with five tabs.
+**DevTools** button in the toolbar opens a bottom pane with six tabs.
 A bare open lands on your project's live dev server when one is
 running, else a home page; the rack's SCOPE device and every
 Open-in-Browser action route here too.
@@ -623,6 +624,15 @@ Open-in-Browser action route here too.
   select a component to see its props and state and outline its root
   element in the page. No Vue on the page is an honest empty state;
   React/Angular are not inspected (v1).
+- **Svelte** — source mapping for a running **Svelte** app served from
+  a dev build (`vite dev`): dev mode stamps every rendered element
+  with the `.svelte` file, line, and column that produced it, and the
+  pane groups those by file — select a line to outline its element in
+  the page. The honest limit, stated plainly: Svelte *compiles
+  components away*, so no component instances, props, or state exist
+  at runtime for any inspector to walk — file/line source mapping is
+  everything dev mode offers, and a production build offers nothing at
+  all (the pane says so instead of claiming "no Svelte").
 
 Everything the page hands the tools is treated as untrusted: strings
 are capped, lists are bounded, and a hostile page can fill a ring
