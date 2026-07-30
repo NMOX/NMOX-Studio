@@ -27,6 +27,15 @@ class IrcClientTest {
 
     private static final long T = 8_000; // generous per-step timeout; CI runs loaded
 
+    /**
+     * The reconnect steps get their own, longer leash: a redial is
+     * drop-detection + backoff + a fresh TCP connect + registration, and
+     * the Windows lane is the slowest of the three. A timeout only costs
+     * wall-clock when something is genuinely broken, so it is cheap
+     * insurance against a false red (the v1.205.0 flake).
+     */
+    private static final long RECONNECT_T = 30_000;
+
     private FakeIrcServer server;
     private IrcClient client;
     private RecordingListener listener;
@@ -222,11 +231,11 @@ class IrcClientTest {
 
         server.dropClient();
         // the engine announces the drop, then redials on its own
-        server.completeRegistration("nmox-user", T);
-        assertThat(server.awaitLine("JOIN ", T))
+        server.completeRegistration("nmox-user", RECONNECT_T);
+        assertThat(server.awaitLine("JOIN ", RECONNECT_T))
                 .as("auto-rejoin after re-registration")
                 .isEqualTo("JOIN #persist");
-        assertThat(client.awaitState(IrcClient.State.READY, T)).isTrue();
+        assertThat(client.awaitState(IrcClient.State.READY, RECONNECT_T)).isTrue();
         assertThat(listener.events).contains("disconnected");
         assertThat(server.acceptCount()).isGreaterThanOrEqualTo(2);
     }
