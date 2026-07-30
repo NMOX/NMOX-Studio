@@ -124,6 +124,16 @@ final class FakeIrcServer implements AutoCloseable {
     void dropClient() throws IOException {
         Socket s = client;
         if (s != null) {
+            // shutdownOutput FIRST so the client sees an orderly FIN.
+            // A bare close() with bytes still unread makes Windows send
+            // RST instead, and the client's blocked reader can miss the
+            // clean EOF that drives its redial — the v1.205.0 Windows-
+            // lane flake (green on ubuntu/macOS, red once on Windows).
+            try {
+                s.shutdownOutput();
+            } catch (IOException ignored) {
+                // already half-closed: the close below still ends it
+            }
             s.close();
         }
     }
