@@ -149,4 +149,40 @@ class ToggleLineCommentActionTest {
         toggleBlockAll(d);
         assertThat(text(d)).isEqualTo("tight");
     }
+
+    // ---- v1.208.0 arc review: the degenerate-marker corruption --------
+
+    /**
+     * A line that both starts with the open marker and ends with the
+     * close marker, while being SHORTER than the two together, looked
+     * "commented" to the direction check — and stripping that many
+     * characters ate the newline and the head of the next line. Silent
+     * file corruption with no exception and no status message.
+     */
+    @Test
+    @DisplayName("a too-short marker pair never eats the next line")
+    void degenerateMarkerLeavesNextLineIntact() throws BadLocationException {
+        PlainDocument d = doc("<!-->\nlet count = 0;\n");
+        ToggleLineCommentAction.toggleBlock(d, 0, 5, "<!--", "-->");
+        assertThat(text(d))
+                .as("the following line survives untouched")
+                .contains("let count = 0;");
+    }
+
+    @Test
+    @DisplayName("a marker-only line that cannot be stripped is left alone")
+    void unstrippableMarkerLineUnchanged() throws BadLocationException {
+        PlainDocument d = doc("<!--->\nnext line\n");
+        ToggleLineCommentAction.toggleBlock(d, 0, 6, "<!--", "-->");
+        assertThat(text(d)).isEqualTo("<!--->\nnext line\n");
+    }
+
+    @Test
+    @DisplayName("a real empty comment still unwraps normally")
+    void realEmptyCommentStillUnwraps() throws BadLocationException {
+        PlainDocument d = doc("<!-- -->\nnext\n");
+        ToggleLineCommentAction.toggleBlock(d, 0, 8, "<!--", "-->");
+        assertThat(text(d)).doesNotContain("<!--");
+        assertThat(text(d)).contains("next");
+    }
 }

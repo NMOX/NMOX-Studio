@@ -241,13 +241,49 @@ public final class FxBrowserPanel extends JPanel {
         onFx(() -> {
             try {
                 Object r = engine.executeScript(js);
-                String s = String.valueOf(r);
-                SwingUtilities.invokeLater(() -> onResult.accept(s));
+                // Every cap inside the injected script is PAGE-controlled
+                // (a page can redefine JSON.stringify to hand back
+                // hundreds of MB). Cap here, on our side of the border,
+                // before the string is copied to the EDT — the parsers'
+                // own MAX_INPUT check comes too late to stop the
+                // allocation. Truncated JSON simply fails to parse, and
+                // the parsers answer honestly empty.
+                SwingUtilities.invokeLater(() -> onResult.accept(cap(String.valueOf(r))));
             } catch (RuntimeException ex) {
                 String msg = ex.getMessage() == null ? ex.toString() : ex.getMessage();
-                SwingUtilities.invokeLater(() -> onError.accept(msg));
+                SwingUtilities.invokeLater(() -> onError.accept(cap(msg)));
             }
         });
+    }
+
+    /**
+     * EDT. Stops the page for good: cancels any load and navigates to
+     * about:blank, which tears down the document's timers, media and
+     * pending requests.
+     *
+     * <p>Without this, closing the Browser tab left the page RUNNING —
+     * JS timers firing, audio playing, requests in flight, the bridge
+     * still feeding models nobody can see — until the IDE itself quit.
+     * Called from the TopComponent's componentClosed (v1.208.0 review).
+     */
+    public void stopEngine() {
+        onFx(() -> {
+            try {
+                engine.getLoadWorker().cancel();
+                engine.load("about:blank");
+            } catch (RuntimeException ignored) {
+                // teardown is best-effort; a dying engine is still dead
+            }
+        });
+        devTools.stopTimers();
+    }
+
+    /** Ceiling on anything crossing back from the page (see runScript). */
+    private static String cap(String s) {
+        return s.length() <= org.nmox.studio.ui.browser.devtools.JsonLite.MAX_INPUT
+                ? s
+                : s.substring(0, org.nmox.studio.ui.browser.devtools.JsonLite.MAX_INPUT)
+                        + "…[truncated]";
     }
 
     /**
