@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.209.0] - 2026-07-31
+
+### Docs truth, and the gauntlet that earned it
+
+- **The v1.208.0 fixes were click-verified in the shipped app**, two of
+  them behaviourally rather than visually. The DevTools hostile-string
+  fixture stored `<html><img src="http://127.0.0.1:8099/beacon">` as a
+  localStorage key/value and as an element id; both panes displayed it as
+  literal text and **the beacon log stayed empty** — the IDE's JVM never
+  fetched it. A ticking page pinged its server every 2s while the Browser
+  tab was open and **stopped dead the moment the tab closed** (0 ticks in
+  the following 20s; before v1.208.0 it ran until the IDE quit). The
+  comment toggle on `<!-->` left the following line whole. And IRC
+  connected to freenode over TLS — the server's own reply reads
+  *"connected to chat.freenode.net using TLS (SSL) cipher
+  'TLSv1.3-TLS_AES_256_GCM_SHA384'"* — proving hostname verification does
+  not break real use. Quit left zero orphan processes.
+- Recorded alongside it, from a headless probe: with verification ON the
+  real host handshakes and a mismatched certificate is **rejected**; with
+  verification OFF (the pre-v1.208.0 code path) the mismatched certificate
+  **handshakes fine**. That is the vulnerability, demonstrated rather than
+  asserted.
+- **plan.md** gains its v1.208.0 currency pass (the v1.194–v1.208 arc) and
+  two new failure patterns, the first of which is the one to internalize:
+  *both security bugs were trusting a platform default* — `SSLSocket`
+  doesn't verify hostnames, `JLabel` does render HTML. The standing lens
+  question is now **"what does this API do by DEFAULT that we assumed it
+  doesn't?"** The second: *a test gated on the packaged app needs both
+  halves of the surefire wiring*, or it silently runs before the app
+  exists.
+- **CLAUDE.md** status paragraph and version history brought current
+  through v1.208.0, and the project is stated as Apache-2.0.
+
 ## [1.208.0] - 2026-07-31
 
 ### The arc review: two security findings, one silent corruption
@@ -7494,6 +7527,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.209.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.208.0...v1.209.0
 [1.208.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.1...v1.208.0
 [1.207.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.0...v1.207.1
 [1.207.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.206.0...v1.207.0
