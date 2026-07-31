@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.210.0] - 2026-07-31
+
+### The junior-dev sprint: the first fifteen minutes
+
+Walked the shipped 1.209.1 as a six-months-experience web developer would
+— never seen NetBeans, doesn't know what a "rack" is — and granted what
+that developer asked for. Two read-only lenses (onboarding surfaces,
+every message and refusal string) backed the walk.
+
+- **A brand-new project raised a red error badge before a line was
+  written.** `racket.tmLanguage.json` carried a repository entry that is a
+  JSON ARRAY; TM4E's `RawRepository.getRule` casts every repository value
+  to `IRawRule`, so it threw `ClassCastException` deep in
+  `ScopeDependencyProcessor` and surfaced as an unexplained "Unexpected
+  Exception". Normalized to `{"patterns": [...]}` — what the entry always
+  meant. This is the same FAMILY as the v1.200.1 Nim/xml capture bug, one
+  door further in, so `GrammarCapturesShapeTest` now gates repository
+  shapes too: proven to catch the shipped file by name.
+- **The IDE asked whether you trust a project it wrote itself sixty
+  seconds earlier** — and the dialog's default button is "Keep Safe", so a
+  reflexive Enter left Run honestly doing nothing (v1.93.0 serving truth)
+  with no explanation. The wizard now trusts what it scaffolds, exactly as
+  Experiments and Learning Spaces have since they shipped; the code's own
+  comment already made this argument for the install spawn, it just never
+  recorded the grant. **Nothing about the gate for cloned code changes.**
+- **A failed `npm install` was invisible**: both `CommandExecutor.run`
+  callbacks were empty lambdas, output went to a tab the product
+  deliberately never fronts, and the exit code was discarded — so a
+  beginner without Node saw nothing, then hit a second unexplained failure
+  on Run. Success is now a status line; failure is a dialog naming the two
+  places that hold the answer (Output ▸ Project Setup, Tools ▸ Environment
+  Doctor).
+- **"CHECK greys" never greyed.** Two dozen call sites document a device
+  refusing a verb its toolchain lacks (gleam has no `outdated`, elm has no
+  `run`); the shared choke point returned `false` in silence, so the
+  button stayed lit and the click did *nothing* — which a beginner on a
+  Gleam or Racket learning space reads as a broken product. The refusal
+  now speaks, naming device and toolchain: `NO CRATE VERB FOR GLEAM —
+  THAT TOOLCHAIN HAS NO SUCH COMMAND`. One fix at the choke point covers
+  the whole family; devices with a better sentence can override it.
+- **The Welcome screen's only documentation link was "What's new"** —
+  release notes, the wrong first door. It now also offers **User Guide**,
+  whose first chapter is "First launch".
+
+Deliberately NOT changed: the trust gate itself, the default-open suite
+tabs, and the rack's vocabulary — those are identity decisions for the
+product's owner, not a junior's to make. They are recorded in the report
+instead.
+
 ## [1.209.1] - 2026-07-31
 
 ### The Windows lane's shell changed under us
@@ -7547,6 +7596,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.210.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.1...v1.210.0
 [1.209.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.0...v1.209.1
 [1.209.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.208.0...v1.209.0
 [1.208.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.1...v1.208.0

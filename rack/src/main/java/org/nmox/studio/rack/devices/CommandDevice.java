@@ -193,6 +193,21 @@ public abstract class CommandDevice extends RackDevice {
      * Makefile...) - running tools against the user's home directory
      * is never what anyone wanted.
      */
+    /**
+     * What the LCD says when this device has no command for the project's
+     * toolchain. Names the device and the toolchain so the reason is
+     * self-evident ("NO CRATE VERB FOR GLEAM"), and says the honest thing
+     * about it: the toolchain simply doesn't offer that operation, so
+     * there is nothing to fix. Devices with a better sentence — a knob to
+     * turn, a file to add — override this.
+     */
+    protected String noCommandReason() {
+        ProjectInspector.ProjectKind k = effectiveKind();
+        String toolchain = k == null ? "THIS PROJECT" : k.name();
+        return "NO " + getTitle() + " VERB FOR " + toolchain
+                + " — THAT TOOLCHAIN HAS NO SUCH COMMAND";
+    }
+
     protected boolean requiresProjectManifest() {
         return true;
     }
@@ -227,6 +242,19 @@ public abstract class CommandDevice extends RackDevice {
             return false;
         }
         if (command == null || command.isEmpty()) {
+            // A null command is how a device says "this toolchain has no such
+            // verb" (gleam has no `outdated`, elm has no `run`, …). Two dozen
+            // call sites comment this as "CHECK greys" / "IGNITION greys" —
+            // but nothing ever greyed: the button stayed lit and the click did
+            // NOTHING. To a beginner on a Gleam or Racket learning space that
+            // reads as a broken product, and there is no way to find out
+            // otherwise. Say it instead. DebugDevice has spoken this exact
+            // refusal honestly since v1.77.1; this brings the whole family up
+            // to that bar at the one choke point they all pass through.
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText(noCommandReason());
+            });
             return false;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {

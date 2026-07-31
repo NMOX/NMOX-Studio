@@ -423,20 +423,22 @@
 				}
 			]
 		},
-		"lambda-onearg": [
-			{
-				"name": "meta.lambda.racket",
-				"match": "(?x) (?<=[(\\[{]) \\s*\n(lambda | λ) \\s+\n([^(\\#)\\[\\]{}\",'`;\\s][^()\\[\\]{}\",'`;\\s]*)\n",
-				"captures": {
-					"1": {
-						"name": "storage.type.lambda.racket"
-					},
-					"2": {
-						"name": "variable.parameter.racket"
+		"lambda-onearg": {
+			"patterns": [
+				{
+					"name": "meta.lambda.racket",
+					"match": "(?x) (?<=[(\\[{]) \\s*\n(lambda | λ) \\s+\n([^(\\#)\\[\\]{}\",'`;\\s][^()\\[\\]{}\",'`;\\s]*)\n",
+					"captures": {
+						"1": {
+							"name": "storage.type.lambda.racket"
+						},
+						"2": {
+							"name": "variable.parameter.racket"
+						}
 					}
 				}
-			}
-		],
+			]
+		},
 		"lambda-args": {
 			"patterns": [
 				{

@@ -48,6 +48,59 @@ class GrammarCapturesShapeTest {
                 .isEmpty();
     }
 
+    /**
+     * The SECOND shape TM4E rejects (v1.210.0, found by walking the app
+     * as a junior dev would: creating a brand-new Vanilla Web project
+     * raised a red "Unexpected Exception" badge before any code was
+     * written). Every value in the top-level {@code repository} must be
+     * a RULE OBJECT — TM4E's {@code RawRepository.getRule} casts it to
+     * {@code IRawRule} and a bare ARRAY throws
+     * {@code ClassCastException} deep in
+     * {@code ScopeDependencyProcessor}, which is how
+     * racket.tmLanguage.json's {@code lambda-onearg} (a one-element
+     * array, tolerated by vscode-textmate) surfaced as an unexplained
+     * error on a junior's first project. The fix is to say what was
+     * meant: <code>{"patterns": [...]}</code>.
+     *
+     * <p>Same family as the capture law above, different door — which is
+     * the lesson: gate the SHAPE FAMILY a foreign parser rejects, not the
+     * single instance you tripped over.
+     */
+    @Test
+    @DisplayName("every vendored grammar's repository values are rule objects, never bare arrays")
+    void allRepositoryValuesAreRuleObjects() throws Exception {
+        File dir = new File("src/main/resources/org/nmox/studio/editor/grammars");
+        File[] grammars = dir.listFiles((d, n) -> n.endsWith(".json"));
+        assertThat(grammars).as("grammar dir present").isNotEmpty();
+
+        List<String> violations = new ArrayList<>();
+        for (File f : grammars) {
+            if (f.getName().equals("package.json")) {
+                continue;
+            }
+            JSONObject g = new JSONObject(Files.readString(f.toPath()));
+            Object repo = g.opt("repository");
+            if (!(repo instanceof JSONObject repoObj)) {
+                if (repo != null) {
+                    violations.add(f.getName() + " repository is not an object");
+                }
+                continue;
+            }
+            for (String k : repoObj.keySet()) {
+                if (!(repoObj.get(k) instanceof JSONObject)) {
+                    violations.add(f.getName() + " repository/" + k + " is "
+                            + repoObj.get(k).getClass().getSimpleName()
+                            + ", not a rule object");
+                }
+            }
+        }
+        assertThat(violations)
+                .as("a bare array in `repository` throws ClassCastException in "
+                        + "TM4E's RawRepository.getRule and surfaces to the user "
+                        + "as an unexplained Unexpected Exception")
+                .isEmpty();
+    }
+
     private static final String[] CAPTURE_KEYS = {
         "captures", "beginCaptures", "endCaptures", "whileCaptures"};
 
