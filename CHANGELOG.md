@@ -4,6 +4,74 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.208.0] - 2026-07-31
+
+### The arc review: two security findings, one silent corruption
+
+Two read-only lenses over v1.204–v1.207 (the IRC client, the Browser
+DevTools, Svelte), then fixes for everything they proved.
+
+**IRC — TLS was decorative against an active attacker.** A raw
+`SSLSocket` validates the certificate CHAIN but not the HOSTNAME (unlike
+`HttpsURLConnection`, that check is off by default), so any CA-valid
+certificate for any domain completed a clean handshake — and received
+the SASL payload or the NickServ password sent moments later. The
+secrets law held at rest and in the logs, and was defeated at the
+transport it rides on. `setEndpointIdentificationAlgorithm("HTTPS")`
+closes it; source-gated and mutation-proven.
+
+**IRC — the bounded-reads law stopped at the line.** The engine caps a
+line at 8k, but nothing capped what the WINDOW retained, and an IRC
+connection deliberately outlives its window: a busy channel left
+overnight grew an EDT-owned document until the IDE ran out of memory —
+the OOM class the v1.104–v1.124 sweeps hunted everywhere else, invisible
+to an HTTP-read grep. Transcripts now drop whole head lines at a 1M-char
+ceiling, and the same drop-don't-grow ceiling covers four more
+server-driven collections (auto-created query tabs, nick sets, pending
+NAMES, WHOIS channels).
+
+**DevTools — Swing rendered page-controlled text as HTML.** Every string
+in these panes comes from the inspected page, and a `JLabel` whose text
+starts with `<html>` renders it: a page naming a component
+`<html><img src="http://evil/beacon">` made the IDE's own JVM fetch that
+URL. Every tree, table and list now disables the HTML view, so page text
+displays as the literal text it is — by construction, not by luck of a
+format string. A source gate fails the build if a pane is added
+unguarded.
+
+**Editor — the comment toggle could eat the next line.** A line that
+both starts with `<!--` and ends with `-->` while being shorter than the
+pair (`<!-->`) looked commented to the direction check, and stripping
+that many characters swallowed the newline and the head of the following
+line — no exception, no status message, silent file corruption. A marker
+pair that cannot fit is not a comment to strip.
+
+Also fixed: long IRC messages now SPLIT at UTF-8 boundaries instead of
+being silently truncated by the server while the local echo showed text
+the channel never received; a quit racing the reconnect timer can no
+longer resurrect a zombie connection that identifies to NickServ
+invisibly; the `echo-message` capability no longer bounces the NickServ
+password into the on-screen transcript; control characters in nicks are
+stripped; mention balloons are one-per-target instead of one-per-line;
+`executeScript` results are capped on OUR side of the page border (every
+cap inside the injected script is page-controlled); closing the Browser
+tab now actually STOPS the page (it kept running timers, audio and
+requests until the IDE quit); DOM tag/id/class labels are re-capped
+Java-side; and 19 Svelte completion entries that could never match are
+reachable — the prefix walk now steps back over `#`, `@`, `/`, `:` on
+`text/x-svelte` only, since widening it globally would change how Ruby
+and Elixir complete.
+
+### Every installer carries the license
+
+- The relicense follow-up: `LICENSE` and `NOTICE` now ride the assembled
+  app directory, so the DMG, tar.gz, deb and Windows installer all
+  inherit them from one Maven execution; the portable zip (which the nbm
+  plugin zips before that copy runs) gets them appended by the release
+  workflow. `PackagedLicenseGateTest` checks the real assembled output at
+  integration-test time, proven failing-first against an assembly that
+  lacked them.
+
 ## [1.207.1] - 2026-07-30
 
 ### The release survives a flaky CDN
@@ -7426,6 +7494,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.208.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.1...v1.208.0
 [1.207.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.0...v1.207.1
 [1.207.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.206.0...v1.207.0
 [1.206.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.205.0...v1.206.0
