@@ -19,7 +19,10 @@
 
 #### Advanced Features
 - **IntelliSense** - JavaScript object property suggestions
-- **Emmet Support** - HTML/CSS abbreviations
+- **Code Templates** - ~60 JS/TS snippets plus the platform's HTML tag
+  templates (type `ul` + Tab). NOT Emmet: there is no `div.foo>ul>li*3`
+  abbreviation expansion, and this line used to claim otherwise
+  (corrected v1.213.0).
 - **Snippet Management** - Custom code snippets
 - **Live Templates** - Dynamic code generation
 - **Refactoring** - Rename, extract, inline operations
