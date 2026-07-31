@@ -172,16 +172,43 @@ ledger): where the project stands, what's genuinely not done, what's worth
 doing next, and the working method that got it here. Unlike most of
 docs/engineering/, this file is NOT historical — keep it true or delete it.*
 
+Currency pass 2026-07-31 at **v1.208.0**, after the day that took the
+IDE from "web studio" to "web studio you can live in": the muscle-memory
+and API-Studio tranche (v1.194–v1.198), the **in-app browser** (v1.199.0,
+FX-lit platform WebKit, ⌥⌘4), the coverage-and-comments arc David asked
+for (v1.202–v1.203: behaviour tests across every module, floors ratcheted,
+and docs/engineering/codebase-guide.md — the beginner's walk), a **full
+IRC client** (v1.204–v1.205: freenode by default on ⌥⌘3, then SASL,
+IRCv3 caps, tab completion, highlights, logging, /list, WHOIS, ignore, a
+network editor; Escape is dead in a docked TopComponent so clearing is
+Ctrl+U), **Browser DevTools** (v1.206.0 — JavaFX WebView has no inspector
+and no remote-debug protocol, so we own the engine: Console/DOM/Network/
+Storage/Vue panes over executeScript plus an injected bridge; a Vue
+production build exposes no component tree and the pane says so),
+**Svelte as a full vertical** (v1.207.0, plus the DevTools Svelte pane
+that maps live DOM back to .svelte source via __svelte_meta — Svelte
+compiles components away, so source mapping is the honest ceiling), the
+**Apache-2.0 relicense** (v1.207.0, David's decision: the app now shares
+the NetBeans Platform's license; permissive-to-permissive, deliberate,
+NOT legally required — don't cargo-cult it as forced), the release-CDN
+hardening (v1.207.1), and **the arc review** (v1.208.0) that found two
+security bugs and one file-corruption bug in four-day-old code. All four
+v1.208.0 fixes were then click-verified in the shipped app, two of them
+behaviourally (an empty beacon log proving no fetch; a ticker that stops
+when the tab closes). Standing counts at v1.208.0: 53 devices, 80
+grammars, 88 learning spaces, six studios (Block, API, DB, Contract,
+Infra + the Browser), 58 recognized manifests, Apache-2.0.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.144.0, 19 release assets per
+NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
 whose identity is the **Reason-style task rack**: 53 hardware-styled devices
 (STELLAR and ANCHOR joined in the v1.130+ Web3 arc) wired with patch
 cables, backed by real process execution, session
 resurrection, CI export, and since v1.55.0 a **frozen public Device SPI**
-third parties extend it through. Around it: a **74-grammar polyglot editor**
+third parties extend it through. Around it: an **80-grammar polyglot editor**
 (70+ language mimes — the 2026-07-16 run added V, Fortran, Smalltalk,
 Prolog, Tcl, Scheme, Ada, Pascal, Odin, COBOL, Haxe, Janet; every
 cleanly-licensed grammar is now vendored, the Raku/Forth-class skips
@@ -669,6 +696,25 @@ the design intent is loud. Two NEW failure patterns joined the method:
 "done" claim must be checked against the artifact it summarizes* (the
 ledger's own section headers, not the working-set memory of them). The
 standing guidance is unchanged — and the backlogs are empty again.
+Two more joined at v1.208.0, and the first is the one to internalize:
+*both security bugs in that review were TRUSTING A PLATFORM DEFAULT.* A
+raw `SSLSocket` validates the certificate chain but NOT the hostname
+(unlike `HttpsURLConnection`, endpoint identification is off until you
+set it), so the IRC client's TLS accepted any CA-valid certificate for
+any domain and handed the SASL/NickServ credentials to whoever held it.
+A Swing `JLabel` whose text starts with `<html>` RENDERS it, so the
+DevTools panes — which display component names, source paths, URLs and
+storage values straight from the inspected page — would make the IDE's
+own JVM fetch `<html><img src="http://evil/...">`. Neither was a logic
+error; both were the platform's default being the opposite of what the
+surrounding code assumed. **Standing lens question for any new surface:
+what does this API do by DEFAULT that we assumed it doesn't?** The
+second pattern is narrower but bit the same release: *a test gated on
+the PACKAGED app needs both halves of the surefire wiring* — excluded
+from the `default-test` execution AND included in the integration-test
+one. Wire only the include and it runs in the plain test phase too,
+before the app is assembled, and fails there.
+
 A third pattern joined at v1.162.0: *changing detection precedence
 starves every consumer keyed on the OLD primary kind* — when CLARITY
 began outranking NODE, PreflightPlan's `case NODE` silently stopped
