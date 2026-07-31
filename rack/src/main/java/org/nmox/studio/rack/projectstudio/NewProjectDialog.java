@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import org.nmox.studio.rack.engine.CommandExecutor;
 import org.nmox.studio.rack.service.RackService;
+import org.nmox.studio.rack.service.WorkspaceTrust;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -230,6 +231,18 @@ public class NewProjectDialog extends JDialog {
                 return;
             }
             ProjectTemplates.initGitRepo(dir); // best-effort, each spawn bounded
+            // The same reasoning the install spawn below already states, applied
+            // where it belongs: every byte in this directory was written by our
+            // own template seconds ago, so it is not "other people's code" and
+            // must not be met with a malware-shaped prompt. Without this the
+            // FIRST Run press asks "Do you trust the files in this folder?" —
+            // about a folder the IDE itself just created — and its default
+            // button is Keep Safe, so a reflexive Enter leaves the beginner
+            // with a Run button that honestly does nothing (v1.93.0 serving
+            // truth) and no idea why. Experiments and Learning Spaces have
+            // pre-trusted their own scaffolds since they shipped; this closes
+            // the one generator that didn't.
+            WorkspaceTrust.trust(dir);
             javax.swing.SwingUtilities.invokeLater(() -> {
                 createdProject = dir;
                 // aim the rack: the template's patch mounts automatically
@@ -242,14 +255,46 @@ public class NewProjectDialog extends JDialog {
                     // future manager-pinning template installs with its own tool.
                     String pm = org.nmox.studio.rack.devices.ProjectInspector
                             .nodePackageManager(dir);
+                    org.openide.awt.StatusDisplayer.getDefault()
+                            .setStatusText("Installing dependencies with " + pm + "…");
                     CommandExecutor.run("Project Setup", dir, Map.of(),
                             List.of(pm, "install"), line -> {
-                            }, code -> {
-                            });
+                            }, code -> reportInstall(pm, code));
                 }
                 dispose();
             });
         });
+    }
+
+    /**
+     * Says how the dependency install went. It used to say nothing at all —
+     * both callbacks were empty lambdas — so a failed install (no Node on
+     * PATH being the common one for a beginner) was invisible: the output
+     * went to a tab the product deliberately never fronts, the exit code was
+     * discarded, and the next thing that happened was a SECOND, equally
+     * unexplained failure when they pressed Run. Success is a quiet status
+     * line; failure is a dialog that names the two places to look.
+     */
+    private static void reportInstall(String pm, int code) {
+        if (code == 0) {
+            org.openide.awt.StatusDisplayer.getDefault()
+                    .setStatusText("Dependencies installed — press Run to start your project");
+            return;
+        }
+        org.openide.awt.StatusDisplayer.getDefault()
+                .setStatusText(pm + " install failed (exit " + code + ")");
+        org.openide.NotifyDescriptor d = new org.openide.NotifyDescriptor.Message(
+                "<html><b>" + pm + " install didn't finish.</b><br><br>"
+                + "Your project files were created fine — only the dependency<br>"
+                + "download failed (exit code " + code + ").<br><br>"
+                + "Two places to look:<br>"
+                + "&nbsp;&nbsp;• <b>Output ▸ Project Setup</b> — the full log of what "
+                + pm + " said<br>"
+                + "&nbsp;&nbsp;• <b>Tools ▸ Environment Doctor</b> — shows whether Node "
+                + "and " + pm + " are installed<br><br>"
+                + "You can also just run <code>" + pm + " install</code> again later.</html>",
+                org.openide.NotifyDescriptor.WARNING_MESSAGE);
+        org.openide.DialogDisplayer.getDefault().notifyLater(d);
     }
 
     /** Locks the form while creation runs; the button says why. */

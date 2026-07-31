@@ -215,6 +215,10 @@ public final class MainWindow extends TopComponent {
             return label;
         }
 
+        /** The newcomer's door: the guide's first chapter is "First launch". */
+        static final String USER_GUIDE_URL =
+                "https://github.com/NMOX/NMOX-Studio/blob/main/docs/user-guide.md";
+
         private static JButton textButton(String text, Color color) {
             JButton button = new JButton(text);
             button.setForeground(color);
