@@ -240,6 +240,7 @@
                                  exist until package: runs below instead -->
                             <excludes>
                                 <exclude>**/PackagedConfGateTest.java</exclude>
+                                <exclude>**/PackagedLicenseGateTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
