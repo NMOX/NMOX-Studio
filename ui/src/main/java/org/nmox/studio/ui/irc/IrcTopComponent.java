@@ -110,7 +110,7 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "IrcTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 356)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 356)
 @ActionID(category = "Window", id = "org.nmox.studio.ui.irc.IrcTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 268),
@@ -224,6 +224,17 @@ public final class IrcTopComponent extends TopComponent {
 
     @Override
     protected void componentOpened() {
+        // Deliberately empty since v1.211.0: this tab now opens by DEFAULT so a
+        // newcomer discovers that the IDE has a chat client, which means
+        // componentOpened fires during startup. Building the whole UI there
+        // would put Swing construction on the EDT before the window paints —
+        // the zero-work-at-boot law (v1.38.0). It all moved to
+        // componentShowing. There is still NO auto-connect: opening the tab
+        // costs nothing and talks to nobody until you press Connect.
+    }
+
+    @Override
+    protected void componentShowing() {
         if (!built) {
             built = true;
             buildUi();

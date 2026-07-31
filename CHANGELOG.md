@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.211.0] - 2026-07-31
+
+### Discovery: the Browser and IRC open on first launch
+
+David's call, answering the junior-sprint report: the advanced tabs staying
+open is fine — anyone can close what they don't need — but the two surfaces
+a newcomer would never guess at should announce themselves.
+
+- **The in-app Browser (⌥⌘4) and the IRC client (⌥⌘3) now open by
+  default**, joining the suite. Nobody discovers a browser inside their IDE
+  by reading a shortcut table.
+- **Neither costs anything at boot.** A default-open tab's
+  `componentOpened` fires during startup, and these two are exactly the
+  expensive cases — the Browser builds the JavaFX platform and fetches its
+  home page, IRC builds a large Swing tree. Both moved that work to
+  `componentShowing`, the idiom DB Studio has used since v1.35.1, so the
+  v1.38.0 startup profile holds: window in 1.4–2.7s, zero processes
+  spawned, no network before you look at something.
+- **Opening the IRC tab still talks to nobody** — there is no auto-connect,
+  and the gate asserts it. The default network is a real public server; a
+  chat client that dials out merely because a tab exists would be a
+  surprise, not a feature.
+
+`DiscoveryTabsGateTest` pins all three properties: both open by default,
+neither builds in `componentOpened`, and IRC does not connect on show.
+
 ## [1.210.0] - 2026-07-31
 
 ### The junior-dev sprint: the first fifteen minutes
@@ -7596,6 +7622,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.211.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.210.0...v1.211.0
 [1.210.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.1...v1.210.0
 [1.209.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.0...v1.209.1
 [1.209.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.208.0...v1.209.0

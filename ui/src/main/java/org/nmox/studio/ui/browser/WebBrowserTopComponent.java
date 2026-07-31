@@ -35,7 +35,7 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "WebBrowserTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 355)
+@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 355)
 @ActionID(category = "Window", id = "org.nmox.studio.ui.browser.WebBrowserTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 267),
@@ -61,6 +61,17 @@ public final class WebBrowserTopComponent extends TopComponent {
 
     @Override
     protected void componentOpened() {
+        // Deliberately empty. Since v1.211.0 this tab is open by DEFAULT so a
+        // newcomer discovers it, which means componentOpened now fires during
+        // startup — and building here would boot the whole JavaFX platform and
+        // fetch the home page before the window has even painted, breaking the
+        // zero-work-at-boot law (v1.38.0: a hidden default-open tab must cost
+        // nothing until it is looked at). All of it moved to componentShowing,
+        // the same idiom DB Studio has used since v1.35.1.
+    }
+
+    @Override
+    protected void componentShowing() {
         if (browser != null || getComponentCount() > 0) {
             return;
         }
