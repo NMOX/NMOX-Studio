@@ -11,7 +11,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProcessSupportTest {
 
+    /**
+     * Do we have a WORKING POSIX shell? Most fixtures below build their
+     * process shapes with {@code sh -c} — that is the only portable way
+     * to make a shell spawn a grandchild, flood a pipe, or write to both
+     * streams at once.
+     *
+     * <p>On Linux and macOS this is always true. On Windows `sh` comes
+     * from Git Bash being on PATH, which the runner image controls and
+     * has changed under us before (2026-07-31: five of these fixtures
+     * began failing on windows-latest with no code change — main was
+     * green at 14:03 and red at 15:11 on a DOCS-ONLY commit, and `sh`
+     * started but exited non-zero rather than being absent). Asserting
+     * the precondition instead of the OS keeps Windows coverage whenever
+     * its shell genuinely works, and skips honestly when it doesn't —
+     * where a bare @DisabledOnOs would give up that coverage forever.
+     *
+     * <p>The product itself never spawns `sh` on Windows: ToolLocator
+     * resolves .exe/.cmd, so this is a FIXTURE dependency, not a
+     * shipping one.
+     */
+    static boolean posixShellWorks() {
+        try {
+            ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
+                    List.of("sh", "-c", "exit 7"), null, Duration.ofSeconds(10));
+            return r.exitCode() == 7 && !r.timedOut();
+        } catch (Exception noShell) {
+            return false;
+        }
+    }
+
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("runBounded captures stdout and stderr separately, UTF-8")
     void shouldCaptureBothStreams() throws Exception {
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
@@ -26,6 +57,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("runBounded reports a nonzero exit honestly")
     void shouldReportNonzeroExit() throws Exception {
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
@@ -37,6 +69,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("timeout is real even when the child stays silent with the pipe open")
     @Timeout(15)
     void shouldKillSilentChildOnTimeout() throws Exception {
@@ -114,6 +147,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("killTreeAndWait returns only once the tree is confirmed dead")
     @Timeout(20)
     void shouldConfirmTreeDeadInKillTreeAndWait() throws Exception {
@@ -130,6 +164,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("a child chatty on stderr cannot deadlock the pipe")
     @Timeout(30)
     void shouldDrainChattyStderrWithoutDeadlock() throws Exception {
@@ -146,6 +181,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("a runaway child that floods stdout is capped, not left to OOM the IDE")
     @Timeout(30)
     void shouldCapRunawayOutput() throws Exception {
@@ -171,6 +207,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("normal short output is never flagged truncated")
     void shouldNotFlagShortOutput() throws Exception {
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
@@ -181,6 +218,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("workingDir is honored")
     void shouldRunInWorkingDir(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
         // Comparing the shell's pwd output to the Java path breaks on two
@@ -204,6 +242,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("an interrupted caller gets an IOException, a killed child, and its flag back")
     @Timeout(15)
     void shouldFailFastWhenCallerInterrupted() {
@@ -223,6 +262,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("killTreeAndWait with no time budget reports honestly instead of blocking")
     @Timeout(15)
     void killTreeAndWaitZeroBudgetIsHonest() throws Exception {
@@ -241,6 +281,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("an interrupted killTreeAndWait still kills, then returns with the flag set")
     @Timeout(15)
     void killTreeAndWaitInterruptedStillKills() throws Exception {
@@ -259,6 +300,7 @@ class ProcessSupportTest {
     }
 
     @Test
+    @org.junit.jupiter.api.condition.EnabledIf("posixShellWorks")
     @DisplayName("a flood arriving after unaligned output still lands exactly at the ceiling")
     @Timeout(40)
     void shouldCapUnalignedFlood() throws Exception {

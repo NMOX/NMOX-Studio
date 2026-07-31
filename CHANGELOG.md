@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.209.1] - 2026-07-31
+
+### The Windows lane's shell changed under us
+
+- Five `ProcessSupportTest` fixtures began failing on windows-latest with
+  **no code change**: main was green at 14:03 and red at 15:11 on a
+  DOCS-ONLY commit, and the test file hadn't been touched since v1.203.0.
+  `sh` started but exited non-zero rather than being absent, so this is
+  the runner's Git Bash moving, not a product regression — the product
+  never spawns `sh` on Windows (ToolLocator resolves .exe/.cmd), so this
+  is a FIXTURE dependency.
+- Fixed by asserting the **precondition** rather than the OS: a
+  `posixShellWorks()` probe runs `sh -c "exit 7"` once, and the twelve
+  shell-shaped fixtures carry `@EnabledIf("posixShellWorks")`. A bare
+  `@DisabledOnOs(WINDOWS)` would have given up that coverage forever;
+  this keeps it whenever Windows' shell genuinely works and skips
+  honestly when it doesn't. Proven both ways locally: with a working
+  shell 14 run / 0 skipped, with the probe forced false 14 run / 12
+  skipped and **zero failures**.
+
 ## [1.209.0] - 2026-07-31
 
 ### Docs truth, and the gauntlet that earned it
@@ -7527,6 +7547,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.209.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.0...v1.209.1
 [1.209.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.208.0...v1.209.0
 [1.208.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.1...v1.208.0
 [1.207.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.207.0...v1.207.1
