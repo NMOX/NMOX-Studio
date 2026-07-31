@@ -49,6 +49,16 @@ public final class LanguageServerCatalog {
         // types from one, lint rules from the other. The binary lives in
         // vscode-langservers-extracted, which is why the install hint
         // names a package that doesn't match the binary.
+        // The Angular Language Service is installed INTO THE PROJECT, not
+        // globally: it must match the Angular and TypeScript versions the
+        // workspace builds with, and it probes the project's own
+        // node_modules (v1.214.0). It also needs TypeScript 5.x —
+        // TypeScript 7 dropped lib/tsserverlibrary.js, which ngserver
+        // requires — so the hint pins the major.
+        add("Angular (templates)", "ngserver",
+                "npm i -D @angular/language-server @angular/language-service typescript@5",
+                List.of("npm", "install", "--save-dev", "@angular/language-server",
+                        "@angular/language-service", "typescript@5"));
         add("ESLint (JS / TS)", "vscode-eslint-language-server",
                 "npm install -g vscode-langservers-extracted",
                 List.of("npm", "install", "-g", "vscode-langservers-extracted"));

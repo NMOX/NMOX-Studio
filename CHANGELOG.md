@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.214.0] - 2026-07-31
+
+### Angular gets the thing that makes an Angular IDE
+
+A positioning call from David: stop chasing React, be genuinely good at
+Angular. The floor was already decent — the HALO console (serve, build,
+test, generate, update, with registry version currency), `angular.json`
+detection feeding every lane, an Angular 22 standalone template, a
+learning space. What was missing was the part that matters most.
+
+**The Angular Language Service is now registered.** Completion for
+component members *inside a binding*, type checking of the TEMPLATE
+against the component class, and go-to-definition from `{{ user.name }}`
+to the property behind it. Until now the IDE saw an Angular template as
+anonymous HTML.
+
+It sits alongside `typescript-language-server` and eslint on the
+TypeScript mime — the platform collects providers with `lookupAll`, so
+this is additive — and starts **only inside an Angular workspace**, since
+every other TypeScript project would otherwise pay for a server it can't
+use.
+
+**Two traps, both verified against the real published binary
+(`@angular/language-server` 22.1.0) before anything was wired:**
+
+- `ngserver` **cannot start without probe locations**. Run bare it does
+  not even print `--help`; it throws `Failed to resolve
+  'typescript/lib/tsserverlibrary' ... from []`. They're mandatory, and
+  they point at the *project's own* `node_modules`, because an Angular
+  workspace pins the Angular and TypeScript versions its language service
+  must match.
+- **TypeScript 7 breaks it.** The native rewrite — and what a bare
+  `npm install typescript` gives you today, 7.0.2 — no longer ships
+  `lib/tsserverlibrary.js`, which ngserver requires. TypeScript 5.9.3
+  starts it clean. Rather than let the LSP client retry an unstartable
+  process on every file open, the missing file is detected and the server
+  declines through the same channel every absent server uses. The catalog's
+  install advice pins `typescript@5` for exactly this reason, and installs
+  into the project (`--save-dev`) rather than globally.
+
+Environment Doctor now probes the Angular CLI too — HALO shells out to
+`npx ng`, but a missing CLI never showed up where people look for it.
+
+Seven tests; the TypeScript 7 guard is mutation-proven.
+
 ## [1.213.0] - 2026-07-31
 
 ### eslint findings arrive on their own
@@ -7729,6 +7774,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.214.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.213.0...v1.214.0
 [1.213.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.212.0...v1.213.0
 [1.212.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.211.0...v1.212.0
 [1.211.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.210.0...v1.211.0

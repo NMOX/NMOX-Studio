@@ -174,6 +174,84 @@ public final class LanguageServers {
         }
     }
 
+    /**
+     * The Angular Language Service — template intelligence, not just
+     * TypeScript intelligence.
+     *
+     * <p>This is the one that makes an Angular IDE an Angular IDE:
+     * completion for component members inside a binding, type checking
+     * of the TEMPLATE against the component class, and go-to-definition
+     * from <code>{{ user.name }}</code> to the property that backs it.
+     * Without it the IDE sees an Angular template as anonymous HTML.
+     *
+     * <h2>Why this can't use {@link #launchNpm}</h2>
+     * {@code ngserver} is unlike every other server here: it refuses to
+     * start at all without being told where to find TypeScript and the
+     * Angular compiler. Run bare it does not even print {@code --help} —
+     * it throws {@code Failed to resolve 'typescript/lib/tsserverlibrary'
+     * ... from []}. So the probe locations are mandatory, and they must
+     * point at the PROJECT's own {@code node_modules}: an Angular
+     * workspace pins its own Angular and TypeScript versions, and the
+     * language service must match the compiler the project builds with.
+     *
+     * <h2>The TypeScript 7 trap (verified against the real binary)</h2>
+     * {@code @angular/language-server} needs
+     * {@code typescript/lib/tsserverlibrary.js}. TypeScript 7 — the
+     * native rewrite, and what a bare {@code npm install typescript}
+     * installs today — no longer ships that file, so the server cannot
+     * start against it. TypeScript 5.9 works. Rather than let the client
+     * crash-loop an unstartable process on every file open, we check for
+     * the file and decline with an honest catalog message.
+     *
+     * <p>Registered on {@code text/typescript} only, and only actually
+     * started inside an Angular workspace ({@code angular.json}) — every
+     * other TypeScript project would otherwise pay for a server it has
+     * no use for. It sits ALONGSIDE typescript-language-server and
+     * eslint on that mime (the platform's {@code lookupAll} collection),
+     * so this adds template intelligence rather than replacing anything.
+     */
+    @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
+    public static final class AngularServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            File dir = projectDir(lookup);
+            if (dir == null
+                    || !org.nmox.studio.rack.devices.ProjectInspector.hasAngular(dir)) {
+                return null; // not an Angular workspace: nothing to do, quietly
+            }
+            File modules = angularProbeDir(dir);
+            if (modules == null) {
+                return null; // no install yet — npm install first, then reopen
+            }
+            if (!new File(modules, "typescript/lib/tsserverlibrary.js").isFile()) {
+                // TypeScript 7+ (or no TypeScript): ngserver would throw on
+                // startup and the client would keep retrying. Say so once
+                // through the same channel every missing server uses.
+                return reported(null, "ngserver");
+            }
+            return reported(launch(lookup, List.of("ngserver", "--stdio",
+                    "--tsProbeLocations", modules.getAbsolutePath(),
+                    "--ngProbeLocations", modules.getAbsolutePath())), "ngserver");
+        }
+    }
+
+    /**
+     * The {@code node_modules} an Angular workspace's language service
+     * should probe: the Angular project's own, which in a monorepo is
+     * the Node subproject's rather than the repo root's.
+     */
+    static File angularProbeDir(File projectDir) {
+        File nested = new File(
+                org.nmox.studio.rack.devices.ProjectInspector.kindDir(projectDir,
+                        org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.NODE),
+                "node_modules");
+        if (nested.isDirectory()) {
+            return nested;
+        }
+        File root = new File(projectDir, "node_modules");
+        return root.isDirectory() ? root : null;
+    }
+
     /** Python via pyright. */
     @MimeRegistration(mimeType = "text/x-python", service = LanguageServerProvider.class)
     public static final class PythonServer implements LanguageServerProvider {
