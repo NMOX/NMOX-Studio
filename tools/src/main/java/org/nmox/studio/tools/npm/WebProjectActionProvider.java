@@ -72,6 +72,16 @@ final class WebProjectActionProvider implements ActionProvider {
             aim.aim(dir);
         }
 
+        // Run means "show me the thing running". The dev server will
+        // announce its URL to the ServingRegistry in a second or two;
+        // arm the opener now so the page lands in the in-app Browser
+        // instead of being printed to Output for the user to fetch by
+        // hand (v1.212.0). Only RUN — nobody wants a browser tab after
+        // a Build, a Test or a Clean. Preference-gated inside arm().
+        if (ActionProvider.COMMAND_RUN.equals(command)) {
+            org.nmox.studio.rack.service.OpenOnServe.getDefault().arm(dir);
+        }
+
         String label = labelFor(command) + " — " + project.getName();
         AtomicReference<CommandExecutor.Handle> proc = new AtomicReference<>();
         ProgressHandle ph = ProgressHandle.createHandle(label, () -> {
