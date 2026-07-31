@@ -4,6 +4,70 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.212.0] - 2026-07-31
+
+### The mid-level sprint: the edit → run → see loop actually closes
+
+Reviewed as a four-year React/TypeScript developer arriving from VS Code
+would — productive, opinionated, measuring everything against the editor
+they left. Two read-only lenses (the run loop; the supporting workflow of
+git, npm, diagnostics, tests) plus a walk. Their asks, granted.
+
+**Run now shows you the page — and the reason it couldn't is the real
+story.** The IDE had every piece: a ServingRegistry that knows live URLs,
+an in-app Browser, a status chip. But `WebProjectActionProvider`'s output
+consumer was an **empty lambda**, so the F6 lane never read the dev
+server's own "Local: http://localhost:5173" and therefore **never
+registered a serving at all**. That single detail cost the whole
+downstream: no ⇄ chip, nothing in ⌘I Live Servers, no VITALS/BEACON
+target, no API Studio `{{baseUrl}}` offer — the URL existed only as text
+in an Output tab, and the loop was: read it with your eyes, select, copy,
+⌥⌘4, paste. Forever, because no later gesture was ever armed by a run.
+F6 now parses and announces its URL exactly as the rack's serve devices
+always have (`ServeUrls.firstLocalUrl`, made public for the purpose), and
+deregisters when the process ends per the v1.65.1 law.
+
+On top of that, the new `OpenOnServe` closes the loop: pressing Run
+**arms** the opener for that project, and the first new web serving opens
+once in the Browser tab. Armed by the gesture rather than "open whatever
+appears", because servings also arrive from session resurrection, presets
+and patch loads — opening tabs for those would be the IDE grabbing the
+wheel. Bounded both ways: a project already serving opens nothing, the
+arm expires after 90s, a CHAIN (devnet RPC) serving is never opened as a
+page. Six tests; the already-serving guard is mutation-proven. Off switch
+in Options ▸ Rack & Cloud, on by default.
+
+**A real lockfile bug.** Project Studio's dependency editor shelled out
+to a hardcoded `npm install`, so on a pnpm or yarn project Add Dependency
+wrote a `package-lock.json` beside the real lockfile and desynchronized
+the tree — the one Node surface that never got v1.60.0's "speaks your
+package manager" message. Now resolved per project. The fix needed a
+tested helper rather than a string swap, because the managers have
+different **verbs**: `yarn install lodash` ignores the argument and
+resolves the whole tree, which looks like success and does nothing.
+`NodePackageCommands` is pure, six tests, mutation-proven on exactly that
+trap.
+
+**Three things that existed but couldn't be found.**
+- **⌘P was bound to tooltip-show.** Go to File already shipped and worked
+  — on ⌥⇧O, a chord nobody arriving from VS Code would ever try. The most
+  pressed key of the day now points at the feature we already had.
+- **Double-clicking an npm script looked broken.** The run happened in an
+  Output tab that deliberately never steals focus, so nothing visibly
+  happened. It now surfaces, as Run Focused Test always has.
+- **The Terminal button's tooltip lied.** It promised the project
+  directory; the platform action passes a null working directory and
+  lands you in `$HOME`. It now tries the context-aware terminal action
+  with the aimed project's node first, and the tooltip describes what
+  actually happens either way.
+
+Recorded, not fixed: `.jsx`/`.tsx` get no JSX highlighting even though
+the React grammars are already vendored (embed-only mimes); there is no
+Emmet, and a historical doc still claims otherwise; eslint findings need
+a rack device mounted, while type errors arrive automatically via LSP.
+Those are scoped work, not wiring, and are named in the report rather
+than half-done here.
+
 ## [1.211.0] - 2026-07-31
 
 ### Discovery: the Browser and IRC open on first launch
@@ -7622,6 +7686,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.212.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.211.0...v1.212.0
 [1.211.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.210.0...v1.211.0
 [1.210.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.1...v1.210.0
 [1.209.1]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.0...v1.209.1

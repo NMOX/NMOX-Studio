@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * at {@code ]} — artisan brackets its URL), and ANVIL parses a
  * "Listening on host:port" banner instead; neither is this scan.
  */
-final class ServeUrls {
+public final class ServeUrls {
 
     /** A local URL printed by the server (vite "Local:", CRA, serve...). */
     private static final Pattern LOCAL_URL =
@@ -22,7 +22,12 @@ final class ServeUrls {
     }
 
     /** The first local URL on the line, or null when it carries none. */
-    static String firstLocalUrl(String line) {
+    /**
+     * Public since v1.212.0: the IDE-native Run lane (tools module) needs
+     * the same parse the serve devices use, so that pressing F6 announces
+     * its dev server exactly like pressing GO on VELOCITY does.
+     */
+    public static String firstLocalUrl(String line) {
         Matcher m = LOCAL_URL.matcher(line);
         return m.find() ? m.group(1) : null;
     }

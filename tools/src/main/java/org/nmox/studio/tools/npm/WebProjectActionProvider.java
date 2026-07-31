@@ -93,9 +93,47 @@ final class WebProjectActionProvider implements ActionProvider {
         });
         ph.start();
 
+        // Until v1.212.0 this consumer was an EMPTY LAMBDA, and that one
+        // detail cost the F6 lane everything downstream: the dev server
+        // printed "Local: http://localhost:5173", nobody read it, and so
+        // no serving was ever registered. No ⇄ chip, nothing in ⌘I Live
+        // Servers, no VITALS/BEACON target, no API Studio {{baseUrl}}
+        // offer — the URL existed only as text in an Output tab. The rack
+        // serve devices had always done this properly; the IDE's own Run
+        // button was the one lane that dropped it on the floor.
+        //
+        // Announcing here is honest by the v1.93.0 serving-truth law: we
+        // register only once the server has SAID it is listening, and
+        // deregister when the process ends.
+        String servingId = "ide-run:" + dir.getAbsolutePath();
+        boolean serves = ActionProvider.COMMAND_RUN.equals(command);
+        AtomicReference<String> announced = new AtomicReference<>();
         CommandExecutor.Handle handle = CommandExecutor.run(
-                label, dir, Map.of(), cmd, line -> {
-                }, exit -> ph.finish());
+                label, dir, Map.of(), cmd,
+                line -> {
+                    if (!serves) {
+                        return;
+                    }
+                    String plain = line.replaceAll("\\[[;\\d]*m", ""); // strip ANSI
+                    String url = org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
+                    if (url != null && !url.equals(announced.get())) {
+                        announced.set(url);
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                                new org.nmox.studio.rack.service.ServingRegistry.Serving(
+                                        servingId, "Run — " + project.getName(), url,
+                                        org.nmox.studio.rack.service.ServingRegistry.Kind.WEB,
+                                        dir));
+                    }
+                },
+                exit -> {
+                    ph.finish();
+                    // a phantom serving outlives nothing: the gate drops
+                    // with the process (the v1.65.1 deregister-on-stop law)
+                    if (announced.get() != null) {
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault()
+                                .deregister(servingId);
+                    }
+                });
         proc.set(handle);
         CommandExecutor.showOutput(label);
     }
