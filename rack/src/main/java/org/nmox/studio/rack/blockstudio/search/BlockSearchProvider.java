@@ -11,6 +11,7 @@ import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.nmox.studio.rack.service.RackService;
+import org.nmox.studio.core.search.SearchTerms;
 
 /**
  * Quick Search (⌘I) into Block Studio: type "blocks", "component", or
@@ -53,11 +54,13 @@ public class BlockSearchProvider implements SearchProvider {
     }
 
     static boolean matches(String query, Snapshot snap) {
-        String q = query == null ? "" : query.toLowerCase(Locale.ROOT).trim();
-        if (q.isEmpty()) {
+        if (query == null || query.isBlank()) {
             return false;
         }
-        return terms(snap).stream().anyMatch(term -> term.contains(q));
+        // Each term is its own haystack: "block studio" must match one
+        // of them, not the concatenation of all of them.
+        return terms(snap).stream()
+                .anyMatch(term -> SearchTerms.matches(query, term));
     }
 
     static String label(Snapshot snap) {

@@ -10,6 +10,7 @@ import org.nmox.studio.infra.model.InfraGraph;
 import org.nmox.studio.infra.model.InfraGraph.InfraNode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.nmox.studio.core.search.SearchTerms;
 
 /**
  * Quick Search over the current infra design: type a node's name (or
@@ -38,7 +39,7 @@ public class InfraNodeSearchProvider implements SearchProvider {
      */
     void evaluate(String text, InfraGraph graph,
             java.util.function.BiPredicate<Runnable, String> addResult) {
-        String needle = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        String needle = text == null ? "" : text;
         if (needle.isBlank()) {
             return;
         }
@@ -62,15 +63,14 @@ public class InfraNodeSearchProvider implements SearchProvider {
     }
 
     /**
-     * Matches a node against the needle by label, kind display name, or
-     * enum name - all case-insensitive on both sides, so the matcher is
-     * self-contained (the caller need not pre-lowercase).
+     * Matches a node by label, kind display name, or enum name. Case is
+     * handled inside {@link SearchTerms}, so the caller need not
+     * pre-lowercase, and matching is term-based since v1.215.0 — "load
+     * balancer" finds LOAD_BALANCER whichever separator it carries.
      */
     static boolean matches(InfraNode node, String needle) {
-        String lower = needle.toLowerCase(Locale.ROOT);
-        return node.label.toLowerCase(Locale.ROOT).contains(lower)
-                || node.kind.getDisplayName().toLowerCase(Locale.ROOT).contains(lower)
-                || node.kind.name().toLowerCase(Locale.ROOT).contains(lower);
+        return SearchTerms.matches(needle, node.label,
+                node.kind.getDisplayName(), node.kind.name());
     }
 
     /** The open Infra Designer window, or null when it has never been opened. */
