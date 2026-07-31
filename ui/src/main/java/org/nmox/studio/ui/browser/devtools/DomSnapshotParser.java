@@ -98,10 +98,18 @@ public final class DomSnapshotParser {
         return root;
     }
 
+    /** Java-side ceiling on any page-supplied label fragment. */
+    private static String clip(String s) {
+        return s.length() > 200 ? s.substring(0, 200) : s;
+    }
+
     private static DomNode shallow(Map<String, Object> o) {
-        String tag = JsonLite.str(o, "t", "#node");
-        String id = JsonLite.str(o, "i", "");
-        String classes = JsonLite.str(o, "c", "");
+        // the page-side caps in DevScripts are page-CONTROLLED (a page can
+        // redefine tagName's getter to return megabytes), so re-impose
+        // them here — the sibling parsers already do
+        String tag = clip(JsonLite.str(o, "t", "#node"));
+        String id = clip(JsonLite.str(o, "i", ""));
+        String classes = clip(JsonLite.str(o, "c", ""));
         List<String> attrs = new ArrayList<>();
         for (Object a : JsonLite.asArray(o.get("a"))) {
             if (a instanceof String s) {

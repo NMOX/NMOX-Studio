@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -21,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -155,7 +157,51 @@ public final class DevToolsPanel extends JPanel {
         consoleDropped.setVisible(dropped > 0);
     }
 
+    /**
+     * Every string in these panes comes from the inspected page: element
+     * tag names, Vue component names, Svelte source paths, request URLs,
+     * localStorage keys and values. Swing's default renderers are
+     * {@link JLabel}s, and a JLabel whose text starts with
+     * {@code <html>} RENDERS it — so a page naming a component
+     * {@code <html><img src="http://evil/beacon">} would make the IDE's
+     * own JVM fetch that URL (a silent outbound beacon, and a reach at
+     * local files via {@code file:}). Disabling the HTML view makes
+     * every such string display as the literal text it is, by
+     * construction rather than by luck of the format string.
+     *
+     * <p>Applied to the tree/table/list renderers of every DevTools pane;
+     * {@code DevToolsHtmlSafetyTest} fails the build if a pane is added
+     * without it.
+     */
+    static void disableHtmlRendering(JComponent renderer) {
+        renderer.putClientProperty("html.disable", Boolean.TRUE);
+    }
+
+    /** A JTree whose labels never interpret page text as HTML. */
+    private static JTree safeTree(javax.swing.tree.TreeModel model) {
+        JTree tree = new JTree(model);
+        if (tree.getCellRenderer() instanceof JComponent c) {
+            disableHtmlRendering(c);
+        }
+        return tree;
+    }
+
+    /** A JTable whose cells never interpret page text as HTML. */
+    private static JTable safeTable(javax.swing.table.TableModel model) {
+        JTable table = new JTable(model);
+        DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
+        disableHtmlRendering(plain);
+        table.setDefaultRenderer(Object.class, plain);
+        return table;
+    }
+
     private static final class ConsoleRenderer extends DefaultListCellRenderer {
+
+        ConsoleRenderer() {
+            // safe today only because the row format leads with "[%tT]";
+            // pin it by construction instead (see disableHtmlRendering)
+            disableHtmlRendering(this);
+        }
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -183,7 +229,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel domTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JTree tree = new JTree(domTree);
+        JTree tree = safeTree(domTree);
         tree.setRootVisible(true);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton("Refresh");
@@ -267,7 +313,7 @@ public final class DevToolsPanel extends JPanel {
         bar.add(networkDropped);
         networkDropped.setVisible(false);
         panel.add(bar, BorderLayout.NORTH);
-        JTable table = new JTable(networkTable);
+        JTable table = safeTable(networkTable);
         table.getColumnModel().getColumn(1).setPreferredWidth(420);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
@@ -296,7 +342,7 @@ public final class DevToolsPanel extends JPanel {
         bar.add(refresh);
         bar.add(new JLabel("localStorage · sessionStorage · cookies — read-only (v1)"));
         panel.add(bar, BorderLayout.NORTH);
-        JTable table = new JTable(storageTable);
+        JTable table = safeTable(storageTable);
         table.getColumnModel().getColumn(2).setPreferredWidth(420);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         return panel;
@@ -318,7 +364,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel vueTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JTree tree = new JTree(vueTree);
+        JTree tree = safeTree(vueTree);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(e -> refreshVue());
@@ -327,7 +373,7 @@ public final class DevToolsPanel extends JPanel {
         bar.add(vueStatus);
         panel.add(bar, BorderLayout.NORTH);
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(tree), new JScrollPane(new JTable(vueDetails)));
+                new JScrollPane(tree), new JScrollPane(safeTable(vueDetails)));
         split.setResizeWeight(0.5);
         panel.add(split, BorderLayout.CENTER);
         tree.addTreeSelectionListener(e -> {
@@ -403,7 +449,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel svelteTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JTree tree = new JTree(svelteTree);
+        JTree tree = safeTree(svelteTree);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(e -> refreshSvelte());
@@ -478,6 +524,16 @@ public final class DevToolsPanel extends JPanel {
     }
 
     // ---- shared --------------------------------------------------------
+
+    /**
+     * EDT. Stops the coalescing timers — called when the Browser tab
+     * closes so an invisible panel stops rebuilding its models
+     * (v1.208.0 review; the panel is discarded with the tab).
+     */
+    void stopTimers() {
+        consoleSync.stop();
+        networkSync.stop();
+    }
 
     private static javax.swing.Timer coalesced(Runnable body) {
         javax.swing.Timer t = new javax.swing.Timer(80, e -> body.run());

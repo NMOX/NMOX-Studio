@@ -240,6 +240,7 @@
                                  exist until package: runs below instead -->
                             <excludes>
                                 <exclude>**/PackagedConfGateTest.java</exclude>
+                                <exclude>**/PackagedLicenseGateTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -255,6 +256,7 @@
                         <configuration>
                             <includes>
                                 <include>**/PackagedConfGateTest.java</include>
+                                <include>**/PackagedLicenseGateTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -272,6 +274,33 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <!-- The relicense follow-up (v1.208.0): LICENSE and NOTICE
+                             ride the assembled app dir, so every installer that copies
+                             application/target/nmoxstudio (DMG, tar.gz, deb, Windows
+                             installer) carries the license terms alongside the app.
+                             Declared after the nbm plugin, so within the package phase
+                             this runs AFTER cluster-app has built the dir. The portable
+                             zip is the one artifact the nbm plugin zips before this
+                             copy runs — release.yml appends the two files there. -->
+                        <id>bundle-license-notice</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/nmoxstudio</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/..</directory>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>dock-icon-for-dev-launches</id>
                         <phase>package</phase>

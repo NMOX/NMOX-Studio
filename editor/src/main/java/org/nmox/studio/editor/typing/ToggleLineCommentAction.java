@@ -138,6 +138,16 @@ public class ToggleLineCommentAction extends BaseAction {
                     openLen = open.length();
                     closeLen = close.length();
                 }
+                if (openLen + closeLen > body.length()) {
+                    // Even the bare markers don't fit — the line only LOOKS
+                    // commented because it both starts with open and ends
+                    // with close while being shorter than the pair (e.g.
+                    // "<!-->"). Removing that much would eat the newline
+                    // and the head of the NEXT line: silent file
+                    // corruption. A marker pair that cannot fit is not a
+                    // comment to strip, so leave the line alone.
+                    continue;
+                }
                 // remove the close first so the open's offset stays valid
                 doc.remove(lineStart + text.length() - trailing - closeLen, closeLen);
                 doc.remove(lineStart + indent, openLen);

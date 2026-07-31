@@ -161,4 +161,45 @@ class PolyglotCompletionProviderTest {
         assertThat(doc.getText(0, doc.getLength())).isEqualTo("myEl.addClass");
         assertThat(pane.getCaretPosition()).isEqualTo("myEl.addClass".length());
     }
+
+    // ---- v1.208.0 arc review: Svelte's sigil vocabulary ----------------
+
+    /**
+     * Svelte template keywords start with sigils ({@code #each},
+     * {@code :then}, {@code /if}, {@code @render}). The identifier-only
+     * prefix walk stopped at the sigil, so typing <code>{#e</code> gave
+     * the prefix "e" and 19 of the shipped entries could never match.
+     */
+    @Test
+    @DisplayName("the Svelte prefix walk steps back over # @ / :")
+    void sveltePrefixIncludesSigils() {
+        assertThat(PolyglotCompletionProvider.prefixAt("{#e", 3, "text/x-svelte"))
+                .isEqualTo("#e");
+        assertThat(PolyglotCompletionProvider.prefixAt("{:th", 4, "text/x-svelte"))
+                .isEqualTo(":th");
+        assertThat(PolyglotCompletionProvider.prefixAt("{@ren", 5, "text/x-svelte"))
+                .isEqualTo("@ren");
+        assertThat(PolyglotCompletionProvider.prefixAt("{/ea", 4, "text/x-svelte"))
+                .isEqualTo("/ea");
+    }
+
+    @Test
+    @DisplayName("#each is actually offered for the prefix a Svelte user types")
+    void eachIsReachable() {
+        java.util.Set<String> svelte = PolyglotCompletionProvider.KEYWORDS.get("text/x-svelte");
+        String prefix = PolyglotCompletionProvider.prefixAt("{#e", 3, "text/x-svelte");
+        assertThat(PolyglotCompletionProvider.matchingKeywords(svelte, prefix))
+                .contains("#each");
+    }
+
+    @Test
+    @DisplayName("other languages keep the identifier-only walk (':' is Ruby/Elixir syntax)")
+    void otherMimesUnchanged() {
+        // widening the walk globally would change how a Ruby symbol or an
+        // Elixir atom completes — the sigils are Svelte-scoped on purpose
+        assertThat(PolyglotCompletionProvider.prefixAt(":sym", 4, "text/x-ruby"))
+                .isEqualTo("sym");
+        assertThat(PolyglotCompletionProvider.prefixAt("{#e", 3, null))
+                .isEqualTo("e");
+    }
 }

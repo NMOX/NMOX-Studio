@@ -18,6 +18,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import org.nmox.studio.ui.irc.protocol.Ctcp;
 import org.nmox.studio.ui.irc.protocol.IrcMessage;
@@ -301,14 +303,59 @@ public final class IrcClient {
         send("PART " + channel);
     }
 
-    /** Says {@code text} to a channel or nick. */
+    /** Says {@code text} to a channel or nick, splitting long text honestly. */
     public void privmsg(String target, String text) {
-        send("PRIVMSG " + target + " :" + text);
+        for (String piece : splitForWire("PRIVMSG " + target + " :", text)) {
+            send("PRIVMSG " + target + " :" + piece);
+        }
     }
 
-    /** Sends a NOTICE to a channel or nick. */
+    /** Sends a NOTICE to a channel or nick, splitting long text honestly. */
     public void notice(String target, String text) {
-        send("NOTICE " + target + " :" + text);
+        for (String piece : splitForWire("NOTICE " + target + " :", text)) {
+            send("NOTICE " + target + " :" + piece);
+        }
+    }
+
+    /**
+     * RFC 1459 caps a wire line at 512 bytes including the command
+     * prefix and CRLF. A long paste sent as one line would be silently
+     * truncated by the SERVER — while the local echo showed text the
+     * channel never received. Splitting here keeps the transcript
+     * truthful: what you see locally is what everyone got. Cuts land on
+     * UTF-8 code-point boundaries (never mid-surrogate) and prefer the
+     * last space in the tail of each piece so words survive.
+     */
+    static List<String> splitForWire(String prefix, String text) {
+        int budget = 510 - prefix.getBytes(StandardCharsets.UTF_8).length;
+        if (budget < 1) {
+            budget = 1; // pathological target name; still make progress
+        }
+        List<String> pieces = new ArrayList<>();
+        String rest = text;
+        while (rest.getBytes(StandardCharsets.UTF_8).length > budget) {
+            // widest prefix of rest that fits the byte budget, cut on a
+            // code-point boundary
+            int end = 0;
+            int bytes = 0;
+            while (end < rest.length()) {
+                int cp = rest.codePointAt(end);
+                int cpBytes = new String(Character.toChars(cp))
+                        .getBytes(StandardCharsets.UTF_8).length;
+                if (bytes + cpBytes > budget) {
+                    break;
+                }
+                bytes += cpBytes;
+                end += Character.charCount(cp);
+            }
+            // prefer a word boundary in the last quarter of the piece
+            int space = rest.lastIndexOf(' ', end - 1);
+            int cut = (space > end - Math.max(1, end / 4)) ? space : end;
+            pieces.add(rest.substring(0, cut));
+            rest = rest.substring(cut == space ? cut + 1 : cut);
+        }
+        pieces.add(rest);
+        return pieces;
     }
 
     /** Asks the server for a new nickname. */
@@ -334,6 +381,13 @@ public final class IrcClient {
     // ---- session ---------------------------------------------------------
 
     private void runSession() {
+        // A quit that lands while the reconnect task sat between its own
+        // closed-check and this post must not resurrect the connection:
+        // the user was told CLOSED, and a zombie session would identify
+        // to NickServ invisibly.
+        if (closed) {
+            return;
+        }
         Socket s = null;
         String failure = null;
         try {
@@ -341,7 +395,21 @@ public final class IrcClient {
                     ? SSLSocketFactory.getDefault()
                     : SocketFactory.getDefault();
             s = factory.createSocket();
+            if (s instanceof SSLSocket ssl) {
+                // A raw SSLSocket validates the chain but NOT the hostname
+                // (unlike HttpsURLConnection) — without this, any CA-valid
+                // certificate for any domain passes, and an on-path
+                // attacker receives the SASL/NickServ credentials sent
+                // right after registration.
+                SSLParameters sp = ssl.getSSLParameters();
+                sp.setEndpointIdentificationAlgorithm("HTTPS");
+                ssl.setSSLParameters(sp);
+            }
             s.connect(new InetSocketAddress(profile.host(), profile.port()), CONNECT_TIMEOUT_MS);
+            if (closed) {
+                closeQuietly(s);
+                return;
+            }
             socket = s;
             BufferedWriter w = new BufferedWriter(
                     new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8));
@@ -522,6 +590,18 @@ public final class IrcClient {
                 && ignoredNicks.contains(msg.nick().toLowerCase(Locale.ROOT))) {
             return;
         }
+        // The echo-message cap bounces our own PRIVMSGs back as inbound
+        // lines. For a service target that means the NickServ IDENTIFY
+        // password would render into the on-screen transcript — the one
+        // gap in the "credentials never echo" promise (the log side is
+        // already suppressed by IrcLogger.isService). Drop the self-echo
+        // of service traffic before any listener sees it.
+        if ("PRIVMSG".equals(msg.command())
+                && msg.nick() != null
+                && msg.nick().equalsIgnoreCase(currentNick)
+                && IrcLogger.isService(msg.param(0))) {
+            return;
+        }
         switch (msg.command()) {
             case "PING" ->
                 sendNow("PONG :" + msg.param(0));
@@ -680,7 +760,14 @@ public final class IrcClient {
 
     /** Queues a line onto the engine RP's write slot (callable from any thread). */
     private void send(String line) {
-        rp.post(() -> sendNow(line));
+        // Defense-in-depth: an embedded CR/LF would smuggle a second raw
+        // protocol line past every verb. No live caller can produce one
+        // today (JTextField filters pasted newlines), but the engine is
+        // the last line of defense, so it enforces the invariant itself.
+        String flat = line.indexOf('\r') < 0 && line.indexOf('\n') < 0
+                ? line
+                : line.replace("\r", " ").replace("\n", " ");
+        rp.post(() -> sendNow(flat));
     }
 
     /** Writes a line right now (engine thread); a dead pipe is the reader's news. */
@@ -749,6 +836,12 @@ public final class IrcClient {
                         }
                         break;
                     }
+                }
+                // Never cut mid-surrogate-pair: an emoji at the cap must
+                // truncate to a whole code point, not a lone surrogate
+                // (the v1.149.0 code-point-safe-caps law).
+                if (Character.isHighSurrogate(sb.charAt(sb.length() - 1))) {
+                    sb.setLength(sb.length() - 1);
                 }
                 return sb.append(TRUNCATION_MARKER).toString();
             }

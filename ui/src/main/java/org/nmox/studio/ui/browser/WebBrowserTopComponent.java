@@ -88,6 +88,20 @@ public final class WebBrowserTopComponent extends TopComponent {
         }
     }
 
+    @Override
+    protected void componentClosed() {
+        // Closing the tab must actually stop the page: a WebView whose
+        // Swing wrapper is discarded keeps running its timers, audio and
+        // requests, and keeps feeding the DevTools models, until the IDE
+        // quits (v1.208.0 review finding). The panel is rebuilt from
+        // scratch on the next componentOpened.
+        if (browser != null) {
+            browser.stopEngine();
+            browser = null;
+        }
+        removeAll();
+    }
+
     /** EDT. Points the (possibly not-yet-opened) browser at a URL. */
     void showUrl(String url) {
         if (browser == null) {

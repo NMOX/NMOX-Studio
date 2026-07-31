@@ -408,7 +408,7 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                 // offer both and doubling them would be noise
                 if (KEYWORDS.containsKey(mime)) {
                     Set<String> keywords = KEYWORDS.get(mime);
-                    String prefix = prefixAt(text, caretOffset);
+                    String prefix = prefixAt(text, caretOffset, mime);
                     int anchor = caretOffset - prefix.length();
                     for (String keyword : matchingKeywords(keywords, prefix)) {
                         resultSet.addItem(new JavaScriptKeywordCompletionItem(keyword, anchor, prefix.length()));
@@ -477,13 +477,32 @@ public class PolyglotCompletionProvider implements CompletionProvider {
      * package-visible for tests.
      */
     static String prefixAt(String text, int offset) {
+        return prefixAt(text, offset, null);
+    }
+
+    /**
+     * Mime-aware prefix walk. Svelte's template vocabulary starts with
+     * sigils — {@code #each}, {@code :then}, {@code /if}, {@code @render}
+     * — so on {@code text/x-svelte} the walk must step back over them or
+     * typing <code>{#e</code> yields the prefix "e" and #each can never
+     * match (19 entries were unreachable before v1.208.0). The sigils
+     * are NOT added globally: ':' would change how Ruby and Elixir
+     * complete.
+     */
+    static String prefixAt(String text, int offset, String mime) {
+        boolean svelte = "text/x-svelte".equals(mime);
         int start = Math.min(offset, text.length());
         int i = start;
         while (i > 0 && (Character.isLetterOrDigit(text.charAt(i - 1))
-                || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$')) {
+                || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$'
+                || (svelte && isSvelteSigil(text.charAt(i - 1))))) {
             i--;
         }
         return text.substring(i, start);
+    }
+
+    private static boolean isSvelteSigil(char c) {
+        return c == '#' || c == '@' || c == '/' || c == ':';
     }
 
     /** Language keywords matching the prefix (case-insensitive), sorted. */

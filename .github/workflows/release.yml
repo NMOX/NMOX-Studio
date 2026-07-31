@@ -93,6 +93,14 @@ jobs:
         run: |
           cp application/target/NMOX-Studio-app-*.zip \
              "NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip"
+          # The nbm plugin zips the cluster before the package-phase
+          # bundle-license-notice copy lands LICENSE/NOTICE in it, so the
+          # portable zip alone needs them appended here (v1.208.0; the
+          # other four artifacts inherit them from target/nmoxstudio).
+          mkdir -p zipstage/nmoxstudio
+          cp LICENSE NOTICE zipstage/nmoxstudio/
+          (cd zipstage && zip -ur "$GITHUB_WORKSPACE/NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip" nmoxstudio)
+          rm -rf zipstage
       - name: Linux tar.gz and deb
         run: ./packaging/linux/build-packages.sh "${{ needs.version.outputs.version }}"
       - uses: actions/upload-artifact@v7
