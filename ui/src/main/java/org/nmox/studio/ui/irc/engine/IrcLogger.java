@@ -128,9 +128,15 @@ public final class IrcLogger {
         if (!enabled || isService(target)) {
             return;
         }
-        String bounded = body.length() > MAX_LINE_CHARS
-                ? body.substring(0, MAX_LINE_CHARS) + TRUNCATION_MARKER
-                : body;
+        String bounded = body;
+        if (bounded.length() > MAX_LINE_CHARS) {
+            // code-point-safe cut (v1.149.0 law): back off one char if the
+            // cap would split a surrogate pair
+            int cut = Character.isHighSurrogate(body.charAt(MAX_LINE_CHARS - 1))
+                    ? MAX_LINE_CHARS - 1
+                    : MAX_LINE_CHARS;
+            bounded = body.substring(0, cut) + TRUNCATION_MARKER;
+        }
         LocalDateTime now = clock.get();
         String line = "[" + TIME.format(now) + "] " + bounded;
         write(network, target, now.toLocalDate(), line);

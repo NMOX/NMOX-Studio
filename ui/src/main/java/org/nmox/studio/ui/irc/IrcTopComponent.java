@@ -176,6 +176,8 @@ public final class IrcTopComponent extends TopComponent {
     private final Map<String, Map<String, String>> nickLists = new HashMap<>();
     private final Map<String, Set<String>> pendingNames = new HashMap<>();
     private final Set<String> unread = new HashSet<>();
+    /** Targets already ballooned about, until viewed (one balloon per target). */
+    private final Set<String> notifiedMentions = new HashSet<>();
     /** key → unread MENTION count (distinct from the plain-unread bold). */
     private final Map<String, Integer> mentions = new HashMap<>();
     /** network → lowercased nicks currently marked away (away-notify + 301). */
@@ -468,6 +470,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         activeKey = key(ref.network(), ref.target());
         unread.remove(activeKey);
+        notifiedMentions.remove(activeKey);
         mentions.remove(activeKey); // looking at it clears the badge
         transcript.setDocument(docForKey(activeKey));
         transcript.setCaretPosition(transcript.getDocument().getLength());
@@ -555,6 +558,52 @@ public final class IrcTopComponent extends TopComponent {
         return docs.computeIfAbsent(k, x -> new DefaultStyledDocument());
     }
 
+    /**
+     * Transcript retention ceiling per tab, in characters. The engine
+     * caps a LINE at 8k, but a connection deliberately outlives the
+     * window — an overnight busy channel (or a hostile server) would
+     * otherwise grow an EDT-owned StyledDocument without bound, the one
+     * read the v1.104–v1.124 bounded-read sweeps didn't reach. When the
+     * cap is passed, whole lines fall off the head, mirroring the
+     * FlightRecorder's rotation shape. Package-private for the cap test.
+     */
+    static final int TRANSCRIPT_CAP_CHARS = 1_000_000;
+
+    /**
+     * Ceilings on server-driven view state (one family with the
+     * transcript cap): a hostile server must not be able to mint
+     * unbounded query tabs or nick-set entries with zero user gestures.
+     * The nick cap is generous — real channels run to tens of thousands.
+     */
+    static final int QUERY_TAB_CAP = 100;
+    static final int NICK_SET_CAP = 50_000;
+
+    private int queryTabCount(String network) {
+        int n = 0;
+        for (String k : targetNodes.keySet()) {
+            String prefix = network + '\u0000';
+            if (k.startsWith(prefix) && !isChannel(k.substring(prefix.length()))
+                    && k.length() > prefix.length()) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** Adds to a server-driven set unless the ceiling is reached (drop, not grow). */
+    private static void capAdd(java.util.Set<String> set, String item) {
+        if (set.size() < NICK_SET_CAP) {
+            set.add(item);
+        }
+    }
+
+    /** Puts into a server-driven map unless the ceiling is reached (drop, not grow). */
+    private static void capPut(Map<String, String> map, String k, String v) {
+        if (map.size() < NICK_SET_CAP || map.containsKey(k)) {
+            map.put(k, v);
+        }
+    }
+
     private void append(String k, List<Object[]> runs, boolean mention) {
         StyledDocument doc = docForKey(k);
         try {
@@ -562,6 +611,7 @@ public final class IrcTopComponent extends TopComponent {
                 doc.insertString(doc.getLength(), (String) run[0], (SimpleAttributeSet) run[1]);
             }
             doc.insertString(doc.getLength(), "\n", null);
+            trimTranscript(doc);
         } catch (BadLocationException ex) {
             // appending at getLength() cannot be out of bounds
         }
@@ -573,6 +623,18 @@ public final class IrcTopComponent extends TopComponent {
                 mentions.merge(k, 1, Integer::sum);
             }
             tree.repaint();
+        }
+    }
+
+    /** Drops whole head lines until the document is back under the cap. */
+    static void trimTranscript(StyledDocument doc) throws BadLocationException {
+        while (doc.getLength() > TRANSCRIPT_CAP_CHARS) {
+            String head = doc.getText(0, Math.min(16_384, doc.getLength()));
+            int nl = head.indexOf('\n');
+            // a single line larger than the probe window (engine caps
+            // lines at 8k, so this is unreachable in practice) still
+            // makes progress by dropping the whole probe
+            doc.remove(0, nl >= 0 ? nl + 1 : head.length());
         }
     }
 
@@ -625,6 +687,10 @@ public final class IrcTopComponent extends TopComponent {
      */
     private void appendChat(String k, String nick, String body, boolean action,
             String stamp, boolean highlight) {
+        // a nick is rendered verbatim (never parsed as format codes), so a
+        // nick carrying mIRC color bytes or C0 controls would paint
+        // garbage glyphs into the transcript — strip to plain text first
+        nick = MircFormat.stripToText(nick);
         List<Object[]> runs = stampedRuns(stamp);
         SimpleAttributeSet nickAttrs = action
                 ? attrs(nickColor(nick), false, true, false)
@@ -1030,6 +1096,20 @@ public final class IrcTopComponent extends TopComponent {
                     targetName = sender;
                 }
                 String k = key(network, targetName);
+                // A server minting sender nicks could otherwise create
+                // unbounded query tabs (tree nodes + documents) with zero
+                // user gestures; past the cap, overflow speech lands in
+                // the network status tab with the sender named, so
+                // nothing is silently dropped.
+                if (!isChannel(targetName)
+                        && targetNodes.get(k) == null
+                        && queryTabCount(network) >= QUERY_TAB_CAP) {
+                    appendStatus(key(network, ""),
+                            "(query overflow) <" + MircFormat.stripToText(sender) + "> " + body,
+                            stamp);
+                    logger.chat(network, targetName, sender, body);
+                    break;
+                }
                 ensureTargetNode(network, targetName);
                 boolean highlight = !fromSelf && Highlights.matches(me,
                         IrcConfig.getDefault().highlightKeywords(), body);
@@ -1059,8 +1139,8 @@ public final class IrcTopComponent extends TopComponent {
                     selectTarget(network, chan);
                     appendStatus(k, "You joined " + chan, stamp);
                 } else {
-                    nickLists.computeIfAbsent(k, x -> new HashMap<>())
-                            .put(who.toLowerCase(Locale.ROOT), who);
+                    capPut(nickLists.computeIfAbsent(k, x -> new HashMap<>()),
+                            who.toLowerCase(Locale.ROOT), who);
                     if (k.equals(activeKey)) {
                         rebuildNickModel();
                     }
@@ -1127,7 +1207,7 @@ public final class IrcTopComponent extends TopComponent {
                 if (msg.trailing() == null || msg.trailing().isEmpty()) {
                     away.remove(who.toLowerCase(Locale.ROOT));
                 } else {
-                    away.add(who.toLowerCase(Locale.ROOT));
+                    capAdd(away, who.toLowerCase(Locale.ROOT));
                 }
                 nickList.repaint();
             }
@@ -1162,7 +1242,13 @@ public final class IrcTopComponent extends TopComponent {
         if (isShowing()) {
             return;
         }
-        String title = sender + " mentioned you in " + target;
+        // one balloon per target until the user views it — a flood of
+        // mention lines must not become a balloon per line
+        if (!notifiedMentions.add(key(network, target))) {
+            return;
+        }
+        String title = MircFormat.stripToText(sender)
+                + " mentioned you in " + MircFormat.stripToText(target);
         NotificationDisplayer.getDefault().notify(title,
                 UIManager.getIcon("OptionPane.informationIcon"),
                 MircFormat.stripToText(body),
@@ -1215,7 +1301,7 @@ public final class IrcTopComponent extends TopComponent {
             appendStatus(k, msg.param(1) + " is away: "
                     + (msg.trailing() == null ? "" : msg.trailing()));
             Set<String> away = awayNicks.computeIfAbsent(network, x -> new HashSet<>());
-            away.add(msg.param(1).toLowerCase(Locale.ROOT));
+            capAdd(away, msg.param(1).toLowerCase(Locale.ROOT));
             nickList.repaint();
             return;
         }
@@ -1230,7 +1316,7 @@ public final class IrcTopComponent extends TopComponent {
                 String namesBlob = msg.trailing() == null ? "" : msg.trailing();
                 for (String name : namesBlob.split(" ")) {
                     if (!name.isEmpty()) {
-                        pending.add(name);
+                        capAdd(pending, name);
                     }
                 }
             }

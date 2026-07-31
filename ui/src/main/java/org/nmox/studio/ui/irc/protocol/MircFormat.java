@@ -117,7 +117,12 @@ public final class MircFormat {
                     }
                 }
                 default -> {
-                    run.append(c);
+                    // unhandled C0 controls (BEL, BS, raw 0x01…) would
+                    // render as garbage glyphs in the transcript — drop
+                    // them; tab survives as ordinary whitespace
+                    if (!Character.isISOControl(c) || c == '\t') {
+                        run.append(c);
+                    }
                     i++;
                 }
             }

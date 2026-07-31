@@ -45,6 +45,8 @@ public final class WhoisCollector {
     private String serverInfo = "";
     private long idleSeconds = -1;
     private List<String> channels = new ArrayList<>();
+    /** WHOIS channel-list ceiling; package-private for the cap test. */
+    static final int CHANNELS_CAP = 2000;
     private String account = "";
     private boolean collecting;
 
@@ -79,9 +81,12 @@ public final class WhoisCollector {
                 }
             }
             case "319" -> {
+                // a server can repeat 319 indefinitely before 318 — cap
+                // the accumulation (the ChannelListCollector idiom) so a
+                // hostile stream can't grow this without bound
                 if (collecting && msg.trailing() != null) {
                     for (String c : msg.trailing().split(" ")) {
-                        if (!c.isEmpty()) {
+                        if (!c.isEmpty() && channels.size() < CHANNELS_CAP) {
                             channels.add(c);
                         }
                     }
