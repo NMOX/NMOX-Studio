@@ -1,32 +1,46 @@
-> **Historical document** (v0.x era). Kept for archaeology; see CLAUDE.md,
-> README.md and CHANGELOG.md for current reality.
+# Engineering Documentation
 
-# NMOX Studio Engineering Documentation
+This directory holds **four live documents and a pile of archaeology.**
+Read the live ones; the rest are v0.x-era plans kept for history and
+describe a product that was never built. Each carries its own
+"Historical document" banner, and none of them is a safe guide to how
+NMOX Studio actually works.
 
-## 🏗️ Engineering Overview
+## The live documents
 
-This documentation provides the technical blueprint for building NMOX Studio - a professional web development IDE. It translates product requirements into actionable engineering specifications, architecture decisions, and implementation guidelines.
+- **[plan.md](./plan.md)** — where the project stands, the honest gaps,
+  the ranked opportunities, and the house laws and failure patterns.
+  **Read this first when deciding what to do next.**
+- **[codebase-guide.md](./codebase-guide.md)** — a beginner's walk
+  through the codebase: the five NetBeans RCP ideas everything rides on,
+  four traced flows, and where each house law came from. **Read this
+  first when deciding how something works.**
+- **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
+  items with their deferral reasons, closed items by version.
+- **[nbm-signing.md](./nbm-signing.md)** — how the secret-gated NBM
+  signing pipeline is wired, and how to turn it on.
 
-## 📚 Documentation Structure
+Outside this directory, [CLAUDE.md](../../CLAUDE.md) is the deep
+architecture reference and [the docs index](../README.md) is the way in
+for users.
 
-### Core Technical Documents
-- [System Architecture](./architecture.md) - Technical architecture and design decisions
-- [Technical Roadmap](./technical-roadmap.md) - Engineering milestones and deliverables
-- [Implementation Guide](./implementation-guide.md) - Detailed technical specifications
-- [Performance Engineering](./performance.md) - Performance targets and optimization strategies
-- [Testing Strategy](./testing-strategy.md) - Quality assurance and testing approach
+## The archaeology
 
-### Infrastructure & Operations
-- [Scalability Plan](./scalability.md) - Infrastructure and scaling requirements
-- [Security Requirements](./security.md) - Security architecture and compliance
-- [API Design](./api-design.md) - Plugin API and integration specifications
-- [Build & Release](./build-release.md) - CI/CD and release engineering
+Everything else here — architecture, api-design, performance,
+scalability, security, testing-strategy, technical-roadmap,
+implementation-guide, team-structure, and the rest — predates the
+shipping product. They are kept because deleting history is worse than
+labelling it, not because they are accurate.
 
-### Team & Process
-- [Team Structure](./team-structure.md) - Engineering organization and roles
-- [Technical Debt](./tech-debt.md) - Debt management and refactoring strategy
-- [Development Standards](./standards.md) - Coding standards and best practices
-- [On-Call Playbook](./on-call.md) - Incident response and operations
+---
+
+## Historical: the original v0.x engineering README
+
+> **Everything below this line is archaeology** and is preserved only
+> as history. The targets were aspirations, the metrics were never
+> measured, and parts of the stack described here (J2V8, for one) were
+> never shipped. For real numbers see `plan.md`; for the real stack see
+> `CLAUDE.md`.
 
 ## 🎯 Engineering Principles
 

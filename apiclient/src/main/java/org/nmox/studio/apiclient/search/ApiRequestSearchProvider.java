@@ -12,6 +12,7 @@ import org.nmox.studio.apiclient.model.ApiModel.Collection;
 import org.nmox.studio.apiclient.model.ApiModel.Request;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
 import org.nmox.studio.apiclient.ui.ApiClientTopComponent;
+import org.nmox.studio.core.search.SearchTerms;
 
 /**
  * Quick Search over the saved API requests: type a request name, an HTTP
@@ -45,7 +46,7 @@ public class ApiRequestSearchProvider implements SearchProvider {
      */
     void evaluate(String text, Workspace ws,
             java.util.function.BiPredicate<Runnable, String> addResult) {
-        String needle = text == null ? "" : text.toLowerCase(Locale.ROOT);
+        String needle = text == null ? "" : text;
         if (needle.isBlank() || ws == null) {
             return;
         }
@@ -82,16 +83,13 @@ public class ApiRequestSearchProvider implements SearchProvider {
         return r.method + " " + r.name + "  —  " + r.url;
     }
 
-    /** True when the lowercased needle appears in the request's name, method, or url. */
+    /**
+     * True when every term in the needle matches the request's name,
+     * method, or URL. Term-based since v1.215.0, so "post users" finds
+     * a POST to /api/users without typing them in URL order.
+     */
     static boolean matches(Request r, String needle) {
-        return contains(r.name, needle)
-                || contains(r.method, needle)
-                || contains(r.url, needle);
-    }
-
-    private static boolean contains(String haystack, String needle) {
-        return haystack != null
-                && haystack.toLowerCase(Locale.ROOT).contains(needle);
+        return SearchTerms.matches(needle, r.name, r.method, r.url);
     }
 
     /**
@@ -103,7 +101,7 @@ public class ApiRequestSearchProvider implements SearchProvider {
         if (ws == null || needle == null) {
             return hits;
         }
-        String lower = needle.toLowerCase(Locale.ROOT);
+        String lower = needle;
         if (lower.isBlank()) {
             return hits;
         }

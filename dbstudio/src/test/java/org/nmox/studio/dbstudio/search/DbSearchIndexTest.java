@@ -85,12 +85,20 @@ class DbSearchIndexTest {
     @Test
     @DisplayName("connection hits always come before table hits")
     void connectionsBeforeTables() {
-        // "shop" matches the SHOP connection by name AND nothing table-wise;
-        // "user" matches only a table; combine via a needle hitting both kinds:
-        // "s" hits all three connections and the users table.
-        List<Hit> hits = index().matches("s");
+        // This test is about ORDER, so it needs one needle that hits
+        // both kinds. It used to use "s" and lean on the old
+        // substring matcher, which matched any text containing an s
+        // anywhere — exactly the loose behaviour v1.215.0 removed.
+        // A dedicated fixture states the intent instead: "shop" is a
+        // real word in the connection name and in a table name.
+        DbSearchIndex index = new DbSearchIndex(
+                List.of(SHOP, STAGING),
+                Map.of("id-staging", List.of(
+                        new TableInfo("", "public", "shop_settings", "TABLE"),
+                        new TableInfo("", "public", "shop_audit", "TABLE"))));
+        List<Hit> hits = index.matches("shop");
 
-        assertThat(hits.size()).isGreaterThanOrEqualTo(4);
+        assertThat(hits.size()).isGreaterThanOrEqualTo(3);
         int firstTable = -1;
         int lastConnection = -1;
         for (int i = 0; i < hits.size(); i++) {

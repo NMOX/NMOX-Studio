@@ -7,6 +7,7 @@ import org.nmox.studio.web3.engine.ContractSizeCheck;
 import org.nmox.studio.web3.engine.DisplayValues;
 import org.nmox.studio.web3.model.ContractArtifact;
 import org.nmox.studio.web3.model.DeploymentRecord;
+import org.nmox.studio.core.search.SearchTerms;
 
 /**
  * The pure matcher behind Contract Studio's Quick Search (⌘I) reach:
@@ -60,7 +61,7 @@ public final class Web3SearchIndex {
         if (query == null || query.isBlank()) {
             return hits;
         }
-        String needle = query.trim().toLowerCase(Locale.ROOT);
+        String needle = query.trim();
         for (ContractArtifact artifact : artifacts) {
             if (contains(artifact.name(), needle)) {
                 hits.add(new Hit(Kind.CONTRACT, contractLabel(artifact),
@@ -95,8 +96,12 @@ public final class Web3SearchIndex {
                 + " — " + deployment.networkName();
     }
 
+    /**
+     * v1.215.0: term-based. A pasted address fragment still matches —
+     * terms of three characters or more may land mid-word, which is
+     * what keeps hex search working.
+     */
     private static boolean contains(String haystack, String needle) {
-        return haystack != null
-                && haystack.toLowerCase(Locale.ROOT).contains(needle);
+        return haystack != null && SearchTerms.matches(needle, haystack);
     }
 }

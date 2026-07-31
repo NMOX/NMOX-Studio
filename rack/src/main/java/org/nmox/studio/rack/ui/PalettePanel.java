@@ -59,17 +59,20 @@ public class PalettePanel extends JPanel {
 
         DefaultListModel<Object> model = new DefaultListModel<>();
         Runnable refilter = () -> {
-            String query = search.getText().trim().toLowerCase();
+            String query = search.getText().trim();
             model.clear();
             java.util.List<DeviceCatalog.Entry> catalog = DeviceCatalog.all();
             for (DeviceType.PaletteCategory category : DeviceType.PaletteCategory.values()) {
                 java.util.List<DeviceCatalog.Entry> matches = new java.util.ArrayList<>();
                 for (DeviceCatalog.Entry t : catalog) {
+                    // Same matcher as Quick Search (v1.215.0), and the
+                    // same vocabulary: typing "coverage" here shows
+                    // VERITAS even though its shelf copy never says it.
                     if (t.category() == category
                             && (query.isEmpty()
-                            || t.title().toLowerCase().contains(query)
-                            || t.description().toLowerCase().contains(query)
-                            || category.label.toLowerCase().contains(query))) {
+                            || org.nmox.studio.core.search.SearchTerms.matches(query,
+                                    t.title(), t.description(), t.keywords(),
+                                    category.label))) {
                         matches.add(t);
                     }
                 }

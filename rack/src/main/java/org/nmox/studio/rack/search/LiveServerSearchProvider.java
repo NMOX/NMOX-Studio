@@ -1,9 +1,9 @@
 package org.nmox.studio.rack.search;
 
-import java.util.Locale;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.nmox.studio.core.search.SearchTerms;
 import org.nmox.studio.rack.service.ServingRegistry;
 
 /**
@@ -16,16 +16,15 @@ public class LiveServerSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        String needle = request.getText() == null ? ""
-                : request.getText().toLowerCase(Locale.ROOT);
-        if (needle.isBlank()) {
+        String needle = request.getText();
+        if (needle == null || needle.isBlank()) {
             return;
         }
         for (ServingRegistry.Serving serving : ServingRegistry.getDefault().snapshot()) {
-            String haystack = (serving.url() + " " + serving.deviceTitle() + " "
-                    + serving.projectDir().getName() + " serving live server")
-                    .toLowerCase(Locale.ROOT);
-            if (haystack.contains(needle)) {
+            // The URL splits into words, so a bare port ("5173") or host
+            // ("localhost") finds the serving without the whole URL.
+            if (SearchTerms.matches(needle, serving.url(), serving.deviceTitle(),
+                    serving.projectDir().getName(), "serving live server localhost port")) {
                 String label = "Serving · " + serving.url() + " — "
                         + serving.deviceTitle() + " · " + serving.projectDir().getName();
                 boolean more = response.addResult(actionFor(serving), label);

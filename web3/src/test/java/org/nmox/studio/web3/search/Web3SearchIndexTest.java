@@ -71,17 +71,49 @@ class Web3SearchIndexTest {
     }
 
     @Test
+    @DisplayName("the visible tail of a shortened address finds its deployment")
+    void addressTailIsSearchable() {
+        // The address book shows "0x5FbDB2…0aa3", so the two halves a
+        // user can actually read are the head AND the tail. The head is
+        // a prefix and would match under any rule; the tail only matches
+        // because SearchTerms lets terms of three or more characters
+        // land mid-word. Without that, searching what is on screen
+        // returns nothing.
+        Web3SearchIndex index = new Web3SearchIndex(List.of(), List.of(LOCAL_COUNTER, LOCAL_TOKEN));
+
+        assertThat(index.matches("0aa3"))
+                .extracting(Hit::deployment).containsExactly(LOCAL_COUNTER);
+        assertThat(index.matches("0512"))
+                .extracting(Hit::deployment).containsExactly(LOCAL_TOKEN);
+    }
+
+    @Test
     @DisplayName("contract hits come before deployment hits, input order kept")
     void ordering() {
+        // About ORDER, so it needs one needle reaching all four rows.
+        // It used to pass "t" and rely on the old substring matcher
+        // ("matches everything here" only because every name happens to
+        // contain a t). v1.215.0 matches whole terms, so the fixture now
+        // shares a real word instead of a letter.
+        ContractArtifact core = new ContractArtifact(
+                "VaultCore", "src/VaultCore.sol", List.of(), "0x00", "0x00");
+        ContractArtifact token = new ContractArtifact(
+                "VaultToken", "src/VaultToken.sol", List.of(), "0x00", "0x00");
         Web3SearchIndex index = new Web3SearchIndex(
-                List.of(COUNTER, TOKEN), List.of(LOCAL_COUNTER, LOCAL_TOKEN));
+                List.of(core, token),
+                List.of(new DeploymentRecord("VaultCore",
+                                "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+                                "Local (anvil)", "0xtx1", 1, 1_000L),
+                        new DeploymentRecord("VaultToken",
+                                "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+                                "Staging", "0xtx2", 2, 2_000L)));
 
-        List<Hit> hits = index.matches("t"); // matches everything here
+        List<Hit> hits = index.matches("vault");
 
         assertThat(hits).extracting(Hit::kind).containsExactly(
                 Kind.CONTRACT, Kind.CONTRACT, Kind.DEPLOYMENT, Kind.DEPLOYMENT);
         assertThat(hits).extracting(Hit::contractName)
-                .containsExactly("Counter", "Token", "Counter", "Token");
+                .containsExactly("VaultCore", "VaultToken", "VaultCore", "VaultToken");
     }
 
     @Test

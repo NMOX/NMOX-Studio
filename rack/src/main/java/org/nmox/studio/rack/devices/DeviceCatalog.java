@@ -46,6 +46,16 @@ public final class DeviceCatalog {
         /** The How-to-use card: what it does plus a patch recipe. */
         String usage();
 
+        /**
+         * Extra words search should match — synonyms and tool names the
+         * title and description don't happen to contain ("coverage" for
+         * VERITAS, "postgres" for NEPTUNE). Search-only: never painted
+         * on a faceplate or a shelf row. Extensions default to none.
+         */
+        default String keywords() {
+            return "";
+        }
+
         /** True when the device's primary action exports as a CI step. */
         boolean ciStep();
 
@@ -197,6 +207,11 @@ public final class DeviceCatalog {
         @Override
         public String usage() {
             return type.getUsage();
+        }
+
+        @Override
+        public String keywords() {
+            return DeviceVocabulary.forId(type.getId());
         }
 
         @Override

@@ -4,6 +4,78 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.215.0] - 2026-07-31
+
+### Search finds what you meant
+
+A senior information architect's lens over the product. The taxonomy
+held up — the palette's seven categories are the jobs people are
+actually doing, the ⌘I groups are named after things rather than
+modules. What did not hold up was **retrieval**.
+
+Measured before touching anything: **24 of 49 ordinary search terms
+returned no device at all.** Not because the devices were missing —
+because nobody had ever checked that the words people type reach them.
+
+The failures came in three shapes, and each is a different bug:
+
+- **Phrases died.** Every search box in the product ran
+  `haystack.contains(wholeQuery)`, so a multi-word query had to appear
+  verbatim, in order, with matching punctuation. `bundle size` missed
+  PRISM — whose description reads "Bundle-**Size** Gate" — on the
+  hyphen alone. A device unfindable by its own name.
+- **Plurals died.** `logs` is not a substring of "Log Follower", so TAIL
+  could not be found by the word most people would reach for.
+- **Junk survived.** `contains` matches inside words, so `ai` returned
+  T**AI**L and ANVIL ("ch**ai**n") next to ORACLE.
+
+**One matcher now decides, for all eight search surfaces.** New
+`core.search.SearchTerms` splits the query into terms and the haystack
+into words, and requires every term to prefix-match some word. Order
+stops mattering; separators (`-` `_` `.` `/`) split, so "Bundle-Size"
+and `/vcs/NMOX-Studio` are searchable by their parts; camelCase splits,
+so `getUserById` is reachable by its pieces; a small plural rule lets
+`logs` find "Log". Terms of three characters or more may still land
+mid-word — that is deliberate, and it is what keeps a pasted address
+fragment working: the address book shows `0x5FbDB2…0aa3`, so the tail is
+as legitimate a search as the head.
+
+**Devices got a vocabulary.** Shelf copy is written to read well, not to
+be guessed at, and it was doing double duty as the search index. VERITAS
+is "a Test Harness — jest/vitest/mocha…", so *coverage* — the thing it
+is most often reached for — found nothing. The words people actually
+type now live in `DeviceVocabulary`, one auditable list, read only by
+search and never painted on a faceplate: *coverage*, *typescript*,
+*postgres*, *cron*, *a11y*, *secrets*, *vulnerabilities*, *breakpoint*,
+*llm*, and the rest, for all 53 devices.
+
+**After: 0 of 49 terms come back empty**, and `ai` returns ORACLE alone.
+
+The gate is structural, not a list of fixes. `DeviceVocabularyTest`
+asserts that each ordinary term reaches the device it names, that none
+is a dead end, and that **every built-in device carries search words** —
+so a new device cannot ship unfindable, and a renamed one cannot leave
+an orphan behind. Three mutation proofs: neutering the vocabulary,
+reverting to `contains`, and dropping the mid-word fallback each kill a
+test by name.
+
+Two existing tests changed, and both were the finding in miniature: one
+searched the single letter `"s"` and another the letter `"t"`, each
+commented as "matches everything here" — true only because the old
+matcher was that loose. Both are about *ordering*, so each now has a
+fixture where one real word reaches every row.
+
+### The engineering docs stop lying about themselves
+
+`docs/engineering/README.md` opened with a blanket "Historical document
+(v0.x era)" banner — while the directory holds `plan.md`,
+`tech-debt.md`, and `codebase-guide.md`, three of the most load-bearing
+live documents in the repository. The signpost pointed contributors away
+from exactly the files they needed. It is now a real index that names
+the four live documents and says plainly that everything else is
+archaeology; three links to files that never existed are gone, and the
+old body is kept below a line that says what it is.
+
 ## [1.214.0] - 2026-07-31
 
 ### Angular gets the thing that makes an Angular IDE
@@ -7774,6 +7846,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.215.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.214.0...v1.215.0
 [1.214.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.213.0...v1.214.0
 [1.213.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.212.0...v1.213.0
 [1.212.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.211.0...v1.212.0

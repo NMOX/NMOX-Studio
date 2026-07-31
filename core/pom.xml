@@ -105,6 +105,13 @@
                         <publicPackage>org.nmox.studio.core.process</publicPackage>
                         <publicPackage>org.nmox.studio.core.util</publicPackage>
                         <publicPackage>org.nmox.studio.core.http</publicPackage>
+                        <!-- the shared search matcher (v1.215.0): every
+                             Quick Search provider and the rack palette
+                             decide "does this match what you typed" here,
+                             so phrase/plural/word-boundary behaviour is
+                             one rule instead of eight copies of
+                             String.contains. -->
+                        <publicPackage>org.nmox.studio.core.search</publicPackage>
                         <!-- the soft-dependency seams (ledger 30): rack
                              publishes ProjectAim/LiveServings providers,
                              studios look them up and branch on null -->
