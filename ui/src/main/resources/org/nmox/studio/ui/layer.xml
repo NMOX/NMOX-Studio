@@ -18,6 +18,17 @@
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
+        <!-- Cmd+P is the most-pressed key of a web developer's day and it
+             was bound to tooltip-show. Go to File already SHIPS and works
+             (jumpto's FileSearchAction, on the undiscoverable Opt+Shift+O)
+             — it just answered to a chord nobody from VS Code would try.
+             Point the muscle memory at the feature we already have.
+             v1.212.0; the editor's own D-P binding is masked below, since
+             editor keybindings outrank Shortcuts entries. -->
+        <file name="D-P.shadow">
+            <attr name="originalFile"
+                  stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+        </file>
     </folder>
     <!-- The Quick Search widget in the toolbar: the platform ships the
          action (Cmd+I) and the Actions/Files providers; this puts the
@@ -78,6 +89,9 @@
                  binding - profile entries outrank Shortcuts. Mask it so
                  Cmd+O opens files, like every other editor on earth. -->
             <file name="D-O.shadow_hidden"/>
+            <!-- and the editor's tooltip-show on Cmd+P, so the Go to File
+                 binding above is the one that wins (v1.212.0) -->
+            <file name="D-P.shadow_hidden"/>
             <!-- Menu accelerators come from Keymaps-profile shadows, not
                  from Shortcuts/ registrations (the v1.38.1 finding, debt
                  #28): without these the Window menu shows "Task Rack" /

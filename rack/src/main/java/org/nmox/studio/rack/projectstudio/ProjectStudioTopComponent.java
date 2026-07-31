@@ -199,7 +199,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
         bar.add(asProject);
 
         JButton terminal = new JButton("Terminal");
-        terminal.setToolTipText("Open the interactive terminal in the project directory");
+        terminal.setToolTipText("Open a terminal — in the project directory when the platform supports it");
         terminal.addActionListener(e -> openTerminal());
         bar.add(terminal);
         return bar;
@@ -261,8 +261,64 @@ public final class ProjectStudioTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
     }
 
-    /** Finds the platform's terminal action wherever the module registered it. */
+    /**
+     * Context-aware attempt: hand the terminal action the aimed project's
+     * folder node so it opens THERE. Returns false when the action is
+     * absent or declines, so the caller can fall back.
+     */
+    private boolean openTerminalInProject() {
+        java.io.File dir = org.nmox.studio.rack.service.RackService.getDefault()
+                .getRack().getProjectDir();
+        if (dir == null || !dir.isDirectory()) {
+            return false;
+        }
+        org.openide.filesystems.FileObject fo =
+                org.openide.filesystems.FileUtil.toFileObject(
+                        org.openide.filesystems.FileUtil.normalizeFile(dir));
+        if (fo == null) {
+            return false;
+        }
+        try {
+            org.openide.nodes.Node node =
+                    org.openide.loaders.DataObject.find(fo).getNodeDelegate();
+            javax.swing.Action action = org.openide.awt.Actions.forID(
+                    "Tools", "org.netbeans.modules.terminal.nodes.OpenInTerminalAction");
+            if (action == null) {
+                return false;
+            }
+            if (action instanceof org.openide.util.ContextAwareAction ctx) {
+                action = ctx.createContextAwareInstance(
+                        org.openide.util.lookup.Lookups.singleton(node));
+            }
+            if (!action.isEnabled()) {
+                return false;
+            }
+            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
+            return true;
+        } catch (org.openide.loaders.DataObjectNotFoundException | RuntimeException notUsable) {
+            return false;
+        }
+    }
+
+    /**
+     * Opens a terminal, in the project directory when the platform lets
+     * us say where.
+     *
+     * <p>The button's tooltip used to promise "in the project directory"
+     * and not deliver: {@code LocalTerminalAction} passes a null working
+     * directory, so you landed in {@code $HOME} and had to cd yourself
+     * (v1.212.0 finding). The terminal module also ships
+     * {@code OpenInTerminalAction}, a context-aware action that reads a
+     * directory out of the supplied Lookup — so try that first with the
+     * aimed project's node, and fall back to the plain action (and the
+     * old behaviour) when the module isn't present or refuses the
+     * context. The tooltip now describes what actually happens either
+     * way rather than the best case.
+     */
     private void openTerminal() {
+        if (openTerminalInProject()) {
+            return;
+        }
         for (String id : new String[]{
                 "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
                 "LocalTerminalAction"}) {

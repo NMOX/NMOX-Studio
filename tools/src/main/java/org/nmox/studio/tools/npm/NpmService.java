@@ -176,6 +176,12 @@ public class NpmService {
         // rides CommandExecutor's kill/orphan guarantee at shutdown.
         CompletableFuture<String> done = new CompletableFuture<>();
         StringBuilder output = new StringBuilder();
+        // Double-clicking a script in NPM Explorer used to look broken:
+        // CommandExecutor.getIO deliberately never steals focus, so the
+        // run happened in a tab you had to know existed. Raise it — the
+        // user just asked for this command, so its output is what they
+        // are waiting to see (Run Focused Test has always done this).
+        CommandExecutor.showOutput("NPM Output");
         CommandExecutor.run("NPM Output", workingDir, java.util.Map.of(),
                 java.util.List.of(command),
                 line -> {

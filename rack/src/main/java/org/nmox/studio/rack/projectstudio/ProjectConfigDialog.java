@@ -173,35 +173,48 @@ public class ProjectConfigDialog extends JDialog {
                 return;
             }
             boolean dev = scope.getSelectedIndex() == 1;
-            runNpm(dev ? List.of("npm", "install", "--save-dev", name)
-                    : List.of("npm", "install", name));
+            // the project's own manager, not a hardcoded npm: writing a
+            // package-lock.json into a pnpm/yarn tree desynchronizes the
+            // lockfile (v1.212.0; the v1.60.0 law every other Node lane
+            // already honors)
+            String mgr = org.nmox.studio.rack.devices.ProjectInspector
+                    .nodePackageManager(projectDir);
+            runPackageManager(org.nmox.studio.rack.devices.NodePackageCommands
+                    .add(mgr, name, dev));
         });
 
         JButton removeBtn = new JButton("Remove");
-        removeBtn.setToolTipText("npm uninstall the selected package");
+        removeBtn.setToolTipText("Remove the selected package with this project's package manager");
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) {
                 return;
             }
             String name = (String) depsModel.getValueAt(row, 0);
+            String mgr = org.nmox.studio.rack.devices.ProjectInspector
+                    .nodePackageManager(projectDir);
+            List<String> argv = org.nmox.studio.rack.devices.NodePackageCommands
+                    .remove(mgr, name);
+            // the prompt names the command that will actually run, so the
+            // confirmation is honest on a yarn/pnpm project too
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    "npm uninstall " + name + "?", "Remove Dependency",
+                    org.nmox.studio.rack.devices.NodePackageCommands.describe(argv) + "?",
+                    "Remove Dependency",
                     NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
-                runNpm(List.of("npm", "uninstall", name));
+                runPackageManager(argv);
             }
         });
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.add(addBtn);
         buttons.add(removeBtn);
-        buttons.add(new JLabel("Changes run npm and refresh when it finishes."));
+        buttons.add(new JLabel("Changes run your package manager and refresh when it finishes."));
         panel.add(buttons, BorderLayout.SOUTH);
         return panel;
     }
 
     /** Runs an npm mutation and reloads the document when it exits. */
-    private void runNpm(List<String> command) {
+    private void runPackageManager(List<String> command) {
         CommandExecutor.run("Project Config", projectDir, Map.of(), command,
                 line -> {
                 }, code -> javax.swing.SwingUtilities.invokeLater(() -> {
@@ -209,10 +222,11 @@ public class ProjectConfigDialog extends JDialog {
                         pkg = PackageJsonFile.load(projectDir);
                         loadFields();
                     } catch (IOException ex) {
-                        error("Could not run npm: " + ex.getMessage());
+                        error("Could not reload package.json: " + ex.getMessage());
                     }
                     if (code != 0) {
-                        warn("npm exited with " + code + " — see the \"Rack: Project Config\" output tab.");
+                        warn(command.get(0) + " exited with " + code
+                                + " — see the \"Rack: Project Config\" output tab.");
                     }
                 }));
     }

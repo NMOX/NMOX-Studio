@@ -30,13 +30,14 @@ import org.openide.util.NbPreferences;
 )
 @org.openide.util.NbBundle.Messages({
     "RackOptions_DisplayName=Rack & Cloud",
-    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare"
+    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare browser run serve"
 })
 public class RackOptionsPanelController extends OptionsPanelController {
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private JPanel panel;
     private JSpinner reflexInterval;
+    private javax.swing.JCheckBox openServedPage;
     private JPasswordField doToken;
     private JPasswordField hetznerToken;
     private JPasswordField cloudflareToken;
@@ -47,6 +48,9 @@ public class RackOptionsPanelController extends OptionsPanelController {
         reflexInterval.setValue(NbPreferences
                 .forModule(org.nmox.studio.rack.devices.ReflexDevice.class)
                 .getInt("reflexIntervalMs", 1200));
+        openServedPage.setSelected(NbPreferences
+                .forModule(org.nmox.studio.rack.service.OpenOnServe.class)
+                .getBoolean(org.nmox.studio.rack.service.OpenOnServe.PREF_OPEN_ON_RUN, true));
         doToken.setText("");
         hetznerToken.setText("");
         cloudflareToken.setText("");
@@ -56,6 +60,9 @@ public class RackOptionsPanelController extends OptionsPanelController {
     public void applyChanges() {
         NbPreferences.forModule(org.nmox.studio.rack.devices.ReflexDevice.class)
                 .putInt("reflexIntervalMs", (Integer) reflexInterval.getValue());
+        NbPreferences.forModule(org.nmox.studio.rack.service.OpenOnServe.class)
+                .putBoolean(org.nmox.studio.rack.service.OpenOnServe.PREF_OPEN_ON_RUN,
+                        openServedPage.isSelected());
         // Keychain writes may block on an OS unlock prompt — off the EDT,
         // like every other keyring user in the suite.
         char[] doTok = doToken.getPassword();
@@ -130,9 +137,18 @@ public class RackOptionsPanelController extends OptionsPanelController {
         c.gridy = 0;
 
         reflexInterval = new JSpinner(new SpinnerNumberModel(1200, 200, 10_000, 100));
+        // Opinionated developers keep an external browser open on a second
+        // monitor; closing the loop for them would be taking the wheel.
+        openServedPage = new javax.swing.JCheckBox(
+                "Open the served page in the Browser tab after Run", true);
         doToken = new JPasswordField(28);
         hetznerToken = new JPasswordField(28);
         cloudflareToken = new JPasswordField(28);
+
+        c.gridwidth = 2;
+        panel.add(openServedPage, c);
+        c.gridwidth = 1;
+        c.gridy++;
 
         panel.add(new JLabel("REFLEX poll interval (ms):"), c);
         c.gridx = 1;
