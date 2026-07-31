@@ -57,7 +57,16 @@ public final class OpenOnServe {
 
     private static final OpenOnServe INSTANCE = new OpenOnServe();
 
-    /** The one live arm, or null. Guarded by the instance monitor. */
+    /**
+     * Private monitor. Synchronizing on {@code this} would publish the
+     * lock — {@link #getDefault()} hands the singleton to anyone, so any
+     * caller could hold it and stall the opener (find-sec-bugs
+     * USO_UNSAFE_ACCESSIBLE_OBJECT_SYNCHRONIZATION). A lock nobody else
+     * can reach cannot be contended by accident.
+     */
+    private final Object lock = new Object();
+
+    /** The one live arm, or null. Guarded by {@link #lock}. */
     private Arm arm;
 
     private OpenOnServe() {
@@ -108,7 +117,7 @@ public final class OpenOnServe {
         }
         Arm fresh = new Arm(projectDir, before,
                 System.currentTimeMillis() + ARM_WINDOW_MS);
-        synchronized (this) {
+        synchronized (lock) {
             disarmLocked();
             arm = fresh;
         }
@@ -122,7 +131,7 @@ public final class OpenOnServe {
     /** Registry thread. Opens the first new web serving, once. */
     private void onServingChanged(Arm which) {
         String url = null;
-        synchronized (this) {
+        synchronized (lock) {
             if (arm != which || which.spent) {
                 return;
             }
@@ -146,14 +155,14 @@ public final class OpenOnServe {
     }
 
     private void expire(Arm which) {
-        synchronized (this) {
+        synchronized (lock) {
             if (arm == which) {
                 disarmLocked();
             }
         }
     }
 
-    /** Caller holds the monitor. Detaches and forgets the current arm. */
+    /** Caller holds {@link #lock}. Detaches and forgets the current arm. */
     private void disarmLocked() {
         if (arm != null) {
             ServingRegistry.getDefault().removeListener(arm);
@@ -192,14 +201,14 @@ public final class OpenOnServe {
 
     /** Test seam: is an arm currently standing? */
     boolean isArmedForTest() {
-        synchronized (this) {
+        synchronized (lock) {
             return arm != null;
         }
     }
 
     /** Test seam: forget any arm so cases don't leak into each other. */
     static void resetForTest() {
-        synchronized (INSTANCE) {
+        synchronized (INSTANCE.lock) {
             INSTANCE.disarmLocked();
         }
     }
