@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.213.0] - 2026-07-31
+
+### eslint findings arrive on their own
+
+The mid-level review left one lopsided matrix: on a fresh React/TypeScript
+project **type** errors appeared automatically — `typescript-language-server`
+is registered on both the JS and TS mimes and the platform starts it on
+file-open — while **eslint** findings, the ones a JS developer actually
+stares at all day, existed only if you mounted the PURITY rack device and
+pressed its button. Lint was the one diagnostic gated behind learning a
+metaphor.
+
+- **New `EslintServer` LSP provider** on `text/javascript` and
+  `text/typescript`, running `vscode-eslint-language-server`. Squiggles as
+  you type, no rack required.
+- The premise that makes this safe was **decompiled, not assumed**: the
+  shipped `LSPBindings` collects providers with
+  `MimeLookup.getLookup(mime).lookupAll(...)` — a Collection — so a second
+  server on a mime JOINS the first rather than replacing it. tsserver keeps
+  reporting types; eslint adds rules. A test pins both registrations, and
+  the mutation that removes tsserver's JS mime fails it by name.
+- It rides `launchNpm`, so the v1.102.0 trust law applies unchanged: a
+  committed `node_modules/.bin` binary runs only in a trusted workspace,
+  otherwise your own global tool. Reimplementing the spawn would have
+  silently opted out of that.
+- Catalog entry + Environment Doctor probe, so an absent binary explains
+  itself and names the package to install — which is
+  `vscode-langservers-extracted`, not the binary name.
+
+The rack lane is untouched and still earns its place: PURITY lints the whole
+project on demand and feeds the Action Items window; the LSP covers the file
+you have open. Two answers to two different questions.
+
+### Two smaller truths
+
+- **The preset named "Web Pipeline" ran a web pipeline with no linting.**
+  PURITY is now in it, wired off the build like the other lanes.
+- **`docs/product/features.md` claimed Emmet support.** It is not
+  implemented — there is no `div.foo>ul>li*3` expansion — and the line now
+  says what we do have instead (~60 JS/TS code templates plus the platform's
+  HTML tag templates). The file is a historical document, but a false
+  capability claim shouldn't outlive its correction.
+
 ## [1.212.0] - 2026-07-31
 
 ### The mid-level sprint: the edit → run → see loop actually closes
@@ -7686,6 +7729,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.213.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.212.0...v1.213.0
 [1.212.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.211.0...v1.212.0
 [1.211.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.210.0...v1.211.0
 [1.210.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.209.1...v1.210.0

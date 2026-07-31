@@ -136,6 +136,44 @@ public final class LanguageServers {
         }
     }
 
+    /**
+     * eslint via {@code vscode-eslint-language-server}.
+     *
+     * <p>Until v1.213.0 the honest matrix for a fresh React/TypeScript
+     * project was lopsided: TYPE errors arrived automatically, because
+     * {@link TypeScriptServer} is registered on both JS and TS mimes and
+     * the LSP client starts it on file-open — but ESLINT findings, the
+     * ones a JS developer actually stares at all day, existed only if you
+     * mounted the PURITY rack device and pressed its button. Lint was the
+     * one diagnostic gated behind learning a metaphor.
+     *
+     * <p>This runs eslint the way every other editor does. The premise
+     * that makes it safe was decompiled rather than assumed: the
+     * platform's {@code LSPBindings} collects providers with
+     * {@code MimeLookup.getLookup(mime).lookupAll(...)} — a Collection —
+     * so a second server on a mime joins the first rather than replacing
+     * it. tsserver keeps reporting types; eslint adds rules.
+     *
+     * <p>The rack lane is untouched and still useful: PURITY lints the
+     * whole project on demand and feeds the Action Items window, where
+     * the LSP reports the file you have open. Two answers to two
+     * different questions.
+     *
+     * <p>Absent eslint means no diagnostics, not an error — the same
+     * honest degradation every other entry here has (see
+     * {@code LanguageServerCatalog}, which surfaces the install hint).
+     */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
+    })
+    public static final class EslintServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vscode-eslint-language-server", "--stdio");
+        }
+    }
+
     /** Python via pyright. */
     @MimeRegistration(mimeType = "text/x-python", service = LanguageServerProvider.class)
     public static final class PythonServer implements LanguageServerProvider {

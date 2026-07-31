@@ -26,12 +26,22 @@ public enum RackPresets {
             RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
             RackDevice build = add(rack, DeviceType.BUILD, null);
             RackDevice test = add(rack, DeviceType.TEST, null);
+            // PURITY belongs in the pipeline people actually pick. Lint
+            // findings reach the editor squiggles and the Action Items
+            // window through the DiagnosticsBus, and before v1.213.0 the
+            // flagship preset had no lint device at all — so the preset
+            // named "Web Pipeline" ran a web pipeline with no linting.
+            // (The eslint LSP added in the same release covers the file
+            // you have OPEN; this covers the whole project on demand.)
+            RackDevice lint = add(rack, DeviceType.LINT, null);
             RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
             RackDevice browser = add(rack, DeviceType.BROWSER, null);
             RackDevice console = add(rack, DeviceType.CONSOLE, null);
             rack.connect(master.getPort("trig1"), deps.getPort("run"));
             rack.connect(deps.getPort("ok"), build.getPort("run"));
             rack.connect(build.getPort("ok"), test.getPort("run"));
+            rack.connect(build.getPort("ok"), lint.getPort("run"));
+            rack.connect(lint.getPort("out"), console.getPort("in"));
             rack.connect(test.getPort("out"), console.getPort("in"));
             rack.connect(server.getPort("url"), browser.getPort("url"));
             rack.connect(server.getPort("ready"), browser.getPort("open"));

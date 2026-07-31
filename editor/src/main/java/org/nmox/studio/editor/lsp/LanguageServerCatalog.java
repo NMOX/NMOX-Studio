@@ -45,6 +45,13 @@ public final class LanguageServerCatalog {
         add("TypeScript / JavaScript", "typescript-language-server",
                 "npm install -g typescript-language-server typescript",
                 List.of("npm", "install", "-g", "typescript-language-server", "typescript"));
+        // eslint rides ALONGSIDE tsserver on the same mimes (v1.213.0) —
+        // types from one, lint rules from the other. The binary lives in
+        // vscode-langservers-extracted, which is why the install hint
+        // names a package that doesn't match the binary.
+        add("ESLint (JS / TS)", "vscode-eslint-language-server",
+                "npm install -g vscode-langservers-extracted",
+                List.of("npm", "install", "-g", "vscode-langservers-extracted"));
         add("Python", "pyright-langserver", "npm install -g pyright",
                 List.of("npm", "install", "-g", "pyright"));
         add("Go", "gopls", "go install golang.org/x/tools/gopls@latest",
