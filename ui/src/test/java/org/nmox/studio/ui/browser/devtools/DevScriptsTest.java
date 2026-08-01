@@ -110,6 +110,33 @@ class DevScriptsTest {
     }
 
     @Test
+    @DisplayName("Angular snapshot embeds its caps and reads the dev-mode debug API")
+    void angularSnapshotCapsAndMarkers() {
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("MAX_COMP=2000");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("VAL_CAP=2000");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("MAX_SCAN=20000");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("DIR_CAP=20");
+        // detection is two-step: ng-version (dev AND prod) then the
+        // dev-only window.ng.getComponent — that split is what lets the
+        // pane say "production build" instead of "no Angular"
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("[ng-version]");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("NG.getComponent");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("NG.getDirectives");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT)
+                .as("Angular present but window.ng stripped reports prod, not absence")
+                .contains("prod:(version||'unknown')");
+        // Angular's own render-tree plumbing is not component state
+        assertThat(DevScripts.ANGULAR_SNAPSHOT)
+                .contains("if(keys[i]==='__ngContext__'){continue;}");
+        // the nesting marker is temporary: planted, used, then deleted so
+        // the page is left exactly as found
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("__nmoxNgIdx");
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("delete hosts[z].__nmoxNgIdx");
+        // the output shape the parser pins on the other side
+        assertThat(DevScripts.ANGULAR_SNAPSHOT).contains("{v:version,prod:'',r:roots}");
+    }
+
+    @Test
     @DisplayName("storage snapshot embeds the 500-char cap and all three areas")
     void storageSnapshot() {
         assertThat(DevScripts.STORAGE_SNAPSHOT).contains("CAP=500");

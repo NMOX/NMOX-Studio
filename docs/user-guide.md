@@ -646,7 +646,7 @@ Open-in-Browser action route here too.
 - **Vue** — the component tree of a running **Vue 2 or Vue 3** app:
   select a component to see its props and state and outline its root
   element in the page. No Vue on the page is an honest empty state;
-  React/Angular are not inspected (v1).
+  Angular has its own tab (below); React is not inspected.
 - **Svelte** — source mapping for a running **Svelte** app served from
   a dev build (`vite dev`): dev mode stamps every rendered element
   with the `.svelte` file, line, and column that produced it, and the
@@ -656,6 +656,15 @@ Open-in-Browser action route here too.
   at runtime for any inspector to walk — file/line source mapping is
   everything dev mode offers, and a production build offers nothing at
   all (the pane says so instead of claiming "no Svelte").
+- **Angular** — the component tree of a running **Angular dev build**:
+  class names, instance state, and host directives, resolved through
+  `window.ng.getComponent` (the debug API Angular exposes in dev
+  builds); select a component to see its fields and outline its host
+  element in the page. Both misses are honest: a **production build**
+  stamps `ng-version` but strips `window.ng`, so the pane says
+  "production build, no component tree" (the official Angular DevTools
+  is limited the same way) — and a page with no Angular at all says
+  that instead.
 
 Everything the page hands the tools is treated as untrusted: strings
 are capped, lists are bounded, and a hostile page can fill a ring

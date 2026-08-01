@@ -228,9 +228,13 @@ definition** — `{{ title }}` lands on the `title` field in the
 component class — and the right-click menu switches you between the
 pair: **Open Angular Template** from the class (the decorator's
 `templateUrl` wins, the sibling convention backstops), **Open
-Component Class** from the template. The rack side is HALO, the
-Angular console (serve/build/test/generate/update with version
-currency), and **New Project** ships an Angular standalone template.
+Component Class** from the template. The in-app Browser's DevTools
+have an **Angular pane**: the live component tree of a dev build
+(instance state, host directives, click-to-highlight), with the
+honest production-build answer when `window.ng` is stripped. The rack
+side is HALO, the Angular console (serve/build/test/generate/update
+with version currency), and **New Project** ships an Angular
+standalone template.
 
 ### 🐞 Breakpoints that actually stop
 
