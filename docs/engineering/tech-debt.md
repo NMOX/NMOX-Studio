@@ -77,6 +77,20 @@ the natural word in its context, and a rename would trade familiar
 local vocabulary for global consistency nobody asked for. Revisit only
 if a real user confuses two of them in the same surface.
 
+### 69. `mvn verify` wipes the developer's real Workspace Trust prefs — LOW
+`WorkspaceTrust` stores grants in `java.util.prefs` userRoot
+(`org/nmox/studio/rack/service/trusted`, one entry per path — the
+v1.27.0 8KB-cap fix), and its tests call `clearForTest` against the
+REAL userRoot, so a local `mvn verify` deletes the developer's own
+trust grants. Bit this session twice: after each verify the dev app's
+LSP servers (which are trust-gated since v1.216.0) silently stopped
+launching until trust was re-granted. Not a shipping concern (users
+don't run our test suite), but a real dev-loop footgun. Fix shape:
+point the tests at a scratch prefs node (system-property override in
+`WorkspaceTrust`, the OracleKeys `env`-seam idiom). Deferred: touches
+a security-sensitive class for a dev-only annoyance; do it as part of
+the next trust-surface release, not as a drive-by.
+
 ## Decided — the v1.192.0 decisions pass (2026-07-27)
 
 The changelog's three longest-standing "deferred with a reason" items

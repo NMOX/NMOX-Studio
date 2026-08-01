@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.219.0] - 2026-08-01
+
+The senior Angular developer's wishes, granted. With the template mime
+a citizen (v1.217.0) and ngserver actually answering on it (v1.218.0),
+the two navigation gestures an Angular developer reaches for hourly
+now work: ⌘B inside a template jumps to the definition, and one popup
+click switches between a component class and its template.
+
+### Added
+- **Go to Declaration in Angular templates (⌘B).** Put the caret on an
+  identifier in `.component.html` and ⌘B asks ngserver for
+  `textDocument/definition` and jumps — `{{ title }}` lands on the
+  `title` field inside the component class, breadcrumb and all. Two
+  cooperating pieces, both necessary (measured live): a mime-registered
+  `HyperlinkProviderExt` (`NgTemplateHyperlinkEnabler`) that claims the
+  identifier span and delegates the click to the platform LSP client's
+  provider — which owns the server connection — and an
+  `ng-goto-declaration` editor-kit action bound to ⌘B through
+  mime-scoped keybindings, because on CSL panes the platform's global
+  goto-declaration never consults the hyperlink-provider chain for
+  this mime. The chord binding is pinned by test.
+- **Component ↔ template switching.** Right-click in a component class
+  → **Open Angular Template** (the decorator's `templateUrl` wins,
+  resolved against the component's directory; the same-basename
+  `.html` sibling backstops). Right-click in a template → **Open
+  Component Class** (sibling `.ts`, else the directory's `.ts` whose
+  `templateUrl` names this file — specs excluded). Resolution lives in
+  the pure `NgSwitch` core (8 tests); misses end in an honest status
+  line ("inline template, or none on disk"), never a beep.
+
+### Lessons
+- **A stale cachedir masks new layer registrations.** The platform
+  caches the merged layer filesystem; hot-swapping a rebuilt module
+  jar under an old cachedir makes brand-new registrations (actions,
+  keybindings, providers) silently not exist while code changes to
+  already-registered classes take — which reads exactly like a wrong
+  registration shape. Wipe the cachedir when testing new
+  registrations.
+- **A same-name mime action loses to the platform's root
+  registration.** Registering `goto-declaration` for the mime never
+  resolved; the recipe that works on CSL panes is a NON-COLLIDING
+  action name plus a mime-scoped keybinding for the chord.
+
 ## [1.218.0] - 2026-08-01
 
 The Angular Language Service answers — for real, for the first time.
@@ -8025,6 +8068,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.219.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.218.0...v1.219.0
 [1.218.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.217.0...v1.218.0
 [1.217.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.216.0...v1.217.0
 [1.216.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.215.0...v1.216.0

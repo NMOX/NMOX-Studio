@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!-- Angular templates: bind Cmd+B to OUR go-to-declaration. The global
+     goto-declaration action name is claimed by the platform's editor-actions
+     GotoAction, which never consults the hyperlink chain on CSL panes
+     (measured live, v1.219.0) - so the mime carries its own action under a
+     non-colliding name, and this mime-scoped binding gives it the muscle-
+     memory chord. Mime keybindings override the global profile for panes
+     of this mime only. -->
+<bindings>
+    <bind actionName="ng-goto-declaration" key="D-B"/>
+</bindings>
