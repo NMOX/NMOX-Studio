@@ -34,8 +34,7 @@ public final class LanguageServers {
         try {
             File dir = projectDir(lookup);
             List<String> resolved = ToolLocator.resolveCommand(command);
-            // a bare unresolved name that doesn't exist anywhere: refuse quietly
-            if (resolved.get(0).equals(command.get(0)) && !onPath(command.get(0))) {
+            if (refusesCommand(resolved.get(0), command.get(0))) {
                 return null;
             }
             ProcessBuilder pb = new ProcessBuilder(resolved);
@@ -45,8 +44,13 @@ public final class LanguageServers {
             pb.environment().put("PATH", ToolLocator.augmentedPath());
             pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
+            // the Lookup carries the languageId mapping: without it the
+            // client sends the RAW MIME as didOpen's languageId and
+            // id-keyed servers (ngserver above all) silently ignore the
+            // document — see LspLanguageIds
             return LanguageServerProvider.LanguageServerDescription.create(
-                    process.getInputStream(), process.getOutputStream(), process);
+                    process.getInputStream(), process.getOutputStream(), process,
+                    org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
             // the log should say why intelligence is absent for this mime
@@ -108,6 +112,23 @@ public final class LanguageServers {
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
         return reported(launch(lookup, cmd), bin);
+    }
+
+    /**
+     * True when the command's first word cannot possibly run: a bare
+     * unresolved name that is nowhere on the PATH. An ABSOLUTE path is
+     * judged by the file itself — v1.218.0: the old bare-name check ran
+     * {@code new File(pathDir, absolutePath)} for every PATH entry,
+     * which never resolves, so every absolute command was refused —
+     * including the project-local {@code .bin/ngserver} the v1.216.0
+     * fix resolves. The Angular Language Service could never launch.
+     */
+    static boolean refusesCommand(String resolvedFirst, String originalFirst) {
+        File first = new File(resolvedFirst);
+        if (first.isAbsolute()) {
+            return !first.canExecute();
+        }
+        return resolvedFirst.equals(originalFirst) && !onPath(originalFirst);
     }
 
     private static boolean onPath(String name) {
