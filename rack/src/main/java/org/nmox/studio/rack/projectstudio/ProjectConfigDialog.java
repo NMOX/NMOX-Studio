@@ -215,6 +215,13 @@ public class ProjectConfigDialog extends JDialog {
 
     /** Runs an npm mutation and reloads the document when it exits. */
     private void runPackageManager(List<String> command) {
+        // npm/pnpm/yarn install runs the project's OWN lifecycle scripts
+        // (preinstall/postinstall, plus every dependency's) — an inward
+        // execution flow like Run/F6, and gated the same way (v1.224.0
+        // spawn-site sweep; prompt-once, a prior grant answers silently)
+        if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir)) {
+            return;
+        }
         CommandExecutor.run("Project Config", projectDir, Map.of(), command,
                 line -> {
                 }, code -> javax.swing.SwingUtilities.invokeLater(() -> {

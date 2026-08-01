@@ -351,6 +351,24 @@ itself), and *a fixture that omits a manifest the real layout carries
 tests a project that doesn't exist* (src/index.html now in the
 fixture).
 
+Currency addendum 2026-08-01 at **v1.224.0**: the spawn-site trust
+sweep — the v1.223.0 lesson made structural the same day. Every
+`CommandExecutor.run` caller is now enumerated in
+`SpawnSiteTrustLedgerTest`, a build-failing ledger where each site is
+classified GATED / GATED-BY-CALLER / BLESSED-with-reason; an
+unclassified new caller fails the build. The sweep found THREE more
+ungated sites: Contract Studio's forge build/test (the sharpest —
+Foundry's ffi cheatcode makes a repo's tests arbitrary host commands;
+fixed via the new `core.spi.TrustGate` facade + rack adapter, closing
+the v1.46.0 "TrustGate deliberately not facaded" deferral the moment
+it grew a soft-dependency consumer), Project Config's npm add/remove,
+and the project-local ALS install. The method lesson: *per-incident
+security fixes leak — two dedicated sweeps each fixed every site they
+knew about and still missed four; only an enumerated, build-enforced
+ledger closes the class.* Live proof: the forge trust prompt fired
+naming the correct root through the facade chain, and a grant ran the
+real forge build to completion.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
