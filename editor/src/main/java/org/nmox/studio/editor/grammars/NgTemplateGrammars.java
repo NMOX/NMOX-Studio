@@ -1,6 +1,7 @@
 package org.nmox.studio.editor.grammars;
 
 import org.netbeans.modules.textmate.lexer.api.GrammarInjectionRegistration;
+import org.netbeans.modules.textmate.lexer.api.GrammarRegistration;
 
 /**
  * Angular template intelligence for the eyes (v1.217.0): the five
@@ -38,14 +39,35 @@ import org.netbeans.modules.textmate.lexer.api.GrammarInjectionRegistration;
  */
 @GrammarInjectionRegistration(grammar = "org/nmox/studio/editor/grammars/ng-template.tmLanguage.json",
         injectTo = {"text.html.basic"})
-@GrammarInjectionRegistration(grammar = "org/nmox/studio/editor/grammars/ng-expression.tmLanguage.json",
-        injectTo = {"text.html.basic"})
 @GrammarInjectionRegistration(grammar = "org/nmox/studio/editor/grammars/ng-template-blocks.tmLanguage.json",
         injectTo = {"text.html.basic"})
 @GrammarInjectionRegistration(grammar = "org/nmox/studio/editor/grammars/ng-let-declaration.tmLanguage.json",
         injectTo = {"text.html.basic"})
 @GrammarInjectionRegistration(grammar = "org/nmox/studio/editor/grammars/ng-template-tag.tmLanguage.json",
         injectTo = {"text.html.basic"})
+/*
+ * expression.ng is deliberately NOT injected — upstream's package.json
+ * injects only the four grammars above and leaves expression.ng to be
+ * INCLUDED by them (interpolation contentName, block conditions). The
+ * first probe of this work injected it directly and its bare operator
+ * rules stomped the host: `<h1>` tokenized as a relational operator.
+ * Registered embed-only instead (the EmbeddedScopeGrammars idiom): the
+ * synthetic mime never resolves a file; registration just puts the
+ * scope in the map so the includes above can reach it.
+ */
+@GrammarRegistration(grammar = "ng-expression.tmLanguage.json",
+        mimeType = "text/x-nmox-embed-ng-expression")
+/*
+ * The mime's driver: the SAME vendored html grammar text/html rides,
+ * here bound to text/x-ng-template so the TEXTMATE lexer serves
+ * component templates (the platform's own HTML lexer owns text/html
+ * and never consults TM4E — see NgTemplateResolver). The injections
+ * above target this grammar's scope, so on THIS mime they finally
+ * reach the screen; a headless tm4e-0.14.1 probe pinned the expected
+ * scopes before this wiring was written.
+ */
+@GrammarRegistration(grammar = "html.tmLanguage.json",
+        mimeType = "text/x-ng-template")
 /*
  * No bridge grammar is needed for the blocks grammar's
  * `text.html.derivative` include: the real VS Code derived-HTML grammar

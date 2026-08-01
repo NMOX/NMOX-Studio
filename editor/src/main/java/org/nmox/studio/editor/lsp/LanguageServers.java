@@ -258,10 +258,9 @@ public final class LanguageServers {
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
         // v1.217.0: templates too — ngserver's whole point is the HTML
-        // half. The hasAngular gate two lines in keeps every non-Angular
-        // HTML file at a two-stat cost, and the same trust gate covers
-        // the same payload.
-        @MimeRegistration(mimeType = "text/html", service = LanguageServerProvider.class)
+        // half. The dedicated template mime keeps this off every plain
+        // HTML file; the same trust gate covers the same payload.
+        @MimeRegistration(mimeType = "text/x-ng-template", service = LanguageServerProvider.class)
     })
     public static final class AngularServer implements LanguageServerProvider {
         @Override

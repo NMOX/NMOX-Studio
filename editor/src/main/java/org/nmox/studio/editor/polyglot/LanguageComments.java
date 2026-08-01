@@ -96,6 +96,7 @@ public final class LanguageComments {
     // top level, and HTML has no line comment — only the block pair.
     private static final Map<String, BlockComment> BLOCK_COMMENT = Map.ofEntries(
             Map.entry("text/x-svelte", new BlockComment("<!--", "-->")),
+            Map.entry("text/x-ng-template", new BlockComment("<!--", "-->")),
             Map.entry("text/x-vue", new BlockComment("<!--", "-->")));
 
     private LanguageComments() {

@@ -38,7 +38,12 @@ import org.openide.loaders.DataObject;
  * (the platform collects every registered provider), adding Angular
  * rows to the same popup that already carries tags and attributes.
  */
-@MimeRegistration(mimeType = "text/html", service = CompletionProvider.class)
+@org.netbeans.api.editor.mimelookup.MimeRegistrations({
+    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class),
+    // plain html in an Angular workspace still completes: templateUrl
+    // may point at files outside the .component.html convention
+    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class)
+})
 public class NgTemplateCompletionProvider implements CompletionProvider {
 
     @Override
