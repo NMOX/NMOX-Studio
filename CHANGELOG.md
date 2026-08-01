@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.220.0] - 2026-08-01
+
+The Angular-arc review: two lenses over v1.217–v1.219 (the template
+mime, the languageId/launch fixes, the navigation grants) — one real
+find, fixed same-day; the rest verified CLEAN or accepted in writing.
+
+### Fixed
+- **The component ↔ template switcher resolved on the EDT.** Both
+  v1.219.0 popup actions did their file reads in `actionPerformed` —
+  `Files.readString` of the component source, and in the
+  template→owner direction a directory scan that can read every
+  sibling `.ts` — on the paint thread, so a wedged mount would freeze
+  the UI on a context-menu click (the v1.108.0 disk-on-EDT law, in
+  day-old code). Resolution now rides a named `nmox-ng-switch`
+  RequestProcessor and hops back to the EDT only to open the result;
+  source-gated (`resolutionOffEdtGate` pins both actions through the
+  RP).
+
+### Verified CLEAN
+- **`LspLanguageIds` generic rule vs every registered server**: all
+  ~60 LSP-provider mimes were cross-checked against the VS Code
+  languageId vocabulary — this product's mime names are already
+  aligned (`text/x-rust` → `rust`, `text/x-cpp` → `cpp`), so the
+  four-entry exception table is complete. One LOW note accepted:
+  `text/x-fortran` maps to `fortran` where VS Code also knows
+  `FortranFreeForm`; fortls accepts the plain id.
+- **`refusesCommand`**: absolute paths judged by the file itself,
+  relative paths keep the PATH probe — the v1.218.0 extraction lost
+  nothing.
+- **The goto pair**: enabler span logic bounds-safe, delegation
+  null-guarded, chord registered in the correct Keymaps profile
+  location (`Keybindings/NetBeans/Defaults`), `D-B` platform-neutral.
+- **Accepted honestly**: the vendored `template.let.ng` grammar's
+  internal `#`-reference TM4E warnings are cosmetic (tokenization
+  unaffected); the grammar stays byte-verbatim per the vendoring law.
+
 ## [1.219.0] - 2026-08-01
 
 The senior Angular developer's wishes, granted. With the template mime
@@ -8068,6 +8104,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.220.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.219.0...v1.220.0
 [1.219.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.218.0...v1.219.0
 [1.218.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.217.0...v1.218.0
 [1.217.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.216.0...v1.217.0

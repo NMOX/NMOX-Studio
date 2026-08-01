@@ -304,6 +304,19 @@ wipe the cachedir before concluding anything about registration
 shapes. Several hours of this session's recon were spent disproving
 conclusions that were cache artifacts.
 
+Currency addendum 2026-08-01 at **v1.220.0**: the same-day arc review
+(v1.217–v1.219), one find: the v1.219.0 switcher actions did their
+file reads — component source plus a sibling-directory scan — in
+`actionPerformed`, i.e. on the EDT, the v1.108.0 disk-on-EDT class in
+day-old code; resolution moved to a named RP, source-gated. The
+review's clean sweep is itself evidence the arc's laws held:
+`LspLanguageIds` needed no fifth exception because the product's mime
+vocabulary was already VS-Code-aligned, and `refusesCommand` survived
+extraction intact. The review streak stands: every same-day arc review
+since v1.135.0 has found at least one real defect the arc's own tests
+missed, and it is almost always a HOUSE LAW violated in fresh code —
+the laws are learned per-surface, not per-author.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

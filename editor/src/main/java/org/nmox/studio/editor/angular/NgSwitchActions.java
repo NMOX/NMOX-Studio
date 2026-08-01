@@ -17,6 +17,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * The Angular component ↔ template switcher's UI half (v1.219.0):
@@ -26,8 +27,17 @@ import org.openide.util.NbBundle.Messages;
  * render and fire on every editor pane in this product). Resolution
  * lives in the pure {@link NgSwitch}; misses end in an honest status
  * line, never a beep.
+ *
+ * <p>Resolution reads files (the component source for its templateUrl,
+ * and in the template→owner direction potentially every sibling .ts),
+ * so it rides {@link #RESOLVE_RP}, never the EDT — a wedged mount must
+ * not freeze the UI on a context-menu click (the v1.108.0 law; found
+ * by the v1.220.0 arc review in day-old code).
  */
 public final class NgSwitchActions {
+
+    private static final RequestProcessor RESOLVE_RP =
+            new RequestProcessor("nmox-ng-switch", 1);
 
     private NgSwitchActions() {
     }
@@ -44,14 +54,16 @@ public final class NgSwitchActions {
             if (component == null || !component.getName().endsWith(".ts")) {
                 return;
             }
-            File template = NgSwitch.templateFor(component, readQuietly(component));
-            if (template == null) {
-                StatusDisplayer.getDefault().setStatusText(
-                        "No template file for " + component.getName()
-                        + " (inline template, or none on disk)");
-                return;
-            }
-            open(template);
+            RESOLVE_RP.post(() -> {
+                File template = NgSwitch.templateFor(component, readQuietly(component));
+                if (template == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "No template file for " + component.getName()
+                            + " (inline template, or none on disk)");
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> open(template));
+            });
         }
     }
 
@@ -67,13 +79,15 @@ public final class NgSwitchActions {
             if (template == null) {
                 return;
             }
-            File component = NgSwitch.componentFor(template, NgSwitchActions::readQuietly);
-            if (component == null) {
-                StatusDisplayer.getDefault().setStatusText(
-                        "No component class found beside " + template.getName());
-                return;
-            }
-            open(component);
+            RESOLVE_RP.post(() -> {
+                File component = NgSwitch.componentFor(template, NgSwitchActions::readQuietly);
+                if (component == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "No component class found beside " + template.getName());
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> open(component));
+            });
         }
     }
 
