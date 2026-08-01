@@ -40,6 +40,23 @@ final class WebProjectActionProvider implements ActionProvider {
      * captured URL (v1.216.0) — a colored banner produced a serving URL
      * with a trailing escape byte. Full CSI sequences plus any stray ESC.
      */
+    /**
+     * The serving URL a dev-server output line announces, or null.
+     * Extracted pure (v1.216.0) so every branch is plainly testable:
+     * python -m http.server (the STATIC lane) prints "Serving HTTP on
+     * 0.0.0.0 port 8000" — a banner with no localhost URL in it, so it
+     * maps to the pinned localhost URL (the same announce IGNITION's
+     * static lane makes; the command carries -u for the same reason
+     * RunDevice's does — piped python block-buffers the banner without
+     * it, the v1.37.0 lesson). Everything else rides the shared scan.
+     */
+    static String servingUrlFor(String line) {
+        String plain = stripAnsi(line);
+        return plain.contains("Serving HTTP")
+                ? "http://localhost:" + WebProjectCommands.STATIC_PORT + "/"
+                : org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
+    }
+
     static String stripAnsi(String line) {
         return line.replaceAll("\\u001B\\[[;\\d]*[ -/]*[@-~]", "")
                 .replace("\u001B", "")
@@ -138,17 +155,7 @@ final class WebProjectActionProvider implements ActionProvider {
                     if (!serves) {
                         return;
                     }
-                    String plain = stripAnsi(line);
-                    // python -m http.server (the STATIC lane) prints
-                    // "Serving HTTP on 0.0.0.0 port 8000" — a banner with
-                    // no localhost URL in it, so the URL scan below can
-                    // never see it. Same pinned announce as IGNITION's
-                    // static lane (v1.216.0; the command carries -u for
-                    // the same reason RunDevice's does — piped python
-                    // block-buffers the banner without it, v1.37.0).
-                    String url = plain.contains("Serving HTTP")
-                            ? "http://localhost:" + WebProjectCommands.STATIC_PORT + "/"
-                            : org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
+                    String url = servingUrlFor(line);
                     if (url != null && !url.equals(announced.get())) {
                         announced.set(url);
                         org.nmox.studio.rack.service.ServingRegistry.getDefault().register(

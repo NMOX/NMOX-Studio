@@ -67,6 +67,24 @@ class ArcReviewServingTest {
     }
 
     @Test
+    @DisplayName("servingUrlFor: banner → pinned URL, Local: → scanned URL, chatter → null")
+    void servingUrlBranches() {
+        // the STATIC lane's banner has no localhost URL to scan
+        assertThat(WebProjectActionProvider.servingUrlFor(
+                "Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ..."))
+                .isEqualTo("http://localhost:8000/");
+        // a normal dev-server banner rides the shared scan, ANSI and all
+        assertThat(WebProjectActionProvider.servingUrlFor(
+                "\u001B[32m  Local:\u001B[0m   \u001B[36mhttp://localhost:5173/\u001B[39m"))
+                .isEqualTo("http://localhost:5173/");
+        // ordinary output announces nothing
+        assertThat(WebProjectActionProvider.servingUrlFor("compiled 12 modules")).isNull();
+        // a Network: LAN address is deliberately not local
+        assertThat(WebProjectActionProvider.servingUrlFor(
+                "  Network: http://192.168.1.7:5173/")).isNull();
+    }
+
+    @Test
     @DisplayName("the STATIC banner announces the pinned URL the scan can never find")
     void staticBannerAnnouncePinned() throws IOException {
         String src = Files.readString(
