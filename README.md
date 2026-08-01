@@ -197,7 +197,7 @@ script-tag era, no build step, served as-is.
 Bun and Deno are first-class toolchains (detected with precedence over
 plain Node — every AUTO device speaks the right binary, CI export
 included), alongside Rust, Go, Python, Ruby, PHP, the BEAM family, and
-more. 70+ languages with syntax highlighting (78 TextMate grammars through NetBeans
+more. 70+ languages with syntax highlighting (85 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class
@@ -210,6 +210,27 @@ survives the save); comment-only spellcheck (your keys and values
 are never flagged as typos); a **Structure navigator** (⌘7) that outlines
 any file — classes, functions, tests, selectors, headings, config keys —
 and jumps to a symbol on click; and the NMOX Phosphor dark theme.
+
+### 🅰️ Angular, first-class
+
+Angular is the framework NMOX Studio is deliberately excellent at.
+`.component.html` templates are their own citizens: a dedicated
+template mime lit by the Angular team's own grammars, so `@if`/`@for`
+control-flow blocks, structural directives, and `{{ interpolations }}`
+all highlight — with `@`-block and `*`-directive completion in any
+project that carries an `angular.json`. The **Angular Language
+Service** installs into your project from an in-IDE prompt (it must
+match your workspace's Angular and TypeScript versions) and then the
+templates are *type-checked against the component class*: typo a
+property in a binding and the Angular compiler's own "Did you mean…?"
+squiggle appears as you type. **⌘B inside a template jumps to the
+definition** — `{{ title }}` lands on the `title` field in the
+component class — and the right-click menu switches you between the
+pair: **Open Angular Template** from the class (the decorator's
+`templateUrl` wins, the sibling convention backstops), **Open
+Component Class** from the template. The rack side is HALO, the
+Angular console (serve/build/test/generate/update with version
+currency), and **New Project** ships an Angular standalone template.
 
 ### 🐞 Breakpoints that actually stop
 
