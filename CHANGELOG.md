@@ -4,6 +4,90 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.216.0] - 2026-08-01
+
+The arc review over v1.209–v1.215: two fresh lenses over the seven
+releases since the last review, every finding verified against the
+source before a fix, three mutation-proven. The theme this time:
+**a gate that covers the binary but not its payload, and an affordance
+that was documented but never exercised** — both classes this codebase
+had already named, both back in week-old code.
+
+### Security
+- **The Angular Language Service now honors Workspace Trust.** ngserver's
+  probe locations make it `require()` the project's own `node_modules` —
+  repo-committed JavaScript executed on file-open, the v1.102.0 RCE class
+  with the payload one level below the binary the existing gate covered.
+  Untrusted workspaces get no Angular service, silently, same as every
+  other trust gate.
+- **The eslint language server now honors Workspace Trust too.** eslint's
+  flat configs are plain JavaScript the server evaluates, and it resolves
+  the eslint *library* from the workspace — so even the user's own global
+  server binary was executing a cloned repo's code. Untrusted workspaces
+  get no lint diagnostics; additionally the server only starts where an
+  eslint config actually exists, so unconfigured projects stop paying for
+  a node process that did nothing.
+
+### Fixed
+- **The Angular Language Service's own install instructions now work.**
+  The catalog said `npm i -D` (correct — the service must match the
+  workspace's versions), but the IDE only ever looked for `ngserver` on
+  global paths, and the Install button ran the command in `$HOME` —
+  creating `~/package.json` and `~/node_modules` while reporting
+  success. The server now resolves from the project's `node_modules/.bin`
+  first, project-local installs run in the project (and refuse honestly
+  when none is open), and the probe directory is chosen by finding the
+  actual `tsserverlibrary.js` file — so npm-workspace hoisting no longer
+  makes a good install look absent.
+- **⌘P Go to File actually works now** — including with focus in an
+  editor, which is where you are when you reach for it. Three
+  independent kills were stacked on the v1.212.0 rebind: the binding
+  sat in the `Shortcuts/` tree, which loses to Keymaps-profile claims
+  (the project's own v1.38.1 lesson — every chord that works lives in
+  the Keymaps profile, and this one now does too); the editor kit's own
+  D-P→tooltip-show claim consumed the keystroke before global dispatch,
+  and the "mask" protecting against it targeted a Keymaps file that
+  exists in no shipped cluster (the claim is now released in the
+  editor-keybindings tree, the only tree that can release it); and the
+  platform's Go to File is disabled until a project is open, which made
+  quick manual checks pass on the wrong evidence. Verified live in the
+  built app: ⌘P opens Go to File from the file tree AND from inside an
+  editor, and the picked file opens.
+- **The Welcome screen's User Guide link exists now.** v1.210.0 declared
+  the constant and the changelog announced the link; the button was never
+  built. Six releases of a documented affordance nobody could click.
+- **Two Runs of one project no longer erase each other's live server.**
+  The serving id was keyed on the project path alone, so a second Run
+  replaced the first's registration and whichever exited first
+  deregistered the survivor. Each run now owns its id.
+- **A STATIC project's Run announces its server.** python's "Serving
+  HTTP on 0.0.0.0" banner contains no localhost URL for the scan to
+  find, and without `-u` piped python never flushes it — the v1.37.0
+  lesson relearned. The classic-web persona's whole serve chain (⇄ chip,
+  ⌘I, auto-open) was dark on the F6 lane.
+- **Colored dev-server banners produce clean URLs.** The ANSI strip left
+  the ESC byte and the URL pattern swallowed it into the captured URL;
+  the strip now removes whole escape sequences and the pattern refuses
+  control characters outright.
+- **Short CJK searches match again.** CJK text has no separators, so
+  v1.215.0's word-boundary rule regressed two-character queries like
+  项目 against a project named 前端项目. Ideographic terms now match
+  mid-word at any length — each character carries word-level meaning.
+
+### Hardened
+- **The grammar shape gate walks nested repositories.** The v1.210.0
+  gate checked `repository` only at the grammar root; TextMate allows
+  one on any rule, four shipped grammars already carry them, and TM4E
+  crashes identically on a bad nested one. The gate now walks every
+  depth — proven by planting a bad nested repository and watching the
+  build refuse it.
+
+### Deferred with reasons (ledger 63–67)
+The proxy-target-first-URL heuristic, the microsecond arm/listener gap,
+broken-binary LSP relaunch, IRC logging while the tab is closed, and
+"compose" ranking Laravel above Docker — each recorded in
+docs/engineering/tech-debt.md with the reason it can wait.
+
 ## [1.215.0] - 2026-07-31
 
 ### Search finds what you meant

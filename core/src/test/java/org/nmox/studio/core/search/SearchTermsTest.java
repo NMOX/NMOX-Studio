@@ -104,6 +104,19 @@ class SearchTermsTest {
         }
 
         @Test
+        @DisplayName("short CJK queries match — each ideograph carries word-level meaning")
+        void cjkQueriesMatch() {
+            // CJK has no separators, so a name tokenizes as one word and
+            // a 2-char query is neither a prefix nor long enough for the
+            // Latin fallback. The old contains matcher handled these;
+            // v1.216.0 restores them (the arc review's regression catch).
+            assertThat(SearchTerms.matches("项目", "前端项目")).isTrue();
+            assertThat(SearchTerms.matches("项", "前端项目")).isTrue();
+            assertThat(SearchTerms.matches("前端", "前端项目")).isTrue();
+            assertThat(SearchTerms.matches("数据", "前端项目")).isFalse();
+        }
+
+        @Test
         @DisplayName("a double-s word is not stemmed")
         void doubleSSurvives() {
             // "css" -> "cs" would be wrong; guard it

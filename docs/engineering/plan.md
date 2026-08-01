@@ -199,6 +199,42 @@ when the tab closes). Standing counts at v1.208.0: 53 devices, 80
 grammars, 88 learning spaces, six studios (Block, API, DB, Contract,
 Infra + the Browser), 58 recognized manifests, Apache-2.0.
 
+Currency pass 2026-08-01 at **v1.216.0**: the persona-lens arc
+(v1.210–v1.215) and its review. Three persona lenses in a row found
+bugs ~200 releases of senior review had not — a junior hit a shipping
+TextMate grammar that crashed on their FIRST project (v1.210.0); a
+mid-level dev found the IDE's own Run button passing an EMPTY LAMBDA
+for output, silently disabling the whole serving chain (v1.212.0); an
+information architect measured 24 of 49 ordinary search terms
+returning NOTHING (v1.215.0: one term-based matcher across all eight
+search surfaces + a controlled device vocabulary, 0 of 49 after).
+Between them: Browser+IRC default-open for discovery (v1.211.0,
+build-on-first-show so boot stays free), eslint as a second LSP on the
+TS/JS mimes (v1.213.0 — the platform's lookupAll lets servers share a
+mime, decompiled not assumed), and the Angular Language Service
+(v1.214.0, David's positioning call: stop investing in React, be
+excellent at Angular; ngserver needs mandatory probe locations and
+TypeScript 5 — TS 7 dropped tsserverlibrary.js). **The arc review
+(v1.216.0) found the persona sprints' own fixes had the arc's two
+worst bugs**: the two new LSP providers honored the trust law for the
+server binary while executing the workspace's own code as the payload
+(ngserver require()s the repo's node_modules; eslint flat configs are
+plain JS the server evaluates) — both now trust-gated; and the ⌘P
+rebind was dead EVERYWHERE, killed three times over (wrong tree,
+editor-consumed key, action disabled without an open project) — the
+live gauntlet that the review demanded is what surfaced all three,
+and the fix is now click-verified in the built app. Also: the Angular
+install path was unwalkable (project-local install, global-only
+resolve, Install button running npm in $HOME), the serving id
+collided across two Runs of one project, the STATIC lane relearned
+the v1.37.0 python -u lesson, and short CJK searches regressed by the
+v1.215.0 word-boundary rule — all fixed, three mutation-proven,
+ledger 63–67 records the deferrals. Failure patterns reinforced: *a
+gate that covers the binary but not its payload is not a gate*, and
+*an affordance documented but never exercised is untested* (the ⌘P
+chord, the User Guide link, the Angular install — all v1.38.1's
+lesson recurring).
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

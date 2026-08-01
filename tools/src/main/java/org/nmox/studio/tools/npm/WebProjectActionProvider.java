@@ -27,7 +27,41 @@ final class WebProjectActionProvider implements ActionProvider {
         COMMAND_RUN, COMMAND_BUILD, COMMAND_TEST, COMMAND_CLEAN
     };
 
+    /** Distinguishes concurrent Runs of one project in the serving registry. */
+    private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
+            new java.util.concurrent.atomic.AtomicLong();
+
     private final WebProject project;
+
+    /**
+     * Drops ANSI escapes before the URL scan. The old strip removed only
+     * {@code [36m}-style tails and left the ESC byte itself, which the
+     * URL pattern's permissive char class then swallowed INTO the
+     * captured URL (v1.216.0) — a colored banner produced a serving URL
+     * with a trailing escape byte. Full CSI sequences plus any stray ESC.
+     */
+    /**
+     * The serving URL a dev-server output line announces, or null.
+     * Extracted pure (v1.216.0) so every branch is plainly testable:
+     * python -m http.server (the STATIC lane) prints "Serving HTTP on
+     * 0.0.0.0 port 8000" — a banner with no localhost URL in it, so it
+     * maps to the pinned localhost URL (the same announce IGNITION's
+     * static lane makes; the command carries -u for the same reason
+     * RunDevice's does — piped python block-buffers the banner without
+     * it, the v1.37.0 lesson). Everything else rides the shared scan.
+     */
+    static String servingUrlFor(String line) {
+        String plain = stripAnsi(line);
+        return plain.contains("Serving HTTP")
+                ? "http://localhost:" + WebProjectCommands.STATIC_PORT + "/"
+                : org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
+    }
+
+    static String stripAnsi(String line) {
+        return line.replaceAll("\\u001B\\[[;\\d]*[ -/]*[@-~]", "")
+                .replace("\u001B", "")
+                .replaceAll("\\[[;\\d]*m", "");
+    }
 
     WebProjectActionProvider(WebProject project) {
         this.project = project;
@@ -105,7 +139,14 @@ final class WebProjectActionProvider implements ActionProvider {
         // Announcing here is honest by the v1.93.0 serving-truth law: we
         // register only once the server has SAID it is listening, and
         // deregister when the process ends.
-        String servingId = "ide-run:" + dir.getAbsolutePath();
+        // Per-invocation id (v1.216.0, arc review): keyed on the path
+        // alone, a SECOND Run of the same project re-registered the same
+        // id (silently replacing a live serving) and whichever run exited
+        // first deregistered the OTHER one's live server — a truthful
+        // serving erased, the inverse of the v1.93.0 phantom. Two dev
+        // servers on two ports are two servings; each run now owns its id.
+        String servingId = "ide-run:" + dir.getAbsolutePath()
+                + "#" + RUN_SEQ.incrementAndGet();
         boolean serves = ActionProvider.COMMAND_RUN.equals(command);
         AtomicReference<String> announced = new AtomicReference<>();
         CommandExecutor.Handle handle = CommandExecutor.run(
@@ -114,8 +155,7 @@ final class WebProjectActionProvider implements ActionProvider {
                     if (!serves) {
                         return;
                     }
-                    String plain = line.replaceAll("\\[[;\\d]*m", ""); // strip ANSI
-                    String url = org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
+                    String url = servingUrlFor(line);
                     if (url != null && !url.equals(announced.get())) {
                         announced.set(url);
                         org.nmox.studio.rack.service.ServingRegistry.getDefault().register(

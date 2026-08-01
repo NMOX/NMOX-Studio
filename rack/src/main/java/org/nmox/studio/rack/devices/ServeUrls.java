@@ -14,9 +14,15 @@ import java.util.regex.Pattern;
  */
 public final class ServeUrls {
 
-    /** A local URL printed by the server (vite "Local:", CRA, serve...). */
+    /**
+     * A local URL printed by the server (vite "Local:", CRA, serve...).
+     * Control characters are excluded from the tail (v1.216.0): an
+     * imperfect ANSI strip upstream can leave a stray ESC byte glued to
+     * the URL, and a permissive char class swallowed it into the capture
+     * — the registered URL then carried an invisible escape character.
+     */
     private static final Pattern LOCAL_URL =
-            Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"']*)");
+            Pattern.compile("(https?://(?:localhost|127\\.0\\.0\\.1):\\d+[^\\s\"'\\x00-\\x1f]*)");
 
     private ServeUrls() {
     }

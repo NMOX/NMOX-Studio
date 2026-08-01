@@ -314,8 +314,11 @@ class WebProjectCommandsTest {
     @DisplayName("A static site runs by serving the folder — the exact command the rack's lane uses")
     void staticServesTheFolder() {
         File d = dir.toFile();
+        // -u is load-bearing: piped python block-buffers the "Serving
+        // HTTP on" banner without it (v1.37.0, relearned v1.216.0), and
+        // the banner is what triggers the serving announce.
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_RUN))
-                .containsExactly("python3", "-m", "http.server", "8000");
+                .containsExactly("python3", "-u", "-m", "http.server", "8000");
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_BUILD)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_TEST)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_CLEAN)).isNull();

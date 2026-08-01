@@ -193,4 +193,30 @@ class WindowShortcutsTest {
                     .doesNotContain("\"" + stale + "\"");
         }
     }
+
+    @Test
+    @DisplayName("⌘P Go to File: the global shadow stays, the dead Keymaps mask is gone")
+    void goToFileChord() throws Exception {
+        String layer = Files.readString(
+                Path.of("src/main/resources/org/nmox/studio/ui/layer.xml"),
+                StandardCharsets.UTF_8);
+        // the binding lives in Keymaps/NetBeans — the tree that WINS.
+        // v1.212.0 put it in Shortcuts/, where profile claims and
+        // focused-editor keybindings both outrank it (the v1.38.1
+        // lesson), and the chord fired nowhere: live-verified dead in
+        // the built app before the move, alive after (v1.216.0).
+        int keymaps = layer.indexOf("<folder name=\"Keymaps\">");
+        int shadow = layer.indexOf("<file name=\"D-P.shadow\">");
+        assertThat(shadow).as("D-P.shadow registered").isGreaterThan(0);
+        assertThat(shadow).as("inside the Keymaps profile, not Shortcuts")
+                .isGreaterThan(keymaps);
+        assertThat(layer.substring(shadow, Math.min(layer.length(), shadow + 300)))
+                .contains("org-netbeans-modules-jumpto-file-FileSearchAction");
+        // the v1.212.0 mistake must not return: a shadow_hidden of
+        // Keymaps/NetBeans/D-P.shadow masks a file that exists in no
+        // cluster — the editor's real claim lives in Editors/Keybindings
+        // (released there by the editor module, v1.216.0), and a mask
+        // here would only LOOK like protection
+        assertThat(layer).doesNotContain("D-P.shadow_hidden");
+    }
 }

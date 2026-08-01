@@ -149,9 +149,19 @@ public final class MainWindow extends TopComponent {
             JButton whatsNew = textButton("What's new ↗", DIM);
             whatsNew.setToolTipText("Open the release notes on GitHub");
             whatsNew.addActionListener(e -> browse(UpdateCheck.RELEASES_PAGE));
+            // v1.216.0 (arc review): v1.210.0 declared USER_GUIDE_URL and
+            // its changelog said the Welcome screen offers the User Guide
+            // — but the button was never built. The constant sat unused
+            // for six releases: the v1.38.1 lesson (an affordance
+            // documented but never exercised is untested), caught by the
+            // review's dead-reference sweep.
+            JButton userGuide = textButton("User Guide ↗", DIM);
+            userGuide.setToolTipText("Open the user guide — install, first launch, and every window");
+            userGuide.addActionListener(e -> browse(USER_GUIDE_URL));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
             footer.add(version);
+            footer.add(userGuide);
             footer.add(whatsNew);
 
             gc.gridy = 0;

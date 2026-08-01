@@ -53,8 +53,10 @@ public final class Web3SearchIndex {
     }
 
     /**
-     * Case-insensitive substring match; blank queries match nothing.
-     * Contract hits first, then deployment hits.
+     * Term-based matching via {@code SearchTerms} (v1.215.0); a pasted
+     * address fragment of three-plus characters still lands mid-word.
+     * Blank queries match nothing. Contract hits first, then deployment
+     * hits.
      */
     public List<Hit> matches(String query) {
         List<Hit> hits = new ArrayList<>();

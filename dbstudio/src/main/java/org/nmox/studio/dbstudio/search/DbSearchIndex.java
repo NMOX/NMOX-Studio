@@ -62,9 +62,11 @@ public final class DbSearchIndex {
     }
 
     /**
-     * Case-insensitive substring match; blank queries match nothing.
-     * Connection hits come first, then table hits, each group in the
-     * order the connections were given.
+     * Term-based matching via {@code SearchTerms} (v1.215.0 — phrases,
+     * plurals, word boundaries, with a mid-word fallback for pasted
+     * fragments); blank queries match nothing. Connection hits come
+     * first, then table hits, each group in the order the connections
+     * were given.
      */
     public List<Hit> matches(String query) {
         List<Hit> hits = new ArrayList<>();

@@ -18,17 +18,13 @@
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
-        <!-- Cmd+P is the most-pressed key of a web developer's day and it
-             was bound to tooltip-show. Go to File already SHIPS and works
-             (jumpto's FileSearchAction, on the undiscoverable Opt+Shift+O)
-             — it just answered to a chord nobody from VS Code would try.
-             Point the muscle memory at the feature we already have.
-             v1.212.0; the editor's own D-P binding is masked below, since
-             editor keybindings outrank Shortcuts entries. -->
-        <file name="D-P.shadow">
-            <attr name="originalFile"
-                  stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
-        </file>
+        <!-- Cmd+P (Go to File) is NOT here: Shortcuts/ entries lose to
+             Keymaps-profile claims and to focused-editor keybindings —
+             the v1.38.1 lesson. The binding lives as a Keymaps shadow
+             below, beside every other chord that actually works, and the
+             editor module releases the editor kit's own D-P claim in the
+             Editors/Keybindings tree (v1.216.0; v1.212.0 had it here and
+             it never fired). -->
     </folder>
     <!-- The Quick Search widget in the toolbar: the platform ships the
          action (Cmd+I) and the Actions/Files providers; this puts the
@@ -89,9 +85,13 @@
                  binding - profile entries outrank Shortcuts. Mask it so
                  Cmd+O opens files, like every other editor on earth. -->
             <file name="D-O.shadow_hidden"/>
-            <!-- and the editor's tooltip-show on Cmd+P, so the Go to File
-                 binding above is the one that wins (v1.212.0) -->
-            <file name="D-P.shadow_hidden"/>
+            <!-- NO D-P mask here (v1.216.0): the v1.212.0 one targeted
+                 Keymaps/NetBeans/D-P.shadow, which no shipped cluster
+                 defines — a shadow_hidden of a nonexistent file masks
+                 nothing, and the editor's real D-P claim lives in the
+                 Editors/Keybindings tree, which Keymaps can't reach.
+                 The unbind ships in the editor module beside the other
+                 Editors registrations. -->
             <!-- Menu accelerators come from Keymaps-profile shadows, not
                  from Shortcuts/ registrations (the v1.38.1 finding, debt
                  #28): without these the Window menu shows "Task Rack" /
@@ -121,6 +121,15 @@
             </file>
             <file name="DA-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <!-- Cmd+P -> Go to File (v1.212.0 intent, wired for real in
+                 v1.216.0): the platform ships NO claim on D-P in this
+                 profile, and the editor kit's tooltip-show claim is
+                 released by the editor module — so this shadow is the
+                 only owner left standing. -->
+            <file name="D-P.shadow">
+                <attr name="originalFile"
+                      stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
         </folder>
     </folder>

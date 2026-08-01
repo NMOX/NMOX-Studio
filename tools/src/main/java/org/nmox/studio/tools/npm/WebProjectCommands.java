@@ -16,6 +16,14 @@ import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
  */
 final class WebProjectCommands {
 
+    /**
+     * The STATIC lane's fixed port — shared with the Run consumer, which
+     * announces {@code http://localhost:STATIC_PORT/} when python's
+     * "Serving HTTP on 0.0.0.0" banner appears (the banner itself never
+     * contains a localhost URL for the scan to find).
+     */
+    static final int STATIC_PORT = 8000;
+
     private WebProjectCommands() {
     }
 
@@ -132,9 +140,14 @@ final class WebProjectCommands {
                 return null;
             case STATIC:
                 // the same command IGNITION's static lane runs, so the
-                // IDE's Run and the rack agree on what "run" means here
+                // IDE's Run and the rack agree on what "run" means here.
+                // -u is load-bearing (v1.216.0, the v1.37.0 lesson
+                // relearned): piped python block-buffers its "Serving
+                // HTTP on" banner, so without it the line consumer never
+                // sees the announce and the serving chain stays dark.
                 return ActionProvider.COMMAND_RUN.equals(action)
-                        ? List.of("python3", "-m", "http.server", "8000") : null;
+                        ? List.of("python3", "-u", "-m", "http.server",
+                                String.valueOf(STATIC_PORT)) : null;
             // ---- v1.163.0: the kinds the rack always spoke but F6/F11
             // silently greyed — commands mirror the rack device tables ----
             case BUN:
