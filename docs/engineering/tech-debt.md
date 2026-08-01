@@ -67,6 +67,16 @@ are true matches; the strongest-intent device just isn't first. Ranking
 is a different feature from matching — deferred until search results
 carry scores.
 
+### 68. "Workspace" carries four meanings in UI strings — BLESSED (David, 2026-08-01)
+The word names (a) Workspace Trust, (b) npm/pnpm monorepo workspaces
+(WAYPOINT), (c) the per-studio `.nmox*.json` workspace files, and (d)
+Angular workspaces (`angular.json`). The v1.215.0 IA pass flagged that
+two of these are industry terms we must keep and two are our own
+coinage that could rename. David's call: keep all four as-is — each is
+the natural word in its context, and a rename would trade familiar
+local vocabulary for global consistency nobody asked for. Revisit only
+if a real user confuses two of them in the same surface.
+
 ## Decided — the v1.192.0 decisions pass (2026-07-27)
 
 The changelog's three longest-standing "deferred with a reason" items

@@ -258,6 +258,28 @@ releases deep). Second lesson: a CSL kit's own toggle-comment SHADOWS
 same-named Actions-folder registrations — configure CSL's
 CommentHandler instead of fighting the shadow.
 
+Currency addendum 2026-08-01 at **v1.218.0**: the consumer-2 proof —
+"does ngserver actually attach and answer on the new mime?" — found
+the Angular Language Service silently dead twice over. (1) The
+platform LSP client sends the RAW MIME as didOpen's languageId unless
+a LanguageIdResolver rides the server description's Lookup; servers
+key on the VS Code identifier vocabulary, so ngserver never treated
+our documents as templates. New `LspLanguageIds` at the `launch()`
+choke point maps every mime (generic subtype rule + a four-entry
+exception table) for all ~55 registered servers. (2) `launch()`'s
+missing-tool guard tested `new File(pathDir, name)` with an ABSOLUTE
+path as name — never resolves — so every absolute command was refused
+quietly: **the v1.216.0 project-local `.bin/ngserver` fix could never
+launch the server it correctly found**. That is the payload-vs-gate
+failure pattern's third strike in three releases, now with its
+sharpest formulation: *a fix verified by unit-testing the resolution
+function is unverified until the resolved value survives every
+downstream gate — live.* The proof that closed the release: ngserver
+spawned from the project's own .bin in the shipped app, and a typo'd
+`user.logedIn` drew the Angular compiler's own "Did you mean
+'loggedIn'?" squiggle against the component class's type — cleared on
+revert.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

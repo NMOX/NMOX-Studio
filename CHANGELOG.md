@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.218.0] - 2026-08-01
+
+The Angular Language Service answers — for real, for the first time.
+The consumer-2 question after v1.217.0's new mime was "does ngserver
+actually attach and speak on it?" The live proof found the service had
+been silently dead TWICE over, and the release closes both:
+
+### Fixed
+- **Every language server now receives the LSP-standard languageId.**
+  The platform LSP client sends the RAW MIME TYPE as
+  `textDocument/didOpen`'s languageId unless a `LanguageIdResolver`
+  rides the server description's lookup (decompiled:
+  `LSPBindings.resolveLanguageId` falls back to `FileUtil.getMIMEType`).
+  Servers classify documents by the VS Code identifier vocabulary —
+  ngserver only treats a document as an external template when it
+  arrives as `html`, never as `text/x-ng-template`. New
+  `LspLanguageIds` (one generic subtype rule + a small exception table:
+  ng-template→html, sh→shellscript, php5→php, vlang→v) is wired at the
+  single `launch()` choke point, so all ~55 registered servers benefit.
+- **An absolute server path can actually launch.** `launch()`'s
+  missing-tool guard checked `new File(pathDir, name)` for every PATH
+  entry — with an absolute path as `name` that never resolves, so every
+  absolute command was refused quietly. The project-local
+  `.bin/ngserver` that the v1.216.0 install fix resolves is exactly
+  such a path: **the v1.216.0 fix could never launch the server it
+  found.** The refusal predicate is now extracted, absolute paths are
+  judged by the file itself, and the case is pinned by test.
+
+### The proof
+In the shipped app, on a real Angular workspace with the ALS installed
+per our own catalog instructions: ngserver spawned from the project's
+`.bin` with both probe locations; typing `user.logedIn` in
+`hello.component.html` produced the Angular compiler's own diagnostic —
+*"Property 'logedIn' does not exist on type '{ loggedIn: boolean; name:
+string; }'. Did you mean 'loggedIn'?"* — as a live squiggle that
+cleared on revert. Template type-checking against the component class,
+end to end.
+
 ## [1.217.0] - 2026-08-01
 
 Angular template awareness: `.component.html` becomes a citizen. The
@@ -7987,6 +8025,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.218.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.217.0...v1.218.0
 [1.217.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.216.0...v1.217.0
 [1.216.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.215.0...v1.216.0
 [1.215.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.214.0...v1.215.0
