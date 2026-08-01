@@ -125,8 +125,10 @@ class EmbeddedScopeGrammarsTest {
             }
         }
         // yaml, js, ts, tsx, html-derivative + the v1.195.1 pair
-        // (xml for text.xml, jsx for source.js.jsx)
-        assertThat(embedFolders).hasSize(7);
+        // (xml for text.xml, jsx for source.js.jsx) + ng-expression
+        // (v1.217.0: expression.ng is include-only — injecting it stomped
+        // host HTML, so it rides the embed idiom like the others)
+        assertThat(embedFolders).hasSize(8);
         try (InputStream layer = EmbeddedScopeGrammars.class
                 .getResourceAsStream("/META-INF/generated-layer.xml")) {
             String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);

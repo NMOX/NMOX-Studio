@@ -96,7 +96,10 @@ public final class LanguageComments {
     // top level, and HTML has no line comment — only the block pair.
     private static final Map<String, BlockComment> BLOCK_COMMENT = Map.ofEntries(
             Map.entry("text/x-svelte", new BlockComment("<!--", "-->")),
-            Map.entry("text/x-ng-template", new BlockComment("<!--", "-->")),
+            // text/x-ng-template deliberately absent: it is a CSL
+            // language, and the CSL kit's own toggle-comment SHADOWS the
+            // Actions-folder action this map feeds — its <!-- --> toggle
+            // is configured via NgTemplateLanguage.getCommentHandler()
             Map.entry("text/x-vue", new BlockComment("<!--", "-->")));
 
     private LanguageComments() {

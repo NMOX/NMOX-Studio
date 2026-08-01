@@ -26,7 +26,6 @@ import org.netbeans.editor.Utilities;
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-yaml"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-properties"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-svelte"),
-    @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-ng-template"),
     @EditorActionRegistration(name = "toggle-comment", mimeType = "text/x-vue")
 })
 public class ToggleLineCommentAction extends BaseAction {

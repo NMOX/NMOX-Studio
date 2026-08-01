@@ -93,7 +93,7 @@ class NgTemplateGrammarsTest {
     }
 
     @Test
-    @DisplayName("the registration class wires all five as injections into our html scope")
+    @DisplayName("four injections into our html scope; expression.ng embed-only; the mime has a driver")
     void registrationsWired() throws IOException {
         String src = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/editor/grammars/NgTemplateGrammars.java"),
@@ -105,8 +105,17 @@ class NgTemplateGrammarsTest {
         // the path VERBATIM (decompiled), unlike GrammarRegistration's
         // package-relative resolution — a bare filename fails the build
         assertThat(src).contains("org/nmox/studio/editor/grammars/ng-template.tmLanguage.json");
+        // FOUR, not five: upstream injects template/blocks/let/tag and
+        // leaves expression.ng include-only — injecting it stomped host
+        // HTML (a live <h1> tokenized as a TS relational operator)
         assertThat(src.split("injectTo = \\{\"text.html.basic\"\\}", -1).length - 1)
-                .as("five injections, all into text.html.basic").isEqualTo(5);
+                .as("four injections, all into text.html.basic").isEqualTo(4);
+        assertThat(src)
+                .as("expression.ng is embed-only — reachable by include, never injected")
+                .contains("mimeType = \"text/x-nmox-embed-ng-expression\"");
+        // the mime's driver grammar: without it the TextMate lexer has
+        // nothing to serve for text/x-ng-template
+        assertThat(src).contains("mimeType = \"text/x-ng-template\"");
     }
 
     @Test
