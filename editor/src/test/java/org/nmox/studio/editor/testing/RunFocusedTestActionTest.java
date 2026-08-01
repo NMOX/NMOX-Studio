@@ -149,6 +149,94 @@ class RunFocusedTestActionTest {
     }
 
     @Test
+    @DisplayName("Angular workspace (no jest/vitest): the CLI's own runner, focused to the spec file")
+    void angularWorkspaceUsesNgTest(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "package.json").toPath(),
+                "{\"name\":\"app\",\"dependencies\":{\"@angular/core\":\"^18.0.0\"}}",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"version\":1}", StandardCharsets.UTF_8);
+        File appDir = new File(project, "src/app");
+        assertThat(appDir.mkdirs()).isTrue();
+        // the real Angular layout: src/index.html is a STATIC-kind manifest,
+        // so the generic manifest walk STOPS at src/ — the live find; the
+        // Angular root must be located by walking up for angular.json itself
+        Files.writeString(new File(project, "src/index.html").toPath(),
+                "<!doctype html><html><body></body></html>", StandardCharsets.UTF_8);
+        File spec = new File(appDir, "hello.component.spec.ts");
+        Files.writeString(spec.toPath(), "it('renders', () => {})", StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "renders", 1);
+        assertThat(f).isNotNull();
+        // Karma has no per-test-name filter: file-level focus is the honest
+        // ceiling, one-shot and headless
+        assertThat(f.command()).containsExactly("ng", "test", "--watch=false",
+                "--browsers=ChromeHeadless", "--include=src/app/hello.component.spec.ts");
+        assertThat(f.dir()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("Angular workspace: a project-local node_modules/.bin/ng wins over PATH")
+    void angularPrefersLocalNg(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "package.json").toPath(),
+                "{\"name\":\"app\"}", StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"version\":1}", StandardCharsets.UTF_8);
+        File bin = new File(project, "node_modules/.bin");
+        assertThat(bin.mkdirs()).isTrue();
+        File localNg = new File(bin, "ng");
+        Files.writeString(localNg.toPath(), "#!/bin/sh\n", StandardCharsets.UTF_8);
+        File spec = new File(project, "app.spec.ts");
+        Files.writeString(spec.toPath(), "it('x', () => {})", StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "x", 1);
+        assertThat(f.command().get(0)).isEqualTo(localNg.getAbsolutePath());
+    }
+
+    @Test
+    @DisplayName("Angular workspace: a non-spec file cannot be focused via ng test")
+    void angularNonSpecIsNull(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "package.json").toPath(),
+                "{\"name\":\"app\"}", StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"version\":1}", StandardCharsets.UTF_8);
+        File ts = new File(project, "hello.component.ts");
+        Files.writeString(ts.toPath(), "it('x', () => {})", StandardCharsets.UTF_8);
+        assertThat(RunFocusedTestAction.commandFor("text/typescript", ts, "x", 1)).isNull();
+    }
+
+    @Test
+    @DisplayName("A declared jest/vitest dependency beats the angular.json route")
+    void declaredRunnerBeatsAngular(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "package.json").toPath(),
+                "{\"name\":\"app\",\"devDependencies\":{\"vitest\":\"^1.0.0\"}}",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(project, "angular.json").toPath(),
+                "{\"version\":1}", StandardCharsets.UTF_8);
+        File spec = new File(project, "app.spec.ts");
+        Files.writeString(spec.toPath(), "it('x', () => {})", StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor("text/typescript", spec, "x", 1);
+        assertThat(f.command().get(0)).isEqualTo("npx");
+        assertThat(f.command().get(1)).isEqualTo("vitest");
+    }
+
+    @Test
+    @DisplayName("the trust gate stands between the caret and the spawn (v1.223.0 security find)")
+    void trustGatePinned() throws Exception {
+        String src = Files.readString(new File(
+                "src/main/java/org/nmox/studio/editor/testing/RunFocusedTestAction.java").toPath());
+        int gate = src.indexOf("WorkspaceTrust.requestTrust");
+        int spawn = src.indexOf("CommandExecutor.run(");
+        assertThat(gate)
+                .as("a focused test executes the project's committed code — the "
+                        + "same inward flow the debug action gates; this action "
+                        + "was missed by the v1.103.0 sweep")
+                .isGreaterThan(0);
+        assertThat(spawn).isGreaterThan(gate);
+    }
+
+    @Test
     @DisplayName("A JS file with no focused test name yields no command")
     void jsNoNameIsNull(@TempDir File project) throws Exception {
         Files.writeString(new File(project, "package.json").toPath(),

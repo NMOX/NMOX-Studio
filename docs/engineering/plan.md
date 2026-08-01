@@ -334,6 +334,23 @@ fine). Method notes: the dev cluster can borrow the installed app's
 FX-bundled jre via `--jdkhome` for Browser work, and the jar-swap +
 wiped-cachedir loop is now a fully reliable fast iteration path.
 
+Currency addendum 2026-08-01 at **v1.223.0**: Run Focused Test speaks
+Angular (the CLI's own runner, file-focused — Karma's honest ceiling),
+and working the surface found a SECURITY hole both prior sweeps
+missed: the action spawned project runners (`npx jest`, `cargo test`,
+`phpunit`, `mix test`) with no Workspace Trust gate — one context-menu
+click on a cloned repo's spec executed its committed code. Gated now,
+the debug-action idiom, source-pinned. The live proof then caught its
+own second bug: Angular's `src/index.html` is a STATIC-kind manifest,
+so the generic manifest walk stopped at `src/` and both mislocated the
+trust root AND hid `angular.json` — the branch silently fell back to
+jest. Two failure patterns reinforced in one release: *an action that
+spawns is untested until its TRUST PROMPT has been seen live* (the
+prompt named the wrong directory — that's how the bug announced
+itself), and *a fixture that omits a manifest the real layout carries
+tests a project that doesn't exist* (src/index.html now in the
+fixture).
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

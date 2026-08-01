@@ -80,6 +80,15 @@ public class RunFocusedTestAction extends BaseAction {
                     "No test found above the caret" + (name == null ? "" : " for " + name));
             return;
         }
+        // A focused test EXECUTES the project's committed code (the spec,
+        // its imports, the runner's own config) — the same inward flow the
+        // debug action gates. Missed by the v1.103.0 sweep; found by the
+        // v1.223.0 Angular pass (the DapDebugAction idiom, prompt-once).
+        if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(focused.dir())) {
+            StatusDisplayer.getDefault().setStatusText(
+                    "Focused test not run — workspace not trusted");
+            return;
+        }
         StatusDisplayer.getDefault().setStatusText("Focused test: "
                 + (name != null ? name : "line " + caretLine));
         CommandExecutor.showOutput("Focused Test");
@@ -103,10 +112,42 @@ public class RunFocusedTestAction extends BaseAction {
         String path = file.getAbsolutePath();
         return switch (mime) {
             case "text/javascript", "text/typescript" -> {
+                // The Angular workspace root is found by walking up for
+                // angular.json ITSELF — the generic manifest walk above
+                // stops at src/ because Angular's src/index.html is a
+                // STATIC-kind manifest (v1.34.0), which both mislocates
+                // the root and hides angular.json (found LIVE: the trust
+                // prompt named ngdemo/src, and the branch fell to jest).
+                File ngRoot = null;
+                for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
+                    if (new File(d, "angular.json").isFile()) {
+                        ngRoot = d;
+                        break;
+                    }
+                }
+                File depRoot = ngRoot != null ? ngRoot : root;
+                boolean vitest = ProjectInspector.firstDependency(depRoot, "vitest") != null;
+                boolean jest = ProjectInspector.firstDependency(depRoot, "jest") != null;
+                // An Angular workspace with neither runner declared tests
+                // through the CLI's own runner (Karma by default) — the old
+                // blind `npx jest` fallback failed for every Angular dev.
+                // Karma has no test-NAME filter, so file-level focus via
+                // --include is the honest ceiling; --watch=false makes it
+                // one-shot, ChromeHeadless keeps it windowless.
+                if (!vitest && !jest && ngRoot != null) {
+                    if (!file.getName().endsWith(".spec.ts")) {
+                        yield null; // only a spec file can be focused via ng test
+                    }
+                    File localNg = new File(ngRoot, "node_modules/.bin/ng");
+                    String ng = localNg.isFile() ? localNg.getAbsolutePath() : "ng";
+                    String rel = ngRoot.toPath().relativize(file.toPath())
+                            .toString().replace('\\', '/');
+                    yield new Focused(List.of(ng, "test", "--watch=false",
+                            "--browsers=ChromeHeadless", "--include=" + rel), ngRoot);
+                }
                 if (name == null) {
                     yield null;
                 }
-                boolean vitest = ProjectInspector.firstDependency(root, "vitest") != null;
                 yield new Focused(vitest
                         ? List.of("npx", "vitest", "run", "-t", name, path)
                         : List.of("npx", "jest", path, "-t", name), root);
