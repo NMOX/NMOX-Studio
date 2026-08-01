@@ -20,6 +20,53 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.216.0, the v1.209–v1.215 arc review)
+
+### 63. The ide-run URL scan can announce a proxy TARGET before the dev server
+`WebProjectActionProvider`'s line consumer registers the first local URL a
+Run prints. Tools like http-proxy-middleware log their target
+(`[HPM] Proxy created: /api -> http://localhost:3001`) before the
+`Local:` banner, so the backend can be registered — and the v1.212.0
+auto-open can show it — before the registry self-corrects to the real
+dev URL on the next banner line. Deferred: every cheap guard is a
+tool-specific heuristic ("skip lines containing `->`") that risks
+breaking a legitimate banner; fixing this well needs a live repro
+against real proxy-logging tools to pin which line shapes exist. The
+registry self-heals; only the one-shot browser open can land wrong.
+
+### 64. OpenOnServe's listener attaches after the arm's registry snapshot
+A serving registered in the microseconds between `urlsBefore` and
+`addListener` is neither suppressed as pre-existing nor delivered as an
+event. Unreachable by the armed project's own server (its process spawns
+after `arm()` returns) — it needs an unrelated device announcing the
+same project's URL in that instant, and the next registry event re-scans
+anyway. Deferred as measured-harmless; noting it so the window is a
+recorded decision, not an unknown.
+
+### 65. A present-but-broken LSP server binary can be relaunched per file open
+The platform LSP client retries a server that dies at startup. The
+Angular provider declines deterministically detectable breakage
+(TypeScript 7's missing tsserverlibrary); a binary broken for
+environmental reasons (wrong node, half-installed package) is not
+cheaply detectable before spawn, for eslint or any other server.
+Deferred: a spawn-probe per file-open would cost every healthy install
+to guard a broken one; the platform's retry policy is the platform's.
+
+### 66. IRC messages during a closed tab are neither rendered nor logged
+By design the connections outlive the window (v1.204.0), but ALL
+transcript and log writes ride the window's Bridge — so with logging
+enabled and the tab closed, traffic in that window-closed period is
+lost to the log files the user turned on. Pre-dates the arc (recorded
+by its review). Fixing it means moving logging from the UI bridge to
+the engine layer — a real design change, its own release.
+
+### 67. "compose" ranks Laravel/CRATE above HARBOR in device search
+`composer` (the PHP tool, correctly in two vocabularies) prefix-matches
+the query "compose", and shelf order puts those devices first. All hits
+are true matches; the strongest-intent device just isn't first. Ranking
+is a different feature from matching — deferred until search results
+carry scores.
+
 ## Decided — the v1.192.0 decisions pass (2026-07-27)
 
 The changelog's three longest-standing "deferred with a reason" items

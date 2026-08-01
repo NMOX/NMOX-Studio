@@ -18,20 +18,13 @@
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
-        <!-- Cmd+P is the most-pressed key of a web developer's day and it
-             was bound to tooltip-show. Go to File already SHIPS and works
-             (jumpto's FileSearchAction, on the undiscoverable Opt+Shift+O)
-             — it just answered to a chord nobody from VS Code would try.
-             Point the muscle memory at the feature we already have.
-             v1.212.0. The editor kit's own D-P claim (tooltip-show) is
-             UNBOUND in the editor module's Editors/Keybindings tree —
-             that is the tree the editor actually reads; the Keymaps mask
-             this comment used to point at targeted a file that exists in
-             no cluster and masked nothing (v1.216.0 arc review). -->
-        <file name="D-P.shadow">
-            <attr name="originalFile"
-                  stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
-        </file>
+        <!-- Cmd+P (Go to File) is NOT here: Shortcuts/ entries lose to
+             Keymaps-profile claims and to focused-editor keybindings —
+             the v1.38.1 lesson. The binding lives as a Keymaps shadow
+             below, beside every other chord that actually works, and the
+             editor module releases the editor kit's own D-P claim in the
+             Editors/Keybindings tree (v1.216.0; v1.212.0 had it here and
+             it never fired). -->
     </folder>
     <!-- The Quick Search widget in the toolbar: the platform ships the
          action (Cmd+I) and the Actions/Files providers; this puts the
@@ -128,6 +121,15 @@
             </file>
             <file name="DA-O.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <!-- Cmd+P -> Go to File (v1.212.0 intent, wired for real in
+                 v1.216.0): the platform ships NO claim on D-P in this
+                 profile, and the editor kit's tooltip-show claim is
+                 released by the editor module — so this shadow is the
+                 only owner left standing. -->
+            <file name="D-P.shadow">
+                <attr name="originalFile"
+                      stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
         </folder>
     </folder>
