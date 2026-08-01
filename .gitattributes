@@ -2,3 +2,4 @@
 
 # Vendored third-party artifacts ship byte-verbatim (NOTICE sha256 depends on it)
 editor/src/main/release/jsdebug/** -text
+editor/src/main/resources/org/nmox/studio/editor/grammars/*.tmLanguage.json -text
