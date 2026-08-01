@@ -317,6 +317,23 @@ since v1.135.0 has found at least one real defect the arc's own tests
 missed, and it is almost always a HOUSE LAW violated in fresh code —
 the laws are learned per-surface, not per-author.
 
+Currency addendum 2026-08-01 at **v1.222.0**: the DevTools Angular
+pane — the framework bet gets what Vue and Svelte already had. Design
+mirrors the Vue pane exactly (page-side walker with caps + Java-side
+parser re-imposing them + honest empty states), with one Angular-shaped
+insight: `ng-version` is stamped in dev AND prod while `window.ng`
+exists only in dev, so "production build, no component tree" is
+detectable as its own answer, never confused with "no Angular". The
+gauntlet ran all three states against a real Angular 18.2 app in the
+assembled cluster (dev tree + state + highlight; prod message; HN
+no-Angular) and caught two things worth keeping: `__ngContext__` must
+be filtered from the state bag (framework plumbing reads as a leak),
+and **ledger 70** — `ng serve`'s esbuild dev server hangs the JFX
+WebView (load never commits; the same bundle served statically is
+fine). Method notes: the dev cluster can borrow the installed app's
+FX-bundled jre via `--jdkhome` for Browser work, and the jar-swap +
+wiped-cachedir loop is now a fully reliable fast iteration path.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

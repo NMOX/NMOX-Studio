@@ -267,6 +267,82 @@ public final class DevScripts {
             + "return JSON.stringify({files:files,total:total});})()";
 
     /**
+     * Walks a running dev-build Angular app into bounded JSON
+     * {@code {v:'17.0.x', prod:'', r:[roots]}}; per component {@code n}
+     * class name, {@code s} instance state (own enumerable fields,
+     * safe-stringified), {@code dir} directive class names on the same
+     * host, {@code d} DOM child-index path of the host element,
+     * {@code k} children (nesting derived from nearest-ancestor host,
+     * linked via a temporary {@code __nmoxNgIdx} marker that is
+     * deleted before the script returns). Detection is two-step and
+     * the honesty mirrors the Vue pane's: Angular stamps
+     * {@code ng-version} on the root host in dev AND prod builds, but
+     * only a DEV build exposes {@code window.ng.getComponent} — so
+     * "Angular present, tree unreachable" is reported as
+     * {@code prod:version} (a production build strips the debug API;
+     * the official Angular DevTools is limited the same way), never as
+     * "no Angular". Bounds: scan {@code 20000} elements, {@code 2000}
+     * components, {@code 20} directives per host, each value capped at
+     * {@code 2000} chars.
+     */
+    public static final String ANGULAR_SNAPSHOT =
+            "(function(){\n"
+            + "var MAX_COMP=2000,VAL_CAP=2000,MAX_SCAN=20000,DIR_CAP=20;\n"
+            + "var verEl=document.querySelector('[ng-version]');\n"
+            + "var version=verEl?(''+verEl.getAttribute('ng-version')).slice(0,20):'';\n"
+            + "var NG=window.ng;\n"
+            + "var usable=!!(NG&&typeof NG.getComponent==='function');\n"
+            + "if(!verEl&&!usable){return JSON.stringify({v:'',prod:'',r:[]});}\n"
+            + "if(!usable){return JSON.stringify({v:version,prod:(version||'unknown'),r:[]});}\n"
+            + "function safe(v){\n"
+            + " try{var seen=[];\n"
+            + "  var s=JSON.stringify(v,function(k,x){\n"
+            + "   if(typeof x==='function'){return '[function]';}\n"
+            + "   if(x&&typeof x==='object'){if(seen.indexOf(x)>=0){return '[circular]';}seen.push(x);}\n"
+            + "   return x;});\n"
+            + "  if(s===undefined){s=''+v;}\n"
+            + "  return (''+s).slice(0,VAL_CAP);\n"
+            + " }catch(e){return '[unserializable]';}}\n"
+            + "function bag(obj){var out={};\n"
+            + " if(!obj){return out;}\n"
+            + " try{var keys=Object.keys(obj);\n"
+            + "  for(var i=0;i<keys.length&&i<100;i++){\n"
+            // __ngContext__ is Angular's own render-tree plumbing, not
+            // component state — showing it reads as a leak (seen live)
+            + "   if(keys[i]==='__ngContext__'){continue;}\n"
+            + "   out[keys[i]]=safe(obj[keys[i]]);}}catch(e){}\n"
+            + " return out;}\n"
+            + "function domPath(el){var p=[];\n"
+            + " while(el&&el.parentElement){\n"
+            + "  var idx=Array.prototype.indexOf.call(el.parentElement.children,el);\n"
+            + "  if(idx<0){return [];}\n"
+            + "  p.unshift(idx);el=el.parentElement;}\n"
+            + " return p;}\n"
+            + "function cname(x){\n"
+            + " try{return (''+((x&&x.constructor&&x.constructor.name)||'Anonymous')).slice(0,200);}\n"
+            + " catch(e){return 'Anonymous';}}\n"
+            + "var all=document.querySelectorAll('*');\n"
+            + "var hosts=[];var nodes=[];\n"
+            + "for(var i=0;i<all.length&&i<MAX_SCAN&&hosts.length<MAX_COMP;i++){var el=all[i];\n"
+            + " var c=null;try{c=NG.getComponent(el);}catch(e){}\n"
+            + " if(!c){continue;}\n"
+            + " var dirs=[];\n"
+            + " try{if(typeof NG.getDirectives==='function'){var ds=NG.getDirectives(el)||[];\n"
+            + "  for(var j=0;j<ds.length&&j<DIR_CAP;j++){dirs.push(cname(ds[j]));}}}catch(e){}\n"
+            + " el.__nmoxNgIdx=hosts.length;\n"
+            + " hosts.push(el);\n"
+            + " nodes.push({n:cname(c),s:bag(c),dir:dirs,d:domPath(el),k:[]});}\n"
+            + "var roots=[];\n"
+            + "for(var a=0;a<hosts.length;a++){\n"
+            + " var p=hosts[a].parentElement;var parentIdx=-1;\n"
+            + " while(p){if(p.__nmoxNgIdx!==undefined){parentIdx=p.__nmoxNgIdx;break;}\n"
+            + "  p=p.parentElement;}\n"
+            + " if(parentIdx>=0){nodes[parentIdx].k.push(nodes[a]);}\n"
+            + " else{roots.push(nodes[a]);}}\n"
+            + "for(var z=0;z<hosts.length;z++){try{delete hosts[z].__nmoxNgIdx;}catch(e){}}\n"
+            + "return JSON.stringify({v:version,prod:'',r:roots});})()";
+
+    /**
      * Reads localStorage, sessionStorage, and document.cookie into one
      * JSON snapshot; every key/value capped at 500 chars, 500 entries
      * per area. Read-only in v1 — edit/delete deliberately absent.

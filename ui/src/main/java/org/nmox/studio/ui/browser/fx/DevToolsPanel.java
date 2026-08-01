@@ -27,6 +27,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
+import org.nmox.studio.ui.browser.devtools.AngularSnapshotParser;
+import org.nmox.studio.ui.browser.devtools.AngularSnapshotParser.NgNode;
+import org.nmox.studio.ui.browser.devtools.AngularSnapshotParser.NgTree;
 import org.nmox.studio.ui.browser.devtools.ConsoleModel;
 import org.nmox.studio.ui.browser.devtools.DevScripts;
 import org.nmox.studio.ui.browser.devtools.DomSnapshotParser;
@@ -90,6 +93,11 @@ public final class DevToolsPanel extends JPanel {
     private final JTextArea svelteDetails = readOnlyArea();
     private final JLabel svelteStatus = new JLabel(" ");
 
+    // Angular tab
+    private final DefaultTreeModel ngTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
+    private final DefaultTableModel ngDetails = readOnlyTable("Kind", "Name", "Value");
+    private final JLabel ngStatus = new JLabel(" ");
+
     public DevToolsPanel(ConsoleModel console, NetworkModel network, ScriptRunner runner) {
         super(new BorderLayout());
         this.console = console;
@@ -106,6 +114,7 @@ public final class DevToolsPanel extends JPanel {
         tabs.addTab("Storage", storageTab());
         tabs.addTab("Vue", vueTab());
         tabs.addTab("Svelte", svelteTab());
+        tabs.addTab("Angular", angularTab());
         add(tabs, BorderLayout.CENTER);
     }
 
@@ -422,7 +431,7 @@ public final class DevToolsPanel extends JPanel {
                         + "limited the same way. Run a development build to inspect.");
             } else {
                 vueStatus.setText("No Vue detected — Vue 2 and 3 supported");
-                vueStatus.setToolTipText("React and Angular are not inspected in v1.");
+                vueStatus.setToolTipText("Angular has its own tab; React is not inspected.");
             }
             return;
         }
@@ -521,6 +530,94 @@ public final class DevToolsPanel extends JPanel {
                 + "compiles components away, so file/line mapping is all a "
                 + "runtime inspector can offer — select a line to highlight "
                 + "its element in the page.");
+    }
+
+    // ---- Angular -------------------------------------------------------
+
+    private JPanel angularTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        JTree tree = safeTree(ngTree);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        JButton refresh = new JButton("Refresh");
+        refresh.addActionListener(e -> refreshAngular());
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        bar.add(refresh);
+        bar.add(ngStatus);
+        panel.add(bar, BorderLayout.NORTH);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(safeTable(ngDetails)));
+        split.setResizeWeight(0.5);
+        panel.add(split, BorderLayout.CENTER);
+        tree.addTreeSelectionListener(e -> {
+            Object last = tree.getLastSelectedPathComponent();
+            if (last instanceof DefaultMutableTreeNode n && n.getUserObject() instanceof NgNode ng) {
+                ngDetails.setRowCount(0);
+                for (Map.Entry<String, String> s : ng.state.entrySet()) {
+                    ngDetails.addRow(new Object[]{"state", s.getKey(), s.getValue()});
+                }
+                for (String d : ng.directives) {
+                    ngDetails.addRow(new Object[]{"directive", d, ""});
+                }
+                if (!ng.domPath.isEmpty()) {
+                    runner.run(DevScripts.highlight(ng.domPath), r -> { }, err -> { });
+                }
+            }
+        });
+        return panel;
+    }
+
+    private void refreshAngular() {
+        runner.run(DevScripts.ANGULAR_SNAPSHOT, json -> RP.post(() -> {
+            NgTree parsed = AngularSnapshotParser.parse(json);
+            SwingUtilities.invokeLater(() -> applyAngular(parsed));
+        }), err -> ngStatus.setText("(no page: " + err + ")"));
+    }
+
+    private void applyAngular(NgTree parsed) {
+        ngDetails.setRowCount(0);
+        if (parsed.empty()) {
+            ngTree.setRoot(new DefaultMutableTreeNode("(no components)"));
+            // Keep the status SHORT (a FlowLayout label wider than the
+            // panel wraps to a hidden second row — the v1.206.0 Vue-tab
+            // lesson); the honest limits ride the tooltip.
+            if (!parsed.productionOnly.isEmpty()) {
+                ngStatus.setText("Angular " + parsed.productionOnly
+                        + " — production build, no component tree");
+                ngStatus.setToolTipText("The page carries ng-version, so Angular IS "
+                        + "here — but a production build strips window.ng, the debug "
+                        + "API every inspector needs (the official Angular DevTools "
+                        + "is limited the same way). Run a dev build (ng serve) to "
+                        + "inspect components.");
+            } else {
+                ngStatus.setText("No Angular detected (dev builds only)");
+                ngStatus.setToolTipText("Detection looks for the ng-version marker "
+                        + "and window.ng.getComponent, which Angular exposes in dev "
+                        + "builds (ng serve). Vue and Svelte have their own tabs; "
+                        + "React is not inspected.");
+            }
+            return;
+        }
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(
+                "Angular " + (parsed.version.isEmpty() ? "app" : parsed.version));
+        int[] count = {0};
+        for (NgNode r : parsed.roots) {
+            root.add(toSwing(r, count));
+        }
+        ngTree.setRoot(root);
+        ngStatus.setText("Angular " + parsed.version + " — " + count[0] + " component"
+                + (count[0] == 1 ? "" : "s"));
+        ngStatus.setToolTipText("Component instances from window.ng.getComponent "
+                + "(dev builds). Select a component to see its fields and host "
+                + "directives, and to highlight its host element in the page.");
+    }
+
+    private static DefaultMutableTreeNode toSwing(NgNode node, int[] count) {
+        count[0]++;
+        DefaultMutableTreeNode swing = new DefaultMutableTreeNode(node);
+        for (NgNode child : node.children) {
+            swing.add(toSwing(child, count));
+        }
+        return swing;
     }
 
     // ---- shared --------------------------------------------------------

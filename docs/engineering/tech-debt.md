@@ -91,6 +91,23 @@ point the tests at a scratch prefs node (system-property override in
 a security-sensitive class for a dev-only annoyance; do it as part of
 the next trust-surface release, not as a drive-by.
 
+### 70. The Angular CLI's esbuild dev server hangs the JavaFX WebView — MEDIUM
+Measured live (2026-08-01, v1.222.0 gauntlet): navigating the in-app
+Browser to a running `ng serve` (Angular 18, the esbuild-based
+`@angular/build` dev server) starts a load that never commits — the
+tab title clears, no error fires, and the previous page stays
+rendered. The same dev bundle built with
+`ng build --configuration development` and served by a plain static
+server (python `http.server`) loads instantly, as do example.com,
+Hacker News, and every other server tried; the dev server's GET
+response is properly framed (`Content-Length` present), so the
+malformed-response theory is out. Something in the esbuild dev
+server ↔ JFX WebKit interplay (keep-alive handling is the leading
+suspect) needs its own instrumented investigation. Workaround for
+Angular DevTools work: build dev, serve static. Affects any workflow
+that points the in-app Browser at `ng serve`; SCOPE auto-follow of
+HALO's serving URL will hit this too.
+
 ## Decided — the v1.192.0 decisions pass (2026-07-27)
 
 The changelog's three longest-standing "deferred with a reason" items

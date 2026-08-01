@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.222.0] - 2026-08-01
+
+The Browser DevTools speak Angular. Vue and Svelte each had a pane;
+the framework bet did not — closed, and live-proven against a real
+Angular 18.2 app in all three honest states.
+
+### Added
+- **An Angular pane in the Browser DevTools.** The live component tree
+  of a running Angular dev build: class names, instance state, and
+  host directives, resolved through `window.ng.getComponent` /
+  `getDirectives` — the debug API Angular exposes in dev builds.
+  Select a component to see its fields and highlight its host element
+  in the page. Detection is two-step and honest the way the Vue pane
+  is: Angular stamps `ng-version` on the root host in dev AND prod
+  builds, but only dev exposes `window.ng` — so a production build
+  reads "Angular X — production build, no component tree" (the
+  official Angular DevTools is limited the same way), and a page with
+  no Angular says that instead. Angular's own `__ngContext__`
+  render-tree plumbing is filtered out of the state table (seen live,
+  reads as a leak). All caps page-side AND re-imposed Java-side
+  (`AngularSnapshotParser`, the hostile-input posture of its Vue
+  sibling); the nesting marker the walker plants is deleted before the
+  script returns.
+- Live proof in the assembled app: dev build → "Angular 18.2.14 —
+  1 component" with `AppComponent`'s state (`title = "ngdemo"`) and
+  the highlight overlay on its host; production build of the same app
+  → the honest prod message; Hacker News → "No Angular detected".
+
+### Recorded
+- **Ledger 70**: the Angular CLI's esbuild dev server (`ng serve`)
+  hangs the JavaFX WebView — navigation starts but never commits,
+  while the same dev bundle served statically loads fine (and
+  example.com / a plain local server load instantly). Real, measured,
+  deferred with the workaround written down.
+
 ## [1.221.0] - 2026-08-01
 
 Docs truth for the Angular arc. The README and user guide now tell the
@@ -8120,6 +8155,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.222.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.221.0...v1.222.0
 [1.221.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.220.0...v1.221.0
 [1.220.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.219.0...v1.220.0
 [1.219.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.218.0...v1.219.0
