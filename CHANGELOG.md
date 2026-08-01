@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.223.0] - 2026-08-01
+
+Run Focused Test speaks Angular — and the action gains the trust gate
+it always needed.
+
+### Added
+- **Angular-aware Run Focused Test.** In an Angular workspace with
+  neither jest nor vitest declared, the action used to hand the spec
+  to a blind `npx jest` — which failed for every Angular developer.
+  It now runs the CLI's own runner: `ng test --watch=false
+  --browsers=ChromeHeadless --include=<spec>`, project-local
+  `node_modules/.bin/ng` preferred, rooted at the directory that
+  actually holds `angular.json`. Karma has no per-test-name filter,
+  so file-level focus is the honest ceiling; non-spec files answer
+  "No test found" instead of inventing a command. A declared
+  jest/vitest dependency still wins — the project's stated runner is
+  the truth.
+
+### Security
+- **Run Focused Test now asks for Workspace Trust.** The action
+  spawned project-controlled runners — `npx jest`, `cargo test`,
+  `phpunit`, `mix test` — with no trust gate: opening a cloned repo's
+  spec and clicking one menu item executed its committed code. The
+  same inward-execution class the v1.102/v1.103 sweeps closed on
+  file-open, save, debug, Run/Build/Test, and NPM Explorer — this
+  action was missed by both. Now `requestTrust` (prompt-once, the
+  debug-action idiom) stands before every spawn; declining runs
+  nothing and says so. Source-gated: the test pins the gate
+  lexically before the spawn.
+
+### The live proof, which found its own bug
+Both paths click-verified in the assembled app against the real
+Angular 18.2 workspace: Keep Safe → no spawn; Trust → `ng test`
+focused to `app.component.spec.ts` → Chrome Headless →
+`TOTAL: 3 SUCCESS`, exit 0. The first live run caught a real bug the
+unit tests missed: Angular's `src/index.html` is a STATIC-kind
+manifest (v1.34.0), so the generic manifest walk stopped at `src/` —
+mislocating the project root and hiding `angular.json` entirely. The
+Angular root is now located by walking up for `angular.json` itself,
+and the regression fixture carries the real layout.
+
 ## [1.222.0] - 2026-08-01
 
 The Browser DevTools speak Angular. Vue and Svelte each had a pane;
@@ -8155,6 +8196,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.223.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.222.0...v1.223.0
 [1.222.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.221.0...v1.222.0
 [1.221.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.220.0...v1.221.0
 [1.220.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.219.0...v1.220.0
