@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.221.0] - 2026-08-01
+
+Docs truth for the Angular arc. The README and user guide now tell the
+story v1.217–v1.220 shipped — the framework bet was invisible in both.
+
+### Changed
+- **README gains "Angular, first-class"**: the template mime and the
+  Angular team's grammars, project-local Angular Language Service
+  install with live template type-checking, ⌘B in templates, the
+  component ↔ template switcher, HALO, and the Angular project
+  template. The stale grammar count (78) corrected to 85.
+- **User guide chapter 5 gains "Angular templates, first-class"**: the
+  install-in-project note (TypeScript 5.x requirement included), the
+  ⌘B gesture, both switcher directions, and the honest status-line
+  miss behavior.
+
 ## [1.220.0] - 2026-08-01
 
 The Angular-arc review: two lenses over v1.217–v1.219 (the template
@@ -8104,6 +8120,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.221.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.220.0...v1.221.0
 [1.220.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.219.0...v1.220.0
 [1.219.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.218.0...v1.219.0
 [1.218.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.217.0...v1.218.0

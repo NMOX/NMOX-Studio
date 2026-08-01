@@ -267,6 +267,29 @@ or no consent and it says so; nothing is ever sent without your click.
 - **`.editorconfig` is honored on save** — indent, charset, final
   newline. Your formatter devices (GLOSS et al.) handle the rest.
 
+### Angular templates, first-class
+
+`.component.html` files are their own language in NMOX Studio, lit by
+the Angular team's own grammars — `@if`/`@for` blocks, structural
+directives, and interpolations all highlight, and `@`-block /
+`*`-directive completion appears in any project with an
+`angular.json`.
+
+- **Template type-checking**: install the Angular Language Service
+  when the IDE offers it (the install runs *inside your project* —
+  the service must match your workspace's Angular and TypeScript
+  versions; note it needs TypeScript 5.x). After that, binding to a
+  property that doesn't exist on the component class draws the Angular
+  compiler's own "Did you mean…?" error as you type.
+- **⌘B in a template** jumps to the definition — `{{ title }}` lands
+  on the `title` field in the component class.
+- **Right-click ▸ Open Angular Template** in a component class opens
+  the template its decorator points at (`templateUrl` wins; the
+  same-basename sibling is the fallback). **Right-click ▸ Open
+  Component Class** in a template goes the other way. Misses are
+  reported on the status line — an inline-template component has no
+  file to open, and the action says so.
+
 ### Debugging with real breakpoints
 
 Click the gutter (or **⌘F8**) to set a breakpoint, right-click →
