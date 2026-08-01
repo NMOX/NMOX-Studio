@@ -141,6 +141,11 @@ JS/TS lexer, platform YAML module). See `EmbeddedScopeGrammars`.
 | typescriptreact.tmLanguage.json | microsoft/vscode 1.95.0 extensions/typescript-basics (microsoft/TypeScript-TmLanguage) | MIT |
 | html-derivative.tmLanguage.json | microsoft/vscode 1.95.0 extensions/html (textmate/html.tmbundle) | MIT-compatible |
 | xml.tmLanguage.json | sha256 98216b32694f2c0c5d2370aff37dcf8223daa61144fa18209678a8b214580c92 | microsoft/vscode 1.95.0 extensions/xml (atom/language-xml), embed-only scope text.xml; patched v1.200.1: comments rule had end/name nested inside captures (upstream sha256 bb51c7b202f20254772c88f86889e0dbcdc734e045b950fe25c0a23b591203d7) — TM4E CCE killed every including grammar | MIT |
+| ng-template.tmLanguage.json | sha256 123875ebd14c7057aa9e5228e6ce9d173c4abc449a884e0e1d8993a881ded901 | angular/vscode-ng-language-service main syntaxes/template.json, INJECTION into text.html (v1.217.0) | MIT |
+| ng-expression.tmLanguage.json | sha256 ea3d34fe734715305fc5a04e4f2bc0f6188871f13b84aff0f9f8fc149f7d8c3e | angular/vscode-ng-language-service main syntaxes/expression.json, injection | MIT |
+| ng-template-blocks.tmLanguage.json | sha256 69d05ab37f883d7c265a0149044f3ea949cbfe336a7c48a74cf720f7ad90ce1e | angular/vscode-ng-language-service main syntaxes/template-blocks.json, injection (@if/@for/@switch/@defer) | MIT |
+| ng-let-declaration.tmLanguage.json | sha256 97d6d32d9d2b2f41d514c4f0069c7fe43f024586b66001212aff789fe1588187 | angular/vscode-ng-language-service main syntaxes/let-declaration.json, injection (@let) | MIT |
+| ng-template-tag.tmLanguage.json | sha256 b862cfed046f9ad88aa0b39ad1d6204dac22c5f1919f6fe070433b054c9d8d57 | angular/vscode-ng-language-service main syntaxes/template-tag.json, injection (ng-template attrs) | MIT |
 | javascriptreact.tmLanguage.json | sha256 ea4a18b3bdc9d6c85e39183104de3fa5a532480eca8013532d567017c396f751 | microsoft/vscode 1.95.0 extensions/javascript (microsoft/TypeScript-TmLanguage), embed-only scope source.js.jsx | MIT |
 
 YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT

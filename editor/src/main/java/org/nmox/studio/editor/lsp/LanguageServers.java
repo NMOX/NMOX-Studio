@@ -255,7 +255,14 @@ public final class LanguageServers {
      * eslint on that mime (the platform's {@code lookupAll} collection),
      * so this adds template intelligence rather than replacing anything.
      */
-    @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
+        // v1.217.0: templates too — ngserver's whole point is the HTML
+        // half. The hasAngular gate two lines in keeps every non-Angular
+        // HTML file at a two-stat cost, and the same trust gate covers
+        // the same payload.
+        @MimeRegistration(mimeType = "text/html", service = LanguageServerProvider.class)
+    })
     public static final class AngularServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
