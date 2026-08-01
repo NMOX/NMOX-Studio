@@ -90,6 +90,22 @@ class NgSwitchTest {
     }
 
     @Test
+    @DisplayName("switcher resolution rides the RP, never the EDT (v1.220.0 review find)")
+    void resolutionOffEdtGate() throws Exception {
+        String src = Files.readString(new File(
+                "src/main/java/org/nmox/studio/editor/angular/NgSwitchActions.java").toPath());
+        assertThat(src)
+                .as("resolution reads files (component source + sibling scans), so both "
+                        + "actions must post to the named RP and hop back to the EDT only "
+                        + "to open — a wedged mount must not freeze a context-menu click")
+                .contains("RESOLVE_RP.post(")
+                .contains("java.awt.EventQueue.invokeLater(");
+        assertThat(src.split("RESOLVE_RP\\.post\\(").length - 1)
+                .as("both actions route through the RP")
+                .isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("the template goto chord stays wired: mime keybindings bind Cmd+B to our action")
     void gotoChordPinned() throws Exception {
         String xml = Files.readString(new File(
