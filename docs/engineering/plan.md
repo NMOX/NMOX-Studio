@@ -280,6 +280,30 @@ spawned from the project's own .bin in the shipped app, and a typo'd
 'loggedIn'?" squiggle against the component class's type — cleared on
 revert.
 
+Currency addendum 2026-08-01 at **v1.219.0**: the senior-Angular
+persona pass ("grant their wishes"), granting the two navigation
+gestures the arc had earned but not yet delivered. **⌘B Go to
+Declaration in templates** required two cooperating pieces, both
+proven necessary live: a mime-registered `HyperlinkProviderExt`
+enabler (identifier-span answers, click delegated to the platform LSP
+client's own provider, which owns the server connection) and an
+`ng-goto-declaration` editor-kit action bound through mime-scoped
+keybindings — because on CSL panes the platform's global
+goto-declaration never consults the hyperlink-provider chain for the
+mime, and a SAME-NAME mime action loses to the root registration. The
+recipe worth keeping: *non-colliding action name + mime keybinding for
+the chord; enabler feeds the hyperlink/hover chain; the action owns
+the gesture.* **Component ↔ template switching** shipped as two popup
+actions over a pure `NgSwitch` core (templateUrl-wins resolution,
+sibling convention backstop, spec-excluded owner scan, honest
+status-line misses). The session's method lesson, earned the expensive
+way: **a stale platform cachedir masks NEW layer registrations from
+hot-swapped module jars** — code edits to already-registered classes
+take, so a correct new registration reads exactly like a wrong one;
+wipe the cachedir before concluding anything about registration
+shapes. Several hours of this session's recon were spent disproving
+conclusions that were cache artifacts.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

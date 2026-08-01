@@ -41,7 +41,7 @@ public class NgTemplateHyperlinkEnabler implements HyperlinkProviderExt {
 
     @Override
     public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
-        return getHyperlinkSpan(doc, offset, type) != null && lspProvider() != null;
+        return identifierSpan(doc, offset) != null && lspProvider() != null;
     }
 
     @Override
