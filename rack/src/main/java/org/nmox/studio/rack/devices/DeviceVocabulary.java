@@ -33,7 +33,9 @@ public final class DeviceVocabulary {
 
     private static final Map<String, String> WORDS = Map.ofEntries(
             // --- Run & Automate ---
-            Map.entry("master", "pipeline orchestrate run everything trigger all sequence chain"),
+            // "chain" deliberately absent: a user typing it means blockchain
+            // (ANVIL), and MAESTRO sits first on the shelf (v1.216.0)
+            Map.entry("master", "pipeline orchestrate run everything trigger all sequence"),
             Map.entry("reflex", "autorun on save hot reload live rebuild automatically"),
             Map.entry("join", "wait for barrier synchronize all green and gate"),
             Map.entry("rosetta", "polyglot toolchain monorepo mixed languages switch"),

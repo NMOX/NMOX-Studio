@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    v1.216.0 (arc review): frees Cmd+P from the editor kit so the global
+    Go to File shortcut (ui module, Shortcuts/D-P.shadow) can receive it.
+
+    The platform's base editor keybindings (org-netbeans-modules-editor's
+    NetBeans-keybindings.xml) bind D-P to tooltip-show. A keystroke the
+    focused editor CONSUMES never reaches the Shortcuts/ dispatcher
+    (ShortcutAndMenuKeyEventProcessor.postProcessKeyEvent returns on
+    ev.isConsumed()), so with focus in any editor - the normal state when
+    reaching for Go to File - Cmd+P opened a completion tooltip instead.
+    The v1.212.0 attempt masked Keymaps/NetBeans/D-P.shadow, a file that
+    exists in no cluster: the editor's claim lives in THIS tree, the only
+    tree that can release it. remove is key-only per the 1.1 DTD.
+-->
+<bindings>
+    <bind key="D-P" remove="true"/>
+</bindings>

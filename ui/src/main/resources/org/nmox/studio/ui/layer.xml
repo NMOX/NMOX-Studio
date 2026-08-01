@@ -23,8 +23,11 @@
              (jumpto's FileSearchAction, on the undiscoverable Opt+Shift+O)
              — it just answered to a chord nobody from VS Code would try.
              Point the muscle memory at the feature we already have.
-             v1.212.0; the editor's own D-P binding is masked below, since
-             editor keybindings outrank Shortcuts entries. -->
+             v1.212.0. The editor kit's own D-P claim (tooltip-show) is
+             UNBOUND in the editor module's Editors/Keybindings tree —
+             that is the tree the editor actually reads; the Keymaps mask
+             this comment used to point at targeted a file that exists in
+             no cluster and masked nothing (v1.216.0 arc review). -->
         <file name="D-P.shadow">
             <attr name="originalFile"
                   stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
@@ -89,9 +92,13 @@
                  binding - profile entries outrank Shortcuts. Mask it so
                  Cmd+O opens files, like every other editor on earth. -->
             <file name="D-O.shadow_hidden"/>
-            <!-- and the editor's tooltip-show on Cmd+P, so the Go to File
-                 binding above is the one that wins (v1.212.0) -->
-            <file name="D-P.shadow_hidden"/>
+            <!-- NO D-P mask here (v1.216.0): the v1.212.0 one targeted
+                 Keymaps/NetBeans/D-P.shadow, which no shipped cluster
+                 defines — a shadow_hidden of a nonexistent file masks
+                 nothing, and the editor's real D-P claim lives in the
+                 Editors/Keybindings tree, which Keymaps can't reach.
+                 The unbind ships in the editor module beside the other
+                 Editors registrations. -->
             <!-- Menu accelerators come from Keymaps-profile shadows, not
                  from Shortcuts/ registrations (the v1.38.1 finding, debt
                  #28): without these the Window menu shows "Task Rack" /

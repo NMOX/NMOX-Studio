@@ -79,26 +79,49 @@ class GrammarCapturesShapeTest {
                 continue;
             }
             JSONObject g = new JSONObject(Files.readString(f.toPath()));
-            Object repo = g.opt("repository");
-            if (!(repo instanceof JSONObject repoObj)) {
-                if (repo != null) {
-                    violations.add(f.getName() + " repository is not an object");
-                }
-                continue;
-            }
-            for (String k : repoObj.keySet()) {
-                if (!(repoObj.get(k) instanceof JSONObject)) {
-                    violations.add(f.getName() + " repository/" + k + " is "
-                            + repoObj.get(k).getClass().getSimpleName()
-                            + ", not a rule object");
-                }
-            }
+            // v1.216.0 (arc review): the original check stopped at the
+            // TOP-LEVEL repository — but TextMate allows a repository on
+            // ANY rule, TM4E resolves nested ones through the same cast,
+            // and four shipped grammars (clarity, crystal, html, ruby)
+            // already carry nested repositories. Walk them all, or the
+            // gate guards the door while the window stands open — the
+            // exact "gate the shape family, not the instance" lesson
+            // this test's own javadoc records.
+            walkRepositories(g, f.getName(), "", violations);
         }
         assertThat(violations)
                 .as("a bare array in `repository` throws ClassCastException in "
                         + "TM4E's RawRepository.getRule and surfaces to the user "
                         + "as an unexplained Unexpected Exception")
                 .isEmpty();
+    }
+
+    /** Checks every {@code repository} at any depth, not just the root's. */
+    private static void walkRepositories(Object o, String file, String path,
+            List<String> out) {
+        if (o instanceof JSONObject obj) {
+            Object repo = obj.opt("repository");
+            if (repo != null && !(repo instanceof JSONObject)) {
+                out.add(file + " " + path + "/repository is "
+                        + repo.getClass().getSimpleName() + ", not an object");
+            }
+            if (repo instanceof JSONObject repoObj) {
+                for (String k : repoObj.keySet()) {
+                    if (!(repoObj.get(k) instanceof JSONObject)) {
+                        out.add(file + " " + path + "/repository/" + k + " is "
+                                + repoObj.get(k).getClass().getSimpleName()
+                                + ", not a rule object");
+                    }
+                }
+            }
+            for (String k : obj.keySet()) {
+                walkRepositories(obj.get(k), file, path + "/" + k, out);
+            }
+        } else if (o instanceof JSONArray arr) {
+            for (int i = 0; i < arr.length(); i++) {
+                walkRepositories(arr.get(i), file, path + "[" + i + "]", out);
+            }
+        }
     }
 
     private static final String[] CAPTURE_KEYS = {

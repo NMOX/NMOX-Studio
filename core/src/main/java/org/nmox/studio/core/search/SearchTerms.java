@@ -96,8 +96,15 @@ public final class SearchTerms {
                 continue;
             }
             // Mid-word fallback for terms long enough to be deliberate:
-            // a pasted address or table-name fragment.
-            if (needle.length() >= MIN_LOOSE_TERM && rawText.contains(needle)) {
+            // a pasted address or table-name fragment. CJK terms skip the
+            // length gate entirely (v1.216.0): CJK text has no separators
+            // — a run like \u524d\u7aef\u9879\u76ee tokenizes as ONE
+            // word — and each character carries word-level meaning, so a
+            // two-character query is a full query, not junk. The old
+            // contains matcher handled these; the length gate regressed
+            // them.
+            if ((needle.length() >= MIN_LOOSE_TERM || hasCjk(needle))
+                    && rawText.contains(needle)) {
                 continue;
             }
             return false;
@@ -105,11 +112,26 @@ public final class SearchTerms {
         return true;
     }
 
+    /** True when the term carries any CJK ideograph. */
+    private static boolean hasCjk(String term) {
+        for (int i = 0; i < term.length(); ) {
+            int cp = term.codePointAt(i);
+            if (Character.isIdeographic(cp)) {
+                return true;
+            }
+            i += Character.charCount(cp);
+        }
+        return false;
+    }
+
     private static boolean matchesAnyWord(String needle, List<String> hay) {
         String stem = singular(needle);
         for (String word : hay) {
-            // Prefix, not contains: "test" finds "tests" and "testing",
-            // but "ai" does not find "tail".
+            // Prefix, not contains: "test" finds "tests", but "ai"
+            // does not find "tail". (The reverse — "testing" finding
+            // "test" — is deliberately NOT offered: the raw fallback
+            // requires the literal, and stemming beyond one plural "s"
+            // buys little for what it costs in junk.)
             if (word.startsWith(needle) || word.startsWith(stem)) {
                 return true;
             }

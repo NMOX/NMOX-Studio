@@ -31,6 +31,21 @@
     </folder>
 
     <folder name="Editors">
+        <!-- Frees Cmd+P from the editor kit's tooltip-show claim so the
+             global Go to File shortcut receives it (v1.216.0; see the
+             XML's own comment for the full mechanism). Position far after
+             the platform's NetBeans-keybindings.xml so the remove is
+             processed after the bind it removes. -->
+        <folder name="Keybindings">
+            <folder name="NetBeans">
+                <folder name="Defaults">
+                    <file name="nmox-keybindings.xml"
+                          url="nmox-keybindings.xml">
+                        <attr name="position" intvalue="9999"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <!-- The IDE always runs the FlatLaf Dark look and feel (forced in
              nmoxstudio.conf), but the editor's color profile is a separate
              switch: it defaults to the light "NetBeans" profile and is only

@@ -170,7 +170,52 @@ public final class LanguageServers {
     public static final class EslintServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            File dir = projectDir(lookup);
+            if (dir != null) {
+                // v1.216.0 (arc review): launchNpm's trust gate covers the
+                // server BINARY, but this server's payload is the
+                // workspace itself — it resolves the eslint LIBRARY from
+                // the project's node_modules and evaluates the project's
+                // eslint.config.js / .eslintrc.js, which are plain
+                // executable JavaScript. A trusted global binary running
+                // an untrusted repo's config is still the v1.102.0 RCE on
+                // file-open. Same silent gate, same honest degradation:
+                // untrusted workspaces get no lint diagnostics.
+                if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                    return null;
+                }
+                // No eslint config, no server: every JS/TS project would
+                // otherwise pay a node process for a linter it never
+                // adopted (the global binary ships in the same package as
+                // the JSON/HTML/CSS servers, so having it installed does
+                // not mean wanting eslint everywhere).
+                if (!hasEslintConfig(dir)) {
+                    return null;
+                }
+            }
             return launchNpm(lookup, "vscode-eslint-language-server", "--stdio");
+        }
+    }
+
+    /** Any of eslint's config spellings, current (flat) or legacy. */
+    static boolean hasEslintConfig(File dir) {
+        for (String name : new String[]{
+            "eslint.config.js", "eslint.config.mjs", "eslint.config.cjs",
+            "eslint.config.ts", ".eslintrc.js", ".eslintrc.cjs",
+            ".eslintrc.json", ".eslintrc.yml", ".eslintrc.yaml", ".eslintrc"}) {
+            if (new File(dir, name).isFile()) {
+                return true;
+            }
+        }
+        // package.json can carry an "eslintConfig" object; a raw scan is
+        // enough here — a false positive just starts a server that then
+        // idles, while parsing JSON on every file-open would cost more.
+        File pkg = new File(dir, "package.json");
+        try {
+            return pkg.isFile() && java.nio.file.Files.readString(pkg.toPath())
+                    .contains("\"eslintConfig\"");
+        } catch (IOException ex) {
+            return false;
         }
     }
 
@@ -219,6 +264,15 @@ public final class LanguageServers {
                     || !org.nmox.studio.rack.devices.ProjectInspector.hasAngular(dir)) {
                 return null; // not an Angular workspace: nothing to do, quietly
             }
+            // v1.216.0 (arc review): the probe locations make ngserver
+            // require() the project's OWN typescript and @angular packages
+            // — repo-committed JavaScript executed on file-open, the
+            // v1.102.0 RCE class with the payload one level down from the
+            // binary. Same silent gate as launchNpm; there is no safe
+            // global fallback because the probe dirs ARE the point.
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                return null;
+            }
             File modules = angularProbeDir(dir);
             if (modules == null) {
                 return null; // no install yet — npm install first, then reopen
@@ -229,7 +283,17 @@ public final class LanguageServers {
                 // through the same channel every missing server uses.
                 return reported(null, "ngserver");
             }
-            return reported(launch(lookup, List.of("ngserver", "--stdio",
+            // The catalog installs @angular/language-server INTO the
+            // project (-D — it must match the workspace's Angular), so the
+            // binary usually lives in the probe dir's own .bin, never on
+            // PATH. Resolve it there first; the trust gate above already
+            // covers running it. Bare "ngserver" stays as the fallback for
+            // a deliberate global install. (v1.216.0: without this, the
+            // catalog's own documented install produced a server the IDE
+            // could never find.)
+            File local = new File(modules, ".bin/ngserver");
+            String bin = local.canExecute() ? local.getAbsolutePath() : "ngserver";
+            return reported(launch(lookup, List.of(bin, "--stdio",
                     "--tsProbeLocations", modules.getAbsolutePath(),
                     "--ngProbeLocations", modules.getAbsolutePath())), "ngserver");
         }
@@ -239,16 +303,30 @@ public final class LanguageServers {
      * The {@code node_modules} an Angular workspace's language service
      * should probe: the Angular project's own, which in a monorepo is
      * the Node subproject's rather than the repo root's.
+     *
+     * <p>Chosen by probing for the FILE the service must load, not for a
+     * bare directory (v1.216.0): npm/yarn workspaces hoist — the nested
+     * {@code node_modules} exists but holds only {@code .bin} links while
+     * typescript lives at the root. A directory test picked the empty
+     * nested dir and declined a perfectly good install.
      */
     static File angularProbeDir(File projectDir) {
         File nested = new File(
                 org.nmox.studio.rack.devices.ProjectInspector.kindDir(projectDir,
                         org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.NODE),
                 "node_modules");
+        File root = new File(projectDir, "node_modules");
+        for (File candidate : new File[]{nested, root}) {
+            if (new File(candidate, "typescript/lib/tsserverlibrary.js").isFile()) {
+                return candidate;
+            }
+        }
+        // Neither carries a usable TypeScript: return an existing dir so
+        // the TS-7 check upstream reports the honest catalog message, or
+        // null when there is no install at all.
         if (nested.isDirectory()) {
             return nested;
         }
-        File root = new File(projectDir, "node_modules");
         return root.isDirectory() ? root : null;
     }
 

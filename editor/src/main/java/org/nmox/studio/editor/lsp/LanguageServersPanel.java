@@ -168,6 +168,11 @@ public final class LanguageServersPanel extends JPanel {
                 status.setText("Install " + row.server.installer()
                         + " first, then retry " + row.server.language() + ".");
             }
+            case NEEDS_PROJECT -> {
+                row.button.setEnabled(true);
+                status.setText(row.server.language()
+                        + " installs into the project - open the project first, then retry.");
+            }
             default -> row.button.setEnabled(true);
         }
         if (batch) {

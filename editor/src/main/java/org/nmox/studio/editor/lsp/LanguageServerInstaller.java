@@ -20,7 +20,9 @@ public final class LanguageServerInstaller {
         INSTALLED,
         FAILED,
         NEEDS_TOOLCHAIN,
-        NOT_AUTO
+        NOT_AUTO,
+        /** A project-local install with no project aimed to install into. */
+        NEEDS_PROJECT
     }
 
     /** UI hooks; all fire on the process worker thread, so marshal to the EDT. */
@@ -50,11 +52,28 @@ public final class LanguageServerInstaller {
             return null;
         }
 
+        // A project-local install (npm install --save-dev) must run in
+        // the aimed project: run in $HOME it would create ~/package.json
+        // and ~/node_modules, report INSTALLED, and leave the project
+        // without the packages the server probes (v1.216.0). Global
+        // installs (-g, brew, go install, cargo) don't care about cwd,
+        // so $HOME stays their harmless default.
+        File cwd = new File(System.getProperty("user.home", "."));
+        if (server.projectLocal()) {
+            org.nmox.studio.core.spi.ProjectAim aim =
+                    org.nmox.studio.core.spi.ProjectAim.find();
+            File project = aim == null ? null : aim.projectDir();
+            if (project == null || !project.isDirectory()) {
+                listener.onFinished(server, Result.NEEDS_PROJECT, -1);
+                return null;
+            }
+            cwd = project;
+        }
+
         listener.onStarted(server);
         String tab = "Install " + server.binary();
-        File home = new File(System.getProperty("user.home", "."));
         CommandExecutor.Handle handle = CommandExecutor.run(
-                tab, home, Map.of(), server.command(), line -> {
+                tab, cwd, Map.of(), server.command(), line -> {
                 }, exit -> {
                     // success = the command succeeded; a freshly-installed binary may
                     // not be on the resolved PATH until restart, so trust the exit code

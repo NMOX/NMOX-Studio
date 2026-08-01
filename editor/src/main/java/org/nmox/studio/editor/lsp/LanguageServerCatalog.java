@@ -22,7 +22,8 @@ public final class LanguageServerCatalog {
      * install hint, and the runnable install command ({@code command} is
      * empty when there's no single command — those stay manual).
      */
-    public record Server(String language, String binary, String install, List<String> command) {
+    public record Server(String language, String binary, String install,
+            List<String> command, boolean projectLocal) {
 
         /** True when this server can be installed by running one command. */
         public boolean autoInstallable() {
@@ -38,7 +39,19 @@ public final class LanguageServerCatalog {
     private static final Map<String, Server> BY_BINARY = new LinkedHashMap<>();
 
     private static void add(String language, String binary, String hint, List<String> command) {
-        BY_BINARY.put(binary, new Server(language, binary, hint, command));
+        BY_BINARY.put(binary, new Server(language, binary, hint, command, false));
+    }
+
+    /**
+     * A server whose install command must run INSIDE the project
+     * (npm install --save-dev): the packages have to match the versions
+     * the workspace builds with, so a global install would be wrong and
+     * a home-directory install would be pollution (v1.216.0 — the
+     * Angular entry's install ran in $HOME and created ~/package.json).
+     */
+    private static void addProjectLocal(String language, String binary, String hint,
+            List<String> command) {
+        BY_BINARY.put(binary, new Server(language, binary, hint, command, true));
     }
 
     static {
@@ -55,7 +68,7 @@ public final class LanguageServerCatalog {
         // node_modules (v1.214.0). It also needs TypeScript 5.x —
         // TypeScript 7 dropped lib/tsserverlibrary.js, which ngserver
         // requires — so the hint pins the major.
-        add("Angular (templates)", "ngserver",
+        addProjectLocal("Angular (templates)", "ngserver",
                 "npm i -D @angular/language-server @angular/language-service typescript@5",
                 List.of("npm", "install", "--save-dev", "@angular/language-server",
                         "@angular/language-service", "typescript@5"));

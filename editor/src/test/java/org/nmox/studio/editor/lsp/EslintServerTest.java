@@ -60,7 +60,9 @@ class EslintServerTest {
     void ridesTheTrustGatedLauncher() throws IOException {
         String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
         int at = src.indexOf("class EslintServer");
-        String body = src.substring(at, Math.min(src.length(), at + 400));
+        // slice to the next member, not a fixed width — the v1.216.0
+        // trust gate sits above the launch and grew the body
+        String body = src.substring(at, src.indexOf("static boolean hasEslintConfig", at));
         // launchNpm is where v1.102.0 lives: a committed
         // node_modules/.bin binary is only used in a TRUSTED workspace,
         // else the user's own global tool. Reimplementing the spawn here
