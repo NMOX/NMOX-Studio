@@ -67,6 +67,15 @@ public final class LanguageServerInstaller {
                 listener.onFinished(server, Result.NEEDS_PROJECT, -1);
                 return null;
             }
+            // npm install IN the project runs the project's own lifecycle
+            // scripts (and every dependency's) — an inward execution flow,
+            // gated like Run/F6 (v1.224.0 spawn-site sweep). Global
+            // installs below run our own fixed argv in $HOME and stay
+            // ungated by design.
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(project)) {
+                listener.onFinished(server, Result.FAILED, -1);
+                return null;
+            }
             cwd = project;
         }
 

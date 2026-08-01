@@ -1162,6 +1162,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NO_PROJECT_HINT, FAIL_RED);
             return;
         }
+        if (!trustedToRunProjectCode(dir)) {
+            return;
+        }
         if (gasRunning) {
             return;
         }
@@ -1218,6 +1221,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NO_PROJECT_HINT, FAIL_RED);
             return;
         }
+        if (!trustedToRunProjectCode(dir)) {
+            return;
+        }
         if (compiling) {
             return;
         }
@@ -1265,6 +1271,28 @@ public final class Web3StudioTopComponent extends TopComponent {
      * exit code. UTF-8, stderr merged — a compiler's diagnostics belong
      * in the same stream.
      */
+    /**
+     * Workspace Trust for the forge buttons (v1.224.0 spawn-site
+     * sweep): {@code forge build} honors the repo's own foundry.toml
+     * and {@code forge test} executes the repo's test contracts —
+     * with Foundry's {@code ffi} cheatcode enabled those tests can run
+     * ARBITRARY HOST COMMANDS, so this is the same inward-execution
+     * flow every other project-code spawn gates. web3 carries no rack
+     * dependency (v1.46.0), so the gate rides the {@link
+     * org.nmox.studio.core.spi.TrustGate} facade; a null lookup means
+     * the rack module is absent (no trust service exists to consult —
+     * a degenerate install this product never ships).
+     */
+    private boolean trustedToRunProjectCode(File dir) {
+        org.nmox.studio.core.spi.TrustGate gate =
+                org.nmox.studio.core.spi.TrustGate.find();
+        if (gate != null && !gate.requestTrust(dir)) {
+            status("Not run — workspace not trusted", FAIL_RED);
+            return false;
+        }
+        return true;
+    }
+
     private int streamProcess(List<String> command, File dir, StringBuilder collector)
             throws IOException, InterruptedException {
         ProcessBuilder builder = ProcessSupport.builder(command)

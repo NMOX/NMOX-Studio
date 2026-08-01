@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.224.0] - 2026-08-01
+
+The spawn-site trust sweep. v1.223.0 proved the per-incident approach
+leaks — a site missed by two dedicated sweeps sat ungated for ~190
+releases — so this release enumerates EVERY `CommandExecutor.run`
+caller, classifies each in a build-failing ledger, and fixes the three
+that were ungated.
+
+### Security
+- **Contract Studio's forge buttons now ask for Workspace Trust.**
+  `forge build` honors the repo's own `foundry.toml` and `forge test
+  --gas-report` executes the repo's test contracts — with Foundry's
+  `ffi` cheatcode those tests run ARBITRARY HOST COMMANDS, so one
+  click on a cloned repo could execute its code. web3 carries no rack
+  dependency (v1.46.0), so the gate rides a NEW `core.spi.TrustGate`
+  soft-dependency facade (the ProjectAim idiom) with the rack
+  publishing the one delegating `@ServiceProvider` — closing the
+  "TrustGate deliberately not facaded" deferral the moment it grew a
+  consumer. Live-proven: the prompt fires naming the correct project
+  root, and a grant runs the real forge build to completion.
+- **Project Config's npm add/remove gates.** Package-manager installs
+  run the project's own lifecycle scripts (and every dependency's) —
+  an inward execution flow like Run/F6, now behind `requestTrust`.
+- **The project-local language-server install gates.** The Angular
+  Language Service installs `--save-dev` INTO the workspace
+  (v1.216.0), which runs the workspace's lifecycle scripts — gated;
+  global installs remain our own fixed argv in `$HOME`, ungated by
+  design.
+
+### Added
+- **`SpawnSiteTrustLedgerTest`** — the sweep made structural: every
+  `CommandExecutor.run` caller in main sources must appear in a
+  written ledger (GATED / GATED-BY-CALLER / BLESSED-with-reason), and
+  a second check verifies each GATED file really references the trust
+  service. A NEW spawn site fails the build until a human classifies
+  it — enumeration beats recollection.
+
+### Verified in the sweep (blessed in the ledger)
+- The device GO path: gated by `CommandDevice.launch`'s trustCheck
+  (v1.93.0) — `RackDevice`'s primitive is reachable only through it.
+- New Project's install: the wizard pre-trusts the directory it
+  itself just created (the v1.62.0 blessing, confirmed real).
+- The Docker panel: our own fixed `docker` verbs; a project
+  Dockerfile builds inside a container, not on the host.
+
 ## [1.223.0] - 2026-08-01
 
 Run Focused Test speaks Angular — and the action gains the trust gate
@@ -8196,6 +8241,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.224.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.223.0...v1.224.0
 [1.223.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.222.0...v1.223.0
 [1.222.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.221.0...v1.222.0
 [1.221.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.220.0...v1.221.0
