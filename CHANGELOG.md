@@ -4,6 +4,63 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.217.0] - 2026-08-01
+
+Angular template awareness: `.component.html` becomes a citizen. The
+Angular team's own five VS Code grammars (MIT, sha256-pinned) light up
+both template generations — `@if/@for/@switch/@defer` blocks AND
+`*ngIf`-era structural directives — with completion for both, in
+Angular workspaces only. Getting them on screen took three verified
+discoveries about how the platform actually works, and the last one
+closed a four-release-old gap nobody had noticed.
+
+### Added
+- **Angular template highlighting.** `*.component.html` files resolve to
+  a dedicated `text/x-ng-template` mime driven by the vendored HTML
+  grammar, with the four Angular injection grammars (template
+  interpolation, control-flow blocks, `@let`, `<ng-template>` forms)
+  composited on top — the first use of TextMate injections in this
+  codebase. `expression.ng` is deliberately include-only, exactly as
+  upstream ships it: injecting it directly made `<h1>` tokenize as a
+  TypeScript relational operator (measured, then pinned in a test).
+  Interpolations, pipes, and `@for (item of items; track item.id)`
+  expression keywords all colorize; plain HTML files are untouched.
+- **Angular template completion.** `@` at markup level offers all 13
+  control-flow blocks; `*` inside a tag offers the 7 classic structural
+  directives — gated per query on an `angular.json` above the file, so
+  a hand-written page never sees an Angular offer. The platform's HTML
+  tag/attribute completion rides along on the new mime.
+- **Comment toggle** for templates via CSL's own action, configured with
+  `<!-- -->` block delimiters (menu-verified live; the Actions-folder
+  override route is dead on CSL mimes — the kit's action shadows it,
+  which is now documented where the shadow bit).
+
+### Fixed
+- **`.http`/`.rest` files now actually highlight — for the first time.**
+  The v1.166.0 grammar was registered "grammar-only by design", but a
+  grammar-only mime has no DataObject loader and no EditorKit, so the
+  files have opened with the PLAIN kit since they shipped: the vendored
+  REST-Client grammar never reached the screen, and nobody noticed for
+  fifty releases. Found while debugging the identical dead-mime state in
+  the new Angular template mime; both mimes are now CSL languages (the
+  registration that brings the loader and kit), and `orders-api.http`
+  was click-verified colorized — comments, methods, `{{variables}}`,
+  headers.
+
+### Engineering notes
+- The three load-bearing discoveries, verified against decompiled
+  platform bytecode and live probes: (1) the ide cluster's own HTML
+  lexer owns text/html outright — TM4E never runs for it, so Angular
+  overlays needed a dedicated mime; (2) declarative MIME resolvers are
+  consulted before every `@ServiceProvider` resolver regardless of
+  position, so the mime claim is a declarative registration at
+  position 250 (`<ext>`+`<name substring>` conditions AND-compose —
+  read from `FileElement$Type.accept`); (3) a TextMate grammar alone
+  does not make a mime — without a kit the editor silently falls back
+  to plain, with every MimeLookup feature dead at once. A headless
+  tm4e-0.14.1 probe pinned the expected token scopes before any
+  platform wiring was written.
+
 ## [1.216.0] - 2026-08-01
 
 The arc review over v1.209–v1.215: two fresh lenses over the seven
@@ -7930,6 +7987,8 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.217.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.216.0...v1.217.0
+[1.216.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.215.0...v1.216.0
 [1.215.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.214.0...v1.215.0
 [1.214.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.213.0...v1.214.0
 [1.213.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.212.0...v1.213.0

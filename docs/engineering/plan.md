@@ -235,6 +235,29 @@ gate that covers the binary but not its payload is not a gate*, and
 chord, the User Guide link, the Angular install — all v1.38.1's
 lesson recurring).
 
+Currency addendum 2026-08-01 at **v1.217.0**: Angular template
+awareness — `.component.html` resolves to its own text/x-ng-template
+mime (a declarative MIME resolver at position 250; the live rounds
+proved a @ServiceProvider resolver NEVER beats a declarative claim,
+and the decompiled matcher AND-composes ext + name-substring), the
+Angular team's five grammars vendored sha256-pinned with FOUR
+registered as TextMate injections into text.html.basic (the first
+injection use in the codebase; expression.ng stays include-only
+because injecting it tokenized `<h1>` as a TS operator), @-block and
+*-directive completion gated on angular.json, and the whole vertical
+click-verified live. The release's real discovery is a NEW failure
+pattern: **a TextMate grammar alone does not make a mime** — with no
+DataObject loader and no EditorKit the editor opens the file with the
+plain kit and every MimeLookup feature (coloring, completion,
+actions) is dead at once, silently. Making the mime a CSL language is
+what brings the loader + kit; applying the same fix to
+text/x-http-request revealed **.http files had never highlighted
+since v1.166.0** ("grammar-only by design" shipped without a live
+coloring proof — the affordance-never-exercised pattern again, fifty
+releases deep). Second lesson: a CSL kit's own toggle-comment SHADOWS
+same-named Actions-folder registrations — configure CSL's
+CommentHandler instead of fighting the shadow.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

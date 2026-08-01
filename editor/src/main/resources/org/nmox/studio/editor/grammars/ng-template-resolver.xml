@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.1//EN"
+                               "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
+<!-- *.component.html opens as an Angular template (text/x-ng-template):
+     the TextMate lexer serves the mime, so the injected Angular grammars
+     finally reach the screen. Position 250 in the registration outranks
+     the platform's generic html claim at 300. -->
+<MIME-resolver>
+    <file>
+        <ext name="html"/>
+        <name name=".component" substring="true"/>
+        <resolver mime="text/x-ng-template"/>
+    </file>
+</MIME-resolver>

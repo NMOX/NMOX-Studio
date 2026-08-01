@@ -24,8 +24,15 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * platform's completion infrastructure instantiates it lazily and runs
  * the query off the EDT through {@link AsyncCompletionTask}.
  */
-@org.netbeans.api.editor.mimelookup.MimeRegistration(
-        mimeType = "text/html", service = CompletionProvider.class)
+@org.netbeans.api.editor.mimelookup.MimeRegistrations({
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
+        mimeType = "text/html", service = CompletionProvider.class),
+    // v1.217.0: component templates left text/html for the TextMate
+    // lexer; the platform HTML completion left with the mime, so ours
+    // serves tags and attributes there
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
+        mimeType = "text/x-ng-template", service = CompletionProvider.class)
+})
 public class HtmlCompletionProvider implements CompletionProvider {
 
     private static final Logger LOG = Logger.getLogger(HtmlCompletionProvider.class.getName());

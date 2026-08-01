@@ -108,7 +108,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/css", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-scss", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-less", service = TypedTextInterceptor.Factory.class),
-        @MimeRegistration(mimeType = "text/x-svelte", service = TypedTextInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-svelte", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-ng-template", service = TypedTextInterceptor.Factory.class)
     })
     public static class Factory implements TypedTextInterceptor.Factory {
         @Override
