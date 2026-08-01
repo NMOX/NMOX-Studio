@@ -381,6 +381,20 @@ focused tests + the missed gate, v1.224 the sweep + ledger, v1.225
 this close. The Angular roadmap's remaining item is the ng-serve ↔
 JFX WebView hang investigation (ledger 70).
 
+Currency addendum 2026-08-01 at **v1.226.0**: ledger 70 root-caused
+and FIXED the same day it was filed. The JFX WebView sends the RFC
+7540 §3.2 cleartext-upgrade probe on every plain-HTTP request, and
+Angular's esbuild dev server accepts such a connection and never
+answers. The method is the transferable part: **capture the exact
+bytes, replay them headlessly** — a socket logger recorded the
+WebView's real request, curl replayed it, and a UI-only "it just
+hangs" became a one-header bisect (hangs with `Upgrade: h2c`, 200 in
+5 ms without, static server fine either way). Fixed by setting
+`com.sun.webkit.useHTTP2Loader=false` before any WebKit class loads.
+`ng serve` now renders in the Browser with the DevTools Angular pane
+reading its live tree — the framework bet's dev loop, in-app, end to
+end. EIGHT releases on 2026-08-01.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

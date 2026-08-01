@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.226.0] - 2026-08-01
+
+Ledger 70, root-caused and fixed — `ng serve` loads in the Browser.
+
+### Fixed
+- **The in-app Browser can open an Angular dev server.** JavaFX
+  WebKit sends the HTTP/1.1→HTTP/2 cleartext-upgrade probe (RFC 7540
+  §3.2: `Upgrade: h2c` + `Connection: Upgrade, HTTP2-Settings`) on
+  every plain-HTTP request, and Angular's esbuild dev server accepts
+  such a connection and then never responds — the navigation hung
+  forever with no error (found in the v1.222.0 gauntlet, deferred as
+  ledger 70). Root-caused headlessly this time: a socket logger
+  captured the WebView's exact request, and replaying it with curl
+  reproduces the hang — with the header the dev server never answers,
+  without it 200 in 5 ms, and a plain static server answers 200 either
+  way, so the fault is the dev server's. `FxAvailability` now sets
+  `com.sun.webkit.useHTTP2Loader=false` before any WebKit class loads
+  (an explicit `-D` still wins). The probe costs nothing to lose —
+  h2c upgrades are essentially never accepted in practice, and
+  `https://` pages still negotiate HTTP/2 via ALPN, untouched.
+- Live-proven end to end: `http://127.0.0.1:4200/` renders the running
+  Angular app in the Browser, and the DevTools **Angular** pane reads
+  its live tree ("Angular 18.2.14 — 1 component") — the framework
+  bet's dev loop, in-app, for the first time.
+
 ## [1.225.0] - 2026-08-01
 
 The day-arc review (v1.222–v1.224) and ledger 69, closed the day it
@@ -8277,6 +8302,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.226.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.225.0...v1.226.0
 [1.225.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.224.0...v1.225.0
 [1.224.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.223.0...v1.224.0
 [1.223.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.222.0...v1.223.0

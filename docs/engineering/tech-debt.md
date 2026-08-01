@@ -99,7 +99,23 @@ point the tests at a scratch prefs node (system-property override in
 a security-sensitive class for a dev-only annoyance; do it as part of
 the next trust-surface release, not as a drive-by.
 
-### 70. The Angular CLI's esbuild dev server hangs the JavaFX WebView — MEDIUM
+### 70. The Angular CLI's esbuild dev server hangs the JavaFX WebView — CLOSED v1.226.0
+ROOT CAUSE FOUND, fixed in the product. JavaFX WebKit sends the RFC
+7540 §3.2 cleartext-upgrade probe (`Upgrade: h2c` +
+`Connection: Upgrade, HTTP2-Settings`) on every plain-HTTP request;
+Angular's esbuild dev server accepts such a connection and never
+responds. Proven headlessly: capture the WebView's exact request with
+a socket logger, replay it with curl — hangs with the header, 200 in
+5 ms without it, and a plain static server answers 200 either way (so
+the fault is the dev server's, not the header's). Fix:
+`FxAvailability` sets `com.sun.webkit.useHTTP2Loader=false` before any
+WebKit class loads (respecting an explicit -D). Costs nothing — h2c
+is essentially never accepted in practice and https:// still gets
+HTTP/2 via ALPN — and `ng serve` now loads in the Browser, with the
+DevTools Angular pane reading its live component tree. Original
+entry below.
+
+### 70-original. The Angular CLI's esbuild dev server hangs the JavaFX WebView — MEDIUM
 Measured live (2026-08-01, v1.222.0 gauntlet): navigating the in-app
 Browser to a running `ng serve` (Angular 18, the esbuild-based
 `@angular/build` dev server) starts a load that never commits — the
