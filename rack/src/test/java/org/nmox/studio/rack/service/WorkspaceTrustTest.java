@@ -56,4 +56,32 @@ class WorkspaceTrustTest {
         assertThat(WorkspaceTrust.isTrusted(never)).isFalse();
         assertThat(WorkspaceTrust.requestTrust(never)).isTrue();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("clearForTest never touches the real trust store (ledger 69)")
+    void clearForTestLeavesRealGrantsAlone() throws Exception {
+        // Seed a sentinel DIRECTLY into the real per-path node, the way a
+        // developer's own grant lives there. clearForTest must flip to the
+        // scratch store and leave it untouched — the old behavior deleted
+        // every real grant on each local mvn verify (bit five times on
+        // 2026-08-01 alone).
+        java.util.prefs.Preferences real = java.util.prefs.Preferences
+                .userNodeForPackage(WorkspaceTrust.class).node("trusted");
+        String sentinelKey = "test-sentinel-ledger69";
+        real.put(sentinelKey, "/tmp/ledger69-sentinel");
+        try {
+            WorkspaceTrust.clearForTest();
+            WorkspaceTrust.trust(new java.io.File("/tmp/ledger69-scratch"));
+            org.assertj.core.api.Assertions.assertThat(real.get(sentinelKey, null))
+                    .as("the real store must survive clearForTest AND test-mode writes")
+                    .isEqualTo("/tmp/ledger69-sentinel");
+            org.assertj.core.api.Assertions.assertThat(java.util.Arrays.asList(real.keys()))
+                    .as("test-mode trust() writes land in the scratch node, not the real one")
+                    .noneMatch(k -> real.get(k, "").contains("ledger69-scratch"));
+        } finally {
+            real.remove(sentinelKey);
+            real.flush();
+            WorkspaceTrust.clearForTest();
+        }
+    }
 }
