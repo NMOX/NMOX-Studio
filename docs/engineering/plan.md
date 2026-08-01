@@ -369,6 +369,18 @@ ledger closes the class.* Live proof: the forge trust prompt fired
 naming the correct root through the facade chain, and a grant ran the
 real forge build to completion.
 
+Currency addendum 2026-08-01 at **v1.225.0**: the day closes with its
+own review — v1.222–v1.224 lenses CLEAN (facade wiring now pinned by
+RackTrustGateTest; one LOW accepted in writing) — and ledger 69 closed
+the day it earned closing: clearForTest now flips WorkspaceTrust into
+a scratch-node test mode, so a local `mvn verify` stops deleting the
+developer's real trust grants (it bit five times today; the sentinel
+regression pins it). Seven releases on 2026-08-01: v1.219 goto +
+switcher, v1.220 review, v1.221 docs, v1.222 DevTools pane, v1.223
+focused tests + the missed gate, v1.224 the sweep + ledger, v1.225
+this close. The Angular roadmap's remaining item is the ng-serve ↔
+JFX WebView hang investigation (ledger 70).
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

@@ -77,7 +77,15 @@ the natural word in its context, and a rename would trade familiar
 local vocabulary for global consistency nobody asked for. Revisit only
 if a real user confuses two of them in the same surface.
 
-### 69. `mvn verify` wipes the developer's real Workspace Trust prefs — LOW
+### 69. `mvn verify` wipes the developer's real Workspace Trust prefs — CLOSED v1.225.0
+Fixed: the first `clearForTest()` call flips `WorkspaceTrust` into
+test mode for the rest of the JVM — the in-memory set clears and every
+subsequent write lands in a scratch child node, leaving the real
+grants untouched. Production never calls it. Regression test seeds a
+sentinel in the real node and proves it survives clearForTest AND
+test-mode writes. (Original entry kept below for the record.)
+
+### 69-original. `mvn verify` wipes the developer's real Workspace Trust prefs — LOW
 `WorkspaceTrust` stores grants in `java.util.prefs` userRoot
 (`org/nmox/studio/rack/service/trusted`, one entry per path — the
 v1.27.0 8KB-cap fix), and its tests call `clearForTest` against the

@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.225.0] - 2026-08-01
+
+The day-arc review (v1.222–v1.224) and ledger 69, closed the day it
+mattered.
+
+### Fixed
+- **Tests no longer wipe the developer's real trust grants (ledger
+  69).** `WorkspaceTrust.clearForTest` used to clear the REAL
+  `java.util.prefs` node, so every local `mvn verify` deleted the
+  developer's own Workspace Trust grants — the dev app's trust-gated
+  features (LSP servers, Prettier, debug) silently stopped until
+  re-granted. It bit five times on this one day. The first
+  `clearForTest` call now flips the class into test mode: writes land
+  in a scratch child node, the real grants survive, and production —
+  which never calls it — is untouched. Regression-proven with a
+  sentinel seeded in the real node.
+
+### Reviewed CLEAN (v1.222–v1.224 lenses)
+- The `TrustGate` facade: EDT prompting matches every other gate; the
+  null-lookup proceed is confined to the rack-absent degenerate and
+  now pinned by `RackTrustGateTest`, which fails if the
+  `@ServiceProvider` wiring ever breaks (that break would silently
+  remove the forge gates).
+- The Angular pane's page-side walker: per-element try/catch, the
+  temporary marker survives only a mid-walk crash on a hostile page
+  (harmless own-property; blessed), stringify input is strings and
+  numbers by construction.
+- `RunFocusedTestAction`'s angular.json walk terminates at the
+  filesystem root; the `--include` path is forward-slashed for
+  Windows.
+- One LOW accepted in writing: declining the project-local
+  language-server install reports `FAILED` rather than a dedicated
+  "declined" result — the install genuinely did not happen, and a new
+  enum value would ripple through the listener API for a message
+  nuance.
+
 ## [1.224.0] - 2026-08-01
 
 The spawn-site trust sweep. v1.223.0 proved the per-incident approach
@@ -8241,6 +8277,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.225.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.224.0...v1.225.0
 [1.224.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.223.0...v1.224.0
 [1.223.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.222.0...v1.223.0
 [1.222.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.221.0...v1.222.0

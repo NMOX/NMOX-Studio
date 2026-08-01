@@ -39,8 +39,27 @@ public final class WorkspaceTrust {
      */
     private static final Preferences trustedNode = prefs.node("trusted");
 
+    /**
+     * Ledger 69 (fixed v1.225.0): tests used to clear the REAL trusted
+     * node, so every local {@code mvn verify} deleted the developer's
+     * own trust grants — and the dev app's trust-gated features
+     * silently stopped until re-granted. The first {@link
+     * #clearForTest} call now flips the class into test mode for the
+     * rest of the JVM: the in-memory set is cleared and every
+     * subsequent write lands in this scratch child instead, leaving
+     * the real grants untouched. Production never calls clearForTest,
+     * so nothing changes for users.
+     */
+    private static final Preferences testScratchNode = prefs.node("trusted-test");
+    private static volatile boolean testMode = false;
+
     static {
         load();
+    }
+
+    /** The node writes go to: the real store, or the test scratch. */
+    private static Preferences store() {
+        return testMode ? testScratchNode : trustedNode;
     }
 
     private WorkspaceTrust() {
@@ -75,7 +94,7 @@ public final class WorkspaceTrust {
     /** Records one trusted path as its own preference entry (in memory + store). */
     private static void remember(String path) {
         trustedPaths.add(path);
-        trustedNode.put(keyFor(path), path);
+        store().put(keyFor(path), path);
     }
 
     /** A short, stable, collision-resistant key for a path (fits the 80-char key cap). */
@@ -109,18 +128,19 @@ public final class WorkspaceTrust {
     }
 
     /**
-     * Test hook: forget every trusted path, in memory and in the store.
-     * Public so cross-module tests (the editor's LSP/Prettier trust
-     * gates) can restore a clean trust store after seeding one — keeps
-     * unique @TempDir paths out of the persisted prefs.
+     * Test hook: start from an empty trust state WITHOUT touching the
+     * developer's real grants (ledger 69). The first call switches
+     * this JVM to the scratch store; the in-memory set and the scratch
+     * node are cleared so each test starts clean. Public so
+     * cross-module tests (the editor's LSP/Prettier trust gates) can
+     * seed and reset trust hermetically.
      */
     public static synchronized void clearForTest() {
+        testMode = true;
         trustedPaths.clear();
         try {
-            trustedNode.clear();
-            prefs.remove(LEGACY_JOINED_KEY);
-            flush(trustedNode);
-            flush(prefs);
+            testScratchNode.clear();
+            flush(testScratchNode);
         } catch (BackingStoreException ignore) {
             // best effort
         }
@@ -146,7 +166,7 @@ public final class WorkspaceTrust {
     public static synchronized void trust(File dir) {
         if (dir != null) {
             remember(dir.getAbsolutePath());
-            flush(trustedNode);
+            flush(store());
         }
     }
 
