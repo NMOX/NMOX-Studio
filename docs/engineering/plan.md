@@ -431,6 +431,17 @@ attribute merge fails silently and partially — the feature "works" on
 exactly the tokens the grammar doesn't know, which a quick look
 mistakes for working.*
 
+Currency addendum 2026-08-02 at **v1.231.0**: the Junior CSS3 persona
+— CSS Color 4 functions (oklch/oklab/lab/lch/hwb/color-mix) swatch
+with real color-space math and pick back in authored form; the swatch
+layer moved to TOP rack after the gauntlet showed the legacy parser's
+warning background hiding modern colors. Ledger 71 records the
+three-way external block on silencing those false warnings, with the
+decompiled evidence. Recon lesson: the platform property DB is
+current (completion knew container-type with spec docs) — probe
+before assuming a whole surface is stale; the rot was only in the
+value grammar.
+
 Currency addendum 2026-08-02 at **v1.230.0**: designer pass part 4 —
 Compile to CSS with recompile-on-save armed on the gesture (sass CLI,
 Prettier-idiom trust-gated binary, partial refusal, error verbatim);

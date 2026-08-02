@@ -115,6 +115,29 @@ HTTP/2 via ALPN — and `ng serve` now loads in the Browser, with the
 DevTools Angular pane reading its live component tree. Original
 entry below.
 
+### 71. The platform CSS parser flags modern color syntax as warnings — LOW, blocked externally
+Measured live (2026-08-02, v1.231.0 gauntlet): `color-mix(in oklch,
+tomato 40%, white)` and space-separated `hsl(210 60% 40%)` draw
+"Unexpected character(s) … found" warnings from the ide cluster's
+css.lib ANTLR grammar, which predates CSS Color 4 and native nesting
+era value syntax. Three removal routes were tried and are all blocked
+from outside the platform module:
+- `CssPreferences.disabledErrorChecks` (the Alt-Enter machinery) was
+  pre-seeded with every key the producer can emit (`PARSING`, `LEXING`,
+  `AST`) in a live userdir — the warnings persisted; the mechanism is
+  inert for these errors in this build.
+- `csl.spi.ErrorFilter` unions the outputs of ALL registered factories
+  (decompiled `ErrorFilterQuery`): an error kept by the css module's
+  own filter survives no matter what ours returns.
+- `css.lib.api.ErrorsProvider` is additive-only — it can contribute
+  diagnostics, never remove another provider's.
+What shipped instead (v1.231.0): the swatch layer moved to the TOP
+rack so the modern color literals paint over the warning background —
+the color always shows, the warning stays as squiggle + gutter badge.
+Honest future fixes: upstream a css.lib grammar refresh to Apache
+NetBeans, or ship stylelint as an LSP so a modern linter carries CSS
+correctness and users can Alt-Enter the legacy check off per file.
+
 ### 70-original. The Angular CLI's esbuild dev server hangs the JavaFX WebView — MEDIUM
 Measured live (2026-08-01, v1.222.0 gauntlet): navigating the in-app
 Browser to a running `ng serve` (Angular 18, the esbuild-based

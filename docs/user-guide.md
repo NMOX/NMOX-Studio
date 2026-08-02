@@ -267,8 +267,10 @@ or no consent and it says so; nothing is ever sent without your click.
 - **`.editorconfig` is honored on save** — indent, charset, final
   newline. Your formatter devices (GLOSS et al.) handle the rest.
 - **Color literals show their color** in CSS, SCSS, and Less: every
-  `#hex`, `rgb()`, `hsl()`, and named color is painted as the color it
-  names, right where it's written. Comments stay prose, and
+  `#hex`, `rgb()`, `hsl()`, `hwb()`, `oklch()`, `oklab()`, `lab()`,
+  `lch()`, and named color is painted as the color it names, right
+  where it's written — and `color-mix()` paints the actual computed
+  mix, with its component colors layered inside. Comments stay prose, and
   identifiers that merely contain a color name (`$red-dark`) never
   light up. ⌘-click a literal to open a **color picker** seeded with
   that color — picking replaces the literal in its authored form (hex
