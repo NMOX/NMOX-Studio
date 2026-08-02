@@ -273,6 +273,11 @@ or no consent and it says so; nothing is ever sent without your click.
   light up. In the Browser DevTools, selecting an element shows a
   **WCAG contrast verdict** (ratio plus AA/AAA for normal and large
   text) computed from its own colors.
+- **The Browser is a design surface too**: a toolbar dropdown
+  constrains the page to a device viewport (iPhone/Android/Tablet/
+  Laptop, real CSS pixels, media queries fire for real), and saving
+  any web file auto-reloads a local page — the save → see loop with
+  no manual refresh. Remote pages never auto-reload.
 
 ### Angular templates, first-class
 

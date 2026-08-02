@@ -81,6 +81,10 @@ public final class WebBrowserTopComponent extends TopComponent {
         }
         browser = new FxBrowserPanel(title -> setDisplayName(BrowserUrls.tabTitle(title)));
         add(browser, BorderLayout.CENTER);
+        // save → see: local pages reload themselves on web-file saves
+        // (v1.228.0); detached symmetrically in stopEngine when the tab
+        // closes
+        browser.startSaveReload();
         // DevTools toggle chord (unadvertised — the toolbar button is
         // the contract; docked TopComponents don't reliably receive
         // every chord, the v1.204.0 irc lesson)

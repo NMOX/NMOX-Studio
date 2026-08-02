@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.228.0] - 2026-08-02
+
+The Senior Web Designer pass, part 2: the save → see loop, closed.
+
+### Added
+- **Responsive viewport presets in the Browser.** A toolbar dropdown
+  constrains the page to a device viewport — iPhone 390×844,
+  Android 412×915, Tablet 768×1024, Laptop 1366×768 — centered on a
+  neutral backdrop, with Full restoring the whole window. No
+  user-agent games: the real page at the real CSS-pixel width, so
+  media queries fire exactly as they would in a window that size.
+  Live-proven: a `max-width: 500px` breakpoint flipped its content
+  the moment the iPhone preset was chosen.
+- **Save-to-reload for local pages.** Saving a web file (html, css,
+  scss, less, js, ts, svg, json…) reloads the Browser by itself when
+  it is showing a LOCAL page (localhost/127.0.0.1 — a dev server or
+  IGNITION's static serve), coalesced 400 ms after the last save so a
+  Save All is one reload. Remote pages never auto-reload: a save of
+  yours has nothing to do with a page you're merely reading. The
+  listener attaches when the Browser tab opens and detaches
+  symmetrically when it closes. Live-proven: editing a background to
+  `tomato` and pressing ⌘S repainted the served page with no manual
+  reload — composing with the active viewport preset.
+
 ## [1.227.0] - 2026-08-02
 
 The Senior Web Designer pass, part 1: colors become visible where they
@@ -8332,6 +8356,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.228.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.227.0...v1.228.0
 [1.227.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.226.0...v1.227.0
 [1.226.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.225.0...v1.226.0
 [1.225.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.224.0...v1.225.0
