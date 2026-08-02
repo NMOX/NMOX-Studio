@@ -85,6 +85,33 @@ class CssColorsTest {
     }
 
     @Test
+    @DisplayName("picker formatting preserves the authored form")
+    void formatPreservesForm() {
+        Color tomato = new Color(0xFF, 0x63, 0x47);
+        assertThat(CssColors.format(tomato, "#336699")).isEqualTo("#ff6347");
+        assertThat(CssColors.format(tomato, "rgb(1, 2, 3)")).isEqualTo("rgb(255, 99, 71)");
+        assertThat(CssColors.format(tomato, "RGBA(1,2,3,.5)")).isEqualTo("rgb(255, 99, 71)");
+        // a picked color almost never has a name: named becomes hex
+        assertThat(CssColors.format(tomato, "rebeccapurple")).isEqualTo("#ff6347");
+    }
+
+    @Test
+    @DisplayName("hsl round trip: rgb→hsl→rgb lands on the same color")
+    void hslRoundTrip() {
+        // hsl(210, 60%, 40%) parses to #2966A3; formatting it back as hsl
+        // must re-parse to the same RGB
+        Color c = new Color(0x29, 0x66, 0xA3);
+        String hsl = CssColors.format(c, "hsl(0, 0%, 0%)");
+        assertThat(hsl).startsWith("hsl(");
+        List<CssColors.ColorSpan> reparsed = CssColors.scan("a{c:" + hsl + "}");
+        assertThat(reparsed).singleElement()
+                .extracting(CssColors.ColorSpan::color).isEqualTo(c);
+        // achromatic: hue and saturation collapse to zero, lightness holds
+        assertThat(CssColors.format(new Color(128, 128, 128), "hsl(1,2%,3%)"))
+                .isEqualTo("hsl(0, 0%, 50%)");
+    }
+
+    @Test
     @DisplayName("garbage never throws and never matches")
     void hostileInput() {
         assertThat(CssColors.scan("")).isEmpty();

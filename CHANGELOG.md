@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.229.0] - 2026-08-02
+
+The Senior Web Designer pass, part 3: the swatch answers back.
+
+### Added
+- **Click-a-color picker in stylesheets.** ⌘-hover a color literal in
+  CSS, SCSS, or Less and it underlines with "Pick a color (replaces
+  this literal)"; ⌘-click opens a chooser seeded with that exact
+  color, and picking replaces the literal IN ITS AUTHORED FORM — hex
+  stays hex, `rgb()` stays `rgb()`, `hsl()` stays `hsl()` via the
+  reverse conversion (round-trip test-pinned), and a named color
+  becomes hex (a picked color almost never has a name). The edit is
+  one undo unit, and if the document changed while the chooser was
+  open the replacement is refused with an honest status line instead
+  of landing on stale offsets. Live-proven: `tomato` ⌘-clicked, the
+  chooser opened seeded at HSL 9/100/63, a pick landed as `#a8b7fb`,
+  the swatch repainted instantly, and one ⌘Z restored it.
+
+### Fixed
+- **Swatches now paint on grammar-colored literals.** The v1.227.0
+  swatch layer sat in the syntax racks, where the CSL/TextMate
+  coloring painted over it for every literal the grammar recognizes —
+  in practice `tomato` and `#hex` showed no swatch at all and only
+  grammar-unknown literals got one. Found live in this release's
+  gauntlet; the layer now rides SHOW_OFF_RACK (still under
+  caret/selection), and named, hex, and functional literals all paint.
+
 ## [1.228.0] - 2026-08-02
 
 The Senior Web Designer pass, part 2: the save → see loop, closed.

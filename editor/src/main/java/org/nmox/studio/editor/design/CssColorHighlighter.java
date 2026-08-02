@@ -102,10 +102,14 @@ public final class CssColorHighlighter implements DocumentListener {
             OffsetsBag bag = new OffsetsBag(context.getDocument());
             new CssColorHighlighter(context.getDocument(), bag);
             return new HighlightsLayer[]{
-                // above syntax coloring so the swatch wins the background,
-                // below caret/selection so selecting still looks selected
+                // SHOW_OFF_RACK, not SYNTAX_RACK: the CSL/TextMate coloring
+                // paints grammar-recognized literals (named colors, hex) at
+                // the top of the syntax racks and was overriding the swatch —
+                // only grammar-UNKNOWN literals showed one (found live in the
+                // v1.229.0 gauntlet). Still below caret/selection racks, so
+                // selecting a literal still looks selected.
                 HighlightsLayer.create("nmox-css-colors",
-                        ZOrder.SYNTAX_RACK.forPosition(1000), true, bag)
+                        ZOrder.SHOW_OFF_RACK.forPosition(100), true, bag)
             };
         }
     }

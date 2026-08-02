@@ -128,6 +128,52 @@ public final class CssColors {
         return luminance(background) > 0.45 ? Color.BLACK : Color.WHITE;
     }
 
+    /**
+     * Formats a picked color IN THE FORM the literal it replaces was
+     * authored in (v1.229.0, the color picker): hex stays hex,
+     * {@code rgb()} stays {@code rgb()}, {@code hsl()} stays
+     * {@code hsl()} (via the reverse conversion), and a named color —
+     * which the picked color almost never has — becomes hex.
+     */
+    public static String format(Color picked, String originalLiteral) {
+        String lower = originalLiteral.toLowerCase(java.util.Locale.ROOT);
+        if (lower.startsWith("rgb")) {
+            return String.format(java.util.Locale.ROOT, "rgb(%d, %d, %d)",
+                    picked.getRed(), picked.getGreen(), picked.getBlue());
+        }
+        if (lower.startsWith("hsl")) {
+            double[] hsl = rgbToHsl(picked);
+            return String.format(java.util.Locale.ROOT, "hsl(%.0f, %.0f%%, %.0f%%)",
+                    hsl[0], hsl[1] * 100, hsl[2] * 100);
+        }
+        return String.format(java.util.Locale.ROOT, "#%02x%02x%02x",
+                picked.getRed(), picked.getGreen(), picked.getBlue());
+    }
+
+    /** RGB → HSL: h in [0,360), s and l in [0,1]. The CSS reverse map. */
+    static double[] rgbToHsl(Color c) {
+        double r = c.getRed() / 255.0;
+        double g = c.getGreen() / 255.0;
+        double b = c.getBlue() / 255.0;
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+        double l = (max + min) / 2;
+        if (max == min) {
+            return new double[]{0, 0, l}; // achromatic
+        }
+        double d = max - min;
+        double s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        double h;
+        if (max == r) {
+            h = (g - b) / d + (g < b ? 6 : 0);
+        } else if (max == g) {
+            h = (b - r) / d + 2;
+        } else {
+            h = (r - g) / d + 4;
+        }
+        return new double[]{h * 60, s, l};
+    }
+
     /** WCAG relative luminance in [0,1]. */
     static double luminance(Color c) {
         return 0.2126 * channel(c.getRed())
