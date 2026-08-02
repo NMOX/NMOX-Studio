@@ -270,7 +270,10 @@ or no consent and it says so; nothing is ever sent without your click.
   `#hex`, `rgb()`, `hsl()`, and named color is painted as the color it
   names, right where it's written. Comments stay prose, and
   identifiers that merely contain a color name (`$red-dark`) never
-  light up. In the Browser DevTools, selecting an element shows a
+  light up. ⌘-click a literal to open a **color picker** seeded with
+  that color — picking replaces the literal in its authored form (hex
+  stays hex, `rgb()` stays `rgb()`, `hsl()` stays `hsl()`) as a
+  single undoable edit. In the Browser DevTools, selecting an element shows a
   **WCAG contrast verdict** (ratio plus AA/AAA for normal and large
   text) computed from its own colors.
 - **The Browser is a design surface too**: a toolbar dropdown

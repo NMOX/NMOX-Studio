@@ -417,6 +417,20 @@ local-URL-only, 400 ms coalesced, attach/detach symmetric with the
 tab). The persona's loop is closed: swatches where colors live,
 contrast where elements are, breakpoints at real widths, save → see.
 
+Currency addendum 2026-08-02 at **v1.229.0**: designer pass part 3 —
+the click-a-color picker (⌘-click a literal → chooser seeded with it →
+in-authored-form replacement as one undo unit, stale-document refusal
+with an honest status line; rides the same HyperlinkProviderExt idiom
+as the v1.219.0 template goto). The release's gauntlet found a real
+v1.227.0 bug: the swatch layer sat in the SYNTAX racks and the
+CSL/TextMate coloring painted over it for every grammar-recognized
+literal — `tomato` and `#hex` never showed a swatch, only
+grammar-unknown names did; moved to SHOW_OFF_RACK, all forms paint.
+The failure pattern to keep: *a highlight layer that loses an
+attribute merge fails silently and partially — the feature "works" on
+exactly the tokens the grammar doesn't know, which a quick look
+mistakes for working.*
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
