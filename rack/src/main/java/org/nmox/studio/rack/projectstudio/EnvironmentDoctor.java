@@ -38,6 +38,7 @@ public final class EnvironmentDoctor {
                 new String[]{"yarn", "Node package manager — AUTO lanes honor yarn.lock", "brew install yarn"},
                 new String[]{"biome", "one-toolchain lint+format — PURITY/GLOSS auto lanes", "brew install biome"},
                 new String[]{"cwebp", "WebP conversion — Image Kit (Web)", "brew install webp"},
+                new String[]{"sass", "Sass → CSS — Compile to CSS in the SCSS editor", "npm i -g sass"},
                 new String[]{"docker", "containers — HARBOR, Docker panel", "Docker Desktop"},
                 new String[]{"java", "JVM — Maven lanes, jshell space", "brew install openjdk"},
                 new String[]{"mvn", "Maven builds", "brew install maven"},

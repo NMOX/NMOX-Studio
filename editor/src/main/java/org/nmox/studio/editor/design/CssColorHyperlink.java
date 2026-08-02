@@ -27,6 +27,10 @@ import org.openide.windows.WindowManager;
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType = "text/css", service = HyperlinkProviderExt.class, position = 150),
+    // text/scss + text/less are the css-prep mimes real .scss/.less
+    // files resolve to; the x- pair only reaches .sass (v1.230.0 find)
+    @MimeRegistration(mimeType = "text/scss", service = HyperlinkProviderExt.class, position = 150),
+    @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 150)
 })

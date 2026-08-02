@@ -431,6 +431,18 @@ attribute merge fails silently and partially — the feature "works" on
 exactly the tokens the grammar doesn't know, which a quick look
 mistakes for working.*
 
+Currency addendum 2026-08-02 at **v1.230.0**: designer pass part 4 —
+Compile to CSS with recompile-on-save armed on the gesture (sass CLI,
+Prettier-idiom trust-gated binary, partial refusal, error verbatim);
+the scss → css → Browser-repaint loop live-proven with one ⌘S. The
+gauntlet's find: **css-prep claims .scss/.less as text/scss and
+text/less before our x- resolver**, so every x-scss/x-less surface
+(v1.227 swatches, v1.229 picker, Prettier popup) had never reached a
+real .scss file — only .sass. The failure pattern to keep: *a mime
+registration is only as real as the resolver race it wins — verify
+which mime a REAL file gets (the popup's action list names the owner)
+before believing any per-mime feature shipped.*
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

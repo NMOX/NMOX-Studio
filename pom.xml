@@ -258,6 +258,12 @@
                         <exclude>**/ui/actions/OpenFileAction*.class</exclude>
                         <exclude>**/ui/actions/OpenFolderAction*.class</exclude>
                         <exclude>**/ui/actions/NewProjectAction*.class</exclude>
+                        <!-- SassCompileAction is editor/FS glue: SaveCookie +
+                             status lines + a FileChangeListener that re-posts to
+                             the compiler; the compile logic itself (argv, output
+                             derivation, partial refusal, error snippets, binary
+                             resolution) lives in SassCompiler, which is tested. -->
+                        <exclude>**/editor/sass/SassCompileAction*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
