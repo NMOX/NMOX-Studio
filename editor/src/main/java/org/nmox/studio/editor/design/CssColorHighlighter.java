@@ -36,7 +36,7 @@ public final class CssColorHighlighter implements DocumentListener {
     private final OffsetsBag bag;
     private RequestProcessor.Task pending;
 
-    private CssColorHighlighter(Document doc, OffsetsBag bag) {
+    CssColorHighlighter(Document doc, OffsetsBag bag) {
         this.doc = doc;
         this.bag = bag;
         doc.addDocumentListener(this);
@@ -50,7 +50,7 @@ public final class CssColorHighlighter implements DocumentListener {
         pending = RP.post(this::recompute, delayMillis);
     }
 
-    private void recompute() {
+    void recompute() {
         final String[] text = new String[1];
         doc.render(() -> {
             try {
@@ -67,6 +67,16 @@ public final class CssColorHighlighter implements DocumentListener {
             fresh.addHighlight(span.start(), span.end(), attrs);
         }
         bag.setHighlights(fresh);
+    }
+
+    /**
+     * Test barrier: drains the recompute lane so a test never reads the
+     * bag while a scheduled recompute is writing it (the awaitIdle
+     * idiom; a torn concurrent read cost this test suite one flake).
+     */
+    static void awaitQuiet() {
+        RP.post(() -> {
+        }).waitFinished();
     }
 
     /** The preview is the opaque color; alpha blending in a text run is noise. */
