@@ -124,6 +124,21 @@ public final class FxBrowserPanel extends JPanel {
         progress.setPreferredSize(new Dimension(70, 14));
         progress.setVisible(false);
         right.add(progress);
+        // responsive presets (v1.228.0): cap the page to a device viewport
+        // so CSS breakpoints fire exactly as in a window of that size
+        javax.swing.JComboBox<ViewportPresets.Preset> viewport =
+                new javax.swing.JComboBox<>(
+                        ViewportPresets.ALL.toArray(new ViewportPresets.Preset[0]));
+        viewport.setToolTipText("Responsive preview: constrain the page to a device "
+                + "viewport (CSS pixels). Full uses the whole window.");
+        viewport.addActionListener(e -> {
+            ViewportPresets.Preset p =
+                    (ViewportPresets.Preset) viewport.getSelectedItem();
+            if (p != null) {
+                onFx(() -> applyViewport(p));
+            }
+        });
+        right.add(viewport);
         right.add(navButton("−", "Zoom out", () -> setZoom(zoom / 1.2)));
         right.add(zoomLabel);
         right.add(navButton("+", "Zoom in", () -> setZoom(zoom * 1.2)));
@@ -171,7 +186,23 @@ public final class FxBrowserPanel extends JPanel {
                         -> console.add("error", "Load failed: " + loc, at));
             }
         });
-        fxPanel.setScene(new Scene(webView));
+        // the WebView sits centered in a neutral backdrop so a viewport
+        // preset can cap it to a device size (v1.228.0); Full = fill
+        javafx.scene.layout.StackPane viewportPane =
+                new javafx.scene.layout.StackPane(webView);
+        viewportPane.setStyle("-fx-background-color: #2b2b2b;");
+        fxPanel.setScene(new Scene(viewportPane));
+    }
+
+    /** FX thread. Caps the WebView to a device viewport, or frees it. */
+    private void applyViewport(ViewportPresets.Preset preset) {
+        if (preset.full()) {
+            webView.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            webView.setPrefSize(-1, -1); // computed = fill the pane
+        } else {
+            webView.setPrefSize(preset.width(), preset.height());
+            webView.setMaxSize(preset.width(), preset.height());
+        }
     }
 
     /**
@@ -276,6 +307,71 @@ public final class FxBrowserPanel extends JPanel {
             }
         });
         devTools.stopTimers();
+        stopSaveReload();
+    }
+
+    // ---- save-to-reload (v1.228.0, the Senior Web Designer pass) --------
+
+    /**
+     * The designer's tightest loop is save → see. When a web file
+     * (html/css/js family) is written anywhere and the Browser is
+     * showing a LOCAL page (localhost/127.0.0.1 — a dev server or
+     * IGNITION's static serve), the page reloads by itself, coalesced
+     * 400 ms after the last save so a Save All is one reload. Remote
+     * pages never auto-reload: a save of yours has nothing to do with
+     * a page you're merely reading.
+     */
+    private static final java.util.Set<String> RELOAD_EXTS = java.util.Set.of(
+            "html", "htm", "css", "scss", "less", "js", "mjs", "ts", "svg", "json");
+    private final javax.swing.Timer reloadCoalesce = coalescedReload();
+    private final org.openide.filesystems.FileChangeListener saveListener =
+            new org.openide.filesystems.FileChangeAdapter() {
+                @Override
+                public void fileChanged(org.openide.filesystems.FileEvent fe) {
+                    String ext = fe.getFile().getExt().toLowerCase(java.util.Locale.ROOT);
+                    if (RELOAD_EXTS.contains(ext)) {
+                        SwingUtilities.invokeLater(FxBrowserPanel.this::maybeScheduleReload);
+                    }
+                }
+            };
+    private boolean saveListenerInstalled;
+
+    private javax.swing.Timer coalescedReload() {
+        javax.swing.Timer t = new javax.swing.Timer(400,
+                e -> onFx(() -> {
+                    try {
+                        engine.reload();
+                    } catch (RuntimeException ignored) {
+                        // best effort; a broken engine has bigger problems
+                    }
+                }));
+        t.setRepeats(false);
+        return t;
+    }
+
+    /** EDT. Arms the coalescer only when the shown page is local. */
+    private void maybeScheduleReload() {
+        String url = urlField.getText();
+        if (url != null && (url.contains("//localhost") || url.contains("//127.0.0.1"))) {
+            reloadCoalesce.restart();
+        }
+    }
+
+    /** EDT. Called from the TopComponent when the tab opens. */
+    public void startSaveReload() {
+        if (!saveListenerInstalled) {
+            org.openide.filesystems.FileUtil.addFileChangeListener(saveListener);
+            saveListenerInstalled = true;
+        }
+    }
+
+    /** EDT. Symmetric detach — the listener dies with the tab. */
+    private void stopSaveReload() {
+        if (saveListenerInstalled) {
+            org.openide.filesystems.FileUtil.removeFileChangeListener(saveListener);
+            saveListenerInstalled = false;
+        }
+        reloadCoalesce.stop();
     }
 
     /** Ceiling on anything crossing back from the page (see runScript). */

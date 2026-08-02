@@ -409,6 +409,14 @@ reference values; transparent backgrounds honestly refuse). Both
 live-proven. Part 2 candidates for the persona: responsive viewport
 presets in the Browser, and save-to-reload for served static projects.
 
+Currency addendum 2026-08-02 at **v1.228.0**: designer pass part 2 —
+viewport presets (StackPane-centered WebView capped to CSS-pixel
+device sizes; the media query fired live on the iPhone preset) and
+save-to-reload (global FileChangeAdapter filtered to web extensions,
+local-URL-only, 400 ms coalesced, attach/detach symmetric with the
+tab). The persona's loop is closed: swatches where colors live,
+contrast where elements are, breakpoints at real widths, save → see.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
