@@ -266,6 +266,13 @@ or no consent and it says so; nothing is ever sent without your click.
   exactly that test — JS/TS, Go, Rust, Python, PHPUnit, and more.
 - **`.editorconfig` is honored on save** — indent, charset, final
   newline. Your formatter devices (GLOSS et al.) handle the rest.
+- **Color literals show their color** in CSS, SCSS, and Less: every
+  `#hex`, `rgb()`, `hsl()`, and named color is painted as the color it
+  names, right where it's written. Comments stay prose, and
+  identifiers that merely contain a color name (`$red-dark`) never
+  light up. In the Browser DevTools, selecting an element shows a
+  **WCAG contrast verdict** (ratio plus AA/AAA for normal and large
+  text) computed from its own colors.
 
 ### Angular templates, first-class
 
