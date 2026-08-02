@@ -100,8 +100,15 @@ public final class CssColorHighlighter implements DocumentListener {
         // attribute-only change: no text moved, spans still valid
     }
 
+    // BOTH mime families: the ide cluster's css-prep resolver claims
+    // .scss/.less as text/scss and text/less BEFORE our x- resolver
+    // (found live in the v1.230.0 gauntlet — the x- registrations only
+    // ever reach .sass files), so the swatches must ride the platform
+    // mimes too or real stylesheets never see them.
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/css", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/scss", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/less", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/x-scss", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/x-less", service = HighlightsLayerFactory.class)
     })

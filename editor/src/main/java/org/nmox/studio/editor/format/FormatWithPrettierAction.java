@@ -39,6 +39,10 @@ import org.openide.util.RequestProcessor;
     @ActionReference(path = "Editors/text/javascript/Popup", position = 1850),
     @ActionReference(path = "Editors/text/typescript/Popup", position = 1850),
     @ActionReference(path = "Editors/text/css/Popup", position = 1850),
+    // text/scss + text/less are the css-prep mimes real .scss/.less
+    // files resolve to; the x- pair only reaches .sass (v1.230.0 find)
+    @ActionReference(path = "Editors/text/scss/Popup", position = 1850),
+    @ActionReference(path = "Editors/text/less/Popup", position = 1850),
     @ActionReference(path = "Editors/text/x-scss/Popup", position = 1850),
     @ActionReference(path = "Editors/text/x-less/Popup", position = 1850),
     @ActionReference(path = "Editors/text/html/Popup", position = 1850),

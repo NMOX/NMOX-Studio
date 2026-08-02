@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.230.0] - 2026-08-02
+
+The Senior Web Designer pass, part 4: scss → pixels, no terminal.
+
+### Added
+- **Compile to CSS in the SCSS editor.** Right-click a stylesheet →
+  Compile to CSS runs `sass --no-source-map` and writes the sibling
+  `.css` — and the gesture ARMS recompile-on-save for that file, so
+  every later ⌘S recompiles by itself (the v1.212.0 law: a capability
+  arms on the gesture that proves you want it). The binary resolves
+  the Prettier way: the project's own `node_modules/.bin/sass` only
+  when the workspace is trusted, else your global install; partials
+  (`_name.scss`) refuse honestly ("imports, not entry points"); a
+  compile error puts sass's own first line on the status bar. It
+  composes with v1.228.0's save-to-reload: live-proven end to end —
+  one ⌘S on `theme.scss` recompiled, rewrote `theme.css`, and the
+  served page turned tomato with no manual reload. Doctor probes sass.
+
+### Fixed
+- **The designer surfaces now reach real .scss/.less files.** The ide
+  cluster's css-prep module resolves `.scss` to `text/scss` and
+  `.less` to `text/less` BEFORE this product's `text/x-scss`/`x-less`
+  resolver — so the v1.227.0 color swatches, the v1.229.0 picker, and
+  the Format-with-Prettier menu entry had never applied to real SCSS
+  or Less files (only to indented `.sass`, which nothing else claims).
+  Found live in this release's gauntlet; all four surfaces now also
+  register on the platform mimes, keeping css-prep's own SCSS
+  intelligence (rules navigator, completion) intact beside them.
+
 ## [1.229.0] - 2026-08-02
 
 The Senior Web Designer pass, part 3: the swatch answers back.

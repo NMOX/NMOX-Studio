@@ -276,6 +276,12 @@ or no consent and it says so; nothing is ever sent without your click.
   single undoable edit. In the Browser DevTools, selecting an element shows a
   **WCAG contrast verdict** (ratio plus AA/AAA for normal and large
   text) computed from its own colors.
+- **Compile to CSS**: right-click an .scss stylesheet and compile it
+  to its sibling .css — the gesture also arms recompile-on-save, so
+  every later ⌘S keeps the .css fresh (and, with a local page open in
+  the Browser, repaints it — scss to pixels with no terminal).
+  Partials (`_name.scss`) are refused honestly; sass errors land on
+  the status bar in sass's own words.
 - **The Browser is a design surface too**: a toolbar dropdown
   constrains the page to a device viewport (iPhone/Android/Tablet/
   Laptop, real CSS pixels, media queries fire for real), and saving
