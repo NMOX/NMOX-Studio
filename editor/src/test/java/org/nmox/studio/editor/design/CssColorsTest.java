@@ -111,6 +111,79 @@ class CssColorsTest {
                 .isEqualTo("hsl(0, 0%, 50%)");
     }
 
+    private static void assertClose(Color actual, Color expected) {
+        assertThat(Math.abs(actual.getRed() - expected.getRed())).isLessThanOrEqualTo(2);
+        assertThat(Math.abs(actual.getGreen() - expected.getGreen())).isLessThanOrEqualTo(2);
+        assertThat(Math.abs(actual.getBlue() - expected.getBlue())).isLessThanOrEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("oklch/oklab: the reference red, achromatic anchors, % lightness")
+    void oklchAnchors() {
+        // the widely published Oklch coordinates of sRGB red
+        assertClose(CssColors.parseOklchArgs("0.628 0.2577 29.234"), new Color(0xFF0000));
+        assertClose(CssColors.parseOklchArgs("62.8% 0.2577 29.234deg"), new Color(0xFF0000));
+        assertClose(CssColors.parseOklabArgs("1 0 0"), Color.WHITE);
+        assertClose(CssColors.parseOklabArgs("0 0 0"), Color.BLACK);
+        List<CssColors.ColorSpan> spans = CssColors.scan("a{c:oklch(0.65 0.15 250)}");
+        assertThat(spans).hasSize(1); // the junior's favourite finally swatches
+    }
+
+    @Test
+    @DisplayName("lab/lch: D50 anchors and the polar identity")
+    void labAnchors() {
+        assertClose(CssColors.parseLabArgs("100 0 0"), Color.WHITE);
+        assertClose(CssColors.parseLabArgs("0 0 0"), Color.BLACK);
+        // lch with hue 0 and lab with +a on the same L,C agree
+        assertClose(CssColors.parseLchArgs("54.3 106.8 40.9"),
+                CssColors.parseLabArgs("54.3 80.7 69.9"));
+    }
+
+    @Test
+    @DisplayName("hwb: pure hue at 0/0, wash-out gray, blackness")
+    void hwbForms() {
+        assertClose(CssColors.parseHwbArgs("120 0% 0%"), new Color(0x00FF00));
+        assertClose(CssColors.parseHwbArgs("0 0% 100%"), Color.BLACK);
+        // w+b >= 100%: achromatic, gray = w/(w+b)
+        assertClose(CssColors.parseHwbArgs("0 100% 100%"), new Color(128, 128, 128));
+    }
+
+    @Test
+    @DisplayName("round trips: format(picked, modern form) re-parses to the same color")
+    void modernRoundTrips() {
+        Color tomato = new Color(0xFF, 0x63, 0x47);
+        for (String form : List.of("oklch(0 0 0)", "oklab(0 0 0)",
+                "lab(0 0 0)", "lch(0 0 0)", "hwb(0 0% 0%)")) {
+            String out = CssColors.format(tomato, form);
+            List<CssColors.ColorSpan> reparsed = CssColors.scan("a{c:" + out + "}");
+            assertThat(reparsed).as(form + " -> " + out).hasSize(1);
+            assertClose(reparsed.get(0).color(), tomato);
+        }
+    }
+
+    @Test
+    @DisplayName("color-mix: the computed mix is the swatch, spanning the whole recipe")
+    void colorMix() {
+        String css = "a{c:color-mix(in srgb, red, white)}";
+        List<CssColors.ColorSpan> spans = CssColors.scan(css);
+        // outer recipe first (start asc, wider first), then the two literals
+        assertThat(spans).hasSize(3);
+        assertThat(spans.get(0).start()).isEqualTo(css.indexOf("color-mix"));
+        assertThat(spans.get(0).end()).isEqualTo(css.indexOf("}"));
+        assertClose(spans.get(0).color(), new Color(255, 128, 128));
+
+        // weighted, nested function args, oklab space
+        List<CssColors.ColorSpan> weighted = CssColors.scan(
+                "a{c:color-mix(in srgb, rgb(255, 0, 0) 25%, white)}");
+        assertClose(weighted.get(0).color(), new Color(255, 191, 191));
+        assertThat(CssColors.scan("a{c:color-mix(in oklab, black, white)}"))
+                .isNotEmpty(); // perceptual space mixes without throwing
+        // an unreadable component: no recipe swatch, no guess
+        assertThat(CssColors.scan("a{c:color-mix(in srgb, var(--x), white)}"))
+                .extracting(CssColors.ColorSpan::start)
+                .doesNotContain("a{c:".length());
+    }
+
     @Test
     @DisplayName("garbage never throws and never matches")
     void hostileInput() {
@@ -119,5 +192,13 @@ class CssColorsTest {
         assertThat(CssColors.scan("a{c:rgb(x,y,z)}")).isEmpty();
         assertThat(CssColors.scan("a{c:hsl(1,2,3)}")).isEmpty(); // s/l need %
         assertThat(CssColors.scan("#33669")).isEmpty(); // 5 digits is no color
+        assertThat(CssColors.scan("a{c:oklch(x y z)}")).isEmpty();
+        assertThat(CssColors.scan("a{c:lab(}")).isEmpty();
+        // broken recipes: the inner literals still swatch (they ARE colors),
+        // but no span may claim the color-mix( itself
+        assertThat(CssColors.scan("a{c:color-mix(in srgb, red")) // unbalanced
+                .extracting(CssColors.ColorSpan::start).doesNotContain("a{c:".length());
+        assertThat(CssColors.scan("a{c:color-mix(red, white)}")) // no 'in space'
+                .extracting(CssColors.ColorSpan::start).doesNotContain("a{c:".length());
     }
 }

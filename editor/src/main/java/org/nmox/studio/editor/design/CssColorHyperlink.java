@@ -128,12 +128,16 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
                 text[0] = "";
             }
         });
+        // NARROWEST containing span: clicking `tomato` inside a
+        // color-mix(...) should pick the inner literal, not the recipe
+        CssColors.ColorSpan best = null;
         for (CssColors.ColorSpan span : CssColors.scan(text[0])) {
-            if (offset >= span.start() && offset < span.end()) {
-                return span;
+            if (offset >= span.start() && offset < span.end()
+                    && (best == null || span.end() - span.start() < best.end() - best.start())) {
+                best = span;
             }
         }
-        return null;
+        return best;
     }
 
 }

@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.231.0] - 2026-08-02
+
+The Junior CSS3 pass: the newest color functions become visible.
+
+### Added
+- **CSS Color 4 functions swatch and pick.** `oklch()`, `oklab()`,
+  `lab()`, `lch()`, and `hwb()` literals now paint as the colors they
+  are — with the real conversions (Ottosson's Oklab matrices, CIELAB
+  under D50 with Bradford adaptation, spec percent scaling, `deg` and
+  `none` accepted) pinned on published anchors: oklch(0.628 0.2577
+  29.234) lands on sRGB red within ±2/255. The ⌘-click picker replaces
+  each in its authored form via the inverse conversions — pick on an
+  `oklch()` literal and the replacement is `oklch(L C H)`, round-trip
+  test-pinned. Space-separated and slash-alpha syntax (`rgb(255 99 71
+  / 80%)`, `hsl(210 60% 40%)`) already parsed and keep working.
+- **`color-mix()` shows the actual mix.** The whole recipe is swatched
+  with the computed result — `color-mix(in oklch, tomato 40%, white)`
+  paints the light salmon it produces — with the component literals
+  layered inside in their own colors, percentages normalized per spec,
+  and a balanced-paren walk so nested `rgb()` components parse. srgb
+  and srgb-linear mix in their own spaces; the other spaces mix in
+  Oklab (the perceptual result they approximate — stated, not silently
+  wrong). An unreadable component (`var(--x)`) means no recipe swatch,
+  no guess. Clicking an inner literal picks that literal (narrowest
+  span wins); clicking the recipe replaces it with the picked hex.
+
+### Fixed
+- **Swatches now outrank the legacy parser's warning highlight.** The
+  platform's CSS grammar predates `color-mix()` and space-separated
+  color values and paints a warning background over exactly the
+  modern literals a junior writes — which was hiding the new swatches
+  where they mattered most. The swatch layer moved to the top rack:
+  colors always show, and the warning stays honest as the squiggle
+  underneath plus the gutter badge. (Silencing the false warnings
+  themselves is recorded as tech-debt ledger 71: the platform's
+  per-key disable proved inert for these errors in live testing, and
+  external filtering is structurally blocked — evidence in the ledger.)
+
 ## [1.230.0] - 2026-08-02
 
 The Senior Web Designer pass, part 4: scss → pixels, no terminal.

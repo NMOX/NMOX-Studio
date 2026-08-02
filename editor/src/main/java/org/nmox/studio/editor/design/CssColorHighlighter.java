@@ -125,8 +125,14 @@ public final class CssColorHighlighter implements DocumentListener {
                 // only grammar-UNKNOWN literals showed one (found live in the
                 // v1.229.0 gauntlet). Still below caret/selection racks, so
                 // selecting a literal still looks selected.
+                // DEFAULT_RACK: above the csl warning-range highlight too —
+                // the platform's legacy CSS grammar flags modern color
+                // syntax (color-mix, space-separated hsl) and its warning
+                // background was painting over the swatch, so a junior's
+                // modern colors were invisible exactly where they used
+                // them (v1.231.0 find). Still below caret/selection.
                 HighlightsLayer.create("nmox-css-colors",
-                        ZOrder.SHOW_OFF_RACK.forPosition(100), true, bag)
+                        ZOrder.TOP_RACK.forPosition(100), true, bag)
             };
         }
     }
