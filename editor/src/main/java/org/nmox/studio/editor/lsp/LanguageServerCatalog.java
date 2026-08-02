@@ -75,6 +75,11 @@ public final class LanguageServerCatalog {
         add("ESLint (JS / TS)", "vscode-eslint-language-server",
                 "npm install -g vscode-langservers-extracted",
                 List.of("npm", "install", "-g", "vscode-langservers-extracted"));
+        // stylelint rides ALONGSIDE the css servers on the same mimes
+        // (v1.232.0, the eslint arrangement for stylesheets)
+        add("Stylelint (CSS / SCSS / Less)", "stylelint-lsp",
+                "npm install -g stylelint-lsp stylelint",
+                List.of("npm", "install", "-g", "stylelint-lsp", "stylelint"));
         add("Python", "pyright-langserver", "npm install -g pyright",
                 List.of("npm", "install", "-g", "pyright"));
         add("Go", "gopls", "go install golang.org/x/tools/gopls@latest",

@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.232.0] - 2026-08-02
+
+The Senior CSS3 pass: modern lint findings arrive on their own.
+
+### Added
+- **stylelint diagnostics in the editor.** Open a stylesheet in a
+  project that carries a stylelint config and the linter's findings
+  arrive on file-open — rule names and all ("Unexpected invalid hex
+  color '#33669' (color-no-invalid-hex)", live-proven) — via
+  `stylelint-lsp` registered across the whole css family (text/css,
+  text/scss, text/less, and the x- pair that reaches .sass). This is
+  the v1.213.0 eslint arrangement told for stylesheets, and it closes
+  tech-debt ledger 71's recommended path: the platform's own CSS
+  grammar predates modern syntax and its false positives can't be
+  silenced externally, so the linter that DOES understand nesting,
+  `@container`, `oklch()` and `color-mix()` now reports beside it.
+  Same laws as eslint: the server joins the mime's other providers
+  rather than replacing them; a stylelint config is executable JS so
+  untrusted workspaces get no diagnostics (the v1.216.0 payload law);
+  and no config means no server — a project that never adopted
+  stylelint pays nothing. The catalog names both packages the install
+  needs (`npm i -g stylelint-lsp stylelint`) and Environment Doctor
+  probes the server.
+
 ## [1.231.0] - 2026-08-02
 
 The Junior CSS3 pass: the newest color functions become visible.
