@@ -284,6 +284,12 @@ or no consent and it says so; nothing is ever sent without your click.
   the Browser, repaints it — scss to pixels with no terminal).
   Partials (`_name.scss`) are refused honestly; sass errors land on
   the status bar in sass's own words.
+- **stylelint findings arrive on their own**: give a project any
+  stylelint config and diagnostics land in your stylesheets on
+  file-open, rule names included — the modern linter that understands
+  nesting, `@container`, and the new color functions, reporting beside
+  the editor's built-in checks. Install once: `npm i -g stylelint-lsp
+  stylelint`.
 - **The Browser is a design surface too**: a toolbar dropdown
   constrains the page to a device viewport (iPhone/Android/Tablet/
   Laptop, real CSS pixels, media queries fire for real), and saving

@@ -218,6 +218,75 @@ public final class LanguageServers {
         }
     }
 
+    /**
+     * stylelint via {@code stylelint-lsp} — the eslint story (v1.213.0),
+     * told for stylesheets (v1.232.0, the Senior CSS3 pass).
+     *
+     * <p>The platform's own CSS grammar predates CSS Color 4 and flags
+     * valid modern syntax ({@code color-mix()}, space-separated values)
+     * as warnings — and tech-debt ledger 71 records, with decompiled
+     * evidence, that those false positives cannot be silenced from
+     * outside the platform module. stylelint is the linter that DOES
+     * understand modern CSS (nesting, {@code @container},
+     * {@code oklch()}), so a project that adopts it gets correct,
+     * current diagnostics beside the legacy parser's noise — the same
+     * two-linters-one-truth arrangement every modern editor ships.
+     *
+     * <p>Same laws as {@link EslintServer}: the server joins the css
+     * family's other providers rather than replacing them (LSPBindings
+     * collects ALL providers per mime); a stylelint config is executable
+     * JavaScript and the library resolves from the project's
+     * node_modules, so untrusted workspaces get no diagnostics (the
+     * v1.216.0 payload law — gating only the binary is not a gate); and
+     * no config means no server, because a stylesheet without stylelint
+     * hasn't opted into stylelint's opinions.
+     */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/scss", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/less", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-less", service = LanguageServerProvider.class)
+    })
+    public static final class StylelintServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            File dir = projectDir(lookup);
+            if (dir != null) {
+                if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                    return null;
+                }
+                if (!hasStylelintConfig(dir)) {
+                    return null;
+                }
+            }
+            return launchNpm(lookup, "stylelint-lsp", "--stdio");
+        }
+    }
+
+    /** Any of stylelint's config spellings. */
+    static boolean hasStylelintConfig(File dir) {
+        for (String name : new String[]{
+            ".stylelintrc", ".stylelintrc.json", ".stylelintrc.yml",
+            ".stylelintrc.yaml", ".stylelintrc.js", ".stylelintrc.cjs",
+            ".stylelintrc.mjs", "stylelint.config.js",
+            "stylelint.config.cjs", "stylelint.config.mjs"}) {
+            if (new File(dir, name).isFile()) {
+                return true;
+            }
+        }
+        // package.json can carry a "stylelint" options key; the raw-scan
+        // tradeoff is the same as hasEslintConfig's — a false positive
+        // (e.g. a stylelint devDependency) starts a server that idles
+        File pkg = new File(dir, "package.json");
+        try {
+            return pkg.isFile() && java.nio.file.Files.readString(pkg.toPath())
+                    .contains("\"stylelint\"");
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
     /** Any of eslint's config spellings, current (flat) or legacy. */
     static boolean hasEslintConfig(File dir) {
         for (String name : new String[]{

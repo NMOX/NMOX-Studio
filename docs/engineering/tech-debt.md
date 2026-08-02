@@ -115,7 +115,7 @@ HTTP/2 via ALPN — and `ng serve` now loads in the Browser, with the
 DevTools Angular pane reading its live component tree. Original
 entry below.
 
-### 71. The platform CSS parser flags modern color syntax as warnings — LOW, blocked externally
+### 71. The platform CSS parser flags modern color syntax as warnings — LOW, blocked externally; MITIGATED v1.232.0 (stylelint-lsp ships — the "modern linter" half of the future-fixes list is done; the grammar-refresh half remains upstream work)
 Measured live (2026-08-02, v1.231.0 gauntlet): `color-mix(in oklch,
 tomato 40%, white)` and space-separated `hsl(210 60% 40%)` draw
 "Unexpected character(s) … found" warnings from the ide cluster's
