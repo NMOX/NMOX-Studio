@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.227.0] - 2026-08-02
+
+The Senior Web Designer pass, part 1: colors become visible where they
+live.
+
+### Added
+- **Inline color swatches in stylesheets.** Every color literal in
+  CSS, SCSS, and Less is painted AS its color — `#336699` renders on
+  its own blue, `rgb(240, 240, 235)` on its warm off-white — with
+  black or white text chosen by WCAG luminance so the literal stays
+  legible. Hex (`#rgb` through `#rrggbbaa`), `rgb()`/`rgba()`
+  (ints and percentages, clamped), `hsl()`/`hsla()` (the CSS
+  reference conversion), and the common named colors
+  (`rebeccapurple` included). Honest limits by design: literals in
+  `/* comments */` are prose and never light up; identifiers that
+  merely contain a color name (`$red-dark`, `--red`, `.red-box`)
+  never match; `var()` and preprocessor variables are not resolved —
+  their value isn't in this file. Live rescan coalesced 200 ms after
+  the last keystroke on a named RP; pure `CssColors` core, 7 tests.
+- **A WCAG contrast verdict in the Browser DevTools.** Select an
+  element in the DOM pane and, beside its computed `color` and
+  `background-color`, the check a designer runs by hand in a contrast
+  calculator: the ratio and all four verdicts (AA/AAA × normal/large
+  text). A fully transparent background yields no verdict — the real
+  backdrop is an ancestor's, and guessing would report a contrast the
+  page doesn't have. Pure `WcagContrast` core pinned on the reference
+  values (black-on-white 21:1; the classic `#767676` borderline at
+  ~4.54:1, AA pass / AAA fail); live-proven on example.com
+  (18.10:1 — AA pass, AAA pass).
+
 ## [1.226.0] - 2026-08-01
 
 Ledger 70, root-caused and fixed — `ng serve` loads in the Browser.
@@ -8302,6 +8332,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.227.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.226.0...v1.227.0
 [1.226.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.225.0...v1.226.0
 [1.225.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.224.0...v1.225.0
 [1.224.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.223.0...v1.224.0

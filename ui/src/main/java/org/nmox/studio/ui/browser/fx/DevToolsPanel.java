@@ -290,6 +290,15 @@ public final class DevToolsPanel extends JPanel {
             for (Map.Entry<String, String> e : style.entrySet()) {
                 sb.append("  ").append(e.getKey()).append(": ").append(e.getValue()).append('\n');
             }
+            // the check a designer runs by hand in a contrast calculator,
+            // done where the colors already are (v1.227.0); silent when the
+            // background is transparent — the real backdrop is an ancestor's
+            org.nmox.studio.ui.browser.devtools.WcagContrast.Verdict contrast =
+                    org.nmox.studio.ui.browser.devtools.WcagContrast.of(
+                            style.get("color"), style.get("background-color"));
+            if (contrast != null) {
+                sb.append("\nContrast: ").append(contrast.summary()).append('\n');
+            }
         }
         return sb.toString();
     }

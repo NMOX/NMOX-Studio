@@ -207,7 +207,9 @@ lexer; typing intelligence; **format on save with Prettier** (and on demand:
 right-click → Format with Prettier, config or not) (opt-in via
 the project's own Prettier config, project-pinned binary preferred, caret
 survives the save); comment-only spellcheck (your keys and values
-are never flagged as typos); a **Structure navigator** (⌘7) that outlines
+are never flagged as typos); **inline color swatches** in CSS/SCSS/Less
+(every color literal is painted as the color it names, with legible
+text picked by luminance); a **Structure navigator** (⌘7) that outlines
 any file — classes, functions, tests, selectors, headings, config keys —
 and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 

@@ -395,6 +395,20 @@ hangs" became a one-header bisect (hangs with `Upgrade: h2c`, 200 in
 reading its live tree — the framework bet's dev loop, in-app, end to
 end. EIGHT releases on 2026-08-01.
 
+Currency addendum 2026-08-02 at **v1.227.0**: the Senior Web Designer
+persona pass opens ("Look at the software through the eyes of a Senior
+Web Designer, and grant their wishes"). The recon drive's verdict in
+three minutes: CSS opens with highlighting and outline, but `#336699`
+is hex soup — no swatch anywhere (the cluster's css-editor modules
+ship but don't decorate our CSL panes). Part 1 grants: inline color
+swatches (literals painted AS their color via a HighlightsLayer, the
+JsOccurrencesHighlighter idiom; pure CssColors core with
+comments-are-prose and identifier-boundary rules) and a WCAG contrast
+verdict in the DevTools DOM pane (pure WcagContrast pinned on
+reference values; transparent backgrounds honestly refuse). Both
+live-proven. Part 2 candidates for the persona: responsive viewport
+presets in the Browser, and save-to-reload for served static projects.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
