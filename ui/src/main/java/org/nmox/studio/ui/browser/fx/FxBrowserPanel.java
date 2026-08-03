@@ -163,12 +163,14 @@ public final class FxBrowserPanel extends JPanel {
         engine = webView.getEngine();
         engine.titleProperty().addListener((obs, old, title)
                 -> SwingUtilities.invokeLater(() -> titleListener.titleChanged(title)));
-        engine.locationProperty().addListener((obs, old, loc)
-                -> SwingUtilities.invokeLater(() -> {
-                    if (!urlField.isFocusOwner() && loc != null) {
-                        urlField.setText(loc);
-                    }
-                }));
+        engine.locationProperty().addListener((obs, old, loc) -> {
+            lastLocation = loc; // volatile write on FX; read by the EDT
+            SwingUtilities.invokeLater(() -> {
+                if (!urlField.isFocusOwner() && loc != null) {
+                    urlField.setText(loc);
+                }
+            });
+        });
         engine.getLoadWorker().progressProperty().addListener((obs, old, p) -> {
             int pct = (int) Math.round(p.doubleValue() * 100);
             SwingUtilities.invokeLater(() -> {
@@ -323,6 +325,8 @@ public final class FxBrowserPanel extends JPanel {
      */
     private static final java.util.Set<String> RELOAD_EXTS = java.util.Set.of(
             "html", "htm", "css", "scss", "less", "js", "mjs", "ts", "svg", "json");
+    /** The engine's last reported location (FX writes, EDT reads). */
+    private volatile String lastLocation;
     private final javax.swing.Timer reloadCoalesce = coalescedReload();
     private final org.openide.filesystems.FileChangeListener saveListener =
             new org.openide.filesystems.FileChangeAdapter() {
@@ -349,10 +353,15 @@ public final class FxBrowserPanel extends JPanel {
         return t;
     }
 
-    /** EDT. Arms the coalescer only when the shown page is local. */
+    /**
+     * EDT. Arms the coalescer only when the shown page is local — the
+     * {@link LocalUrls} host check against the location the ENGINE last
+     * reported, not the url field's draft text (v1.234.0 review: while
+     * the user types a candidate URL in the focused field, the shown
+     * page is what a save should or shouldn't reload).
+     */
     private void maybeScheduleReload() {
-        String url = urlField.getText();
-        if (url != null && (url.contains("//localhost") || url.contains("//127.0.0.1"))) {
+        if (LocalUrls.isLocal(lastLocation)) {
             reloadCoalesce.restart();
         }
     }

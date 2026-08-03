@@ -4,6 +4,88 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.234.0] - 2026-08-03
+
+The night-arc review: two lenses over v1.226–v1.233, seven findings
+fixed, the rest blessed in writing. No HIGH — but the same reviewer
+rhythm that has paid every week paid again: the sharpest finds were
+in day-old code.
+
+### Fixed
+- **`~/.nimble` no longer turns $HOME into a project.** The v1.233.0
+  glob recognition matched ANY child whose name carried a manifest
+  suffix — but nimble's package cache is a DIRECTORY named
+  `~/.nimble`, so every Nim user's home directory became a platform
+  project, re-arming the v1.33.1 TCC-prompt-storm class. Both halves
+  fixed: `WebProjectFactory` and `ProjectInspector`'s glob detection
+  now require plain files and skip dotfiles — and the factory's glob
+  ride a name-only `File.list` instead of materializing a FileObject
+  per child on every ancestor walk the platform makes (the review's
+  perf MED).
+- **CMake and make subdirectories stop fragmenting their repo.**
+  `CMakeLists.txt` lives in every subdirectory by CMake's own
+  convention, and nearest-ancestor ownership made `src/` its own
+  project — F6 on a file there would have configured the wrong root.
+  A directory whose PARENT carries the same recursive-by-convention
+  manifest now defers to the chain's outermost member.
+- **⌘-hover stops paying two full-document scans per mouse-move.**
+  The platform calls the hyperlink provider synchronously on the EDT
+  for every ⌘-mouse-move, and each call copied the whole stylesheet
+  and ran four regex passes — twice. The scan is now cached by
+  document edit-version: first ask after an edit scans once, every
+  later hover is a list walk.
+- **The swatch layer sits where the decompiled z-order says it
+  should.** v1.231.0's `TOP_RACK` beat the legacy warning background
+  but also painted OVER text selection — selecting a rule punched an
+  unselected-looking hole at every color literal — and its in-code
+  comment claimed the opposite. The real anchors, read from platform
+  bytecode: warnings at SHOW_OFF 420, selection at SHOW_OFF 500. The
+  swatches now ride SHOW_OFF 430 — above the warnings, below the
+  selection — and the comment cites its anchors.
+- **Compile to CSS does its disk work off the EDT.** The pre-compile
+  editor save and the post-compile directory refresh both ran on the
+  paint thread (the v1.108.0 class); both now ride the compile lane.
+- **No project, no lint server.** The eslint and stylelint providers
+  skipped BOTH their gates when the Lookup carried no project — and
+  both linters resolve their executable-JS config by walking up from
+  the linted FILE, so a lone stylesheet opened out of an untrusted
+  checkout would have handed that repo's config to the global server
+  (the v1.216.0 payload law, one lookup-shape away). A file that
+  belongs to no workspace has no workspace that opted in.
+- **Save-to-reload checks the host, not a substring.**
+  `http://localhost.evil.example/` and a URL merely carrying
+  `//localhost` in its query both counted as local; the predicate now
+  parses the URI (adding `[::1]`) and consults the location the
+  engine last reported instead of the url field's draft text.
+- **Sass helpers stop cosplaying as colors.** `to-rgb(255, 0, 0)` —
+  a Bootstrap-style Sass function — swatched as if it were `rgb()`
+  because `\b` treats the hyphen as a boundary; the function matcher
+  now applies the same ident-neighbor rule the named colors already
+  had.
+- **WCAG verdicts refuse translucency and never contradict their own
+  display.** `rgba(…, 0.5)` backgrounds computed as opaque, reporting
+  a contrast the page doesn't have — any alpha below 1 now gets the
+  honest refusal. And the displayed ratio truncates instead of
+  rounding, so a true 4.4987 can no longer print "4.50:1 — AA FAIL".
+
+### Changed
+- **The spawn-site ledger grew a second enumeration.** The v1.230.0
+  sass spawn was correctly trust-gated but INVISIBLE to the v1.224.0
+  ledger, which only counted `CommandExecutor.run` callers —
+  `ProcessSupport.builder` is the lower door into the same room. All
+  eight builder callers outside core are now classified
+  (GATED/GATED-BY-CALLER/BLESSED with written reasons), and a new
+  caller fails the build until a human classifies it.
+- **The OpenProjects bridge failures say so at INFO.** The v1.233.0
+  bug hid in a FINE-level swallow; the barrier timeout and the
+  post-barrier failure now log where someone will see them.
+- Blessed in writing: the viewport presets' height is best-effort
+  (width is the contract — documented in the class), string contents
+  are deliberately not masked in the color scan, the highlighter's
+  GC-by-document listener story is stated at the attach site, and
+  the CMAKE lane's one `build/` stat per menu paint stays until a
+  second conditioned kind joins it.
+
 ## [1.233.0] - 2026-08-02
 
 Run/Build/Test buttons work for every stack.
@@ -8518,6 +8600,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.234.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.233.0...v1.234.0
 [1.233.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.232.0...v1.233.0
 [1.232.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.231.0...v1.232.0
 [1.231.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.230.0...v1.231.0

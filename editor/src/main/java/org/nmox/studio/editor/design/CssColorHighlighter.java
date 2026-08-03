@@ -39,6 +39,13 @@ public final class CssColorHighlighter implements DocumentListener {
     CssColorHighlighter(Document doc, OffsetsBag bag) {
         this.doc = doc;
         this.bag = bag;
+        // no removeDocumentListener anywhere, ON PURPOSE (the
+        // JsOccurrencesHighlighter idiom, said out loud per the v1.234.0
+        // review): the only strong holders of this object are the
+        // document itself and a briefly-pending RP task, so it is
+        // collected WITH the document when the last editor clone closes.
+        // A remove path would need a disposal hook the HighlightsLayer
+        // SPI doesn't offer.
         doc.addDocumentListener(this);
         schedule(0); // first paint without waiting for an edit
     }
@@ -119,20 +126,25 @@ public final class CssColorHighlighter implements DocumentListener {
             OffsetsBag bag = new OffsetsBag(context.getDocument());
             new CssColorHighlighter(context.getDocument(), bag);
             return new HighlightsLayer[]{
-                // SHOW_OFF_RACK, not SYNTAX_RACK: the CSL/TextMate coloring
-                // paints grammar-recognized literals (named colors, hex) at
-                // the top of the syntax racks and was overriding the swatch —
-                // only grammar-UNKNOWN literals showed one (found live in the
-                // v1.229.0 gauntlet). Still below caret/selection racks, so
-                // selecting a literal still looks selected.
-                // DEFAULT_RACK: above the csl warning-range highlight too —
-                // the platform's legacy CSS grammar flags modern color
-                // syntax (color-mix, space-separated hsl) and its warning
-                // background was painting over the swatch, so a junior's
-                // modern colors were invisible exactly where they used
-                // them (v1.231.0 find). Still below caret/selection.
+                // SHOW_OFF_RACK.forPosition(430) — placed by decompiled
+                // evidence, not hope (v1.234.0 review). The three layers
+                // this must sit AMONG: the CSL/TextMate syntax coloring
+                // (SYNTAX rack — below everything here; it overrode the
+                // swatch in v1.229.0 until we left that rack), the hints
+                // error/warning background (SHOW_OFF 420, decompiled from
+                // org-netbeans-spi-editor-hints HighlightsLayerFactoryImpl
+                // — the legacy CSS grammar flags modern color syntax and
+                // its background hid the swatches, the v1.231.0 find), and
+                // TEXT SELECTION (SHOW_OFF 500, decompiled from editor-lib2
+                // Factory). 430 beats the warnings and stays under the
+                // selection — v1.231.0's TOP_RACK(100) beat the warnings
+                // but ALSO painted over the selection band, so selecting a
+                // rule punched an unselected-looking hole at every color
+                // literal (and tied the platform's caret-overwrite layer at
+                // TOP 100, an unspecified order). A z-order comment is a
+                // claim about a total order — this one cites its anchors.
                 HighlightsLayer.create("nmox-css-colors",
-                        ZOrder.TOP_RACK.forPosition(100), true, bag)
+                        ZOrder.SHOW_OFF_RACK.forPosition(430), true, bag)
             };
         }
     }

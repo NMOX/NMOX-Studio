@@ -47,6 +47,23 @@ class CssColorHyperlinkTest {
     }
 
     @Test
+    @DisplayName("the scan is cached by document version: same doc, no edit → same list instance (v1.234.0)")
+    void scanCachedByDocumentVersion() throws Exception {
+        PlainDocument d = doc("a{color:#336699}");
+        var first = CssColorHyperlink.spansFor(d);
+        var again = CssColorHyperlink.spansFor(d);
+        assertThat(again)
+                .as("⌘-hover calls this per MOUSE MOVE on the EDT — an unchanged "
+                        + "document must not pay a fresh getText + four regex passes")
+                .isSameAs(first);
+
+        d.insertString(d.getLength(), " b{c:tomato}", null);
+        var after = CssColorHyperlink.spansFor(d);
+        assertThat(after).isNotSameAs(first);
+        assertThat(after).hasSize(2); // the edit's new literal is seen
+    }
+
+    @Test
     @DisplayName("the seeded color is the literal's color")
     void spanCarriesColor() throws Exception {
         PlainDocument d = doc("a{c:rgb(255, 0, 0)}");

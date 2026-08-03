@@ -81,8 +81,7 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
             String original = doc.getText(span.start(), span.end() - span.start());
             // the document may have changed while the chooser was open —
             // replace only if the literal is still exactly where it was
-            List<CssColors.ColorSpan> now = CssColors.scan(
-                    doc.getText(0, doc.getLength()));
+            List<CssColors.ColorSpan> now = spansFor(doc);
             boolean stillThere = now.stream().anyMatch(s
                     -> s.start() == span.start() && s.end() == span.end());
             if (!stillThere) {
@@ -117,8 +116,44 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
 
     /** The color literal containing {@code offset}, else null. */
     static CssColors.ColorSpan spanAt(Document doc, int offset) {
+        // NARROWEST containing span: clicking `tomato` inside a
+        // color-mix(...) should pick the inner literal, not the recipe
+        CssColors.ColorSpan best = null;
+        for (CssColors.ColorSpan span : spansFor(doc)) {
+            if (offset >= span.start() && offset < span.end()
+                    && (best == null || span.end() - span.start() < best.end() - best.start())) {
+                best = span;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * The scan, cached by document edit-version (v1.234.0 review): the
+     * platform calls {@code isHyperlinkPoint} + {@code getHyperlinkSpan}
+     * synchronously ON THE EDT for every ⌘-mouse-move, and each used to
+     * pay a full {@code getText} copy plus four regex passes — a
+     * multi-millisecond, garbage-heavy tax per hover on a big
+     * stylesheet. Now the first ask after an edit scans once and every
+     * subsequent hover is a list walk. The cache lives in a document
+     * property and its version listener is never removed — both are
+     * held only by the document, so they are collected with it (the
+     * {@code CssColorHighlighter} GC story). EDT-confined by the
+     * hyperlink SPI's contract, so the create-once check is race-free.
+     */
+    static List<CssColors.ColorSpan> spansFor(Document doc) {
         if (doc.getLength() > MAX_SCAN_CHARS) {
-            return null;
+            return List.of();
+        }
+        ScanCache cache = (ScanCache) doc.getProperty(ScanCache.class);
+        if (cache == null) {
+            cache = new ScanCache();
+            doc.putProperty(ScanCache.class, cache);
+            doc.addDocumentListener(cache);
+        }
+        long version = cache.version.get();
+        if (cache.scannedVersion == version) {
+            return cache.spans;
         }
         final String[] text = new String[1];
         doc.render(() -> {
@@ -128,16 +163,32 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
                 text[0] = "";
             }
         });
-        // NARROWEST containing span: clicking `tomato` inside a
-        // color-mix(...) should pick the inner literal, not the recipe
-        CssColors.ColorSpan best = null;
-        for (CssColors.ColorSpan span : CssColors.scan(text[0])) {
-            if (offset >= span.start() && offset < span.end()
-                    && (best == null || span.end() - span.start() < best.end() - best.start())) {
-                best = span;
-            }
+        cache.spans = CssColors.scan(text[0]);
+        cache.scannedVersion = version;
+        return cache.spans;
+    }
+
+    /** Edit counter + memoized scan; text-attribute changes don't bump. */
+    private static final class ScanCache implements javax.swing.event.DocumentListener {
+
+        final java.util.concurrent.atomic.AtomicLong version = new java.util.concurrent.atomic.AtomicLong();
+        volatile long scannedVersion = -1;
+        volatile List<CssColors.ColorSpan> spans = List.of();
+
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            version.incrementAndGet();
         }
-        return best;
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            version.incrementAndGet();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
+            // attribute-only change: the text the scan read is intact
+        }
     }
 
 }

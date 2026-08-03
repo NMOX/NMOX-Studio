@@ -192,27 +192,36 @@ public final class LanguageServers {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             File dir = projectDir(lookup);
-            if (dir != null) {
-                // v1.216.0 (arc review): launchNpm's trust gate covers the
-                // server BINARY, but this server's payload is the
-                // workspace itself — it resolves the eslint LIBRARY from
-                // the project's node_modules and evaluates the project's
-                // eslint.config.js / .eslintrc.js, which are plain
-                // executable JavaScript. A trusted global binary running
-                // an untrusted repo's config is still the v1.102.0 RCE on
-                // file-open. Same silent gate, same honest degradation:
-                // untrusted workspaces get no lint diagnostics.
-                if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
-                    return null;
-                }
-                // No eslint config, no server: every JS/TS project would
-                // otherwise pay a node process for a linter it never
-                // adopted (the global binary ships in the same package as
-                // the JSON/HTML/CSS servers, so having it installed does
-                // not mean wanting eslint everywhere).
-                if (!hasEslintConfig(dir)) {
-                    return null;
-                }
+            // v1.234.0 (arc review): no project means no trust anchor and
+            // no config gate — but eslint resolves its config by walking
+            // UP from the linted FILE, and an eslint config is executable
+            // JavaScript. A lone .js opened out of an untrusted checkout
+            // would hand that repo's config to the global server: the
+            // v1.216.0 payload law with both gates skipped. No project,
+            // no server — a file that belongs to no workspace has no
+            // workspace that opted in.
+            if (dir == null) {
+                return null;
+            }
+            // v1.216.0 (arc review): launchNpm's trust gate covers the
+            // server BINARY, but this server's payload is the
+            // workspace itself — it resolves the eslint LIBRARY from
+            // the project's node_modules and evaluates the project's
+            // eslint.config.js / .eslintrc.js, which are plain
+            // executable JavaScript. A trusted global binary running
+            // an untrusted repo's config is still the v1.102.0 RCE on
+            // file-open. Same silent gate, same honest degradation:
+            // untrusted workspaces get no lint diagnostics.
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                return null;
+            }
+            // No eslint config, no server: every JS/TS project would
+            // otherwise pay a node process for a linter it never
+            // adopted (the global binary ships in the same package as
+            // the JSON/HTML/CSS servers, so having it installed does
+            // not mean wanting eslint everywhere).
+            if (!hasEslintConfig(dir)) {
+                return null;
             }
             return launchNpm(lookup, "vscode-eslint-language-server", "--stdio");
         }
@@ -252,13 +261,18 @@ public final class LanguageServers {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             File dir = projectDir(lookup);
-            if (dir != null) {
-                if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
-                    return null;
-                }
-                if (!hasStylelintConfig(dir)) {
-                    return null;
-                }
+            // no project, no server (v1.234.0 review): stylelint resolves
+            // its config by walking up from the linted FILE, and the
+            // config is executable JS — see EslintServer for the full
+            // reasoning; this class replicated its shape and its hole.
+            if (dir == null) {
+                return null;
+            }
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                return null;
+            }
+            if (!hasStylelintConfig(dir)) {
+                return null;
             }
             return launchNpm(lookup, "stylelint-lsp", "--stdio");
         }

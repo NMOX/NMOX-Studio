@@ -52,7 +52,11 @@ public final class WcagContrast {
         double lighter = Math.max(luminance(fg), luminance(bg));
         double darker = Math.min(luminance(fg), luminance(bg));
         double ratio = (lighter + 0.05) / (darker + 0.05);
-        return new Verdict(Math.round(ratio * 100.0) / 100.0,
+        // verdicts use the TRUE ratio (that's what WCAG compares), and
+        // the displayed value truncates rather than rounds so the two
+        // never contradict: a true 4.4987 used to display as
+        // "4.50:1 — AA FAIL" (v1.234.0 review); it now shows 4.49
+        return new Verdict(Math.floor(ratio * 100.0) / 100.0,
                 ratio >= 4.5, ratio >= 3.0, ratio >= 7.0, ratio >= 4.5);
     }
 
@@ -80,8 +84,14 @@ public final class WcagContrast {
             return null;
         }
         try {
-            if (parts.length >= 4 && Double.parseDouble(parts[3].trim()) == 0.0) {
-                return null; // fully transparent: not this element's backdrop
+            // ANY translucency refuses, not just alpha 0 (v1.234.0
+            // review): rgba(0,0,0,0.5) — the classic overlay — composites
+            // with an ancestor's backdrop this class cannot see, and
+            // treating it as opaque reported a contrast the page doesn't
+            // have. The honest refusal the javadoc promises for
+            // "transparent" applies to every alpha below 1.
+            if (parts.length >= 4 && Double.parseDouble(parts[3].trim()) < 1.0) {
+                return null;
             }
             return new int[]{
                 clamp(parts[0]), clamp(parts[1]), clamp(parts[2])

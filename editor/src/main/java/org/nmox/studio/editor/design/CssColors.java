@@ -77,7 +77,15 @@ public final class CssColors {
     private CssColors() {
     }
 
-    /** Every color literal in {@code text}, in order, comments skipped. */
+    /**
+     * Every color literal in {@code text}, in order, comments skipped.
+     * Honest limit (v1.234.0 review): STRING contents are not masked the
+     * way comments are, so {@code content: "red"} swatches the word
+     * inside the string. Strings in stylesheets are rare and a color
+     * word inside one is rarer; masking them would double the pre-pass
+     * for a case nobody has hit. Recorded here so the limit is a choice,
+     * not a surprise.
+     */
     public static List<ColorSpan> scan(String text) {
         List<ColorSpan> out = new ArrayList<>();
         boolean[] inComment = commentMask(text);
@@ -94,6 +102,12 @@ public final class CssColors {
         Matcher fn = FUNC.matcher(text);
         while (fn.find()) {
             if (inComment[fn.start()]) {
+                continue;
+            }
+            // \b treats '-' as a boundary, but `to-rgb(255, 0, 0)` is a
+            // Sass helper, not rgb() — same neighbor rule as the named
+            // colors below (v1.234.0 review)
+            if (identNeighbor(text, fn.start() - 1)) {
                 continue;
             }
             Color c = parseFunction(fn.group(1), fn.group(2));

@@ -9,6 +9,15 @@ import java.util.List;
  * it on a neutral backdrop — no user-agent games, just the real page
  * at the real width, so CSS breakpoints fire exactly as they would in
  * a resized window.
+ *
+ * <p>WIDTH is the contract; height is best-effort (v1.234.0 review).
+ * The preset caps the WebView with a max size but no min, so a pane
+ * shorter than the device gives the page the pane's height — an
+ * 844-tall iPhone preset in a 600px pane reports
+ * {@code window.innerHeight} 600. Width — the axis breakpoints
+ * actually query — is always exact. Forcing the full height would
+ * need the viewport wrapped in a scroll pane; not worth the chrome
+ * until a height-dependent media query matters to someone.
  */
 public final class ViewportPresets {
 

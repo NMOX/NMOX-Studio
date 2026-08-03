@@ -64,19 +64,28 @@ public final class SassCompileAction implements ActionListener {
             status("Not a local file.");
             return;
         }
-        // save first so the compiler sees what the editor shows
+        // the save (an editor-buffer write to disk) and the compile both
+        // ride the RP — actionPerformed runs on the EDT and a slow or
+        // network volume must not stall the paint thread (the v1.108.0
+        // Load-Patch law; v1.234.0 review). CloneableEditorSupport saves
+        // are thread-safe.
         org.openide.cookies.SaveCookie save =
                 context.getLookup().lookup(org.openide.cookies.SaveCookie.class);
-        if (save != null) {
-            try {
-                save.save();
-            } catch (java.io.IOException ex) {
-                status("Could not save before compiling.");
-                return;
-            }
-        }
         RP.post(() -> {
+            if (save != null) {
+                try {
+                    save.save();
+                } catch (java.io.IOException ex) {
+                    EventQueue.invokeLater(() -> status("Could not save before compiling."));
+                    return;
+                }
+            }
             SassCompiler.Result result = new SassCompiler().compile(file);
+            // the directory refresh stats the disk — do it here, not in
+            // the EDT report (the review's other half of this finding)
+            if (result.outcome() == SassCompiler.Outcome.COMPILED) {
+                FileUtil.refreshFor(file.getParentFile());
+            }
             EventQueue.invokeLater(() -> report(fo, file, result, true));
         });
     }
@@ -86,7 +95,6 @@ public final class SassCompileAction implements ActionListener {
         switch (result.outcome()) {
             case COMPILED -> {
                 boolean newlyArmed = armAfter && arm(fo, file);
-                FileUtil.refreshFor(file.getParentFile());
                 status("Compiled " + result.output().getName()
                         + (newlyArmed ? " — recompiling on save." : "."));
             }
@@ -131,6 +139,9 @@ public final class SassCompileAction implements ActionListener {
         public void fileChanged(FileEvent fe) {
             RP.post(() -> {
                 SassCompiler.Result result = new SassCompiler().compile(file);
+                if (result.outcome() == SassCompiler.Outcome.COMPILED) {
+                    FileUtil.refreshFor(file.getParentFile()); // RP, not EDT
+                }
                 EventQueue.invokeLater(()
                         -> report(fe.getFile(), file, result, false));
             });

@@ -54,6 +54,22 @@ class StylelintServerTest {
     }
 
     @Test
+    @DisplayName("no project means NO server — both config-payload servers (v1.234.0 review)")
+    void projectlessLookupGetsNoServer() throws IOException {
+        // the config resolves by walking UP from the linted FILE and is
+        // executable JS; a project-less Lookup used to skip BOTH gates
+        // and hand an untrusted checkout's config to the global server
+        String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
+        for (String server : new String[]{"class EslintServer", "class StylelintServer"}) {
+            int at = src.indexOf(server);
+            String body = src.substring(at, src.indexOf("launchNpm(", at));
+            assertThat(body)
+                    .as(server + " must refuse a null project dir before any gate")
+                    .contains("if (dir == null)");
+        }
+    }
+
+    @Test
     @DisplayName("every config spelling opts in; a bare project does not")
     void configSpellings(@TempDir File dir) throws IOException {
         assertThat(LanguageServers.hasStylelintConfig(dir)).isFalse();

@@ -110,4 +110,68 @@ class SpawnSiteTrustLedgerTest {
                 "../rack/src/main/java/org/nmox/studio/rack/service/RackTrustGate.java")))
                 .contains("@ServiceProvider(service = TrustGate.class)");
     }
+
+    /**
+     * The second enumeration (v1.234.0 review): {@code
+     * ProcessSupport.builder(} callers outside core. The v1.230.0 sass
+     * spawn was correctly gated but INVISIBLE to the ledger above —
+     * builder() is the lower door into the same room, and a future
+     * edit could have ungated it without failing any build.
+     */
+    private static final Map<String, String> BUILDER_LEDGER = Map.of(
+            "JsDebugServer.java",
+            "GATED-BY-CALLER: every debug action requestTrusts before any spawn (v1.37.0)",
+            "PrettierFormatter.java",
+            "GATED: project-local .bin/prettier only when isTrusted; else the global tool (v1.102.0)",
+            "SassCompiler.java",
+            "GATED: resolveBinary checks isTrusted before the project-local .bin/sass (v1.230.0)",
+            "DockerClient.java",
+            "BLESSED: our own fixed docker verbs; project Dockerfiles build in a container, not the host",
+            "CommandExecutor.java",
+            "BLESSED-PRIMITIVE: deliberately un-gated (v1.103.0 law) — trust is the caller's job, "
+            + "and the CommandExecutor.run ledger above enumerates those callers",
+            "InteractiveProcess.java",
+            "BLESSED: REPL interpreters from the learning catalog / ENGINE knob — the user's "
+            + "chosen tool, not a project-controlled argv",
+            "Web3StudioTopComponent.java",
+            "GATED: forge build/test behind the TrustGate facade (v1.224.0)");
+
+    @Test
+    @DisplayName("every ProcessSupport.builder caller outside core is classified too")
+    void everyBuilderSiteIsClassified() throws IOException {
+        Set<String> found = new TreeSet<>();
+        for (String module : new String[]{"editor", "tools", "rack", "project",
+            "ui", "apiclient", "dbstudio", "web3", "infra"}) {
+            Path src = Path.of("..", module, "src", "main", "java");
+            if (!Files.isDirectory(src)) {
+                continue;
+            }
+            try (Stream<Path> files = Files.walk(src)) {
+                files.filter(p -> p.toString().endsWith(".java"))
+                        .filter(p -> {
+                            try {
+                                return Files.readString(p).contains("ProcessSupport.builder(");
+                            } catch (IOException e) {
+                                return false;
+                            }
+                        })
+                        .forEach(p -> found.add(p.getFileName().toString()));
+            }
+        }
+        assertThat(found)
+                .as("a ProcessSupport.builder site missing from BUILDER_LEDGER is "
+                        + "UNCLASSIFIED — gate it or bless it in writing first")
+                .isEqualTo(new TreeSet<>(BUILDER_LEDGER.keySet()));
+    }
+
+    @Test
+    @DisplayName("the builder ledger's GATED rows are true in source")
+    void gatedBuilderFilesReallyGate() throws IOException {
+        assertThat(Files.readString(Path.of(
+                "../editor/src/main/java/org/nmox/studio/editor/sass/SassCompiler.java")))
+                .contains("WorkspaceTrust.isTrusted");
+        assertThat(Files.readString(Path.of(
+                "../editor/src/main/java/org/nmox/studio/editor/format/PrettierFormatter.java")))
+                .contains("WorkspaceTrust.isTrusted");
+    }
 }

@@ -194,6 +194,41 @@ class WebProjectFactoryTest {
     }
 
     @Test
+    @DisplayName("a DIRECTORY named like a glob manifest is not one — ~/.nimble made $HOME a project (v1.234.0)")
+    void globRequiresPlainFilesAndSkipsDotfiles(@TempDir Path home, @TempDir Path art)
+            throws IOException {
+        // nimble's package cache: a directory named .nimble in $HOME
+        Files.createDirectory(home.resolve(".nimble"));
+        assertThat(factory.isProject(mount(home)))
+                .as("~/.nimble (a dot-DIRECTORY) must not make $HOME a project — "
+                        + "the v1.33.1 TCC-storm class").isFalse();
+        // a non-dot directory whose name carries the suffix is also not a manifest
+        Files.createDirectory(art.resolve("gallery.sln"));
+        assertThat(factory.isProject(mount(art)))
+                .as("a directory named gallery.sln is not a solution FILE").isFalse();
+    }
+
+    @Test
+    @DisplayName("recursive manifests collapse to the outermost: src/CMakeLists.txt is not its own project (v1.234.0)")
+    void recursiveManifestChainsCollapse(@TempDir Path repo) throws IOException {
+        Files.writeString(repo.resolve("CMakeLists.txt"), "project(x)");
+        Path src = Files.createDirectory(repo.resolve("src"));
+        Files.writeString(src.resolve("CMakeLists.txt"), "add_library(x x.c)");
+        Path tests = Files.createDirectory(repo.resolve("tests"));
+        Files.writeString(tests.resolve("Makefile"), "all:\n");
+
+        FileObject root = mount(repo);
+        assertThat(factory.isProject(root)).as("the repo root IS the project").isTrue();
+        assertThat(factory.isProject(root.getFileObject("src")))
+                .as("src/ carries a CMakeLists.txt because CMake puts one in every "
+                        + "subdirectory — F6 there must resolve the ROOT, not configure src/")
+                .isFalse();
+        // a Makefile under a CMake root has no Makefile PARENT chain — it
+        // stays a project boundary of its own kind (nearest ancestor wins)
+        assertThat(factory.isProject(root.getFileObject("tests"))).isTrue();
+    }
+
+    @Test
     @DisplayName("loadProject mints a WebProject for a recognized directory and null for a stranger")
     void loadProjectFollowsRecognition(@TempDir Path yes, @TempDir Path no) throws IOException {
         Files.writeString(yes.resolve("package.json"), "{}");
