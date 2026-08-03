@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.241.0] - 2026-08-03
+
+The Angular truth release: the framework bet's own starters, proven.
+
+### Fixed
+- **The Angular project template could never npm-install.** Its
+  `@angular ^22.0.0` pins resolved to a line that requires TypeScript
+  >=6.0 <6.1 — an ERESOLVE conflict against the template's own
+  `typescript ~5.9.0`, from birth (Angular 22.0 already had the TS-6
+  peer). Caught by the night proof loop the moment the template was
+  actually installed; it was never among v1.237.0's seven proven
+  templates. Both Angular generators now pin the proven line —
+  **~21.2 + TS ~5.9** — because the product's TS-5 ceiling binds
+  (ngserver and the tsserver lane need tsserverlibrary.js, which the
+  TS 6/7 line drops): npm install clean and `ng build` green,
+  live-proven 2026-08-03. The template README also says Angular's own
+  node floor out loud (20.19+/22.12+/24+ — the CLI hard-refuses
+  older nodes with exit 3).
+- **The angular learning space could never start.** It shipped
+  Angular ^18 sketch files with NO `angular.json` — its own START
+  button runs `ng serve`, which has nothing to read (the tutorial
+  apologized for it). The space is now a real minimal workspace —
+  zoneless, signals, suffixed naming, same proven ~21.2 pins — whose
+  exact shipped files were npm-installed and `ng build`-proven before
+  ship, and whose tutorial walks the whole Angular arc: template
+  intelligence in `.component.html`, the one-click ALS install, ⌘B,
+  the DevTools Angular pane, File ▸ New Angular Schematic…, HALO.
+
+### Added
+- **The suffixed-naming pin.** Angular 20+ scaffolds suffixless files
+  (`app.html`) that the IDE's template intelligence (v1.217.0 mime
+  resolver keys on `.component.html`) cannot see. Both generators now
+  pin `@schematics/angular:component {"type": "component"}` in
+  angular.json, so HALO GEN and New Angular Schematic… produce files
+  the tooling recognizes — proven live: `ng generate component` under
+  the pin emits `.component.*` on Angular 21's otherwise-suffixless
+  CLI. Externally-scaffolded suffixless projects remain a known gap
+  (ledger 73).
+- **AngularSpacePinParityTest** — the template and the space are two
+  homes for the same pins (the KitCatalogParityTest lesson); the gate
+  fails the build if either moves alone. Mutation-proven: a drifted
+  catalog pin fails by name.
+
 ## [1.240.0] - 2026-08-03
 
 The night-tail review: two lenses over v1.235–v1.239.
@@ -8775,6 +8818,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.241.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.240.0...v1.241.0
 [1.240.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.239.0...v1.240.0
 [1.239.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.238.0...v1.239.0
 [1.238.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.237.0...v1.238.0
