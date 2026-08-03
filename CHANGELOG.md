@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.246.0] - 2026-08-03
+
+The dead door is removed: the unreachable platform template wizard is
+deleted, and Project Studio's wizard is the one New Project surface.
+
+### Removed
+- **The platform `@TemplateRegistration` project wizard** —
+  `WebProjectWizardIterator` + panels, the React/Vue/Vanilla resource
+  templates, and their New Project description pages. Both File ▸ New
+  Project… and the Welcome tab have opened Project Studio's wizard
+  since the v1.11-era chrome pass evicted the platform action
+  (verified live in v1.244.0), so this surface was unreachable dead
+  weight — and Project Studio's wizard is strictly richer (14
+  templates, presets, npm install). Deletion over re-exposure follows
+  the v1.36.0 precedent for superseded surfaces: one wizard, one
+  door. v1.244.0's template modernization made the deletion safe (the
+  last state shipped was proven, not broken); its
+  WizardTemplateCeilingTest goes with the surface it gated —
+  Project Studio's own pins remain live-proven per v1.237.0.
+- The dependabot npm ecosystem block for the deleted template
+  directories, the wizard's JaCoCo excludes in the root pom, and the
+  wizard keys in the tools Bundle.properties (the load-bearing NPM
+  Explorer keys stay, per the v1.103.0 lesson).
+
 ## [1.245.0] - 2026-08-03
 
 Docs truth: the night shift's last word.

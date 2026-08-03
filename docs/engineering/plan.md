@@ -573,6 +573,18 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-03 at **v1.246.0**: the queued
+delete-vs-re-expose decision resolved as DELETE — the platform
+`@TemplateRegistration` wizard (`WebProjectWizardIterator` + panels +
+the React/Vue/Vanilla resource templates + WizardTemplateCeilingTest
++ the dependabot npm block + the root-pom JaCoCo excludes) is gone.
+Rationale: the surface had been unreachable since the v1.11 chrome
+pass, Project Studio's wizard is strictly richer (14 templates,
+presets, npm install), and the v1.36.0 precedent (tools.build,
+CodeIndexService) says superseded surfaces get deleted, not
+preserved. v1.244.0's modernization made the deletion safe — the
+last shipped state was proven, not broken. One wizard, one door.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

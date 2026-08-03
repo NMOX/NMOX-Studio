@@ -228,9 +228,6 @@
                         <!-- editor: Navigator tree panel + LSP status table panel -->
                         <exclude>**/StructureNavigatorPanel*.class</exclude>
                         <exclude>**/LanguageServersPanel*.class</exclude>
-                        <!-- tools: New Web Project wizard visual + iterator glue -->
-                        <exclude>**/WebProjectWizardPanelVisual*.class</exclude>
-                        <exclude>**/WebProjectWizardIterator*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
                         <exclude>**/RackPanel$*.class</exclude>
