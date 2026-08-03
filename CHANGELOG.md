@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.243.0] - 2026-08-03
+
+Dependency housekeeping, with the one bump that would have lied refused.
+
+### Changed
+- snakeyaml 2.2 → 2.6 (root property), MariaDB Connector/J 3.5.9 →
+  3.5.10 (dbstudio) — the safe three-quarters of Dependabot's grouped
+  PR, merged through the full gate.
+- **The OpenJFX half refused, structurally.** The grouped PR also
+  bumped ui's provided-scope javafx-web/javafx-swing 21.0.5 → 26.0.2 —
+  but those are the compile-time halves of the FX runtime the release
+  workflow jlinks from sha256-pinned 21.0.5 jmods (v1.199.0). A
+  pom-only bump compiles the Browser against FX 26 API while shipping
+  FX 21: skew no CI lane can see, because tests run with the maven dep
+  and never the jlinked runtime — and the v1.226.0 h2c fix rides an
+  internal com.sun.webkit flag verified against 21's WebKit.
+  dependabot.yml now ignores org.openjfx with the reason written in
+  place; the real FX upgrade is ledger 74 — both pins move together,
+  browser-gauntleted.
+
 ## [1.242.0] - 2026-08-03
 
 Docs truth for the night shift's close, and the Angular space gauntleted.
@@ -8836,6 +8856,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.243.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.242.0...v1.243.0
 [1.242.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.241.0...v1.242.0
 [1.241.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.240.0...v1.241.0
 [1.240.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.239.0...v1.240.0

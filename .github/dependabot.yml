@@ -12,6 +12,15 @@ updates:
     groups:
       maven:
         patterns: ["*"]
+    ignore:
+      # The org.openjfx deps in ui/pom.xml are PROVIDED-scope compile-time
+      # halves of the FX runtime that the release workflow jlinks from
+      # sha256-pinned jmods (v1.199.0). Bumping the pom alone compiles
+      # against a newer FX API than the app ships — skew no CI lane can
+      # see, because tests run with the maven dep, not the jlinked
+      # runtime. An FX upgrade moves BOTH pins together as its own
+      # browser-gauntleted release (tech-debt ledger 74).
+      - dependency-name: "org.openjfx:*" 
 
   # The GitHub Actions used by the build/release workflows.
   - package-ecosystem: github-actions
