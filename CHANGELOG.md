@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.235.0] - 2026-08-03
+
+The aim follows you: Test works from any window.
+
+### Added
+- **The aimed project is every suite window's ambient selection.**
+  The platform's Test Project (^F6), the Team menu's git verbs, and
+  every other project-sensitive action read the global selection —
+  and until now the Welcome tab, Browser, IRC, Docker Panel, Block
+  Studio and DB Studio offered none, so ^F6 greyed for every kind
+  exactly where a fresh launch lands. A new `AimFollower` helper
+  (rack.service) packages the whole v1.45.0 discipline — publish only
+  while showing (the v1.38.0 zero-boot-resolution law), listener
+  attach/detach symmetric with the showing/hidden hooks, equality-
+  guarded storm-safe resolution, guard reset on close — and the six
+  windows call three hooks each. Live-proven: with the WELCOME tab
+  focused and a CMake project aimed, Run ▸ Test Project (cmake-demo)
+  enabled and ran `ctest` through the rack. The three studios that
+  deliberately dropped their rack dependency in v1.46.0 (API,
+  Contract, Infra) stay selection-less until an aim-node facade joins
+  core.spi — recorded as tech-debt ledger 72 rather than half-done.
+- **Environment Doctor probes cmake.** CMake became a first-class IDE
+  lane in v1.233.0 (configure → build → ctest); the Doctor now says
+  whether the tool behind those buttons exists.
+
+### Verified
+- **The v1.233.0 stack-lane story, gauntleted in the shipped app**
+  (brew-installed 1.234.0): a CMake project with the conventional
+  per-subdirectory CMakeLists.txt opened as ONE project (the v1.234.0
+  recursive-manifest fix live), the context menu showed the honest
+  enablement ladder (Build enabled; Run/Test/Clean greyed with no
+  build/ yet), Build ran the `cmake -B build` configure step behind
+  the trust prompt, Build again compiled, and Test ran
+  `ctest --test-dir build` — `1/1 Test #1: hello_runs ... Passed`,
+  `100% tests passed`, exit 0.
+
 ## [1.234.0] - 2026-08-03
 
 The night-arc review: two lenses over v1.226–v1.233, seven findings
@@ -8600,6 +8636,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.235.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.234.0...v1.235.0
 [1.234.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.233.0...v1.234.0
 [1.233.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.232.0...v1.233.0
 [1.232.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.231.0...v1.232.0

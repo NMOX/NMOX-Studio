@@ -311,17 +311,33 @@ public final class MainWindow extends TopComponent {
         requestActive();
     }
 
+    /**
+     * v1.235.0 (the ledger-29 remainder): the aimed project's node is
+     * this window's ambient selection, so Test Project (^F6), the Team
+     * menu and every project-sensitive action work while the Welcome
+     * tab is focused — the tab a fresh launch lands on.
+     */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
     @Override
     protected void componentShowing() {
         // the recents column is live, not a launch-time snapshot
         if (welcomePanel != null) {
             welcomePanel.refreshRecents();
         }
+        aimFollower.showing();
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
     }
 
     @Override
     public void componentClosed() {
-        // nothing to release
+        aimFollower.closed();
     }
 
     @Override

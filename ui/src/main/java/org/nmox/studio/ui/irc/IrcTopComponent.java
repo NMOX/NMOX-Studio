@@ -233,8 +233,19 @@ public final class IrcTopComponent extends TopComponent {
         // costs nothing and talks to nobody until you press Connect.
     }
 
+    /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     @Override
     protected void componentShowing() {
+        aimFollower.showing();
         if (!built) {
             built = true;
             buildUi();
@@ -260,6 +271,7 @@ public final class IrcTopComponent extends TopComponent {
 
     @Override
     protected void componentClosed() {
+        aimFollower.closed();
         // listener symmetry: this window's ears detach; the connections
         // stay up — a chat client outlives its window
         for (Map.Entry<String, Bridge> e : bridges.entrySet()) {

@@ -376,8 +376,19 @@ public final class BlockStudioTopComponent extends TopComponent {
         RackService.getDefault().getRack().addListener(rackListener);
     }
 
+    /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     @Override
     public void componentClosed() {
+        aimFollower.closed();
         RackService.getDefault().getRack().removeListener(rackListener);
         stopPulse();
         stopPreview();
@@ -389,6 +400,7 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     @Override
     protected void componentShowing() {
+        aimFollower.showing();
         if (!shownOnce) {
             shownOnce = true;
             loadForAim();
