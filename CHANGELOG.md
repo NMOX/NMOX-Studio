@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.242.0] - 2026-08-03
+
+Docs truth for the night shift's close, and the Angular space gauntleted.
+
+### Verified
+- **The v1.241.0 angular learning space, live in the shipped app**: the
+  picker shows the new real-workspace blurb, the scaffold lands
+  angular.json + the zoneless src tree at ~/.nmox/learn/angular, and
+  `app.component.html` opens with Angular-template intelligence — `@if`
+  keyword-colored, `{{ count() }}` interpolation and `(click)` bindings
+  highlighted as expressions — the v1.217.0 resolver claiming the
+  space's files in the installed 1.241.0.
+
+### Changed
+- plan.md carries the night's closing addendum (v1.239–v1.241: the
+  schematic gesture, the night-tail review, the Angular truth release
+  with its pinned engine facts and the npm-prove-every-generator law).
+
 ## [1.241.0] - 2026-08-03
 
 The Angular truth release: the framework bet's own starters, proven.
@@ -8818,6 +8836,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.242.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.241.0...v1.242.0
 [1.241.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.240.0...v1.241.0
 [1.240.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.239.0...v1.240.0
 [1.239.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.238.0...v1.239.0
