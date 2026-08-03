@@ -22,7 +22,20 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
-### 74. The OpenJFX 21 → 26 upgrade is its own release, not a Dependabot merge
+### 74. The OpenJFX major upgrade is chained to a bundled-JDK decision (floors MEASURED, v1.248.0)
+The 2026-08-03 day shift measured the ladder from the jmods themselves:
+FX 24 = class v66 = JDK 22 floor, FX 25 = v67 = JDK 23, FX 26 = v68 =
+JDK 24 — jlink refuses each on anything older ("Unsupported major.minor
+version"). The product's deliberate baseline is Java 21 LTS (workflow,
+CI matrix, bundled runtime), so ANY FX major past 21 first requires
+bumping the bundled JDK — a product-wide baseline change that is
+David's call. What CAN move on JDK 21 is the FX 21 LTS line itself:
+v1.248.0 took 21.0.5 → 21.0.12 in full lockstep (ui pom ×2, the
+windows workflow pin, bundle-jre.sh's three platform sha256s) with the
+browser gauntlet green on the new WebKit (https render, plain-http
+through the h2c-flagged loader, DevTools bridge reading the live DOM).
+Keep riding 21.0.x patches until the JDK decision is made; then this
+row becomes the FX-major unit its original text described.
 ui/pom.xml's org.openjfx deps are provided-scope compile-time halves of
 the FX runtime the release workflow jlinks from sha256-pinned 21.0.5
 jmods (v1.199.0). Dependabot's pom-only bump (#371) would compile the
