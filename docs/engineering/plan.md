@@ -503,6 +503,47 @@ assemble a STALE cluster from ~/.m2 (fresh clusters need the full
 reactor); a nohup'd pipeline dies with the tool shell
 (run_in_background only).
 
+Currency addendum 2026-08-03 at **v1.242.0** (the night shift's
+close): three more releases. **v1.239.0** — File ▸ New Angular
+Schematic…: `ng generate` as an IDE gesture (kit-action idiom,
+HALO's exact schematic vocabulary, trust-gated + spawn-ledger
+classified, traversal-guarded pure core), live-proven on ngdemo with
+all four generated files byte-verified on disk. **v1.240.0** — the
+night-tail review: the CoalescerTest sleep-based timing assumption
+that flaked v1.239.0's macOS CI lane made deterministic
+(await-the-dispatch — the merge it tripped over was CORRECT
+coalescing), the schematic-vocabulary parity claim made structural
+(source-reading gate, mutation-proven; and the mutation session
+re-learned that `surefire:test` never recompiles a mutated source
+and `-pl` without `-am` compiles against stale ~/.m2 — either one
+makes a mutant lie). **v1.241.0** — the Angular truth release, the
+night's sharpest find: the framework bet's OWN STARTERS were broken
+and only installing them could show it. The ANGULAR template's ^22
+pins could NEVER npm-install (Angular 22 requires TypeScript 6 —
+all of it, 22.0 included — ERESOLVE against the template's own
+~5.9), and the angular learning space shipped Angular-18 sketch
+files with NO angular.json, so its own START (`ng serve`) had
+nothing to read. Both now pin the live-proven ~21.2 + TS ~5.9 line
+(the TS-5 ceiling binds), the space is a real minimal zoneless
+workspace whose exact shipped files were npm-proven before ship,
+both pin `@schematics/angular:component {type: component}` so ng
+generate keeps emitting the `.component.*` naming the IDE's
+template intelligence keys on (Angular 20+ scaffolds suffixless by
+default — external suffixless repos are ledger 73), and
+AngularSpacePinParityTest locks the two pin homes together. Facts
+pinned so they never get re-derived: Angular's node engines are
+19: >=22.0 / 20-21: ^20.19||^22.12||>=24 / 22: ^22.22.3||^24.15,
+npm engines only WARN but the Angular CLI HARD-refuses (exit 3),
+and the box's node 22.9 runs only Angular 19 natively (keg-only
+brew node@22 = 22.23 exists for proofs). The v1.241.0 space was
+then gauntleted in the shipped app: picker shows the new blurb,
+scaffold lands the real workspace, and app.component.html opens
+with Angular-template highlighting (@if keyword-colored,
+interpolation and event bindings as expressions) — the v1.217.0
+resolver claiming the space's files live. The night's law, twice
+proven: *a starter that was never installed is a claim, not a
+product — npm-prove every generator whose output is meant to run.*
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
