@@ -27,6 +27,29 @@ class TestingRigorTest {
                 .isEqualTo("TestCheckout");
         assertThat(TestDevice.failedTestName("  ✓ renders the footer")).isNull();
         assertThat(TestDevice.failedTestName("ordinary output")).isNull();
+
+        // node:test speaks TAP — "not ok N - name", with an optional
+        // trailing "# ..." directive that is metadata, not the name
+        // (v1.252.0: a `node --test` project showed NO failure names)
+        assertThat(TestDevice.failedTestName("not ok 4 - SAVE10 takes ten percent off"))
+                .isEqualTo("SAVE10 takes ten percent off");
+        assertThat(TestDevice.failedTestName("not ok 2 - flaky case # TODO"))
+                .isEqualTo("flaky case");
+        assertThat(TestDevice.failedTestName("ok 3 - total multiplies price by qty"))
+                .as("a passing TAP line is not a failure").isNull();
+    }
+
+    @Test
+    @DisplayName("TAP summary counts drive the tally (node:test says pass/fail, not passed/failed)")
+    void tapCountsParse() {
+        // the v1.252.0 find: node --test prints "# pass 3" / "# fail 1",
+        // which the word-based patterns never matched — VERITAS showed
+        // P:0 F:0 on a real failing suite while the verdict said FAIL
+        assertThat(TestDevice.tallyFrom("# pass 3")).containsExactly(3, -1);
+        assertThat(TestDevice.tallyFrom("# fail 1")).containsExactly(-1, 1);
+        assertThat(TestDevice.tallyFrom("Tests:  2 failed, 5 passed"))
+                .as("the jest-style words still work").containsExactly(5, 2);
+        assertThat(TestDevice.tallyFrom("# duration_ms 61.7")).containsExactly(-1, -1);
     }
 
     @Test
@@ -44,6 +67,10 @@ class TestingRigorTest {
     @Test
     @DisplayName("Re-run failed builds the right filter per runner")
     void rerunCommands() {
+        assertThat(TestDevice.rerunFailedCommand("node", List.of("SAVE10 takes ten percent off")))
+                .as("node:test filters by name regex")
+                .containsExactly("node", "--test", "--test-name-pattern",
+                        "SAVE10 takes ten percent off");
         assertThat(TestDevice.rerunFailedCommand("jest", List.of("a", "b")))
                 .containsExactly("npx", "jest", "-t", "a|b");
         assertThat(TestDevice.rerunFailedCommand("vitest", List.of("x")))
