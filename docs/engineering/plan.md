@@ -474,6 +474,35 @@ audit**; and **a stale module cache after a jar swap fakes product
 bugs — the corrupted dev install manufactured three of them before a
 cachedir wipe told the truth** (the v1.233.0 session's detour).
 
+Currency addendum 2026-08-03 at **v1.238.0** (the night shift's tail):
+four more releases after the v1.234.0 review. **v1.235.0** closed the
+ledger-29 remainder the affordable way — AimFollower gives six suite
+windows (Welcome/Browser/IRC/Docker/Block/DB Studio) the aimed
+project's node as ambient selection, so Test Project ^F6 and the Team
+menu work wherever focus is (live-proven from the WELCOME tab: Test
+Project (cmake-demo) ran ctest 1/1); apiclient/web3/infra stay
+selection-less by the v1.46.0 architecture → ledger 72. **v1.236.0**
+and **v1.237.0** applied one lens twice — *a version literal inside a
+generator is invisible to every bot that keeps the rest of the repo
+current*: Export CI's action pins were three majors stale (nine bumps
++ CiExportPinCurrencyTest riding Dependabot's freshness for shared
+actions), Dockerize bases moved to node:24/rust:1.89/golang:1.25/
+php:8.4/trixie, and the project templates moved to React 19/Express
+5/Vue 3.5/eslint 10/vitest 3/Vite ^6 — with ALL SEVEN touched
+templates live-proven by real npm install + build, which is exactly
+how the two deliberate ceilings were found (TS stays 5.x: TS 7
+dropped tsserverlibrary.js and the IDE's own intelligence needs 5;
+Vite stays ^6: 7+ demands node >=22.12 and a starter must run on a
+learner's node — vite 8's rolldown binding refused node 22.9 in the
+proof itself). The night also re-proved the UPDATE CENTER across
+seven releases of drift: a stock v1.230.0 portable updated itself
+in-app to 1.237.0, all 11 modules digest-verified with originals in
+update/backup, clean restart. Process laws collected: mvn output
+piped through tail EATS the exit code (pipefail always); -rf resumes
+assemble a STALE cluster from ~/.m2 (fresh clusters need the full
+reactor); a nohup'd pipeline dies with the tool shell
+(run_in_background only).
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
