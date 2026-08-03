@@ -43,13 +43,35 @@ public class WebProjectFactory implements ProjectFactory {
         "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",
         "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs",
         // Ember CLI + Remix/React Router framework mode (v1.92.0)
-        "ember-cli-build.js", "remix.config.js"};
+        "ember-cli-build.js", "remix.config.js",
+        // v1.233.0: the kinds ProjectInspector always knew but this
+        // factory never recognized — their IDE lanes were wired to a
+        // project that could not open
+        "CMakeLists.txt", "Makefile"};
+
+    /**
+     * The glob-detected kinds (v1.233.0): ProjectInspector detects
+     * DOTNET by *.csproj/*.fsproj/*.sln and NIM by *.nimble, but this
+     * factory only ever checked fixed names — so a .NET or bare-nimble
+     * Nim checkout was never a platform project at all: no
+     * ActionProvider, no F6/Test, no OpenProjects. The lanes existed;
+     * the door didn't.
+     */
+    private static final String[] GLOB_SUFFIXES = {".csproj", ".fsproj", ".sln", ".nimble"};
 
     @Override
     public boolean isProject(FileObject projectDirectory) {
         for (String manifest : MANIFESTS) {
             if (projectDirectory.getFileObject(manifest) != null) {
                 return true;
+            }
+        }
+        for (FileObject child : projectDirectory.getChildren()) {
+            String name = child.getNameExt();
+            for (String suffix : GLOB_SUFFIXES) {
+                if (name.endsWith(suffix)) {
+                    return true;
+                }
             }
         }
         // the static last resort, deliberate: a directory with an

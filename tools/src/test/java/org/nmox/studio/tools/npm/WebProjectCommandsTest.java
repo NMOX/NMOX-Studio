@@ -400,4 +400,110 @@ class WebProjectCommandsTest {
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.CLARITY, ActionProvider.COMMAND_CLEAN))
                 .isNull();
     }
+
+    @Test
+    @DisplayName(".NET speaks dotnet on all four actions (v1.233.0 — it greyed everything before)")
+    void dotnetCommands() {
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DOTNET, ActionProvider.COMMAND_RUN))
+                .containsExactly("dotnet", "run");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DOTNET, ActionProvider.COMMAND_BUILD))
+                .containsExactly("dotnet", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DOTNET, ActionProvider.COMMAND_TEST))
+                .containsExactly("dotnet", "test");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.DOTNET, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("dotnet", "clean");
+    }
+
+    @Test
+    @DisplayName("Tact rides the project's own npm scripts, like the kit that ships it")
+    void tactCommands() throws Exception {
+        Files.writeString(dir.resolve("package.json"),
+                "{\"scripts\":{\"build\":\"tact --config tact.config.json\",\"test\":\"jest\"}}");
+        File d = dir.toFile();
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.TACT, ActionProvider.COMMAND_BUILD))
+                .containsExactly("npm", "run", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.TACT, ActionProvider.COMMAND_TEST))
+                .containsExactly("npm", "test");
+    }
+
+    @Test
+    @DisplayName("CMake plans only what exists: configure without build/, real verbs with it")
+    void cmakeCommands() throws Exception {
+        File d = dir.toFile();
+        // no build/ yet: Build offers the configure step, nothing else guesses
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CMAKE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("cmake", "-B", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CMAKE, ActionProvider.COMMAND_TEST))
+                .isNull();
+        Files.createDirectory(dir.resolve("build"));
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CMAKE, ActionProvider.COMMAND_BUILD))
+                .containsExactly("cmake", "--build", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CMAKE, ActionProvider.COMMAND_TEST))
+                .containsExactly("ctest", "--test-dir", "build");
+        assertThat(WebProjectCommands.commandFor(d, ProjectKind.CMAKE, ActionProvider.COMMAND_CLEAN))
+                .containsExactly("cmake", "--build", "build", "--target", "clean");
+    }
+
+    /**
+     * Kinds with NO IDE lanes at all, each with its reason. A new kind
+     * landing here silently is exactly the v1.163.0 default-null bug —
+     * so it can't: the completeness gate below fails the build instead.
+     */
+    private static final java.util.Map<ProjectKind, String> BLESSED_NO_LANES = java.util.Map.of(
+            ProjectKind.BOWER, "a package manager, not a build system — CRATE installs",
+            ProjectKind.NONE, "no project, no lanes");
+
+    /** Kinds whose toolchain honestly has no test verb, each with the reason. */
+    private static final java.util.Map<ProjectKind, String> BLESSED_NO_TEST = java.util.Map.of(
+            ProjectKind.ADA, "alr has no test verb (v1.155.0-era recon)",
+            ProjectKind.RESCRIPT, "build-only compiler; tests ride the host npm project",
+            ProjectKind.WEBPACK, "a bundler, not a test runner",
+            ProjectKind.GRUNT, "a task runner; tasks are project-defined",
+            ProjectKind.GULP, "a task runner; tasks are project-defined",
+            ProjectKind.STATIC, "a bare index.html has nothing to test");
+
+    @Test
+    @DisplayName("EVERY kind either tests through the IDE or is blessed here by name (v1.233.0)")
+    void everyKindTestsOrIsBlessed() throws Exception {
+        // a fixture rich enough that conditional lanes (scripts, build/,
+        // harnesses) take their real branch instead of failing on absence
+        Files.writeString(dir.resolve("package.json"),
+                "{\"scripts\":{\"dev\":\"x\",\"build\":\"x\",\"test\":\"x\",\"clean\":\"x\"}}");
+        Files.createDirectory(dir.resolve("build"));
+        File d = dir.toFile();
+        for (ProjectKind kind : ProjectKind.values()) {
+            if (BLESSED_NO_LANES.containsKey(kind)) {
+                for (String action : new String[]{ActionProvider.COMMAND_RUN,
+                    ActionProvider.COMMAND_BUILD, ActionProvider.COMMAND_TEST,
+                    ActionProvider.COMMAND_CLEAN}) {
+                    assertThat(WebProjectCommands.commandFor(d, kind, action))
+                            .as(kind + " is blessed laneless: " + BLESSED_NO_LANES.get(kind))
+                            .isNull();
+                }
+                continue;
+            }
+            // every unblessed kind must offer SOMETHING…
+            boolean any = false;
+            for (String action : new String[]{ActionProvider.COMMAND_RUN,
+                ActionProvider.COMMAND_BUILD, ActionProvider.COMMAND_TEST,
+                ActionProvider.COMMAND_CLEAN}) {
+                any |= WebProjectCommands.commandFor(d, kind, action) != null;
+            }
+            assertThat(any)
+                    .as(kind + " has no IDE lane at all — wire it or bless it "
+                            + "IN THIS TEST with a written reason (the v1.163.0 "
+                            + "default-null class, made structural)")
+                    .isTrue();
+            // …and TESTING specifically runs through the system unless the
+            // toolchain honestly lacks a test verb
+            if (!BLESSED_NO_TEST.containsKey(kind)) {
+                assertThat(WebProjectCommands.commandFor(d, kind, ActionProvider.COMMAND_TEST))
+                        .as(kind + " cannot test through the IDE — wire the test "
+                                + "lane or bless it with the reason the toolchain "
+                                + "has no test verb")
+                        .isNotNull();
+            }
+        }
+    }
 }
