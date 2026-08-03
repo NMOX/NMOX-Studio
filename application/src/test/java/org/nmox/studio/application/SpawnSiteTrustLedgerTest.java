@@ -52,7 +52,10 @@ class SpawnSiteTrustLedgerTest {
             + "whose trustCheck gates before exec (v1.93.0)",
             "DockerPanelTopComponent.java",
             "BLESSED: argv is our own fixed docker verbs; a project Dockerfile builds "
-            + "inside a container, not on the host");
+            + "inside a container, not on the host",
+            "NgSchematicAction.java",
+            "GATED: requestTrust before ng generate — the CLI and the project's "
+            + "schematics execute the repo's own code (v1.239.0)");
 
     @Test
     @DisplayName("every CommandExecutor.run caller is classified in the trust ledger")

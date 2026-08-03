@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.239.0] - 2026-08-03
+
+The Angular bet, continued: schematics as an IDE gesture.
+
+### Added
+- **File ▸ New Angular Schematic…** — the terminal habit (`cd` into a
+  folder, `ng g c widget`) as a dialog: pick a schematic (the same
+  eight HALO's GEN knob offers — component, service, directive, pipe,
+  guard, interceptor, resolver, class), a name, and a folder inside
+  the aimed Angular workspace, and the CLI generates in place with
+  its output streaming to the Output window. The kit-action idiom:
+  always enabled, honest refusal when the aim carries no
+  angular.json. The trust law holds — ng and the project's schematics
+  execute the repo's own code, so the spawn sits behind the Workspace
+  Trust prompt and is classified GATED in the spawn-site ledger. The
+  pure core (root detection, a traversal guard that kills
+  `../../etc` before any spawn, name validation, the exact argv) is
+  unit-tested without a dialog or a process.
+
 ## [1.238.0] - 2026-08-03
 
 Docs truth for the night shift, and the update center re-proven.
@@ -8713,6 +8732,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.239.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.238.0...v1.239.0
 [1.238.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.237.0...v1.238.0
 [1.237.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.236.0...v1.237.0
 [1.236.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.235.0...v1.236.0
