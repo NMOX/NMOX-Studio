@@ -59,20 +59,41 @@ public class WebProjectFactory implements ProjectFactory {
      */
     private static final String[] GLOB_SUFFIXES = {".csproj", ".fsproj", ".sln", ".nimble"};
 
+    /**
+     * Manifests that recur in EVERY subdirectory by their build system's
+     * own convention (cmake's add_subdirectory, recursive make), so the
+     * nearest-ancestor rule would fragment one repo into a project per
+     * folder — F6 on a file under src/ would configure src/ instead of
+     * the root (v1.234.0 review). A directory whose PARENT carries the
+     * same manifest is a subdirectory of the real project, not a
+     * project of its own; the chain collapses to its outermost member.
+     */
+    private static final String[] RECURSIVE_MANIFESTS = {"CMakeLists.txt", "Makefile"};
+
+    private static boolean isRecursive(String manifest) {
+        for (String r : RECURSIVE_MANIFESTS) {
+            if (r.equals(manifest)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean isProject(FileObject projectDirectory) {
         for (String manifest : MANIFESTS) {
             if (projectDirectory.getFileObject(manifest) != null) {
+                if (isRecursive(manifest)) {
+                    FileObject parent = projectDirectory.getParent();
+                    if (parent != null && parent.getFileObject(manifest) != null) {
+                        continue; // a subdirectory of the real CMake/make root
+                    }
+                }
                 return true;
             }
         }
-        for (FileObject child : projectDirectory.getChildren()) {
-            String name = child.getNameExt();
-            for (String suffix : GLOB_SUFFIXES) {
-                if (name.endsWith(suffix)) {
-                    return true;
-                }
-            }
+        if (hasGlobbedManifest(projectDirectory)) {
+            return true;
         }
         // the static last resort, deliberate: a directory with an
         // index.html is a project — a 2005 site deserves to open too.
@@ -80,6 +101,42 @@ public class WebProjectFactory implements ProjectFactory {
         // ProjectInspector; recognition here is just a boolean.
         return projectDirectory.getFileObject("index.html") != null
                 || projectDirectory.getFileObject("index.htm") != null;
+    }
+
+    /**
+     * The glob check rides a name-only {@code File.list} where possible:
+     * {@code getChildren()} materializes a FileObject per child, and this
+     * factory is consulted for every ancestor of every file the platform
+     * asks about — a full-listing walk was the v1.234.0 review's MED.
+     * Dotfiles are excluded and plain files required, because nimble's
+     * package cache is a DIRECTORY named {@code ~/.nimble}: without the
+     * filter, every Nim user's $HOME became a platform project, re-arming
+     * the v1.33.1 TCC-storm class.
+     */
+    private static boolean hasGlobbedManifest(FileObject projectDirectory) {
+        File dir = FileUtil.toFile(projectDirectory);
+        if (dir != null) {
+            String[] hits = dir.list((parent, name) -> !name.startsWith(".")
+                    && matchesGlobSuffix(name) && new File(parent, name).isFile());
+            return hits != null && hits.length > 0;
+        }
+        // non-masterfs mounts (tests): same filter over FileObjects
+        for (FileObject child : projectDirectory.getChildren()) {
+            String name = child.getNameExt();
+            if (child.isData() && !name.startsWith(".") && matchesGlobSuffix(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesGlobSuffix(String name) {
+        for (String suffix : GLOB_SUFFIXES) {
+            if (name.endsWith(suffix)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -493,15 +493,24 @@ public class RackService {
                     return;
                 } catch (java.util.concurrent.ExecutionException
                         | java.util.concurrent.TimeoutException ex) {
-                    // fall through: setMainProject below tells the truth
+                    // fall through: setMainProject below tells the truth —
+                    // but say the barrier gave up somewhere findable,
+                    // because the v1.233.0 bug hid in exactly this kind of
+                    // silence (v1.234.0 review: a timeout followed by the
+                    // FINE swallow below is invisible twice over)
+                    java.util.logging.Logger.getLogger(RackService.class.getName())
+                            .info("OpenProjects barrier gave up waiting for "
+                                    + dir + ": " + ex);
                 }
             }
             open.setMainProject(project);
         } catch (java.io.IOException | IllegalArgumentException ex) {
             // a project the platform refuses to load is not our failure to
-            // surface: the rack aim already succeeded
+            // surface: the rack aim already succeeded. INFO, not FINE — a
+            // main project that silently fails to follow the aim was the
+            // v1.233.0 bug, and FINE is where it hid (v1.234.0 review).
             java.util.logging.Logger.getLogger(RackService.class.getName())
-                    .fine("OpenProjects bridge skipped " + dir + ": " + ex);
+                    .info("OpenProjects bridge skipped " + dir + ": " + ex);
         }
     }
 

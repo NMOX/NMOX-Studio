@@ -213,7 +213,12 @@ public final class ProjectInspector {
     }
 
     private static boolean hasGlobManifest(File dir, java.util.function.Predicate<String> manifest) {
-        String[] names = dir.list((d, name) -> manifest.test(name));
+        // dotfiles excluded and plain files required: nimble's package
+        // cache is a DIRECTORY named ~/.nimble, and without this filter
+        // a rack aimed at $HOME detected NIM (v1.234.0 review — the
+        // WebProjectFactory half of the same bug made $HOME a project)
+        String[] names = dir.list((d, name) -> !name.startsWith(".")
+                && manifest.test(name) && new File(d, name).isFile());
         return names != null && names.length > 0;
     }
 

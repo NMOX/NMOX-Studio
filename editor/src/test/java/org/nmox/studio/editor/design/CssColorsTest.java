@@ -185,6 +185,18 @@ class CssColorsTest {
     }
 
     @Test
+    @DisplayName("a hyphen-prefixed function is a helper, not a color: to-rgb() never swatches (v1.234.0)")
+    void hyphenPrefixedFunctionsRefused() {
+        // Bootstrap's Sass helpers: to-rgb(255,0,0) is a function CALL of
+        // the project's own making — \b saw the '-' as a boundary and
+        // swatched its arguments as if they were rgb()'s
+        assertThat(CssColors.scan("a{c:to-rgb(255, 0, 0)}")).isEmpty();
+        assertThat(CssColors.scan("a{c:my-hsl(1, 20%, 30%)}")).isEmpty();
+        // the real function still swatches right next to it
+        assertThat(CssColors.scan("a{c:rgb(255, 0, 0)}")).hasSize(1);
+    }
+
+    @Test
     @DisplayName("garbage never throws and never matches")
     void hostileInput() {
         assertThat(CssColors.scan("")).isEmpty();

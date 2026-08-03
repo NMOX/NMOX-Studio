@@ -454,6 +454,26 @@ registration is only as real as the resolver race it wins — verify
 which mime a REAL file gets (the popup's action list names the owner)
 before believing any per-mime feature shipped.*
 
+Currency addendum 2026-08-03 at **v1.234.0**: the CSS arc closed with
+v1.232.0 (stylelint-lsp as the css family's second linter — trust- and
+config-gated, ledger 71's recommended mitigation shipped) and the IDE
+lanes opened for every stack in v1.233.0 (DOTNET/TACT/CMAKE lanes, the
+glob-kinds recognition fix — "the lanes existed; the door didn't" —
+the async OpenProjects barrier, and a completeness gate so a
+default-null switch arm can never ship silently again). The v1.234.0
+night review (two lenses over v1.226–v1.233, seven MEDs fixed) then
+caught the recognition fix's own tail the same week it shipped:
+~/.nimble (a DIRECTORY) made $HOME a project, CMakeLists.txt-per-subdir
+fragmented ownership, and getChildren() paid a full listing per
+ancestor walk. Method notes worth keeping: **a z-order comment is a
+claim about a total order — decompile the anchors (warnings SHOW_OFF
+420, selection SHOW_OFF 500) instead of hoping**; **a second door into
+the spawn room (ProcessSupport.builder beside CommandExecutor.run)
+needs its own ledger row or a gated site is invisible to the gate
+audit**; and **a stale module cache after a jar swap fakes product
+bugs — the corrupted dev install manufactured three of them before a
+cachedir wipe told the truth** (the v1.233.0 session's detour).
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per

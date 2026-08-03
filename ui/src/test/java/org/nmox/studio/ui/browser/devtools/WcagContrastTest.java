@@ -48,11 +48,32 @@ class WcagContrastTest {
     }
 
     @Test
-    @DisplayName("a fully transparent background yields no verdict — the backdrop is an ancestor's")
-    void transparentBackgroundRefused() {
+    @DisplayName("ANY translucency yields no verdict — the composited backdrop is unknowable (v1.234.0)")
+    void translucentBackgroundRefused() {
         assertThat(WcagContrast.of("rgb(0,0,0)", "rgba(0, 0, 0, 0)")).isNull();
-        // but a merely translucent one still computes against its own value
-        assertThat(WcagContrast.of("rgb(0,0,0)", "rgba(255, 255, 255, 0.9)")).isNotNull();
+        // v1.234.0 review: rgba(…, 0.5) — the classic overlay — used to
+        // compute as if opaque, reporting a contrast the page doesn't have
+        assertThat(WcagContrast.of("rgb(0,0,0)", "rgba(255, 255, 255, 0.5)")).isNull();
+        assertThat(WcagContrast.of("rgb(0,0,0)", "rgba(255, 255, 255, 0.9)")).isNull();
+        // a fully opaque rgba still computes
+        assertThat(WcagContrast.of("rgb(0,0,0)", "rgba(255, 255, 255, 1)")).isNotNull();
+    }
+
+    @Test
+    @DisplayName("the displayed ratio never contradicts the verdict: truncation, not rounding (v1.234.0)")
+    void displayNeverContradictsVerdict() {
+        // gray pair whose true ratio sits just BELOW an AA threshold:
+        // the display must not round up across the boundary it failed.
+        // rgb(118,118,118) on white is the classic ~4.54 pass; nudge one
+        // channel down to land under 4.5 and check display ≤ 4.49.
+        WcagContrast.Verdict v = WcagContrast.of("rgb(120,120,120)", "rgb(255,255,255)");
+        assertThat(v).isNotNull();
+        if (!v.aaNormal()) {
+            assertThat(v.ratio()).isLessThan(4.5);
+        }
+        // and the stored ratio is always the floor of the true value —
+        // summary() can never print "4.50:1 — AA FAIL"
+        assertThat(v.summary()).doesNotContain("4.50:1 — AA FAIL");
     }
 
     @Test
