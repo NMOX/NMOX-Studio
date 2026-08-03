@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.237.0] - 2026-08-03
+
+Template currency: a scaffolded project starts on today's stack.
+
+### Fixed
+- **The project templates hand out current dependencies — every
+  touched template live-proven by a real `npm install` + build.**
+  React moved to 19 (the template still SAID "React 18"), Express to
+  5, Vue to 3.5, the eslint family to 10 (`@eslint/js` ^10, globals
+  ^17), vitest to 3, and the whole Vite line from ^5.4 to ^6 with its
+  matching plugin majors (plugin-react ^5, plugin-vue ^5.2,
+  vite-plugin-svelte ^5, vite-plugin-solid ^2.11). All seven touched
+  templates (React/Vue/Solid/Svelte/TS-library install+build,
+  Express/Vanilla install) ran green from the real template code
+  before ship.
+- **Two deliberate ceilings, written where the pins live.**
+  TypeScript stays on 5.x everywhere: npm's `typescript` latest is
+  7.x — the Go-port compiler that dropped `tsserverlibrary.js` — and
+  both the IDE's tsserver lane and the Angular Language Service
+  (the v1.214.0 find) require the 5.x library; a template that
+  installs TS 7 gets a project the IDE itself cannot serve
+  intelligence for. And Vite stays on ^6 rather than 7/8: Vite 7+
+  requires node ≥ 22.12, and a starter template must run on whatever
+  node a learner has (the live proof itself caught this — Vite 8's
+  rolldown binding refused the box's node 22.9, exactly the failure
+  a fresh learner would hit).
+
 ## [1.236.0] - 2026-08-03
 
 The DevOps pass: what the product GENERATES is as current as what it runs.
@@ -8668,6 +8695,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.237.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.236.0...v1.237.0
 [1.236.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.235.0...v1.236.0
 [1.235.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.234.0...v1.235.0
 [1.234.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.233.0...v1.234.0
