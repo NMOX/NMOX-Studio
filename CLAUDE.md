@@ -260,9 +260,9 @@ Projects are recognized by any supported manifest (package.json and 15 others); 
 
 ### Project Templates
 
-Location: `tools/src/main/resources/org/nmox/studio/tools/npm/`
+Location: `rack/src/main/java/org/nmox/studio/rack/projectstudio/ProjectTemplates.java`
 
-Templates for React, Vue, and Vanilla JS projects. Uses wizard pattern with `WebProjectWizardIterator`.
+All 14 project templates (React/Vue/Svelte/Solid via Vite, Angular, vanilla, PHP, Classic Web, …) live in Project Studio's wizard — the one New Project surface (File ▸ New Project… and the Welcome tab both open it). The old platform `@TemplateRegistration` wizard (`WebProjectWizardIterator` + resource templates) was unreachable since the v1.11 chrome pass evicted the platform action, and was deleted in v1.246.0.
 
 ## Known Issues and Technical Debt
 
