@@ -20,6 +20,26 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.235.0, the ambient-selection release)
+
+### 72. API Studio, Contract Studio and the Infra Designer stay selection-less — an aim-node facade would need to join core.spi
+v1.235.0 gave six suite windows (Welcome, Browser, IRC, Docker Panel,
+Block Studio, DB Studio) the aimed project as their ambient selection
+via `rack.service.AimFollower`, so Test Project (^F6), the Team menu
+and every project-sensitive action work while those windows are
+focused. The remaining three CANNOT ride the same helper: apiclient,
+web3 and infra dropped their rack Maven dependency on purpose in the
+v1.46.0 soft-dependency surgery, and reaching AimFollower would
+re-add it. The honest route is a small aim-node facade in core.spi
+(the ProjectAim idiom: rack publishes an @ServiceProvider adapter
+exposing the resolved node or its Lookup, the three modules consume
+it null-safely). Deferred until the facade earns a second consumer
+beyond selection — the three studios have their own re-aim machinery
+already, and their users' project-sensitive gestures (Team menu from
+INSIDE API Studio) are rare enough that no journey has hit the gap
+yet. Wire it when one does, or when core.spi grows the facade for
+another reason.
+
 ## Open — deferred deliberately, with reasons (added v1.216.0, the v1.209–v1.215 arc review)
 
 ### 63. The ide-run URL scan can announce a proxy TARGET before the dev server

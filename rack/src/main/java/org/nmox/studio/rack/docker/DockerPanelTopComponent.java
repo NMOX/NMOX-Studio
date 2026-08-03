@@ -177,6 +177,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         autoTimer.stop();
+        aimFollower.closed();
     }
 
     // ---- header ----
@@ -687,12 +688,23 @@ public final class DockerPanelTopComponent extends TopComponent {
     /** A dockerize preview is owed but the panel is hidden; served on show. */
     private boolean dockerizePending;
 
+    /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
     @Override
     protected void componentShowing() {
+        aimFollower.showing();
         if (dockerizePending) {
             dockerizePending = false;
             regenerateDockerize();
         }
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
     }
 
     private File projectDir() {

@@ -2086,6 +2086,7 @@ public final class DbStudioTopComponent extends TopComponent {
      */
     @Override
     public void componentShowing() {
+        aimFollower.showing(); // v1.235.0: ambient aim selection (ledger 29)
         java.util.List<org.nmox.studio.rack.docker.DockerClient.ContainerInfo> held =
                 dockerHold.onShowing();
         if (held.isEmpty()) {
@@ -2095,8 +2096,19 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     @Override
     public void componentClosed() {
+        aimFollower.closed();
         // a write may sit queued on the save lane (every edit saves the
         // moment it is made) — drain it before the studio is torn down
         // (bounded; see SaveLane.flush)

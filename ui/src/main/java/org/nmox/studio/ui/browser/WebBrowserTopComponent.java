@@ -70,8 +70,21 @@ public final class WebBrowserTopComponent extends TopComponent {
         // the same idiom DB Studio has used since v1.35.1.
     }
 
+    /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
+    private final org.nmox.studio.rack.service.AimFollower aimFollower =
+            new org.nmox.studio.rack.service.AimFollower(n ->
+                    setActivatedNodes(new org.openide.nodes.Node[]{n}));
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     @Override
     protected void componentShowing() {
+        // before the build-once guard: the ambient selection follows
+        // EVERY showing, not just the first
+        aimFollower.showing();
         if (browser != null || getComponentCount() > 0) {
             return;
         }
@@ -105,6 +118,7 @@ public final class WebBrowserTopComponent extends TopComponent {
 
     @Override
     protected void componentClosed() {
+        aimFollower.closed();
         // Closing the tab must actually stop the page: a WebView whose
         // Swing wrapper is discarded keeps running its timers, audio and
         // requests, and keeps feeding the DevTools models, until the IDE

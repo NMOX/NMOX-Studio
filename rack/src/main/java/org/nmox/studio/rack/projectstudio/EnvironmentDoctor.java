@@ -91,6 +91,10 @@ public final class EnvironmentDoctor {
                 new String[]{"haxe", "Haxe — one codebase, many targets; run space", "brew install haxe"},
                 new String[]{"janet", "Janet — the embeddable Lisp, REPL space", "brew install janet"},
                 new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
+                // v1.235.0: CMake became a first-class IDE lane in v1.233.0
+                // (configure → build → ctest); the Doctor should say whether
+                // the tool behind the buttons exists
+                new String[]{"cmake", "CMake — configure/build lane + ctest", "brew install cmake"},
                 new String[]{"dart", "Dart SDK", "brew install dart-sdk"},
                 new String[]{"zig", "Zig toolchain", "brew install zig"},
                 new String[]{"sbt", "Scala build tool", "brew install sbt"},
