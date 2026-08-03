@@ -20,6 +20,20 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
+
+### 74. The OpenJFX 21 → 26 upgrade is its own release, not a Dependabot merge
+ui/pom.xml's org.openjfx deps are provided-scope compile-time halves of
+the FX runtime the release workflow jlinks from sha256-pinned 21.0.5
+jmods (v1.199.0). Dependabot's pom-only bump (#371) would compile the
+Browser against FX 26 API while shipping FX 21 — skew no CI lane can
+see, since tests run with the maven dep, not the jlinked runtime; and
+the v1.226.0 h2c fix rides an internal com.sun.webkit flag verified
+against 21's WebKit. dependabot.yml now ignores org.openjfx. The real
+upgrade moves the pom pins AND the workflow's fxVersion+sha256 together,
+re-verifies the h2c flag and the DevTools bridge against the new WebKit,
+and gets the full browser gauntlet before ship.
+
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
 ### 73. Suffixless Angular templates (`app.html`) are invisible to the IDE's template intelligence
