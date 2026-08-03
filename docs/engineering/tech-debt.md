@@ -20,6 +20,25 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
+
+### 73. Suffixless Angular templates (`app.html`) are invisible to the IDE's template intelligence
+Angular 20+ scaffolds components without the `.component` suffix by
+default, but the v1.217.0 declarative mime resolver keys on the
+`.component.html` name substring — a stock `ng new` project's
+templates open as plain HTML: no @-block completion, no ALS
+type-checking, no ⌘B. MITIGATED for everything WE generate: the
+ANGULAR project template and the angular learning space both pin
+`@schematics/angular:component {"type": "component"}` so HALO GEN and
+File ▸ New Angular Schematic… keep producing recognized files
+(proven live on Angular 21's CLI, v1.241.0). The remaining gap is
+externally-scaffolded suffixless projects. A name-only resolver
+cannot close it — `app.html` is not distinguishable from generic
+HTML by name; closing it needs a programmatic resolver consulting
+the sibling `.ts` (templateUrl) or the workspace's angular.json,
+weighed against resolver-per-file-open cost. Take it up when a real
+suffixless repo shows up in use.
+
 ## Open — deferred deliberately, with reasons (added v1.235.0, the ambient-selection release)
 
 ### 72. API Studio, Contract Studio and the Infra Designer stay selection-less — an aim-node facade would need to join core.spi

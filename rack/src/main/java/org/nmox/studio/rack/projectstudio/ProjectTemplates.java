@@ -38,7 +38,22 @@ import static org.nmox.studio.rack.projectstudio.RackPresets.buildPatchFrom;
  * exist — vite 7+ requires node >=22.12, and a starter template must
  * run on whatever node a learner has (^18/^20/any 22). The whole
  * vite-6 peer set was live-proven: npm install + build green on all
- * four vite templates, 2026-08-03.
+ * four vite templates, 2026-08-03. A THIRD deliberate ceiling: Angular
+ * stays on ~21.2 — Angular 22 (all of it, 22.0 included) requires
+ * TypeScript >=6.0 <6.1, so the TS-5 ceiling above binds; the old
+ * ^22.0.0 pin could never npm-install (ERESOLVE against its own
+ * ~5.9 typescript) and was caught by the 2026-08-03 night proof.
+ * Angular's own node floor is ^20.19 || ^22.12 || >=24 — the CLI
+ * hard-refuses older nodes at runtime (exit 3), which the template
+ * README says out loud. The ~21.2 + TS ~5.9 set was live-proven:
+ * npm install clean (zero engine warnings on node 22.23) + ng build
+ * green, zoneless config compiling, 2026-08-03. The angular.json also
+ * pins `@schematics/angular:component {"type": "component"}`: Angular
+ * 20+ scaffolds suffixless files (app.html) by default, but the IDE's
+ * template intelligence (v1.217.0 mime resolver, ALS, ⌘B) keys on the
+ * `.component.html` convention — the workspace teaches the naming
+ * that lights the tools up, and HALO GEN / New Angular Schematic…
+ * generate recognized files because ng reads this config.
  */
 public enum ProjectTemplates {
 
@@ -827,7 +842,7 @@ public enum ProjectTemplates {
         }
     },
 
-    ANGULAR("Angular (standalone)", "Angular 22, zoneless, signals + control flow, HALO-wired") {
+    ANGULAR("Angular (standalone)", "Angular 21, zoneless, signals + control flow, HALO-wired") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {
             write(dir, "package.json", """
@@ -842,18 +857,18 @@ public enum ProjectTemplates {
                     "test": "ng test"
                   },
                   "dependencies": {
-                    "@angular/common": "^22.0.0",
-                    "@angular/compiler": "^22.0.0",
-                    "@angular/core": "^22.0.0",
-                    "@angular/platform-browser": "^22.0.0",
-                    "@angular/router": "^22.0.0",
+                    "@angular/common": "~21.2.0",
+                    "@angular/compiler": "~21.2.0",
+                    "@angular/core": "~21.2.0",
+                    "@angular/platform-browser": "~21.2.0",
+                    "@angular/router": "~21.2.0",
                     "rxjs": "~7.8.0",
                     "tslib": "^2.8.0"
                   },
                   "devDependencies": {
-                    "@angular/build": "^22.0.0",
-                    "@angular/cli": "^22.0.0",
-                    "@angular/compiler-cli": "^22.0.0",
+                    "@angular/build": "~21.2.0",
+                    "@angular/cli": "~21.2.0",
+                    "@angular/compiler-cli": "~21.2.0",
                     "typescript": "~5.9.0"
                   }
                 }
@@ -862,6 +877,9 @@ public enum ProjectTemplates {
                 {
                   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
                   "version": 1,
+                  "schematics": {
+                    "@schematics/angular:component": {"type": "component"}
+                  },
                   "projects": {
                     "%s": {
                       "projectType": "application",
@@ -962,7 +980,7 @@ public enum ProjectTemplates {
             write(dir, "src/main.ts", """
                 import { bootstrapApplication } from '@angular/platform-browser';
                 import { appConfig } from './app/app.config';
-                import { App } from './app/app';
+                import { App } from './app/app.component';
 
                 bootstrapApplication(App, appConfig).catch(err => console.error(err));
                 """);
@@ -980,13 +998,13 @@ public enum ProjectTemplates {
 
                 export const routes: Routes = [];
                 """);
-            write(dir, "src/app/app.ts", """
+            write(dir, "src/app/app.component.ts", """
                 import { Component, computed, signal } from '@angular/core';
 
                 @Component({
                   selector: 'app-root',
-                  templateUrl: './app.html',
-                  styleUrl: './app.css',
+                  templateUrl: './app.component.html',
+                  styleUrl: './app.component.css',
                 })
                 export class App {
                   readonly count = signal(0);
@@ -998,7 +1016,7 @@ public enum ProjectTemplates {
                   }
                 }
                 """);
-            write(dir, "src/app/app.html", """
+            write(dir, "src/app/app.component.html", """
                 <main>
                   <h1>%s</h1>
                   <button (click)="increment()">count: {{ count() }}</button>
@@ -1013,14 +1031,14 @@ public enum ProjectTemplates {
                   </ul>
                 </main>
                 """.formatted(name));
-            write(dir, "src/app/app.css", """
+            write(dir, "src/app/app.component.css", """
                 main { text-align: center; }
                 button { font-size: 1.25rem; padding: 0.5rem 1.5rem; cursor: pointer; }
                 """);
-            write(dir, "src/app/app.spec.ts", """
+            write(dir, "src/app/app.component.spec.ts", """
                 import { TestBed } from '@angular/core/testing';
                 import { provideZonelessChangeDetection } from '@angular/core';
-                import { App } from './app';
+                import { App } from './app.component';
 
                 describe('App', () => {
                   beforeEach(async () => {
@@ -1070,6 +1088,7 @@ public enum ProjectTemplates {
                 - SERVE on HALO runs ng serve and opens the browser via SCOPE
                 - HALO's version cluster tracks the latest Angular; UPDATE runs `ng update`
                 - GEN scaffolds components/services with the SCHEMATIC knob
+                - needs Node 20.19+, 22.12+, or 24+ — Angular's CLI refuses older nodes
                 """;
         }
     },

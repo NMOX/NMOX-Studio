@@ -1446,7 +1446,7 @@
       "name": "Angular",
       "category": "FRAMEWORK",
       "family": "JavaScript UI",
-      "blurb": "A full, opinionated TypeScript framework: components, dependency injection, and tooling all included.",
+      "blurb": "A full, opinionated TypeScript framework — this space is a real minimal workspace: zoneless, signals, and the CLI all wired.",
       "driver": {
         "kind": "run",
         "command": [
@@ -1464,18 +1464,50 @@
       "files": [
         {
           "path": "package.json",
-          "content": "{\n  \"name\": \"angular-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"ng serve\",\n    \"build\": \"ng build\"\n  },\n  \"dependencies\": {\n    \"@angular/common\": \"^18.0.0\",\n    \"@angular/compiler\": \"^18.0.0\",\n    \"@angular/core\": \"^18.0.0\",\n    \"@angular/platform-browser\": \"^18.0.0\",\n    \"@angular/platform-browser-dynamic\": \"^18.0.0\",\n    \"rxjs\": \"^7.8.0\",\n    \"tslib\": \"^2.6.0\",\n    \"zone.js\": \"^0.14.0\"\n  },\n  \"devDependencies\": {\n    \"@angular/cli\": \"^18.0.0\",\n    \"@angular/compiler-cli\": \"^18.0.0\",\n    \"typescript\": \"~5.4.0\"\n  }\n}\n"
+          "content": "{\n  \"name\": \"angular-space\",\n  \"private\": true,\n  \"scripts\": {\n    \"ng\": \"ng\",\n    \"start\": \"ng serve\",\n    \"build\": \"ng build\"\n  },\n  \"dependencies\": {\n    \"@angular/common\": \"~21.2.0\",\n    \"@angular/compiler\": \"~21.2.0\",\n    \"@angular/core\": \"~21.2.0\",\n    \"@angular/platform-browser\": \"~21.2.0\",\n    \"rxjs\": \"~7.8.0\",\n    \"tslib\": \"^2.8.0\"\n  },\n  \"devDependencies\": {\n    \"@angular/build\": \"~21.2.0\",\n    \"@angular/cli\": \"~21.2.0\",\n    \"@angular/compiler-cli\": \"~21.2.0\",\n    \"typescript\": \"~5.9.0\"\n  }\n}\n"
         },
         {
-          "path": "src/main.ts",
-          "content": "import { bootstrapApplication } from \"@angular/platform-browser\";\nimport { Component, signal } from \"@angular/core\";\n\n@Component({\n  selector: \"app-root\",\n  standalone: true,\n  template: `\n    <main style=\"font-family: system-ui; padding: 40px\">\n      <h1>Hello, Angular</h1>\n      <p>You clicked {{ count() }} times.</p>\n      <button (click)=\"count.set(count() + 1)\">Click me</button>\n    </main>\n  `\n})\nexport class AppComponent {\n  count = signal(0);\n}\n\nbootstrapApplication(AppComponent);\n"
+          "path": "angular.json",
+          "content": "{\n  \"$schema\": \"./node_modules/@angular/cli/lib/config/schema.json\",\n  \"version\": 1,\n  \"schematics\": {\n    \"@schematics/angular:component\": {\"type\": \"component\"}\n  },\n  \"projects\": {\n    \"angular-space\": {\n      \"projectType\": \"application\",\n      \"root\": \"\",\n      \"sourceRoot\": \"src\",\n      \"prefix\": \"app\",\n      \"architect\": {\n        \"build\": {\n          \"builder\": \"@angular/build:application\",\n          \"options\": {\n            \"outputPath\": \"dist/angular-space\",\n            \"index\": \"src/index.html\",\n            \"browser\": \"src/main.ts\",\n            \"tsConfig\": \"tsconfig.app.json\",\n            \"styles\": [\"src/styles.css\"]\n          },\n          \"configurations\": {\n            \"production\": {\"outputHashing\": \"all\"},\n            \"development\": {\"optimization\": false, \"sourceMap\": true}\n          },\n          \"defaultConfiguration\": \"production\"\n        },\n        \"serve\": {\n          \"builder\": \"@angular/build:dev-server\",\n          \"configurations\": {\n            \"production\": {\"buildTarget\": \"angular-space:build:production\"},\n            \"development\": {\"buildTarget\": \"angular-space:build:development\"}\n          },\n          \"defaultConfiguration\": \"development\"\n        }\n      }\n    }\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.json",
+          "content": "{\n  \"compileOnSave\": false,\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noImplicitOverride\": true,\n    \"noImplicitReturns\": true,\n    \"skipLibCheck\": true,\n    \"isolatedModules\": true,\n    \"experimentalDecorators\": false,\n    \"moduleResolution\": \"bundler\",\n    \"importHelpers\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"preserve\"\n  },\n  \"angularCompilerOptions\": {\n    \"strictInjectionParameters\": true,\n    \"strictTemplates\": true\n  }\n}\n"
+        },
+        {
+          "path": "tsconfig.app.json",
+          "content": "{\n  \"extends\": \"./tsconfig.json\",\n  \"compilerOptions\": {\"outDir\": \"./out-tsc/app\", \"types\": []},\n  \"files\": [\"src/main.ts\"],\n  \"include\": [\"src/**/*.d.ts\"]\n}\n"
         },
         {
           "path": "src/index.html",
           "content": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\" />\n    <title>Angular Space</title>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  </head>\n  <body>\n    <app-root></app-root>\n  </body>\n</html>\n"
+        },
+        {
+          "path": "src/styles.css",
+          "content": "body {\n  margin: 0;\n  font-family: system-ui, sans-serif;\n  display: grid;\n  place-items: center;\n  min-height: 100vh;\n}\n"
+        },
+        {
+          "path": "src/main.ts",
+          "content": "import { bootstrapApplication } from '@angular/platform-browser';\nimport { appConfig } from './app/app.config';\nimport { App } from './app/app.component';\n\nbootstrapApplication(App, appConfig).catch(err => console.error(err));\n"
+        },
+        {
+          "path": "src/app/app.config.ts",
+          "content": "import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';\n\nexport const appConfig: ApplicationConfig = {\n  providers: [provideZonelessChangeDetection()],\n};\n"
+        },
+        {
+          "path": "src/app/app.component.ts",
+          "content": "import { Component, computed, signal } from '@angular/core';\n\n@Component({\n  selector: 'app-root',\n  templateUrl: './app.component.html',\n  styleUrl: './app.component.css',\n})\nexport class App {\n  readonly count = signal(0);\n  readonly doubled = computed(() => this.count() * 2);\n\n  increment(): void {\n    this.count.update(v => v + 1);\n  }\n}\n"
+        },
+        {
+          "path": "src/app/app.component.html",
+          "content": "<main>\n  <h1>Hello, Angular</h1>\n  <button (click)=\"increment()\">count: {{ count() }}</button>\n  <p>doubled: {{ doubled() }}</p>\n  @if (count() > 4) {\n    <p>that's plenty.</p>\n  }\n</main>\n"
+        },
+        {
+          "path": "src/app/app.component.css",
+          "content": "main { text-align: center; }\nbutton { font-size: 1.25rem; padding: 0.5rem 1.5rem; cursor: pointer; }\n"
         }
       ],
-      "tutorial": "# Angular\n\nAngular is a **full, batteries-included** framework built on TypeScript. Unlike the lighter libraries, it ships routing, forms, HTTP, dependency injection, and a build system as one opinionated whole — and it leans on its own CLI (`ng`) for almost everything.\n\n## Honest note: this is a starting point\n\nAngular really wants to be scaffolded by its CLI. The files here are a minimal standalone-component sketch to read, but the cleanest path to a *fully wired* project is to let the CLI generate it:\n\n```\nnpm install -g @angular/cli\nng new angular-space --minimal --defaults\ncd angular-space\n```\n\nThat produces the full `angular.json`, `tsconfig`, and build config a real app needs.\n\n## Get it running\n\n1. Install Node and the Angular CLI (see install hints).\n2. Run `npm install`.\n3. Click **START** (this runs `npm start` -> `ng serve`). Open `http://localhost:4200`.\n\nIf `ng serve` complains about missing config, run the `ng new` scaffold above and copy your component into it — that's the honest, supported route.\n\n## The shape\n\n- `src/main.ts` — the entry point. `bootstrapApplication(AppComponent)` boots a standalone component (no NgModule needed in modern Angular). The `@Component` decorator ties a `selector`, an inline `template`, and a class together. `signal(0)` is Angular's reactive state; `count()` reads it, `count.set(...)` writes it.\n- `src/index.html` — hosts `<app-root>`, where the component renders.\n\nCore idea: **components + decorators + dependency injection**, all typed.\n\n## Try this\n\n1. Add a reset button: `<button (click)=\"count.set(0)\">Reset</button>`.\n2. Add a `computed`: `import { computed } from \"@angular/core\"` then `doubled = computed(() => this.count() * 2);` and show `{{ doubled() }}`.\n3. Scaffold a real project with `ng new` and run `ng generate component hello` to see Angular's file conventions.\n\n## Going further\n\nOfficial tutorial: https://angular.dev/tutorials/learn-angular\n"
+      "tutorial": "# Angular\n\nAngular is a **full, batteries-included** framework built on TypeScript: components, dependency injection, routing, forms, and a build system as one opinionated whole, driven by its own CLI (`ng`).\n\nThis space is a **real, minimal Angular workspace** — `angular.json`, `tsconfig`, and a zoneless standalone component with signals — so everything the CLI and the IDE can do works here.\n\n## Honest note: the node floor\n\nAngular's CLI requires Node **20.19+, 22.12+, or 24+** and refuses older versions outright. If START fails with a version message, update Node first (see the install hints).\n\n## Get it running\n\n1. Install Node and the Angular CLI (install hints on this space).\n2. Drop a SOLDER device in the rack and run `npm install` here once.\n3. Click **START** — that's `ng serve`. The dev server URL lands on the rack; open it in the in-app Browser (⌥⌘4).\n\n## What to try\n\n- Open `src/app/app.component.html`. This is an **Angular template, and the IDE knows it**: `@`-block and `*`-directive completion work, and if you accept the one-click **Angular Language Service** install offer, you get live template type-checking — try typing `{{ coun }}` and read the squiggle. **⌘B** on a member jumps to the component class, and the right-click menu switches between component and template.\n- Click the button a few times — `@if (count() > 4)` is Angular's built-in control flow, and the component is **zoneless**: signals drive change detection, no zone.js.\n- With the app served, open the Browser's **DevTools → Angular pane** to inspect the live component tree (dev builds only — a production build honestly says it exposes no tree).\n- **File ▸ New Angular Schematic…** (or the HALO device's GEN button) scaffolds components/services/pipes with the CLI; the workspace pins the suffixed `.component.*` naming, which is exactly what the IDE's template tooling keys on.\n- The **HALO** rack device carries the rest: SERVE/BUILD lanes, an `ng update` button, and a version cluster tracking the latest Angular.\n"
     },
     {
       "slug": "nextjs",

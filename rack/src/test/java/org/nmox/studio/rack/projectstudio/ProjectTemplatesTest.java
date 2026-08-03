@@ -195,6 +195,36 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("Angular pins the proven ~21.2 + TS 5.9 line and the suffixed naming")
+    void angularObeysItsCeilings() throws Exception {
+        File dir = parent.resolve("ng-ceilings").toFile();
+
+        ProjectTemplates.ANGULAR.generate(dir, "demo-ng");
+
+        // Angular stays ~21.2: 22 requires TypeScript 6, and the TS-5
+        // ceiling (ngserver/tsserver need tsserverlibrary.js) binds —
+        // the old ^22 pin could never npm-install (v1.241.0 night proof)
+        JSONObject pkg = new JSONObject(
+                Files.readString(dir.toPath().resolve("package.json")));
+        assertThat(pkg.getJSONObject("dependencies").getString("@angular/core"))
+                .startsWith("~21.2");
+        JSONObject dev = pkg.getJSONObject("devDependencies");
+        assertThat(dev.getString("@angular/cli")).startsWith("~21.2");
+        assertThat(dev.getString("typescript")).startsWith("~5.");
+
+        // the workspace teaches the suffixed naming the IDE's template
+        // intelligence keys on (v1.217.0 resolver: *.component.html) —
+        // and pins ng generate to keep producing it
+        String ngJson = Files.readString(dir.toPath().resolve("angular.json"));
+        assertThat(ngJson).contains("\"@schematics/angular:component\"");
+        assertThat(ngJson).contains("\"type\": \"component\"");
+        assertThat(dir.toPath().resolve("src/app/app.component.html")).exists();
+        assertThat(dir.toPath().resolve("src/app/app.component.ts")).exists();
+        assertThat(Files.readString(dir.toPath().resolve("src/main.ts")))
+                .contains("./app/app.component");
+    }
+
+    @Test
     @DisplayName("Should refuse to generate into a non-empty directory")
     void shouldRefuseNonEmptyDirectory() throws Exception {
         File dir = parent.resolve("occupied").toFile();
