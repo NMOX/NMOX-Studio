@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.244.0] - 2026-08-03
+
+The third generator home joins the proven line: the platform wizard's
+templates.
+
+### Fixed
+- **The platform New Project wizard's React template was Create React
+  App** — react-scripts 5, dead upstream, and unable to even
+  npm-install beside the React 19 pin Dependabot kept fresh around it
+  (the v1.241.0 broken-from-birth class in the third generator home).
+  It now scaffolds the same proven Vite + React set as Project
+  Studio's VITE_REACT template (react ^19, @vitejs/plugin-react ^5,
+  vite ^6, `"type": "module"` — the proof loop caught plugin-react 5
+  being ESM-only), and the wizard's hardcoded file list moved to the
+  Vite layout.
+- **The wizard's Vue template had marched past the learner ceiling**:
+  Dependabot bumped it to vite ^8 — the exact version the v1.237.0
+  proof watched refuse node 22.9 — because this home had no gate.
+  Clamped to the proven vite ^6 + @vitejs/plugin-vue ^5.2 set.
+- Both templates live-proven: npm install + build green from the
+  exact shipped files on default node 22.9.
+
+### Added
+- **WizardTemplateCeilingTest** — no react-scripts, vite ^6, matching
+  plugin majors, and the wizard's hardcoded react file list pinned to
+  the template dir. A future Dependabot bump across a ceiling now
+  fails CI on the bump PR itself, so a human decides instead of a bot.
+
 ## [1.243.0] - 2026-08-03
 
 Dependency housekeeping, with the one bump that would have lied refused.
@@ -8856,6 +8884,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.244.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.243.0...v1.244.0
 [1.243.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.242.0...v1.243.0
 [1.242.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.241.0...v1.242.0
 [1.241.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.240.0...v1.241.0

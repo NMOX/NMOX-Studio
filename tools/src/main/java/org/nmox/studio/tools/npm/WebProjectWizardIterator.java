@@ -145,16 +145,19 @@ public class WebProjectWizardIterator implements WizardDescriptor.AsynchronousIn
     }
 
     private void createReactProject(FileObject projectDir) throws IOException {
+        // Vite + React (v1.244.0): the CRA layout this wizard shipped since
+        // v0.1 died upstream — react-scripts 5 cannot even npm-install
+        // beside React 19 — so the platform wizard now scaffolds the same
+        // proven vite-6 peer set as Project Studio's VITE_REACT template.
         String projectName = projectDir.getName();
         createFileFromTemplate(projectDir, "package.json", "templates/react/package.json", projectName);
-        
+        createFileFromTemplate(projectDir, "index.html", "templates/react/index.html", projectName);
+        createFileFromTemplate(projectDir, "vite.config.js", "templates/react/vite.config.js", projectName);
+
         FileObject src = projectDir.createFolder("src");
-        createFileFromTemplate(src, "index.js", "templates/react/src/index.js", projectName);
-        createFileFromTemplate(src, "App.js", "templates/react/src/App.js", projectName);
+        createFileFromTemplate(src, "main.jsx", "templates/react/src/main.jsx", projectName);
+        createFileFromTemplate(src, "App.jsx", "templates/react/src/App.jsx", projectName);
         createFileFromTemplate(src, "index.css", "templates/react/src/index.css", projectName);
-        
-        FileObject publicFolder = projectDir.createFolder("public");
-        createFileFromTemplate(publicFolder, "index.html", "templates/react/public/index.html", projectName);
     }
 
     private void createVueProject(FileObject projectDir) throws IOException {
