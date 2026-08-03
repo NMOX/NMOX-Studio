@@ -23,6 +23,23 @@ import static org.nmox.studio.rack.projectstudio.RackPresets.buildPatchFrom;
  * up with SURGE on 5173 patched into the browser, FORGE on vite,
  * VERITAS on vitest, and a REFLEX TDD loop one switch away.
  */
+/*
+ * VERSION-PIN LAW (v1.237.0, the generator-currency pass): dependency
+ * pins in these templates are version literals no bot can see — bump
+ * them against the live npm registry when touched, and LIVE-PROVE the
+ * touched templates (npm install + build) before ship. ONE deliberate
+ * exception: typescript stays on 5.x everywhere. npm's `typescript`
+ * latest is 7.x — the Go-port compiler — which dropped
+ * tsserverlibrary.js, and both the IDE's tsserver LSP lane and the
+ * Angular Language Service (v1.214.0 find) require the 5.x library.
+ * A template that installs TS 7 gets a project the IDE itself cannot
+ * serve intelligence for. A SECOND deliberate ceiling: vite stays on
+ * ^6 (with vitest ^3 and the matching plugin majors) even though 7/8
+ * exist — vite 7+ requires node >=22.12, and a starter template must
+ * run on whatever node a learner has (^18/^20/any 22). The whole
+ * vite-6 peer set was live-proven: npm install + build green on all
+ * four vite templates, 2026-08-03.
+ */
 public enum ProjectTemplates {
 
     VANILLA("Vanilla Web", "HTML/CSS/JS, no build step, static dev server") {
@@ -38,9 +55,9 @@ public enum ProjectTemplates {
                     "start": "http-server -p 8080 ."
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "http-server": "^14.1.1",
                     "prettier": "^3.3.3"
                   }
@@ -96,7 +113,7 @@ public enum ProjectTemplates {
         }
     },
 
-    VITE_REACT("Vite + React", "React 18 with Vite dev server and Vitest") {
+    VITE_REACT("Vite + React", "React 19 with Vite dev server and Vitest") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {
             write(dir, "package.json", """
@@ -112,17 +129,17 @@ public enum ProjectTemplates {
                     "test": "vitest run"
                   },
                   "dependencies": {
-                    "react": "^18.3.1",
-                    "react-dom": "^18.3.1"
+                    "react": "^19.0.0",
+                    "react-dom": "^19.0.0"
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "@vitejs/plugin-react": "^4.3.1",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "@vitejs/plugin-react": "^5.0.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^5.4.0",
-                    "vitest": "^2.0.5"
+                    "vite": "^6.0.0",
+                    "vitest": "^3.0.0"
                   }
                 }
                 """.formatted(name));
@@ -207,16 +224,16 @@ public enum ProjectTemplates {
                     "test": "vitest run"
                   },
                   "dependencies": {
-                    "vue": "^3.4.35"
+                    "vue": "^3.5.0"
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "@vitejs/plugin-vue": "^5.1.2",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "@vitejs/plugin-vue": "^5.2.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^5.4.0",
-                    "vitest": "^2.0.5"
+                    "vite": "^6.0.0",
+                    "vitest": "^3.0.0"
                   }
                 }
                 """.formatted(name));
@@ -295,12 +312,12 @@ public enum ProjectTemplates {
                     "test": "node --test"
                   },
                   "dependencies": {
-                    "express": "^4.19.2"
+                    "express": "^5.0.0"
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "nodemon": "^3.1.4",
                     "prettier": "^3.3.3"
                   }
@@ -376,13 +393,13 @@ public enum ProjectTemplates {
                     "solid-js": "^1.9.0"
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "prettier": "^3.3.3",
-                    "vite": "^5.4.0",
-                    "vite-plugin-solid": "^2.10.0",
-                    "vitest": "^2.0.5"
+                    "vite": "^6.0.0",
+                    "vite-plugin-solid": "^2.11.0",
+                    "vitest": "^3.0.0"
                   }
                 }
                 """.formatted(name));
@@ -459,14 +476,14 @@ public enum ProjectTemplates {
                     "test": "vitest run"
                   },
                   "devDependencies": {
-                    "@eslint/js": "^9.9.0",
-                    "@sveltejs/vite-plugin-svelte": "^4.0.0",
-                    "eslint": "^9.9.0",
-                    "globals": "^15.9.0",
+                    "@eslint/js": "^10.0.0",
+                    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+                    "eslint": "^10.0.0",
+                    "globals": "^17.0.0",
                     "prettier": "^3.3.3",
                     "svelte": "^5.0.0",
-                    "vite": "^5.4.0",
-                    "vitest": "^2.0.5"
+                    "vite": "^6.0.0",
+                    "vitest": "^3.0.0"
                   }
                 }
                 """.formatted(name));
@@ -548,7 +565,7 @@ public enum ProjectTemplates {
                   "devDependencies": {
                     "prettier": "^3.3.3",
                     "typescript": "^5.5.4",
-                    "vitest": "^2.0.5"
+                    "vitest": "^3.0.0"
                   }
                 }
                 """.formatted(name));

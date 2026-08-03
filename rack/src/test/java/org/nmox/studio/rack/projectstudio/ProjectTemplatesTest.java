@@ -166,14 +166,15 @@ class ProjectTemplatesTest {
         ProjectTemplates.VITE_SVELTE.generate(dir, "demo-app");
 
         // package.json parses and pins the Svelte 5 toolchain: svelte ^5
-        // with the matching vite-plugin-svelte major (4 is the Svelte-5 +
-        // Vite-5 line; the template's vite major matches Vite + Solid's)
+        // with the matching vite-plugin-svelte major (5 is the Svelte-5 +
+        // Vite-6 line — the whole set live-proven by npm install+build,
+        // v1.237.0; the template's vite major matches Vite + Solid's)
         JSONObject pkg = new JSONObject(
                 Files.readString(dir.toPath().resolve("package.json")));
         JSONObject dev = pkg.getJSONObject("devDependencies");
         assertThat(dev.getString("svelte")).startsWith("^5.");
-        assertThat(dev.getString("@sveltejs/vite-plugin-svelte")).startsWith("^4.");
-        assertThat(dev.getString("vite")).startsWith("^5.");
+        assertThat(dev.getString("@sveltejs/vite-plugin-svelte")).startsWith("^5.");
+        assertThat(dev.getString("vite")).startsWith("^6.");
         assertThat(pkg.getJSONObject("scripts").getString("dev")).isEqualTo("vite");
 
         // the component speaks runes, not the Svelte-4 idiom
