@@ -503,6 +503,35 @@ assemble a STALE cluster from ~/.m2 (fresh clusters need the full
 reactor); a nohup'd pipeline dies with the tool shell
 (run_in_background only).
 
+Currency addendum 2026-08-03 at **v1.245.0** (the shift's last
+word): two more releases after the close. **v1.243.0** — deps
+housekeeping with the bump that would have lied refused: snakeyaml
+2.6 + MariaDB 3.5.10 through the gate, and Dependabot's OpenJFX
+21→26 pom-only bump REJECTED — ui's javafx deps are provided-scope
+compile-time halves of the FX runtime the release workflow jlinks
+from sha256-pinned 21.0.5 jmods, so a pom-only bump compiles the
+Browser against an API it doesn't ship, skew no CI lane can see
+(tests run with the maven dep, never the jlinked runtime);
+dependabot.yml now ignores org.openjfx and ledger 74 owns the real
+upgrade (both pins together + browser gauntlet). **v1.244.0** — the
+THIRD generator home joined the proven line: the platform New
+Project wizard still scaffolded Create React App (react-scripts 5,
+dead upstream, unable to npm-install beside the React 19 pin
+Dependabot kept fresh AROUND it) and its Vue template had marched to
+vite ^8 because that home had no gate; react is now the proven Vite
+set (the proof loop caught plugin-react 5 being ESM-only →
+type:module), vue clamped, both npm-proven from the exact shipped
+files on node 22.9, WizardTemplateCeilingTest holds the line. The
+post-ship live check then found the platform template dialog itself
+UNREACHABLE — both File ▸ New Project… and the Welcome tab open
+Project Studio's wizard (the platform action was evicted in the
+v1.11 chrome pass) — so the CRA breakage was invisible dead weight;
+the fix is gated for whenever that door returns, and the
+delete-vs-re-expose decision is queued for David. Method rule from
+the tail: after any Dependabot rebase, verify mergedAt — `gh pr
+merge` can fail "head out of date" while a checks poll reads STALE
+pre-rebase runs, and script flow alone will lie about both.
+
 Currency addendum 2026-08-03 at **v1.242.0** (the night shift's
 close): three more releases. **v1.239.0** — File ▸ New Angular
 Schematic…: `ng generate` as an IDE gesture (kit-action idiom,

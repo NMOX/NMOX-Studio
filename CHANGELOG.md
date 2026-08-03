@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.245.0] - 2026-08-03
+
+Docs truth: the night shift's last word.
+
+### Changed
+- plan.md carries the closing addendum (v1.243–v1.244): the OpenJFX
+  lockstep refusal, the third generator home joining the proven line,
+  the unreachable-platform-wizard finding, and the
+  verify-mergedAt-after-rebase method rule. Docs only.
+
 ## [1.244.0] - 2026-08-03
 
 The third generator home joins the proven line: the platform wizard's
@@ -8884,6 +8894,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.245.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.244.0...v1.245.0
 [1.244.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.243.0...v1.244.0
 [1.243.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.242.0...v1.243.0
 [1.242.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.241.0...v1.242.0
