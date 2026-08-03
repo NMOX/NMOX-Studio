@@ -91,7 +91,7 @@ class CiExporterTest {
 
         String yaml = CiExporter.toWorkflowYaml(rack);
 
-        assertThat(yaml).contains("actions/checkout@v4");
+        assertThat(yaml).contains("actions/checkout@v7");
         int installAt = yaml.indexOf("CRATE");
         int buildAt = yaml.indexOf("FORGE");
         int testAt = yaml.indexOf("VERITAS");

@@ -55,7 +55,7 @@ class DockerizeGeneratorTest {
         assertThat(files.get("Dockerfile"))
                 .contains("FROM composer:2 AS deps")
                 .contains("--no-dev --optimize-autoloader")
-                .contains("php:8.3-fpm-alpine")
+                .contains("php:8.4-fpm-alpine")
                 .contains("COPY --from=deps /app/vendor ./vendor");
         assertThat(files.get(".dockerignore")).contains("vendor").contains(".env");
         // the sidecar publishes 80 and hands .php to the fpm container by name

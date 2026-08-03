@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.236.0] - 2026-08-03
+
+The DevOps pass: what the product GENERATES is as current as what it runs.
+
+### Fixed
+- **Export CI hands out today's action pins.** The exported GitHub
+  Actions workflows still said `actions/checkout@v4` while our own CI
+  — and GitHub's starter templates — were on v7: Dependabot keeps
+  `.github/workflows` fresh but cannot read Java string literals, so
+  the generated pins rotted silently. Nine bumps, each verified
+  against the action repo's latest release: checkout v4→v7,
+  setup-node v4→v7, setup-python v5→v7, setup-java v4→v5,
+  setup-dotnet v4→v6, setup-go v5→v7, setup-fpm v5→v10,
+  setup-alire v4→v6, setup-julia v2→v3. The other sixteen setup
+  actions were verified current as pinned.
+- **Dockerize and the LEMP template build on current bases.** The
+  generated production Dockerfiles moved to `node:24-alpine` (the
+  active LTS; 22 entered maintenance), `rust:1.89`, `golang:1.25`,
+  `php:8.4-fpm-alpine`, and `debian:trixie-slim`; the LEMP compose
+  serves `php:8.4-fpm`. Every new tag existence-checked against
+  Docker Hub before the bump; `python:3.13-slim`, `composer:2`,
+  `nginx:alpine` and `mariadb:11` verified current as pinned.
+
+### Changed
+- **A new currency gate rides Dependabot's freshness.**
+  `CiExportPinCurrencyTest` fails the build whenever the exporter
+  pins a different version than our own workflows for the SAME
+  action — when Dependabot bumps `.github/workflows`, the exporter
+  must follow in the same change. Exporter-only actions stay on the
+  periodic review (hand-verified 2026-08-03), because no bot watches
+  them; the shared subset can never drift again.
+
 ## [1.235.0] - 2026-08-03
 
 The aim follows you: Test works from any window.
@@ -8636,6 +8668,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.236.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.235.0...v1.236.0
 [1.235.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.234.0...v1.235.0
 [1.234.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.233.0...v1.234.0
 [1.233.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.232.0...v1.233.0

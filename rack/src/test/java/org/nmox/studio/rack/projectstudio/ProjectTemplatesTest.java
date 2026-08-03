@@ -95,7 +95,7 @@ class ProjectTemplatesTest {
 
         // compose runs all three LEMP services; nginx hands PHP to the fpm box
         String compose = Files.readString(dir.toPath().resolve("docker-compose.yml"));
-        assertThat(compose).contains("nginx").contains("php:8.3-fpm").contains("mariadb:11");
+        assertThat(compose).contains("nginx").contains("php:8.4-fpm").contains("mariadb:11");
         assertThat(Files.readString(dir.toPath().resolve("docker/nginx.conf")))
                 .contains("root /var/www/html/public").contains("fastcgi_pass php:9000");
 
