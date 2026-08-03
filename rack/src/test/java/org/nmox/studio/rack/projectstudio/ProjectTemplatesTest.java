@@ -195,6 +195,53 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("The Vite templates obey the ceilings: no CRA, vite ^6, proven plugin majors")
+    void viteTemplatesObeyTheCeilings() throws Exception {
+        // Ported from the deleted platform wizard's WizardTemplateCeilingTest
+        // (v1.246.0): this is now the ONE wizard, so the ceilings it enforced
+        // live here. react-scripts is dead upstream and cannot install beside
+        // react 19 (the v1.244.0 find); vite stays ^6 because 7+ requires
+        // node >=22.12 and a starter must run on a learner's default node
+        // (the v1.237.0 live proof watched vite 8 refuse node 22.9). The pins
+        // are Java string literals — invisible to Dependabot (v1.236.0
+        // pattern), so this test is the only thing that fails a bump PR.
+        for (ProjectTemplates template : ProjectTemplates.values()) {
+            File dir = parent.resolve("ceiling-" + template.name().toLowerCase()).toFile();
+            template.generate(dir, "demo-app");
+            Path pkgPath = dir.toPath().resolve("package.json");
+            if (!Files.exists(pkgPath)) {
+                continue;
+            }
+            JSONObject pkg = new JSONObject(Files.readString(pkgPath));
+            for (String section : new String[]{"dependencies", "devDependencies"}) {
+                JSONObject deps = pkg.optJSONObject(section);
+                if (deps != null) {
+                    assertThat(deps.has("react-scripts"))
+                            .as(template + " " + section + " must never carry react-scripts").isFalse();
+                    if (deps.has("vite")) {
+                        assertThat(deps.getString("vite"))
+                                .as(template + " vite ceiling").startsWith("^6.");
+                    }
+                }
+            }
+        }
+
+        // the react and vue sets stay the exact npm-proven line (v1.237.0)
+        JSONObject react = new JSONObject(Files.readString(
+                parent.resolve("ceiling-vite_react").resolve("package.json")));
+        assertThat(react.getJSONObject("dependencies").getString("react")).startsWith("^19.");
+        assertThat(react.getJSONObject("devDependencies").getString("@vitejs/plugin-react"))
+                .startsWith("^5.");
+        assertThat(react.getJSONObject("scripts").getString("dev")).isEqualTo("vite");
+
+        JSONObject vue = new JSONObject(Files.readString(
+                parent.resolve("ceiling-vite_vue").resolve("package.json")));
+        assertThat(vue.getJSONObject("dependencies").getString("vue")).startsWith("^3.");
+        assertThat(vue.getJSONObject("devDependencies").getString("@vitejs/plugin-vue"))
+                .startsWith("^5.2");
+    }
+
+    @Test
     @DisplayName("Angular pins the proven ~21.2 + TS 5.9 line and the suffixed naming")
     void angularObeysItsCeilings() throws Exception {
         File dir = parent.resolve("ng-ceilings").toFile();

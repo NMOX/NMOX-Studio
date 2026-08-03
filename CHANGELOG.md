@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.247.0] - 2026-08-03
+
+The deleted wizard's one transferable asset, transplanted: the ceiling
+gate now guards the wizard that ships.
+
+### Added
+- **`viteTemplatesObeyTheCeilings` in ProjectTemplatesTest** — ported
+  from v1.246.0's deleted WizardTemplateCeilingTest to the one
+  surviving New Project surface. Every template's package.json is
+  swept: `react-scripts` can never return (dead upstream, cannot
+  install beside react 19 — the v1.244.0 find), any template carrying
+  vite stays on the proven ^6 line (7+ requires node >=22.12; a
+  starter must run on a learner's default node, the v1.237.0 proof),
+  and the react/vue sets pin their npm-proven plugin majors. The pins
+  are Java string literals — invisible to Dependabot (the v1.236.0
+  generator-drift pattern) — so this test is the only gate that fails
+  a careless bump. Previously only Svelte and Angular had ceiling
+  tests here; React and Vue were guarded solely by the deleted test.
+
 ## [1.246.0] - 2026-08-03
 
 The dead door is removed: the unreachable platform template wizard is
