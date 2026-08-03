@@ -35,7 +35,13 @@ windows workflow pin, bundle-jre.sh's three platform sha256s) with the
 browser gauntlet green on the new WebKit (https render, plain-http
 through the h2c-flagged loader, DevTools bridge reading the live DOM).
 Keep riding 21.0.x patches until the JDK decision is made; then this
-row becomes the FX-major unit its original text described.
+row becomes the FX-major unit its original text described. The
+decision now has its measured dossier —
+docs/engineering/jdk25-fx26-dossier.md (v1.250.0): JDK 25 LTS + FX 26
+jlink green, platform boots with zero SEVERE and the --add-opens set
+holding, Browser renders on FX 26's WebKit, and the v1.226.0 h2c flag
+survives; remaining work if GO is listed there (CI matrix on 25,
+win/linux probes, fresh sha pins, full gauntlet).
 ui/pom.xml's org.openjfx deps are provided-scope compile-time halves of
 the FX runtime the release workflow jlinks from sha256-pinned 21.0.5
 jmods (v1.199.0). Dependabot's pom-only bump (#371) would compile the
