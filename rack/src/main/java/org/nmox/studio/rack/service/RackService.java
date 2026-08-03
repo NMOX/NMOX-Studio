@@ -478,6 +478,23 @@ public class RackService {
                     org.netbeans.api.project.ui.OpenProjects.getDefault();
             if (!open.isProjectOpen(project)) {
                 open.open(new org.netbeans.api.project.Project[]{project}, false);
+                // v1.233.0: open() completes ASYNCHRONOUSLY, and
+                // setMainProject on a not-yet-open project throws
+                // IllegalArgumentException — which the catch below then
+                // swallowed at FINE, so the main project silently never
+                // followed a newly-opened aim (found live: F6 kept running
+                // the PREVIOUS project). openProjects() is the API's own
+                // completion barrier; bounded so a wedged open can't hang
+                // the bridge lane.
+                try {
+                    open.openProjects().get(5, java.util.concurrent.TimeUnit.SECONDS);
+                } catch (java.lang.InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (java.util.concurrent.ExecutionException
+                        | java.util.concurrent.TimeoutException ex) {
+                    // fall through: setMainProject below tells the truth
+                }
             }
             open.setMainProject(project);
         } catch (java.io.IOException | IllegalArgumentException ex) {

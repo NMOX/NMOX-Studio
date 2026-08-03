@@ -118,6 +118,28 @@ final class WebProjectCommands {
             case MAKE:
                 return fixed(action, List.of("make", "run"), List.of("make"),
                         List.of("make", "test"), List.of("make", "clean"));
+            case DOTNET:
+                // v1.233.0: the one kind with a COMPLETE toolchain story
+                // that fell to default-null — every .NET project greyed
+                // all four actions since the kind shipped
+                return fixed(action, List.of("dotnet", "run"), List.of("dotnet", "build"),
+                        List.of("dotnet", "test"), List.of("dotnet", "clean"));
+            case TACT:
+                // npm-carried by design (v1.161.0): the compiler is an npm
+                // dep and the kit's build/test are package.json scripts —
+                // the lanes speak the project's own scripts, like NODE
+                return node(dir, action);
+            case CMAKE:
+                // plansOnlyWhatExists (v1.164.0): with a configured build/
+                // the real verbs run there; without one, Build offers the
+                // configure step — the honest first move, never a guess
+                if (new File(dir, "build").isDirectory()) {
+                    return fixed(action, null,
+                            List.of("cmake", "--build", "build"),
+                            List.of("ctest", "--test-dir", "build"),
+                            List.of("cmake", "--build", "build", "--target", "clean"));
+                }
+                return fixed(action, null, List.of("cmake", "-B", "build"), null, null);
             case PYTHON:
                 return ActionProvider.COMMAND_TEST.equals(action)
                         ? List.of("python3", "-m", "pytest") : null;

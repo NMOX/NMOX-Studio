@@ -178,6 +178,22 @@ class WebProjectFactoryTest {
     }
 
     @Test
+    @DisplayName("glob-detected kinds open as projects too (v1.233.0 — the lanes existed, the door didn't)")
+    void globKindsRecognized(@TempDir Path dotnet, @TempDir Path nim, @TempDir Path cmake,
+            @TempDir Path make, @TempDir Path stranger) throws IOException {
+        Files.writeString(dotnet.resolve("app.csproj"), "<Project/>");
+        assertThat(factory.isProject(mount(dotnet))).as(".csproj glob").isTrue();
+        Files.writeString(nim.resolve("tool.nimble"), "version = \"0.1\"");
+        assertThat(factory.isProject(mount(nim))).as(".nimble glob").isTrue();
+        Files.writeString(cmake.resolve("CMakeLists.txt"), "project(x)");
+        assertThat(factory.isProject(mount(cmake))).as("CMakeLists.txt").isTrue();
+        Files.writeString(make.resolve("Makefile"), "all:\n");
+        assertThat(factory.isProject(mount(make))).as("Makefile").isTrue();
+        Files.writeString(stranger.resolve("notes.txt"), "x");
+        assertThat(factory.isProject(mount(stranger))).isFalse();
+    }
+
+    @Test
     @DisplayName("loadProject mints a WebProject for a recognized directory and null for a stranger")
     void loadProjectFollowsRecognition(@TempDir Path yes, @TempDir Path no) throws IOException {
         Files.writeString(yes.resolve("package.json"), "{}");

@@ -4,6 +4,50 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.233.0] - 2026-08-02
+
+Run/Build/Test buttons work for every stack.
+
+### Added
+- **IDE lanes for .NET, Tact, and CMake.** The kinds
+  `ProjectInspector` always detected but the IDE's own Run/Build/
+  Test/Clean silently greyed: DOTNET now speaks `dotnet run` /
+  `build` / `test` / `clean` (live-proven — F6 on an MSTest project
+  ran it through the rack executor, trust prompt naming the right
+  root, exit 0), TACT rides the project's own package.json scripts
+  (npm-carried by design since v1.161.0), and CMAKE follows
+  plansOnlyWhatExists: with a configured `build/` the real verbs run
+  there (`cmake --build`, `ctest --test-dir`, `--target clean`);
+  without one, Build offers the `cmake -B build` configure step —
+  the honest first move, never a guess.
+
+### Fixed
+- **Glob-detected projects could not open at all.** ProjectInspector
+  detects DOTNET by `*.csproj`/`*.fsproj`/`*.sln` and NIM by
+  `*.nimble`, but `WebProjectFactory` only ever checked fixed
+  manifest names — so a .NET or bare-nimble Nim checkout was never a
+  platform project: no ActionProvider, no F6/Test, no OpenProjects
+  entry. The lanes existed; the door didn't. The factory now
+  recognizes the glob suffixes (and `CMakeLists.txt`/`Makefile` as
+  named manifests), so every detectable kind opens.
+- **The main project could miss a newly-opened aim.** The
+  OpenProjects bridge called `setMainProject` immediately after the
+  asynchronous `open()`, and on a not-yet-registered project the
+  platform throws an `IllegalArgumentException` that was swallowed
+  at FINE — F6 kept running the PREVIOUS project. The bridge now
+  waits on `openProjects().get(5s)`, the platform's own completion
+  barrier, before aiming the main-project pointer.
+
+### Changed
+- **A lane gap can no longer ship silently.** A new completeness
+  gate in `WebProjectCommandsTest` walks every `ProjectKind` and
+  fails the build unless the kind either resolves at least one IDE
+  lane or is blessed in a reasons table (BOWER is a package manager,
+  NONE is the absence of a kind; ADA/RESCRIPT/WEBPACK/GRUNT/GULP/
+  STATIC carry their no-test reasons). DOTNET fell to default-null
+  for six releases because nothing counted the switch's arms — now
+  something does.
+
 ## [1.232.0] - 2026-08-02
 
 The Senior CSS3 pass: modern lint findings arrive on their own.
@@ -8474,6 +8518,11 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.233.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.232.0...v1.233.0
+[1.232.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.231.0...v1.232.0
+[1.231.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.230.0...v1.231.0
+[1.230.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.229.0...v1.230.0
+[1.229.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.228.0...v1.229.0
 [1.228.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.227.0...v1.228.0
 [1.227.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.226.0...v1.227.0
 [1.226.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.225.0...v1.226.0
