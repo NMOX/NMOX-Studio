@@ -18,9 +18,14 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 public class TestDevice extends CommandDevice {
 
     // append-only: persisted patches store the knob index, not the label
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken"};
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "node"};
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
+    // node:test speaks TAP, whose summary counts read "# pass 3" / "# fail 1"
+    // — no "passed"/"failed" word anywhere, so the tally above never moved on
+    // a `node --test` project (v1.252.0, the QA persona's find)
+    private static final Pattern TAP_PASS = Pattern.compile("^#\\s*pass\\s+(\\d+)\\s*$");
+    private static final Pattern TAP_FAIL = Pattern.compile("^#\\s*fail\\s+(\\d+)\\s*$");
     private static final String[] COVERAGE_MINIMUMS = {"off", "50", "60", "70", "80", "90"};
     /** Failing test names, per runner family. */
     private static final Pattern[] FAILURE_LINES = {
@@ -29,6 +34,9 @@ public class TestDevice extends CommandDevice {
         Pattern.compile("^test (\\S+) \\.\\.\\. FAILED$"),                     // cargo
         Pattern.compile("^--- FAIL: (\\S+)"),                                  // go
         Pattern.compile("^\\[FAIL[.:][^\\]]*\\]\\s+([A-Za-z0-9_]+)"),          // forge
+        // TAP (node:test): "not ok 4 - SAVE10 takes ten percent off"; the
+        // trailing " # ..." directive is TAP metadata, not part of the name
+        Pattern.compile("^not ok \\d+\\s+-\\s+(.+?)(?:\\s+#.*)?$"),
     };
     /** Coverage summaries: istanbul text-summary, pytest-cov TOTAL, go -cover. */
     private static final Pattern[] COVERAGE_LINES = {
@@ -123,6 +131,33 @@ public class TestDevice extends CommandDevice {
         return null;
     }
 
+    /**
+     * The pass/fail counts this line reports, as {passed, failed} with -1
+     * for "this line says nothing about that count". Word-based summaries
+     * (jest/vitest/mocha) and TAP summaries (node:test) both land here so
+     * the tally has ONE tested home.
+     */
+    static int[] tallyFrom(String line) {
+        int p = -1, f = -1;
+        Matcher m = PASSED.matcher(line);
+        if (m.find()) {
+            p = Numbers.intOrZero(m.group(1));
+        }
+        m = FAILED.matcher(line);
+        if (m.find()) {
+            f = Numbers.intOrZero(m.group(1));
+        }
+        m = TAP_PASS.matcher(line);
+        if (m.matches()) {
+            p = Numbers.intOrZero(m.group(1));
+        }
+        m = TAP_FAIL.matcher(line);
+        if (m.matches()) {
+            f = Numbers.intOrZero(m.group(1));
+        }
+        return new int[]{p, f};
+    }
+
     /** The coverage percentage if this line carries one, else -1. */
     static double coveragePercent(String line) {
         for (Pattern p : COVERAGE_LINES) {
@@ -145,6 +180,8 @@ public class TestDevice extends CommandDevice {
         String alternation = String.join("|", names);
         return switch (framework) {
             case "jest" -> List.of("npx", "jest", "-t", alternation);
+            // node:test filters by regex over the test name (node 18.13+)
+            case "node" -> List.of("node", "--test", "--test-name-pattern", alternation);
             case "bun" -> List.of("bun", "test", "-t", alternation);
             case "deno" -> List.of("deno", "test", "--filter", alternation);
             case "vitest" -> List.of("npx", "vitest", "run", "-t", alternation);
@@ -370,13 +407,12 @@ public class TestDevice extends CommandDevice {
 
     @Override
     protected void onLine(String line) {
-        Matcher m = PASSED.matcher(line);
-        if (m.find()) {
-            passed = Numbers.intOrZero(m.group(1));
+        int[] tally = tallyFrom(line);
+        if (tally[0] >= 0) {
+            passed = tally[0];
         }
-        m = FAILED.matcher(line);
-        if (m.find()) {
-            failed = Numbers.intOrZero(m.group(1));
+        if (tally[1] >= 0) {
+            failed = tally[1];
         }
         String failure = failedTestName(line);
         if (failure != null && failures.size() < 500) {
