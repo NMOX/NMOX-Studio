@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.240.0] - 2026-08-03
+
+The night-tail review: two lenses over v1.235–v1.239.
+
+### Fixed
+- **The Coalescer test that blocked v1.239.0's macOS CI lane.**
+  `secondBurstDispatchesAgain` slept 250ms and assumed the 100ms
+  window's flush had run — on a loaded runner the scheduler thread
+  can lag past the sleep, the second offer merges into the still-open
+  first burst (correct coalescing behavior), and the two-dispatch
+  latch never trips. The test now awaits the first dispatch before
+  offering again — deterministic because `flush()` clears its
+  armed flag before calling downstream. Test-only; the product's
+  storm law was never wrong. Proven by five consecutive green runs.
+
+### Added
+- **The schematic vocabulary parity gate.** v1.239.0's "one
+  vocabulary, two surfaces" claim — File ▸ New Angular Schematic…
+  offers exactly HALO's GEN knob list — was a comment over two
+  literal arrays in two modules (the v1.189.0 lesson: a comment
+  claiming a parity property is a test not yet written).
+  `NgSchematicParityGateTest` reads the rack source (HALO's field is
+  private) and fails the build on any drift; mutation-proven — a
+  reordered copy fails the gate by name. The mutation session also
+  re-learned two build traps the hard way: `surefire:test` alone
+  never recompiles a mutated source, and `-pl ui` without `-am`
+  compiles against a stale `~/.m2` rack.
+
+### Verified
+- **AimFollower's six windows (v1.235.0), lifecycle lens CLEAN**:
+  every wiring calls showing/hidden/closed symmetrically and
+  preserves its window's prior teardown (IRC keeps its bridge
+  detach, the Browser keeps `stopEngine`, the Docker panel keeps its
+  timer stop).
+- **The ng-generate spawn is cross-OS**: the argv's `npx` resolves
+  through `ToolLocator.resolveCommand` inside `ProcessSupport.builder`
+  (`.cmd` on Windows), the same path every device rides.
+- Blessed in writing (LOW): the kit action's two click-time disk
+  stats (`angular.json` probe + `src/app` prefill) stay on the EDT —
+  one-shot on a menu click, not the v1.114.0 per-paint class; a
+  refused name/folder closes the dialog and drops the typed input —
+  the kit idiom's cost, acceptable until a second complaint.
+
 ## [1.239.0] - 2026-08-03
 
 The Angular bet, continued: schematics as an IDE gesture.
@@ -8732,6 +8775,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.240.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.239.0...v1.240.0
 [1.239.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.238.0...v1.239.0
 [1.238.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.237.0...v1.238.0
 [1.237.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.236.0...v1.237.0

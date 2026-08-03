@@ -66,14 +66,24 @@ class CoalescerTest {
     @DisplayName("a second burst after the window closes dispatches again")
     void secondBurstDispatchesAgain() throws Exception {
         List<List<Path>> batches = Collections.synchronizedList(new java.util.ArrayList<>());
+        // Await the FIRST dispatch instead of sleeping past the window: on a
+        // loaded CI runner the scheduler thread can lag arbitrarily, and a
+        // sleep-timed second offer then merges into the still-open first
+        // burst — correct coalescing, broken test (flaked on macOS CI,
+        // 2026-08-03). flush() clears flushScheduled BEFORE calling
+        // downstream, so once the latch trips the next offer arms a new
+        // window deterministically.
+        CountDownLatch first = new CountDownLatch(1);
         CountDownLatch two = new CountDownLatch(2);
         Coalescer<Path> coalescer = new Coalescer<>(100, batch -> {
             batches.add(batch);
+            first.countDown();
             two.countDown();
         });
         try {
             coalescer.offer(List.of(Path.of("/p/a.json")));
-            Thread.sleep(250); // let the first window flush
+            assertThat(first.await(5, TimeUnit.SECONDS))
+                    .as("first window flushes").isTrue();
             coalescer.offer(List.of(Path.of("/p/b.json")));
             assertThat(two.await(5, TimeUnit.SECONDS)).isTrue();
             assertThat(batches).hasSize(2);
