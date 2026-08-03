@@ -90,7 +90,7 @@ public final class DockerizeGenerator {
     private static String nodeStatic() {
         return """
                 # Build the static bundle, serve it with nginx - tiny final image
-                FROM node:22-alpine AS build
+                FROM node:24-alpine AS build
                 WORKDIR /app
                 COPY package*.json ./
                 RUN npm ci
@@ -106,7 +106,7 @@ public final class DockerizeGenerator {
     private static String nodeServer() {
         return """
                 # Install with the lockfile, run as the non-root node user
-                FROM node:22-alpine
+                FROM node:24-alpine
                 WORKDIR /app
                 ENV NODE_ENV=production
                 COPY package*.json ./
@@ -121,7 +121,7 @@ public final class DockerizeGenerator {
     private static String go(String name) {
         return """
                 # Static binary in a distroless image - ~10MB, no shell to exploit
-                FROM golang:1.23 AS build
+                FROM golang:1.25 AS build
                 WORKDIR /src
                 COPY go.* ./
                 RUN go mod download
@@ -138,12 +138,12 @@ public final class DockerizeGenerator {
     private static String rust(String name) {
         return """
                 # Release build, then a minimal runtime layer
-                FROM rust:1.83 AS build
+                FROM rust:1.89 AS build
                 WORKDIR /src
                 COPY . .
                 RUN cargo build --release
 
-                FROM debian:bookworm-slim
+                FROM debian:trixie-slim
                 COPY --from=build /src/target/release/%s /usr/local/bin/%s
                 EXPOSE 8080
                 CMD ["%s"]
@@ -171,7 +171,7 @@ public final class DockerizeGenerator {
                 COPY . .
                 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-                FROM php:8.3-fpm-alpine
+                FROM php:8.4-fpm-alpine
                 WORKDIR /var/www/html
                 COPY --from=deps /app/vendor ./vendor
                 COPY . .
@@ -227,7 +227,7 @@ public final class DockerizeGenerator {
     private static String generic() {
         return """
                 # No toolchain detected - a starting point, not a guess
-                FROM debian:bookworm-slim
+                FROM debian:trixie-slim
                 WORKDIR /app
                 COPY . .
                 CMD ["/bin/sh", "-c", "echo 'edit this Dockerfile for your runtime' && sleep infinity"]

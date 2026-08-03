@@ -1346,7 +1346,7 @@ public enum ProjectTemplates {
                       - php
 
                   php:
-                    image: php:8.3-fpm
+                    image: php:8.4-fpm
                     working_dir: /var/www/html
                     volumes:
                       - .:/var/www/html

@@ -40,7 +40,7 @@ public final class CiExporter {
         yaml.append("name: NMOX Rack Pipeline\n\n");
         yaml.append("on:\n  push:\n    branches: [ main ]\n  pull_request:\n    branches: [ main ]\n\n");
         yaml.append("jobs:\n  rack:\n    runs-on: ubuntu-latest\n    steps:\n");
-        yaml.append("      - uses: actions/checkout@v4\n");
+        yaml.append("      - uses: actions/checkout@v7\n");
 
         for (String setup : setupSteps(rack.getProjectDir())) {
             yaml.append(setup);
@@ -125,7 +125,7 @@ public final class CiExporter {
         for (var kind : kinds.keySet()) {
             switch (kind) {
                 case NODE -> steps.add("""
-                          - uses: actions/setup-node@v4
+                          - uses: actions/setup-node@v7
                             with: { node-version: 22 }
                     """.stripTrailing() + "\n");
                 case BUN -> steps.add("      - uses: oven-sh/setup-bun@v2\n");
@@ -135,15 +135,15 @@ public final class CiExporter {
                     """.stripTrailing() + "\n");
                 case RUST -> steps.add("      - uses: dtolnay/rust-toolchain@stable\n");
                 case GO -> steps.add("""
-                          - uses: actions/setup-go@v5
+                          - uses: actions/setup-go@v7
                             with: { go-version: stable }
                     """.stripTrailing() + "\n");
                 case PYTHON -> steps.add("""
-                          - uses: actions/setup-python@v5
+                          - uses: actions/setup-python@v7
                             with: { python-version: '3.12' }
                     """.stripTrailing() + "\n");
                 case MAVEN, GRADLE -> steps.add("""
-                          - uses: actions/setup-java@v4
+                          - uses: actions/setup-java@v5
                             with: { distribution: temurin, java-version: 17 }
                     """.stripTrailing() + "\n");
                 case ELIXIR, ERLANG -> steps.add("""
@@ -167,12 +167,12 @@ public final class CiExporter {
                             with: { otp-version: '27', gleam-version: '1.5' }
                     """.stripTrailing() + "\n");
                 case JULIA -> steps.add("""
-                          - uses: julia-actions/setup-julia@v2
+                          - uses: julia-actions/setup-julia@v3
                             with: { version: '1' }
                     """.stripTrailing() + "\n");
                 case DART -> steps.add("      - uses: dart-lang/setup-dart@v1\n");
                 case DOTNET -> steps.add("""
-                          - uses: actions/setup-dotnet@v4
+                          - uses: actions/setup-dotnet@v6
                             with: { dotnet-version: 8.x }
                     """.stripTrailing() + "\n");
                 case HASKELL -> steps.add("      - uses: haskell-actions/setup@v2\n");
@@ -193,11 +193,11 @@ public final class CiExporter {
                 case MOVE -> steps.add("      # NOTE: install the Sui CLI in CI (or the Aptos CLI for AptosFramework projects; no first-party setup action); see docs.sui.io / aptos.dev\n");
                 case AIKEN -> steps.add("      - uses: aiken-lang/setup-aiken@v1\n");
                 case CLARITY -> steps.add("      # NOTE: install clarinet in CI (no first-party setup action) — download a release binary from github.com/hirosystems/clarinet/releases; the vitest/simnet tests ride the npm harness below\n");
-                case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v5\n");
-                case ADA -> steps.add("      - uses: alire-project/setup-alire@v4\n");
+                case FORTRAN -> steps.add("      - uses: fortran-lang/setup-fpm@v10\n");
+                case ADA -> steps.add("      - uses: alire-project/setup-alire@v6\n");
                 // the functional web and Tact ride npm — their lanes run npx/spago
                 case ELM, RESCRIPT, PURESCRIPT, TACT -> steps.add("""
-                          - uses: actions/setup-node@v4
+                          - uses: actions/setup-node@v7
                             with: { node-version: 22 }
                     """.stripTrailing() + "\n");
                 case SCALA -> steps.add(
