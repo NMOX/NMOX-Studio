@@ -573,6 +573,35 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-03 at **v1.251.0** (the day shift):
+v1.248.0 took ledger 74 the honest way — OpenJFX 21.0.5 → 21.0.12 in
+FULL lockstep (ui pom ×2, the windows workflow pin, bundle-jre.sh's
+three platform sha256s), gauntleted live on the new WebKit (https
+render, plain-http through the h2c-flagged loader, DevTools bridge
+reading the DOM) and byte-verified in the brewed app
+(javafx.web@21.0.12); the FX/JDK floors are now MEASURED from the
+jmods' class versions — FX 24 = JDK 22, FX 25 = JDK 23, FX 26 =
+JDK 24 — so every FX major past 21 is chained to a bundled-JDK
+baseline decision. v1.249.0's day-arc review (v1.241–v1.248) found
+the bundled FX runtime was the ONLY unattributed vendored component;
+NOTICE now carries it and FxPinLockstepTest binds the FX version's
+four homes into build-failing lockstep (mutation-proven); the
+v1.246.0 wizard deletion verified complete, the org.openjfx ignore
+survived, the v1.247.0 ceiling port is real. v1.250.0 delivered the
+JDK 25 + FX 26 decision dossier, measured live on this box: jlink
+green, the app boots with ZERO SEVERE on JDK 25 (the --add-opens set
+holds), the Browser renders on FX 26's WebKit, and the v1.226.0 h2c
+flag survives — docs/engineering/jdk25-fx26-dossier.md lists the
+honest GO-remainder; the decision is David's. v1.251.0 ran the FIRST
+CONTRIBUTOR persona: a fresh clone built the assembled app with the
+documented command verbatim in 21 seconds, zero friction — the only
+finds were CLAUDE.md's fossil JDK-17 Troubleshooting claims (v0.x
+era), now corrected to the Java 21 baseline. Process laws from the
+day: a branch touching .github/workflows needs the SSH insteadOf
+bypass (the repo's local url rewrite defeats naive git@ pushes), and
+after any Dependabot rebase verify mergedAt before trusting script
+flow.
+
 Currency addendum 2026-08-03 at **v1.246.0**: the queued
 delete-vs-re-expose decision resolved as DELETE — the platform
 `@TemplateRegistration` wizard (`WebProjectWizardIterator` + panels +
