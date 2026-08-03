@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.238.0] - 2026-08-03
+
+Docs truth for the night shift, and the update center re-proven.
+
+### Verified
+- **The update center, gauntleted across seven releases of drift.** A
+  stock v1.230.0 portable install updated itself in-app to 1.237.0:
+  Tools ▸ Plugins offered all 11 modules from the "NMOX Studio
+  Updates" center, every NBM passed its SHA-512 digest, the originals
+  were preserved in `update/backup/`, and the restart came up clean —
+  byte-verified by reading `OpenIDE-Module-Specification-Version:
+  1.237.0` out of all eleven installed jars.
+
+### Changed
+- plan.md carries the night's currency addendum (v1.234–v1.237: the
+  arc review, the ambient aim selection, the two generator-currency
+  passes and their laws) — docs only, no code in this release.
+
 ## [1.237.0] - 2026-08-03
 
 Template currency: a scaffolded project starts on today's stack.
@@ -8695,6 +8713,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.238.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.237.0...v1.238.0
 [1.237.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.236.0...v1.237.0
 [1.236.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.235.0...v1.236.0
 [1.235.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.234.0...v1.235.0
