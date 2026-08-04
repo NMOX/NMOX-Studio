@@ -232,6 +232,10 @@ public final class ApiClientTopComponent extends TopComponent {
         methodCombo.addActionListener(e -> {
             if (!loading && current != null) {
                 current.method = (String) methodCombo.getSelectedItem();
+                // the tree label is "METHOD  name" — repaint it so a
+                // GET->POST switch shows immediately (same one-node
+                // repaint the rename uses; no reload, no reselect)
+                repaintTreeLabel(current);
                 touch();
             }
         });
@@ -1005,8 +1009,19 @@ public final class ApiClientTopComponent extends TopComponent {
         nameField.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
                 current.name = nameField.getText();
-                ((DefaultTreeModel) tree.getModel()).reload();
-                restoreSelection();
+                // Repaint THIS node's label only. reload() + restoreSelection()
+                // re-entered the tree's own selection listener -> onTreeSelect ->
+                // bindRequest -> nameField.setText() while this very document was
+                // mid-notification, which Swing answers with
+                // IllegalStateException("Attempt to mutate in notification") — and
+                // the aborted setText left the typed name SCRAMBLED (typing
+                // "HN top stories" produced "N top storiesH": the first keystroke
+                // reset the caret to 0, so every later character landed in front)
+                // while the whole tree collapsed. Shipped broken since API Studio
+                // itself (v1.19.0); found live against the Hacker News API.
+                // nodeChanged fires only treeNodesChanged: the renderer repaints,
+                // no selection event, no re-entry, expansion state preserved.
+                repaintTreeLabel(current);
                 touch();
             }
         }));
@@ -1439,14 +1454,36 @@ public final class ApiClientTopComponent extends TopComponent {
         if (current == null) {
             return;
         }
+        DefaultMutableTreeNode n = findNode(current);
+        if (n != null) {
+            tree.setSelectionPath(new TreePath(n.getPath()));
+        }
+    }
+
+    /** The tree node whose user object IS {@code userObject}, else null. */
+    private DefaultMutableTreeNode findNode(Object userObject) {
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
         java.util.Enumeration<javax.swing.tree.TreeNode> en = root.depthFirstEnumeration();
         while (en.hasMoreElements()) {
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) en.nextElement();
-            if (n.getUserObject() == current) {
-                tree.setSelectionPath(new TreePath(n.getPath()));
-                return;
+            if (n.getUserObject() == userObject) {
+                return n;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Repaints one node's label after its model object changed — the
+     * SAFE alternative to reload()+restoreSelection() when the caller
+     * may be inside a Swing notification. {@code nodeChanged} fires only
+     * treeNodesChanged, so no TreeSelectionListener runs and nothing
+     * re-enters the editor bindings; selection and expansion survive.
+     */
+    private void repaintTreeLabel(Object userObject) {
+        DefaultMutableTreeNode n = findNode(userObject);
+        if (n != null) {
+            ((DefaultTreeModel) tree.getModel()).nodeChanged(n);
         }
     }
 
