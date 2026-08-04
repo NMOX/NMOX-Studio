@@ -116,4 +116,20 @@ if ! grep -q '^jdkhome=' "$CONF"; then
     } >> "$CONF"
     echo "==> jdkhome=\"jre\" written to etc/nmoxstudio.conf"
 fi
+
+# JEP 472 native-access grant for the FX modules we just linked in.
+# The base conf grants ALL-UNNAMED (the platform's JNA bridge); the NAMED
+# javafx.graphics/javafx.web modules can only be named where they exist,
+# which is here — this script is what PUT them in the image. Naming them
+# in the base conf would print "Unknown module" on every launch of the
+# portable zip, which runs on the host's own usually-FX-less JDK.
+# Rewrite the single existing default_options line rather than appending a
+# second one: the Windows .exe launcher greps this file for keys instead of
+# sourcing it, and two default_options lines have no defined winner.
+if grep -q -- '--enable-native-access=ALL-UNNAMED' "$CONF" \
+        && ! grep -q -- '--enable-native-access=ALL-UNNAMED,javafx' "$CONF"; then
+    sed -i.bak 's/--enable-native-access=ALL-UNNAMED/--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web/' "$CONF"
+    rm -f "$CONF.bak"
+    echo "==> FX native-access grant written to etc/nmoxstudio.conf"
+fi
 echo "==> bundled runtime: $(du -sh "$CLUSTER/jre" | cut -f1)"

@@ -69,4 +69,25 @@ class BundledRuntimeGateTest {
                         + "but the branch must exist before it doesn't")
                 .contains("Test-Path \"$env:JAVA_HOME\\jmods\"");
     }
+
+    /**
+     * The named FX modules can only be granted native access where they
+     * actually exist, so the grant is written by whichever script installs
+     * the FX-carrying runtime — never by the base conf, which also ships in
+     * the portable zip that runs on the host's own usually-FX-less JDK
+     * (naming an absent module prints "Unknown module" on every launch).
+     * Both jlink sites install the same runtime, so both must write it, or
+     * one OS ships a Browser that a future JDK blocks from loading WebKit.
+     */
+    @Test
+    @DisplayName("both jlink sites grant native access to the FX modules they install")
+    void bothLanesGrantFxNativeAccess() throws Exception {
+        String grant = "--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web";
+        assertThat(Files.readString(Path.of("..", "packaging", "tools", "bundle-jre.sh")))
+                .as("bundle-jre.sh (macOS DMG, linux tar.gz/deb) extends the grant")
+                .contains(grant);
+        assertThat(Files.readString(Path.of("..", ".github", "workflows", "release.yml")))
+                .as("the windows lane extends the same grant")
+                .contains(grant);
+    }
 }

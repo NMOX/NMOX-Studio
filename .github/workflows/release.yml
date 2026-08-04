@@ -235,6 +235,21 @@ jobs:
           & application\target\nmoxstudio\jre\bin\java.exe --list-modules | Select-String "javafx.web" | Out-Null
           if (-not $?) { throw "bundled runtime is missing javafx.web" }
           Add-Content application\target\nmoxstudio\etc\nmoxstudio.conf "`n# bundled runtime: the app runs on its own Java, whatever the host has`njdkhome=`"jre`""
+          # JEP 472 native-access grant for the FX modules just linked in —
+          # the windows mirror of the same step in bundle-jre.sh. The base
+          # conf grants ALL-UNNAMED (the platform's JNA bridge); the NAMED
+          # javafx modules are only nameable where they exist. Rewrite the
+          # ONE default_options line: this .exe launcher greps the file for
+          # keys instead of sourcing it, so a second line has no winner.
+          $conf = "application\target\nmoxstudio\etc\nmoxstudio.conf"
+          $text = Get-Content $conf -Raw
+          if ($text -notmatch '--enable-native-access=ALL-UNNAMED') {
+            throw "base conf lost its --enable-native-access=ALL-UNNAMED grant"
+          }
+          $text = $text -replace '--enable-native-access=ALL-UNNAMED(?!,javafx)',
+            '--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web'
+          Set-Content -NoNewline $conf $text
+          Write-Host "FX native-access grant written to etc/nmoxstudio.conf"
       - name: Brand launcher icons
         # The nbm-maven-plugin launcher stubs ship with the stock NetBeans
         # icon; swap in ours so the exe file icon and pinned-taskbar icon
