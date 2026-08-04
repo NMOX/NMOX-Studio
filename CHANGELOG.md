@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.254.0] - 2026-08-03
+
+The JDK 25 runtime lanes, fixed: jlink without a jmods directory.
+
+### Fixed
+- **The v1.253.0 release built zero assets: the Linux and macOS
+  runtime jobs failed with "need a JDK 21+ with jmods".** A JDK's own
+  jmods directory is OPTIONAL since JDK 24 — JEP 493, "linkable
+  run-time images": a JDK built with `--enable-linkable-runtime` ships
+  no `jmods/` at all and jlink links the platform modules straight out
+  of the running image. Temurin 25 on the GitHub Linux and macOS
+  runners is exactly that build; the Windows one still ships jmods,
+  which is why exactly two of the three lanes failed. `bundle-jre.sh`
+  now adds the JDK half of the module path only when it exists, and
+  the release workflow's Windows lane carries the same branch so it
+  can't break the day Temurin drops jmods there too.
+- **The module set is sourced from the JDK, not hand-picked.** With no
+  jmods, `ALL-MODULE-PATH` covers OpenJFX alone, so the platform
+  modules must be named — and a plausible-looking hand list measured
+  **39 modules against the jmods build's 76**, quietly dropping the
+  java cluster's compiler and debugger modules. The list now comes
+  from `java --list-modules`, which reproduces the old behaviour
+  exactly: **78 modules** (69 JDK + 9 FX), `java.compiler`,
+  `jdk.jdi` and `jdk.attach` among them.
+
+### Verified
+- `bundle-jre.sh` run end to end against a **jmods-less JDK 25**
+  (a symlink tree of the real JDK with `jmods/` withheld — the runner
+  shape): takes the JEP 493 branch, links a 290 MB runtime carrying
+  `javafx.web@26.0.2`, and reports module parity with the jmods path.
+- v1.253.0's tag stands (the commit is on main and correct); it simply
+  has no release assets. "Latest" remained v1.252.0 throughout, so the
+  in-app update center was never pointed at an empty release.
+
 ## [1.253.0] - 2026-08-03
 
 **The baseline advances: JDK 25 LTS + OpenJFX 26.** David's call.
@@ -9099,6 +9133,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.254.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.253.0...v1.254.0
 [1.253.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.252.0...v1.253.0
 [1.252.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.251.0...v1.252.0
 [1.251.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.250.0...v1.251.0
