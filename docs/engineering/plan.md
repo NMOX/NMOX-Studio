@@ -614,6 +614,19 @@ CodeIndexService) says superseded surfaces get deleted, not
 preserved. v1.244.0's modernization made the deletion safe — the
 last shipped state was proven, not broken. One wizard, one door.
 
+Process law added 2026-08-03 (learned the expensive way): **verify a
+docs edit landed by reading the file back — never trust the script's
+own "ok".** A scripted CHANGELOG insert during v1.248.0 failed its
+anchor assertion inside a batched shell block. Bash does not stop at a
+failing python heredoc, the traceback scrolled past under a `tail`,
+and every later release anchored its insert on the entry that was
+never written — so SIX shipped releases (v1.248–v1.253) carried no
+CHANGELOG entry, while their code, gates and installers were all
+correct. The releases never lied; the file did. Two rules follow:
+a docs edit is not done until a `grep` proves it, and an assertion
+inside a batched block must be the LAST thing in that block or run on
+its own where its exit code is read.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
