@@ -4,6 +4,70 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.256.0] - 2026-08-03
+
+The native-access grant — JEP 472 before it bites.
+
+### Fixed
+- **The live gauntlet on the shipped 1.255.0 app — the first release
+  running the bundled Zulu 25 + OpenJFX 26 runtime — found the platform
+  calling restricted methods on every boot.** `com.sun.jna.Native`, the
+  NetBeans Platform's own native bridge in
+  `platform/modules/ext/jna-5.17.0.jar`, calls `System::loadLibrary` from
+  the classpath, and `javafx.graphics`/`javafx.web` call restricted
+  natives as soon as the Browser opens. JDK 25 answers each with
+  *"Restricted methods will be blocked in a future release unless native
+  access is enabled"*. They are warnings today; when the JDK flips them to
+  errors the platform stops booting and the Browser can no longer load
+  WebKit. The grant goes in now rather than then, because **this conf
+  ships only inside installers, never through the update center** (which
+  carries modules, not runtimes) — an install that never receives a fresh
+  conf can never be fixed retroactively.
+  - The base conf grants `-J--enable-native-access=ALL-UNNAMED`, covering
+    JNA and every other classpath caller. Verified accepted and silent on
+    Temurin 21 as well as the bundled 25, so the portable zip's BYO-Java
+    range is untouched.
+  - The **named** `javafx.graphics,javafx.web` entries are written by
+    whichever script installs the FX-carrying runtime —
+    `packaging/tools/bundle-jre.sh` for the macOS DMG and linux
+    tar.gz/deb, the windows lane in `release.yml` — and deliberately NOT
+    by the base conf: naming a module the runtime lacks prints
+    `WARNING: Unknown module: javafx.web specified to
+    --enable-native-access` on every launch, and the portable zip runs on
+    the host's own, usually FX-less, JDK. The script that PUT JavaFX in
+    the image is the one that knows it is there.
+  - Both rewrites EXTEND the single `default_options` line instead of
+    appending a second: the Windows `.exe` launcher greps this file for
+    keys rather than sourcing it, so with two assignments a POSIX shell
+    takes the last and the `.exe` takes whichever it finds first — the two
+    platforms would silently run different flags.
+  - Both are anchored to that line, which verification forced: the first
+    `sed` was unanchored and also rewrote the explanatory comment that
+    names the flag literally, producing a packaged conf whose prose
+    contradicted its own code. The PowerShell mirror had the same flaw and
+    was fixed and re-proven against real `pwsh`.
+  - Proven live before ship: the shipped 1.255.0 app booted with these
+    exact flags and emitted **zero** native-access warnings, against four
+    without.
+  - Gated + mutation-proven ×4: `PackagedConfGateTest` pins the grant on
+    the assembled app's conf and that exactly one `default_options`
+    assignment exists; `BundledRuntimeGateTest` pins that BOTH jlink sites
+    write the FX half, so one OS cannot ship a Browser a future JDK
+    blocks.
+
+### Verified
+- **The JDK 25 + OpenJFX 26 baseline, gauntleted in the shipped
+  artifact.** v1.255.0 installed from the Homebrew cask carries Zulu
+  25.0.4 with all seven `javafx.*@26.0.2` modules — 78 modules total,
+  including the `java.compiler`/`jdk.jdi`/`jdk.attach` trio the rejected
+  hand-picked module list would have silently dropped. The module jars are
+  still **class-file major 65 (Java 21)**, so the update-center bytecode
+  law holds and an install still running bundled Java 21 can load
+  1.255.0's modules. The assembled app boots clean (module system up and
+  quit in 6s, zero install/enable failures), and FX 26's WebKit renders
+  both https and plain http through the v1.226.0 h2c-disabled loader while
+  answering `executeScript` DOM reads — the path DevTools uses.
+
 ## [1.255.0] - 2026-08-03
 
 The jlinking lanes move to Zulu — Temurin 25 cannot build a runtime.
@@ -9167,6 +9231,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.256.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.255.0...v1.256.0
 [1.255.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.254.0...v1.255.0
 [1.254.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.253.0...v1.254.0
 [1.253.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.252.0...v1.253.0
