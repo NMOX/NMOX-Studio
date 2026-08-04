@@ -1,4 +1,4 @@
-package org.nmox.studio.ui.browser.fx;
+package org.nmox.studio.core.http;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,12 +95,29 @@ class LoopbackUrlsTest {
         assertThat(probed).containsExactly("127.0.0.1:80", "127.0.0.1:443");
     }
 
+
     @Test
-    @DisplayName("the rewritten form still counts as local for save-to-reload")
-    void rewrittenFormStaysLocal() {
-        // LocalUrls is the v1.228.0 gate: if [::1] were not local, the
-        // rewrite would silently disable save -> see for ng serve pages
-        assertThat(LocalUrls.isLocal("http://[::1]:4321/")).isTrue();
-        assertThat(LocalUrls.isLocal("http://127.0.0.1:4321/")).isTrue();
+    @DisplayName("Gate: every localhost-capable HTTP seam routes through LoopbackUrls.resolve")
+    void sitesRouteThroughResolver() throws Exception {
+        // The six seams a localhost URL can actually reach: the Browser
+        // (the v1.259.0 original), API Studio sends (the {{baseUrl}}
+        // offer announces "http://localhost:<port>" verbatim), the rack
+        // HTTP console and BEACON (user-pointed URLs), CouchDB (the
+        // stock install is localhost:5984) and JSON-RPC (localhost
+        // devnets). Deliberately OUT, endpoints fixed remote by
+        // construction: OracleClient (api.anthropic.com), UpdateCheck
+        // (github.com), DigitalOceanClient (api.digitalocean.com).
+        java.util.List<String> sites = java.util.List.of(
+                "../ui/src/main/java/org/nmox/studio/ui/browser/fx/FxBrowserPanel.java",
+                "../apiclient/src/main/java/org/nmox/studio/apiclient/api/ApiClient.java",
+                "../rack/src/main/java/org/nmox/studio/rack/devices/HttpDevice.java",
+                "../rack/src/main/java/org/nmox/studio/rack/devices/BeaconDevice.java",
+                "../dbstudio/src/main/java/org/nmox/studio/dbstudio/engine/CouchBackend.java",
+                "../web3/src/main/java/org/nmox/studio/web3/engine/JsonRpcClient.java");
+        for (String site : sites) {
+            String src = java.nio.file.Files.readString(java.nio.file.Path.of(site));
+            assertThat(src).as("%s routes through LoopbackUrls", site)
+                    .contains("LoopbackUrls.");
+        }
     }
 }
