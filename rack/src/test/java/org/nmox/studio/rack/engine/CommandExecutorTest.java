@@ -91,6 +91,12 @@ class CommandExecutorTest {
         // node's shape and the plain-english shape both trip the detector
         org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
                 "Error: listen EADDRINUSE: address already in use 0.0.0.0:8080")).isTrue();
+        // each branch ALONE must also trip it: node's full line satisfies
+        // both OR'd conditions at once, and a mutant that killed only the
+        // EADDRINUSE half survived exactly that redundancy (caught by
+        // javap during this fix's own mutation proof)
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
+                "code: 'EADDRINUSE',")).isTrue();
         org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
                 "bind: Address already in use")).isTrue();
         org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
