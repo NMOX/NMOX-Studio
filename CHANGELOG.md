@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.263.0] - 2026-08-04
+
+Renaming a request in API Studio works — for the first time since API
+Studio shipped.
+
+### Fixed
+- **Typing in the Name field threw on every keystroke, scrambled the
+  name, and collapsed the collections tree.** Found by driving the
+  shipped app against the live Hacker News API: the Name field's
+  document listener called `treeModel.reload()` + `restoreSelection()`,
+  and re-selecting the node fired the tree's own selection listener →
+  `onTreeSelect` → `bindRequest` → `nameField.setText(...)` — a Document
+  mutation DURING that Document's own notification, which Swing answers
+  with `IllegalStateException("Attempt to mutate in notification")`.
+  Three visible symptoms, one cause:
+  - typing `HN top stories` produced **`N top storiesH`** — the first
+    keystroke reset the caret to 0, so every later character landed in
+    front of it;
+  - the whole collections tree collapsed on the first keystroke;
+  - a red "Unexpected Exception" badge appeared in the status bar.
+  - Worse than cosmetic: the aborted `bindRequest` never cleared its
+    `loading` guard, so the listener body was skipped from then on and
+    the model stopped recording edits — the workspace persisted the
+    name as just **`H`**.
+  The listener now repaints that one node via `DefaultTreeModel.
+  nodeChanged`, which fires only `treeNodesChanged`: no selection event,
+  no re-entry, selection and expansion preserved. Present since API
+  Studio itself (v1.19.0, 2026-07-02) — over 240 releases.
+- **The method combo repaints the tree label too.** The renderer draws
+  `METHOD  name`, so a GET→POST switch used to leave a stale label until
+  something else rebuilt the tree; it now takes the same one-node
+  repaint.
+- Proven three ways: a behavioural test that reproduces the real
+  `IllegalStateException` with a miniature of the old wiring, a second
+  proving the `nodeChanged` shape is immune (typed text intact, zero
+  re-binds), and a source gate pinning the studio to that shape — the
+  gate strips comments first, because the fix's own explanation names
+  `reload()`/`restoreSelection()` and a naive `contains()` matched the
+  explanation.
+
+### Verified
+- **API Studio against the live Hacker News API**, in the built app:
+  `GET /v0/topstories.json` → **200 · 188ms · 4 KB** of real story IDs,
+  pretty-printed; a second request using `{{storyId}}` resolved from the
+  environment editor → **200 · 38ms · 1 KB**, the real "Show HN" story
+  with its score and comment ids; the Standards pane graded the live
+  endpoint **F**, correctly crediting its HSTS header
+  (`max-age=31556926; includeSubDomains; preload`) and naming each
+  absent header with the fix to apply.
+
 ## [1.262.0] - 2026-08-04
 
 Ledger 63 closed — a proxy target can no longer win the auto-open.
@@ -9437,6 +9487,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.263.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.262.0...v1.263.0
 [1.262.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.261.0...v1.262.0
 [1.261.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.260.0...v1.261.0
 [1.260.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.259.0...v1.260.0
