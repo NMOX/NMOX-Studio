@@ -66,8 +66,8 @@ public enum ProjectTemplates {
                   "version": "0.1.0",
                   "private": true,
                   "scripts": {
-                    "dev": "http-server -p 8080 -c-1 .",
-                    "start": "http-server -p 8080 ."
+                    "dev": "http-server -c-1 .",
+                    "start": "http-server ."
                   },
                   "devDependencies": {
                     "@eslint/js": "^10.0.0",
