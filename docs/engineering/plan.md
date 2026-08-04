@@ -627,6 +627,26 @@ a joined "a|b" could never match two names), pytest/cargo stay
 verbatim by design. The review verified killTreeAndWait's
 Process-vs-handle reap rewrite and the whole packaging chain CLEAN.
 
+Same-day tail (v1.258–v1.261): v1.259.0 came out of the FX 26 Angular
+gauntlet — `http://localhost:4321` (the URL ng serve prints) REFUSED
+in the in-app Browser because the WebView loader dials only the first
+resolved address and Angular 21's esbuild server binds ONLY [::1];
+LoopbackUrls probes the stacks in the loader's own order and rewrites
+only when the as-typed form would fail. v1.260.0 asked the v1.175.0
+consumer-2 question and got NO twice: java.net.http.HttpClient has
+the same first-address dial, AND fixing it unmasked the twin — the
+HTTP/2 default's cleartext h2c upgrade, which esbuild never answers
+(HTTP_1_1 answered in 54ms); LoopbackUrls moved to core.http, NEW
+CleartextHttp pins http->1.1, both wired at all six localhost-capable
+seams with by-name source gates. Law: **a refused connection can mask
+a hang — re-probe after every layer you fix.** v1.261.0 closed the
+baseline arc's last unproven claim: a stock v1.252.0 install (bundled
+Java 21.0.11) updated in-app to 1.260.0 and booted clean on its old
+runtime — the target-stays-21 law proven behaviorally, and the
+update-center gauntlet now fully headless (`--modules --update-all` +
+`-J-Dnetbeans.close=true`; without netbeans.close the CLI finishes
+and the app sits in its GUI forever — a fake hang).
+
 Currency addendum 2026-08-03 at **v1.251.0** (the day shift):
 v1.248.0 took ledger 74 the honest way — OpenJFX 21.0.5 → 21.0.12 in
 FULL lockstep (ui pom ×2, the windows workflow pin, bundle-jre.sh's
