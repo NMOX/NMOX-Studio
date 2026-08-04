@@ -49,8 +49,10 @@ class BunDenoTest {
         assertThat(tests.buildCommand()).startsWith("bun", "test");
         assertThat(TestDevice.rerunFailedCommand("bun", java.util.List.of("a", "b")))
                 .containsExactly("bun", "test", "-t", "a|b");
+        // /.../ is deno's regex-filter form (v1.257.0): bare --filter is a
+        // SUBSTRING match, so a multi-name "a|b" join could never match
         assertThat(TestDevice.rerunFailedCommand("deno", java.util.List.of("x")))
-                .containsExactly("deno", "test", "--filter", "x");
+                .containsExactly("deno", "test", "--filter", "/x/");
         rack.shutdown();
     }
 }
