@@ -32,9 +32,39 @@ public final class ServeUrls {
      * Public since v1.212.0: the IDE-native Run lane (tools module) needs
      * the same parse the serve devices use, so that pressing F6 announces
      * its dev server exactly like pressing GO on VELOCITY does.
+     *
+     * <p>Arrow-target URLs are skipped (v1.262.0, ledger 63): a URL
+     * immediately preceded by {@code ->} (or {@code →}) is a mapping
+     * DESTINATION, not a serving. Pinned by live capture rather than
+     * folklore — http-proxy-middleware v2 (the CRA-era stack) prints
+     * {@code [HPM] Proxy created: /  -> http://localhost:3001} BEFORE
+     * the server's own banner, so the backend target used to win the
+     * one-shot v1.212.0 auto-open; HPM v4 and webpack-dev-server 5
+     * print no such line (measured 2026-08-04, exact outputs in the
+     * ledger-63 close). No banner in the corpus (vite {@code Local:},
+     * wds {@code Loopback:}, CRA, {@code started server on}, artisan,
+     * {@code php -S}) puts an arrow before its own URL — arrows point
+     * at destinations. Skipping returns null on a pure proxy line, and
+     * the real banner registers on a later line, which is the correct
+     * order.
      */
     public static String firstLocalUrl(String line) {
         Matcher m = LOCAL_URL.matcher(line);
-        return m.find() ? m.group(1) : null;
+        while (m.find()) {
+            if (!arrowPrecedes(line, m.start())) {
+                return m.group(1);
+            }
+        }
+        return null;
+    }
+
+    /** True when the text before {@code start} ends with an arrow token. */
+    private static boolean arrowPrecedes(String line, int start) {
+        int i = start;
+        while (i > 0 && line.charAt(i - 1) == ' ') {
+            i--;
+        }
+        return (i >= 2 && line.charAt(i - 1) == '>' && line.charAt(i - 2) == '-')
+                || (i >= 1 && line.charAt(i - 1) == '→');
     }
 }
