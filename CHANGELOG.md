@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.255.0] - 2026-08-03
+
+The jlinking lanes move to Zulu — Temurin 25 cannot build a runtime.
+
+### Fixed
+- **v1.254.0 also built zero assets, and the cause was one layer
+  deeper than the JEP 493 branch it shipped: Temurin 25 ships
+  NEITHER a `jmods/` directory NOR a linkable run-time image.** jlink
+  refuses outright — *"This JDK does not contain packaged modules and
+  cannot be used to create another image"* — so that distribution
+  simply cannot build a bundled runtime, with or without a clever
+  module path. Windows was never immune either; its one earlier pass
+  was an older Temurin patch that still carried jmods.
+- All three release jobs, and the windows-installer check that runs
+  the same packaging path, now use **Zulu 25** — which ships all 70
+  jmods. `build-and-test` deliberately stays on Temurin: it only
+  compiles and runs tests, and keeping it there proves the product
+  still builds on the distribution most users have.
+- The v1.254.0 JEP 493 branch stays in place as the safety net for
+  whichever distribution drops jmods next; it is simply not the
+  branch these runners take today.
+
+### Verified
+- `bundle-jre.sh` run against a **real Zulu 25.0.4** download (not a
+  simulation): takes the jmods path, links a 291 MB runtime with
+  **78 modules**, `javafx.web@26.0.2` and `java.compiler` present.
+- Full `mvn verify` green on JDK 25.
+
+### Note
+- v1.253.0 and v1.254.0 are correct commits on main with no release
+  assets. "Latest" stayed v1.252.0 throughout, so the in-app update
+  center was never pointed at an empty release; v1.255.0 is intended
+  to be the first release carrying JDK 25 + OpenJFX 26 artifacts.
+
 ## [1.254.0] - 2026-08-03
 
 The JDK 25 runtime lanes, fixed: jlink without a jmods directory.
@@ -9133,6 +9167,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.255.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.254.0...v1.255.0
 [1.254.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.253.0...v1.254.0
 [1.253.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.252.0...v1.253.0
 [1.252.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.251.0...v1.252.0

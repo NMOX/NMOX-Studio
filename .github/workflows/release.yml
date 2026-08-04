@@ -23,7 +23,14 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
-          distribution: temurin
+          # zulu, not temurin: these jobs JLINK the bundled runtime, and
+          # Temurin 25 ships neither a jmods/ directory nor a linkable
+          # run-time image (JEP 493), so jlink refuses outright — "This JDK
+          # does not contain packaged modules". Zulu 25 ships all 70 jmods.
+          # Verified 2026-08-03 by running bundle-jre.sh against a real Zulu
+          # 25.0.4: 78 modules, javafx.web@26.0.2. build-and-test stays on
+          # temurin (it only compiles and tests — no jlink).
+          distribution: zulu
           java-version: 25
           cache: maven
       - name: Stamp version into branding
@@ -122,7 +129,14 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
-          distribution: temurin
+          # zulu, not temurin: these jobs JLINK the bundled runtime, and
+          # Temurin 25 ships neither a jmods/ directory nor a linkable
+          # run-time image (JEP 493), so jlink refuses outright — "This JDK
+          # does not contain packaged modules". Zulu 25 ships all 70 jmods.
+          # Verified 2026-08-03 by running bundle-jre.sh against a real Zulu
+          # 25.0.4: 78 modules, javafx.web@26.0.2. build-and-test stays on
+          # temurin (it only compiles and tests — no jlink).
+          distribution: zulu
           java-version: 25
           cache: maven
       - name: Stamp version into branding
@@ -148,7 +162,14 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
-          distribution: temurin
+          # zulu, not temurin: these jobs JLINK the bundled runtime, and
+          # Temurin 25 ships neither a jmods/ directory nor a linkable
+          # run-time image (JEP 493), so jlink refuses outright — "This JDK
+          # does not contain packaged modules". Zulu 25 ships all 70 jmods.
+          # Verified 2026-08-03 by running bundle-jre.sh against a real Zulu
+          # 25.0.4: 78 modules, javafx.web@26.0.2. build-and-test stays on
+          # temurin (it only compiles and tests — no jlink).
+          distribution: zulu
           java-version: 25
           cache: maven
       - name: Stamp version into branding
