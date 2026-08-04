@@ -126,9 +126,13 @@ fi
 # Rewrite the single existing default_options line rather than appending a
 # second one: the Windows .exe launcher greps this file for keys instead of
 # sourcing it, and two default_options lines have no defined winner.
-if grep -q -- '--enable-native-access=ALL-UNNAMED' "$CONF" \
-        && ! grep -q -- '--enable-native-access=ALL-UNNAMED,javafx' "$CONF"; then
-    sed -i.bak 's/--enable-native-access=ALL-UNNAMED/--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web/' "$CONF"
+# Anchored to the default_options line on purpose: the comment block above
+# it names the flag literally to explain itself, and an unanchored sed
+# rewrites that prose too (measured — it produced a packaged conf whose
+# comment claimed the FX modules were required for the JNA bridge).
+if grep -q '^default_options=.*--enable-native-access=ALL-UNNAMED' "$CONF" \
+        && ! grep -q '^default_options=.*--enable-native-access=ALL-UNNAMED,javafx' "$CONF"; then
+    sed -i.bak '/^default_options=/s/--enable-native-access=ALL-UNNAMED/--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web/' "$CONF"
     rm -f "$CONF.bak"
     echo "==> FX native-access grant written to etc/nmoxstudio.conf"
 fi

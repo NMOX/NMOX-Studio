@@ -241,14 +241,21 @@ jobs:
           # javafx modules are only nameable where they exist. Rewrite the
           # ONE default_options line: this .exe launcher greps the file for
           # keys instead of sourcing it, so a second line has no winner.
+          # Anchored to the default_options line: the comment block above it
+          # names the flag literally to explain itself, and a whole-file
+          # replace rewrites that prose too (measured on the sh side).
           $conf = "application\target\nmoxstudio\etc\nmoxstudio.conf"
-          $text = Get-Content $conf -Raw
-          if ($text -notmatch '--enable-native-access=ALL-UNNAMED') {
+          $lines = Get-Content $conf
+          if (-not ($lines | Where-Object { $_ -like 'default_options=*--enable-native-access=ALL-UNNAMED*' })) {
             throw "base conf lost its --enable-native-access=ALL-UNNAMED grant"
           }
-          $text = $text -replace '--enable-native-access=ALL-UNNAMED(?!,javafx)',
-            '--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web'
-          Set-Content -NoNewline $conf $text
+          $lines = $lines | ForEach-Object {
+            if ($_ -like 'default_options=*') {
+              $_ -replace '--enable-native-access=ALL-UNNAMED(?!,javafx)',
+                          '--enable-native-access=ALL-UNNAMED,javafx.graphics,javafx.web'
+            } else { $_ }
+          }
+          Set-Content $conf $lines
           Write-Host "FX native-access grant written to etc/nmoxstudio.conf"
       - name: Brand launcher icons
         # The nbm-maven-plugin launcher stubs ship with the stock NetBeans
