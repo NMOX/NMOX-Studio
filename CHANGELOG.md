@@ -4,6 +4,168 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.253.0] - 2026-08-03
+
+**The baseline advances: JDK 25 LTS + OpenJFX 26.** David's call.
+
+### Changed
+- **The bundled runtime is now Java 25 LTS**, and with it the Browser's
+  engine moves to **OpenJFX 26.0.2**. CI, the release workflow's three
+  jlink jobs, and the windows-installer check all build on 25;
+  bundle-jre.sh and release.yml carry fresh sha256 pins for all four
+  platform jmods; ui's provided-scope FX deps and NOTICE move with them
+  (FxPinLockstepTest enforces the four-home lockstep).
+- **`maven.compiler.target` deliberately stays 21.** The update center
+  ships module NBMs, never a runtime — an install still on its bundled
+  Java 21 must be able to load modules from a newer release, and
+  class-69 bytecode would fail to load and brick the IDE on in-app
+  update. Java 25 runs class-65 bytecode fine, so we build on 25 and
+  target 21; users get the new runtime (and its WebKit) with a full
+  installer or `brew upgrade`. The reasoning is recorded at the
+  property so it can't be "tidied" away.
+
+### Fixed (found BY the move, on the windows lane)
+- **`killTreeAndWait` could report a tree "confirmed dead" while the
+  caller's own process was still alive.** Its verdict asked the
+  ProcessHandles — but a handle's view of aliveness and the `Process`
+  object's are not the same: the handle can report dead (its pid gone
+  from the OS table) while `Process.isAlive()` is still true because
+  the exit status has not been reaped. That defeats the purpose of the
+  API, whose callers delete the files that process was holding open
+  (the v1.42.0 Windows file-lock lesson) — concretely,
+  `JsDebugServer.stop` deleting a Chrome profile directory while
+  Chrome may still hold locks on it. The direct child is now waited on
+  through `Process.waitFor()` (which forces the reap) and the verdict
+  is `!p.isAlive() && descendants all dead`. Four years of Java-21 CI
+  never surfaced this; the JDK 25 windows lane caught it on run one.
+
+### Verified
+- `mvn verify` on JDK 25.0.4 — tests, SpotBugs, find-sec-bugs, and
+  every JaCoCo floor across all ten modules — **zero errors**.
+- A workflow-identical ALL-MODULE-PATH jlink over the complete FX 26
+  jmods directory (incubator modules included) builds clean and
+  carries `javafx.web@26.0.2`.
+- The app, compiled by JDK 25, boots on that runtime with **zero
+  SEVERE and zero IllegalAccess** entries — the `--add-opens` set
+  carries unchanged.
+- Browser gauntlet on FX 26's WebKit: https renders, a plain-http page
+  loads through the v1.226.0 h2c-flagged loader (the flag survives in
+  FX 26), and DevTools reads the live DOM tree.
+- Ledger 74 **closed**; the dossier keeps the evidence trail.
+
+### Housekeeping
+- **The entries for v1.248.0–v1.252.0 below were written here, in
+  arrears.** A scripted CHANGELOG edit during v1.248.0 failed its
+  anchor assertion inside a batched shell block; the block continued,
+  the failure scrolled past unread, and every later entry anchored on
+  the missing one — so six shipped releases carried no CHANGELOG entry
+  until now. The releases themselves were correct and gated; only this
+  file lied. Lesson recorded in plan.md: **verify a docs edit landed
+  by reading the file back — never trust the script's own "ok".**
+
+## [1.252.0] - 2026-08-03
+
+VERITAS reads node's own test runner (the QA persona's find).
+
+### Fixed
+- **A `node --test` project showed `P:0 F:0` and no failure names**
+  while the verdict said FAIL — the tally and failure patterns knew
+  jest/vitest/pytest/cargo/go/forge but not TAP, and node's runner
+  speaks TAP: `# pass 3` / `# fail 1` for counts, `not ok 4 - name`
+  for failures. Node's built-in runner is the zero-dependency default
+  for a modern Node project, so the most dependency-free suite in the
+  ecosystem was the one VERITAS could not read. Both now parse through
+  one tested `tallyFrom` seam.
+- **Re-run failed** now works for node:test via `--test-name-pattern`,
+  and `node` joined the RUNNER knob at the end (the append-only law —
+  saved patches keep their pinned index).
+
+### Verified
+- Live in the shipped app on a purpose-built failing suite: the tally
+  reads **P:3 F:1**, the FAILURES dialog names *"SAVE10 takes ten
+  percent off"*, and **Re-run failed (1)** is armed — where the same
+  suite read P:0 F:0 with an empty dialog before.
+
+## [1.251.0] - 2026-08-03
+
+The contributor persona + day docs truth.
+
+### Verified
+- **The first contributor on-ramp pass**: a fresh `git clone` built the
+  assembled app with CONTRIBUTING's verbatim first command in 21
+  seconds — zero friction; the guide, scripts, and plan links all
+  resolve.
+
+### Fixed
+- CLAUDE.md's Troubleshooting still told contributors "Java 17+" in
+  five places (v0.x fossils) while the product targets Java 21 LTS —
+  all corrected, including the JAVA_HOME recipes.
+
+### Changed
+- plan.md carries the day-shift addendum (v1.248–v1.250).
+
+## [1.250.0] - 2026-08-03
+
+The bundled-JDK decision gets its measured dossier (docs only).
+
+### Added
+- **docs/engineering/jdk25-fx26-dossier.md** — the ledger-74 FX-major
+  decision, measured instead of guessed: JDK 25 LTS + OpenJFX 26 jlink
+  green, the full app boots on that runtime with zero SEVERE and the
+  `--add-opens` set holding, the Browser renders on FX 26's WebKit
+  live, and the v1.226.0 h2c flag survives in FX 26's javafx.web. The
+  remaining GO-work listed honestly (CI matrix on 25, windows/linux
+  probes, fresh sha pins, the full browser gauntlet). No product
+  change.
+
+## [1.249.0] - 2026-08-03
+
+The day-arc review: lenses over v1.241–v1.248, one find, fixed.
+
+### Fixed
+- **The bundled OpenJFX runtime was the only unattributed vendored
+  component.** Every vendored piece carries a NOTICE entry with its
+  license and pin (js-debug, grammars, classic-web libraries) — but the
+  FX runtime jlinked into all five installers since v1.199.0, the
+  largest third-party component in the product, appeared nowhere in
+  NOTICE. It now does: OpenJFX at the pinned version, GPLv2 with the
+  Classpath Exception, source and sha256-pin locations named.
+
+### Added
+- **FxPinLockstepTest** — the FX version lives in FOUR homes (ui pom's
+  two provided deps, bundle-jre.sh, release.yml, NOTICE) and nothing
+  bound them: v1.248.0 moved all four by hand, and a partial future
+  bump would ship per-OS runtimes on different WebKits. One version,
+  four homes, lockstep or the build fails naming the straggler.
+  Mutation-proven.
+
+### Verified
+- The v1.246.0 wizard deletion is COMPLETE (template dirs, iterator,
+  dependabot npm entries, doc references — nothing dangles); the
+  v1.243.0 org.openjfx ignore survived the dependabot.yml edit with its
+  reason intact; the v1.247.0 ceiling port is real.
+
+## [1.248.0] - 2026-08-03
+
+The browser engine catches up seven WebKit patches — the ledger-74 way.
+
+### Changed
+- **OpenJFX 21.0.5 → 21.0.12, in full lockstep**: ui's provided-scope
+  javafx-web/javafx-swing pins, the release workflow's windows
+  fxVersion + sha256, and bundle-jre.sh's three per-platform sha256s
+  all move together — the compile-time API and the jlinked runtime stay
+  the same bytes (the skew Dependabot's pom-only bump would have
+  introduced, refused in v1.243.0).
+- Ledger 74 gained MEASURED FX/JDK floors read from the jmods' class
+  versions: FX 24 = v66 (JDK 22), FX 25 = v67 (JDK 23), FX 26 = v68
+  (JDK 24) — every FX major past 21 is chained to a bundled-JDK
+  baseline decision; the FX 21 LTS line is what moves on Java 21.
+
+### Verified
+- Gauntleted live on the new WebKit before ship: Hacker News over https
+  renders, a plain-http page loads through the v1.226.0 h2c-flagged
+  loader, and the DevTools bridge reads the live DOM.
+
 ## [1.247.0] - 2026-08-03
 
 The deleted wizard's one transferable asset, transplanted: the ceiling
@@ -8937,6 +9099,14 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.253.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.252.0...v1.253.0
+[1.252.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.251.0...v1.252.0
+[1.251.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.250.0...v1.251.0
+[1.250.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.249.0...v1.250.0
+[1.249.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.248.0...v1.249.0
+[1.248.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.247.0...v1.248.0
+[1.247.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.246.0...v1.247.0
+[1.246.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.245.0...v1.246.0
 [1.245.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.244.0...v1.245.0
 [1.244.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.243.0...v1.244.0
 [1.243.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.242.0...v1.243.0

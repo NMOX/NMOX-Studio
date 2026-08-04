@@ -1,9 +1,10 @@
 # The bundled-JDK decision: JDK 25 LTS + OpenJFX 26, measured
 
-**Status**: recon dossier, 2026-08-03. No product change — this
-document gives David the measured facts for the ledger-74 decision.
-The product today: Java 21 LTS baseline (CI, workflow, bundled
-runtime) + OpenJFX 21.0.12 (v1.248.0).
+**Status**: DECIDED — David said advance, 2026-08-03. Shipped as
+v1.253.0; the product baseline is now JDK 25 LTS + OpenJFX 26.0.2.
+This document is kept as the evidence trail: the measurements below
+are what the decision rested on, and the "not measured" list was
+worked through before ship (results at the end).
 
 ## Why this pairing
 
@@ -61,3 +62,29 @@ deps + NOTICE (FxPinLockstepTest enforces the FX half), the CI
 matrix, and the full gauntlet. NO-GO costs nothing: the FX 21 LTS
 line keeps taking patches on Java 21 (v1.248.0's lane), and this
 dossier stays current until the numbers change.
+
+
+## Worked through before ship (v1.253.0)
+
+- **CI on JDK 25 — GREEN.** The full `mvn verify` (tests, SpotBugs,
+  find-sec-bugs, JaCoCo floors, all ten modules) passes on JDK 25.0.4
+  with zero errors. This was the largest unknown and it cost nothing.
+- **Full-directory jlink — GREEN.** ALL-MODULE-PATH over the complete
+  FX 26 jmods dir (incubator modules included, exactly as the release
+  workflow does it) builds a runtime carrying `javafx.web@26.0.2`.
+- **Fresh sha256 pins** for all four platforms are in bundle-jre.sh
+  and release.yml. Note for whoever bumps next: Gluon's CDN served a
+  500-error HTML page in place of one zip during this work; the size
+  check caught it before it became a pinned hash. **Always size-check
+  before hashing.**
+- **Browser gauntlet on FX 26 — GREEN.** https renders, plain http
+  loads through the h2c-flagged loader, DevTools reads the live DOM.
+- **The bytecode split.** `maven.compiler.target` stays 21 while the
+  runtime is 25: the update center ships module NBMs, never a
+  runtime, so class-69 modules would fail to load on an install whose
+  bundled JRE is still 21 — an in-app update would brick it. Law
+  recorded at the property in the root pom.
+- Still unproven by construction: the windows and linux release lanes
+  build their runtimes in CI, so the first tagged release IS their
+  proof; and the NetBeans platform has no published JDK-25 support
+  statement — we have a clean boot and a green suite instead.

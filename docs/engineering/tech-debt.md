@@ -22,36 +22,19 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
-### 74. The OpenJFX major upgrade is chained to a bundled-JDK decision (floors MEASURED, v1.248.0)
-The 2026-08-03 day shift measured the ladder from the jmods themselves:
-FX 24 = class v66 = JDK 22 floor, FX 25 = v67 = JDK 23, FX 26 = v68 =
-JDK 24 — jlink refuses each on anything older ("Unsupported major.minor
-version"). The product's deliberate baseline is Java 21 LTS (workflow,
-CI matrix, bundled runtime), so ANY FX major past 21 first requires
-bumping the bundled JDK — a product-wide baseline change that is
-David's call. What CAN move on JDK 21 is the FX 21 LTS line itself:
-v1.248.0 took 21.0.5 → 21.0.12 in full lockstep (ui pom ×2, the
-windows workflow pin, bundle-jre.sh's three platform sha256s) with the
-browser gauntlet green on the new WebKit (https render, plain-http
-through the h2c-flagged loader, DevTools bridge reading the live DOM).
-Keep riding 21.0.x patches until the JDK decision is made; then this
-row becomes the FX-major unit its original text described. The
-decision now has its measured dossier —
-docs/engineering/jdk25-fx26-dossier.md (v1.250.0): JDK 25 LTS + FX 26
-jlink green, platform boots with zero SEVERE and the --add-opens set
-holding, Browser renders on FX 26's WebKit, and the v1.226.0 h2c flag
-survives; remaining work if GO is listed there (CI matrix on 25,
-win/linux probes, fresh sha pins, full gauntlet).
-ui/pom.xml's org.openjfx deps are provided-scope compile-time halves of
-the FX runtime the release workflow jlinks from sha256-pinned 21.0.5
-jmods (v1.199.0). Dependabot's pom-only bump (#371) would compile the
-Browser against FX 26 API while shipping FX 21 — skew no CI lane can
-see, since tests run with the maven dep, not the jlinked runtime; and
-the v1.226.0 h2c fix rides an internal com.sun.webkit flag verified
-against 21's WebKit. dependabot.yml now ignores org.openjfx. The real
-upgrade moves the pom pins AND the workflow's fxVersion+sha256 together,
-re-verifies the h2c flag and the DevTools bridge against the new WebKit,
-and gets the full browser gauntlet before ship.
+### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0
+David's call, 2026-08-03: advance. The product baseline moved to
+**JDK 25 LTS + OpenJFX 26**, all pins in lockstep, with the full
+gauntlet green: `mvn verify` (tests + SpotBugs + find-sec-bugs +
+JaCoCo floors, all ten modules) passes on JDK 25 with zero errors —
+the dossier's biggest unknown; a workflow-identical ALL-MODULE-PATH
+jlink over the complete FX 26 jmods dir (incubator modules included)
+builds clean; the app boots on that runtime with zero SEVERE; and the
+Browser renders https, loads plain http through the v1.226.0
+h2c-flagged loader, and answers DevTools DOM reads on FX 26's WebKit.
+The one thing that does NOT move: `maven.compiler.target` stays 21 —
+see the law at the property in the root pom (the update center ships
+modules, not runtimes).
 
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
