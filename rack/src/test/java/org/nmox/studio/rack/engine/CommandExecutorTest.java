@@ -84,4 +84,26 @@ class CommandExecutorTest {
                 .isTrue();
         assertThat(exit.get()).isNotEqualTo(0);
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("EADDRINUSE is recognized and translated with the port (v1.264.0)")
+    void portInUseSpeaksHuman() {
+        // node's shape and the plain-english shape both trip the detector
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
+                "Error: listen EADDRINUSE: address already in use 0.0.0.0:8080")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
+                "bind: Address already in use")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikePortInUse(
+                "compiled successfully")).isFalse();
+        String human = CommandExecutor.friendlyPortInUse(
+                "Error: listen EADDRINUSE: address already in use 0.0.0.0:8080");
+        org.assertj.core.api.Assertions.assertThat(human)
+                .contains("Port 8080")
+                .contains("already being used")
+                .contains("SONAR");
+        // no port on the line -> still a full sentence, no nulls
+        org.assertj.core.api.Assertions.assertThat(
+                CommandExecutor.friendlyPortInUse("EADDRINUSE"))
+                .startsWith("\u21b3 This port");
+    }
 }

@@ -206,6 +206,7 @@ public final class CommandExecutor {
 
     private static void pumpStream(java.io.InputStream stream, OutputWriter writer,
             boolean isErr, String tabName, File dir, Consumer<String> onLine) {
+        boolean portExplained = false;
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
@@ -223,12 +224,48 @@ public final class CommandExecutor {
                         writer.println(clean);
                     }
                 }
+                // The one failure every beginner hits eventually, translated
+                // where EVERY lane's output flows (v1.264.0): the rack's
+                // DevServerDevice had its own LCD message since v1.11, but
+                // the IDE Run button — the lane the status bar tells a new
+                // user to press — showed only node's raw errno dump. Once
+                // per pump so a stack trace can't repeat the explanation.
+                if (!portExplained && looksLikePortInUse(clean)) {
+                    portExplained = true;
+                    String human = friendlyPortInUse(clean);
+                    if (writer != null) {
+                        writer.println(human);
+                    }
+                    RackBus.publish(tabName, human, isErr);
+                }
                 safeAccept(onLine, clean);
                 RackBus.publish(tabName, clean, isErr);
             }
         } catch (IOException ignored) {
             // stream closes when the process dies or is killed
         }
+    }
+
+    /** True when a tool line reports the address-already-in-use failure. */
+    static boolean looksLikePortInUse(String line) {
+        return line.contains("EADDRINUSE")
+                || line.toLowerCase(java.util.Locale.ROOT)
+                        .contains("address already in use");
+    }
+
+    /**
+     * The plain-language translation, with the port number when the line
+     * carries one ("...0.0.0.0:8080", "port: 8080").
+     */
+    static String friendlyPortInUse(String line) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?::|port:? )(\\d{2,5})\\b").matcher(line);
+        String port = m.find() ? m.group(1) : null;
+        return "\u21b3 " + (port != null ? "Port " + port : "This port")
+                + " is already being used by another program \u2014 maybe an"
+                + " earlier run that is still going. Stop that program and Run"
+                + " again, or change the port. (Task Rack \u25b8 SONAR shows"
+                + " who owns every port.)";
     }
 
     /**
