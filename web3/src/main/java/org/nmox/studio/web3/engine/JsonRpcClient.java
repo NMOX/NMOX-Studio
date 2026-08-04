@@ -1,5 +1,6 @@
 package org.nmox.studio.web3.engine;
 
+import org.nmox.studio.core.http.CleartextHttp;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -419,8 +420,8 @@ public final class JsonRpcClient {
                 // v1.260.0: LoopbackUrls.resolve sits INSIDE this redacting try
                 // for the same reason URI.create does — a secret URL must
                 // never leak through an exception message
-                HttpRequest request = HttpRequest.newBuilder(
-                        URI.create(LoopbackUrls.resolve(url)))
+                HttpRequest request = CleartextHttp.pinVersion(HttpRequest.newBuilder(
+                        URI.create(LoopbackUrls.resolve(url))), url)
                         .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
                         .header("Content-Type", "application/json")
                         .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))

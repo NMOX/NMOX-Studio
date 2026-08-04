@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.http.CleartextHttp;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.Color;
 import java.net.URI;
@@ -129,7 +130,8 @@ public class BeaconDevice extends RackDevice {
                             uri.getPort() > 0 ? uri.getPort() : 443);
                 }
                 HttpResponse<Void> response = client.send(
-                        HttpRequest.newBuilder(uri).method("HEAD",
+                        CleartextHttp.pinVersion(HttpRequest.newBuilder(uri), url)
+                                .method("HEAD",
                                 HttpRequest.BodyPublishers.noBody())
                                 .timeout(Duration.ofSeconds(10)).build(),
                         HttpResponse.BodyHandlers.discarding());

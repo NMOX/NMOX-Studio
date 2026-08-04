@@ -1,5 +1,6 @@
 package org.nmox.studio.dbstudio.engine;
 
+import org.nmox.studio.core.http.CleartextHttp;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -404,8 +405,8 @@ public final class CouchBackend implements DbBackend {
     private HttpRequest.Builder request(String path) {
         // v1.260.0: localhost couch reached on whichever loopback stack
         // it bound (HttpClient dials only the first resolved address)
-        HttpRequest.Builder builder = HttpRequest.newBuilder(
-                URI.create(LoopbackUrls.resolve(baseUrl() + path)))
+        HttpRequest.Builder builder = CleartextHttp.pinVersion(HttpRequest.newBuilder(
+                URI.create(LoopbackUrls.resolve(baseUrl() + path))), baseUrl())
                 .timeout(Duration.ofSeconds(TIMEOUT_SECONDS));
         String auth = basicAuth(spec.user(), password);
         if (auth != null) {
