@@ -290,4 +290,28 @@ class ServingDevicesTest {
         assertThat(ServeUrls.firstLocalUrl("Server running on [http://127.0.0.1:8000]."))
                 .isEqualTo("http://127.0.0.1:8000].");
     }
+
+    @Test
+    @DisplayName("Arrow-target URLs are mapping destinations, not servings (ledger 63)")
+    void arrowTargetsAreNotServings() {
+        // VERBATIM live capture, http-proxy-middleware 2.0.9 (the
+        // CRA-era stack) — printed BEFORE the server's own banner, so
+        // this line used to win the v1.212.0 one-shot auto-open
+        assertThat(ServeUrls.firstLocalUrl("[HPM] Proxy created: /  -> http://localhost:3001"))
+                .as("a proxy TARGET must not register as a serving").isNull();
+        assertThat(ServeUrls.firstLocalUrl("proxy /api → http://127.0.0.1:9999"))
+                .as("the unicode arrow counts too").isNull();
+        // a later non-arrow URL on the same line still wins
+        assertThat(ServeUrls.firstLocalUrl(
+                "map -> http://localhost:3001 then serving http://localhost:5173/"))
+                .isEqualTo("http://localhost:5173/");
+        // banners never put an arrow before their own URL — vite's ➜ is
+        // a LEADING glyph two tokens earlier, not an immediate arrow
+        assertThat(ServeUrls.firstLocalUrl("  ➜  Local:   http://localhost:5173/"))
+                .isEqualTo("http://localhost:5173/");
+        // webpack-dev-server 5's real banner (live capture) still parses
+        assertThat(ServeUrls.firstLocalUrl(
+                "<i> [webpack-dev-server] Loopback: http://localhost:5198/, http://[::1]:5198/"))
+                .isEqualTo("http://localhost:5198/,");
+    }
 }

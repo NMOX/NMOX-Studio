@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.262.0] - 2026-08-04
+
+Ledger 63 closed — a proxy target can no longer win the auto-open.
+
+### Fixed
+- **`ServeUrls.firstLocalUrl` skips arrow-target URLs.** The ledger's
+  deferral condition — a live repro pinning the real proxy-log
+  shapes — was met: http-proxy-middleware **2.0.9** (the CRA-era
+  stack) prints `[HPM] Proxy created: /  -> http://localhost:3001`
+  BEFORE the server's own banner, so the backend target used to
+  register first and the v1.212.0 one-shot auto-open could show the
+  wrong page; HPM **4.2.0** and webpack-dev-server **5** print no
+  such line, so modern stacks were never exposed. The fix is the
+  general rule the deferral said didn't exist, and the corpus proves
+  it: no banner puts an arrow before its own URL — **arrows point at
+  destinations**. A local URL immediately preceded by `->` or `→` is
+  skipped and the scan continues; a pure proxy line yields null and
+  the real banner registers on a later line — the correct order. One
+  scan serves both consumers (serve devices and the ide Run lane).
+  Mutation-proven (a no-op arrow guard fails
+  `arrowTargetsAreNotServings` by name); the captured lines are
+  pinned verbatim, including webpack-dev-server 5's real `Loopback:`
+  banner.
+
 ## [1.261.0] - 2026-08-04
 
 The update center crosses the runtime boundary — gauntleted, and now
@@ -9413,6 +9437,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.262.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.261.0...v1.262.0
 [1.261.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.260.0...v1.261.0
 [1.260.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.259.0...v1.260.0
 [1.259.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.258.0...v1.259.0

@@ -77,17 +77,22 @@ another reason.
 
 ## Open — deferred deliberately, with reasons (added v1.216.0, the v1.209–v1.215 arc review)
 
-### 63. The ide-run URL scan can announce a proxy TARGET before the dev server
-`WebProjectActionProvider`'s line consumer registers the first local URL a
-Run prints. Tools like http-proxy-middleware log their target
-(`[HPM] Proxy created: /api -> http://localhost:3001`) before the
-`Local:` banner, so the backend can be registered — and the v1.212.0
-auto-open can show it — before the registry self-corrects to the real
-dev URL on the next banner line. Deferred: every cheap guard is a
-tool-specific heuristic ("skip lines containing `->`") that risks
-breaking a legitimate banner; fixing this well needs a live repro
-against real proxy-logging tools to pin which line shapes exist. The
-registry self-heals; only the one-shot browser open can land wrong.
+### 63. CLOSED v1.262.0 — arrow-target URLs are mapping destinations, not servings
+The deferral's own condition was met: a live repro pinned the exact
+line shapes. **http-proxy-middleware 2.0.9** (the CRA-era stack)
+prints `[HPM] Proxy created: /  -> http://localhost:3001` BEFORE the
+server's own banner — the hazard was real; **HPM 4.2.0 and
+webpack-dev-server 5** print no proxy line at all — modern stacks
+were never exposed. The general rule the deferral said didn't exist
+fell out of the corpus: no banner (vite `Local:`, wds `Loopback:`,
+CRA, `started server on`, artisan, `php -S`) puts an arrow before its
+own URL — **arrows point at destinations**. `ServeUrls.firstLocalUrl`
+now skips a URL immediately preceded by `->` or `→` and keeps
+scanning; a pure proxy line yields null and the real banner registers
+on a later line, which is the correct order. Both consumers (the
+serve devices and the ide Run lane) share the one scan.
+Mutation-proven; the captured lines are pinned verbatim in
+`ServingDevicesTest.arrowTargetsAreNotServings`.
 
 ### 64. OpenOnServe's listener attaches after the arm's registry snapshot
 A serving registered in the microseconds between `urlsBefore` and
