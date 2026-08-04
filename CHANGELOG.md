@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.259.0] - 2026-08-04
+
+The Browser speaks both loopbacks — `ng serve`'s own URL now loads.
+
+### Fixed
+- **`http://localhost:<port>` failed in the in-app Browser whenever the
+  dev server bound only one loopback stack.** The FX 26 Angular
+  gauntlet on the shipped 1.258.0 app found it on the framework bet's
+  front door: Java resolves `localhost` to `[127.0.0.1, ::1]`, the
+  WebView's loader dials ONLY the first address (no happy-eyeballs
+  fallback the way desktop browsers have), and Angular 21's esbuild dev
+  server (`ng serve`) binds ONLY `[::1]` — so the exact URL the CLI
+  prints, the one SCOPE announces and users type, answered "Connection
+  refused by server" in the Browser while curl and Chrome worked. New
+  `LoopbackUrls.resolve` probes the loopback stacks IN THE LOADER'S OWN
+  resolution order and rewrites only when the as-typed form would fail:
+  first-resolved stack answers → URL untouched (no behavior or
+  Host-header change); only the other loopback answers → host rewritten
+  to that literal (`[::1]` / `127.0.0.1`, both already local for the
+  v1.228.0 save-to-reload gate, test-pinned); nothing answers → URL
+  untouched so the error names what was typed. Wired at
+  `FxBrowserPanel.loadUrl`, the one choke point behind the toolbar,
+  `showUrl` (SCOPE, the v1.212.0 auto-open, IRC links) and the home
+  page; probes ride a single-lane RP off the EDT, FIFO so the last
+  request wins. Non-localhost URLs are never probed. Mutation-proven ×2
+  (dropping the fallback and ignoring resolution order each fail by
+  name); live-proven — `resolve()` against the real `ng serve` returned
+  `http://[::1]:4321/`.
+
+### Verified
+- **The FX 26 Angular gauntlet closes green.** On the shipped bundled
+  runtime (Zulu 25 + FX 26.0.2), a real `ng new` workspace on the
+  proven ~21.2 line served by the real esbuild dev server: the page
+  loads through the v1.226.0 h2c-disabled loader (the ledger-70 fix
+  holds on FX 26's WebKit against the real server), Angular 21.2.19
+  bootstraps, and the DevTools Angular pane's own two-step detection
+  answers — `ng-version` present, `window.ng.getComponent` live, root
+  component retrieved. The framework bet's dev loop works end to end on
+  the new engine.
+
 ## [1.258.0] - 2026-08-04
 
 Docs truth — the plan carries the baseline advance.
@@ -9294,6 +9334,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.259.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.258.0...v1.259.0
 [1.258.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.257.0...v1.258.0
 [1.257.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.256.0...v1.257.0
 [1.256.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.255.0...v1.256.0

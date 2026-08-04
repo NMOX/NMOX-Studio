@@ -159,6 +159,18 @@
         <Bug pattern="UNENCRYPTED_SERVER_SOCKET,UNENCRYPTED_SOCKET"/>
     </Match>
 
+    <!-- The Browser's loopback probe (v1.259.0) opens a socket ONLY to ask
+         "is anything listening on this loopback stack?" — connect, then
+         close, zero bytes ever written or read, and the target literals are
+         hardcoded 127.0.0.1/::1 (the URL's host is only ever "localhost" by
+         the needsProbe guard). There is no data to encrypt and no peer off
+         the host. Scoped to the one probe class; a new unencrypted socket
+         anywhere else still fails the gate. -->
+    <Match>
+        <Class name="org.nmox.studio.ui.browser.fx.LoopbackUrls"/>
+        <Bug pattern="UNENCRYPTED_SOCKET"/>
+    </Match>
+
     <!-- Tests may trip benign patterns; analyse main code only for the gate. -->
     <Match><Class name="~.*Test"/></Match>
 </FindBugsFilter>
