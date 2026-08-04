@@ -160,7 +160,11 @@ class ProcessSupportTest {
         boolean dead = ProcessSupport.killTreeAndWait(p, Duration.ofSeconds(10));
 
         assertThat(dead).isTrue();
-        assertThat(p.isAlive()).isFalse();
+        assertThat(p.isAlive())
+                .as("a TRUE verdict must mean the caller's own Process is dead "
+                        + "— the handle's view is not the Process's view "
+                        + "(v1.253.0, caught on windows-latest under JDK 25)")
+                .isFalse();
     }
 
     @Test

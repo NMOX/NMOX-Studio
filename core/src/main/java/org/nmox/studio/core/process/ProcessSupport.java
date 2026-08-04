@@ -166,11 +166,32 @@ public final class ProcessSupport {
      *         caller can proceed, but file locks may linger)
      */
     public static boolean killTreeAndWait(Process p, Duration timeout) {
-        List<ProcessHandle> tree = new java.util.ArrayList<>(p.descendants().toList());
-        tree.add(p.toHandle());
-        tree.forEach(ProcessHandle::destroyForcibly);
+        List<ProcessHandle> descendants = p.descendants().toList();
+        descendants.forEach(ProcessHandle::destroyForcibly);
+        p.destroyForcibly();
         long deadline = System.nanoTime() + timeout.toNanos();
-        for (ProcessHandle ph : tree) {
+
+        // Wait for the direct child through the PROCESS api, not its handle.
+        // A ProcessHandle's view of "alive" and the Process object's view are
+        // NOT the same thing: the handle can report dead (its pid is gone from
+        // the OS table) while Process.isAlive() still returns true because the
+        // Process has not reaped its exit status yet. Waiting on the handle
+        // alone let this method answer "confirmed dead" about a Process the
+        // caller can still see alive — which defeats the entire point of the
+        // API, since callers delete the files that process was holding open
+        // (v1.42.0's Windows file-lock lesson). waitFor() forces the reap, so
+        // the verdict below and the caller's own isAlive() agree.
+        // Caught on windows-latest by the JDK 25 baseline move (v1.253.0).
+        try {
+            long left = deadline - System.nanoTime();
+            if (left > 0) {
+                p.waitFor(left, TimeUnit.NANOSECONDS);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        for (ProcessHandle ph : descendants) {
             long left = deadline - System.nanoTime();
             if (left <= 0) {
                 break;
@@ -186,7 +207,9 @@ public final class ProcessSupport {
                 // normally); timeout falls through to the aliveness verdict
             }
         }
-        return tree.stream().noneMatch(ProcessHandle::isAlive);
+        // the verdict speaks the caller's language: the Process they hold,
+        // plus every descendant handle
+        return !p.isAlive() && descendants.stream().noneMatch(ProcessHandle::isAlive);
     }
 
     private static Thread drain(InputStream stream, StringBuilder into,
