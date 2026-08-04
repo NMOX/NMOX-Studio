@@ -1,4 +1,4 @@
-package org.nmox.studio.ui.browser.fx;
+package org.nmox.studio.core.http;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -29,7 +29,8 @@ import java.net.URI;
  * unchanged (no behavior change, no Host-header change); if only the
  * OTHER loopback answers, the host is rewritten to that literal
  * ({@code [::1]} or {@code 127.0.0.1} — both already count as local for
- * the v1.228.0 save-to-reload check, see {@link LocalUrls}); if neither
+ * the v1.228.0 save-to-reload check, pinned by the ui module's
+ * LocalUrls test); if neither
  * answers, the URL is returned unchanged so the user sees the honest
  * connection error for what they typed. Non-localhost URLs are never
  * probed and never touched.

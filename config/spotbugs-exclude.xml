@@ -167,7 +167,7 @@
          the host. Scoped to the one probe class; a new unencrypted socket
          anywhere else still fails the gate. -->
     <Match>
-        <Class name="org.nmox.studio.ui.browser.fx.LoopbackUrls"/>
+        <Class name="org.nmox.studio.core.http.LoopbackUrls"/>
         <Bug pattern="UNENCRYPTED_SOCKET"/>
     </Match>
 

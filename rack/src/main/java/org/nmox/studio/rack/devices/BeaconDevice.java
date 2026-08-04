@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.http.CleartextHttp;
+import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.Color;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -118,13 +120,18 @@ public class BeaconDevice extends RackDevice {
             long days = -1;
             String detail = "";
             try {
-                URI uri = URI.create(url);
+                // v1.260.0: a localhost target is probed-and-rewritten to the
+                // loopback stack that actually listens; the cert-days
+                // read below only COUNTS the peer cert (no hostname
+                // verification), so it rides the same resolved URI
+                URI uri = URI.create(LoopbackUrls.resolve(url));
                 if ("https".equals(uri.getScheme())) {
                     days = certDaysRemaining(uri.getHost(),
                             uri.getPort() > 0 ? uri.getPort() : 443);
                 }
                 HttpResponse<Void> response = client.send(
-                        HttpRequest.newBuilder(uri).method("HEAD",
+                        CleartextHttp.pinVersion(HttpRequest.newBuilder(uri), url)
+                                .method("HEAD",
                                 HttpRequest.BodyPublishers.noBody())
                                 .timeout(Duration.ofSeconds(10)).build(),
                         HttpResponse.BodyHandlers.discarding());

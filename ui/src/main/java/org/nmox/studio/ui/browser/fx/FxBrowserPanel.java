@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.browser.fx;
 
+import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;

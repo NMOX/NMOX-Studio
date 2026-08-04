@@ -1,5 +1,7 @@
 package org.nmox.studio.apiclient.api;
 
+import org.nmox.studio.core.http.CleartextHttp;
+import org.nmox.studio.core.http.LoopbackUrls;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,7 +28,11 @@ public final class ApiClient {
     /** Builds the wire request from a saved request + resolved variables. */
     public static HttpRequest build(Request request, Map<String, String> vars) {
         String url = appendParams(Variables.resolve(request.url, vars), request.params, vars);
-        HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url.trim()))
+        // localhost may resolve to a stack the dev server did not bind
+        // (v1.259.0/v1.260.0: HttpClient dials only the first address;
+        // ng serve binds only [::1]) — probe-and-rewrite before dialing
+        HttpRequest.Builder b = CleartextHttp.pinVersion(HttpRequest.newBuilder(
+                URI.create(LoopbackUrls.resolve(url.trim()))), url)
                 .timeout(Duration.ofSeconds(30));
 
         boolean bodyMethod = request.method.equals("POST") || request.method.equals("PUT")

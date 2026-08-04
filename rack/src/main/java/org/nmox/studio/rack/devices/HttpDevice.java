@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.http.CleartextHttp;
+import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.net.URI;
@@ -176,7 +178,11 @@ public class HttpDevice extends RackDevice {
      * Static and side-effect-free so the wiring is unit-testable.
      */
     static HttpRequest buildRequest(String method, String url, String body, Map<String, String> headers) {
-        HttpRequest.Builder b = HttpRequest.newBuilder(URI.create(url))
+        // v1.260.0: localhost probed-and-rewritten so a [::1]-only dev
+        // server (ng serve) answers — HttpClient dials only the first
+        // resolved address
+        HttpRequest.Builder b = CleartextHttp.pinVersion(HttpRequest.newBuilder(
+                URI.create(LoopbackUrls.resolve(url))), url)
                 .timeout(Duration.ofSeconds(15));
         boolean sendsBody = ("POST".equals(method) || "PUT".equals(method))
                 && body != null && !body.isBlank();
