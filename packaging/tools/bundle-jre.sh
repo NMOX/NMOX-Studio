@@ -24,14 +24,14 @@ JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)}"
 # runtime — auto-resolved for classpath apps per JEP 261, no launcher
 # flags. Version + per-platform sha256 pinned; a hash mismatch aborts
 # the build rather than shipping unverified bytes.
-FX_VERSION="21.0.12"
+FX_VERSION="26.0.2"
 case "$(uname -s)-$(uname -m)" in
     Darwin-arm64)  FX_PLATFORM="osx-aarch64"
-                   FX_SHA256="22f56be67d1fbe3e47bba9470d3c4595b8808489c0fc2d981287c5d333262031" ;;
+                   FX_SHA256="ed6ac7d8d056b29fa221edb029ed232eb54f3a7068c4d4e1304faf99f8d93285" ;;
     Darwin-x86_64) FX_PLATFORM="osx-x64"
-                   FX_SHA256="c1a54ca49abbf3940f5c5f1e27b76cd1de86e09629fbd05cbe95029acb70ff24" ;;
+                   FX_SHA256="3cb67bcc4be73f422010cca06618b51a57975ace429d14e6c97f08ea66d8a3cd" ;;
     Linux-x86_64)  FX_PLATFORM="linux-x64"
-                   FX_SHA256="87dbf03d39d2df3d232bd8d98cb6ad4920940d5251287f0cba61222b4e46a173" ;;
+                   FX_SHA256="7c32eee96c4f992cea43cecee77420a660478ee2776f0b7475e03fb40cbfae84" ;;
     *) echo "ERROR: no pinned OpenJFX jmods for $(uname -s)-$(uname -m)"; exit 1 ;;
 esac
 FX_CACHE="${FX_JMODS_CACHE:-$HOME/.cache/nmox-openjfx}"

@@ -9,7 +9,7 @@ Vendored third-party components (TextMate grammars, the js-debug
 adapter, classic web libraries) keep their own licenses, recorded in
 the NOTICE files beside them in the source tree.
 
-The installers bundle a Java runtime that includes OpenJFX 21.0.12
+The installers bundle a Java runtime that includes OpenJFX 26.0.2
 (the embedded browser's WebKit engine), licensed under the GNU General
 Public License v2 with the Classpath Exception. Source:
 https://github.com/openjdk/jfx. The jmods are fetched at build time

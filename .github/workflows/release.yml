@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - name: Stamp version into branding
         run: |
@@ -123,7 +123,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - name: Stamp version into branding
         run: |
@@ -149,7 +149,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
           cache: maven
       - name: Stamp version into branding
         shell: pwsh
@@ -166,8 +166,8 @@ jobs:
         run: |
           # OpenJFX jmods join the runtime (v1.199.0: the embedded
           # browser's engine) — same pin + sha256 law as bundle-jre.sh.
-          $fxVersion = "21.0.12"
-          $fxSha256 = "b13b0f83704a16d5dcf58bf3ed023d6c41e5ffcf4040c32b9ed8dfc0d18e3366"
+          $fxVersion = "26.0.2"
+          $fxSha256 = "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672"
           $fxZip = "$env:RUNNER_TEMP\openjfx-jmods.zip"
           # same retry law as bundle-jre.sh: a truncated CDN transfer
           # must not take the release with it (v1.207.0 run 1)

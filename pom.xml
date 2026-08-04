@@ -314,6 +314,18 @@
              sprint. -->
         <spec.version>1.95.0</spec.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--
+            The BYTECODE target stays 21 while the bundled RUNTIME moved to
+            25 (v1.253.0). These are deliberately different numbers: the
+            update center ships MODULE NBMs, never a runtime, so an install
+            whose bundled JRE is still 21 must be able to load modules from
+            a newer release — class-69 bytecode would fail to load and brick
+            the IDE on in-app update. Java 25 runs class-65 bytecode fine, so
+            building on 25 and targeting 21 is the safe pairing; users get
+            the new runtime (and its FX 26 WebKit) with a full installer or
+            brew upgrade. Raise this only when dropping support for updating
+            pre-1.253 installs in place.
+        -->
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <junit.version>6.1.2</junit.version>
