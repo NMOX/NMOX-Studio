@@ -4,6 +4,53 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.257.0] - 2026-08-04
+
+The baseline-arc review — Re-run failed can no longer answer green for a
+test that never ran.
+
+### Fixed
+- **Failure names are now escaped for the runners' regex filters.** The
+  review lens over v1.250–v1.256 caught it in the day-old node lane and
+  the fix covers the whole family: `rerunFailedCommand` joined RAW
+  failure names with `|` and handed the result to runners that read it
+  as a REGEX (jest/vitest/bun `-t`, node `--test-name-pattern`, go
+  `-run`, forge `--match-test`). Real test names carry metacharacters
+  constantly — `applies discount (10%)`, `totals $10.00`,
+  `[edge] handles null` — and measured live on node 22, the raw name
+  `applies discount (10%)` as a pattern SKIPPED the failing test of that
+  exact name and reported **PASS**: a Re-run-failed that answers green
+  while the failure never ran, the worst possible lie from the one
+  button whose job is truth. Names are now backslash-escaped per
+  metacharacter — `Pattern.quote` is wrong here, its `\Q...\E` envelope
+  is Java-only and these engines are JS regex, RE2 and Rust regex;
+  backslash escaping is the one dialect all of them share. Escaped, the
+  same live fixture runs the failing test and reports the failure.
+  pytest node ids and cargo substring filters stay verbatim (they are
+  not regexes and escaping would break them), test-pinned.
+- **The deno multi-failure re-run could never match at all.** deno's
+  `--filter` is a SUBSTRING match unless wrapped in slashes, so the
+  joined `a|b` searched for a literal pipe character in test names; the
+  filter now ships as `/a|b/`, the regex form the join needs.
+- Both fixes mutation-proven: un-escaping and de-slashing each fail
+  `rerunEscapesRegexMetacharacters` by name.
+
+### Verified CLEAN (the rest of the v1.250–v1.256 arc under review lenses)
+- `ProcessSupport.killTreeAndWait` (the v1.253.0 rewrite): kill order
+  still descendants-first, deadline math correct, an interrupt degrades
+  to an honest false verdict, and the Process-vs-handle reap distinction
+  is real and documented. The descendant-snapshot race (a child spawned
+  between snapshot and destroy escapes) pre-dates the arc and is
+  inherent to the API.
+- The runtime/packaging chain (bundle-jre.sh, release.yml, the conf)
+  was already gauntleted in the shipped 1.255.0/1.256.0 artifacts —
+  including the FX grant as the release pipeline's own rewrite produced
+  it, one `default_options` line, comment intact, silent boot.
+- The TAP tally (`# pass`/`# fail` anchors, `not ok` name capture with
+  trailing-directive strip) holds against node's actual output shape;
+  node's indented subtest TAP lines are correctly excluded by the `^#`
+  anchor.
+
 ## [1.256.0] - 2026-08-03
 
 The native-access grant — JEP 472 before it bites.
@@ -9231,6 +9278,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.257.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.256.0...v1.257.0
 [1.256.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.255.0...v1.256.0
 [1.255.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.254.0...v1.255.0
 [1.254.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.253.0...v1.254.0
