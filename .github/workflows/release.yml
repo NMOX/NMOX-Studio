@@ -187,9 +187,28 @@ jobs:
           if ($actual -ne $fxSha256) { throw "OpenJFX jmods sha256 mismatch: $actual" }
           Expand-Archive $fxZip -DestinationPath "$env:RUNNER_TEMP\openjfx"
           $fxJmods = "$env:RUNNER_TEMP\openjfx\javafx-jmods-$fxVersion"
+          # A JDK's own jmods are OPTIONAL since JDK 24 (JEP 493): a build
+          # made with --enable-linkable-runtime ships none, and jlink links
+          # the platform modules from the running image instead. Temurin 25
+          # is that build on the linux/macOS runners; windows still ships
+          # jmods today, so this lane takes the first branch — but it must
+          # not BREAK the day windows follows. When the jmods are absent the
+          # platform modules are named from `java --list-modules`, because a
+          # hand-picked subset would silently ship a narrower runtime.
+          if (Test-Path "$env:JAVA_HOME\jmods") {
+            $modulePath = "$env:JAVA_HOME\jmods;$fxJmods"
+            $addModules = "ALL-MODULE-PATH"
+            Write-Host "JDK jmods present"
+          } else {
+            $modulePath = $fxJmods
+            $jdkModules = (& "$env:JAVA_HOME\bin\java.exe" --list-modules |
+              ForEach-Object { ($_ -split '@')[0] }) -join ','
+            $addModules = "$jdkModules,ALL-MODULE-PATH"
+            Write-Host "no JDK jmods (JEP 493) — linking from the image"
+          }
           & "$env:JAVA_HOME\bin\jlink.exe" `
-            --module-path "$env:JAVA_HOME\jmods;$fxJmods" `
-            --add-modules ALL-MODULE-PATH `
+            --module-path "$modulePath" `
+            --add-modules "$addModules" `
             --strip-debug --no-header-files --no-man-pages `
             --output application\target\nmoxstudio\jre
           & application\target\nmoxstudio\jre\bin\java.exe --list-modules | Select-String "javafx.web" | Out-Null

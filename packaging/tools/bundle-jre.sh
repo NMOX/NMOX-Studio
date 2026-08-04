@@ -14,8 +14,25 @@ CLUSTER="${1:?usage: bundle-jre.sh <cluster-dir>}"
 [ -d "$CLUSTER" ] || { echo "ERROR: $CLUSTER missing"; exit 1; }
 
 JDK="${JAVA_HOME:-$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)}"
-[ -n "$JDK" ] && [ -d "$JDK/jmods" ] || {
-    echo "ERROR: need a JDK 21+ with jmods (JAVA_HOME=$JDK)"; exit 1; }
+[ -n "$JDK" ] && [ -x "$JDK/bin/jlink" ] || {
+    echo "ERROR: need a JDK 21+ with jlink (JAVA_HOME=$JDK)"; exit 1; }
+
+# A JDK's own jmods are OPTIONAL since JDK 24 (JEP 493, "linkable
+# run-time images"): a JDK built with --enable-linkable-runtime ships
+# no jmods dir at all, and jlink links the platform modules straight
+# out of the running image instead. Temurin 25 on the GitHub linux and
+# macOS runners is exactly that build — it has no $JAVA_HOME/jmods —
+# while the windows build still ships them, which is why only two of
+# the three release lanes failed on the v1.253.0 baseline move. So the
+# JDK half of the module path is added only when it exists; the FX
+# jmods are always ours to supply either way.
+if [ -d "$JDK/jmods" ]; then
+    JDK_MODULE_PATH="$JDK/jmods:"
+    echo "==> JDK jmods present"
+else
+    JDK_MODULE_PATH=""
+    echo "==> no JDK jmods (JEP 493 linkable run-time image) — linking from the image"
+fi
 
 # ---- OpenJFX jmods (v1.199.0: the embedded browser's engine) ----
 # Temurin carries no JavaFX; the platform's embedded WebKit browser
@@ -67,9 +84,23 @@ if [ -x "$CLUSTER/jre/bin/java" ]; then
 else
     echo "==> jlinking runtime from $JDK (+ OpenJFX)"
     rm -rf "$CLUSTER/jre"
+    # ALL-MODULE-PATH means "every module on the module path". With the
+    # JDK's jmods present that is the whole platform + FX. WITHOUT them it
+    # would be FX alone — so the platform modules must be named, and the
+    # only honest source for that list is the JDK itself: naming a
+    # hand-picked subset silently ships a NARROWER runtime on the lanes
+    # that take this branch (measured: 39 modules vs 76 — the java
+    # cluster's compiler/debugger modules among the missing). Asking
+    # `java --list-modules` reproduces the jmods behaviour exactly.
+    if [ -n "$JDK_MODULE_PATH" ]; then
+        JLINK_MODULES="ALL-MODULE-PATH"
+    else
+        JLINK_MODULES="$("$JDK/bin/java" --list-modules \
+            | cut -d@ -f1 | paste -sd, -),ALL-MODULE-PATH"
+    fi
     "$JDK/bin/jlink" \
-        --module-path "$JDK/jmods:$FX_DIR" \
-        --add-modules ALL-MODULE-PATH \
+        --module-path "${JDK_MODULE_PATH}$FX_DIR" \
+        --add-modules "$JLINK_MODULES" \
         --strip-debug --no-header-files --no-man-pages \
         --output "$CLUSTER/jre"
     "$CLUSTER/jre/bin/java" --list-modules | grep -q "javafx.web" || {

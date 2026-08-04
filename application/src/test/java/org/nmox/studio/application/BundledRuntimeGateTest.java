@@ -40,8 +40,20 @@ class BundledRuntimeGateTest {
         assertThat(s).as("hash verified before unpack").contains("sha256 mismatch");
         assertThat(s).as("the image must actually contain the engine")
                 .contains("javafx.web");
+        // The FX jmods are ALWAYS on the module path; the JDK's own half is
+        // conditional, because a JDK built with --enable-linkable-runtime
+        // (JEP 493, JDK 24+) ships no jmods and jlink links the platform
+        // modules from the running image instead — Temurin 25 on the linux
+        // and macOS runners is that build, and assuming jmods there is what
+        // made v1.253.0 ship zero assets.
         assertThat(s).as("FX jmods join the jlink module path")
-                .contains("--module-path \"$JDK/jmods:$FX_DIR\"");
+                .contains("--module-path \"${JDK_MODULE_PATH}$FX_DIR\"");
+        assertThat(s).as("the JDK half of the module path is conditional")
+                .contains("if [ -d \"$JDK/jmods\" ]");
+        assertThat(s).as("a jmods-less JDK names the platform modules from the "
+                        + "JDK ITSELF — a hand-picked subset silently ships a "
+                        + "narrower runtime (measured 39 modules vs 76)")
+                .contains("--list-modules");
     }
 
     @Test
@@ -52,5 +64,9 @@ class BundledRuntimeGateTest {
         assertThat(s).as("hash verified").contains("OpenJFX jmods sha256 mismatch");
         assertThat(s).as("image gated on the engine")
                 .contains("javafx.web");
+        assertThat(s).as("the windows lane survives a jmods-less JDK too "
+                        + "(JEP 493): windows Temurin still ships them today, "
+                        + "but the branch must exist before it doesn't")
+                .contains("Test-Path \"$env:JAVA_HOME\\jmods\"");
     }
 }
