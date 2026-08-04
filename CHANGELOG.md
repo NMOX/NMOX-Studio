@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.264.0] - 2026-08-04
+
+The beginner pass — first Run survives a busy port, failure speaks
+human, and the catalog finally starts at the beginning.
+
+### Fixed
+- **A brand-new user's FIRST Run no longer dies on a busy port.** The
+  beginner-persona walk (fresh userdir, shipped app) hit it in the
+  first minute: the Vanilla Web template pinned `http-server -p 8080`,
+  something else owned 8080, and the status bar's own advice — "press
+  Run to start your project" — produced a raw red errno dump and
+  `[exit 1]`. http-server WITHOUT a `-p` scans upward from 8080 and
+  prints the port it bound (measured live: 8080 busy →
+  `Available on: http://127.0.0.1:8081`), so the template now omits
+  the pin; the serving registry catches the scanned port's URL —
+  live-proven with 8080 deliberately occupied: Run → 8081 →
+  `⇄ serving: http://127.0.0.1:8081`.
+- **EADDRINUSE speaks human on every lane.** The v1.11-era humanizer
+  lived only on the rack's DevServerDevice LCD; the IDE Run button —
+  the exact lane the status bar tells a new user to press — showed
+  only node's internals. The translation now lives in
+  `CommandExecutor`'s pump, where every lane's output flows: the first
+  port-in-use line in a run is followed by
+  `↳ Port 8080 is already being used by another program — maybe an
+  earlier run that is still going. Stop that program and Run again, or
+  change the port. (Task Rack ▸ SONAR shows who owns every port.)` —
+  once per run, port extracted when the line carries one. Live-proven
+  in the same session against the same busy port.
+
+### Added
+- **Learning space #89: "Your First Web Page" — and it leads the
+  catalog.** 88 spaces and not one for someone who has never written
+  HTML; the catalog started at Common Lisp. The new space is a real
+  two-file page (index.html + style.css with plain-English comments),
+  served by the same unpinned http-server, with a tutorial that
+  teaches the edit→save→look loop, points the color swatches/picker at
+  the `tomato` heading, and ends with where-to-next (the JavaScript
+  space, MDN). First in the catalog on purpose: the picker keeps
+  catalog order, and the one reader the other 88 spaces skip should
+  not have to scroll.
+- All three pinned by `BeginnerPathTest` (no `-p` in the template, the
+  space exists and leads, its server unpinned) and
+  `CommandExecutorTest.portInUseSpeaksHuman` — including inputs that
+  trip each detector branch ALONE, because this unit's own mutation
+  proof caught a half-strength mutant (`false && A || B` folds to `B`)
+  surviving redundant test inputs; the strengthened test kills the
+  whole-method mutant by name.
+
 ## [1.263.0] - 2026-08-04
 
 Renaming a request in API Studio works — for the first time since API
@@ -9487,6 +9535,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.264.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.263.0...v1.264.0
 [1.263.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.262.0...v1.263.0
 [1.262.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.261.0...v1.262.0
 [1.261.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.260.0...v1.261.0
