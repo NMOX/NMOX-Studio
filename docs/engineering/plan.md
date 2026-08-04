@@ -573,6 +573,60 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-04 at **v1.257.0** (the baseline advance):
+David said "advance to the future," and the bundled runtime is now
+**JDK 25 LTS + OpenJFX 26.0.2** — proven in the shipped artifact, not
+just a local jlink. It took four releases, and each failure was a
+distinct fact worth keeping: v1.253.0 built ZERO assets because a
+JDK's jmods/ directory is OPTIONAL since JDK 24 (JEP 493 linkable
+run-time images); v1.254.0 ALSO built zero because **Temurin 25 ships
+NEITHER jmods NOR a linkable image** — jlink refuses outright ("This
+JDK does not contain packaged modules"), so that distribution simply
+cannot build a bundled runtime; v1.255.0 moved the three jlink lanes
++ the windows-installer check to **Zulu 25** (all 70 jmods, verified
+on a real download) while build-and-test deliberately stays on
+Temurin to prove the product builds on the distro most users have.
+Neither failed tag ever published a release, so `latest` never
+pointed at nothing. **The law that must not move:
+maven.compiler.target STAYS 21** — the update center ships module
+NBMs, never a runtime, so class-69 bytecode would brick an in-app
+update on an install still running bundled Java 21 (recorded at the
+property in the root pom; shipped jars verified class 65). Corollary
+from the same failure: when a jmods-less JDK is used, the platform
+module list must come from `java --list-modules` — a hand-picked
+subset measured 39 modules vs 76, silently dropping
+java.compiler/jdk.jdi/jdk.attach. v1.256.0 was the live gauntlet's
+own finding: the shipped app calls RESTRICTED METHODS on every boot
+(JNA's System::loadLibrary from the classpath, the FX modules'
+natives when the Browser opens) and JDK 25's JEP 472 warnings become
+ERRORS in a future release — the base conf now grants
+--enable-native-access=ALL-UNNAMED and the runtime-installing
+scripts append the named javafx.graphics,javafx.web entries where
+they exist. The timing law: **the conf ships only inside installers,
+never through the update center, so conf-level hardening must ship
+before the JDK forces it** — an install that never gets a fresh conf
+can never be fixed retroactively. Two traps now structural: the
+Windows .exe launcher GREPS the conf for keys instead of sourcing
+it, so two default_options lines have no defined winner (extend the
+one line, gate-pinned); and an unanchored sed rewrites the COMMENT
+naming a flag as readily as the flag (anchor conf rewrites to the
+default_options line — measured, both shells). v1.252.0, before the
+baseline work, was the QA persona's find: VERITAS could not read
+node:test's TAP output (P:0 F:0 on a real failing suite) — one
+tallyFrom seam now parses "# pass/# fail" + "not ok N - name", with
+"node" appended to the RUNNER knob per the index law. v1.257.0's
+arc review then caught, in that day-old lane and across the family,
+that Re-run failed joined RAW names into the runners' REGEX filters:
+measured live, the raw name `applies discount (10%)` as a
+--test-name-pattern SKIPPED the failing test of that exact name and
+reported PASS — a false green from the truth button. Names are now
+backslash-escaped per metacharacter (Pattern.quote's \Q\E is
+Java-only; JS/RE2/Rust regex all speak backslash), deno's --filter
+gained its /.../ regex form (bare --filter is a SUBSTRING match, so
+a joined "a|b" could never match two names), pytest/cargo stay
+verbatim by design. The review verified killTreeAndWait's
+Process-vs-handle reap rewrite and the whole packaging chain CLEAN.
+
 Currency addendum 2026-08-03 at **v1.251.0** (the day shift):
 v1.248.0 took ledger 74 the honest way — OpenJFX 21.0.5 → 21.0.12 in
 FULL lockstep (ui pom ×2, the windows workflow pin, bundle-jre.sh's
@@ -629,7 +683,8 @@ its own where its exit code is read.
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.208.0, Apache-2.0, 19 release assets per
+NMOX Studio is a shipping NetBeans RCP IDE (v1.257.0, Apache-2.0, bundled JDK 25 LTS +
+OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
 whose identity is the **Reason-style task rack**: 53 hardware-styled devices

@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.258.0] - 2026-08-04
+
+Docs truth — the plan carries the baseline advance.
+
+### Changed
+- `docs/engineering/plan.md` gains the 2026-08-04 currency addendum at
+  v1.257.0: the JDK 25 LTS + OpenJFX 26 baseline story (the JEP 493
+  jmods lesson, the Temurin-25-cannot-jlink lesson, the Zulu fix, the
+  never-move `maven.compiler.target` law with its update-center
+  rationale, the `--list-modules` corollary), the v1.256.0 JEP 472
+  native-access grant with its installer-only-conf timing law and the
+  two conf-rewrite traps, the v1.252.0 TAP fix, and the v1.257.0
+  review's false-green re-run find. The "Where the project stands"
+  headline moves off the fossil v1.208.0 to v1.257.0 and names the
+  bundled runtime. Docs only — no code changes.
+
 ## [1.257.0] - 2026-08-04
 
 The baseline-arc review — Re-run failed can no longer answer green for a
@@ -9278,6 +9294,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.258.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.257.0...v1.258.0
 [1.257.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.256.0...v1.257.0
 [1.256.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.255.0...v1.256.0
 [1.255.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.254.0...v1.255.0
