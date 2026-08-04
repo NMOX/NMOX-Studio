@@ -58,6 +58,38 @@ class PackagedConfGateTest {
         }
     }
 
+    @Test
+    @DisplayName("The assembled app's conf grants classpath native access (JEP 472)")
+    void packagedConfGrantsNativeAccess() throws Exception {
+        Path conf = Path.of("target", "nmoxstudio", "etc", "nmoxstudio.conf");
+        assertThat(conf).as("the assembled application's conf").exists();
+        String text = Files.readString(conf);
+        assertThat(defaultOptionsLine(text))
+                .as("the platform's own JNA bridge calls System::loadLibrary "
+                        + "from the classpath on every boot; JEP 472 warns "
+                        + "today and BLOCKS in a future release, and this conf "
+                        + "ships only in installers — never through the update "
+                        + "center — so an install without the grant can never "
+                        + "receive it later")
+                .contains("-J--enable-native-access=ALL-UNNAMED");
+    }
+
+    @Test
+    @DisplayName("The packaged conf has exactly ONE default_options line")
+    void packagedConfHasASingleDefaultOptionsLine() throws Exception {
+        Path conf = Path.of("target", "nmoxstudio", "etc", "nmoxstudio.conf");
+        assertThat(conf).as("the assembled application's conf").exists();
+        long lines = Files.readString(conf).lines()
+                .filter(l -> l.startsWith("default_options="))
+                .count();
+        // bundle-jre.sh and the windows lane EXTEND this line in place rather
+        // than appending a second one, because the Windows .exe launcher greps
+        // this file for keys instead of sourcing it: with two assignments a
+        // POSIX shell takes the last and the .exe takes whichever it finds
+        // first, so the two platforms would silently run different flags.
+        assertThat(lines).as("exactly one default_options assignment").isEqualTo(1);
+    }
+
     private static String defaultOptionsLine(String conf) {
         for (String line : conf.split("\n")) {
             if (line.startsWith("default_options=")) {
