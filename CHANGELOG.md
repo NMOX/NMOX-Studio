@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.261.0] - 2026-08-04
+
+The update center crosses the runtime boundary — gauntleted, and now
+headless.
+
+### Verified
+- **A stock v1.252.0 install (bundled Java 21.0.11 — the last release
+  before the JDK 25 baseline) updated itself in-app to 1.260.0 and
+  booted clean on its old runtime.** The real update center offered all
+  11 modules at 1.260.0; download, digest verification and install ran
+  through the platform's own updater (originals preserved in
+  `update/backup`); the relaunch — still on Java 21.0.11 — enabled all
+  eleven 1.260.0 modules with ZERO module-system failure phrases (the
+  boot-smoke law's exact regex set). This is the behavioral proof of
+  the law recorded at `maven.compiler.target` in the root pom: the
+  update center ships modules, never runtimes, so modules built on
+  JDK 25 must load on an install still running bundled Java 21 —
+  verified until now only by class-file numbers (major 65), proven here
+  across the exact boundary it protects.
+- **The update-center gauntlet is now fully headless.** The platform's
+  `autoupdate-cli` ships in the cluster:
+  `bin/nmoxstudio --userdir <throwaway> --nosplash
+  -J-Dnetbeans.close=true --modules --update-all` refreshes the
+  catalog, updates everything and exits on its own; `--modules --list`
+  before and after pins the versions. Every previous gauntlet
+  (v1.170.0, v1.238.0) was click-driven. One trap recorded: WITHOUT
+  `netbeans.close=true` the CLI handler completes and the app then
+  sits in its full GUI forever — a 10-minute "hang" that was nothing
+  of the kind (`--nogui` is not a platform option and is silently
+  swallowed).
+
+Docs only — no code changes.
+
 ## [1.260.0] - 2026-08-04
 
 Every HTTP seam speaks both loopbacks AND plain-HTTP/1.1 — the v1.259.0
@@ -9380,6 +9413,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.261.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.260.0...v1.261.0
 [1.260.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.259.0...v1.260.0
 [1.259.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.258.0...v1.259.0
 [1.258.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.257.0...v1.258.0
