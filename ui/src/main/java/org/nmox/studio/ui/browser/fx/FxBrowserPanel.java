@@ -227,8 +227,24 @@ public final class FxBrowserPanel extends JPanel {
     /** EDT. Loads a URL (already scheme-complete). */
     public void loadUrl(String url) {
         urlField.setText(url);
-        onFx(() -> engine.load(url));
+        if (LoopbackUrls.needsProbe(url)) {
+            // localhost URLs first learn which loopback stack actually
+            // answers (the WebView loader dials only the first-resolved
+            // address; ng serve binds only [::1] — see LoopbackUrls).
+            // Socket probes must not ride the EDT; the single-thread RP
+            // keeps rapid re-loads FIFO so the last request wins.
+            LOOPBACK_RP.post(() -> {
+                String target = LoopbackUrls.resolve(url);
+                onFx(() -> engine.load(target));
+            });
+        } else {
+            onFx(() -> engine.load(url));
+        }
     }
+
+    /** One lane so overlapping localhost probes stay ordered. */
+    private static final org.openide.util.RequestProcessor LOOPBACK_RP =
+            new org.openide.util.RequestProcessor("Browser Loopback Probe", 1);
 
     /** EDT. Shows/hides the DevTools split. */
     public void setDevToolsVisible(boolean visible) {
