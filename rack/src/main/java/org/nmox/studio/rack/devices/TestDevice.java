@@ -170,6 +170,36 @@ public class TestDevice extends CommandDevice {
     }
 
     /**
+     * A failure NAME escaped for the regex name filters the runners
+     * accept (jest/vitest/bun {@code -t}, node
+     * {@code --test-name-pattern}, go {@code -run}, forge
+     * {@code --match-test}, deno's {@code /.../} filter form). The
+     * names arrive verbatim from test output, and real test names
+     * carry regex metacharacters constantly — "applies discount
+     * (10%)", "totals $10.00", "[edge] handles null". Passed RAW, the
+     * name becomes a DIFFERENT regex: measured live on node 22,
+     * {@code --test-name-pattern 'applies discount (10%)'} skipped
+     * the failing test of that exact name and reported PASS — a
+     * re-run-failed that answers green while the failure never ran.
+     * {@link Pattern#quote} is not the fix: its {@code \Q...\E}
+     * envelope is Java-only, and these engines are JS regex
+     * (jest/vitest/bun/node/deno), RE2 (go) and Rust regex (forge).
+     * Backslash-escaping each metacharacter is the one dialect all of
+     * them share.
+     */
+    static String regexLiteral(String name) {
+        StringBuilder sb = new StringBuilder(name.length() + 8);
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if ("\\^$.|?*+()[]{}".indexOf(c) >= 0) {
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
      * The re-run command for exactly the named failures, per runner -
      * null when the runner has no name filter worth trusting.
      */
@@ -177,13 +207,17 @@ public class TestDevice extends CommandDevice {
         if (names.isEmpty()) {
             return null;
         }
-        String alternation = String.join("|", names);
+        String alternation = names.stream().map(TestDevice::regexLiteral)
+                .collect(java.util.stream.Collectors.joining("|"));
         return switch (framework) {
             case "jest" -> List.of("npx", "jest", "-t", alternation);
             // node:test filters by regex over the test name (node 18.13+)
             case "node" -> List.of("node", "--test", "--test-name-pattern", alternation);
             case "bun" -> List.of("bun", "test", "-t", alternation);
-            case "deno" -> List.of("deno", "test", "--filter", alternation);
+            // deno's --filter is a SUBSTRING match unless wrapped in
+            // slashes, so the bare "a|b" join could never match two
+            // names — the /.../ form makes it the regex the join needs
+            case "deno" -> List.of("deno", "test", "--filter", "/" + alternation + "/");
             case "vitest" -> List.of("npx", "vitest", "run", "-t", alternation);
             case "pytest" -> {
                 List<String> cmd = new ArrayList<>(List.of("python3", "-m", "pytest"));

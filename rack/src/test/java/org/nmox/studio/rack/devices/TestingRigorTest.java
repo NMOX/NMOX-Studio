@@ -87,6 +87,34 @@ class TestingRigorTest {
     }
 
     @Test
+    @DisplayName("Failure names are escaped for the runners' regex filters")
+    void rerunEscapesRegexMetacharacters() {
+        // Measured live on node 22: the RAW name 'applies discount (10%)'
+        // as --test-name-pattern SKIPPED the failing test of that exact
+        // name and reported PASS — the capture group swallowed the parens.
+        // Real names carry metacharacters constantly; escaped, the filter
+        // matches the name and only the name.
+        assertThat(TestDevice.rerunFailedCommand("node",
+                List.of("applies discount (10%)")))
+                .containsExactly("node", "--test", "--test-name-pattern",
+                        "applies discount \\(10%\\)");
+        assertThat(TestDevice.rerunFailedCommand("jest",
+                List.of("totals $10.00", "[edge] a+b")))
+                .containsExactly("npx", "jest", "-t",
+                        "totals \\$10\\.00|\\[edge\\] a\\+b");
+        // deno --filter is a SUBSTRING match unless wrapped in slashes —
+        // the bare "a|b" join could never match two names
+        assertThat(TestDevice.rerunFailedCommand("deno", List.of("a", "b (x)")))
+                .containsExactly("deno", "test", "--filter", "/a|b \\(x\\)/");
+        // pytest node ids and cargo substring filters are NOT regexes —
+        // they must stay verbatim or the ids stop resolving
+        assertThat(TestDevice.rerunFailedCommand("pytest",
+                List.of("tests/test_api.py::test_login[case(1)]")))
+                .containsExactly("python3", "-m", "pytest",
+                        "tests/test_api.py::test_login[case(1)]");
+    }
+
+    @Test
     @DisplayName("VERITAS coverage floor gates a clean exit; unmeasured never gates")
     void coverageFloorGates() {
         TestDevice veritas = new TestDevice();
