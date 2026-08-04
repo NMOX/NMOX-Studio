@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.260.0] - 2026-08-04
+
+Every HTTP seam speaks both loopbacks AND plain-HTTP/1.1 — the v1.259.0
+find, swept product-wide.
+
+### Fixed
+- **The v1.175.0 question — does consumer 2 survive what consumer 1
+  failed? — answered NO, twice.** Probing `java.net.http.HttpClient`
+  (the client behind API Studio sends, BEACON, the rack HTTP console,
+  CouchDB and JSON-RPC) against the same `[::1]`-only `ng serve` that
+  broke the Browser found BOTH halves of the v1.259.0 bug class:
+  - `HttpClient` also dials only the first `localhost` address —
+    `ConnectException` where curl succeeds; and
+  - fixing that exposed the deeper twin: `HttpClient` defaults to
+    HTTP/2, which on cleartext http means the RFC 7540 h2c upgrade —
+    the exact ledger-70 dance esbuild accepts and never answers.
+    Bisected live on the shipped runtime: `HTTP_2` timed out at 5s,
+    `HTTP_1_1` answered 200 in 54ms against the same server. So an API
+    Studio send to the `{{baseUrl}}` the serving registry itself offers
+    would first refuse to connect, and once connected, hang to its
+    timeout.
+- **`LoopbackUrls` promoted to `core.http`** (the Browser's v1.259.0
+  resolver, verbatim; the ui class now imports it, the SpotBugs
+  exclusion follows the FQN, and the ui keeps a locality test binding
+  the rewrite forms to the save-to-reload gate). **New
+  `core.http.CleartextHttp.pinVersion`** pins plain-http requests to
+  HTTP/1.1 — https URLs are untouched, since ALPN-negotiated HTTP/2
+  involves no upgrade request at all (the v1.226.0 argument, verbatim).
+- **Both wired at all six localhost-capable seams**: the Browser
+  (LoopbackUrls only — the WebView has its own v1.226.0 flag and never
+  touches java.net.http), API Studio `ApiClient`, the rack `HttpDevice`
+  and `BeaconDevice` (one resolved URI serves the HEAD probe and the
+  cert-days read, which only counts the peer cert), DB Studio
+  `CouchBackend`, and web3 `JsonRpcClient` (resolve sits INSIDE the
+  redacting try, same as URI.create — a secret URL must never leak
+  through an exception). Deliberately out, endpoints remote by
+  construction: OracleClient, UpdateCheck, DigitalOceanClient.
+- Gated + mutation-proven: `LoopbackUrlsTest` gains the six-seam
+  source gate (un-wiring a seam fails it by name);
+  `CleartextHttpTest` pins http→1.1 / https→default plus the five-seam
+  pin gate (a no-op pinVersion fails `httpPinsH1`).
+- Live-proven end to end against the real `ng serve`: the exact seam
+  shape (`resolve` + `pinVersion`) turned `http://localhost:4321/` —
+  previously a refused connection, then an infinite hang — into
+  **HTTP 200 over HTTP/1.1 in 153ms**.
+
 ## [1.259.0] - 2026-08-04
 
 The Browser speaks both loopbacks — `ng serve`'s own URL now loads.
@@ -9334,6 +9380,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.260.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.259.0...v1.260.0
 [1.259.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.258.0...v1.259.0
 [1.258.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.257.0...v1.258.0
 [1.257.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.256.0...v1.257.0
