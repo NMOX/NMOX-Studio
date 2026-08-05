@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.266.0] - 2026-08-05
+
+The DBA persona walk — saved queries become manageable, the
+placeholder becomes a hint.
+
+### Added
+- **Manage Saved Queries.** The DBA persona walk (a real SQLite store
+  with quotes, unicode, NULLs and a formula-injection name) found the
+  organize gesture missing: saved queries could be recalled but never
+  renamed or deleted — a typo'd name lived forever unless the user
+  hand-edited `.nmoxdb.json` (the v1.263.0 API Studio class, found by
+  asking what gesture the tests never perform). The saved-queries
+  combo gains a trailing `Manage…` row opening a dialog with
+  Rename/Delete: renames keep position, text and engine and REFUSE a
+  collision with another saved query (status line, never a silent
+  overwrite); Delete confirms with the safe button focused (v1.98.0
+  law). All list edits ride pure `WorkspaceEdits`
+  (`withRenamed`/`withoutSaved`), mutation-proven — dropping the
+  collision guard fails `renameNeverDestroysASibling` by name.
+
+### Fixed
+- **The console placeholder can no longer execute.** `SELECT …;` was
+  REAL editor text: the walk clicked in, typed a query, pressed RUN —
+  and the untouched placeholder ran as statement 1, so a user's very
+  first run reported "1 failed" for text the product itself put there
+  (the persisted history still shows the concatenation). The
+  placeholder now clears the moment the console takes focus and
+  returns only to a blank console (`shouldClearOnFocus` /
+  `shouldRestoreOnBlur`, pure and mutation-proven — a clear-always
+  mutant that would wipe USER text fails by name), and RUN refuses
+  placeholder-or-blank text with a status line, matching Save's
+  existing guard.
+- SQLite's connection Test now says "OK — database opens" — a file
+  database has no server to reach.
+
+### Verified
+- The rest of the walk CLEAN in the shipped app: connect flow with
+  the keychain note, schema tree, JOIN grid with the honest
+  "Read-only — not a single-table SELECT" reason, in-grid edit →
+  exact-UPDATE preview with Cancel focused → applied → re-run for
+  truth (99→149 live), CSV export byte-verified (quotes doubled,
+  unicode intact, `=SUM(A1:A9)` neutralized to `'=SUM(A1:A9)` per the
+  v1.101.0 law), per-project `.nmoxdb.json` following a re-aim, and
+  Remove-connection's safe default with its honest password warning.
+  Blessed by design: the 30-char save-name default (first line, not
+  the whole SQL) and CSV's literal `NULL` (the grid's own honest
+  representation; a true null cell already exports empty). The
+  narrow-pane toolbar clip is recorded as ledger 75 with its
+  workaround.
+
 ## [1.265.0] - 2026-08-05
 
 The arc review — the loading guard can no longer wedge.
@@ -9571,6 +9621,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.266.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.265.0...v1.266.0
 [1.265.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.264.0...v1.265.0
 [1.264.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.263.0...v1.264.0
 [1.263.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.262.0...v1.263.0
