@@ -347,6 +347,14 @@ public final class DbStudioTopComponent extends TopComponent {
         JPanel panel = new JPanel(new BorderLayout());
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
+        // ledger 75: with the tab sharing a row with a wide neighbor, the
+        // one-row toolbar clipped Save… and the saved-queries combo off the
+        // right edge. WrapLayout reports the WRAPPED height, so at narrow
+        // widths the bar flows onto a second row and every verb stays
+        // reachable — no menu consolidation, RUN/EXPLAIN/Cancel keep
+        // their one-click place.
+        bar.setLayout(new org.nmox.studio.core.util.WrapLayout(
+                java.awt.FlowLayout.LEFT, 4, 2));
         runButton.setForeground(ACCENT);
         runButton.setToolTipText("Execute the console against the active connection");
         runButton.addActionListener(e -> run());
