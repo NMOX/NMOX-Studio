@@ -1184,6 +1184,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             status("Forgot " + record.contractName(), Color.GRAY);
         });
         popup.add(forget);
+        // the menu's verbs read getSelectedRow(); make the CLICKED row
+        // the selected row before the menu opens (v1.270.0 arc review)
+        org.nmox.studio.core.util.Popups.selectOnTrigger(deployTable);
         deployTable.setComponentPopupMenu(popup);
         deployTable.setToolTipText("Double-click to open in Interact; right-click to copy the address or forget the row");
         JScrollPane deployScroll = new JScrollPane(deployTable);

@@ -827,6 +827,11 @@ public final class ApiClientTopComponent extends TopComponent {
         javax.swing.JMenuItem deleteItem = new javax.swing.JMenuItem("Delete");
         deleteItem.addActionListener(e -> deleteSelected());
         treeMenu.add(deleteItem);
+        // Duplicate/Rename/Delete read the tree SELECTION; a right-click
+        // must therefore select what it hit first — a request delete has
+        // no confirm and wipes the keychain token, so acting on a stale
+        // selection is silent data loss (v1.270.0 arc review)
+        org.nmox.studio.core.util.Popups.selectOnTrigger(tree);
         tree.setComponentPopupMenu(treeMenu);
         tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("DELETE"), "nmox-delete");
         tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke("BACK_SPACE"), "nmox-delete");
@@ -952,6 +957,7 @@ public final class ApiClientTopComponent extends TopComponent {
         javax.swing.JMenuItem clear = new javax.swing.JMenuItem("Clear history");
         clear.addActionListener(e -> clearHistory());
         menu.add(clear);
+        org.nmox.studio.core.util.Popups.selectOnTrigger(historyList);
         historyList.setComponentPopupMenu(menu);
 
         JPanel panel = new JPanel(new BorderLayout());
