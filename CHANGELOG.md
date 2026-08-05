@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.272.0] - 2026-08-05
+
+Docs truth — the plan carries the day's second half.
+
+### Changed
+- `docs/engineering/plan.md` gains the 2026-08-05 evening currency
+  addendum at v1.271.0: the organize sweep's close (v1.268/v1.269 and
+  the "free gesture is the most suspicious" rider), the v1.270.0
+  clicked-item-wins review with its two gate-scan lessons (dot-dirs,
+  separator normalization caught by the main-green gate), the Infra
+  Designer walk's nub/refusal/rule fixes with the live click-proof,
+  and the verdict-grep near-miss law (count BUILD SUCCESS and BUILD
+  FAILURE separately — an alternation match exits 0 either way).
+
 ## [1.271.0] - 2026-08-05
 
 The Infra Designer walk — wires you can actually grab.
@@ -9796,6 +9810,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.272.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.271.0...v1.272.0
 [1.271.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.270.0...v1.271.0
 [1.270.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.269.0...v1.270.0
 [1.269.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.268.0...v1.269.0

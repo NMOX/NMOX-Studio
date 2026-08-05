@@ -573,6 +573,44 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-05 (evening) at **v1.271.0** (the organize
+sweep closes; the review and the walk both pay): five more releases.
+v1.268.0 closed the organize sweep's SHARPEST instance — Block Studio
+components COULD be renamed (F2, generic param editor) and that was
+worse than no gesture: sibling Element references silently orphaned,
+tag collisions allowed (double customElements.define throws);
+BlockWorkspace.renameActive refuses invalid/taken with zero side
+effects, follows references with a count, and treats the rename as a
+patch boundary. The sweep law grew its rider: *an existing gesture a
+generic editor provides "for free" is the most suspicious of all —
+nobody designed its semantics.* v1.269.0 closed the fourth surface —
+Contract Studio can forget (Remove Network… deletes the RpcSecrets
+keychain entry off the EDT, LOCAL_ANVIL refuses before any dialog;
+Forget deployment says the chain is untouched); the sweep now covers
+every studio persisting named user artifacts (API/DB/Block/Contract).
+v1.270.0 was the arc review's find: EVERY context menu in the product
+acted on the SELECTED item, not the CLICKED one — setComponentPopupMenu
+never moves the selection while every verb reads it; sharpest in API
+Studio where a request Delete is confirm-less and keychain-wiping.
+core.util.Popups.selectOnTrigger (press+release triggers, empty space
+clears) wired at all four sites, PopupTargetGateTest makes the pairing
+a build law — and the gate itself taught two scan lessons the same
+day: skip dot-dirs (stale .claude worktrees read as offenders) and
+NORMALIZE SEPARATORS (windows-latest went red because backslash paths
+matched nothing and starved the subject floor — the v1.63.2 class, in
+a day-old test about paths, caught by the main-green gate before the
+tag). v1.271.0 was the Infra Designer's first persona walk: pressing
+the wire connector dot PANNED the canvas — the nub straddles the node
+edge and the press handler required inside-the-rect first — plus
+silent wire refusals and a rule table that couldn't express a managed
+database serving a droplet; all three fixed,
+FlowCanvasWireGestureTest drives the real canvas listener headless,
+and the shipped app then click-proved both directions (the nub-center
+wire AND the verbatim status-line refusal). One process near-miss
+worth its scar: a verify verdict read through
+`grep "BUILD SUCCESS|BUILD FAILURE"` exits 0 EITHER WAY — count the
+two lines separately, never match the alternation.
+
 Currency addendum 2026-08-05 at **v1.266.0** (the persona cadence):
 five more releases, four of them born from USING the product rather
 than reading it. v1.262.0 closed ledger 63 by meeting the deferral's
