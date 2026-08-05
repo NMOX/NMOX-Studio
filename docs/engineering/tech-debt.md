@@ -50,6 +50,13 @@ wrap or overflow-chevron toolbar rather than a menu. Deferred until
 a layout pass; maximizing the tab is the workaround and everything
 remains reachable.
 
+Second instance (v1.271.0, the Infra Designer walk): the property
+panel's value editors overflow the fixed-width EAST panel — Name/Size
+render clipped ("postgresq…", "db-s-1vcp…") behind a horizontal
+scrollbar at the default window width. Same class, same layout-pass
+owner: the field column should shrink-to-fit or the labels wrap. The
+values remain reachable by the panel's own scrollbar.
+
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
 ### 73. Suffixless Angular templates (`app.html`) are invisible to the IDE's template intelligence
