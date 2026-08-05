@@ -612,7 +612,7 @@ public class FlowCanvas extends JPanel {
                 if (target == null) {
                     target = inputNubOwnerAt(drop);
                 }
-                if (target != null && target != wireFrom && !locked) { // 53b: no wiring mid-op
+                if (target != null && !locked && target != wireFrom) { // 53b: no wiring mid-op
                     final InfraNode to = target;
                     boolean duplicate = graph.getWires().stream().anyMatch(w
                             -> w.fromId().equals(wireFrom.id) && w.toId().equals(to.id));
