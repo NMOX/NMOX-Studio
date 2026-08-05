@@ -113,6 +113,26 @@ public final class ApiClientTopComponent extends TopComponent {
     private final Timer saveDebounce;
     private boolean loading;
 
+    /**
+     * Runs a UI-mutating body with the {@code loading} guard raised, and
+     * GUARANTEES the guard falls again. The v1.263.0 rename bug's worst
+     * symptom was not the exception — it was the aborted bindRequest
+     * leaving {@code loading} stuck true, which silently killed every
+     * edit-recording listener from then on: a UI bug promoted to data
+     * loss. Removing that trigger fixed the instance; this helper fixes
+     * the CLASS — any future throw inside a guarded body can no longer
+     * wedge the guard. The only lawful way to raise the flag
+     * (source-gated by LoadingGuardShapeTest).
+     */
+    private void withLoading(Runnable body) {
+        loading = true;
+        try {
+            body.run();
+        } finally {
+            loading = false;
+        }
+    }
+
     /** Rack servings → the {{baseUrl}} offer; null when the rack is absent. */
     private org.nmox.studio.apiclient.api.ServingBridge servingBridge;
     /** One offer per (url + project) per session — recorded at offer time. */
@@ -280,9 +300,7 @@ public final class ApiClientTopComponent extends TopComponent {
                                 && target.authToken != null && !target.authToken.isBlank()
                                 ? " — includes the auth secret" : "") + ".");
                 if (current == target) {
-                    loading = true;
-                    authField.setText(target.authToken);
-                    loading = false;
+                    withLoading(() -> authField.setText(target.authToken));
                 }
             });
         });
@@ -1386,24 +1404,22 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     private void bindRequest(Request r) {
-        loading = true;
         current = r;
-        nameField.setText(r.name);
-        methodCombo.setSelectedItem(r.method);
-        urlField.setText(r.url);
-        bodyArea.setText(r.body);
-        authCombo.setSelectedItem(r.authType);
-        authField.setText(r.authToken);
-        paramsTable.setModel(new PairTableModel(r.params, this::touch));
-        headersTable.setModel(new PairTableModel(r.headers, this::touch));
-        testsTable.setModel(new TestsTableModel(r.tests, this::touch));
-        TestsTableModel.install(testsTable);
-        loading = false;
+        withLoading(() -> {
+            nameField.setText(r.name);
+            methodCombo.setSelectedItem(r.method);
+            urlField.setText(r.url);
+            bodyArea.setText(r.body);
+            authCombo.setSelectedItem(r.authType);
+            authField.setText(r.authToken);
+            paramsTable.setModel(new PairTableModel(r.params, this::touch));
+            headersTable.setModel(new PairTableModel(r.headers, this::touch));
+            testsTable.setModel(new TestsTableModel(r.tests, this::touch));
+            TestsTableModel.install(testsTable);
+        });
         hydrateAuth(r, () -> {
             if (current == r) {
-                loading = true;
-                authField.setText(r.authToken);
-                loading = false;
+                withLoading(() -> authField.setText(r.authToken));
             }
         });
     }
@@ -1771,27 +1787,30 @@ public final class ApiClientTopComponent extends TopComponent {
 
     /** EDT half of a load: binds a read workspace to the UI. */
     private void applyWorkspace(Workspace loaded, File dir) {
-        loading = true;
         workspace = loaded;
         current = null;
-        // A response belongs to the project it came from. Before
-        // v1.171.0 keeping it across a re-aim was merely stale display;
-        // with Explain… it became a disclosure path — the button would
-        // still be armed with the PREVIOUS project's response body while
-        // the user works in a new one. Clear it with the workspace.
-        clearResponse();
-        // hydration state belongs to the workspace whose ids it names
-        hydratedAuth.clear();
-        selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
-        refreshHistory();
-        DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
-        workspace.environments.forEach(e -> envs.addElement(e.name));
-        envCombo.setModel(envs);
-        if (!workspace.activeEnvironment.isEmpty()) {
-            envCombo.setSelectedItem(workspace.activeEnvironment);
+        loading = true;
+        try {
+            // A response belongs to the project it came from. Before
+            // v1.171.0 keeping it across a re-aim was merely stale display;
+            // with Explain… it became a disclosure path — the button would
+            // still be armed with the PREVIOUS project's response body while
+            // the user works in a new one. Clear it with the workspace.
+            clearResponse();
+            // hydration state belongs to the workspace whose ids it names
+            hydratedAuth.clear();
+            selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
+            refreshHistory();
+            DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
+            workspace.environments.forEach(e -> envs.addElement(e.name));
+            envCombo.setModel(envs);
+            if (!workspace.activeEnvironment.isEmpty()) {
+                envCombo.setSelectedItem(workspace.activeEnvironment);
+            }
+            rebuildTree();
+        } finally {
+            loading = false;
         }
-        rebuildTree();
-        loading = false;
         // select the first request so the editor isn't blank
         if (!workspace.collections.isEmpty() && !workspace.collections.get(0).requests.isEmpty()) {
             current = workspace.collections.get(0).requests.get(0);
@@ -1834,9 +1853,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     save(); // rewrites .nmoxapi.json without any authToken
                 }
                 if (current != null && authField != null) {
-                    loading = true;
-                    authField.setText(current.authToken);
-                    loading = false;
+                    withLoading(() -> authField.setText(current.authToken));
                 }
             });
         });
@@ -2088,12 +2105,12 @@ public final class ApiClientTopComponent extends TopComponent {
             fresh.variables.put(offer.key(), offer.url());
             workspace.environments.add(fresh);
             workspace.activeEnvironment = fresh.name;
-            loading = true;
-            DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
-            workspace.environments.forEach(env -> envs.addElement(env.name));
-            envCombo.setModel(envs);
-            envCombo.setSelectedItem(fresh.name);
-            loading = false;
+            withLoading(() -> {
+                DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
+                workspace.environments.forEach(env -> envs.addElement(env.name));
+                envCombo.setModel(envs);
+                envCombo.setSelectedItem(fresh.name);
+            });
         } else {
             Environment env = null;
             for (Environment candidate : workspace.environments) {
