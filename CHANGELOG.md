@@ -36,7 +36,11 @@ The arc review (v1.266–v1.269): context menus act on the clicked item.
   must clear, not snap to it). All four sites wired; the new
   `PopupTargetGateTest` in the application module scans every reactor
   member's main sources and fails the build on any future
-  `setComponentPopupMenu` without the targeting listener.
+  `setComponentPopupMenu` without the targeting listener (walk paths
+  normalized to forward slashes — the raw Windows backslashes matched
+  nothing and starved the gate's subject floor on exactly one CI lane,
+  the v1.63.2 separator class, caught by the main-green gate before
+  the tag was cut).
   Mutation-proven ×4: un-wiring a site fails the gate naming the file;
   dropping the trigger guard, the list bounds check, or the
   empty-space clear each fails its named behavior test.
