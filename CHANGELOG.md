@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.273.0] - 2026-08-05
+
+Ledger 75 closed — the narrow-width clip class, both instances.
+
+### Fixed
+- **The DB Studio console toolbar wraps instead of clipping.** With
+  the tab sharing a row with a wide neighbor, the one-row toolbar
+  truncated Save… and the saved-queries combo off the right edge
+  (recorded v1.266.0). New `core.util.WrapLayout` — a FlowLayout whose
+  `preferredLayoutSize` reports the WRAPPED height for the container's
+  current width — lets the bar flow onto a second row at narrow
+  widths. Plain FlowLayout already wraps at layout time but answers
+  one-row in preferred size, which is exactly what clipped the second
+  row invisible; the deferral's own words called a wrap the honest fix
+  (RUN/EXPLAIN/Cancel keep their one-click place, no menu
+  consolidation).
+- **The Infra property form squeezes to fit.** The form sat in its
+  scroll pane as a plain panel, rendering at preferred width — the
+  weightx=1 editor column never shrank and Name/Size clipped behind a
+  horizontal scrollbar at the default panel width (v1.271.0's walk
+  find). The form is now a Scrollable tracking the viewport width, so
+  GridBag squeezes the editors; vertical scrolling untouched.
+- WrapLayoutTest (three behavior tests including the one-row lie and
+  a children-stay-inside layout check), PropertyPanelLayoutTest, and
+  ConsoleBarLayoutGateTest pin the fixes; mutation-proven ×3 — the
+  FlowLayout-lie revert, the plain-panel revert, and the un-wrap each
+  fail their named test. Ledger 75 moves to closed.
+
 ## [1.272.0] - 2026-08-05
 
 Docs truth — the plan carries the day's second half.
@@ -9810,6 +9838,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.273.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.272.0...v1.273.0
 [1.272.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.271.0...v1.272.0
 [1.271.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.270.0...v1.271.0
 [1.270.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.269.0...v1.270.0

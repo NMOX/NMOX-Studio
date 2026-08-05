@@ -36,26 +36,23 @@ The one thing that does NOT move: `maven.compiler.target` stays 21 —
 see the law at the property in the root pom (the update center ships
 modules, not runtimes).
 
-## Open — deferred deliberately, with reasons (added v1.266.0, the DBA persona walk)
+## Closed by v1.273.0 (the ledger-75 layout pass)
 
-### 75. DB Studio's toolbar clips at narrow pane widths
-With the tab sharing a row with a wide neighbor, the console toolbar
-(RUN EXPLAIN Limit Cancel Save… saved-queries) truncates from the
-right — Save… and the saved-queries combo become unreachable until
-the user widens or maximizes the tab (the v1.167.0 API Studio class,
-which was fixed there by consolidating buttons into one menu). Not
-consolidated here yet: the toolbar's verbs are all high-frequency
-(RUN/EXPLAIN/Cancel must stay one click), so the honest fix is a
-wrap or overflow-chevron toolbar rather than a menu. Deferred until
-a layout pass; maximizing the tab is the workaround and everything
-remains reachable.
-
-Second instance (v1.271.0, the Infra Designer walk): the property
-panel's value editors overflow the fixed-width EAST panel — Name/Size
-render clipped ("postgresq…", "db-s-1vcp…") behind a horizontal
-scrollbar at the default window width. Same class, same layout-pass
-owner: the field column should shrink-to-fit or the labels wrap. The
-values remain reachable by the panel's own scrollbar.
+### 75. The narrow-width clip class — both instances
+The deferral's trigger was "a layout pass"; the second instance
+(v1.271.0's Infra walk) supplied it. DB Studio's console toolbar now
+installs `core.util.WrapLayout` — a FlowLayout whose
+preferredLayoutSize reports the WRAPPED height for the container's
+current width, so at narrow widths the bar flows onto a second row
+and Save…/saved-queries stay reachable while RUN/EXPLAIN/Cancel keep
+their one-click place (plain FlowLayout wraps at layout time but lies
+one-row in preferred size, which is exactly what clipped the second
+row invisible). The Infra property form became a Scrollable that
+tracks the viewport width, so GridBag squeezes the weightx=1 editor
+column instead of growing a horizontal scrollbar over clipped
+Name/Size values. WrapLayoutTest (3 behavior tests incl. the one-row
+lie), PropertyPanelLayoutTest, and ConsoleBarLayoutGateTest pin all
+three; mutation-proven ×3.
 
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
