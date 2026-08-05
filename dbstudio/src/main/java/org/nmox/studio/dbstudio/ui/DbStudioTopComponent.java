@@ -1518,8 +1518,14 @@ public final class DbStudioTopComponent extends TopComponent {
                             tree.expandPath(new TreePath(node.getPath()));
                         }
                     }
+                    // the engine's own noun, never the internal word
+                    // "containers" — beside a Docker-sourced connection
+                    // that word reads as a Docker statement (v1.274.0)
                     status("Connected: " + spec.name() + " — " + containers.size()
-                            + (containers.size() == 1 ? " container" : " containers"), OK_GREEN);
+                            + " " + (spec.engine() != null
+                                    ? spec.engine().containerNoun(containers.size())
+                                    : (containers.size() == 1 ? "table" : "tables")),
+                            OK_GREEN);
                     publishSearch();
                 }
                 refreshActions();

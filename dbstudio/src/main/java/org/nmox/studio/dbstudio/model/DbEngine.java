@@ -39,6 +39,23 @@ public enum DbEngine {
      */
     public enum Kind { SQL, DOCUMENT }
 
+    /**
+     * The user-facing word for what this engine's tree lists. The
+     * codebase calls them "containers" internally (tables and views on
+     * SQL, collections on Mongo, databases on Couch) — but that word
+     * must never reach the status line: the v1.274.0 Docker-persona
+     * walk connected to a PostgreSQL CONTAINER and read
+     * "Connected: walk-postgres (docker) — 0 containers" as a Docker
+     * statement, not a schema one.
+     */
+    public String containerNoun(int count) {
+        return switch (this) {
+            case MONGODB -> count == 1 ? "collection" : "collections";
+            case COUCHDB -> count == 1 ? "database" : "databases";
+            default -> count == 1 ? "table" : "tables";
+        };
+    }
+
     private final String displayName;
     private final int defaultPort;
     private final String driverClass;

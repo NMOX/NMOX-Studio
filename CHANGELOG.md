@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.274.0] - 2026-08-05
+
+The Docker-persona walk — the status line speaks the engine's language.
+
+### Fixed
+- **"Connected: walk-postgres (docker) — 0 containers."** The walk ran
+  a real PostgreSQL container, took DB Studio's own Docker offer, and
+  the connect status answered in dbstudio's INTERNAL vocabulary —
+  "containers" is the codebase's word for tables/views/collections,
+  and beside a connection literally sourced from a Docker container it
+  reads as a Docker statement, not a schema one. `DbEngine` gains
+  `containerNoun(count)` — tables (SQL), collections (MongoDB),
+  databases (CouchDB), singular and plural — and the connect status
+  asks the engine instead of leaking the abstraction. DbEngineNounTest
+  pins every engine's noun plus a source-gate that the internal word
+  never appears as a user-facing literal; mutation-proven ×2.
+
+### Verified clean (the walk's stations, all live against Docker 29.6.1)
+- Docker Panel: ENGINE UP with version, the containers table listing
+  the running postgres beside old exited compose containers with
+  honest status/ports, and Logs streaming the container's real
+  entrypoint output (capped 500 lines).
+- The v1.35.0 corpus callosum end to end: the "Database container
+  running in Docker" offer fired for the new container, the offer's
+  dialog came pre-filled with the PUBLISHED port (5433, not the
+  in-container 5432), Test said "OK — server reachable" (the v1.266.0
+  engine-aware wording), and the saved connection ran
+  `SELECT version()` in 5 ms with the honest read-only reason on the
+  grid. Balloon nuance recorded: the balloon body dismisses — the
+  DETAILS LINK is the action, and the Notifications drawer keeps it
+  clickable after the balloon times out.
+
 ## [1.273.0] - 2026-08-05
 
 Ledger 75 closed — the narrow-width clip class, both instances.
@@ -9838,6 +9870,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.274.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.273.0...v1.274.0
 [1.273.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.272.0...v1.273.0
 [1.272.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.271.0...v1.272.0
 [1.271.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.270.0...v1.271.0
