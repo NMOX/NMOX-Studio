@@ -41,7 +41,10 @@ class PopupTargetGateTest {
         int sites = 0;
         try (Stream<Path> walk = Files.walk(root)) {
             for (Path p : (Iterable<Path>) walk::iterator) {
-                String s = p.toString();
+                // Windows walks yield backslash paths — normalize before
+                // matching or the filter passes NOTHING and the subject
+                // floor fails on exactly one OS (the v1.63.2 class)
+                String s = p.toString().replace('\\', '/');
                 // dot-dirs hold non-build copies (.claude worktrees, .git);
                 // only reactor members' main sources are the gate's subjects
                 if (!s.endsWith(".java") || !s.contains("src/main/java")
