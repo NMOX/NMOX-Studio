@@ -246,7 +246,11 @@ final class ConnectionDialog extends JPanel {
             }
             SwingUtilities.invokeLater(() -> {
                 testLabel.setForeground(error == null ? OK_GREEN : FAIL_RED);
-                testLabel.setText(error == null ? "OK — server reachable" : error);
+                // a SQLite "connection" is a file, not a server — say so
+                // (v1.266.0, a DBA-persona copy nit)
+                testLabel.setText(error != null ? error
+                        : selectedEngine() == DbEngine.SQLITE
+                                ? "OK — database opens" : "OK — server reachable");
             });
         });
     }

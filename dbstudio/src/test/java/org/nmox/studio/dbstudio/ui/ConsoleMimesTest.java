@@ -63,4 +63,24 @@ class ConsoleMimesTest {
         assertThat(ConsoleMimes.isPlaceholderOrBlank("SELECT * FROM users;")).isFalse();
         assertThat(ConsoleMimes.isPlaceholderOrBlank("{\"find\": \"users\"}")).isFalse();
     }
+
+    @Test
+    @DisplayName("The placeholder clears on focus and returns only to a blank console")
+    void placeholderIsAHintNotContent() {
+        // the DBA persona walk's first RUN executed the untouched
+        // "SELECT \u2026;" as statement 1 — a failure the user never wrote
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldClearOnFocus("SELECT \u2026;")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldClearOnFocus("{\"selector\": {}}")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldClearOnFocus("SELECT 1;"))
+                .as("user text is never cleared").isFalse();
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldClearOnFocus("  ")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldRestoreOnBlur("")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(
+                ConsoleMimes.shouldRestoreOnBlur("SELECT 1;")).isFalse();
+    }
 }

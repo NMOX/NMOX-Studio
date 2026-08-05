@@ -68,6 +68,45 @@ public final class WorkspaceEdits {
     }
 
     /**
+     * The shelf after a rename in the Manage dialog (v1.266.0 — the
+     * DBA persona walk found saved queries could be recalled but never
+     * renamed or deleted; the only recourse was hand-editing
+     * {@code .nmoxdb.json}). The query keeps its position, text and
+     * engine; only the name changes. A blank/unknown old name, a blank
+     * new name, or a new name already carried by ANOTHER query leaves
+     * the list unchanged — a rename must never silently destroy a
+     * different saved query.
+     */
+    public static List<SavedQuery> withRenamed(List<SavedQuery> saved,
+            String oldName, String newName) {
+        List<SavedQuery> updated = new ArrayList<>(saved);
+        if (oldName == null || newName == null || newName.isBlank()
+                || newName.equals(oldName)) {
+            return updated;
+        }
+        for (SavedQuery other : updated) {
+            if (other.name().equals(newName)) {
+                return updated; // collision: refuse, keep both intact
+            }
+        }
+        for (int i = 0; i < updated.size(); i++) {
+            SavedQuery q = updated.get(i);
+            if (q.name().equals(oldName)) {
+                updated.set(i, new SavedQuery(newName, q.text(), q.engine()));
+                return updated;
+            }
+        }
+        return updated;
+    }
+
+    /** The shelf after Delete in the Manage dialog: dropped by name. */
+    public static List<SavedQuery> withoutSaved(List<SavedQuery> saved, String name) {
+        List<SavedQuery> updated = new ArrayList<>(saved);
+        updated.removeIf(q -> q.name().equals(name));
+        return updated;
+    }
+
+    /**
      * The default name offered when saving a query: the first line of
      * the text, stripped, capped at 30 characters; a blank text
      * defaults to {@code "query"}.
