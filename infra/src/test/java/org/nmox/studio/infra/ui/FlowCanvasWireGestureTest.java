@@ -153,6 +153,20 @@ class FlowCanvasWireGestureTest {
     }
 
     @Test
+    @DisplayName("both nub hit zones share ONE tolerance formula")
+    void nubToleranceHasOneHome() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src", "main", "java", "org", "nmox", "studio", "infra",
+                "ui", "FlowCanvas.java"));
+        assertThat(src.split("9 / zoom \\+ 4", -1).length - 1)
+                .as("the press side and the drop side are two ends of the"
+                        + " SAME gesture — the tolerance lives in nearNub and"
+                        + " nowhere else, or a future tune diverges them"
+                        + " silently (v1.275.0 review)")
+                .isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("a managed database wires into a droplet — the most common DO pairing")
     void databaseServesDroplet() {
         Fixture f = new Fixture();

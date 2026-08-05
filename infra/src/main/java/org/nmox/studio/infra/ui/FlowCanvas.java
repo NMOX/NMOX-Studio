@@ -341,13 +341,23 @@ public class FlowCanvas extends JPanel {
         return null;
     }
 
+    /**
+     * ONE tolerance for both nub hit zones (v1.275.0 review): the press
+     * side (output nub, right edge) and the drop side (input nub, left
+     * edge) must accept the same halo around their dot, or a future
+     * tune of one silently diverges the two ends of the same gesture.
+     */
+    private boolean nearNub(double edgeX, InfraNode node, Point2D world) {
+        return Math.abs(world.getX() - edgeX) < 9 / zoom + 4
+                && Math.abs(world.getY() - (node.y + NODE_H / 2.0)) < 12;
+    }
+
     /** Topmost node whose input nub (left edge) contains the point. */
     private InfraNode inputNubOwnerAt(Point2D world) {
         var nodes = graph.getNodes();
         for (int i = nodes.size() - 1; i >= 0; i--) {
             InfraNode n = nodes.get(i);
-            if (Math.abs(world.getX() - n.x) < 9 / zoom + 4
-                    && Math.abs(world.getY() - (n.y + NODE_H / 2.0)) < 12) {
+            if (nearNub(n.x, n, world)) {
                 return n;
             }
         }
@@ -355,9 +365,7 @@ public class FlowCanvas extends JPanel {
     }
 
     private boolean onOutputNub(InfraNode node, Point2D world) {
-        return node != null
-                && Math.abs(world.getX() - (node.x + NODE_W)) < 9 / zoom + 4
-                && Math.abs(world.getY() - (node.y + NODE_H / 2.0)) < 12;
+        return node != null && nearNub(node.x + NODE_W, node, world);
     }
 
     private Wire wireAt(Point2D world) {
