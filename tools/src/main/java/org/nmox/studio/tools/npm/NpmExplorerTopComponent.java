@@ -200,6 +200,10 @@ public final class NpmExplorerTopComponent extends TopComponent {
         });
         popup.add(runItem);
         
+        // Run Script spawns the SELECTED node's script; select the
+        // clicked node first so a right-click can't run a different
+        // script than the one under the cursor (v1.270.0 arc review)
+        org.nmox.studio.core.util.Popups.selectOnTrigger(tree);
         tree.setComponentPopupMenu(popup);
         
         JScrollPane scrollPane = new JScrollPane(tree);
