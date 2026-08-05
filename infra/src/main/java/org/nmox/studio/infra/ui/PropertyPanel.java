@@ -27,7 +27,45 @@ import org.nmox.studio.infra.model.NodeKind;
 public class PropertyPanel extends JPanel {
 
     private final InfraGraph graph;
-    private final JPanel form = new JPanel(new GridBagLayout());
+    // ledger 75: inside a JScrollPane a plain panel renders at PREFERRED
+    // width, so the weightx=1 editors never squeezed and Name/Size clipped
+    // behind a horizontal scrollbar at the default panel width. Tracking
+    // the viewport width makes GridBag shrink the editor column to fit;
+    // vertical scrolling is untouched.
+    private static final class ViewportWidthForm extends JPanel
+            implements javax.swing.Scrollable {
+
+        ViewportWidthForm() {
+            super(new GridBagLayout());
+        }
+
+        @Override
+        public java.awt.Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(java.awt.Rectangle r, int o, int d) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(java.awt.Rectangle r, int o, int d) {
+            return 64;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
+    }
+
+    private final JPanel form = new ViewportWidthForm();
     private final JLabel header = new JLabel("No selection");
     private final JLabel costLabel = new JLabel(" ");
     private InfraNode current;
