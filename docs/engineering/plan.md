@@ -573,6 +573,44 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-05 at **v1.266.0** (the persona cadence):
+five more releases, four of them born from USING the product rather
+than reading it. v1.262.0 closed ledger 63 by meeting the deferral's
+own condition — live captures pinned HPM 2.0.9's
+`[HPM] Proxy created: / -> http://localhost:3001` printing BEFORE the
+server banner (hazard real for the CRA-era stack; HPM 4/wds 5 print
+nothing), and the corpus yielded the rule the deferral said didn't
+exist: no banner puts an arrow before its own URL, so firstLocalUrl
+skips arrow-preceded URLs. v1.263.0 came from David's "try the API
+studio with the Hacker News API": renaming a request threw on EVERY
+keystroke since API Studio first shipped (v1.19.0, 240+ releases) —
+reload()+restoreSelection() from inside the Name field's document
+event re-entered bindRequest and mutated the notifying document, and
+worst, the aborted bind left `loading` stuck so edits silently
+stopped persisting; fixed with nodeChanged (repaint, no selection
+event). **The law that found it: ask what gesture the tests never
+perform — every prior gauntlet SENT requests, none ORGANIZED them.**
+v1.264.0 was David's beginner pass: the Vanilla Web template's pinned
+`-p 8080` killed a new user's FIRST Run on a busy port (unpinned;
+http-server scans upward), EADDRINUSE now speaks human in
+CommandExecutor's PUMP (one seam = every lane), and learning space
+#89 "Your First Web Page" now LEADS a catalog that used to open with
+Common Lisp. v1.265.0's arc review closed the v1.263.0 data-loss
+CLASS: six un-finally'd `loading` raise sites (incl. applyWorkspace,
+the re-aim path) became withLoading/try-finally with
+LoadingGuardShapeTest making the shape a build law — raise only above
+`try`, drop only inside `finally`. v1.266.0's DBA persona walk gave
+saved queries their missing organize gestures (Manage… →
+Rename/Delete, collision-refusing, safe-default; live-proven renamed
+in the shipped app with the .nmoxdb.json byte-verified) and made the
+console placeholder a real hint — the walk's first RUN had executed
+the untouched `SELECT …;` as statement 1. Ledger 75 records the
+narrow-pane toolbar clip. Standing method note: the persona passes
+(junior, mid-level, IA, QA, contributor, designer, beginner, DBA, and
+the HN-API session) are now the single richest source of shipped
+fixes — each one found a defect invisible to review because there was
+no wrong logic to read, only a wrong experience to have.
+
 Currency addendum 2026-08-04 at **v1.257.0** (the baseline advance):
 David said "advance to the future," and the bundled runtime is now
 **JDK 25 LTS + OpenJFX 26.0.2** — proven in the shipped artifact, not
@@ -703,7 +741,7 @@ its own where its exit code is read.
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.257.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.266.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)

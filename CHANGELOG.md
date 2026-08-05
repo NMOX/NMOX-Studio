@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.267.0] - 2026-08-05
+
+Docs truth — the plan carries the persona cadence.
+
+### Changed
+- `docs/engineering/plan.md` gains the 2026-08-05 currency addendum at
+  v1.266.0: the ledger-63 close by its own condition, the API Studio
+  rename bug and its ask-what-gesture-the-tests-never-perform law, the
+  beginner pass, the loading-guard build law, and the DBA walk's
+  grants — with the standing method note that the persona passes are
+  now the single richest source of shipped fixes. The "Where the
+  project stands" headline moves to v1.266.0. Also recorded here: the
+  Manage Saved Queries dialog was live-verified in the shipped
+  1.266.0 (rename "best sellers" → "top sellers", green feedback,
+  `.nmoxdb.json` byte-verified with the SQL intact). Docs only — no
+  code changes.
+
 ## [1.266.0] - 2026-08-05
 
 The DBA persona walk — saved queries become manageable, the
@@ -9621,6 +9638,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.267.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.266.0...v1.267.0
 [1.266.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.265.0...v1.266.0
 [1.265.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.264.0...v1.265.0
 [1.264.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.263.0...v1.264.0
