@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.270.0] - 2026-08-05
+
+The arc review (v1.266–v1.269): context menus act on the clicked item.
+
+### Fixed
+- **Every context menu in the product acted on the SELECTED item, not
+  the CLICKED item.** The review's lens over the day-old Forget
+  deployment asked how its row is resolved — `getSelectedRow()` — and
+  then asked who moves the selection on a right-click: nobody.
+  `setComponentPopupMenu` shows the menu on the platform popup trigger
+  but never touches the selection, while every menu verb reads it. So
+  right-click row 3 with row 1 selected and the verb hits row 1. The
+  gap is invisible in casual use (people left-click first) and wrong
+  exactly when it matters. All four popup sites had it, ranked:
+  **API Studio's collections tree** (Duplicate/Rename/Delete — a
+  REQUEST delete has no confirm and wipes the request's keychain token,
+  so a stale-selection Delete is silent data loss), **NPM Explorer**
+  (Run Script SPAWNS the selected script — the wrong side effects, not
+  just the wrong label), **Contract Studio's address book** (Copy
+  address copies the wrong address silently; the day-old Forget names
+  the wrong row in its dialog), and **API Studio's history list**
+  (Restore restores the wrong send). New `core.util.Popups
+  .selectOnTrigger(JTable/JTree/JList)` selects the item under the
+  popup trigger before the menu opens (checked on both press and
+  release — macOS/Linux trigger on press, Windows on release) and
+  CLEARS the selection over empty space so verbs honestly no-op
+  instead of acting on an item the user isn't looking at; behavior
+  tests drive the real listener on real headless Swing components,
+  including the JList closest-index trap (a point past the last entry
+  must clear, not snap to it). All four sites wired; the new
+  `PopupTargetGateTest` in the application module scans every reactor
+  member's main sources and fails the build on any future
+  `setComponentPopupMenu` without the targeting listener.
+  Mutation-proven ×4: un-wiring a site fails the gate naming the file;
+  dropping the trigger guard, the list bounds check, or the
+  empty-space clear each fails its named behavior test.
+
+### Verified clean
+- v1.266's DBA-pass guards hold everywhere the console text escapes:
+  RUN, EXPLAIN (via the shared `runText`), and Save query… all refuse
+  the placeholder; the Manage… rename touches nothing but the saved
+  query it names.
+- v1.268's rename-follows-references: refusals are side-effect-free,
+  the patch-boundary undo law is applied, and a component
+  self-reference (already inert by the v1.85.0 exclusion) is the only
+  reference the walk deliberately skips.
+- v1.269's gestures: no row sorter on the address book (view index ==
+  model index), the keychain delete rides the worker, and LOCAL_ANVIL
+  refuses before any dialog — the popup-targeting find above was the
+  one gap.
+
 ## [1.269.0] - 2026-08-05
 
 Contract Studio can forget — the organize sweep closes its fourth surface.
@@ -9697,6 +9748,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.270.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.269.0...v1.270.0
 [1.269.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.268.0...v1.269.0
 [1.268.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.267.0...v1.268.0
 [1.267.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.266.0...v1.267.0
