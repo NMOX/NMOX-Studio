@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.265.0] - 2026-08-05
+
+The arc review — the loading guard can no longer wedge.
+
+### Fixed
+- **The v1.263.0 data-loss class, closed structurally.** The rename
+  fix removed the known trigger, but the review found the SHAPE still
+  live at six sites in API Studio: `loading = true; ...; loading =
+  false;` with no try/finally — in `bindRequest`, `applyWorkspace`
+  (the re-aim path, the worst possible place), two keychain-hydration
+  callbacks, the auth-migration callback and the .env-offer combo
+  rebuild. Any future throw inside any of them would wedge the guard
+  and silently stop edit recording again, with no visible symptom.
+  Every raise now enters a `try` (a `withLoading(Runnable)` helper for
+  the five small sites, an explicit try/finally for applyWorkspace's
+  field-assigning body), and NEW `LoadingGuardShapeTest` makes the
+  shape a build law: `loading = true` may only appear immediately
+  above a `try`, `loading = false` only inside a `finally`. Both rules
+  mutation-proven independently (a bare raise and an out-of-finally
+  drop each fail their own test by name — per the v1.264.0 lesson,
+  each rule tripped alone).
+
+### Verified
+- Review lenses over v1.259–v1.264, the six unreviewed same-day
+  releases. CLEAN: the LoopbackUrls sweep's cost profile (non-local
+  URLs short-circuit with zero sockets; BEACON resolves once per
+  CHECK press, never polled; the Watch pane's 2s tick pays ~1ms
+  against a live devnet and its 300ms worst case rides fixed-DELAY
+  scheduling off the EDT, so ticks cannot pile up), CleartextHttp's
+  https-untouched pin, the ServeUrls arrow guard, and the beginner
+  pass's template/catalog gates. Blessed LOW ×2, in writing: the
+  EADDRINUSE humanizer is once-per-STREAM (a failure landing on both
+  stdout and stderr could explain twice; real tools use one), and a
+  TAIL/grep line merely MENTIONING the failure trips one explanation
+  (the translation remains accurate for the line above it).
+
 ## [1.264.0] - 2026-08-04
 
 The beginner pass — first Run survives a busy port, failure speaks
@@ -9535,6 +9571,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.265.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.264.0...v1.265.0
 [1.264.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.263.0...v1.264.0
 [1.263.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.262.0...v1.263.0
 [1.262.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.261.0...v1.262.0
