@@ -160,14 +160,30 @@ class DevScriptsTest {
     }
 
     @Test
-    @DisplayName("evalScript embeds the quoted expression and the error marker")
+    @DisplayName("evalScript inlines the expression host-compiled — never window.eval")
     void evalScriptShape() {
         String js = DevScripts.evalScript("document.title + \"!\"");
-        assertThat(js).contains("window.eval(\"document.title + \\\"!\\\"\")");
+        // the expression rides the script itself, so the HOST compiles
+        // it — a page CSP without 'unsafe-eval' (Hacker News, GitHub)
+        // refuses in-page eval and made the console dead on exactly the
+        // pages worth inspecting (v1.276.0)
+        assertThat(js).contains("var r=(\ndocument.title + \"!\"\n);");
+        assertThat(js).doesNotContain("window.eval");
+        assertThat(js).doesNotContain("new Function"); // same CSP gate
         assertThat(js).contains(DevScripts.EVAL_ERROR_MARKER);
         assertThat(js).contains("8000"); // result cap
         assertThat(js).contains("[circular]");
         assertThat(js).contains("[function]");
+    }
+
+    @Test
+    @DisplayName("statementScript runs the text as a body and answers undefined")
+    void statementScriptShape() {
+        String js = DevScripts.statementScript("var x = 1");
+        assertThat(js).contains("var x = 1");
+        assertThat(js).contains("return 'undefined';");
+        assertThat(js).doesNotContain("window.eval");
+        assertThat(js).contains(DevScripts.EVAL_ERROR_MARKER);
     }
 
     @Test

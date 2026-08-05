@@ -137,16 +137,22 @@ public final class DevToolsPanel extends JPanel {
             }
             repl.setText("");
             console.add("log", "> " + expr, System.currentTimeMillis());
-            runner.run(DevScripts.evalScript(expr),
-                    result -> {
-                        if (result.startsWith(DevScripts.EVAL_ERROR_MARKER)) {
-                            console.add("error", result.substring(DevScripts.EVAL_ERROR_MARKER.length()),
-                                    System.currentTimeMillis());
-                        } else {
-                            console.add("result", result, System.currentTimeMillis());
-                        }
-                    },
-                    error -> console.add("error", error, System.currentTimeMillis()));
+            // expression form first (host-compiled — a CSP without
+            // 'unsafe-eval' killed the old window.eval path, v1.276.0);
+            // runtime errors come back as the in-page marker, so an
+            // error CALLBACK here means the text didn't compile as an
+            // expression — retry it as a statement body before giving up
+            java.util.function.Consumer<String> render = result -> {
+                if (result.startsWith(DevScripts.EVAL_ERROR_MARKER)) {
+                    console.add("error", result.substring(DevScripts.EVAL_ERROR_MARKER.length()),
+                            System.currentTimeMillis());
+                } else {
+                    console.add("result", result, System.currentTimeMillis());
+                }
+            };
+            runner.run(DevScripts.evalScript(expr), render,
+                    error -> runner.run(DevScripts.statementScript(expr), render,
+                            error2 -> console.add("error", error2, System.currentTimeMillis())));
         });
         JButton clear = new JButton("Clear");
         clear.addActionListener(e -> console.clear());

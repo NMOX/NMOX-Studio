@@ -367,16 +367,25 @@ public final class DevScripts {
     public static final String EVAL_ERROR_MARKER = "__NMOX_EVAL_ERR__:";
 
     /**
-     * Wraps a user REPL expression: evaluated via {@code window.eval},
-     * result safe-stringified (cycle-guarded, functions and circulars
-     * named honestly) and capped at 8000 chars; an evaluation error
-     * comes back as a marker-prefixed string so the Java side can
-     * render it red instead of catching a JSException.
+     * Wraps a user REPL expression, INLINED so the host compiles it —
+     * never {@code window.eval}: a page whose Content-Security-Policy
+     * omits {@code 'unsafe-eval'} (Hacker News, GitHub, most serious
+     * sites) refuses in-page eval with an EvalError, which made the
+     * console dead on exactly the pages worth inspecting (v1.276.0,
+     * the Browser-persona walk; the DOM/Network/Storage panes never
+     * noticed because their executeScript payloads are host-compiled
+     * top-level scripts, which unsafe-eval does not gate). The result
+     * is safe-stringified (cycle-guarded, functions and circulars
+     * named honestly) and capped at 8000 chars; a RUNTIME error comes
+     * back as a marker-prefixed string so the Java side renders it
+     * red. A SYNTAX error in the user's text now fails the whole
+     * compile instead — the caller's error callback retries
+     * {@link #statementScript} before reporting.
      */
     public static String evalScript(String userExpression) {
         return "(function(){\n"
                 + "try{\n"
-                + " var r=window.eval(" + quote(userExpression) + ");\n"
+                + " var r=(\n" + userExpression + "\n);\n"
                 + " if(r===undefined){return 'undefined';}\n"
                 + " var s;\n"
                 + " if(typeof r==='string'){s=r;}\n"
@@ -388,6 +397,21 @@ public final class DevScripts {
                 + "  if(s===undefined){s=''+r;}}\n"
                 + " s=''+s;\n"
                 + " return s.length>8000?s.slice(0,8000)+'\\u2026[truncated]':s;\n"
+                + "}catch(e){return " + quote(EVAL_ERROR_MARKER) + "+e;}})()";
+    }
+
+    /**
+     * The statement-form fallback for console input that is not a
+     * single expression ({@code var x = 1}, {@code if (...) ...}):
+     * the text runs as a host-compiled function body and the result is
+     * honestly {@code undefined}. Tried by the caller only after the
+     * expression form fails to compile.
+     */
+    public static String statementScript(String userText) {
+        return "(function(){\n"
+                + "try{\n"
+                + userText + "\n"
+                + ";return 'undefined';\n"
                 + "}catch(e){return " + quote(EVAL_ERROR_MARKER) + "+e;}})()";
     }
 
