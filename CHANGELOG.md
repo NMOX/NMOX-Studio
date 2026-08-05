@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.268.0] - 2026-08-05
+
+Renaming a Block Studio component follows its references.
+
+### Fixed
+- **The organize-gesture sweep's third instance, sharper than the
+  first two.** API Studio requests couldn't be renamed (v1.263.0), DB
+  Studio saved queries couldn't be renamed (v1.266.0) — Block Studio
+  components COULD, via F2 on the root piece, and that was worse: the
+  generic param editor set the tag and silently orphaned every sibling
+  component's Element piece still naming the old tag (composed
+  previews 404'd their /lib import), and nothing stopped two
+  components from colliding on one tag — which makes the preview
+  harness's double `customElements.define` THROW, the exact hazard
+  v1.85.0 documented when it excluded the active tag from its own
+  imports. Root-tag edits now route through a new
+  `BlockWorkspace.renameActive` seam: an invalid tag (the
+  custom-element rules) or a tag another component already carries is
+  refused with a status line and ZERO side effects; on success every
+  other component's Element references follow the rename and the
+  status line says how many. A cross-component rename is a patch
+  boundary (the v1.84.0 switch law) — the per-doc undo cannot restore
+  sibling references, so it does not pretend to. Ordinary Element/tag
+  params are untouched — only the ROOT's tag is identity.
+  Mutation-proven ×2: dropping the reference loop fails
+  `renameFollowsReferences`, dropping the collision check fails
+  `renameRefusalsAreSideEffectFree`, each by name.
+
 ## [1.267.0] - 2026-08-05
 
 Docs truth — the plan carries the persona cadence.
@@ -9638,6 +9666,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.268.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.267.0...v1.268.0
 [1.267.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.266.0...v1.267.0
 [1.266.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.265.0...v1.266.0
 [1.265.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.264.0...v1.265.0
