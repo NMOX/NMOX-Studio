@@ -264,8 +264,14 @@ public enum NodeKind {
             case SPACES -> Set.of(CDN);
             case CERTIFICATE -> Set.of(LOAD_BALANCER, CDN);
             case CONTAINER_REGISTRY -> Set.of(KUBERNETES, APP_PLATFORM);
+            // a managed database serving a plain droplet is the single most
+            // common DO pairing — it was missing while App Platform and
+            // Kubernetes were representable (v1.271.0, the DevOps walk's
+            // catalog find). The wire orders creation (db first) and carries
+            // no creation-time reference: droplet create takes no db id, and
+            // the planner's provider loop reads only VPC/SSH_KEY kinds.
             case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH ->
-                Set.of(APP_PLATFORM, KUBERNETES);
+                Set.of(APP_PLATFORM, KUBERNETES, DROPLET, GPU_DROPLET);
             case GRADIENT_AI -> Set.of(APP_PLATFORM, FUNCTIONS);
             case HZ_NETWORK -> Set.of(HZ_SERVER, HZ_LB);
             case HZ_FIREWALL -> Set.of(HZ_SERVER);

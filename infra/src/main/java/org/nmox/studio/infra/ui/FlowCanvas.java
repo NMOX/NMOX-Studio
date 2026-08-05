@@ -43,6 +43,17 @@ public class FlowCanvas extends JPanel {
         void nodeContextMenu(InfraNode node, Point screenPoint);
 
         void selectionChanged(InfraNode node);
+
+        /**
+         * A wire drop landed on a real target but the graph refused it —
+         * either the rule table forbids the pair or the wire already
+         * exists. Default no-op so headless fakes stay small; the
+         * designer window narrates the reason on the status line
+         * (v1.271.0 — the ghost used to just vanish, indistinguishable
+         * from a misdrop).
+         */
+        default void wireRefused(InfraNode from, InfraNode to, boolean duplicate) {
+        }
     }
 
     public static final int NODE_W = 150;
@@ -319,6 +330,30 @@ public class FlowCanvas extends JPanel {
         return null;
     }
 
+    /** Topmost node whose output nub contains the point, inside or out. */
+    private InfraNode outputNubOwnerAt(Point2D world) {
+        var nodes = graph.getNodes();
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            if (onOutputNub(nodes.get(i), world)) {
+                return nodes.get(i);
+            }
+        }
+        return null;
+    }
+
+    /** Topmost node whose input nub (left edge) contains the point. */
+    private InfraNode inputNubOwnerAt(Point2D world) {
+        var nodes = graph.getNodes();
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            InfraNode n = nodes.get(i);
+            if (Math.abs(world.getX() - n.x) < 9 / zoom + 4
+                    && Math.abs(world.getY() - (n.y + NODE_H / 2.0)) < 12) {
+                return n;
+            }
+        }
+        return null;
+    }
+
     private boolean onOutputNub(InfraNode node, Point2D world) {
         return node != null
                 && Math.abs(world.getX() - (node.x + NODE_W)) < 9 / zoom + 4
@@ -518,8 +553,14 @@ public class FlowCanvas extends JPanel {
                 }
                 return;
             }
-            if (node != null && onOutputNub(node, world)) {
-                wireFrom = node;
+            // the output nub is painted CENTERED on the node's right edge,
+            // so half of the visible dot lies OUTSIDE the node rectangle —
+            // gating the nub test on nodeAt() made the dot's center and
+            // outer half pan the canvas instead of starting a wire
+            // (v1.271.0, found by pressing the dot four times in a row)
+            InfraNode nubOwner = outputNubOwnerAt(world);
+            if (nubOwner != null) {
+                wireFrom = nubOwner;
                 wireGhost = world;
             } else if (node != null) {
                 draggingNode = node;
@@ -563,9 +604,21 @@ public class FlowCanvas extends JPanel {
                 }
             }
             if (wireFrom != null) {
-                InfraNode target = nodeAt(toWorld(e.getPoint()));
-                if (target != null && !locked) { // 53b: no wiring mid-op
-                    graph.connect(wireFrom, target);
+                Point2D drop = toWorld(e.getPoint());
+                // the input nub straddles the LEFT edge the same way the
+                // output nub straddles the right — a drop on its outer
+                // half must still count as hitting the node
+                InfraNode target = nodeAt(drop);
+                if (target == null) {
+                    target = inputNubOwnerAt(drop);
+                }
+                if (target != null && target != wireFrom && !locked) { // 53b: no wiring mid-op
+                    final InfraNode to = target;
+                    boolean duplicate = graph.getWires().stream().anyMatch(w
+                            -> w.fromId().equals(wireFrom.id) && w.toId().equals(to.id));
+                    if (!graph.connect(wireFrom, target)) {
+                        callbacks.wireRefused(wireFrom, target, duplicate);
+                    }
                 }
                 wireFrom = null;
                 wireGhost = null;
