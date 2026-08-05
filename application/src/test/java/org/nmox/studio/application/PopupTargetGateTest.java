@@ -42,15 +42,17 @@ class PopupTargetGateTest {
         try (Stream<Path> walk = Files.walk(root)) {
             for (Path p : (Iterable<Path>) walk::iterator) {
                 String s = p.toString();
+                // dot-dirs hold non-build copies (.claude worktrees, .git);
+                // only reactor members' main sources are the gate's subjects
                 if (!s.endsWith(".java") || !s.contains("src/main/java")
-                        || s.contains("/target/")) {
+                        || s.contains("/target/") || s.contains("/.")) {
                     continue;
                 }
                 String src = Files.readString(p);
                 if (!src.contains("setComponentPopupMenu(")) {
                     continue;
                 }
-                sites++;
+                sites += src.split("setComponentPopupMenu\\(", -1).length - 1;
                 if (!src.contains("Popups.selectOnTrigger(")) {
                     offenders.add(root.relativize(p).toString());
                 }
