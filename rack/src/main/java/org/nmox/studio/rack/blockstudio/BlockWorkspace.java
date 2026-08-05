@@ -100,6 +100,58 @@ public final class BlockWorkspace {
         components.set(active, doc);
     }
 
+    /** What {@link #renameActive} did — the UI speaks each case. */
+    public enum RenameOutcome { RENAMED, INVALID, TAKEN, NO_CHANGE }
+
+    /** A rename's result: the outcome plus how many sibling references moved. */
+    public record Rename(RenameOutcome outcome, int refsUpdated) {
+    }
+
+    /**
+     * Renames the active component's tag AND follows every reference
+     * (v1.268.0 — the organize-gesture sweep's third instance, sharper
+     * than the first two: an F2 rename already EXISTED via the generic
+     * param editor, but it silently orphaned every sibling component's
+     * Element piece still naming the old tag — composed previews
+     * 404'd — and nothing stopped two components from colliding on one
+     * tag, which makes the preview harness's double
+     * {@code customElements.define} throw (the v1.85 hazard).
+     * Refusals mutate NOTHING: an invalid tag (the custom-element
+     * rules {@link BlockCodegen#validTag}) or a tag another component
+     * already carries comes back {@code INVALID}/{@code TAKEN} with
+     * zero side effects. On success every OTHER component's ELEMENT
+     * blocks whose {@code tag} equals the old tag follow the rename,
+     * and the count comes back so the status line can say so.
+     */
+    public Rename renameActive(String newTag) {
+        String oldTag = activeDoc().root().param("tag");
+        String tag = newTag == null ? "" : newTag.trim();
+        if (tag.equals(oldTag)) {
+            return new Rename(RenameOutcome.NO_CHANGE, 0);
+        }
+        if (!BlockCodegen.validTag(tag)) {
+            return new Rename(RenameOutcome.INVALID, 0);
+        }
+        int existing = indexOfTag(tag);
+        if (existing >= 0 && existing != active) {
+            return new Rename(RenameOutcome.TAKEN, 0);
+        }
+        activeDoc().root().setParam("tag", tag);
+        int refs = 0;
+        for (int i = 0; i < components.size(); i++) {
+            if (i == active) {
+                continue;
+            }
+            for (Block b : components.get(i).preorder()) {
+                if (b.kind() == BlockKind.ELEMENT && oldTag.equals(b.param("tag"))) {
+                    b.setParam("tag", tag);
+                    refs++;
+                }
+            }
+        }
+        return new Rename(RenameOutcome.RENAMED, refs);
+    }
+
     /** The index of the component whose tag matches, or -1. */
     public int indexOfTag(String tag) {
         List<String> t = tags();
