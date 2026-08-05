@@ -106,4 +106,72 @@ class BlockWorkspaceTest {
         assertThat(ws.indexOfTag("swapped-in")).isZero();
         assertThat(ws.indexOfTag("absent-tag")).isEqualTo(-1);
     }
+
+    @Test
+    @DisplayName("Renaming a component follows every sibling reference")
+    void renameFollowsReferences() {
+        BlockWorkspace ws = new BlockWorkspace();
+        ws.activeDoc().root().setParam("tag", "my-badge");
+        // a second component composing <my-badge> twice
+        BlockDoc page = ws.add();
+        page.root().setParam("tag", "my-page");
+        Block use1 = page.create(BlockKind.ELEMENT);
+        use1.setParam("tag", "my-badge");
+        page.insert(page.root(), use1, 0);
+        Block use2 = page.create(BlockKind.ELEMENT);
+        use2.setParam("tag", "my-badge");
+        page.insert(page.root(), use2, 1);
+        // and one unrelated element that must NOT move
+        Block plain = page.create(BlockKind.ELEMENT);
+        plain.setParam("tag", "div");
+        page.insert(page.root(), plain, 2);
+
+        ws.setActive(0);
+        BlockWorkspace.Rename r = ws.renameActive("my-chip");
+        org.assertj.core.api.Assertions.assertThat(r.outcome())
+                .isEqualTo(BlockWorkspace.RenameOutcome.RENAMED);
+        org.assertj.core.api.Assertions.assertThat(r.refsUpdated())
+                .as("both composed usages follow; <div> does not")
+                .isEqualTo(2);
+        org.assertj.core.api.Assertions.assertThat(ws.tags())
+                .containsExactly("my-chip", "my-page");
+        org.assertj.core.api.Assertions.assertThat(use1.param("tag")).isEqualTo("my-chip");
+        org.assertj.core.api.Assertions.assertThat(use2.param("tag")).isEqualTo("my-chip");
+        org.assertj.core.api.Assertions.assertThat(plain.param("tag")).isEqualTo("div");
+    }
+
+    @Test
+    @DisplayName("A colliding or invalid rename refuses and mutates NOTHING")
+    void renameRefusalsAreSideEffectFree() {
+        BlockWorkspace ws = new BlockWorkspace();
+        ws.activeDoc().root().setParam("tag", "my-badge");
+        BlockDoc page = ws.add();
+        page.root().setParam("tag", "my-page");
+        Block use = page.create(BlockKind.ELEMENT);
+        use.setParam("tag", "my-badge");
+        page.insert(page.root(), use, 0);
+        ws.setActive(0);
+
+        // TAKEN: my-page belongs to the sibling — two components on one
+        // tag would make the preview's double customElements.define throw
+        org.assertj.core.api.Assertions.assertThat(
+                ws.renameActive("my-page").outcome())
+                .isEqualTo(BlockWorkspace.RenameOutcome.TAKEN);
+        // INVALID: no dash / uppercase are not custom-element tags
+        org.assertj.core.api.Assertions.assertThat(
+                ws.renameActive("badge").outcome())
+                .isEqualTo(BlockWorkspace.RenameOutcome.INVALID);
+        org.assertj.core.api.Assertions.assertThat(
+                ws.renameActive("My-Badge").outcome())
+                .isEqualTo(BlockWorkspace.RenameOutcome.INVALID);
+        // NO_CHANGE: same tag back
+        org.assertj.core.api.Assertions.assertThat(
+                ws.renameActive("my-badge").outcome())
+                .isEqualTo(BlockWorkspace.RenameOutcome.NO_CHANGE);
+        // and after all four: nothing moved anywhere
+        org.assertj.core.api.Assertions.assertThat(ws.tags())
+                .containsExactly("my-badge", "my-page");
+        org.assertj.core.api.Assertions.assertThat(use.param("tag"))
+                .isEqualTo("my-badge");
+    }
 }

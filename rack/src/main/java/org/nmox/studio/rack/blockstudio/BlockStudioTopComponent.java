@@ -821,6 +821,53 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
         DialogDescriptor dd = new DialogDescriptor(form, block.kind().display());
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
+            // The ROOT's tag is the component's IDENTITY, not an ordinary
+            // param: sibling components reference it by name (the v1.85
+            // composition), so its edit routes through the workspace's
+            // rename seam, which follows every reference and refuses
+            // invalid or colliding tags outright (v1.268.0 — the bare
+            // setParam path silently orphaned composed usages and let two
+            // components collide on one tag, which throws in the preview
+            // harness's double customElements.define).
+            if (workspace != null && block == canvas.doc().root()
+                    && fields.containsKey("tag")
+                    && !fields.get("tag").getText().trim()
+                            .equals(block.param("tag"))) {
+                BlockWorkspace.Rename r =
+                        workspace.renameActive(fields.get("tag").getText());
+                switch (r.outcome()) {
+                    case INVALID -> {
+                        setStatus("\"" + fields.get("tag").getText().trim()
+                                + "\" is not a valid custom-element tag \u2014 "
+                                + "lowercase with a dash, e.g. my-widget");
+                        return;
+                    }
+                    case TAKEN -> {
+                        setStatus("Another component is already <"
+                                + fields.get("tag").getText().trim() + ">");
+                        return;
+                    }
+                    case RENAMED -> {
+                        // a cross-component edit is a patch boundary, the
+                        // v1.84 switch law: the per-doc undo cannot restore
+                        // sibling references, so it must not pretend to
+                        undo.clear();
+                        refreshComponentCombo();
+                        setStatus("Renamed to <" + block.param("tag") + ">"
+                                + (r.refsUpdated() > 0
+                                        ? " \u2014 " + r.refsUpdated()
+                                                + " reference(s) in sibling components follow"
+                                        : ""));
+                    }
+                    case NO_CHANGE -> {
+                        // fall through to the generic apply (a no-op here)
+                    }
+                }
+                canvas.refresh();
+                regen.restart();
+                saver.restart();
+                return;
+            }
             pushUndo();
             fields.forEach((k, f) -> block.setParam(k, f.getText().trim()));
             canvas.refresh();
