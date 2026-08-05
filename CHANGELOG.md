@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.275.0] - 2026-08-05
+
+The day-tail review (v1.271–v1.274): one drift hazard, closed.
+
+### Fixed
+- **The wire gesture's two hit zones shared a formula by COPY.** The
+  v1.271.0 fix gave the input nub its own hit test, and the tolerance
+  (`9 / zoom + 4` horizontal, ±12 vertical) was duplicated inline —
+  the press side and the drop side are two ends of the SAME gesture,
+  and a future tune of one would silently diverge them. Both zones now
+  ride one `nearNub(edgeX, node, world)` predicate, and the gesture
+  test suite pins the tolerance literal to exactly ONE occurrence in
+  the canvas source; re-inlining it fails `nubToleranceHasOneHome` by
+  name. All six gesture tests hold through the refactor.
+
+### Verified clean
+- v1.271's nub-before-drag precedence (the dot's 13px halo winning
+  over a neighboring node's body edge is what the dot advertises),
+  the wireRefused duplicate/illegal distinction, and the EDT-only
+  mutation model.
+- v1.273's WrapLayout edges: zero components yield insets-only height,
+  zero width (pre-layout) falls back to one row — both pinned by the
+  existing behavior tests; the BorderLayout re-layout settling was
+  already live-proven at ship.
+- v1.274's Services-bridge fallback: a null-engine connection says
+  "tables", which is right for the JDBC-only bridge.
+
 ## [1.274.0] - 2026-08-05
 
 The Docker-persona walk — the status line speaks the engine's language.
@@ -9870,6 +9897,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.275.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.274.0...v1.275.0
 [1.274.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.273.0...v1.274.0
 [1.273.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.272.0...v1.273.0
 [1.272.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.271.0...v1.272.0
