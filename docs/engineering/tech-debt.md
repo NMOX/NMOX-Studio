@@ -36,6 +36,20 @@ The one thing that does NOT move: `maven.compiler.target` stays 21 —
 see the law at the property in the root pom (the update center ships
 modules, not runtimes).
 
+## Open — deferred deliberately, with reasons (added v1.266.0, the DBA persona walk)
+
+### 75. DB Studio's toolbar clips at narrow pane widths
+With the tab sharing a row with a wide neighbor, the console toolbar
+(RUN EXPLAIN Limit Cancel Save… saved-queries) truncates from the
+right — Save… and the saved-queries combo become unreachable until
+the user widens or maximizes the tab (the v1.167.0 API Studio class,
+which was fixed there by consolidating buttons into one menu). Not
+consolidated here yet: the toolbar's verbs are all high-frequency
+(RUN/EXPLAIN/Cancel must stay one click), so the honest fix is a
+wrap or overflow-chevron toolbar rather than a menu. Deferred until
+a layout pass; maximizing the tab is the workaround and everything
+remains reachable.
+
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
 ### 73. Suffixless Angular templates (`app.html`) are invisible to the IDE's template intelligence

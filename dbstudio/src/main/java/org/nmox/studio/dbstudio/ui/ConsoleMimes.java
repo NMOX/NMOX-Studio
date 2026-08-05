@@ -46,6 +46,23 @@ final class ConsoleMimes {
      * and the mime switch may overwrite it with the new engine's
      * placeholder without losing user work.
      */
+    /**
+     * True when a console gaining focus should clear itself: it holds
+     * exactly a placeholder (v1.266.0 — the DBA persona walk typed into
+     * the console and RAN, and the untouched {@code "SELECT …;"}
+     * executed as statement 1, so a user's very first run reported
+     * "1 failed" for text the product itself put there). An already
+     * blank console has nothing to clear; user text is never touched.
+     */
+    static boolean shouldClearOnFocus(String text) {
+        return text != null && !text.isBlank() && isPlaceholderOrBlank(text);
+    }
+
+    /** True when a console losing focus should restore its placeholder. */
+    static boolean shouldRestoreOnBlur(String text) {
+        return text == null || text.isBlank();
+    }
+
     static boolean isPlaceholderOrBlank(String text) {
         if (text == null || text.isBlank()) {
             return true;

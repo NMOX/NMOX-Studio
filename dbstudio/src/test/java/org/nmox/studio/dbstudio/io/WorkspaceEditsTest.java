@@ -198,4 +198,47 @@ class WorkspaceEditsTest {
 
         assertThat(WorkspaceEdits.alreadyConfigured(mysql(), specs)).isFalse();
     }
+
+    @Test
+    @DisplayName("Rename keeps position, text and engine; only the name moves")
+    void renameKeepsEverythingButTheName() {
+        var a = new DbWorkspaceIO.SavedQuery("first", "SELECT 1;", "SQLite");
+        var b = new DbWorkspaceIO.SavedQuery("second", "SELECT 2;", "SQLite");
+        var renamed = WorkspaceEdits.withRenamed(java.util.List.of(a, b), "first", "opener");
+        org.assertj.core.api.Assertions.assertThat(renamed)
+                .containsExactly(
+                        new DbWorkspaceIO.SavedQuery("opener", "SELECT 1;", "SQLite"), b);
+    }
+
+    @Test
+    @DisplayName("Rename refuses to overwrite ANOTHER saved query")
+    void renameNeverDestroysASibling() {
+        var a = new DbWorkspaceIO.SavedQuery("first", "SELECT 1;", "SQLite");
+        var b = new DbWorkspaceIO.SavedQuery("second", "SELECT 2;", "SQLite");
+        // colliding rename comes back unchanged — the UI reads equality
+        // as "refused" and says so instead of silently deleting 'second'
+        org.assertj.core.api.Assertions.assertThat(
+                WorkspaceEdits.withRenamed(java.util.List.of(a, b), "first", "second"))
+                .containsExactly(a, b);
+        // blank and unknown names are no-ops too
+        org.assertj.core.api.Assertions.assertThat(
+                WorkspaceEdits.withRenamed(java.util.List.of(a), "first", " "))
+                .containsExactly(a);
+        org.assertj.core.api.Assertions.assertThat(
+                WorkspaceEdits.withRenamed(java.util.List.of(a), "ghost", "x"))
+                .containsExactly(a);
+    }
+
+    @Test
+    @DisplayName("Delete drops exactly the named query")
+    void deleteDropsByName() {
+        var a = new DbWorkspaceIO.SavedQuery("first", "SELECT 1;", "SQLite");
+        var b = new DbWorkspaceIO.SavedQuery("second", "SELECT 2;", "SQLite");
+        org.assertj.core.api.Assertions.assertThat(
+                WorkspaceEdits.withoutSaved(java.util.List.of(a, b), "first"))
+                .containsExactly(b);
+        org.assertj.core.api.Assertions.assertThat(
+                WorkspaceEdits.withoutSaved(java.util.List.of(a), "ghost"))
+                .containsExactly(a);
+    }
 }

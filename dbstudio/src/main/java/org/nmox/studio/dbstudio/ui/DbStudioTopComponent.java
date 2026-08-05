@@ -68,6 +68,7 @@ import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.dbstudio.model.TableInfo;
 import org.nmox.studio.dbstudio.search.DbSearchProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -172,6 +173,8 @@ public final class DbStudioTopComponent extends TopComponent {
     private final JButton cancelButton = new JButton("Cancel");
     private final JButton saveQueryButton = new JButton("Save…");
     private final JComboBox<Object> savedCombo = new JComboBox<>();
+    /** The combo's trailing action row: opens the Manage dialog (v1.266.0). */
+    private static final String MANAGE_SAVED = "Manage\u2026";
     /** Guards the saved-combo's action listener during programmatic refills. */
     private boolean savedComboRefreshing;
     private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(200, 1, 1_000_000, 100));
@@ -235,6 +238,8 @@ public final class DbStudioTopComponent extends TopComponent {
     /** True while a console run is in flight; gates RUN and re-entry. */
     private boolean running;
     private String consoleMime = "";
+    /** What an empty console currently shows; never runnable (v1.266.0). */
+    private String consolePlaceholder = "SELECT \u2026;";
 
     public DbStudioTopComponent() {
         setName(Bundle.CTL_DbStudioTopComponent());
@@ -374,6 +379,26 @@ public final class DbStudioTopComponent extends TopComponent {
         panel.add(bar, BorderLayout.NORTH);
 
         console.setFont(MONO);
+        // The placeholder is a HINT, not content: it vanishes the moment
+        // the console takes focus and returns only to a blank console, so
+        // it can never ride along into a RUN (v1.266.0 — the DBA persona
+        // walk's first query executed the untouched "SELECT \u2026;" as
+        // statement 1 and reported a failure the user never wrote).
+        console.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (ConsoleMimes.shouldClearOnFocus(console.getText())) {
+                    console.setText("");
+                }
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (ConsoleMimes.shouldRestoreOnBlur(console.getText())) {
+                    console.setText(consolePlaceholder);
+                }
+            }
+        });
         // EXPLAIN follows the console text; setEditorKit swaps the document,
         // so the listener re-attaches on every document change
         console.getDocument().addDocumentListener(consoleTextListener);
@@ -452,6 +477,10 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private void run() {
+        if (ConsoleMimes.isPlaceholderOrBlank(console.getText())) {
+            status("Console is empty \u2014 type a query first", Color.GRAY);
+            return;
+        }
         runText(console.getText());
     }
 
@@ -911,9 +940,14 @@ public final class DbStudioTopComponent extends TopComponent {
         if (savedComboRefreshing) {
             return;
         }
-        if (savedCombo.getSelectedItem() instanceof DbWorkspaceIO.SavedQuery query) {
+        Object picked = savedCombo.getSelectedItem();
+        if (picked instanceof DbWorkspaceIO.SavedQuery query) {
             console.setText(query.text());
             status("Loaded \"" + query.name() + "\"", Color.GRAY);
+        } else if (MANAGE_SAVED.equals(picked)) {
+            SwingUtilities.invokeLater(this::manageSavedQueries);
+        }
+        if (picked instanceof DbWorkspaceIO.SavedQuery || MANAGE_SAVED.equals(picked)) {
             SwingUtilities.invokeLater(() -> {
                 savedComboRefreshing = true;
                 try {
@@ -925,6 +959,101 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * The Manage Saved Queries dialog: a list plus Rename/Delete. All
+     * list edits go through {@link WorkspaceEdits} (pure, test-pinned);
+     * Delete defaults to the SAFE button per the v1.98.0 idiom, and a
+     * rename that would collide with another saved query is refused
+     * with a status line rather than silently destroying it.
+     */
+    private void manageSavedQueries() {
+        javax.swing.DefaultListModel<DbWorkspaceIO.SavedQuery> model =
+                new javax.swing.DefaultListModel<>();
+        savedQueries.forEach(model::addElement);
+        javax.swing.JList<DbWorkspaceIO.SavedQuery> list = new javax.swing.JList<>(model);
+        list.setCellRenderer(new SavedQueryRenderer());
+        list.setVisibleRowCount(8);
+        if (!model.isEmpty()) {
+            list.setSelectedIndex(0);
+        }
+        JButton rename = new JButton("Rename\u2026");
+        JButton delete = new JButton("Delete\u2026");
+        Runnable syncButtons = () -> {
+            boolean has = list.getSelectedValue() != null;
+            rename.setEnabled(has);
+            delete.setEnabled(has);
+        };
+        list.addListSelectionListener(e -> syncButtons.run());
+        syncButtons.run();
+        rename.addActionListener(e -> {
+            DbWorkspaceIO.SavedQuery q = list.getSelectedValue();
+            if (q == null) {
+                return;
+            }
+            NotifyDescriptor.InputLine input =
+                    new NotifyDescriptor.InputLine("New name:", "Rename Saved Query");
+            input.setInputText(q.name());
+            if (DialogDisplayer.getDefault().notify(input) != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+            String newName = input.getInputText().strip();
+            if (newName.isEmpty() || newName.equals(q.name())) {
+                return;
+            }
+            java.util.List<DbWorkspaceIO.SavedQuery> renamed =
+                    WorkspaceEdits.withRenamed(savedQueries, q.name(), newName);
+            if (renamed.equals(savedQueries)) {
+                status("A saved query named \"" + newName + "\" already exists", FAIL_RED);
+                return;
+            }
+            savedQueries = renamed;
+            saveWorkspace();
+            refreshSavedCombo();
+            int index = list.getSelectedIndex();
+            model.clear();
+            savedQueries.forEach(model::addElement);
+            list.setSelectedIndex(Math.min(index, model.size() - 1));
+            status("Renamed to \"" + newName + "\"", OK_GREEN);
+        });
+        delete.addActionListener(e -> {
+            DbWorkspaceIO.SavedQuery q = list.getSelectedValue();
+            if (q == null) {
+                return;
+            }
+            // full ctor so Enter lands on the SAFE option (v1.98.0 law)
+            NotifyDescriptor confirm = new NotifyDescriptor(
+                    "Delete saved query \"" + q.name() + "\"?",
+                    "Delete Saved Query",
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    null,
+                    NotifyDescriptor.NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+            savedQueries = WorkspaceEdits.withoutSaved(savedQueries, q.name());
+            saveWorkspace();
+            refreshSavedCombo();
+            int index = list.getSelectedIndex();
+            model.removeElement(q);
+            if (!model.isEmpty()) {
+                list.setSelectedIndex(Math.min(index, model.size() - 1));
+            }
+            syncButtons.run();
+            status("Deleted \"" + q.name() + "\"", Color.GRAY);
+        });
+        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        south.add(rename);
+        south.add(delete);
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        panel.add(new JScrollPane(list), BorderLayout.CENTER);
+        panel.add(south, BorderLayout.SOUTH);
+        DialogDescriptor dd = new DialogDescriptor(panel, "Manage Saved Queries",
+                true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, null, null);
+        DialogDisplayer.getDefault().notify(dd);
+    }
+
     private void refreshSavedCombo() {
         savedComboRefreshing = true;
         try {
@@ -933,6 +1062,14 @@ public final class DbStudioTopComponent extends TopComponent {
                     ? "No saved queries" : "Saved queries…");
             for (DbWorkspaceIO.SavedQuery query : savedQueries) {
                 savedCombo.addItem(query);
+            }
+            if (!savedQueries.isEmpty()) {
+                // renaming/deleting lives behind one row instead of a
+                // context menu a combo popup cannot host (v1.266.0 — the
+                // DBA persona walk found saved queries could only ever be
+                // recalled; a typo'd name lived forever unless the user
+                // hand-edited .nmoxdb.json)
+                savedCombo.addItem(MANAGE_SAVED);
             }
             savedCombo.setSelectedIndex(0);
             savedCombo.setEnabled(!savedQueries.isEmpty());
@@ -1274,6 +1411,7 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private void applyConsoleMime(String mime, String placeholder) {
+        consolePlaceholder = placeholder;
         String text = console.getText();
         boolean replaceable = ConsoleMimes.isPlaceholderOrBlank(text);
         if (!mime.equals(consoleMime)) {
