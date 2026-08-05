@@ -128,6 +128,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
             public void selectionChanged(InfraNode node) {
                 properties.show(node);
             }
+
+            @Override
+            public void wireRefused(InfraNode from, InfraNode to, boolean duplicate) {
+                // the ghost wire vanishing silently read exactly like a
+                // misdrop — say WHY it refused (v1.271.0)
+                String why = duplicate
+                        ? "already wired"
+                        : from.kind.getDisplayName() + " doesn't wire into "
+                        + to.kind.getDisplayName() + " — a wire reads \"serves\"";
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Wire refused: " + why);
+            }
         });
 
         add(new InfraPalette(graph), BorderLayout.WEST);

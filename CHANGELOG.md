@@ -4,6 +4,50 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.271.0] - 2026-08-05
+
+The Infra Designer walk — wires you can actually grab.
+
+### Fixed
+- **Pressing the connector dot panned the canvas instead of starting a
+  wire.** The DevOps persona walk tried to wire a droplet to a
+  database four times and watched the canvas slide out from under the
+  cursor each time. The output nub is painted CENTERED on the node's
+  right edge, so half the visible dot lies outside the node
+  rectangle — and the press handler consulted `nodeAt` (strictly
+  inside-the-rect) before it ever tested the nub, so the dot's center
+  and outer half fell through to the pan branch. The nub hit-test now
+  owns the whole dot, checked before the inside gate; the drop side
+  had the same flaw (releasing on the target's INPUT nub — left edge,
+  half outside — silently cancelled the wire) and gained the matching
+  input-nub fallback. `FlowCanvasWireGestureTest` drives the canvas's
+  real mouse listener headless with synthesized press/drag/release.
+- **An illegal wire refused silently.** `InfraGraph.connect` returns
+  false for a rule-refused or duplicate wire and the canvas ignored
+  it — the ghost vanishing was indistinguishable from a misdrop. A new
+  default-method `Callbacks.wireRefused` narrates the reason on the
+  status line: "already wired", or "X doesn't wire into Y — a wire
+  reads \"serves\"".
+- **A managed database couldn't wire into a droplet** — the single
+  most common DigitalOcean pairing was missing from the rule table
+  while App Platform and Kubernetes were representable. DB_* now
+  wires into DROPLET/GPU_DROPLET; the wire orders creation (database
+  first) and carries no creation-time reference — the planner's
+  provider loop reads only VPC/SSH_KEY kinds, verified before the
+  rule changed — and the rule graph stays a DAG.
+  All three fixes mutation-proven ×4 (the rule mutation collapses
+  four tests at once; each gesture mutation fails its named test).
+
+### Verified clean (the walk's other stations)
+- DEPLOY without tokens is exemplary: an honest dry-run dialog naming
+  the missing provider, the ordered API plan, and the estimated cost.
+- Destroy stack… with nothing deployed answers "Nothing deployed to
+  destroy." Renaming a node updates its canvas label live; the cost
+  strip follows selection and design totals.
+- Ledger 75 gains its second instance: the property panel's value
+  editors clip at the default width (the DB Studio toolbar class,
+  same future layout-pass owner).
+
 ## [1.270.0] - 2026-08-05
 
 The arc review (v1.266–v1.269): context menus act on the clicked item.
@@ -9752,6 +9796,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.271.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.270.0...v1.271.0
 [1.270.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.269.0...v1.270.0
 [1.269.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.268.0...v1.269.0
 [1.268.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.267.0...v1.268.0
