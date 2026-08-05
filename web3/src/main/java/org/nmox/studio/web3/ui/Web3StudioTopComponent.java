@@ -304,6 +304,11 @@ public final class Web3StudioTopComponent extends TopComponent {
         addNetworkButton.setToolTipText("Add an RPC endpoint — secret URLs go to the OS keychain");
         addNetworkButton.addActionListener(e -> addNetwork());
         bar.add(addNetworkButton);
+        JButton removeNetworkButton = new JButton("Remove Network\u2026");
+        removeNetworkButton.setToolTipText(
+                "Removes the selected network \u2014 a secret RPC URL's keychain entry is deleted too");
+        removeNetworkButton.addActionListener(e -> removeSelectedNetwork());
+        bar.add(removeNetworkButton);
         bar.addSeparator();
         chipLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         chipLabel.setForeground(Color.GRAY);
@@ -1147,8 +1152,40 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
         });
         popup.add(copy);
+        javax.swing.JMenuItem forget = new javax.swing.JMenuItem("Forget deployment");
+        forget.addActionListener(e -> {
+            int row = deployTable.getSelectedRow();
+            if (row < 0 || row >= deployments.size()) {
+                return;
+            }
+            DeploymentRecord record = deployments.get(row);
+            // the address book is BOOKKEEPING — forgetting a row touches
+            // nothing on any chain, and the message says so; safe default
+            // per the v1.98.0 law (v1.269.0 — the organize sweep's fourth
+            // surface: deployments accumulated forever with no gesture)
+            NotifyDescriptor confirm = new NotifyDescriptor(
+                    "Forget " + record.contractName() + " at "
+                            + record.address() + "? Only this address-book row"
+                            + " is removed \u2014 the contract on chain is"
+                            + " untouched.",
+                    "Forget Deployment",
+                    NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE,
+                    null,
+                    NotifyDescriptor.NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(confirm)
+                    != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+            deployments.remove(row);
+            saveWorkspace();
+            deploymentsModel.fireTableDataChanged();
+            rebuildDeploymentsBranch();
+            status("Forgot " + record.contractName(), Color.GRAY);
+        });
+        popup.add(forget);
         deployTable.setComponentPopupMenu(popup);
-        deployTable.setToolTipText("Double-click to open in Interact; right-click to copy the address");
+        deployTable.setToolTipText("Double-click to open in Interact; right-click to copy the address or forget the row");
         JScrollPane deployScroll = new JScrollPane(deployTable);
         deployScroll.setBorder(BorderFactory.createTitledBorder("Deployments (address book)"));
         panel.add(deployScroll);
@@ -1588,6 +1625,45 @@ public final class Web3StudioTopComponent extends TopComponent {
         rebuildNetworksBranch();
         refreshNetworkCombo(result.network());
         status("Added network " + result.network().name(), OK_GREEN);
+    }
+
+    /**
+     * Removes the combo's selected network (v1.269.0 — the organize
+     * sweep's fourth surface: Add Network\u2026 existed since v1.205-era
+     * with no inverse, so a typo'd RPC URL lived in the combo forever
+     * and a SECRET network's keychain entry outlived any way to drop
+     * it). LOCAL_ANVIL is built in and refuses; the confirm carries the
+     * safe default and names the keychain consequence, the DB Studio
+     * remove-connection wording. Selection falls back to LOCAL_ANVIL.
+     */
+    private void removeSelectedNetwork() {
+        Object selected = networkCombo.getSelectedItem();
+        if (!(selected instanceof Network network) || LOCAL_ANVIL.equals(network)) {
+            status("The local Anvil network is built in \u2014 select an added network to remove", Color.GRAY);
+            return;
+        }
+        NotifyDescriptor confirm = new NotifyDescriptor(
+                "Remove network \"" + network.name() + "\"?"
+                        + (network.secretUrl()
+                                ? " Its keychain RPC URL is deleted too."
+                                : ""),
+                "Remove Network",
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+        networks.remove(network);
+        if (network.secretUrl()) {
+            String name = network.name();
+            RP.post(() -> RpcSecrets.delete(name));
+        }
+        saveWorkspace();
+        rebuildNetworksBranch();
+        refreshNetworkCombo(LOCAL_ANVIL);
+        status("Removed network " + network.name(), Color.GRAY);
     }
 
     // ---- persistence (.nmoxweb3.json, the RackService idiom) ---------------------

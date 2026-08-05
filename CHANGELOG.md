@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.269.0] - 2026-08-05
+
+Contract Studio can forget — the organize sweep closes its fourth surface.
+
+### Added
+- **Remove Network…** beside Add Network… in Contract Studio's network
+  bar. Add Network… had shipped with no inverse since the network
+  manager existed, so a typo'd RPC URL lived in the combo forever —
+  and a SECRET network's keychain entry outlived every way to drop it.
+  Removal confirms with the v1.98.0 safe default (Enter answers No),
+  names the keychain consequence in the dialog when the network is
+  secret, deletes the `RpcSecrets` entry off the EDT (the keyring may
+  block on OS calls), and falls the selection back to Local Anvil. The
+  built-in Local Anvil network refuses removal before any dialog or
+  mutation — a refusal never shows a dialog it would have to walk back.
+- **Forget deployment** in the Oversight address book's right-click
+  menu, beside Copy address. Deployment rows accumulated forever with
+  no removal gesture at all. The dialog says exactly what forgetting
+  means — only the address-book row is removed, the contract on chain
+  is untouched — with the same safe default; the absence persists to
+  `.nmoxweb3.json` and both the table and the ⌘I search branch repaint.
+
+### Fixed
+- The organize-gesture sweep (API Studio v1.263.0, DB Studio v1.266.0,
+  Block Studio v1.268.0, now Contract Studio) is complete across every
+  studio that persists named user artifacts. Both gestures are
+  pure-Swing wiring, so the laws are pinned at the source by the new
+  `OrganizeGesturesGateTest` — LOCAL_ANVIL-refuses-first, safe-default
+  confirms, keychain-delete-on-secret-removal, persist-and-repaint —
+  mutation-proven ×4, each dropped line failing its named test.
+
 ## [1.268.0] - 2026-08-05
 
 Renaming a Block Studio component follows its references.
@@ -9666,6 +9697,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.269.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.268.0...v1.269.0
 [1.268.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.267.0...v1.268.0
 [1.267.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.266.0...v1.267.0
 [1.266.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.265.0...v1.266.0
