@@ -20,6 +20,36 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
+
+### 76. Tooltips never reach an LCD on a rack faceplate
+Found while live-verifying v1.282.0 in the shipped app. `LcdDisplay`
+carries the full text as a tooltip when the glass had to cut it, and
+the method is correct in isolation — a headless probe on a 215px
+display returns the whole `UNTRUSTED WORKSPACE — EXECUTION REFUSED`
+string. In the running IDE the tooltip never appears.
+
+What the evidence rules in and out:
+- **Not the synthetic hover.** The same hover shows `RackButton`'s
+  command-transparency tooltip (`$ npm test / in …`) immediately, so
+  events and the manager both work in that window.
+- **Not v1.282.0's code.** REFLEX's *editable* LCD calls
+  `setToolTipText("Double-click to edit")` and has since v1.0 — it
+  shows nothing either. **No LcdDisplay tooltip has ever fired.**
+- **Not the registration site alone.** v1.283.0 moved registration
+  from the constructor (which runs off the EDT, where the Swing
+  singleton must not be touched) to `addNotify`/`removeNotify`, which
+  is the right place regardless. The behaviour did not change.
+
+The remaining suspects are the interaction between `RackDevice`'s own
+`ToolTipManager` registration plus its `getToolTipText(MouseEvent)`
+override (which answers for the patch bay and the rear jacks) and a
+registered child underneath it. That needs a real bisect against the
+manager's dispatch, not another guess — which is why this is a ledger
+entry and not a fix. Nothing is broken by the current state: the
+tooltip is inert, and the truncation it backs up is live-proven, so
+the visible text is honest with or without it.
+
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
 ### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0

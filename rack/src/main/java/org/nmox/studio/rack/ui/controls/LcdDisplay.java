@@ -45,11 +45,6 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         setFocusable(false);
         setPreferredSize(new Dimension(widthPx, 12 + this.lines * 15));
         setSize(getPreferredSize());
-        // a display that had to cut its text must still be readable;
-        // setToolTipText is what normally registers a component, and
-        // most LCDs never call it, so register outright and let
-        // getToolTipText decide per hover
-        javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -190,6 +185,28 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         // even the ellipsis alone may not fit; showing it beats showing
         // a lone letter that reads as content
         return head + "…";
+    }
+
+    /**
+     * Register for tooltips here, not in the constructor: devices are
+     * built off the EDT, and {@link javax.swing.ToolTipManager} is a
+     * Swing singleton that must be touched on the paint thread.
+     * v1.282.0 registered in the constructor and the tooltip never
+     * fired in the shipped app — the method returned the right string,
+     * nothing ever asked it. {@code addNotify} runs on the EDT when the
+     * faceplate is really added, which is also when a tooltip could
+     * first be shown.
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        javax.swing.ToolTipManager.sharedInstance().unregisterComponent(this);
+        super.removeNotify();
     }
 
     /**
