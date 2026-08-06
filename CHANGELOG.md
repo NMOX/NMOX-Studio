@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.285.0] - 2026-08-06
+
+The file tree's Cut, Copy and Delete actually work.
+
+### Fixed
+- **Every file's context menu offered Cut, Copy and Delete — and all
+  three were permanently disabled, since the v1.64.0 platform-tree
+  rewrite.** They are `CallbackSystemAction`s: the menu shows them, but
+  they only enable when the activated component's ActionMap binds their
+  keys through `ExplorerUtils`, and nothing ever bound them — the
+  v1.64.0 comment even celebrated "Cut/Copy/Paste are new". 220
+  releases of grey menu items; the v1.38.1 pattern (an affordance
+  documented but never exercised is untested), found by the
+  project-starter persona walk trying to delete a scratch file.
+  `FileTreePanel.installExplorerActions` now binds copy/cut/paste/
+  delete over the tree's ExplorerManager into the ActionMap Project
+  Studio's default lookup already exposes, with
+  `ExplorerUtils.activateActions` riding the window's activation
+  lifecycle. Delete passes `confirmDelete=true`, so the platform's own
+  "Confirm Object Deletion" dialog guards the irreversible verb per the
+  v1.98.0 safe-default law. And with the verbs now live, the aimed
+  project ROOT refuses destroy and cut from its own tree — the
+  underlying DataFolder node would happily delete the whole checkout.
+  Live-proven in the dev build: Delete enabled on a scratch file →
+  platform confirm → gone from tree and disk; on the project root, Cut
+  and Delete grey while Copy/Paste/Add/Find/Rename stay live.
+  Mutation-proven ×3: removing the studio-side install call, dropping
+  the root guard, and turning off the delete confirmation each fail a
+  named test.
+
 ## [1.284.0] - 2026-08-06
 
 Renaming a script onto an existing name is refused, not silently absorbed.
