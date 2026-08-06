@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.279.0] - 2026-08-06
+
+The Workbench's OPEN FILES lists files, once each.
+
+### Fixed
+- **The project folder was listed as an open file — twice.** Opening a
+  folder as a project leaves a folder-backed editor TopComponent in the
+  platform registry, and the Workbench's OPEN FILES section rowed every
+  opened editor TopComponent verbatim: no folder guard, and no dedup by
+  path, so the aimed project directory appeared once per time it had
+  been opened. The neighbouring RECENT FILES section already knew paths
+  repeat (it builds its own open-path `Set` to exclude them) — this one
+  didn't. Rows now come through one `listable` predicate: folders never
+  list, and one row per path (falling back to the title for a document
+  with no file on disk, so virtual editors still dedupe). Three
+  behavior tests; mutation-proven ×2 — dropping the folder guard and
+  dropping the dedup each fail by name.
+
 ## [1.278.0] - 2026-08-06
 
 The Task Rack persona walk — a patchless project shows its own rack.
@@ -9965,6 +9983,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.279.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.278.0...v1.279.0
 [1.278.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.277.0...v1.278.0
 [1.277.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.276.0...v1.277.0
 [1.276.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.275.0...v1.276.0
