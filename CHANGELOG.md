@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.283.0] - 2026-08-06
+
+The LCD tooltip registers where Swing requires it, and the ledger tells
+the truth about what still does not work.
+
+### Changed
+- **`LcdDisplay` registers with `ToolTipManager` in `addNotify`, not in
+  its constructor**, and unregisters in `removeNotify` per the listener
+  symmetry law. Devices are built off the EDT, and the manager is a
+  Swing singleton that must be touched on the paint thread — the
+  constructor was simply the wrong place. This is a correctness fix,
+  not a behaviour fix: see below.
+
+### Documented
+- **Ledger 76: tooltips never reach an LCD on a rack faceplate.** Live
+  verification of v1.282.0 in the shipped app found the tooltip never
+  appears, and the bisect showed why that is not v1.282.0's fault:
+  `RackButton`'s tooltip shows on the same synthetic hover, so events
+  and the manager work; REFLEX's *editable* LCD has called
+  `setToolTipText` since v1.0 and shows nothing either. **No
+  `LcdDisplay` tooltip has ever fired.** A headless probe proves the
+  method returns the right string, so the fault is in dispatch, most
+  likely the interaction with `RackDevice`'s own registration and its
+  `getToolTipText(MouseEvent)` override. That needs a real bisect
+  against the manager, not another guess, so it is recorded rather
+  than patched. The v1.282.0 truncation fix itself is live-proven and
+  unaffected: the glass reads `UNTRUSTED WORKSPACE — EXECUTION…`, head
+  intact, cut marked.
+
 ## [1.282.0] - 2026-08-06
 
 An LCD that has to cut its text keeps the head and says it cut.
