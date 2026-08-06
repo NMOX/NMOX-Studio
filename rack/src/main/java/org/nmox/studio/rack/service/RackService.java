@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.model.Rack;
+import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.RackIO;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
@@ -668,10 +669,37 @@ public class RackService {
                 java.util.logging.Logger.getLogger(RackService.class.getName())
                         .warning("Could not load rack patch " + patch + ": " + ex);
             }
+        } else {
+            // A project with NO patch used to keep the PREVIOUS project's
+            // devices mounted — there was no else here (v1.278.0, the
+            // Task Rack persona walk: aiming a plain Node project showed
+            // a REPL dialed to `elm repl` from the learning space aimed
+            // before it). Three consequences, worst last: the rack lied
+            // about whose pipeline it was; Save Patch would have written
+            // project A's devices into project B's .nmoxrack.json; and a
+            // RUNNING device kept its process while every lane's
+            // commandDir silently re-rooted to B, so GO would run A's
+            // command in B's directory. A patchless project now gets the
+            // same known state a fresh launch gets — removeDevice
+            // disposes each device, so anything running stops first.
+            resetToStarterRack();
         }
         // switching projects loads a different rack; undo starts fresh, and
         // must never peel a just-loaded patch apart device by device
         rack.clearUndoHistory();
+    }
+
+    /**
+     * Clears the rack and mounts the starter patch — the state a
+     * project with no {@code .nmoxrack.json} must show, identical to a
+     * first launch. Shares {@link #loadDefaultRack()} so the two can
+     * never drift.
+     */
+    private void resetToStarterRack() {
+        for (RackDevice d : new java.util.ArrayList<>(rack.getDevices())) {
+            rack.removeDevice(d);
+        }
+        loadDefaultRack();
     }
 
     /**
