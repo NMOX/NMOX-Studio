@@ -377,6 +377,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         section("OPEN FILES");
         TopComponent active = TopComponent.getRegistry().getActivated();
         int count = 0;
+        java.util.Set<String> listed = new java.util.HashSet<>();
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
                 continue;
@@ -387,6 +388,16 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             File file = FileUtil.toFile(dob.getPrimaryFile());
             String title = dob.getPrimaryFile().getNameExt();
+            // an OPEN FILES list lists FILES (v1.279.0, the Task Rack walk):
+            // opening a folder as a project leaves a folder-backed editor
+            // TopComponent in the registry, so the project directory itself
+            // was listed here — and once PER open, because nothing deduped
+            // by path either. The neighbouring RECENT FILES section already
+            // knew paths repeat (it builds its own open-path Set); this one
+            // rowed every TopComponent verbatim.
+            if (!listable(dob.getPrimaryFile().isFolder(), file, title, listed)) {
+                continue;
+            }
             boolean isActive = tc == active;
             boolean modified = dob.isModified();
             row(title, file != null ? file.getParent() : null,
@@ -398,6 +409,21 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         if (count == 0) {
             emptyRow("nothing open — pick up where you left off below");
         }
+    }
+
+    /**
+     * Whether an open editor becomes an OPEN FILES row: folders never
+     * (this list is about files), and one row per path — two editors on
+     * one file, or the same folder opened twice, must not double the
+     * list. Adds the accepted path to {@code listed}; package-private
+     * so the rule is tested without a window system.
+     */
+    static boolean listable(boolean isFolder, File file, String title,
+            java.util.Set<String> listed) {
+        if (isFolder) {
+            return false;
+        }
+        return listed.add(file != null ? file.getAbsolutePath() : title);
     }
 
     /** The trail: recently touched files not currently open. */
