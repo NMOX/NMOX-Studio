@@ -45,6 +45,11 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         setFocusable(false);
         setPreferredSize(new Dimension(widthPx, 12 + this.lines * 15));
         setSize(getPreferredSize());
+        // a display that had to cut its text must still be readable;
+        // setToolTipText is what normally registers a component, and
+        // most LCDs never call it, so register outright and let
+        // getToolTipText decide per hover
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -158,6 +163,60 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         }
     }
 
+    /**
+     * Fit text to {@code maxPx}, keeping the HEAD and marking the cut.
+     *
+     * <p>The single-line branch used to drop characters off the FRONT,
+     * silently: VERITAS's "UNTRUSTED WORKSPACE — EXECUTION REFUSED"
+     * reached the user as "ED WORKSPACE — EXECUTION REFUSED", which
+     * loses the one word the message exists to say and reads like
+     * content rather than a cut. The multi-line branch cut from the
+     * end, also silently, so the two halves of one widget disagreed.
+     * Both now keep the head and end in an ellipsis, and whatever the
+     * glass cannot hold is one hover away — see {@link #getToolTipText}.
+     *
+     * @param maxPx   available width inside the bezel
+     * @param widthOf measures a candidate string (the font's metrics)
+     * @return text that fits, ending in … when it had to be cut
+     */
+    static String fit(String t, int maxPx, java.util.function.ToIntFunction<String> widthOf) {
+        if (t == null || t.isEmpty() || widthOf.applyAsInt(t) <= maxPx) {
+            return t == null ? "" : t;
+        }
+        String head = t;
+        while (!head.isEmpty() && widthOf.applyAsInt(head + "…") > maxPx) {
+            head = head.substring(0, head.length() - 1);
+        }
+        // even the ellipsis alone may not fit; showing it beats showing
+        // a lone letter that reads as content
+        return head + "…";
+    }
+
+    /**
+     * The full text whenever the glass had to cut it, so nothing the
+     * device said is unreachable. Assistive technology already reads
+     * the untruncated text through the accessible description.
+     */
+    @Override
+    public String getToolTipText() {
+        if (getWidth() <= 14) {
+            return super.getToolTipText();   // not laid out yet
+        }
+        String full = shownText();
+        java.awt.FontMetrics fm = getFontMetrics(RackStyle.LCD_FONT);
+        boolean cut = false;
+        for (String line : full.split("\n", -1)) {
+            if (fm.stringWidth(line) > getWidth() - 14) {
+                cut = true;
+                break;
+            }
+        }
+        if (cut) {
+            return editable ? full + "  (double-click to edit)" : full;
+        }
+        return super.getToolTipText();
+    }
+
     private void repaintLater() {
         if (SwingUtilities.isEventDispatchThread()) {
             repaint();
@@ -191,10 +250,7 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
 
         g.setColor(textColor);
         if (lines == 1) {
-            String t = text;
-            while (t.length() > 1 && fm.stringWidth(t) > w - 14) {
-                t = t.substring(1);
-            }
+            String t = fit(text, w - 14, fm::stringWidth);
             g.drawString(t, 7, h / 2 + fm.getAscent() / 2 - 2);
         } else {
             List<Entry> snapshot;
@@ -203,10 +259,7 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
             }
             int y = 4 + fm.getAscent();
             for (Entry entry : snapshot) {
-                String t = entry.text();
-                while (t.length() > 1 && fm.stringWidth(t) > w - 14) {
-                    t = t.substring(0, t.length() - 1);
-                }
+                String t = fit(entry.text(), w - 14, fm::stringWidth);
                 g.setColor(entry.color() != null ? entry.color() : textColor);
                 g.drawString(t, 7, y);
                 y += 15;

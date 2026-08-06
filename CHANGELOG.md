@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.282.0] - 2026-08-06
+
+An LCD that has to cut its text keeps the head and says it cut.
+
+### Fixed
+- **A device's own refusal reached the user mutilated.** VERITAS's
+  `UNTRUSTED WORKSPACE — EXECUTION REFUSED` painted as
+  `ED WORKSPACE — EXECUTION REFUSED` — observed live in the shipped
+  1.280.0 during the Task Rack persona walk. `LcdDisplay`'s single-line
+  paint dropped characters off the FRONT one at a time with no marker,
+  so the first word (the one the message exists to say) went first, and
+  what remained read like content rather than like a cut. The
+  multi-line branch trimmed from the END, also silently, so the two
+  halves of one widget disagreed about which end matters. Both now
+  route through one `fit` helper that keeps the head and ends in an
+  ellipsis; an impossibly narrow display shows the marker rather than a
+  stray letter. Whatever the glass cannot hold is one hover away — a
+  truncated LCD now carries the full text as its tooltip (assistive
+  technology already read the untruncated text through the accessible
+  description, so only sighted users were losing it). Mutation-proven
+  ×3: restoring the front-drop, removing the ellipsis, and letting the
+  two branches diverge again each fail a named test.
+
 ## [1.281.0] - 2026-08-06
 
 REFLEX stops firing for the IDE's own saves.
