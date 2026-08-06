@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.277.0] - 2026-08-05
+
+Docs truth — the plan closes the persona day.
+
+### Changed
+- `docs/engineering/plan.md` gains the close-of-shift addendum at
+  v1.276.0: the twelve-release day (v1.265–v1.276), the WrapLayout
+  one-row-lie and viewport-tracking laws, the Docker walk's noun fix,
+  the shared nub tolerance, the CSP-console law (*page CSP gates
+  in-page eval, never host-compiled executeScript — never route user
+  input through window.eval*), and the two process scars
+  (verdict-grep counting, repo-scan gate hygiene).
+
 ## [1.276.0] - 2026-08-05
 
 The Browser-persona walk — the DevTools console survives a strict CSP.
@@ -9929,6 +9942,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.277.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.276.0...v1.277.0
 [1.276.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.275.0...v1.276.0
 [1.275.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.274.0...v1.275.0
 [1.274.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.273.0...v1.274.0

@@ -573,6 +573,41 @@ resolver claiming the space's files live. The night's law, twice
 proven: *a starter that was never installed is a claim, not a
 product — npm-prove every generator whose output is meant to run.*
 
+Currency addendum 2026-08-05 (close of shift) at **v1.276.0** (the
+persona day, twelve releases): the walks kept paying to the last
+hour. v1.273.0 closed ledger 75 structurally — core.util.WrapLayout
+exists because plain FlowLayout WRAPS at layout time but LIES one-row
+in preferredLayoutSize (the exact lie that clips a second toolbar row
+invisible), and the Infra property form now tracks its viewport width
+so GridBag squeezes editors instead of growing an h-scrollbar; both
+live-proven by resizing the shipped app. v1.274.0's Docker walk ran a
+real postgres container through the whole corpus callosum (offer with
+the PUBLISHED port pre-filled, Test OK, SELECT version() 5 ms) and
+found ONE wrong noun — the connect status said "0 containers"
+(dbstudio's internal word) beside a connection sourced FROM a Docker
+container; DbEngine.containerNoun now speaks tables/collections/
+databases, live-proven "— 0 tables". v1.275.0's day-tail review gave
+the wire gesture's two hit zones one shared nearNub tolerance (the
+press and drop sides are two ends of the SAME gesture; the literal is
+pinned to a single occurrence). v1.276.0's Browser walk typed
+document.title on Hacker News and got EvalError: the DevTools console
+wrapped input in window.eval, which any CSP without 'unsafe-eval'
+refuses — DEAD on exactly the pages worth inspecting, including the
+Browser's own home page, while the sibling panes never noticed
+because host-compiled executeScript payloads are NOT gated by
+unsafe-eval. That distinction IS the fix (inline the expression
+host-compiled; statementScript fallback for non-expressions), and the
+law is worth keeping: *in a WebView, page CSP gates in-page
+eval/Function but never host-injected executeScript compiles — never
+route user input through window.eval.* Live-proven the same hour:
+"result Hacker News" where the EvalError had been. Two process scars
+also earned their keep: a verify verdict read through
+grep "SUCCESS|FAILURE" exits 0 either way (count the two lines
+separately), and a repo-scan gate must normalize path separators and
+skip dot-directories on day one (windows-latest went red on the
+popup gate's backslash starvation; caught by the main-green gate
+before the tag).
+
 Currency addendum 2026-08-05 (evening) at **v1.271.0** (the organize
 sweep closes; the review and the walk both pay): five more releases.
 v1.268.0 closed the organize sweep's SHARPEST instance — Block Studio
