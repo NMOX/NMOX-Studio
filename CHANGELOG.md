@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.280.0] - 2026-08-06
+
+Replacing the rack asks first — the walk's sharpest find.
+
+### Fixed
+- **Presets and Load Patch destroyed unsaved work with no confirmation
+  and no way back.** Both verbs route through `RackIO.fromJson`, which
+  CLEARS UNDO HISTORY by design (v1.50.0 — so undo can never peel a
+  just-loaded patch apart). Together that means: build a pipeline,
+  click Presets ▸ anything, and the pipeline is gone with ⌘Z powerless.
+  Every other irreversible gesture in the product carries the v1.98.0
+  safe-default confirm — Destroy Stack, Delete Network, Apply edits,
+  Discard experiment, Remove connection — the rack's own patch verbs
+  never did. Both now ask when the rack differs from the patch it was
+  last loaded from or saved to, with Enter landing on No and the
+  message saying plainly that loading cannot be undone. The baseline
+  re-sets on window open (so an untouched rack asks nothing), on a
+  successful save, after a load, and after a preset applies — a confirm
+  that nags is a confirm people learn to click through. Three tests
+  (the pure dirty predicate, both call sites + the safe-default shape,
+  and the re-baseline count); mutation-proven ×2 — removing the preset
+  confirm and flipping the initialValue to YES each fail by name.
+
 ## [1.279.0] - 2026-08-06
 
 The Workbench's OPEN FILES lists files, once each.
@@ -9983,6 +10006,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.280.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.279.0...v1.280.0
 [1.279.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.278.0...v1.279.0
 [1.278.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.277.0...v1.278.0
 [1.277.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.276.0...v1.277.0
