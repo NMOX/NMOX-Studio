@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.278.0] - 2026-08-06
+
+The Task Rack persona walk — a patchless project shows its own rack.
+
+### Fixed
+- **Switching to a project with no saved patch left the PREVIOUS
+  project's devices mounted.** `autoLoadPatch` loaded
+  `.nmoxrack.json` when the aimed project had one and did nothing when
+  it didn't — there was no else branch. The walk aimed a plain Node
+  project and found a REPL dialed to `elm repl`, inherited from a
+  learning space aimed before it. The lie is the least of it:
+  **Save Patch would have written project A's devices into project B's
+  `.nmoxrack.json`**, and a RUNNING device kept its process while every
+  lane's `commandDir` silently re-rooted to B — pressing GO would have
+  run A's configured command in B's directory. A patchless project now
+  resets to exactly the starter rack a first launch shows, sharing
+  `loadDefaultRack()` so the two states cannot drift; `removeDevice`
+  disposes each device, so anything running stops first. Three
+  behavior tests (inherit-nothing, starter-shape, patch-to-patch
+  unchanged) drive the real `RackService` aim path; mutation-proven ×2
+  — deleting the else branch and dropping the starter device each fail
+  by name.
+
 ## [1.277.0] - 2026-08-05
 
 Docs truth — the plan closes the persona day.
@@ -9942,6 +9965,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.278.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.277.0...v1.278.0
 [1.277.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.276.0...v1.277.0
 [1.276.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.275.0...v1.276.0
 [1.275.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.274.0...v1.275.0
