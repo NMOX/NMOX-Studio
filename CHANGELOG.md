@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.276.0] - 2026-08-05
+
+The Browser-persona walk — the DevTools console survives a strict CSP.
+
+### Fixed
+- **The console was dead on exactly the pages worth inspecting.** The
+  walk read Hacker News in the in-app Browser and typed
+  `document.title` into the DevTools console: `EvalError: Refused to
+  evaluate a string as JavaScript because 'unsafe-eval' ...` — the
+  console wrapped input in `window.eval`, and any page whose
+  Content-Security-Policy omits `'unsafe-eval'` (HN, GitHub, most
+  serious sites) refuses in-page eval. The DOM/Network/Storage panes
+  never noticed because their `executeScript` payloads are
+  host-compiled top-level scripts, which `unsafe-eval` does not gate —
+  the exact distinction the fix rides: the user's expression is now
+  INLINED into the wrapper so the host compiles it. Runtime errors
+  still come back as the in-page red marker; a syntax error now fails
+  the whole compile, so the caller retries the new
+  `statementScript` form (the text as a host-compiled function body,
+  honestly answering `undefined`) before reporting. Mutation-proven
+  ×2: re-introducing `window.eval` and dropping the statement form's
+  error marker each fail their named test.
+
+### Verified clean (the walk's stations, live on FX 26 WebKit)
+- Hacker News renders and reads; a story click navigates with the tab
+  title following; Back restores the list.
+- The iPhone viewport preset reflows HN at 390px — media queries fire
+  for real (the v1.228.0 promise holding on FX 26).
+- The DevTools DOM pane snapshots the live page (html → head/body)
+  and the console echoes input with timestamps; the deliberate
+  press-Refresh snapshot model is honest about when it reads.
+
 ## [1.275.0] - 2026-08-05
 
 The day-tail review (v1.271–v1.274): one drift hazard, closed.
@@ -9897,6 +9929,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.276.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.275.0...v1.276.0
 [1.275.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.274.0...v1.275.0
 [1.274.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.273.0...v1.274.0
 [1.273.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.272.0...v1.273.0
