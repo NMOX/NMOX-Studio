@@ -80,7 +80,19 @@ class WorkspaceTrustTest {
                     .noneMatch(k -> real.get(k, "").contains("ledger69-scratch"));
         } finally {
             real.remove(sentinelKey);
-            real.flush();
+            try {
+                real.flush();
+            } catch (java.util.prefs.BackingStoreException ex) {
+                // Best-effort janitorial flush only: it persists the
+                // sentinel's REMOVAL so a developer's real store is not
+                // left with a stray test key. On a fresh CI runner with
+                // no ~/.java/.userPrefs the store cannot even be locked
+                // (BackingStoreException, ENOENT) — but then the put()
+                // above never persisted either, so there is nothing
+                // durable to clean up. The assertions above are the
+                // sentinel; they must never be excused. Struck twice on
+                // ubuntu runners on 2026-08-06 (v1.286.0).
+            }
             WorkspaceTrust.clearForTest();
         }
     }
