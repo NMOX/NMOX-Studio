@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.284.0] - 2026-08-06
+
+Renaming a script onto an existing name is refused, not silently absorbed.
+
+### Fixed
+- **The Scripts table destroyed scripts on a name collision.** package.json
+  scripts are a JSON object, and Project Configuration's Save folded table
+  rows into a map where a later row silently REPLACED an earlier one with
+  the same name. The project-starter persona walk hit it on a fresh
+  Express API: renaming `test` to `dev` and saving destroyed the RUNNING
+  dev script and the test script in one click — three scripts in, two
+  out, no warning. The v1.268.0 Block Studio tag-collision class, in its
+  fourth home. Save now refuses the collision by name ("Two scripts are
+  both named …") before any write, leaving the dialog open and the file
+  untouched; blank Add-Script rows never count. Fixed in passing, same
+  listener: Save never committed an in-progress cell edit (only Remove
+  did), so a half-typed command that hadn't seen Enter was silently
+  dropped — the editor now commits first, so Save saves what the user
+  can see. Mutation-proven ×3: removing the refusal, dropping the name
+  trim, and moving the editor commit below the check each fail a named
+  test. The rest of the walk's happy path was verified CLEAN live in the
+  shipped 1.282.0: wizard → scaffold → silent npm install (143 packages)
+  → Run behind the pre-trust blessing → nodemon banner → ⇄ serving chip
+  → the JSON response rendered in the in-app Browser, with an honest
+  refusal when the project name already existed.
+
 ## [1.283.0] - 2026-08-06
 
 The LCD tooltip registers where Swing requires it, and the ledger tells
