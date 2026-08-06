@@ -241,6 +241,7 @@ public final class RackTopComponent extends TopComponent {
                     org.nmox.studio.core.util.AtomicFiles.writeString(
                             target.toPath(), snapshot.toString(2));
                     java.awt.EventQueue.invokeLater(() -> {
+                        markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
                         // never appended onto itself across repeated saves
                         projectLabel.setText(projectName + "  [saved]");
@@ -261,6 +262,9 @@ public final class RackTopComponent extends TopComponent {
         load.addActionListener(e -> {
             File source = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
             if (source.isFile()) {
+                if (!confirmReplace("the saved patch")) {
+                    return;
+                }
                 loadPatch(source);
             } else {
                 info("No " + RackIO.DEFAULT_FILENAME + " in project.");
@@ -277,8 +281,12 @@ public final class RackTopComponent extends TopComponent {
                 javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
                 item.setToolTipText(preset.getDescription());
                 item.addActionListener(a -> {
+                    if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
+                        return;
+                    }
                     try {
                         RackIO.fromJson(rack, preset.buildPatch());
+                        markPersisted();
                     } catch (RuntimeException ex) {
                         error("Could not wire the preset: " + ex.getMessage());
                     }
@@ -354,6 +362,56 @@ public final class RackTopComponent extends TopComponent {
         return bar;
     }
 
+    /**
+     * The text of the patch the rack was last loaded from or saved to —
+     * the baseline "unsaved work" is measured against. Set at open (the
+     * rack has just been autoloaded), on a successful save, and after
+     * every load or preset apply.
+     */
+    private String lastPersistedJson;
+
+    /**
+     * Whether the rack holds work that replacing it would destroy
+     * (v1.280.0, the Task Rack persona walk). Both patch verbs route
+     * through {@code RackIO.fromJson}, which CLEARS UNDO HISTORY by
+     * design (v1.50.0 — so undo can never peel a just-loaded patch
+     * apart), and neither asked first: clicking Presets ▸ anything on
+     * a pipeline you had not saved destroyed it with no confirmation
+     * and no way back. Every other irreversible gesture in the product
+     * carries the v1.98.0 safe-default confirm; these two never did.
+     */
+    static boolean unsavedWork(String currentJson, String lastPersistedJson) {
+        return lastPersistedJson != null && !lastPersistedJson.equals(currentJson);
+    }
+
+    /**
+     * Asks before an action that replaces the whole rack. Enter lands
+     * on No (the v1.98.0 idiom: {@code Confirmation} hard-codes OK, so
+     * the full constructor with {@code NO_OPTION} as initialValue is
+     * the only safe shape). Returns true when the caller may proceed.
+     */
+    private boolean confirmReplace(String what) {
+        if (!unsavedWork(RackIO.toJson(rack).toString(2), lastPersistedJson)) {
+            return true;
+        }
+        org.openide.NotifyDescriptor confirm = new org.openide.NotifyDescriptor(
+                "Replace the rack with " + what + "? This patch has unsaved"
+                        + " changes, and loading cannot be undone — save it"
+                        + " first if you want to keep it.",
+                "Replace Rack",
+                org.openide.NotifyDescriptor.YES_NO_OPTION,
+                org.openide.NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                org.openide.NotifyDescriptor.NO_OPTION);
+        return org.openide.DialogDisplayer.getDefault().notify(confirm)
+                == org.openide.NotifyDescriptor.YES_OPTION;
+    }
+
+    /** Re-baselines the dirty check to whatever the rack now holds. */
+    private void markPersisted() {
+        lastPersistedJson = RackIO.toJson(rack).toString(2);
+    }
+
     private void loadPatch(File file) {
         // Read + parse off the EDT (a project-homed patch can live on a slow or
         // network volume), then apply on the EDT where fromJson mutates the
@@ -371,6 +429,7 @@ public final class RackTopComponent extends TopComponent {
             java.awt.EventQueue.invokeLater(() -> {
                 try {
                     RackIO.fromJson(rack, doc);
+                    markPersisted();
                 } catch (RuntimeException ex) {
                     error("Could not load the patch: " + ex.getMessage());
                 }
@@ -404,6 +463,12 @@ public final class RackTopComponent extends TopComponent {
             projectListenerAttached = true;
         }
         updateProjectLabel(); // re-sync: the aim may have moved while closed
+        if (lastPersistedJson == null) {
+            // baseline the unsaved-work check against whatever the rack
+            // holds now — at open that IS the autoloaded patch, so a
+            // preset click without edits asks nothing (v1.280.0)
+            markPersisted();
+        }
     }
 
     @Override
