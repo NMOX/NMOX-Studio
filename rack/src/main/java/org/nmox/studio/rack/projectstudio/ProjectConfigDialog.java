@@ -44,6 +44,7 @@ public class ProjectConfigDialog extends JDialog {
     private final JTextField licenseField = new JTextField(10);
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[]{"commonjs", "module"});
     private final DefaultTableModel scriptsModel = new DefaultTableModel(new Object[]{"Script", "Command"}, 0);
+    private JTable scriptsTable;
     private final DefaultTableModel depsModel = new DefaultTableModel(new Object[]{"Package", "Version", "Scope"}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -117,6 +118,7 @@ public class ProjectConfigDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JTable table = new JTable(scriptsModel);
+        scriptsTable = table;
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
@@ -253,7 +255,44 @@ public class ProjectConfigDialog extends JDialog {
         pkg.getDevDependencies().forEach((k, v) -> depsModel.addRow(new Object[]{k, v, "dev"}));
     }
 
+    /**
+     * Trimmed script name that appears on more than one row, or null.
+     *
+     * <p>package.json scripts are a JSON OBJECT: two rows with one name
+     * cannot both survive serialization, and the map used to fold rows
+     * kept the LAST one — so renaming a script onto an existing name
+     * silently REPLACED that script (v1.284.0, the project-starter
+     * walk: renaming test→dev destroyed the running dev script AND the
+     * test script in one Save, three scripts in, two out). Same class
+     * as the v1.268.0 Block Studio tag collision: a rename that allows
+     * a collision is data loss at serialization time. Blank rows are
+     * skipped here because saveAll drops them anyway.
+     */
+    static String duplicateScriptName(javax.swing.table.TableModel m) {
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (int i = 0; i < m.getRowCount(); i++) {
+            String key = String.valueOf(m.getValueAt(i, 0)).trim();
+            String value = String.valueOf(m.getValueAt(i, 1)).trim();
+            if (!key.isEmpty() && !value.isEmpty() && !seen.add(key)) {
+                return key;
+            }
+        }
+        return null;
+    }
+
     private boolean saveAll() {
+        // a half-typed cell that never saw Enter is still in its editor;
+        // committing it here means Save saves what the user can SEE
+        if (scriptsTable != null && scriptsTable.isEditing()) {
+            scriptsTable.getCellEditor().stopCellEditing();
+        }
+        String dup = duplicateScriptName(scriptsModel);
+        if (dup != null) {
+            error("Two scripts are both named \"" + dup + "\" — script"
+                    + " names must be unique, or one of them would be"
+                    + " silently lost. Rename one and save again.");
+            return false;
+        }
         pkg.setName(nameField.getText());
         pkg.setVersion(versionField.getText());
         pkg.setDescription(descriptionField.getText());
