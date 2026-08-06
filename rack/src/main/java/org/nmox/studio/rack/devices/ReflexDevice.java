@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.nmox.studio.core.util.IdeWorkspaceFiles;
 import org.nmox.studio.rack.engine.FileWatcher;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.Signal;
@@ -133,7 +134,20 @@ public class ReflexDevice extends RackDevice {
         watcher.start();
     }
 
-    private void filesChanged(List<Path> changed) {
+    private void filesChanged(List<Path> allChanged) {
+        // The studios save their own workspace files into the project
+        // (.nmoxrack.json and friends). Those are the IDE talking to
+        // itself, not work the user did, and firing a save lane for
+        // them runs the test suite — or raises a Workspace Trust
+        // prompt — for a Save Patch click. Drop them before anything
+        // observable happens, so the EYE, the CHANGES meter and the
+        // CHANGED trigger all stay quiet for a save nobody made.
+        List<Path> changed = allChanged.stream()
+                .filter(p -> !IdeWorkspaceFiles.isOwn(p.getFileName().toString()))
+                .toList();
+        if (changed.isEmpty()) {
+            return;
+        }
         Path first = changed.get(0);
         Path root = projectDir().toPath();
         String shown;
