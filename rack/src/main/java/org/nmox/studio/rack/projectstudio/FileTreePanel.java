@@ -65,7 +65,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         if (fo == null || !fo.isFolder()) {
             return null;
         }
-        return new HeavyAwareFilterNode(DataFolder.findFolder(fo).getNodeDelegate());
+        return new HeavyAwareFilterNode(DataFolder.findFolder(fo).getNodeDelegate(), true);
     };
 
     private final ExplorerManager manager = new ExplorerManager();
@@ -104,6 +104,40 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     @Override
     public ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+    /**
+     * Bind the explorer's Cut/Copy/Paste/Delete into {@code map} — the
+     * owning TopComponent's ActionMap, which its default lookup already
+     * exposes to the platform's global actions.
+     *
+     * <p>The context menu has advertised Cut/Copy/Delete since the
+     * v1.64.0 platform-tree rewrite, but those are
+     * {@code CallbackSystemAction}s: they only enable when the
+     * activated component's ActionMap carries their keys, and nothing
+     * ever bound them — so every one of those items was permanently
+     * grey for 220 releases (v1.285.0, the project-starter walk; the
+     * v1.38.1 pattern — an affordance documented but never exercised
+     * is untested). Delete passes {@code confirmDelete=true}, so the
+     * platform's own confirmation guards the irreversible verb per the
+     * v1.98.0 safe-default law.
+     */
+    void installExplorerActions(javax.swing.ActionMap map) {
+        map.put(javax.swing.text.DefaultEditorKit.copyAction,
+                org.openide.explorer.ExplorerUtils.actionCopy(manager));
+        map.put(javax.swing.text.DefaultEditorKit.cutAction,
+                org.openide.explorer.ExplorerUtils.actionCut(manager));
+        map.put(javax.swing.text.DefaultEditorKit.pasteAction,
+                org.openide.explorer.ExplorerUtils.actionPaste(manager));
+        map.put("delete", org.openide.explorer.ExplorerUtils.actionDelete(manager, true));
+    }
+
+    /**
+     * Forwarded from the owning TopComponent's activation lifecycle so
+     * cut/copy enablement tracks focus the way ExplorerUtils expects.
+     */
+    void activateExplorerActions(boolean activate) {
+        org.openide.explorer.ExplorerUtils.activateActions(manager, activate);
     }
 
     // ---- root management ----
@@ -221,8 +255,33 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
      */
     static final class HeavyAwareFilterNode extends FilterNode {
 
+        /** True only for the project root the tree is aimed at. */
+        private final boolean root;
+
         HeavyAwareFilterNode(Node original) {
+            this(original, false);
+        }
+
+        HeavyAwareFilterNode(Node original, boolean root) {
             super(original, original.isLeaf() ? Children.LEAF : new HeavyChildren(original));
+            this.root = root;
+        }
+
+        /**
+         * The aimed project must not be deletable or cuttable from its
+         * own tree: the underlying DataFolder node would happily
+         * destroy the whole checkout, and with the explorer actions
+         * wired (v1.285.0) that verb would otherwise light up on the
+         * root row like on any other folder.
+         */
+        @Override
+        public boolean canDestroy() {
+            return !root && super.canDestroy();
+        }
+
+        @Override
+        public boolean canCut() {
+            return !root && super.canCut();
         }
 
         /**

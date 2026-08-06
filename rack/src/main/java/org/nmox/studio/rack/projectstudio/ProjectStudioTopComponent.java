@@ -101,6 +101,11 @@ public final class ProjectStudioTopComponent extends TopComponent {
         // publisher resolves the DataObject node off-EDT and equality-guards,
         // so a held arrow key is a stream of cheap compares, not disk walks.
         treePanel.setSelectionListener(this::selectionChanged);
+        // v1.285.0: the tree's context menu has offered Cut/Copy/Delete
+        // since v1.64.0, but those are CallbackSystemActions — without
+        // these bindings in the ActionMap this TopComponent's default
+        // lookup exposes, every one of them was permanently disabled.
+        treePanel.installExplorerActions(getActionMap());
         // No syncToRack here: this tab is open-at-startup, so componentOpened
         // always follows construction and runs its own sync — a constructor
         // sync lists the project directory and spins up a FileWatcher twice
@@ -216,6 +221,16 @@ public final class ProjectStudioTopComponent extends TopComponent {
     public void componentOpened() {
         rack.addListener(rackListener);
         syncToRack();
+    }
+
+    @Override
+    protected void componentActivated() {
+        treePanel.activateExplorerActions(true);
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        treePanel.activateExplorerActions(false);
     }
 
     @Override
