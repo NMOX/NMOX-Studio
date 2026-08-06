@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.281.0] - 2026-08-06
+
+REFLEX stops firing for the IDE's own saves.
+
+### Fixed
+- **Saving the rack patch ran the user's save-on-change pipeline.** The
+  studios persist their workspaces beside the project — `.nmoxrack.json`,
+  `.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`,
+  `.nmoxblocks.json` — and REFLEX's "code" filter includes `json`, so
+  pressing Save Patch registered as a source change: the EYE lit, the
+  CHANGES meter pulsed, the CHANGED trigger fired, and the lane launch
+  raised a Workspace Trust prompt for a click that touched no source at
+  all. Caught live during the Task Rack persona walk, on the very next
+  click after the v1.280.0 confirm. API Studio and DB Studio save the
+  same way on ordinary edits, so an armed REFLEX kept re-firing all
+  session. New pure `core.util.IdeWorkspaceFiles.isOwn(name)` states the
+  rule as the naming convention itself, so a studio shipped later is
+  covered on its first day; `ReflexDevice` drops IDE-owned paths BEFORE
+  anything observable happens, and an all-IDE batch returns without
+  emitting at all rather than triggering on the next file in the batch.
+  Three mutation proofs: dropping the empty-batch return, breaking the
+  convention, and moving the filter below the LCD/meter/trigger each
+  fail a named test. `IdeWorkspaceFilesTest` reads every workspace
+  filename the product actually writes out of five modules' sources and
+  fails the build if one stops matching — a new studio that names its
+  file differently is caught by the gate, not by a user.
+
 ## [1.280.0] - 2026-08-06
 
 Replacing the rack asks first — the walk's sharpest find.
