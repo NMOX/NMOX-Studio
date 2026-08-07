@@ -450,7 +450,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 continue;
             }
             row(file.getName(), file.getParent(), false, null,
-                    file.getAbsolutePath(), () -> openFile(file));
+                    file.getAbsolutePath(), () -> openFile(file),
+                    "Forget — the file stays on disk",
+                    () -> RecentFiles.forget(file, refreshCoalescer::request));
         }
         if (count == 0) {
             emptyRow("files you open will gather here");
@@ -476,7 +478,19 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             JLabel sub = row(dir.getName(), dir.getParent(),
                     aimed, aimed ? ACCENT : null,
                     dir.getAbsolutePath() + (aimed ? "  (aimed)" : "  — click to aim the IDE here"),
-                    () -> aimAt(dir));
+                    () -> aimAt(dir),
+                    // the aimed project re-adds itself to the list head, so
+                    // forgetting it would be a lie — no menu on that row
+                    aimed ? null : "Forget — the project stays on disk",
+                    aimed ? null : () -> org.openide.util.RequestProcessor.getDefault().post(() -> {
+                        // prefs flush is file I/O; keep it off the EDT
+                        org.nmox.studio.core.spi.ProjectAim a =
+                                org.nmox.studio.core.spi.ProjectAim.find();
+                        if (a != null) {
+                            a.forgetRecentProject(dir);
+                        }
+                        SwingUtilities.invokeLater(refreshCoalescer::request);
+                    }));
             if (sub != null) {
                 WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
                     String kinds = shorten(String.join(" · ", names), 38);
@@ -623,6 +637,23 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      */
     private JLabel row(String title, String subtitle, boolean bold, Color dot,
             String tooltip, Runnable onClick) {
+        return row(title, subtitle, bold, dot, tooltip, onClick, null, null);
+    }
+
+    /**
+     * A row with a forget gesture (v1.288.0, the Workbench walk): the
+     * organize sweep gave every studio's named-artifact list a removal
+     * verb (API v1.263, DB v1.266, Block v1.268, Contract v1.269) — the
+     * home base's own RECENT FILES and PROJECTS rows were the holdout,
+     * so a learning space sat in the daily list for the life of the
+     * install. The menu item says what it does NOT do: nothing on disk
+     * changes, and reopening re-records the entry. Each row owns its
+     * own menu, so the clicked-row-is-the-target property holds by
+     * construction (no shared selection, the v1.270.0 hazard shape
+     * cannot arise).
+     */
+    private JLabel row(String title, String subtitle, boolean bold, Color dot,
+            String tooltip, Runnable onClick, String forgetLabel, Runnable onForget) {
         JPanel rowPanel = new JPanel();
         rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
         rowPanel.setBackground(BG);
@@ -652,6 +683,26 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             rowPanel.add(sub);
         }
         rowPanel.add(Box.createHorizontalGlue());
+
+        if (onForget != null) {
+            // POPUP-PER-ROW: this menu belongs to ONE row panel and its verb
+            // captures that row's own file/dir in the closure — there is no
+            // selection model a stale click could read, so the clicked-item-
+            // wins property the v1.270.0 gate enforces holds by construction
+            // and Popups.selectOnTrigger has nothing to select.
+            javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(forgetLabel);
+            item.addActionListener(e -> onForget.run());
+            menu.add(item);
+            rowPanel.setComponentPopupMenu(menu);
+            // right-clicking the title or subtitle must open the same
+            // menu — children don't inherit the panel's popup by default
+            for (java.awt.Component child : rowPanel.getComponents()) {
+                if (child instanceof javax.swing.JComponent jc) {
+                    jc.setInheritsPopupMenu(true);
+                }
+            }
+        }
 
         rowPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

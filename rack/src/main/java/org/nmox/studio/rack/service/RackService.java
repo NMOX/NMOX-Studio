@@ -634,6 +634,36 @@ public class RackService {
         return result;
     }
 
+    /**
+     * Forget a project from the recent list on request (v1.288.0): the
+     * learning spaces under ~/.nmox/learn exist on disk forever, so
+     * without this gesture they crowd the Workbench's home list for the
+     * life of the install. List-only — the directory is untouched, and
+     * aiming at the project re-records it.
+     */
+    public void forgetRecentProject(File dir) {
+        if (dir == null) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (File f : getRecentProjects()) {
+            if (f.equals(dir)) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(f.getAbsolutePath());
+        }
+        java.util.prefs.Preferences p = prefs();
+        p.put(PREF_RECENT, sb.toString());
+        try {
+            p.flush();
+        } catch (java.util.prefs.BackingStoreException ignore) {
+            // best effort
+        }
+    }
+
     private void addRecentProject(File dir) {
         List<File> recent = getRecentProjects();
         recent.remove(dir);

@@ -51,6 +51,11 @@ public final class RackProjectAim implements ProjectAim {
     }
 
     @Override
+    public void forgetRecentProject(File dir) {
+        RackService.getDefault().forgetRecentProject(dir);
+    }
+
+    @Override
     public List<File> recentProjects() {
         return service.getRecentProjects();
     }
