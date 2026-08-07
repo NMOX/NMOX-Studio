@@ -89,6 +89,43 @@ class LearningSpaceDiscardTest {
     }
 
     @Test
+    @DisplayName("discarding the AIMED space re-aims the studio, after the delete")
+    void aimedDiscardReAims() throws IOException {
+        String src = Files.readString(Path.of("src", "main", "java", "org",
+                "nmox", "studio", "rack", "projectstudio", "LearningSpace.java"),
+                StandardCharsets.UTF_8);
+
+        int delete = src.indexOf("Files.deleteIfExists(p)");
+        int reAim = src.indexOf("openProjectQuietly(fallbackWorkspace())");
+        assertThat(delete).isPositive();
+        assertThat(reAim)
+                .as("re-aiming BEFORE the tree is gone lets the watchers and the"
+                        + " patch autosave race the delete and re-create files"
+                        + " under the directory being removed")
+                .isGreaterThan(delete);
+        assertThat(src)
+                .as("only an aimed discard re-aims — dropping some other space"
+                        + " must leave the studio where the user put it")
+                .contains("if (wasAimedHere) {");
+        assertThat(src)
+                .as("quietly: a discarded space must not re-enter the recents"
+                        + " list the caller just cleaned up")
+                .contains("openProjectQuietly(");
+    }
+
+    @Test
+    @DisplayName("the fallback is the ~/NMOX workspace, never $HOME")
+    void fallbackIsTheWorkspaceNotHome() {
+        File fallback = LearningSpace.fallbackWorkspace();
+        assertThat(fallback.getName())
+                .as("the v1.33.1 law: aiming at $HOME walks TCC-protected"
+                        + " folders and stacks macOS permission prompts")
+                .isEqualTo("NMOX");
+        assertThat(fallback.getParentFile())
+                .isEqualTo(new File(System.getProperty("user.home")));
+    }
+
+    @Test
     @DisplayName("the manage action confirms with the safe default and forgets the row")
     void actionUsesSafeDefaultAndForgets() throws IOException {
         String src = Files.readString(Path.of("..", "ui", "src", "main", "java", "org",
