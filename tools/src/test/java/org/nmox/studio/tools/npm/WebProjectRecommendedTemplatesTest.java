@@ -24,12 +24,18 @@ class WebProjectRecommendedTemplatesTest {
     @Test
     @DisplayName("Privileged templates float the everyday web files to the top")
     void privilegedTemplatesAreEverydayFiles() {
+        // v1.286.0: this pin used to freeze the ORIGINAL list — four of
+        // whose five paths no shipped module ever registered, so the
+        // float-to-top feature pointed at ghosts and the pin certified
+        // the bug. Existence is now PrivilegedTemplatesExistTest's job;
+        // this pin keeps the list the everyday set, in order.
         assertThat(templates.getPrivilegedTemplates())
                 .containsExactly(
-                        "Templates/ClientSide/html.html",
                         "Templates/ClientSide/javascript.js",
+                        "Templates/ClientSide/typescript.ts",
                         "Templates/ClientSide/json.json",
-                        "Templates/ClientSide/css.css",
+                        "Templates/Other/html.html",
+                        "Templates/Other/CascadeStyleSheet.css",
                         "Templates/Other/file");
     }
 
