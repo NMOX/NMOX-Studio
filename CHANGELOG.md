@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.288.0] - 2026-08-07
+
+The Workbench forgets on request.
+
+### Added
+- **RECENT FILES and PROJECTS rows gain a right-click Forget.** The
+  night Workbench walk found the home base's lists were the organize
+  sweep's last holdout: every studio's named-artifact list grew a
+  removal verb (API v1.263, DB v1.266, Block v1.268, Contract v1.269),
+  but a learning space sat in the daily PROJECTS list for the life of
+  the install — the ~/.nmox/learn directories exist on disk forever, so
+  the prune that keeps the lists honest could never touch them, and
+  right-click offered nothing. Each row now carries "Forget — the file/
+  project stays on disk": list-only by contract, reopening re-records
+  the entry, and the AIMED project's row carries no menu because it
+  re-adds itself to the list head — a Forget there would be a lie.
+  Every row owns its own menu, so the clicked-row-is-the-target
+  property holds by construction (the v1.270.0 shared-selection hazard
+  cannot arise), and the title and subtitle labels inherit the popup so
+  right-clicking the text itself works. `RecentFiles.forget` runs its
+  pref write on the trail's own lane with the refresh callback fired
+  AFTER the write; the project side lands as
+  `ProjectAim.forgetRecentProject` (a default method, so providers stay
+  compatible) forwarded to `RackService`, with the flush kept off the
+  EDT. The walk verified the rest of the surface CLEAN live: vanished
+  files and deleted projects prune on refresh (v1.111 holds), OPEN
+  FILES dedups (v1.279 holds), and row tooltips are honest.
+  Live-proven in the dev build: Forget on the elm learning space
+  removed the row and left ~/.nmox/learn/elm untouched.
+  The v1.270.0 popup gate caught the new site and gained its one
+  written exemption: a PER-ROW menu whose verbs capture the row's own
+  data has no selection model a stale click could read, so the
+  clicked-item-wins property holds by construction — the site carries
+  a POPUP-PER-ROW comment stating the claim, and the gate accepts
+  exactly that marker. Mutation-proven ×3: a drop() that keeps the
+  entry, a Forget on the aimed row, and a refresh fired before the
+  write each fail a named test.
+
 ## [1.287.0] - 2026-08-07
 
 The night-arc review — two lenses over the ten-release persona day

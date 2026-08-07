@@ -125,6 +125,39 @@ class RecentFilesStoreTest {
     }
 
     @Test
+    @DisplayName("forget removes the entry, leaves the file, and calls back after the write")
+    void forgetRemovesFromStore(@TempDir Path dir) throws Exception {
+        File keep = Files.writeString(dir.resolve("keep.txt"), "keep").toFile();
+        File drop = Files.writeString(dir.resolve("drop.txt"), "drop").toFile();
+        RecentFiles.record(drop);
+        RecentFiles.record(keep);
+        RecentFiles.awaitIdle();
+
+        CountDownLatch done = new CountDownLatch(1);
+        java.util.List<File> seenAtCallback = new java.util.ArrayList<>();
+        RecentFiles.forget(drop, () -> {
+            // the callback fires AFTER the pref write, so a refresh
+            // triggered from it reads the already-forgotten trail
+            seenAtCallback.addAll(RecentFiles.listRaw());
+            done.countDown();
+        });
+
+        assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
+        assertThat(seenAtCallback).containsExactly(keep);
+        assertThat(RecentFiles.listRaw()).containsExactly(keep);
+        assertThat(drop).as("Forget is list-only — the file stays on disk").exists();
+    }
+
+    @Test
+    @DisplayName("forget(null) is a no-op that never calls back")
+    void forgetNullIsNoOp() throws Exception {
+        AtomicInteger fired = new AtomicInteger();
+        RecentFiles.forget(null, fired::incrementAndGet);
+        RecentFiles.awaitIdle();
+        assertThat(fired.get()).isZero();
+    }
+
+    @Test
     @DisplayName("listRaw on a fresh (empty) store is empty, not a one-element blank")
     void listEmptyStore() {
         assertThat(RecentFiles.listRaw()).isEmpty();

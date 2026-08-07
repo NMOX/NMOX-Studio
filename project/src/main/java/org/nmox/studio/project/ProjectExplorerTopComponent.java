@@ -685,6 +685,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.add(Box.createHorizontalGlue());
 
         if (onForget != null) {
+            // POPUP-PER-ROW: this menu belongs to ONE row panel and its verb
+            // captures that row's own file/dir in the closure — there is no
+            // selection model a stale click could read, so the clicked-item-
+            // wins property the v1.270.0 gate enforces holds by construction
+            // and Popups.selectOnTrigger has nothing to select.
             javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
             javax.swing.JMenuItem item = new javax.swing.JMenuItem(forgetLabel);
             item.addActionListener(e -> onForget.run());

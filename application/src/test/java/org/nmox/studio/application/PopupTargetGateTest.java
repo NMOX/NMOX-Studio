@@ -30,6 +30,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * targeting listener, so a NEW popup site cannot ship the stale-
  * selection bug back in. The scan runs from the application module —
  * the last reactor member — so it sees every sibling module's sources.
+ *
+ * <p>One shape is exempt, in writing: a PER-ROW menu — one JPopupMenu
+ * per row component, its verbs capturing that row's own data in the
+ * closure (the Workbench's Forget rows, v1.288.0). There is no
+ * selection model a stale click could read, so the property the gate
+ * enforces holds by construction and selectOnTrigger has nothing to
+ * select. Such a site carries a {@code POPUP-PER-ROW:} comment stating
+ * the claim beside the install; the marker is the blessing.
  */
 class PopupTargetGateTest {
 
@@ -56,7 +64,8 @@ class PopupTargetGateTest {
                     continue;
                 }
                 sites += src.split("setComponentPopupMenu\\(", -1).length - 1;
-                if (!src.contains("Popups.selectOnTrigger(")) {
+                if (!src.contains("Popups.selectOnTrigger(")
+                        && !src.contains("POPUP-PER-ROW:")) {
                     offenders.add(root.relativize(p).toString());
                 }
             }
