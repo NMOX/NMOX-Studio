@@ -180,7 +180,11 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         }
         String head = t;
         while (!head.isEmpty() && widthOf.applyAsInt(head + "…") > maxPx) {
-            head = head.substring(0, head.length() - 1);
+            // whole code points, never bare chars: chopping a UTF-16
+            // unit can split a surrogate pair and leave a lone high
+            // surrogate on the glass (the v1.149.0 cap law — this
+            // helper reintroduced the class one day before this review)
+            head = head.substring(0, head.offsetByCodePoints(head.length(), -1));
         }
         // even the ellipsis alone may not fit; showing it beats showing
         // a lone letter that reads as content

@@ -54,6 +54,26 @@ class LcdTruncationTest {
     }
 
     @Test
+    @DisplayName("the cut never splits a surrogate pair")
+    void cutIsCodePointSafe() {
+        // an emoji is one glyph but two UTF-16 units; a char-based chop
+        // at the boundary leaves a lone high surrogate on the glass —
+        // the v1.149.0 cap class, reintroduced by this helper's first
+        // version and caught by the night-arc review one day later
+        String s = "OK \uD83D\uDE80";                    // "OK 🚀"
+        String shown = LcdDisplay.fit(s, 4, ONE_PX);      // must cut the rocket
+        assertThat(shown).isEqualTo("OK …");
+        String tight = LcdDisplay.fit(s, 5, ONE_PX);      // rocket costs 2 units
+        for (int i = 0; i < tight.length(); i++) {
+            char c = tight.charAt(i);
+            assertThat(Character.isHighSurrogate(c) && (i == tight.length() - 1
+                    || !Character.isLowSurrogate(tight.charAt(i + 1))))
+                    .as("no dangling high surrogate in [%s]", tight)
+                    .isFalse();
+        }
+    }
+
+    @Test
     @DisplayName("an impossibly narrow display shows the marker, not a stray letter")
     void degradesToTheMarker() {
         assertThat(LcdDisplay.fit("REFUSED", 0, ONE_PX))
