@@ -935,9 +935,50 @@ next person:
   device` was a full disk at 356 MB free, not a bad artifact; the
   marathon's own debris cleared 29 GB in one `brew cleanup --prune=all`.
 
+## Addendum — 2026-08-07, the extensibility arc (v1.291–v1.294)
+
+The day carried the marathon past the persona walks and into structure,
+on David's explicit mandate: *clean it up, organize it, give it
+direction, help it grow, make it extensible, make it moldable.*
+
+- **v1.291.0** docs truth for the night shift; **v1.292.0** the editor
+  persona walk — the Navigator outlined an Express `server.js` as
+  nothing because the extractor, correct about functions and classes,
+  was blind to the dominant idiom: such a file's structure IS its route
+  table. `app.get('/health', …)` now outlines as `GET /health` with
+  click-to-line, and the extractor probe-first method (prove the engine
+  headlessly BEFORE judging the surface) is the lesson worth keeping.
+- **v1.293.0** closed tech-debt item #1 on its extensibility half:
+  `~/.nmox/templates.d/*.json` drop-ins join the New Project wizard.
+  The built-ins deliberately stay in code — their pins carry
+  gate-enforced version ceilings. The substance is safety: the path law
+  (an unsafe path disqualifies the WHOLE template), and no borrowed
+  trust — a drop-in is data from anywhere, so customs keep the
+  Workspace Trust prompt and the optional install asks first.
+- **v1.294.0** the same idiom for rack presets: `~/.nmox/presets.d`
+  joins the Presets menu, and the format IS the Save Patch format —
+  capture a wiring once, have it everywhere.
+
+**The direction this states.** The product now has THREE user-facing
+drop-in surfaces (learn-catalog.d v1.53, templates.d v1.293, presets.d
+v1.294) plus the frozen Device SPI (v1.55) for compiled extensions.
+That is the moldability story: every catalog the product ships should
+have a user-writable sibling directory, read lazily, malformed entries
+skipped with a note, and NEVER granted the trust the product's own
+artifacts earn. Candidate next seams, in value order: API Studio
+collections (a .nmoxapi.json drop-in library), Dockerize recipes, and
+Doctor probes. The counter-principle is equally standing: content whose
+correctness is gate-enforced (template pins, device wiring) stays in
+code where the gates can see it.
+
+The windows lane earned its keep again: a multi-line literal in a
+source-gate assertion died on the CRLF checkout (the v1.42.0 class) —
+normalize `\r\n` → `\n` after every `Files.readString` a source-gate
+asserts on.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.290.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.294.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)

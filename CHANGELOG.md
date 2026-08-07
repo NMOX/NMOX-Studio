@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.295.0] - 2026-08-07
+
+Docs truth: the plan carries the extensibility arc.
+
+### Changed
+- **plan.md carries the 2026-08-07 extensibility addendum** (v1.291 —
+  v1.294) and its standing header moves to v1.294.0: the editor walk's
+  route outline, the templates.d and presets.d drop-ins, and the
+  direction they state — every catalog the product ships should have a
+  user-writable sibling directory (lazy read, skip-with-note, never the
+  product's own trust), while gate-enforced content (template pins,
+  device wiring) stays in code where the gates can see it. Candidate
+  next seams recorded in value order: API Studio collection drop-ins,
+  Dockerize recipes, Doctor probes. (docs only)
+
 ## [1.294.0] - 2026-08-07
 
 Save a patch once, have it as a preset everywhere.
