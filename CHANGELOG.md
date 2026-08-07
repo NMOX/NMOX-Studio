@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.290.0] - 2026-08-07
+
+Discarding the space you are standing in re-aims the studio.
+
+### Fixed
+- **The arc review over v1.287–v1.289 found one real bug, in code a
+  few hours old.** v1.289.0's Discard stopped the devices when you
+  dropped the space the studio was aimed at — but left the aim itself
+  pointing at a directory that no longer existed. And that is the
+  COMMON path, not an exotic one: Discard sits beside Open, so the
+  natural gesture is open a space, decide you are done, drop it.
+  Reproduced live before the fix: the file tree went blank with an
+  orphan root and the status line still read the deleted path, while
+  Save Patch would have tried to write into nothing.
+  An aimed discard now re-aims at the `~/NMOX` workspace — the same
+  known-good home a fresh launch uses (v1.33.1: one shallow self-made
+  directory, never `$HOME`, so re-aiming cannot walk into a
+  TCC-protected folder). The re-aim happens strictly AFTER the tree is
+  gone; aiming first would let the watchers and the patch autosave
+  race the delete and re-create files under the directory being
+  removed. It is quiet, so a space just dropped does not re-enter the
+  recents list the caller cleaned up, and it is guarded, so discarding
+  some OTHER space leaves the studio and its running work exactly
+  where they were.
+  Live-proven after the fix: the tree repopulated with the `~/NMOX`
+  contents and the status line followed. Mutation-proven ×2 — moving
+  the re-aim before the delete, and dropping its guard, each fail a
+  named test.
+  The second mutant SURVIVED its first test, which is the same lesson
+  v1.287.0 recorded: the assertion checked that the guard *appears* in
+  the source, and the panic block still carries one, so an unguarded
+  re-aim read as correct. It now counts the guarded blocks, which is a
+  claim the mutant can actually violate.
+
 ## [1.289.0] - 2026-08-07
 
 Learning spaces can be discarded.

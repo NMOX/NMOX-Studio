@@ -94,6 +94,17 @@ public final class LearningSpace {
      * refuses anything outside {@link #root()} — a symlinked or
      * hand-edited path must not let a marker file elsewhere on disk
      * authorize a tree delete.
+     *
+     * <p>Discarding the space the studio is currently AIMED at is the
+     * common case, not the exotic one: Discard sits beside Open, so the
+     * natural gesture is open a space, decide you are done with it, and
+     * drop it. Left alone that aims the whole IDE at a directory which
+     * no longer exists — the file tree renders an orphan root, the
+     * status line names a deleted path, and Save Patch would try to
+     * write into nothing. So an aimed discard stops the devices AND
+     * re-aims at the {@code ~/NMOX} workspace, the same known-good home
+     * a fresh launch uses (v1.33.1). Verified live before the fix: the
+     * tree went blank with the old path still on the status line.
      */
     public static void discard(File space) throws IOException {
         if (!isLearningSpace(space)) {
@@ -104,8 +115,11 @@ public final class LearningSpace {
         if (!canonicalRoot.equals(canonical.getParentFile())) {
             throw new IOException("Outside the learning-space home: " + space);
         }
-        Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
-        if (space.equals(rack.getProjectDir())) {
+        org.nmox.studio.rack.service.RackService service =
+                org.nmox.studio.rack.service.RackService.getDefault();
+        Rack rack = service.getRack();
+        boolean wasAimedHere = space.equals(rack.getProjectDir());
+        if (wasAimedHere) {
             for (RackDevice d : rack.getDevices()) {
                 d.panic();
             }
@@ -115,6 +129,31 @@ public final class LearningSpace {
                 Files.deleteIfExists(p);
             }
         }
+        if (wasAimedHere) {
+            // re-aim only after the tree is really gone: aiming first
+            // would let the watchers and the patch autosave race the
+            // delete and re-create files under a directory we are
+            // removing. Quietly — a discarded space must not re-enter
+            // the recents list the caller just cleaned up.
+            service.openProjectQuietly(fallbackWorkspace());
+        }
+    }
+
+    /**
+     * Where the studio lands when the space under it is discarded: the
+     * {@code ~/NMOX} workspace, created if this is the first time. The
+     * v1.33.1 law applies — this is one shallow, self-made directory,
+     * never {@code $HOME}, so re-aiming cannot walk into a TCC-protected
+     * folder and stack permission prompts.
+     */
+    static File fallbackWorkspace() {
+        File workspace = new File(System.getProperty("user.home"), "NMOX");
+        try {
+            Files.createDirectories(workspace.toPath());
+        } catch (IOException ignore) {
+            // aiming at a missing dir is still better than a deleted one
+        }
+        return workspace;
     }
 
     private static void writeMarker(File dir, LearningCatalog.Space space) throws IOException {
