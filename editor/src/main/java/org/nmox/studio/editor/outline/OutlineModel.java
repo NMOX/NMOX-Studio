@@ -171,6 +171,29 @@ public final class OutlineModel {
             "^\\s+(?:public\\s+|private\\s+|protected\\s+|readonly\\s+)*(?:static\\s+)?(?:async\\s+)?(?:get\\s+|set\\s+|\\*\\s*)?([A-Za-z0-9_$]+)\\s*\\([^;]*\\)\\s*(?::[^={]+)?\\{");
     private static final Pattern JS_TEST = Pattern.compile(
             "^\\s*(?:describe|it|test|context|suite)\\s*(?:\\.\\w+)?\\s*\\(\\s*[`'\"]([^`'\"]+)[`'\"]");
+    /**
+     * A route registration: {@code app.get('/health', …)},
+     * {@code router.post("/invoices", …)}.
+     *
+     * <p>Why this exists (v1.292.0, the editor persona walk): the outline
+     * was empty for the most-opened file in the ecosystem this IDE is
+     * built for. An Express/Fastify/Koa server file declares no named
+     * functions and no classes — every handler is an inline callback — so
+     * the extractor was correct to find nothing and useless in saying so.
+     * The structure of such a file IS its route table, which is exactly
+     * what a reader opens the outline to see.
+     *
+     * <p>Deliberately narrow, because a wrong outline entry is worse than
+     * a missing one: the receiver must look like an app or a router, the
+     * verb must be a real HTTP method, and a string path must be present
+     * — so {@code app.use(express.json())} (no path) and
+     * {@code res.json({…})} (not a method, not a router) both stay out.
+     */
+    private static final Pattern JS_ROUTE = Pattern.compile(
+            "^\\s*(?:module\\.exports\\s*=\\s*)?"
+            + "([A-Za-z0-9_$]*(?:app|App|router|Router|server|Server|api|Api))"
+            + "\\s*\\.\\s*(get|post|put|patch|delete|head|options|all)"
+            + "\\s*\\(\\s*[`'\"]([^`'\"]*)[`'\"]");
     private static final java.util.Set<String> JS_KEYWORDS = java.util.Set.of(
             "if", "for", "while", "switch", "catch", "return", "function", "constructor",
             "do", "else", "try", "finally", "await", "yield", "typeof", "new");
@@ -189,6 +212,12 @@ public final class OutlineModel {
             Matcher m;
             if ((m = JS_TEST.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.TEST, m.group(1), null, i, depthHere));
+            } else if ((m = JS_ROUTE.matcher(code)).find()) {
+                // "GET /health" reads the way the route is talked about, and
+                // sorts naturally when several verbs share a path
+                out.add(new Item(OutlineKind.TARGET,
+                        m.group(2).toUpperCase(java.util.Locale.ROOT) + " " + m.group(3),
+                        null, i, depthHere));
             } else if ((m = JS_CLASS.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.CLASS, m.group(1), null, i, depthHere));
             } else if ((m = JS_IFACE.matcher(code)).find()) {
