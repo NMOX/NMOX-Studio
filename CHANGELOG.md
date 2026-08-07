@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.289.0] - 2026-08-07
+
+Learning spaces can be discarded.
+
+### Added
+- **File ▸ Learning Spaces… — the inverse of New Learning Space…**
+  Creating a space has been one menu item away since v1.24.0 and
+  removing one was impossible: the directories under `~/.nmox/learn`
+  exist forever, which is precisely why the v1.288.0 Workbench walk
+  found a language tried once still sitting in the daily PROJECTS list.
+  That made learning spaces the last thing in the product you could
+  name into existence and never unmake — the organize sweep's final
+  creator, after API requests (v1.263.0), saved queries (v1.266.0),
+  components (v1.268.0), networks and deployments (v1.269.0) and the
+  Workbench's own rows (v1.288.0).
+  The dialog lists every space newest-first; Open aims the studio at
+  one, and Discard stops anything running there, deletes the tree, and
+  drops the space from the recent projects list so the Workbench never
+  shows a row for a directory that is gone.
+  The delete is irreversible, so it is guarded the way the Experiments
+  manager guards its own: the confirm uses the full `NotifyDescriptor`
+  constructor with `NO_OPTION` as the initial value (the v1.98.0
+  safe-default idiom), the marker file is the contract so the method
+  can never become a general-purpose `rm -rf`, and the space must sit
+  directly under the learning-space home — a marker dropped anywhere
+  else on disk does not authorize deleting that tree. The tree walk
+  and the listing both ride a named RequestProcessor: a space with a
+  `node_modules` or a cargo `target/` under it is a slow delete, and on
+  the paint thread that is a beachball.
+  Mutation-proven ×4: removing the marker guard, removing the
+  outside-the-home guard, defaulting the confirm to YES, and skipping
+  the recents cleanup each fail a named test.
+
 ## [1.288.0] - 2026-08-07
 
 The Workbench forgets on request.
