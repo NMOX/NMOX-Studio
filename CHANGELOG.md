@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.294.0] - 2026-08-07
+
+Save a patch once, have it as a preset everywhere.
+
+### Added
+- **Any `.json` file in `~/.nmox/presets.d/` joins the rack's Presets
+  menu** under the built-ins, labelled "· yours" — and the file format
+  is one you already know how to produce, because it IS the Save Patch
+  format. That closes a loop the product left open: Save Patch could
+  capture a wiring you liked, but only inside the one project that
+  owned it. Copy the file into the drop-in dir and the same wiring is
+  a preset in every project. No schema to learn, no IDE build — the
+  second drop-in seam of the extensibility arc, beside v1.293.0's
+  templates.
+  The menu entry is deliberately just a name (filename sans `.json`)
+  and a file: the JSON parses at APPLY time, off the EDT, through the
+  exact read path the Load Patch button uses — a corrupt preset fails
+  with a message then, and an unknown device type inside one degrades
+  to the v1.54.0 MISSING placeholder instead of dropping the patch.
+  The drop-in scan itself also runs off the EDT (the v1.33.1 law), and
+  a custom preset keeps the same replace-confirm the built-ins have —
+  a preset click destroys the current wiring with undo powerless
+  (v1.280.0), whoever authored the preset.
+  Live-proven in the dev build: a preset generated from real
+  `RackIO.toJson` output appeared as "Log Watch · yours" under the 16
+  built-ins and, applied, replaced the project's pipeline with exactly
+  its TAIL → MONITOR wiring. Mutation-proven ×2: a custom apply that
+  loses its confirm, and an extension filter widened to every file,
+  each fail a named test.
+
 ## [1.293.0] - 2026-08-07
 
 Your templates join the wizard.
