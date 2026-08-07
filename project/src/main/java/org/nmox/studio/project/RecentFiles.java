@@ -119,6 +119,46 @@ public final class RecentFiles {
     }
 
     /**
+     * Forget one entry on request (v1.288.0, the Workbench walk): every
+     * other list of named user artifacts grew a removal gesture in the
+     * organize sweep (API v1.263, DB v1.266, Block v1.268, Contract
+     * v1.269) — the home base's own trail was the holdout. List-only:
+     * nothing on disk changes, and reopening the file re-records it.
+     */
+    public static void forget(File file, Runnable onDone) {
+        if (file == null) {
+            return;
+        }
+        RP.post(() -> {
+            Preferences prefs = prefs();
+            prefs.put(PREF_KEY, drop(prefs.get(PREF_KEY, ""), file.getAbsolutePath()));
+            try {
+                prefs.flush();
+            } catch (java.util.prefs.BackingStoreException ignore) {
+                // best effort
+            }
+            if (onDone != null) {
+                onDone.run();   // after the write, so a refresh reads the new trail
+            }
+        });
+    }
+
+    /** Pure inverse of {@link #push}: the trail without {@code path}. */
+    static String drop(String csv, String path) {
+        StringBuilder sb = new StringBuilder();
+        for (String existing : csv.split("\n")) {
+            if (existing.isBlank() || existing.equals(path)) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append(existing);
+        }
+        return sb.toString();
+    }
+
+    /**
      * The pure list discipline, testable without a platform: newline-
      * separated paths, newest first, no duplicates, at most {@code cap}.
      */

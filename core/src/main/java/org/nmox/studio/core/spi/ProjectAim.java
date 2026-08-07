@@ -53,6 +53,15 @@ public interface ProjectAim {
     /** The recent-projects list, most recent first; never null. */
     List<File> recentProjects();
 
+    /**
+     * Drop {@code dir} from the recent-projects list (v1.288.0). A
+     * default no-op so existing providers stay source-compatible; the
+     * rack adapter forwards to the real list. List-only by contract —
+     * implementations must never touch the directory itself.
+     */
+    default void forgetRecentProject(File dir) {
+    }
+
     /** Fires when the aimed project changes; thread is the aimer's. */
     interface Listener {
         void projectChanged();
