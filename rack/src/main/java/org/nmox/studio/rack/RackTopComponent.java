@@ -273,27 +273,18 @@ public final class RackTopComponent extends TopComponent {
         bar.add(load);
 
         JButton presets = new JButton("Presets ▾");
-        presets.setToolTipText("Wire a ready-made pipeline into the rack");
+        presets.setToolTipText("Wire a ready-made pipeline into the rack —"
+                + " drop a saved patch into ~/.nmox/presets.d to add your own");
         presets.addActionListener(e -> {
-            javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-            for (org.nmox.studio.rack.projectstudio.RackPresets preset
-                    : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
-                javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
-                item.setToolTipText(preset.getDescription());
-                item.addActionListener(a -> {
-                    if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
-                        return;
-                    }
-                    try {
-                        RackIO.fromJson(rack, preset.buildPatch());
-                        markPersisted();
-                    } catch (RuntimeException ex) {
-                        error("Could not wire the preset: " + ex.getMessage());
-                    }
-                });
-                menu.add(item);
-            }
-            menu.show(presets, 0, presets.getHeight());
+            // the drop-in scan is file IO — off the EDT per the v1.33.1 law,
+            // then the whole menu (built-ins + yours) shows on the callback;
+            // a local dir listing lands within a frame, so the menu still
+            // feels attached to the click
+            org.openide.util.RequestProcessor.getDefault().post(() -> {
+                java.util.List<org.nmox.studio.rack.projectstudio.UserPresets.Custom> yours =
+                        org.nmox.studio.rack.projectstudio.UserPresets.list();
+                java.awt.EventQueue.invokeLater(() -> showPresetsMenu(presets, yours));
+            });
         });
         bar.add(presets);
 
@@ -410,6 +401,51 @@ public final class RackTopComponent extends TopComponent {
     /** Re-baselines the dirty check to whatever the rack now holds. */
     private void markPersisted() {
         lastPersistedJson = RackIO.toJson(rack).toString(2);
+    }
+
+    /**
+     * The Presets menu: built-ins first, then any {@code ~/.nmox/presets.d}
+     * drop-ins under a separator (v1.294.0). A custom entry applies through
+     * the same {@link #loadPatch} path the Load Patch button uses — read and
+     * parse off the EDT, apply on it — and the same replace-confirm guards
+     * both kinds, because a preset click destroys the current wiring with
+     * undo powerless either way (the v1.280.0 law).
+     */
+    private void showPresetsMenu(JButton anchor,
+            java.util.List<org.nmox.studio.rack.projectstudio.UserPresets.Custom> yours) {
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+        for (org.nmox.studio.rack.projectstudio.RackPresets preset
+                : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
+            item.setToolTipText(preset.getDescription());
+            item.addActionListener(a -> {
+                if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
+                    return;
+                }
+                try {
+                    RackIO.fromJson(rack, preset.buildPatch());
+                    markPersisted();
+                } catch (RuntimeException ex) {
+                    error("Could not wire the preset: " + ex.getMessage());
+                }
+            });
+            menu.add(item);
+        }
+        if (!yours.isEmpty()) {
+            menu.addSeparator();
+            for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem(custom.name() + " · yours");
+                item.setToolTipText(custom.file().getAbsolutePath());
+                item.addActionListener(a -> {
+                    if (!confirmReplace("the " + custom.name() + " preset")) {
+                        return;
+                    }
+                    loadPatch(custom.file());
+                });
+                menu.add(item);
+            }
+        }
+        menu.show(anchor, 0, anchor.getHeight());
     }
 
     private void loadPatch(File file) {

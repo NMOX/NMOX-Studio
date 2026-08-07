@@ -46,3 +46,11 @@ asks the normal Workspace Trust question, and the wizard's optional
 dependency install asks it up front. Templates you wrote yourself are
 one Trust Workspace click away; templates you did not write deserve the
 prompt.
+
+## Rack presets, the same way
+
+Since v1.294.0 the rack's Presets menu reads `~/.nmox/presets.d/` too.
+Any `.json` file there appears under the built-ins, named after the
+file — and the format is exactly what Save Patch writes
+(`.nmoxrack.json`). Capture a wiring you like with Save Patch, copy the
+file into the drop-in dir, and it becomes a preset in every project.
