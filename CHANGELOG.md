@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.287.0] - 2026-08-07
+
+The night-arc review — two lenses over the ten-release persona day
+(v1.278–v1.286), two fixes, one test lesson, docs truth.
+
+### Fixed
+- **`LcdDisplay.fit` chopped UTF-16 code units and could strand a lone
+  high surrogate on the glass** — the v1.149.0 code-point-safe cap law,
+  reintroduced by v1.282.0 one day earlier and caught by this review. A
+  SOLDER echo or TAIL line with an emoji at the truncation boundary
+  would render a broken glyph. The chop now moves by whole code points
+  (`offsetByCodePoints`). The review's own lesson is in the regression
+  test: the first mutation proof let the char-chop mutant SURVIVE,
+  because under a uniform per-unit width metric a dangling surrogate
+  still costs one unit and can never be the loop's stopping point — the
+  two chop styles converge on identical output. The rewritten test uses
+  a font-like metric where a lone surrogate is width zero (no glyph, no
+  width), under which the mutant diverges and dies by name. Pick inputs
+  where the mutant's behavior DIVERGES, not inputs that merely contain
+  the hazard.
+- **The v1.286.0 template content files lived in two homes** — copies
+  in both the source package (for the annotation processor) and the
+  resources tree (for the jar). The processor turns out to resolve
+  content from the resources tree alone, so the source-side copies are
+  gone; the generated layer and the packed resources are byte-verified
+  unchanged.
+
+### Verified clean
+- `Rack.removeDevice` calls `d.dispose()` — the v1.278.0 patchless
+  reset really does stop a running device's process before the rack
+  re-roots. The v1.285.0 ExplorerUtils activation lifecycle and the
+  v1.281.0 REFLEX filter placement both hold.
+
+### Documentation
+- plan.md carries the full 2026-08-06 day addendum: the two persona
+  walks, the finds-found-by-verifying-the-previous-fix method note,
+  ledger 76's bisect, and the day's CI-recovery recipes (identical-tag
+  re-push for dropped webhooks; the ledger-69 sentinel's best-effort
+  cleanup flush).
+
 ## [1.286.0] - 2026-08-06
 
 New File speaks JavaScript, and the privileged list stops pointing at

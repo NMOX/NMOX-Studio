@@ -812,9 +812,69 @@ a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
 
+## Addendum — 2026-08-06, the two-shift persona day (v1.278–v1.287)
+
+**Ten releases in one day, and eight of them came from two persona walks.**
+The morning walked the Task Rack (the product's signature surface, never
+walked before); the evening walked Project Studio as a developer starting a
+fresh Express API. The method note that matters: **three finds were made by
+the click that verified the previous fix** — going back to live-prove a
+shipped release is what produced the next one.
+
+The Task Rack walk (v1.278–v1.283): a patchless project kept the previous
+project's devices mounted, with Save Patch writing project A's rack into
+project B's file (v1.278.0); the Workbench listed the project FOLDER as an
+open file, once per open (v1.279.0); Presets and Load Patch destroyed
+unsaved work with no confirm while undo was already cleared by design
+(v1.280.0); Save Patch fired the user's save-on-change pipeline because the
+IDE's own .nmox*.json read as source — new core.util.IdeWorkspaceFiles
+states the rule as the naming convention (v1.281.0); and VERITAS's
+"UNTRUSTED WORKSPACE — EXECUTION REFUSED" painted as "ED WORKSPACE —
+EXECUTION REFUSED": single-line LCDs trimmed the FRONT, multi-line the
+BACK, two halves of one widget disagreeing since v1.0 (v1.282.0). v1.283.0
+then corrected v1.282.0's own claim: the tooltip half never fires — no
+LcdDisplay tooltip has EVER fired (RackButton's works on the same hover,
+the editable LCD's v1.0 tooltip never showed, a headless probe returns the
+right string) — recorded as ledger 76 with the bisect, not patched by a
+third guess.
+
+The Project Studio walk (v1.284–v1.286): the wizard→install→Run→serve→
+Browser happy path was CLEAN live, and every find was an organize gesture.
+Renaming a script onto an existing name silently destroyed the RUNNING dev
+script (the map-fold kept the last row; the old unit test PINNED the buggy
+list) plus Save dropped a half-typed cell edit (v1.284.0); the file tree's
+Cut/Copy/Delete had been advertised and PERMANENTLY DISABLED since the
+v1.64.0 rewrite — CallbackSystemActions with no ExplorerUtils bindings, 220
+releases of grey menu items, with a new root guard so the checkout cannot
+delete itself (v1.285.0); and a JavaScript IDE offered no JavaScript file
+in New File — WebProjectRecommendedTemplates' privileged list had named
+four paths NO shipped module ever registered, so the float-to-top feature
+pointed at ghosts, now registered for real and layer-gated (v1.286.0).
+
+v1.287.0 is the night-arc review over all nine: two fixes (fit()'s
+truncation chopped UTF-16 units and could strand a lone high surrogate —
+the v1.149.0 cap class reintroduced by day-old code; the template content
+files lived in two homes) and one hard-won test lesson: **the first
+surrogate mutation test let the mutant survive because under a uniform
+per-unit width metric a dangling surrogate can never be the loop's stopping
+point — the chop styles converge. Pick inputs where the mutant's behavior
+DIVERGES (a font-like metric where a lone surrogate is width 0), not
+inputs that merely contain the hazard.** Verified CLEAN: removeDevice
+disposes running devices (the v1.278 reset is safe), the ExplorerUtils
+activation lifecycle, the v1.281 filter placement.
+
+Also this day: GitHub Actions had a rough stretch — an action-download
+outage, a 6-hour zombie release run, runner queue starvation, and dropped
+tag webhooks. The recipe that worked: when a tag's Release run never
+appears and no release object exists, delete + re-push the IDENTICAL tag
+(same commit, nothing moves) and the run fires in seconds. The ledger-69
+prefs sentinel flaked twice on fresh ubuntu runners (BackingStoreException
+from the FINALLY flush after all assertions passed) and its cleanup flush
+is now best-effort; the assertions are never excused.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.266.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.287.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
