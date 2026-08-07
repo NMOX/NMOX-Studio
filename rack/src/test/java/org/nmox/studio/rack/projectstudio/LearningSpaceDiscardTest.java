@@ -103,10 +103,15 @@ class LearningSpaceDiscardTest {
                         + " patch autosave race the delete and re-create files"
                         + " under the directory being removed")
                 .isGreaterThan(delete);
-        assertThat(src)
-                .as("only an aimed discard re-aims — dropping some other space"
-                        + " must leave the studio where the user put it")
-                .contains("if (wasAimedHere) {");
+        // BOTH effects must be guarded: stopping the devices and
+        // re-aiming. Asserting the guard merely *appears* is too weak —
+        // it passes with the re-aim unguarded, because the panic block
+        // still carries one (a surviving mutant caught exactly this).
+        assertThat(src.split("if \\(wasAimedHere\\) \\{", -1).length - 1)
+                .as("only an aimed discard stops devices and re-aims —"
+                        + " dropping some other space must leave the studio"
+                        + " and its running work exactly where they were")
+                .isEqualTo(2);
         assertThat(src)
                 .as("quietly: a discarded space must not re-enter the recents"
                         + " list the caller just cleaned up")
