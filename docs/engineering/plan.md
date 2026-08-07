@@ -872,9 +872,72 @@ prefs sentinel flaked twice on fresh ubuntu runners (BackingStoreException
 from the FINALLY flush after all assertions passed) and its cleanup flush
 is now best-effort; the assertions are never excused.
 
+## Addendum — 2026-08-07, the night shift (v1.288–v1.290)
+
+**Three more releases, and the shape of the night is one theme finishing
+itself.** v1.288.0 walked the Workbench — the home base — and found its
+RECENT FILES and PROJECTS rows were the organize sweep's last holdout:
+you could open anything and forget nothing. The reason a learning space
+sat in the daily list for the life of the install turned out to be
+structural rather than cosmetic: the prune only sweeps *vanished* files,
+and `~/.nmox/learn` directories never vanish. So each row grew a
+right-click **Forget — the file/project stays on disk**, list-only,
+with the AIMED project exempt because it re-adds itself to the list head
+(a Forget there would be a lie).
+
+v1.289.0 followed the cause upstream. New Learning Space… had had **no
+inverse since v1.24.0**, which is why those directories accumulate at
+all — making learning spaces the sweep's *last creator*, after API
+requests (v1.263.0), saved queries (v1.266.0), components (v1.268.0),
+networks and deployments (v1.269.0) and the Workbench rows themselves.
+File ▸ Learning Spaces… lists them with Open and Discard, guarded the
+way the Experiments manager guards its own: safe-default confirm, the
+marker file as the contract so the method can never become a general
+`rm -rf`, and a must-be-under-the-home check so a marker dropped
+elsewhere on disk cannot authorize deleting that tree.
+
+v1.290.0 is the arc review over v1.287–v1.289, and it found one real bug
+**in code a few hours old**: v1.289's Discard stopped the devices when
+you dropped the space the studio was aimed at, but left the aim pointing
+at a directory that no longer existed — blank tree, orphan root, the
+deleted path still on the status line. That is the COMMON path, not an
+exotic one, because Discard sits beside Open. An aimed discard now
+re-aims at `~/NMOX` (the v1.33.1 known-good home), strictly AFTER the
+delete, quietly, and only when it was the aimed space.
+
+Three lessons from the night, in order of how much they will cost the
+next person:
+
+- **The mutation-divergence lesson repeated, one release after it was
+  written.** v1.290's second mutant survived its first test because the
+  assertion checked that a guard *appears* in the source — and the
+  sibling panic block still carries one, so an unguarded re-aim read as
+  correct. Counting the guarded blocks kills it. Taken with v1.287.0's
+  surrogate metric, this is now twice in two days: **"does the mutant
+  actually diverge under this input?" belongs on the checklist, not in
+  the lessons file.**
+
+- **Hover behaviour cannot be verified by automation, which is what
+  four rounds of ledger-76 instrumentation actually established.** A
+  global AWTEventListener measured **three `MOUSE_MOVED` events for an
+  entire session** — the synthetic cursor warp delivers enter/exit but
+  essentially no motion, and Swing tooltips need both. Ledger 76 stands
+  open with the registration site, the enter delivery and the manager's
+  never-invoked overload all ruled in or out; the remaining work needs
+  hands on a real mouse. The truncation the tooltip backs up is
+  live-proven either way.
+
+- **Two pipeline hazards were mine, not CI's.** The gate watcher parsed
+  `gh pr checks` with default awk field splitting, but check names
+  contain spaces (`build (macos-latest)`), so `$2` was never `pass` and
+  two green runs reported CHECKS-TIMEOUT — the output is TAB-separated.
+  And `brew upgrade --cask` failing with `ditto: No space left on
+  device` was a full disk at 356 MB free, not a bad artifact; the
+  marathon's own debris cleared 29 GB in one `brew cleanup --prune=all`.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.287.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.290.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)

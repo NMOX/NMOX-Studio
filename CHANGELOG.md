@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.291.0] - 2026-08-07
+
+Docs truth: the plan carries the night shift.
+
+### Changed
+- **`docs/engineering/plan.md` — the read-this-first document — gains an
+  addendum for v1.288–v1.290 and its standing header moves to v1.290.0.**
+  The night's three releases are one theme finishing itself: the
+  Workbench's rows were the organize sweep's last holdout (v1.288.0),
+  learning spaces were its last creator and the reason those rows
+  accumulated at all (v1.289.0), and the arc review over the result
+  found the aimed-discard bug in hours-old code (v1.290.0).
+  Three lessons recorded with their cost to the next reader: the
+  mutation-divergence rule repeated one release after it was written, so
+  it belongs on the checklist rather than in the lessons file; hover
+  behaviour cannot be verified by this automation at all (a global AWT
+  listener measured three MOUSE_MOVED events for a whole session), which
+  is what four rounds of ledger-76 instrumentation actually established;
+  and two pipeline "failures" were the harness, not CI — an awk field
+  split on tab-separated `gh pr checks` output, and a full disk reported
+  as a bad cask artifact.
+  Docs only — no product code changed.
+
 ## [1.290.0] - 2026-08-07
 
 Discarding the space you are standing in re-aims the studio.
