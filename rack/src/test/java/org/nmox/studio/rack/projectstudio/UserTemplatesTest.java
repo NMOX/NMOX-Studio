@@ -151,9 +151,11 @@ class UserTemplatesTest {
     @Test
     @DisplayName("the wizard lists customs but never grants them the built-ins' pre-trust")
     void wizardWiring() throws IOException {
+        // CRLF checkouts (the windows lane) would break the multi-line
+        // literal below — normalize before asserting (the v1.42.0 lesson)
         String src = Files.readString(Path.of("src", "main", "java", "org",
                 "nmox", "studio", "rack", "projectstudio", "NewProjectDialog.java"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8).replace("\r\n", "\n");
         assertThat(src)
                 .as("customs must join the wizard's list, or the drop-in dir is dead")
                 .contains("UserTemplates.load(UserTemplates.dropInDir())");
