@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.286.0] - 2026-08-06
+
+New File speaks JavaScript, and the privileged list stops pointing at
+ghosts.
+
+### Fixed
+- **A JavaScript IDE offered no JavaScript file in its New File
+  wizard.** ClientSide held only the css-prep module's Sass and LESS
+  entries, HTML and CSS hid under "Other", and JS/TS/JSON existed
+  nowhere. The tell: `WebProjectRecommendedTemplates`' privileged list
+  — the "float the everyday files to the top" feature — has named
+  `Templates/ClientSide/javascript.js`, `json.json`, `html.html` and
+  `css.css` since the day it was written, and four of its five entries
+  were paths NO shipped module ever registered. A dangling privileged
+  entry is invisible in review: the wizard just silently doesn't float
+  it. The editor module now registers JavaScript File, TypeScript File
+  and JSON File under ClientSide at exactly the promised paths (JS/TS
+  deliberately empty — the value is the type and the extension, not a
+  guess at the user's module shape; JSON starts as `{}` because an
+  empty file is not valid JSON), and the privileged list is rewritten
+  to paths that exist, with the platform entries pinned to their real
+  names (`Templates/Other/html.html`,
+  `Templates/Other/CascadeStyleSheet.css`, `Templates/Other/file`) as
+  read out of the assembled app's module layers. New
+  `PrivilegedTemplatesExistTest` fails the build if a ClientSide entry
+  is privileged but unregistered, or a dangling spelling comes back —
+  mutation-proven ×2 by name. Live-proven in the dev build: ⌘N →
+  ClientSide lists JavaScript/TypeScript/JSON/Sass/LESS with real
+  loader icons → `routes.js` created and opened.
+- **The ledger-69 trust sentinel stops flaking on fresh CI runners.**
+  `clearForTestLeavesRealGrantsAlone` failed twice on 2026-08-06 with
+  `BackingStoreException: Couldn't get file lock` — from the FINALLY
+  block's cleanup `flush()`, after every assertion had passed: a fresh
+  ubuntu runner has no `~/.java/.userPrefs` to lock, and then the
+  sentinel's `put` never persisted either, so there is nothing durable
+  to clean up. The janitorial flush is now best-effort; the assertions
+  are never excused.
+
 ## [1.285.0] - 2026-08-06
 
 The file tree's Cut, Copy and Delete actually work.
