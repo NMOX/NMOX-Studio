@@ -243,13 +243,14 @@
                         <!-- ui: menu actions that only open a dialog/file-chooser and
                              delegate to logic tested in rack (PwaKit/Experiments/
                              EnvironmentDoctor are rack classes with their own tests).
-                             These seven carry no testable branch of their own. The
+                             These eight carry no testable branch of their own. The
                              actions that DO hold ui-resident logic (StandardsKitAction's
                              validate gate, NewLearningSpaceAction/SwitchProjectAction's
                              filter predicates, GeneralOptionsPanelController, UpdateCheck)
                              are kept and tested. -->
                         <exclude>**/ui/actions/PwaKitAction*.class</exclude>
                         <exclude>**/ui/actions/ManageExperimentsAction*.class</exclude>
+                        <exclude>**/ui/actions/ManageLearningSpacesAction*.class</exclude>
                         <exclude>**/ui/actions/EnvironmentDoctorAction*.class</exclude>
                         <exclude>**/ui/actions/NewExperimentAction*.class</exclude>
                         <exclude>**/ui/actions/OpenFileAction*.class</exclude>
