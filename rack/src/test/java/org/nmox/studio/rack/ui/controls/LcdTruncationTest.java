@@ -54,6 +54,55 @@ class LcdTruncationTest {
     }
 
     @Test
+    @DisplayName("the cut never splits a surrogate pair")
+    void cutIsCodePointSafe() {
+        // An emoji is one glyph but two UTF-16 units. The first version
+        // of this test used the uniform ONE_PX metric and the char-chop
+        // mutant SURVIVED: when every unit costs the same, a lone
+        // surrogate still costs 1, so the loop never STOPS on one — the
+        // two chop styles converge. The mutant is only visible under a
+        // metric where a dangling surrogate measures NARROWER than the
+        // whole pair, which is exactly what a real font does (no glyph,
+        // no width). The v1.149.0 lesson again: pick inputs where the
+        // mutant's behavior DIVERGES, not inputs that merely contain
+        // the hazard.
+        java.util.function.ToIntFunction<String> fontLike = str -> {
+            int w = 0;
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isHighSurrogate(c)
+                        && i + 1 < str.length()
+                        && Character.isLowSurrogate(str.charAt(i + 1))) {
+                    w += 2;      // the emoji glyph
+                    i++;
+                } else if (Character.isHighSurrogate(c) || Character.isLowSurrogate(c)) {
+                    w += 0;      // a lone surrogate renders nothing
+                } else {
+                    w += 1;
+                }
+            }
+            return w;
+        };
+
+        String s = "AB\uD83D\uDE80";                     // "AB🚀", width 4
+        String shown = LcdDisplay.fit(s, 3, fontLike);
+        assertThat(shown)
+                .as("a char-based chop stops on AB\uD83D… (the dangling"
+                        + " surrogate is free, so it 'fits'); the cut must"
+                        + " remove the whole rocket")
+                .isEqualTo("AB…");
+        for (int i = 0; i < shown.length(); i++) {
+            char c = shown.charAt(i);
+            boolean dangling = Character.isHighSurrogate(c)
+                    && (i == shown.length() - 1
+                        || !Character.isLowSurrogate(shown.charAt(i + 1)));
+            assertThat(dangling)
+                    .as("no dangling high surrogate in [%s]", shown)
+                    .isFalse();
+        }
+    }
+
+    @Test
     @DisplayName("an impossibly narrow display shows the marker, not a stray letter")
     void degradesToTheMarker() {
         assertThat(LcdDisplay.fit("REFUSED", 0, ONE_PX))
