@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.292.0] - 2026-08-07
+
+The outline sees your routes.
+
+### Added
+- **An Express/Fastify/Koa server file now outlines as its route
+  table.** The editor persona walk opened `server.js` — the
+  most-opened file in the ecosystem this IDE is built for — and the
+  Navigator said "No structure to show".
+  The extractor was not broken: a headless probe confirmed it reads
+  classic declarations (`function`, `class`) and modern arrow consts
+  (`const add = () => …`) correctly. It found nothing because such a
+  file genuinely declares neither — every handler is an inline
+  callback passed to `app.get(...)`. It was right, and useless, because
+  the structure of that file IS its route table.
+  `app.get('/health', …)` and `router.post('/invoices', …)` now appear
+  as `GET /health` and `POST /invoices` — the way the route is talked
+  about — and clicking one lands on the line that declares it.
+  Deliberately narrow, because a wrong outline entry is worse than a
+  missing one: the receiver must look like an app or router, the verb
+  must be a real HTTP method, and a string path must be present. So
+  `app.use(express.json())`, `res.json({…})` and `cache.get('key')`
+  all stay out, and a route inside a comment or template literal rides
+  the same `stripNonCode` guard the other patterns already use. The one
+  shape that still reads as a route by pure syntax —
+  Express's own `app.get('port')` config getter — is pinned in the
+  tests as a written limit rather than left to be discovered.
+  Live-proven in the dev build: `GET /` and `GET /health` in the
+  Navigator for the file that showed nothing, and clicking `GET
+  /health` moved the caret to line 12.
+  Mutation-proven ×2 — widening the receiver to any identifier, and
+  making the string path optional, each fail a named test. The second
+  mutation SURVIVED its first run and the reason is recorded in the
+  test: `app.use(...)` is excluded by the VERB list, not the string
+  rule, so nothing exercised that guard until a no-quotes
+  `app.get(port)` case was added.
+
 ## [1.291.0] - 2026-08-07
 
 Docs truth: the plan carries the night shift.

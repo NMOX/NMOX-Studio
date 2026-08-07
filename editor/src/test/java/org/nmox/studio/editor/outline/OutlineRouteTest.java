@@ -80,7 +80,14 @@ class OutlineRouteTest {
     @DisplayName("look-alikes stay out — a wrong entry is worse than none")
     void lookAlikesAreNotRoutes() {
         assertThat(names("app.use(express.json());\n"))
-                .as("use() has no path and is not a route")
+                .as("use is not one of the HTTP verbs")
+                .isEmpty();
+        assertThat(names("app.get(port);\n"))
+                .as("Express's config getter reads a variable, not a string"
+                        + " path — the string requirement is what excludes it,"
+                        + " and this is the ONLY case that exercises that"
+                        + " guard (a mutation making the quotes optional"
+                        + " survived every other assertion here)")
                 .isEmpty();
         assertThat(names("res.json({ ok: true });\n"))
                 .as("json is not an HTTP verb and res is not a router")
