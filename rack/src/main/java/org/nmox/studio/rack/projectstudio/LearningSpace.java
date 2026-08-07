@@ -76,6 +76,47 @@ public final class LearningSpace {
         return dir;
     }
 
+    /**
+     * Discards a learning space: stops anything running there and
+     * deletes the tree (v1.289.0, the organize sweep's last creator).
+     *
+     * <p>Every other place the product lets you make a named thing grew
+     * a way to unmake it — API requests v1.263.0, saved queries
+     * v1.266.0, components v1.268.0, networks and deployments v1.269.0,
+     * Workbench rows v1.288.0. Learning spaces were the holdout, and
+     * the one whose leftovers were most visible: the directories under
+     * {@code ~/.nmox/learn} exist forever, so a space you tried once
+     * sat in the daily PROJECTS list for the life of the install.
+     *
+     * <p>The marker is the contract, exactly as it is for experiments:
+     * this method refuses any directory that is not a learning space,
+     * so it can never become a general-purpose {@code rm -rf}. It also
+     * refuses anything outside {@link #root()} — a symlinked or
+     * hand-edited path must not let a marker file elsewhere on disk
+     * authorize a tree delete.
+     */
+    public static void discard(File space) throws IOException {
+        if (!isLearningSpace(space)) {
+            throw new IOException("Not a learning space: " + space);
+        }
+        File canonicalRoot = root().getCanonicalFile();
+        File canonical = space.getCanonicalFile();
+        if (!canonicalRoot.equals(canonical.getParentFile())) {
+            throw new IOException("Outside the learning-space home: " + space);
+        }
+        Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
+        if (space.equals(rack.getProjectDir())) {
+            for (RackDevice d : rack.getDevices()) {
+                d.panic();
+            }
+        }
+        try (java.util.stream.Stream<java.nio.file.Path> walk = Files.walk(space.toPath())) {
+            for (java.nio.file.Path p : walk.sorted(Comparator.reverseOrder()).toList()) {
+                Files.deleteIfExists(p);
+            }
+        }
+    }
+
     private static void writeMarker(File dir, LearningCatalog.Space space) throws IOException {
         Files.writeString(new File(dir, MARKER).toPath(),
                 "slug=" + space.slug() + "\nname=" + space.name()
