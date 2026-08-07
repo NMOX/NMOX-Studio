@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.293.0] - 2026-08-07
+
+Your templates join the wizard.
+
+### Added
+- **Drop a JSON file into `~/.nmox/templates.d/` and it appears in the
+  New Project wizard beside the built-ins** — no IDE build, no plugin,
+  just a file. "Templates live in code; should be extensible/
+  data-driven" had been tech-debt item #1 since the debt file was
+  written; this closes the extensibility half with the idiom the
+  product already trusts (the `~/.nmox/learn-catalog.d` drop-in,
+  v1.53.0): files read lazily in filename order, a malformed one
+  skipped with a status note instead of blocking the wizard. The
+  schema is one template per file — name, description, and a files map
+  of path → content — with `{{name}}` in any path or content replaced
+  by the project name (the var spelling API Studio and .http files
+  already use). The BUILT-INS deliberately stay in code: their
+  dependency pins carry live-proven version ceilings (TS 5, vite ^6,
+  Angular ~21.2) enforced by build gates that read that source.
+  Safety is the substance of the release: a declared path that is
+  absolute, contains `..`, a backslash, or a drive letter disqualifies
+  the WHOLE template — half a template is worse than none — and
+  generation re-checks the resolved path so substitution cannot reopen
+  the hole. And because a drop-in is data that may have been copied
+  from anywhere, a custom template never receives the built-ins'
+  pre-trust: the generated project keeps its Workspace Trust prompt,
+  and the optional dependency install asks first (the v1.224.0
+  spawn-ledger law). The install also gained a package.json guard for
+  every template — an install in a project with no manifest could only
+  fail. Live-proven in the dev build: "Fastify Team Starter · yours"
+  listed after the built-ins, a deliberately broken drop-in skipped
+  with its parse error on the status line, generation with `{{name}}`
+  substituted throughout, and the trust prompt (Keep Safe default)
+  fired before the install, which completed after the grant.
+  Mutation-proven ×3: dropping the traversal check, weakening
+  whole-template refusal to skip-the-entry, and pre-trusting customs
+  each fail a named test. docs/project-templates.md documents the
+  schema.
+
 ## [1.292.0] - 2026-08-07
 
 The outline sees your routes.

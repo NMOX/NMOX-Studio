@@ -42,7 +42,10 @@ public class NewProjectDialog extends JDialog {
 
     private final JTextField nameField = new JTextField("my-app", 20);
     private final JTextField locationField = new JTextField(28);
-    private final JList<ProjectTemplates> templateList = new JList<>(ProjectTemplates.values());
+    // built-ins first, then any ~/.nmox/templates.d drop-ins (v1.293.0) —
+    // both kinds render name+description and generate the same way, so the
+    // list holds the union and the OK path dispatches on the element type
+    private final JList<Object> templateList = new JList<>(templateModel());
     private final JCheckBox installBox = new JCheckBox("Run npm install after creating", true);
     private final JLabel previewLabel = new JLabel(" ");
     private final JButton createButton = new JButton("Create Project");
@@ -50,6 +53,39 @@ public class NewProjectDialog extends JDialog {
     private final JButton browseButton = new JButton("…");
 
     private File createdProject;
+
+    /**
+     * Built-ins immediately, drop-ins a beat later: the wizard must open
+     * without waiting on disk (the v1.33.1 law — even a shallow local scan
+     * stays off the EDT, because a network-mounted home must not freeze a
+     * menu click). Custom templates join the same model when read; a
+     * malformed drop-in is skipped with a status note, never a blocker —
+     * the learn-catalog.d law.
+     */
+    private static javax.swing.ListModel<Object> templateModel() {
+        javax.swing.DefaultListModel<Object> model = new javax.swing.DefaultListModel<>();
+        for (ProjectTemplates t : ProjectTemplates.values()) {
+            model.addElement(t);
+        }
+        CREATE_RP.post(() -> {
+            UserTemplates.Loaded loaded = UserTemplates.load(UserTemplates.dropInDir());
+            if (loaded.templates().isEmpty() && loaded.skipped().isEmpty()) {
+                return;
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                loaded.templates().forEach(model::addElement);
+                for (UserTemplates.Skipped s : loaded.skipped()) {
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                            "Template " + s.file() + " skipped: " + s.reason());
+                }
+            });
+        });
+        return model;
+    }
+
+    private static String escape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
 
     public NewProjectDialog(Component parent) {
         super(javax.swing.SwingUtilities.getWindowAncestor(parent), "New Project",
@@ -59,15 +95,21 @@ public class NewProjectDialog extends JDialog {
 
         templateList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         templateList.setSelectedIndex(0);
-        templateList.setVisibleRowCount(ProjectTemplates.values().length);
+        templateList.setVisibleRowCount(Math.min(16, templateList.getModel().getSize()));
         templateList.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                ProjectTemplates t = (ProjectTemplates) value;
-                setText("<html><b>" + t.getDisplayName() + "</b><br><small>"
-                        + t.getDescription() + "</small></html>");
+                if (value instanceof ProjectTemplates t) {
+                    setText("<html><b>" + t.getDisplayName() + "</b><br><small>"
+                            + t.getDescription() + "</small></html>");
+                } else if (value instanceof UserTemplates.Custom c) {
+                    // "yours" says where it came from without a second column
+                    setText("<html><b>" + escape(c.name()) + "</b> <font color='#888'>·"
+                            + " yours</font><br><small>" + escape(c.description())
+                            + "</small></html>");
+                }
                 setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
                 return this;
             }
@@ -211,7 +253,7 @@ public class NewProjectDialog extends JDialog {
             warn("Give the project a name.");
             return;
         }
-        ProjectTemplates template = templateList.getSelectedValue();
+        Object template = templateList.getSelectedValue();
         File dir = targetDir();
         if (dir.exists()) {
             warn(dir.getName() + " already exists in that location.");
@@ -222,7 +264,11 @@ public class NewProjectDialog extends JDialog {
         setBusy(true);
         CREATE_RP.post(() -> {
             try {
-                template.generate(dir, name);
+                if (template instanceof UserTemplates.Custom custom) {
+                    UserTemplates.generate(custom, dir, name);
+                } else {
+                    ((ProjectTemplates) template).generate(dir, name);
+                }
             } catch (IOException ex) {
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     setBusy(false);
@@ -241,18 +287,29 @@ public class NewProjectDialog extends JDialog {
             // with a Run button that honestly does nothing (v1.93.0 serving
             // truth) and no idea why. Experiments and Learning Spaces have
             // pre-trusted their own scaffolds since they shipped; this closes
-            // the one generator that didn't.
-            WorkspaceTrust.trust(dir);
+            // the one generator that didn't. A CUSTOM template is the one
+            // exception: its content is drop-in DATA that may have been
+            // copied from anywhere, so it is exactly the "other people's
+            // code" the trust prompt exists for — no pre-trust, and the
+            // optional install below asks first (v1.224.0 spawn-ledger law).
+            boolean custom = template instanceof UserTemplates.Custom;
+            if (!custom) {
+                WorkspaceTrust.trust(dir);
+            }
             javax.swing.SwingUtilities.invokeLater(() -> {
                 createdProject = dir;
                 // aim the rack: the template's patch mounts automatically
                 RackService.getDefault().openProject(dir);
-                if (installBox.isSelected()) {
-                    // Deliberately NOT trust-gated: this runs code the product
-                    // itself just wrote from its own template, at the user's
-                    // explicit request — WorkspaceTrust guards OTHER people's
-                    // code. Manager resolved via the v1.60.0 detection so a
-                    // future manager-pinning template installs with its own tool.
+                // package.json guard: an install in a project that has no
+                // manifest (PHP built-in, a make-based custom) can only fail
+                if (installBox.isSelected() && new File(dir, "package.json").isFile()
+                        && (!custom || WorkspaceTrust.requestTrust(dir))) {
+                    // For built-ins deliberately NOT trust-gated: this runs
+                    // code the product itself just wrote from its own
+                    // template, at the user's explicit request —
+                    // WorkspaceTrust guards OTHER people's code. Manager
+                    // resolved via the v1.60.0 detection so a manager-pinning
+                    // template installs with its own tool.
                     String pm = org.nmox.studio.rack.devices.ProjectInspector
                             .nodePackageManager(dir);
                     org.openide.awt.StatusDisplayer.getDefault()
