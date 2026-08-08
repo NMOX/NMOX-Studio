@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.301.0] - 2026-08-07
+
+Dockerize speaks your house style.
+
+### Added
+- **Dockerize recipes: a JSON file in `~/.nmox/dockerize.d/` joins the
+  Docker panel's Dockerize tab** beside the detected-toolchain
+  generator — the fourth drop-in surface, and the last seam the
+  extensibility direction in plan.md named. A team whose Dockerfile
+  convention differs from the built-in one stops re-editing the
+  generated file on every project: pick the recipe in the new combo,
+  the previews swap to its files with `{{name}}` substituted, and
+  Write writes exactly what previews.
+  The path law is the SAME public implementation the template drop-ins
+  use (`UserTemplates.pathProblem`) — an unsafe path disqualifies the
+  whole recipe — and the WRITER itself now routes every file through a
+  behaviorally-tested `resolveInside` guard, so no future producer can
+  reopen the hole. That guard exists in testable code deliberately:
+  the first mutation run survived a string-presence assertion (the
+  v1.290.0 class, fourth instance), and the fix this time was
+  structural — move the guard out of the private UI method and kill
+  the mutant with behavior, not prose.
+  The recipe scan rides the existing off-EDT dockerize lane; malformed
+  drop-ins are skipped with a status note.
+  Live-proven in the dev build: "Corp Node baseline · yours" in the
+  combo, previews swapped to the recipe with `LABEL org=corp
+  app=invoice-api` substituted, info line naming the recipe.
+  Mutation-proven ×2, both fatal by name: the parse-time path law
+  dropped, and the resolver's escape check skipped.
+
 ## [1.300.0] - 2026-08-07
 
 Docs truth: the plan carries the whole evening.

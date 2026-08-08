@@ -63,3 +63,13 @@ one click from joining the current project's workspace. Export a
 collection to .http first — the export deliberately omits auth, and an
 Authorization header in a library file is lifted into the OS keychain on
 import, so sharing request files never shares secrets.
+
+## Dockerize recipes
+
+Since v1.301.0 the Docker panel's Dockerize tab reads
+`~/.nmox/dockerize.d/` too. A JSON file there — `{ "name": …,
+"files": { "Dockerfile": …, ".dockerignore": …, "compose.yaml": … } }` —
+appears in the tab's recipe picker beside the detected-toolchain
+generator, with `{{name}}` replaced by the image name. The same path
+rules as templates apply: a file entry that would land outside the
+project disqualifies the whole recipe.
