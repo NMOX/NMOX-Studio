@@ -157,7 +157,9 @@ public class BlackboxDevice extends RackDevice {
         JTable table = new JTable(model);
         table.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
         table.setRowHeight(22);
-        table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+        // the flight table shows recorded COMMANDS from any project — plain text
+        table.setDefaultRenderer(Object.class, org.nmox.studio.core.util.PlainTables.plain(
+                new javax.swing.table.DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(JTable t, Object v,
                     boolean sel, boolean foc, int row, int col) {
@@ -173,7 +175,7 @@ public class BlackboxDevice extends RackDevice {
                 }
                 return c;
             }
-        });
+        }));
 
         JCheckBox errorsOnly = new JCheckBox("errors only");
         Runnable fill = () -> {

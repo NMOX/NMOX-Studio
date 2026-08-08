@@ -117,7 +117,7 @@ public class ProjectConfigDialog extends JDialog {
     private JPanel buildScriptsTab() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JTable table = new JTable(scriptsModel);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(scriptsModel));
         scriptsTable = table;
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
@@ -144,7 +144,7 @@ public class ProjectConfigDialog extends JDialog {
     private JPanel buildDependenciesTab() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JTable table = new JTable(depsModel);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(depsModel));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 

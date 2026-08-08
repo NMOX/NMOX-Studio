@@ -177,7 +177,8 @@ public class SonarDevice extends RackDevice {
                 return false;
             }
         };
-        JTable table = new JTable(model);
+        // process command names come from `lsof` — external text, keep it literal
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
         table.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
         table.setRowHeight(22);
 

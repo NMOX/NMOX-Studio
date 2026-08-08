@@ -41,7 +41,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
                 return false;
             }
         };
-        JTable table = new JTable(model);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
         table.setRowHeight(22);
         table.getColumnModel().getColumn(0).setMaxWidth(28);
         table.getColumnModel().getColumn(1).setPreferredWidth(90);

@@ -203,6 +203,9 @@ public final class DevToolsPanel extends JPanel {
 
     /** A JTable whose cells never interpret page text as HTML. */
     private static JTable safeTable(javax.swing.table.TableModel model) {
+        // PLAIN-TABLE-EXEMPT: this pane predates core.util.PlainTables and
+        // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
+        // (v1.206.0). The safety is identical (html.disable on the renderer).
         JTable table = new JTable(model);
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
