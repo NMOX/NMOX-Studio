@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.304.0] - 2026-08-08
+
+Docs truth — the drop-in family's night, on the record.
+
+### Changed
+- **plan.md carries the night shift (v1.300–v1.303)** in a new
+  addendum, and its standing header moves to v1.303.0: the dockerize.d
+  seam that completed the five-surface drop-in family, the structural
+  resolution of the mutation-divergence class (a guard belongs in
+  testable code, not a private UI method — plus the wip-commit-after-
+  any-new-code corollary), the family review's stale-object law (store
+  the identity, resolve against a fresh load at use time), and the
+  Doctor's honesty walk (a failing version probe is said, never
+  quoted; the timeout sentinel; the house tests defending documented
+  behaviour in both directions). The 502-mid-merge retry recipe and
+  the standing Doctor-probes drop-in candidate are recorded alongside.
+  Documentation only — no product code changes.
+
 ## [1.303.0] - 2026-08-07
 
 The Doctor stops quoting error text as versions.
