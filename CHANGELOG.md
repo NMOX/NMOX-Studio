@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.296.0] - 2026-08-07
+
+The extensibility-arc review.
+
+### Fixed
+- **Two fast clicks on Presets no longer stack two menus.** The
+  v1.294.0 drop-in scan moved the menu open behind an off-EDT hop, and
+  each click posted its own scan — so a double-click showed two
+  popups. The button now disables until its menu is up.
+- **A verbatim `.nmoxrack.json` copy reads by its plain name.** The
+  docs say "copy your .nmoxrack.json into ~/.nmox/presets.d" — and a
+  file copied exactly that way appeared in the menu as
+  "Log Watch.nmoxrack". The inner suffix is stripped from the display
+  name.
+
+### Verified clean (v1.292–v1.295, fresh lenses)
+- The wizard's heterogeneous selection: the only cast left is
+  instanceof-guarded in createProject; updatePreview is cast-free.
+- The route-outline order (TEST before ROUTE, so a test named
+  "GET /x" stays a test) and the stripNonCode guard on route lines.
+- templates.d and the wizard share one single-threaded RP, so a
+  drop-in scan cannot interleave a generation.
+- Blessed in writing: the New Experiment dialog deliberately offers
+  built-ins only (an experiment is a throwaway; drop-in templates are
+  one Open away if it grows up), and the wizard's visible-row count is
+  computed before customs arrive (cosmetic — the list scrolls).
+
+Both fixes mutation-proven: removing the suffix strip and removing the
+button guard each fail a named test.
+
 ## [1.295.0] - 2026-08-07
 
 Docs truth: the plan carries the extensibility arc.
