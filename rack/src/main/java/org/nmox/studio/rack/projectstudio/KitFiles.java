@@ -22,6 +22,24 @@ final class KitFiles {
     private KitFiles() {
     }
 
+    /**
+     * A W3C manifest {@code short_name}, truncated for home-screen
+     * display. Home screens show roughly 12 characters, so a longer
+     * name is cut — but on a CODE-POINT boundary (never mid-surrogate,
+     * which would strand a lone UTF-16 unit and mint an invalid JSON
+     * string — the v1.149.0/v1.287.0 truncation class), and with
+     * trailing whitespace stripped so the cut never leaves a dangling
+     * space in the installed app's name.
+     */
+    static String shortName(String name) {
+        String s = name == null ? "" : name.strip();
+        if (s.codePointCount(0, s.length()) <= 12) {
+            return s;
+        }
+        int end = s.offsetByCodePoints(0, 12);
+        return s.substring(0, end).stripTrailing();
+    }
+
     static Write writeNeverClobber(File dir, String path, String content)
             throws IOException {
         File target = new File(dir, path);

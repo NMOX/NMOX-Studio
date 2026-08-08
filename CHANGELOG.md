@@ -6,6 +6,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.309.0] - 2026-08-08
+
+The PWA kit precaches the icons it generates; short_name truncates cleanly.
+
+### Fixed
+- **An installed PWA no longer 404s its own home-screen icons offline.**
+  The site-launch persona walk of the PWA Kit (Tools ▸ PWA Kit…, first
+  walked since it shipped in v1.21.0) found the service worker precached
+  only 2 of the 5 icons the kit writes: the manifest references the
+  maskable pair and index.html references the apple-touch icon, but
+  neither was in the precache list — so an installed PWA gone offline
+  showed broken home-screen and splash art, defeating the kit's whole
+  "install and work offline" promise. The precache now includes every
+  icon in `ICON_FILES` (keyed off the same constant `write()` uses, so
+  it can't drift), proven by generating a real site.
+- **`short_name` truncation no longer leaves a trailing space or a lone
+  surrogate.** Both kits cut a long manifest `short_name` to 12 for
+  home-screen display; the raw `substring(0, 12)` left a dangling space
+  ("Acme Rocket ") and could cut mid-surrogate on an astral character
+  (the v1.149.0/v1.287.0 code-point class), minting an invalid JSON
+  string. One shared `KitFiles.shortName` helper now cuts on a
+  code-point boundary and strips trailing whitespace. Mutation-proven
+  ×2.
+
 ## [1.308.0] - 2026-08-08
 
 Docs truth — doctor.d and the html-render security arc, on the record.
