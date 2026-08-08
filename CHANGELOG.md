@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.298.0] - 2026-08-07
+
+The update center crosses ten releases, gauntleted headlessly.
+
+### Verified
+- **A stock v1.288.0 install updated itself in-app to 1.297.0** through
+  the real update center — the scriptable v1.261.0 recipe
+  (`--modules --update-all` + `-J-Dnetbeans.close=true`, throwaway
+  userdir): the catalog at releases/latest offered all 11 modules
+  (`updates=11`, every "Will update …@1.288.0 to version 1.297.0" line
+  present), the install completed, and a second refresh converged to
+  "Updates not found" — the correct steady state. On restart, all
+  eleven modules report **1.297.0 Enabled**, messages.log carries zero
+  module-system failure phrases, and the cluster's own jar manifests
+  byte-verify at `OpenIDE-Module-Specification-Version: 1.297.0`.
+  This is the behavioral proof of the spec-version chain (v1.47.0) and
+  the target-stays-21 law (v1.253.0) across the exact ten-release
+  stretch the last two days shipped — including the three new drop-in
+  surfaces, which ride module code the update path just delivered.
+  One observation recorded: with a WRITABLE cluster (an app copy, not
+  /Applications) the platform installs the new jars in place rather
+  than shadowing them in the userdir — both layouts load the same
+  1.297.0 bytes. (docs only)
+
 ## [1.297.0] - 2026-08-07
 
 The request library.
