@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.300.0] - 2026-08-07
+
+Docs truth: the plan carries the whole evening.
+
+### Changed
+- **plan.md's extensibility addendum extends through v1.299** and the
+  standing header moves to v1.299.0: the arc review's two finds, the
+  request library and its deliberate .http-over-.nmoxapi.json call,
+  the ten-release update gauntlet with the writable-cluster
+  observation, and the floors ratchet with the law it taught red-first
+  — a JaCoCo floor must clear the LOWEST honest lane, and the windows
+  lane is rack's binding measurement. (docs only)
+
 ## [1.299.0] - 2026-08-07
 
 The floors ratchet: a week of new tests is locked in.
