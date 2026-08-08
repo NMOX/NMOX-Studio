@@ -658,7 +658,8 @@ public final class DbStudioTopComponent extends TopComponent {
             if (decision != null && decision.editable()) {
                 panel.add(editableGrid(panel, spec, content), BorderLayout.CENTER);
             } else {
-                JTable table = new JTable(new ResultsTableModel(result));
+                JTable table = org.nmox.studio.core.util.PlainTables
+                        .disableHtml(new JTable(new ResultsTableModel(result)));
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
                 String reason = decision == null ? "Read-only" : decision.reason();
@@ -711,7 +712,9 @@ public final class DbStudioTopComponent extends TopComponent {
         table.setFont(MONO);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        table.setDefaultRenderer(String.class, new DirtyCellRenderer(model));
+        // editable grid shows external DB cell values — keep markup literal
+        table.setDefaultRenderer(String.class,
+                org.nmox.studio.core.util.PlainTables.plain(new DirtyCellRenderer(model)));
         table.setToolTipText("Double-click a cell to edit; Apply… previews the UPDATEs first");
         applyButton.addActionListener(e -> applyEdits(tabPanel, spec, content, model));
         revertButton.addActionListener(e -> model.revertAll());

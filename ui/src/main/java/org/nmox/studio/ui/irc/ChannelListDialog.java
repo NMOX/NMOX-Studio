@@ -39,7 +39,7 @@ final class ChannelListDialog {
     static void show(String network, List<ChannelListCollector.Row> rows,
             int totalSeen, Consumer<String> join) {
         Model model = new Model(rows);
-        JTable table = new JTable(model);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
         TableRowSorter<Model> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
         table.getColumnModel().getColumn(0).setPreferredWidth(180);

@@ -233,7 +233,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         t.getTableHeader().setForeground(DIM);
         t.setSelectionBackground(new Color(40, 70, 110));
         t.setSelectionForeground(Color.WHITE);
-        t.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        // container names/images/status come from `docker` — keep markup literal
+        t.setDefaultRenderer(Object.class, org.nmox.studio.core.util.PlainTables.plain(
+                new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable tb, Object v,
                     boolean sel, boolean foc, int row, int col) {
@@ -246,7 +248,7 @@ public final class DockerPanelTopComponent extends TopComponent {
                 }
                 return c;
             }
-        });
+        }));
         return t;
     }
 

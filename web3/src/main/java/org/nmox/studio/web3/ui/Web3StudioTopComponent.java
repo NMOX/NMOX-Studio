@@ -938,7 +938,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         bar.add(watchFilterCombo);
         panel.add(bar, BorderLayout.NORTH);
 
-        JTable table = new JTable(watchModel);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(watchModel));
         table.setFont(MONO);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
@@ -1107,7 +1107,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         JTable sizeTable = new JTable(sizeModel);
         sizeTable.setFont(MONO);
-        sizeTable.setDefaultRenderer(Object.class, new SizeCellRenderer());
+        sizeTable.setDefaultRenderer(Object.class,
+                org.nmox.studio.core.util.PlainTables.plain(new SizeCellRenderer()));
         sizeTable.getColumnModel().getColumn(2).setCellRenderer(new HeadroomBarRenderer());
         JScrollPane sizeScroll = new JScrollPane(sizeTable);
         sizeScroll.setBorder(BorderFactory.createTitledBorder(
@@ -1121,13 +1122,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         gasButton.addActionListener(e -> runGasReport());
         gasBar.add(gasButton);
         gasPanel.add(gasBar, BorderLayout.NORTH);
-        JTable gasTable = new JTable(gasModel);
+        JTable gasTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(gasModel));
         gasTable.setFont(MONO);
         gasPanel.add(new JScrollPane(gasTable), BorderLayout.CENTER);
         gasPanel.setBorder(BorderFactory.createTitledBorder("Gas report"));
         panel.add(gasPanel);
 
-        JTable deployTable = new JTable(deploymentsModel);
+        JTable deployTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(deploymentsModel));
         deployTable.setFont(MONO);
         deployTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

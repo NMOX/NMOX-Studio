@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.306.0] - 2026-08-08
+
+Tables show external text as text, everywhere.
+
+### Fixed
+- **A `<html>`-prefixed cell can no longer make the IDE fetch a URL.**
+  Swing's `DefaultTableCellRenderer` RENDERS a value that starts with
+  `<html>` — markup executes at paint time, and an
+  `<img src="http://…">` makes the IDE's own JVM fetch an
+  attacker-chosen URL just for displaying a row. This is the v1.208.0
+  bug class (found then in Browser DevTools, where a page could name a
+  DOM node `<html><img …>`), and a review found it standing open in
+  every OTHER table that shows text from outside the IDE: API response
+  headers, DB result cells, IRC channel topics, docker container
+  names, probed tool output, port-scan process names,
+  flight-recorder commands. New `core.util.PlainTables` is the one
+  place the Swing `"html.disable"` switch is spelled; every swept
+  table now routes through it, and `PlainTableGateTest` fails the
+  build if a new `new JTable` file ships without it (DevToolsPanel
+  keeps its own equivalent gate, exempt in writing). A negative-control
+  test pins that stock Swing really does render the markup, so the fix
+  is proven against a live failure mode. Mutation-proven ×2 (the
+  helper's property drop, and the gate's own detection).
+
 ## [1.305.0] - 2026-08-08
 
 The Doctor takes your probes — the sixth drop-in surface.

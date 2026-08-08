@@ -161,15 +161,15 @@ public final class ApiClientTopComponent extends TopComponent {
     private final javax.swing.JList<org.nmox.studio.apiclient.model.SendHistory.Entry>
             historyList = new javax.swing.JList<>(historyModel);
 
-    private final JTable paramsTable = new JTable();
-    private final JTable headersTable = new JTable();
+    private final JTable paramsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
+    private final JTable headersTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
     private final JTextArea bodyArea = new JTextArea();
     private final JComboBox<AuthType> authCombo = new JComboBox<>(AuthType.values());
     // A JPasswordField, not a plaintext JTextField (v1.97.0): the token
     // is a secret, so it neither echoes on screen nor is written to the
     // committable .nmoxapi.json — it lives in the OS keychain.
     private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
-    private final JTable testsTable = new JTable();
+    private final JTable testsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
 
     private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
