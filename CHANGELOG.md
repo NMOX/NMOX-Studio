@@ -6,6 +6,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.308.0] - 2026-08-08
+
+Docs truth — doctor.d and the html-render security arc, on the record.
+
+### Changed
+- **plan.md carries v1.304–v1.307** in a new addendum, and its standing
+  header moves to v1.307.0: the doctor.d seam that completed the
+  six-surface drop-in family, and the html-render security class
+  (Swing renders a `<html>`-prefixed label, fetching an `<img src>` URL
+  at paint time — the v1.208.0 class) closed across its last two homes,
+  the studio tables (v1.306) and the IRC client (v1.307). The two
+  lessons — the construction-time ordering trap and the negative-control
+  method — and the branch-first process slip are recorded alongside.
+  Documentation only — no product code changes.
+
 ## [1.307.0] - 2026-08-08
 
 The IRC client can't be made to fetch a URL by a hostile server.
