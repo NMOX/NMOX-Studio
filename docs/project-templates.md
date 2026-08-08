@@ -54,3 +54,12 @@ Any `.json` file there appears under the built-ins, named after the
 file — and the format is exactly what Save Patch writes
 (`.nmoxrack.json`). Capture a wiring you like with Save Patch, copy the
 file into the drop-in dir, and it becomes a preset in every project.
+
+## The request library
+
+Since v1.297.0 API Studio's Import… menu reads `~/.nmox/api-library.d/`
+too. Any `.http` or `.rest` file there appears under the import formats,
+one click from joining the current project's workspace. Export a
+collection to .http first — the export deliberately omits auth, and an
+Authorization header in a library file is lifted into the OS keychain on
+import, so sharing request files never shares secrets.
