@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.302.0] - 2026-08-07
+
+The drop-in family review.
+
+### Fixed
+- **Regenerate now previews recipe EDITS.** The v1.301.0 Dockerize tab
+  captured the recipe object at combo-refill time, so editing the
+  drop-in file and pressing Regenerate showed the old content — the
+  button's whole purpose defeated. The selection now resolves by name
+  against the fresh on-disk load, and a recipe deleted mid-session
+  falls back to the detected generator instead of ghost-writing from
+  memory. Mutation-proven by a behavioral test covering both the
+  edited and the deleted case.
+
+### Verified clean (v1.297–v1.301, fresh lenses)
+- The request library's scan rides API Studio's housekeeping RP, not
+  the send lane — a hung send cannot block the Import menu and the
+  scan cannot block a send.
+- The rebuilt Import… menu carries all eight format items plus the
+  export, in the original order, with separators correct for both an
+  empty and a populated library.
+- The Dockerize recipe combo's first-show path (empty combo → null
+  selection → detected generator) and the listener-detached refill.
+- Blessed in writing: a button that disables around an off-EDT scan
+  stays disabled if the scan dies mid-flight — the scans are
+  null-safe local dir listings and the failure needs a broken JDK, so
+  a try/finally there is ceremony, not safety.
+
 ## [1.301.0] - 2026-08-07
 
 Dockerize speaks your house style.
