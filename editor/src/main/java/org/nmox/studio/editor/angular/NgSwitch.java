@@ -21,6 +21,20 @@ public final class NgSwitch {
     private static final Pattern TEMPLATE_URL =
             Pattern.compile("templateUrl\\s*:\\s*['\"]([^'\"]+)['\"]");
 
+    /**
+     * Matches the FIRST stylesheet the decorator names, in either
+     * spelling: Angular 17+ writes {@code styleUrl: './x.css'} and
+     * older projects {@code styleUrls: ['./x.css', …]}. Both forms put
+     * the first URL in the same capture, so one pattern serves the
+     * whole ecosystem the IDE has to open (v1.313.0).
+     */
+    private static final Pattern STYLE_URL =
+            Pattern.compile("styleUrls?\\s*:\\s*\\[?\\s*['\"]([^'\"]+)['\"]");
+
+    /** The stylesheet extensions an Angular workspace can be configured for. */
+    private static final String[] STYLE_EXTENSIONS =
+            {".css", ".scss", ".sass", ".less"};
+
     private NgSwitch() {
     }
 
@@ -69,6 +83,78 @@ public final class NgSwitch {
             }
         }
         return null;
+    }
+
+    /**
+     * The stylesheet a component file points at (v1.313.0): the
+     * decorator's {@code styleUrl}/{@code styleUrls} first entry
+     * resolved against the component's directory, else the first
+     * same-basename sibling in the extensions an Angular workspace can
+     * be configured for (css, scss, sass, less — the {@code ng new
+     * --style} choices). Null when the component has none: inline
+     * {@code styles: []} and style-less components are both ordinary.
+     */
+    public static File stylesFor(File componentTs, String componentSource) {
+        File dir = componentTs.getParentFile();
+        if (componentSource != null) {
+            Matcher m = STYLE_URL.matcher(componentSource);
+            if (m.find()) {
+                File byUrl = new File(dir, m.group(1)).toPath().normalize().toFile();
+                if (byUrl.isFile()) {
+                    return byUrl;
+                }
+            }
+        }
+        for (String ext : STYLE_EXTENSIONS) {
+            File sibling = new File(dir, swapExtension(componentTs.getName(), ".ts", ext));
+            if (sibling.isFile()) {
+                return sibling;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The spec beside a component (v1.313.0): {@code foo.component.ts}
+     * → {@code foo.component.spec.ts}. Null when the component has no
+     * spec on disk — {@code ng generate --skip-tests} is a real choice,
+     * so its absence is reported honestly rather than invented.
+     *
+     * <p>Called on a spec itself this returns null (a spec has no spec),
+     * which keeps the action's refusal message truthful.
+     */
+    public static File specFor(File componentTs) {
+        String name = componentTs.getName();
+        if (!name.endsWith(".ts") || name.endsWith(".spec.ts")) {
+            return null;
+        }
+        File spec = new File(componentTs.getParentFile(),
+                swapExtension(name, ".ts", ".spec.ts"));
+        return spec.isFile() ? spec : null;
+    }
+
+    /**
+     * The component class a sibling file belongs to (v1.313.0), for the
+     * files that carry no reference back: a stylesheet or a spec names
+     * its component only by the basename convention, so
+     * {@code foo.component.css} and {@code foo.component.spec.ts} both
+     * resolve to {@code foo.component.ts}. Null when it isn't there.
+     */
+    public static File componentForSibling(File sibling) {
+        String name = sibling.getName();
+        String base = name.endsWith(".spec.ts")
+                ? name.substring(0, name.length() - ".spec.ts".length())
+                : stripLastExtension(name);
+        if (base.isEmpty()) {
+            return null;
+        }
+        File component = new File(sibling.getParentFile(), base + ".ts");
+        return component.isFile() && !component.equals(sibling) ? component : null;
+    }
+
+    private static String stripLastExtension(String name) {
+        int dot = name.lastIndexOf('.');
+        return dot <= 0 ? "" : name.substring(0, dot);
     }
 
     /** True when {@code source}'s templateUrl names {@code templateName}. */

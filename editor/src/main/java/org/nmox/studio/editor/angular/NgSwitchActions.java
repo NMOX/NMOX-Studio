@@ -10,6 +10,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
@@ -84,6 +85,97 @@ public final class NgSwitchActions {
                 if (component == null) {
                     StatusDisplayer.getDefault().setStatusText(
                             "No component class found beside " + template.getName());
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> open(component));
+            });
+        }
+    }
+
+    /** In a component class: open its stylesheet (v1.313.0). */
+    @ActionID(category = "Edit", id = "org.nmox.studio.editor.angular.OpenStyles")
+    @ActionRegistration(displayName = "#CTL_OpenNgStyles", lazy = true)
+    @ActionReference(path = "Editors/text/typescript/Popup", position = 96)
+    @Messages("CTL_OpenNgStyles=Open Angular Styles")
+    public static final class OpenStyles implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File component = focusedFile();
+            if (component == null || !component.getName().endsWith(".ts")) {
+                return;
+            }
+            RESOLVE_RP.post(() -> {
+                File styles = NgSwitch.stylesFor(component, readQuietly(component));
+                if (styles == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "No stylesheet for " + component.getName()
+                            + " (inline styles, or none on disk)");
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> open(styles));
+            });
+        }
+    }
+
+    /** In a component class: open its spec (v1.313.0). */
+    @ActionID(category = "Edit", id = "org.nmox.studio.editor.angular.OpenSpec")
+    @ActionRegistration(displayName = "#CTL_OpenNgSpec", lazy = true)
+    @ActionReference(path = "Editors/text/typescript/Popup", position = 97)
+    @Messages("CTL_OpenNgSpec=Open Angular Spec")
+    public static final class OpenSpec implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File component = focusedFile();
+            if (component == null || !component.getName().endsWith(".ts")) {
+                return;
+            }
+            RESOLVE_RP.post(() -> {
+                File spec = NgSwitch.specFor(component);
+                if (spec == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "No spec beside " + component.getName()
+                            + " (generated with --skip-tests, or this IS the spec)");
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> open(spec));
+            });
+        }
+    }
+
+    /**
+     * In a stylesheet: open the component class it belongs to
+     * (v1.313.0). A stylesheet names its component only by the basename
+     * convention, so this rides {@link NgSwitch#componentForSibling}
+     * rather than the templateUrl scan the template direction uses.
+     */
+    @ActionID(category = "Edit", id = "org.nmox.studio.editor.angular.OpenComponentFromStyles")
+    @ActionRegistration(displayName = "#CTL_OpenNgComponentFromStyles", lazy = true)
+    @ActionReferences({
+        // text/css alone is NOT enough: the platform's css-prep module
+        // resolves .scss/.less to their OWN mimes before our resolvers see
+        // them, so a css-only registration never reaches the stylesheets
+        // Angular projects actually use (`ng new --style=scss` is the common
+        // choice). This is the v1.230.0 finding — where the same mime gap
+        // had silently kept the swatches, the colour picker and the Prettier
+        // menu off real SCSS files — and the v1.313.0 live walk caught the
+        // menu item missing on a .scss editor before ship.
+        @ActionReference(path = "Editors/text/css/Popup", position = 95),
+        @ActionReference(path = "Editors/text/scss/Popup", position = 95),
+        @ActionReference(path = "Editors/text/less/Popup", position = 95)
+    })
+    @Messages("CTL_OpenNgComponentFromStyles=Open Component Class")
+    public static final class OpenComponentFromStyles implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            File styles = focusedFile();
+            if (styles == null) {
+                return;
+            }
+            RESOLVE_RP.post(() -> {
+                File component = NgSwitch.componentForSibling(styles);
+                if (component == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "No component class beside " + styles.getName());
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(component));

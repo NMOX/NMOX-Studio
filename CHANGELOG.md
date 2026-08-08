@@ -6,6 +6,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.313.0] - 2026-08-08
+
+The Angular switcher covers the whole four-file set.
+
+### Added
+- **Open Angular Styles / Open Angular Spec, and back from a
+  stylesheet.** An Angular component is four files — `.component.ts`,
+  `.html`, `.css|scss|sass|less`, `.spec.ts` — and a developer moves
+  between all four constantly. v1.219.0 gave component ↔ template; the
+  other two siblings had no gesture, which is a gap in the framework
+  the project has bet on. The editor popup now also opens a
+  component's stylesheet and its spec, and a stylesheet opens the
+  component it belongs to.
+
+  Resolution lives in the pure `NgSwitch` so every rule is a plain
+  test: `styleUrl` (Angular 17+) and `styleUrls: [...]` (older) both
+  resolve and the first entry wins; with no decorator URL the sibling
+  is found in any extension `ng new --style` offers; a spec resolves by
+  the `.spec.ts` convention, and a spec correctly has no spec of its
+  own. Absences stay honest — inline styles, `--skip-tests`, and an
+  orphan stylesheet each end in a status line, never a guess. The
+  off-EDT gate that pinned "both actions ride the RP" now ties its
+  count to the NUMBER of actions, so a new action skipping the RP fails
+  it by construction rather than the count merely needing a bump.
+
+  Mutation-proven ×2 — and the first attempt **survived**: the test had
+  used a `styleUrl` that also matched the sibling convention, so the
+  fallback returned the same file and the assertion couldn't tell a
+  singular-only pattern from the correct one. The fix is the standing
+  divergence lesson — pick an input where mutant and original must
+  disagree — and the test now points the decorator at a
+  non-convention-named stylesheet.
+
+  **The live walk earned its keep.** Clicked through in the dev build on
+  a real four-file component, the styles→component item was ABSENT from
+  a `.scss` editor: the action had been registered on `text/css` alone,
+  but the platform's css-prep module resolves `.scss`/`.less` to their
+  own mimes — the exact v1.230.0 finding that had silently kept the
+  colour swatches, the picker and the Prettier menu off real SCSS files.
+  Registration now covers css, scss and less (`ng new --style=scss` is
+  the common choice), a gate test pins all three, and the corrected
+  menu was re-verified live: component → styles (through the
+  `styleUrls` array), component → spec, and scss → component all open
+  the right file.
+
 ## [1.312.0] - 2026-08-08
 
 Docs truth — the day's retroactive-sweep arc, on the record.
