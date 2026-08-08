@@ -1050,14 +1050,67 @@ now **dockerize.d**.
   against the fix that comes next.
 
 The remaining candidate from the v1.294 list — Doctor probes as a
-drop-in — stands, and v1.303's walk sharpened its value case: a user
-whose tool the Doctor doesn't know currently gets silence, and a
-drop-in probe row would ride the same honest `detailFor` seam the
-built-ins now use.
+drop-in — stood at v1.303, and v1.305 shipped it (below).
+
+## Addendum — 2026-08-08 night, doctor.d + the html-render security arc (v1.304–v1.307)
+
+The night's tail closed the drop-in family and then reopened, and
+finished, a security bug class that had been half-closed for a hundred
+releases.
+
+- **v1.304.0** docs truth (this file through v1.303).
+- **v1.305.0** shipped the sixth and final named drop-in seam,
+  **doctor.d**: `~/.nmox/doctor.d/*.json` probes join the Environment
+  Doctor, riding the same 4-second launcher and honest `detailFor`
+  wording as the built-ins, marked `· yours`. The drop-in family is now
+  complete at six surfaces — learn-catalog.d (v1.53), templates.d
+  (v1.293), presets.d (v1.294), api-library.d (v1.297), dockerize.d
+  (v1.301), doctor.d (v1.305) — each sharing one lazy-read idiom, one
+  path law, and the standing rule that a drop-in never earns the
+  product's own trust. The Doctor probe is the strictest of the six
+  because it EXECUTES on open: bare PATH-resolved tool names only,
+  flag-shaped args only, one bad field disqualifies the whole file, and
+  refusals render as visible `skipped —` rows.
+
+- **v1.306.0 and v1.307.0 closed the html-render security class across
+  its last two homes.** Swing's `JLabel` — and therefore every
+  `DefaultTableCellRenderer` and list/tree cell renderer — RENDERS a
+  value that starts with `<html>`, so an `<img src="http://…">` makes
+  the IDE's own JVM fetch an attacker-chosen URL at paint time. This
+  was fixed in v1.208.0, but only in Browser DevTools where it was
+  first found. A review found it standing open everywhere else text
+  from outside the IDE reaches a Swing label:
+  - **v1.306.0** swept the studio TABLES (API response headers, DB
+    result cells, docker names, probed tool output, port-scan process
+    names, flight-recorder commands) behind a single
+    `core.util.PlainTables` helper — the one place the Swing
+    `"html.disable"` switch is spelled — with `PlainTableGateTest`
+    failing the build on any new `new JTable` file that doesn't route
+    through it.
+  - **v1.307.0** closed the remotely-triggerable home: the IRC client's
+    nick list, channel tree, and topic label all show text a hostile
+    server chooses. The transcript was already a styled document
+    (safe); the three JLabel-based surfaces were not.
+
+  Two lessons worth keeping. **The ordering trap:** `html.disable` must
+  be set at renderer CONSTRUCTION, before the first `setText` —
+  `BasicHTML` installs the HTML view on the text change, so setting the
+  property afterward cannot undo an already-built view. A test
+  (`plainAfterRenderIsTooLate`) pins this so a refactor can't
+  reintroduce the fetch. **The negative control:** each fix carries a
+  test proving stock Swing really DOES render the markup, so the
+  defense is proven against a live failure mode, not an assumption.
+
+  Process slip, recorded so it isn't repeated: v1.307's wip commits
+  landed on `main` before the unit's branch existed, so the ship gate's
+  `git pull --ff-only` failed on the divergence even though the PR had
+  merged cleanly — the fix was `git reset --hard origin/main` then a
+  manual tag+release. **The branch-first law — `git checkout -b` before
+  the FIRST commit of every unit — exists exactly to prevent this.**
 
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.303.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.307.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
