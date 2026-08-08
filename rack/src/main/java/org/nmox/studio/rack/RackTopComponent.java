@@ -279,11 +279,17 @@ public final class RackTopComponent extends TopComponent {
             // the drop-in scan is file IO — off the EDT per the v1.33.1 law,
             // then the whole menu (built-ins + yours) shows on the callback;
             // a local dir listing lands within a frame, so the menu still
-            // feels attached to the click
+            // feels attached to the click. The button disables until the
+            // menu is up: two fast clicks used to post two scans and stack
+            // two popups (the v1.296.0 arc review's find).
+            presets.setEnabled(false);
             org.openide.util.RequestProcessor.getDefault().post(() -> {
                 java.util.List<org.nmox.studio.rack.projectstudio.UserPresets.Custom> yours =
                         org.nmox.studio.rack.projectstudio.UserPresets.list();
-                java.awt.EventQueue.invokeLater(() -> showPresetsMenu(presets, yours));
+                java.awt.EventQueue.invokeLater(() -> {
+                    presets.setEnabled(true);
+                    showPresetsMenu(presets, yours);
+                });
             });
         });
         bar.add(presets);

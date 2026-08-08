@@ -36,6 +36,31 @@ class UserPresetsTest {
     }
 
     @Test
+    @DisplayName("a verbatim .nmoxrack.json copy reads by its plain name")
+    void nmoxrackSuffixStripped(@TempDir Path tmp) throws Exception {
+        // the docs' own instruction — "copy your .nmoxrack.json here" —
+        // must not produce a menu entry called "Log Watch.nmoxrack"
+        Files.writeString(tmp.resolve("Log Watch.nmoxrack.json"), "{}",
+                StandardCharsets.UTF_8);
+        assertThat(UserPresets.listFrom(tmp.toFile()))
+                .extracting(UserPresets.Custom::name)
+                .containsExactly("Log Watch");
+    }
+
+    @Test
+    @DisplayName("the Presets button serializes its menu — no double-open race")
+    void presetsButtonSerializes() throws Exception {
+        String src = Files.readString(Path.of("..", "rack", "src", "main", "java", "org",
+                "nmox", "studio", "rack", "RackTopComponent.java"),
+                StandardCharsets.UTF_8).replace("\r\n", "\n");
+        assertThat(src)
+                .as("two fast clicks posted two scans and stacked two popups;"
+                        + " the button must disable until the menu is up")
+                .contains("presets.setEnabled(false);");
+        assertThat(src).contains("presets.setEnabled(true);");
+    }
+
+    @Test
     @DisplayName("a missing drop-in dir lists nothing — no dir is created as a side effect")
     void missingDirIsEmpty(@TempDir Path tmp) {
         File absent = tmp.resolve("never-created").toFile();

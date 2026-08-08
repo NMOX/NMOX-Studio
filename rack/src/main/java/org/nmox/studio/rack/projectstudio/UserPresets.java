@@ -53,6 +53,11 @@ public final class UserPresets {
         Arrays.sort(files, Comparator.comparing(File::getName));
         for (File f : files) {
             String name = f.getName().substring(0, f.getName().length() - ".json".length());
+            if (name.endsWith(".nmoxrack")) {
+                // the docs say "copy your .nmoxrack.json here" — a verbatim
+                // copy must not read as "Log Watch.nmoxrack" in the menu
+                name = name.substring(0, name.length() - ".nmoxrack".length());
+            }
             if (!name.isBlank()) {
                 out.add(new Custom(name, f));
             }
