@@ -4,8 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-<<<<<<< HEAD
-=======
+## [1.314.0] - 2026-08-08
+
+The outline sees your Angular routes — and a gate for the marker that
+rode six releases.
+
+### Added
+- **An Angular route table outlines as its routes.** `app.routes.ts` is
+  the file an Angular developer opens to see how the application is put
+  together, and it outlined as NOTHING — measured on a real routes file
+  before a line was written, exactly the emptiness v1.292.0 found in
+  Express server files, this time in the framework the project has bet
+  on. The extractor was right (one exported array, no functions, no
+  classes) and useless, because the structure of that file IS its route
+  table. Now `/`, `/heroes`, `/admin`, `/**` list with what each one
+  resolves to: an eager `component`, a lazy symbol from
+  `loadComponent`/`loadChildren`, or a `redirectTo` target. Children
+  nest under their parent, and clicking a route lands on the line that
+  declares its `path`.
+- The rule is narrow by design, because a wrong outline entry is worse
+  than a missing one: it fires only in a file that BOTH imports
+  `@angular/router` AND annotates a `Routes` type. Either signal alone
+  is too weak — half the components in a workspace import `RouterLink`,
+  and `path:` is an ordinary key — while the AND costs nothing, since
+  you cannot write `: Routes` without importing it. An untyped route
+  array is deliberately out of scope. Mutation-proven ×3, including
+  the depth normalization that keeps a single-line route and a
+  multi-line one at the same level, and the lookahead reading stripped
+  code so a commented-out `component:` is never read as the target.
+
+### Fixed
+- **Conflict markers were sitting in two committed files.** The
+  v1.307.0 process slip left a `<<<<<<< HEAD` / `=======` / `>>>>>>>`
+  triple wrapping the top of `CHANGELOG.md` AND inside
+  `PlainTables.java`'s class javadoc, and both rode through v1.308 to
+  v1.313 unseen: six releases published a changelog whose first visible
+  line was a merge artifact. Every test kept passing, because the tests
+  read SUBSTRINGS out of these documents and a substring survives a
+  marker sitting above it. Both files repaired, and the new repo-wide
+  `ConflictMarkerGateTest` makes the shape a build law — it found the
+  second instance the first time it ran, which is the whole argument
+  for it. Proven both ways: a planted marker fails it by name, and the
+  scanned-file floor fails if the walk ever matches nothing.
+
 ## [1.313.0] - 2026-08-08
 
 The Angular switcher covers the whole four-file set.
@@ -179,7 +220,6 @@ The IRC client can't be made to fetch a URL by a hostile server.
   the fetch, and `IrcHtmlSafetyTest` gates the three wirings.
   Mutation-proven ×2.
 
->>>>>>> 349f6278 (v1.307.0: the IRC client can't be made to fetch a URL by a hostile server)
 ## [1.306.0] - 2026-08-08
 
 Tables show external text as text, everywhere.

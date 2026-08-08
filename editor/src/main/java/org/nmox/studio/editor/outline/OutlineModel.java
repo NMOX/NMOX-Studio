@@ -198,8 +198,55 @@ public final class OutlineModel {
             "if", "for", "while", "switch", "catch", "return", "function", "constructor",
             "do", "else", "try", "finally", "await", "yield", "typeof", "new");
 
+    /**
+     * An Angular route entry: {@code { path: 'heroes', component: … }}.
+     *
+     * <p>Why this exists (v1.313.0): {@code app.routes.ts} is the file an
+     * Angular developer opens to see how the application is put together,
+     * and it outlined as NOTHING — measured, not assumed. The file
+     * declares one exported array and no functions or classes, so the
+     * extractor found nothing and was right to; the structure of that
+     * file is its route table, exactly as an Express server file's is
+     * (the v1.292.0 finding, in the framework this project has bet on).
+     *
+     * <p>Only consulted in a file that both imports {@code @angular/router}
+     * and annotates a {@code Routes} type — see
+     * {@link #looksLikeAngularRoutes}. That AND is what keeps an ordinary
+     * object with a {@code path:} key out of every other TypeScript file
+     * in the workspace.
+     */
+    private static final Pattern NG_ROUTE_PATH = Pattern.compile(
+            "(?:^|[{,\\s])path\\s*:\\s*['\"]([^'\"]*)['\"]");
+    /** {@code component: HeroesComponent} — never {@code loadComponent:}. */
+    private static final Pattern NG_ROUTE_COMPONENT = Pattern.compile(
+            "(?:^|[^A-Za-z0-9_$])component\\s*:\\s*([A-Za-z0-9_$]+)");
+    private static final Pattern NG_ROUTE_REDIRECT = Pattern.compile(
+            "redirectTo\\s*:\\s*['\"]([^'\"]*)['\"]");
+    private static final Pattern NG_ROUTE_LAZY = Pattern.compile(
+            "load(?:Component|Children)\\s*:");
+    /** {@code .then(m => m.HeroesComponent)} — what the lazy chunk exports. */
+    private static final Pattern NG_LAZY_SYMBOL = Pattern.compile(
+            "\\.then\\s*\\(\\s*[A-Za-z0-9_$]+\\s*=>\\s*[A-Za-z0-9_$]+\\.([A-Za-z0-9_$]+)");
+    /** {@code import('./heroes/heroes.component')} — the chunk itself. */
+    private static final Pattern NG_LAZY_IMPORT = Pattern.compile(
+            "import\\s*\\(\\s*['\"]([^'\"]+)['\"]");
+    private static final Pattern NG_ROUTER_IMPORT = Pattern.compile(
+            "from\\s*['\"]@angular/router['\"]");
+    private static final Pattern NG_ROUTES_TYPE = Pattern.compile(
+            "(?::|satisfies)\\s*Routes\\b");
+    /**
+     * How far past a {@code path:} line a route's target may sit. Routes
+     * are written one per object, so a handful of lines covers the
+     * multi-line form without letting an unrelated later line be read as
+     * this route's target.
+     */
+    private static final int NG_ROUTE_WINDOW = 12;
+
     private static List<Item> js(String[] lines) {
         List<Item> out = new ArrayList<>();
+        boolean ngRoutes = looksLikeAngularRoutes(lines);
+        int pendingRoute = -1;
+        int pendingLine = -1;
         int brace = 0;
         // carries across lines: are we inside a /* */ block comment or a
         // `backtick` template literal? Without this, a declaration that only
@@ -210,7 +257,19 @@ public final class OutlineModel {
             String code = stripNonCode(lines[i], state);
             int depthHere = brace;
             Matcher m;
-            if ((m = JS_TEST.matcher(code)).find()) {
+            if (ngRoutes && (m = NG_ROUTE_PATH.matcher(code)).find()) {
+                // A route written on one line carries its own opening brace,
+                // so depthHere is already the depth OUTSIDE the route object.
+                // A multi-line route opened its brace on an earlier line, so
+                // depthHere counts one level too deep — without this, sibling
+                // routes written in the two styles would nest under each other.
+                boolean braceHere = code.lastIndexOf('{', m.start()) >= 0;
+                out.add(new Item(OutlineKind.TARGET, ngRoutePath(m.group(1)),
+                        ngRouteTarget(code), i,
+                        braceHere ? depthHere : Math.max(0, depthHere - 1)));
+                pendingRoute = out.size() - 1;
+                pendingLine = i;
+            } else if ((m = JS_TEST.matcher(code)).find()) {
                 out.add(new Item(OutlineKind.TEST, m.group(1), null, i, depthHere));
             } else if ((m = JS_ROUTE.matcher(code)).find()) {
                 // "GET /health" reads the way the route is talked about, and
@@ -234,12 +293,101 @@ public final class OutlineModel {
                     && !JS_KEYWORDS.contains(m.group(1))) {
                 out.add(new Item(OutlineKind.METHOD, m.group(1), null, i, depthHere));
             }
+            // A multi-line route names its target on a later line of the same
+            // object. That line produces no item of its own, so it is read
+            // here rather than in the chain above — and through the SAME
+            // stripNonCode output, so a commented-out component: is not read
+            // as this route's target.
+            if (pendingRoute >= 0 && i > pendingLine
+                    && out.get(pendingRoute).detail() == null) {
+                if (i - pendingLine > NG_ROUTE_WINDOW) {
+                    pendingRoute = -1;
+                } else {
+                    String target = ngRouteTarget(code);
+                    if (target != null) {
+                        Item p = out.get(pendingRoute);
+                        out.set(pendingRoute,
+                                new Item(p.kind(), p.name(), target, p.line(), p.depth()));
+                        pendingRoute = -1;
+                    }
+                }
+            }
             brace += netBraces(code);
             if (brace < 0) {
                 brace = 0;
             }
         }
         return out;
+    }
+
+    /**
+     * True when this file is an Angular route table: it must BOTH import
+     * from {@code @angular/router} AND annotate a {@code Routes} type.
+     *
+     * <p>Either signal alone is too weak — half the components in a
+     * workspace import {@code RouterLink} from that module — and the AND
+     * costs nothing, because you cannot write {@code : Routes} without
+     * importing the type. A route array with no type annotation is
+     * deliberately out of scope: a wrong outline entry is worse than a
+     * missing one (the v1.292.0 rule, applied again).
+     */
+    static boolean looksLikeAngularRoutes(String[] lines) {
+        boolean imported = false;
+        boolean typed = false;
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            if (!imported && NG_ROUTER_IMPORT.matcher(lines[i]).find()) {
+                imported = true;
+            }
+            if (!typed && NG_ROUTES_TYPE.matcher(lines[i]).find()) {
+                typed = true;
+            }
+            if (imported && typed) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * How a route path reads in the outline. Angular writes paths without
+     * a leading slash ({@code path: 'heroes'}, {@code path: ''} for the
+     * default and {@code '**'} for the wildcard); a reader talks about
+     * them with one.
+     */
+    private static String ngRoutePath(String path) {
+        if (path.isEmpty()) {
+            return "/";
+        }
+        return path.startsWith("/") ? path : "/" + path;
+    }
+
+    /**
+     * What a route resolves to, as the dim detail beside its path: a
+     * component name, a redirect target, or the lazily-loaded symbol.
+     * Null when this line names none — the route still lists, just
+     * without a target, which is honest for a route whose target the
+     * extractor cannot see.
+     */
+    private static String ngRouteTarget(String code) {
+        Matcher m = NG_ROUTE_COMPONENT.matcher(code);
+        if (m.find()) {
+            return m.group(1);
+        }
+        m = NG_ROUTE_REDIRECT.matcher(code);
+        if (m.find()) {
+            return "→ " + ngRoutePath(m.group(1));
+        }
+        if (NG_ROUTE_LAZY.matcher(code).find()) {
+            Matcher symbol = NG_LAZY_SYMBOL.matcher(code);
+            if (symbol.find()) {
+                return "lazy " + symbol.group(1);
+            }
+            Matcher chunk = NG_LAZY_IMPORT.matcher(code);
+            // a default-export lazy route names no symbol; the chunk it
+            // pulls is the most specific true thing left to say
+            return chunk.find() ? "lazy " + chunk.group(1) : "lazy";
+        }
+        return null;
     }
 
     /**
