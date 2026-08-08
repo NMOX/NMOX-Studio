@@ -90,6 +90,35 @@ class DockerRecipesTest {
     }
 
     @Test
+    @DisplayName("Regenerate resolves the selection against the FRESH load")
+    void regenerateUsesFreshRecipe(@TempDir Path tmp) throws Exception {
+        Files.writeString(tmp.resolve("corp.json"),
+                "{ \"name\": \"Corp\", \"files\": { \"Dockerfile\": \"FROM a\" } }",
+                StandardCharsets.UTF_8);
+        DockerRecipes.Recipe stale =
+                DockerRecipes.loadFrom(tmp.toFile()).recipes().get(0);
+
+        // the recipe is EDITED on disk; the fresh load must win
+        Files.writeString(tmp.resolve("corp.json"),
+                "{ \"name\": \"Corp\", \"files\": { \"Dockerfile\": \"FROM b\" } }",
+                StandardCharsets.UTF_8);
+        var fresh = DockerRecipes.findByName(
+                DockerRecipes.loadFrom(tmp.toFile()).recipes(), stale.name());
+        assertThat(fresh).isPresent();
+        assertThat(fresh.get().files().get("Dockerfile"))
+                .as("editing a recipe then pressing Regenerate must show the"
+                        + " edit — the stale combo object must not win")
+                .isEqualTo("FROM b");
+
+        // the recipe is DELETED; the selection must resolve to empty so the
+        // panel falls back to the detected generator, never ghost-writes
+        Files.delete(tmp.resolve("corp.json"));
+        assertThat(DockerRecipes.findByName(
+                DockerRecipes.loadFrom(tmp.toFile()).recipes(), stale.name()))
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("the panel wires the combo, the shared law, and the writer guard")
     void panelWiring() throws Exception {
         // CRLF checkouts (the windows lane) — normalize before asserting
@@ -102,7 +131,10 @@ class DockerRecipesTest {
         assertThat(src)
                 .as("a selected recipe must preview through materialize —"
                         + " the same bytes Write will write")
-                .contains("DockerRecipes.materialize(recipe, image)");
+                .contains("DockerRecipes.materialize(fresh.get(), image)");
+        assertThat(src)
+                .as("the selection resolves by NAME against the fresh load")
+                .contains("DockerRecipes.findByName(loaded.recipes(), recipe.name())");
         assertThat(src)
                 .as("the writer must route every file through the ONE"
                         + " behaviorally-tested resolver below")
