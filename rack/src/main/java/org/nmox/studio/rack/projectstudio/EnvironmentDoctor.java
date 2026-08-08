@@ -152,6 +152,10 @@ public final class EnvironmentDoctor {
             // nginx has no --version and prints `nginx -v` to STDERR —
             // runBounded captures stderr, so the version line is found either way
             case "nginx" -> List.of("nginx", "-v");
+            // cwebp rejects --version with a usage dump; -version prints "1.6.0"
+            // (the Doctor walk found the usage banner's first line — "Usage:" —
+            // rendered as the tool's version, v1.303.0)
+            case "cwebp" -> List.of("cwebp", "-version");
             case "apachectl" -> List.of("apachectl", "-v"); // --version unsupported
             default -> List.of(tool, "--version");
         };
@@ -179,15 +183,39 @@ public final class EnvironmentDoctor {
             if (firstLine.isBlank()) {
                 firstLine = firstNonBlankLine(r.stderr());
             }
-            String detail = firstLine.isBlank() ? "found (version unknown)"
-                    : (firstLine.length() > 72 ? firstLine.substring(0, 72) + "…" : firstLine);
-            return new Finding(tool, purpose, true, detail, installHint);
+            return new Finding(tool, purpose, true,
+                    detailFor(r.exitCode(), firstLine), installHint);
         } catch (IOException notFound) {
             // no such binary, or the sweep thread was interrupted mid-probe
             // (runBounded reasserts the interrupt flag before wrapping) — either
             // way this tool doesn't answer, so report it missing and move on
             return new Finding(tool, purpose, false, "not found", installHint);
         }
+    }
+
+    /**
+     * The Status cell for a tool that LAUNCHED. The old rule echoed the
+     * first output line unconditionally, which rendered failure text as
+     * a version: cwebp's usage banner ("Usage:"), and — worse — a
+     * crashing corepack pnpm shim's stack-trace path shown with a ✓
+     * beside it (the v1.303.0 Doctor walk; the Doctor is exactly the
+     * surface that should have SAID pnpm was broken). A nonzero exit
+     * means the output is an error, not a version — say that instead
+     * of quoting it.
+     */
+    static String detailFor(int exitCode, String firstLine) {
+        // exitCode -1 is the TIMEOUT sentinel (BoundedResult contract): a
+        // wedged tool that already printed its version keeps it — the
+        // pre-existing wedged-pipe test pins that, and it caught this rule
+        // over-reaching on its first run. Only a real nonzero exit means
+        // the output is an error rather than a version.
+        if (exitCode > 0) {
+            return "found — but its version command failed (exit " + exitCode + ")";
+        }
+        if (firstLine.isBlank()) {
+            return "found (version unknown)";
+        }
+        return firstLine.length() > 72 ? firstLine.substring(0, 72) + "…" : firstLine;
     }
 
     /** The first non-blank line of a captured stream, stripped, or "". */

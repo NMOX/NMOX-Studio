@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.303.0] - 2026-08-07
+
+The Doctor stops quoting error text as versions.
+
+### Fixed
+- **A failing version probe is SAID, never quoted** — the Environment
+  Doctor walk (the machine-setup persona, the surface's first) found
+  the Status column rendering failure output as if it were a version,
+  with a ✓ beside it: cwebp's usage banner showed as "Usage:", and —
+  the sharper case — a crashing corepack pnpm shim showed the first
+  line of its stack trace as pnpm's "version". The Doctor is exactly
+  the surface that should have said pnpm was broken on this machine,
+  and instead it vouched for it. A probe that exits nonzero now reads
+  "found — but its version command failed (exit N)".
+  The timeout sentinel (exit −1) deliberately keeps a version the
+  wedged tool already printed — the pre-existing wedged-pipe test pins
+  that, and it caught this rule over-reaching on its first run.
+- **cwebp joins the version-dialect holdouts**: it rejects
+  `--version` with a usage dump; `-version` prints the real number.
+  The Doctor now shows "1.6.0" where it showed "Usage:".
+  Live-proven in the dev build (cwebp 1.6.0; pnpm and stylelint-lsp
+  honestly failed). Mutation-proven ×2: the dialect case dropped and
+  the exit check skipped each fail a named test.
+
 ## [1.302.0] - 2026-08-07
 
 The drop-in family review.
