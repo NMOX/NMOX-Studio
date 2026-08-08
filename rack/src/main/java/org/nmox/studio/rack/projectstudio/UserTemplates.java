@@ -145,7 +145,7 @@ public final class UserTemplates {
      * name is sanitized by the wizard, so the declared path is where an
      * escape could hide.
      */
-    static String pathProblem(String path) {
+    public static String pathProblem(String path) {
         if (path.isBlank()) {
             return "is blank";
         }
