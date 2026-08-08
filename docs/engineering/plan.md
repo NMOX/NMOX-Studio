@@ -995,9 +995,69 @@ windows lane is rack's binding measurement** (.76 there vs .78 on unix,
 POSIX-gated tests skip), so rack held at .75. Measure against the
 windows lane before ratcheting.
 
+## Addendum — 2026-08-07/08 night, the drop-in family completes (v1.300–v1.303)
+
+The night shift finished what the evening started: the candidate list
+above was worked, and the drop-in family now numbers FIVE surfaces
+sharing one idiom and one path law — learn-catalog.d (v1.53),
+templates.d (v1.293), presets.d (v1.294), api-library.d (v1.297), and
+now **dockerize.d**.
+
+- **v1.300.0** was the docs close of the evening arc (this file through
+  v1.299). Its pipeline recorded an ops recipe worth keeping: a GitHub
+  502 mid-merge left the PR OPEN and a retry answered "Merge already in
+  progress" — the fix is to wait ~90 seconds and retry the SAME merge,
+  not to force anything; it completed clean.
+- **v1.301.0** shipped the fourth seam: `~/.nmox/dockerize.d/*.json`
+  recipes join the Docker panel's Dockerize tab beside the detected
+  generators — a team's blessed Dockerfile/compose set becomes a
+  drop-in, with `{{image}}` substitution and the SAME path law as
+  templates (one public `UserTemplates.pathProblem`, one recipe-wide
+  refusal). The release also resolved the mutation-divergence class
+  STRUCTURALLY after its fourth instance: a string-presence source-gate
+  cannot see `if (false && …)` — the surviving mutant kept the asserted
+  literal while dead. The answer is not a cleverer grep: **a guard
+  belongs in testable code, not in a private UI method** —
+  `DockerRecipes.resolveInside` is a public normalize+startsWith seam a
+  behavioral test kills the mutant through. Corollary law, learned the
+  expensive way in the same unit: **wip-commit after ANY new code added
+  mid-unit**, because the mutation-restore `git checkout --` reverted
+  an uncommitted helper and the compile error looked like a product bug.
+- **v1.302.0** reviewed the whole five-surface family and found one
+  real bug in day-old code: the Dockerize recipe combo held PARSED
+  recipe objects, so editing the drop-in file and pressing Regenerate
+  previewed the STALE parse — the drop-in promise (edit the file, see
+  the change) broken at the last step. The law: **a combo or list
+  holding parsed objects previews stale data after the backing file
+  changes — store the identity, resolve against a fresh load at use
+  time** (`DockerRecipes.findByName`), and say so when the identity no
+  longer resolves. The other four surfaces were verified CLEAN against
+  the same lens (they all re-list on open; the combo was the one
+  surface that cached across the gesture).
+- **v1.303.0** was the Environment Doctor's first persona walk
+  (machine-setup), and it found the honesty bug hiding in the Status
+  column since v1.25.0: a probe whose version command FAILED had its
+  error text quoted as if it were a version, with a ✓ beside it —
+  cwebp's usage banner as "Usage:", and a crashing corepack pnpm shim's
+  stack-trace path as pnpm's "version". The one surface whose job is
+  saying "this tool is broken on your machine" vouched for the broken
+  tool. Nonzero probes now read "found — but its version command failed
+  (exit N)", cwebp joined the `-version` dialect holdouts, and the
+  timeout sentinel (exit −1) keeps a version the wedged tool already
+  printed — pinned by the pre-existing wedged-pipe test, which caught
+  the new rule over-reaching on its first run. The method note: the
+  house tests defend documented behaviour in BOTH directions, including
+  against the fix that comes next.
+
+The remaining candidate from the v1.294 list — Doctor probes as a
+drop-in — stands, and v1.303's walk sharpened its value case: a user
+whose tool the Doctor doesn't know currently gets silence, and a
+drop-in probe row would ride the same honest `detailFor` seam the
+built-ins now use.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.299.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.303.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
