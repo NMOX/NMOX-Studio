@@ -24,6 +24,15 @@ import javax.swing.table.DefaultTableCellRenderer;
  * property is spelled, and {@code PlainTableGateTest} fails the build
  * on any production {@code new JTable} file that doesn't route
  * through it — a new table starts safe or names its reason.
+<<<<<<< HEAD
+=======
+ *
+ * <p>The {@link #plain(JComponent)} primitive is not table-specific: any
+ * JLabel-based cell renderer (list, tree) or a bare {@code JLabel} that
+ * shows external text renders {@code <html>} the same way. The IRC
+ * client's nick list, channel tree, and topic label route through it
+ * too (v1.307.0), because a hostile IRC server chooses those strings.
+>>>>>>> 349f6278 (v1.307.0: the IRC client can't be made to fetch a URL by a hostile server)
  */
 public final class PlainTables {
 

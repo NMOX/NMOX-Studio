@@ -74,4 +74,46 @@ class PlainTablesTest {
         assertThat(c.getClientProperty("html.disable")).isEqualTo(Boolean.TRUE);
         assertThat(c.getClientProperty(BasicHTML.propertyKey)).isNull();
     }
+
+    @Test
+    @DisplayName("plain() on a list-cell renderer, set BEFORE render: hostile nick is text")
+    void plainCoversListRenderers() throws Exception {
+        // the exact shape the IRC nick list uses (v1.307.0): plain() is set
+        // on the renderer at construction, BEFORE it ever renders a value,
+        // because BasicHTML installs the view at setText time — setting the
+        // property after super's setText would be too late.
+        javax.swing.DefaultListCellRenderer renderer =
+                PlainTables.plain(new javax.swing.DefaultListCellRenderer());
+        javax.swing.JList<String> list = new javax.swing.JList<>(
+                new String[]{HOSTILE});
+        JComponent[] out = new JComponent[1];
+        SwingUtilities.invokeAndWait(() -> out[0] = (JComponent)
+                renderer.getListCellRendererComponent(list, HOSTILE, 0, false, false));
+        assertThat(out[0].getClientProperty(BasicHTML.propertyKey))
+                .as("a nick chosen by a hostile server must be text, not markup")
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("the ordering trap: plain() AFTER a render does NOT undo an installed view")
+    void plainAfterRenderIsTooLate() throws Exception {
+        // pins WHY the IRC fix sets the property at construction: once
+        // setText has built the HTML view, disabling html later can't remove
+        // it. A future refactor moving plain() into the render method would
+        // reintroduce the fetch — this test fails first if that happens.
+        javax.swing.DefaultListCellRenderer renderer =
+                new javax.swing.DefaultListCellRenderer();
+        javax.swing.JList<String> list = new javax.swing.JList<>(
+                new String[]{HOSTILE});
+        JComponent[] out = new JComponent[1];
+        SwingUtilities.invokeAndWait(() -> {
+            java.awt.Component c = renderer.getListCellRendererComponent(
+                    list, HOSTILE, 0, false, false);
+            PlainTables.plain((JComponent) c);
+            out[0] = (JComponent) c;
+        });
+        assertThat(out[0].getClientProperty(BasicHTML.propertyKey))
+                .as("view already built at setText time; late plain() cannot undo it")
+                .isNotNull();
+    }
 }

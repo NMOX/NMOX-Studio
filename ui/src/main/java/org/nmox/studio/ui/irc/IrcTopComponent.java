@@ -332,6 +332,10 @@ public final class IrcTopComponent extends TopComponent {
         nickList.setCellRenderer(new AwayAwareNickRenderer());
 
         topicLabel = new JLabel(" ");
+        // a channel topic is arbitrary server/op text (stripToText removes
+        // mIRC colors, NOT <html>) — keep it literal so a topic can't make
+        // the IDE fetch a URL at paint time (the v1.208.0 class, v1.307.0)
+        org.nmox.studio.core.util.PlainTables.plain(topicLabel);
         topicLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
         input = new JTextField();
@@ -387,6 +391,15 @@ public final class IrcTopComponent extends TopComponent {
      */
     private final class UnreadBoldRenderer extends DefaultTreeCellRenderer {
 
+        UnreadBoldRenderer() {
+            // channel/network labels can carry server-chosen text; disable
+            // HTML at CONSTRUCTION (before any setText) so a name like
+            // <html><img src=http://evil> can't make the IDE fetch the URL
+            // at paint time — the v1.208.0 class. Setting it after super's
+            // setText is too late: BasicHTML installs the view on text change.
+            org.nmox.studio.core.util.PlainTables.plain(this);
+        }
+
         @Override
         public Component getTreeCellRendererComponent(JTree t, Object value,
                 boolean sel, boolean expanded, boolean leaf, int row, boolean focus) {
@@ -415,6 +428,15 @@ public final class IrcTopComponent extends TopComponent {
 
     /** Away nicks render dim italic (away-notify keeps the set fresh). */
     private final class AwayAwareNickRenderer extends DefaultListCellRenderer {
+
+        AwayAwareNickRenderer() {
+            // nicks come straight from the server; disable HTML at
+            // CONSTRUCTION (before any setText) so a nick like
+            // <html><img src=http://evil> can't make the IDE fetch the URL
+            // at paint time (the v1.208.0 class). After super's setText is
+            // too late: BasicHTML installs the view on the text change.
+            org.nmox.studio.core.util.PlainTables.plain(this);
+        }
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,

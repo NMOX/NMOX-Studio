@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+<<<<<<< HEAD
+=======
+## [1.307.0] - 2026-08-08
+
+The IRC client can't be made to fetch a URL by a hostile server.
+
+### Fixed
+- **A crafted nick, channel name, or topic can no longer make the IDE
+  fetch a URL.** The IRC client shows text a hostile server chooses —
+  nicknames (the nick list), channel/network names (the tree), and the
+  channel topic (the topic label) — through JLabel-based Swing
+  components, and a JLabel RENDERS a value starting with `<html>`. A
+  nick or topic of `<html><img src="http://evil/">` would make the
+  IDE's own JVM fetch that URL at paint time. This is the same v1.208.0
+  bug class fixed then only in Browser DevTools, extended by v1.306.0
+  to the studio tables, and now closed in its remotely-triggerable
+  home: the IRC transcript was already a styled document (safe), but
+  the nick list, channel tree, and topic label were not. All three now
+  route through `core.util.PlainTables.plain`, set at renderer
+  CONSTRUCTION — setting `html.disable` after Swing's `setText` is too
+  late, because `BasicHTML` installs the view on the text change. A
+  test pins that ordering trap so a future refactor can't reintroduce
+  the fetch, and `IrcHtmlSafetyTest` gates the three wirings.
+  Mutation-proven ×2.
+
+>>>>>>> 349f6278 (v1.307.0: the IRC client can't be made to fetch a URL by a hostile server)
 ## [1.306.0] - 2026-08-08
 
 Tables show external text as text, everywhere.
