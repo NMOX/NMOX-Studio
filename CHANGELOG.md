@@ -6,6 +6,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.311.0] - 2026-08-08
+
+The html-render sweep reaches the cell renderers.
+
+### Fixed
+- **Three more surfaces that render external text as markup.** The
+  v1.306.0/v1.307.0 sweeps closed the `<html><img src>` paint-time-fetch
+  class (the v1.208.0 bug) in tables and the IRC client — but the gate
+  enumerated `new JTable`, so JLabel-based CELL RENDERERS showing
+  equally external text were never checked. Applying v1.310.0's own
+  lesson (*when a law is introduced, sweep the surfaces that predate
+  it*) found three:
+  - **API Studio's collections tree** rendered collection and request
+    names unescaped — and those names come from imported Postman
+    collections, HAR captures, and OpenAPI specs.
+  - **API Studio's send history** rendered the sent method and URL, and
+    an imported request carries an external URL.
+  - **The Navigator outline** escaped the item name in its
+    detail-carrying branch but set it RAW in the other — and an outline
+    name comes from a parsed source file, which since v1.292.0 can be a
+    string literal out of that source (the route outline renders
+    `GET /health` from `app.get('/health')`), so a cloned repo could
+    make the IDE fetch a URL just from opening the file.
+
+  The two no-markup renderers now disable HTML at construction (the
+  v1.307.0 ordering law); the outline's raw branch now escapes exactly
+  like its sibling. Verified CLEAN and deliberately left alone: DB
+  Studio's tree and saved-query renderers, which use `<html>` on
+  purpose for bold/colour and already escape every external value —
+  disabling HTML there would show users raw markup. Mutation-proven ×2.
+
 ## [1.310.0] - 2026-08-08
 
 A community learning-space catalog can't write outside its space.

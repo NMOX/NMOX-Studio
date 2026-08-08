@@ -344,7 +344,17 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
                     setText("<html>" + escape(item.name())
                             + " <font color='#7a7a7a'>" + escape(item.detail()) + "</font></html>");
                 } else {
-                    setText(item.name());
+                    // Escape here too, and for the same reason the branch
+                    // above does: an item name comes from a PARSED SOURCE
+                    // FILE, so it is external text. Since v1.292.0 a name
+                    // can even be a string literal out of the source (the
+                    // route outline renders `GET /health` from
+                    // app.get('/health')), and a plain setText of a name
+                    // beginning with <html> renders as markup — an
+                    // <img src> in a cloned repo would make the IDE's own
+                    // JVM fetch that URL just from opening the file
+                    // (the v1.208.0 class; v1.311.0).
+                    setText("<html>" + escape(item.name()) + "</html>");
                 }
             }
             return this;

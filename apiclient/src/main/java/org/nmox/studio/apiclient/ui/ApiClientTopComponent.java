@@ -959,7 +959,12 @@ public final class ApiClientTopComponent extends TopComponent {
     // ---- left panel: send history (v1.197.0) ----
 
     private JPanel buildHistoryPanel() {
-        historyList.setCellRenderer(new javax.swing.DefaultListCellRenderer() {
+        // the row shows the sent METHOD and URL, and a request imported from
+        // Postman/HAR/OpenAPI carries an external URL — keep markup literal
+        // so a crafted one can't make the IDE fetch it at paint time
+        // (the v1.208.0 class; v1.311.0 extends the sweep to cell renderers)
+        historyList.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(
+                new javax.swing.DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list,
                     Object value, int index, boolean selected, boolean focus) {
@@ -976,7 +981,7 @@ public final class ApiClientTopComponent extends TopComponent {
                 }
                 return this;
             }
-        });
+        }));
         historyList.setToolTipText("Double-click restores a send as a new request"
                 + " (auth token not carried — re-enter it)");
         historyList.addMouseListener(new java.awt.event.MouseAdapter() {

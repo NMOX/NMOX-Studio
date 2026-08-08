@@ -72,4 +72,25 @@ class OutlineNavigatorGateTest {
                         + " — the outline is dead code for these")
                 .isEmpty();
     }
+
+    @Test
+    @DisplayName("the outline renderer escapes EVERY branch — a name is external text")
+    void outlineRendererEscapesBothBranches() throws IOException {
+        // An outline item's name comes from a PARSED SOURCE FILE, and since
+        // v1.292.0 it can be a string literal out of that source (the route
+        // outline renders `GET /health` from app.get('/health')). A plain
+        // setText of a name beginning with <html> renders as markup, so an
+        // <img src> in a cloned repo would make the IDE's own JVM fetch that
+        // URL just from opening the file (the v1.208.0 class, v1.311.0).
+        // CRLF checkouts (the windows lane) — normalize before asserting.
+        String src = Files.readString(Path.of("src", "main", "java", "org", "nmox",
+                "studio", "editor", "outline", "StructureNavigatorPanel.java"))
+                .replace("\r\n", "\n");
+        assertThat(src)
+                .as("the detail-less branch must escape too, not setText(name) raw")
+                .doesNotContain("setText(item.name());");
+        assertThat(src.split("escape\\(item\\.name\\(\\)\\)", -1).length - 1)
+                .as("both render branches escape the item name")
+                .isGreaterThanOrEqualTo(2);
+    }
 }
