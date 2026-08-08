@@ -364,6 +364,56 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * The Import… menu: the format family, the export, and — when
+     * {@code ~/.nmox/api-library.d} has entries — the library section
+     * (v1.297.0). A library item imports through the exact
+     * {@link #importHttpFrom} implementation the chooser and the editor
+     * gesture share, so the off-EDT read, the refusals, and the
+     * secrets-law Authorization lift reach it by construction.
+     */
+    private void showImportMenu(javax.swing.JButton anchor,
+            java.util.List<org.nmox.studio.apiclient.api.HttpLibrary.Entry> library) {
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem curl = new javax.swing.JMenuItem("curl command…");
+        curl.addActionListener(a -> importCurl());
+        javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
+        http.addActionListener(a -> importHttpFile());
+        javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON/YAML)…");
+        openapi.addActionListener(a -> importOpenApi());
+        javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
+        postman.addActionListener(a -> importPostman());
+        javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem("Postman Environment…");
+        postmanEnv.addActionListener(a -> importPostmanEnv());
+        javax.swing.JMenuItem insomnia = new javax.swing.JMenuItem("Insomnia Export…");
+        insomnia.addActionListener(a -> importInsomnia());
+        javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
+        har.addActionListener(a -> importHar());
+        javax.swing.JMenuItem export = new javax.swing.JMenuItem(
+                "Export collection to .http…");
+        export.addActionListener(a -> exportHttp());
+        menu.add(curl);
+        menu.add(http);
+        menu.add(openapi);
+        menu.add(postman);
+        menu.add(postmanEnv);
+        menu.add(insomnia);
+        menu.add(har);
+        if (!library.isEmpty()) {
+            menu.addSeparator();
+            for (org.nmox.studio.apiclient.api.HttpLibrary.Entry entry : library) {
+                javax.swing.JMenuItem item =
+                        new javax.swing.JMenuItem(entry.name() + " · library");
+                item.setToolTipText(entry.file().getAbsolutePath());
+                item.addActionListener(a -> importHttpFrom(entry.file()));
+                menu.add(item);
+            }
+        }
+        menu.addSeparator();
+        menu.add(export);
+        menu.show(anchor, 0, anchor.getHeight());
+    }
+
     /** Import a REST Client .http/.rest file as a whole collection. */
     private void importHttpFile() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
@@ -871,35 +921,22 @@ public final class ApiClientTopComponent extends TopComponent {
         importBtn.setToolTipText("Import curl / .http / OpenAPI / Postman / HAR, "
                 + "or export a collection to .http");
         importBtn.addActionListener(e -> {
-            javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-            javax.swing.JMenuItem curl = new javax.swing.JMenuItem("curl command…");
-            curl.addActionListener(a -> importCurl());
-            javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
-            http.addActionListener(a -> importHttpFile());
-            javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON/YAML)…");
-            openapi.addActionListener(a -> importOpenApi());
-            javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
-            postman.addActionListener(a -> importPostman());
-            javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem("Postman Environment…");
-            postmanEnv.addActionListener(a -> importPostmanEnv());
-            javax.swing.JMenuItem insomnia = new javax.swing.JMenuItem("Insomnia Export…");
-            insomnia.addActionListener(a -> importInsomnia());
-            javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
-            har.addActionListener(a -> importHar());
-            javax.swing.JMenuItem export = new javax.swing.JMenuItem(
-                    "Export collection to .http…");
-            export.addActionListener(a -> exportHttp());
-            menu.add(curl);
-            menu.add(http);
-            menu.add(openapi);
-            menu.add(postman);
-            menu.add(postmanEnv);
-            menu.add(insomnia);
-            menu.add(har);
-            menu.addSeparator();
-            menu.add(export);
-            menu.show(importBtn, 0, importBtn.getHeight());
+            // the library scan is file IO — off the EDT (v1.33.1), menu on
+            // the callback, button disabled until it shows so two fast
+            // clicks cannot stack two popups (the v1.296.0 review find,
+            // applied here on day one instead of re-learned)
+            importBtn.setEnabled(false);
+            RP.post(() -> {
+                java.util.List<org.nmox.studio.apiclient.api.HttpLibrary.Entry> library =
+                        org.nmox.studio.apiclient.api.HttpLibrary.list();
+                java.awt.EventQueue.invokeLater(() -> {
+                    importBtn.setEnabled(true);
+                    showImportMenu(importBtn, library);
+                });
+            });
         });
+        // (menu construction lives in showImportMenu so the library scan can
+        // feed it from off the EDT)
         JButton del = new JButton("Delete");
         del.addActionListener(e -> deleteSelected());
         tools.add(addCol);
