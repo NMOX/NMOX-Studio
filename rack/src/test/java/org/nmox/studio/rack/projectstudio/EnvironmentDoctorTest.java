@@ -135,4 +135,30 @@ class EnvironmentDoctorTest {
                 EnvironmentDoctor.detailFor(0, longLine))
                 .hasSize(73).endsWith("…");
     }
+
+    @Test
+    @DisplayName("a drop-in probe runs its declared args — the tool, then every flag")
+    void customCommandCarriesTheArgs() {
+        // divergent input for the mutant that drops the addAll: a probe
+        // whose dialect ISN'T --version (kubectl version --client) would
+        // silently probe with no args at all
+        assertThat(EnvironmentDoctor.customCommand("kubectl",
+                List.of("version", "--client")))
+                .containsExactly("kubectl", "version", "--client");
+    }
+
+    @Test
+    @DisplayName("a drop-in probe's row says whose it is, and a missing tool is honest")
+    void probeCustomProvenanceAndHonesty() {
+        EnvironmentDoctor.Finding f = EnvironmentDoctor.probeCustom(
+                new UserProbes.Custom("nmox-no-such-tool-xyz", "team CLI",
+                        List.of("--version"), "ask #tooling"));
+        assertThat(f.found()).isFalse();
+        assertThat(f.detail()).isEqualTo("not found");
+        assertThat(f.installHint()).isEqualTo("ask #tooling");
+        assertThat(f.purpose())
+                .as("the family's provenance marker — the table must say"
+                        + " which rows came from ~/.nmox/doctor.d")
+                .endsWith(" · yours");
+    }
 }

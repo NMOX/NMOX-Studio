@@ -73,3 +73,29 @@ appears in the tab's recipe picker beside the detected-toolchain
 generator, with `{{name}}` replaced by the image name. The same path
 rules as templates apply: a file entry that would land outside the
 project disqualifies the whole recipe.
+
+## Doctor probes
+
+Since v1.305.0 the Environment Doctor (Tools ▸ Environment Doctor…)
+reads `~/.nmox/doctor.d/` too. Each `.json` file there adds one row to
+the table, probed live through the same hardened 4-second launcher as
+the built-ins and marked `· yours` in the Used-for column:
+
+```json
+{
+  "tool": "kubectl",
+  "purpose": "cluster ops",
+  "args": ["version", "--client"],
+  "install": "brew install kubectl"
+}
+```
+
+`tool` and `purpose` are required; `args` defaults to `--version`;
+`install` is the hint shown when the tool is missing. Because a probe
+is a command the Doctor executes on open, the rules are strict: `tool`
+must be a bare binary name resolved on PATH (never a path), `args`
+entries must be flag-shaped (`--version`, `-v`, `version` — no paths,
+spaces, or shell text), and a tool the product already probes is
+skipped so one authoritative row speaks for it. A refused or malformed
+file shows up in the table as a `skipped — …` row, never as a silent
+absence.

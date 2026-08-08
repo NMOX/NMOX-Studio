@@ -59,29 +59,59 @@ public final class EnvironmentDoctorAction implements ActionListener {
         panel.setPreferredSize(new Dimension(780, 480));
 
         List<String[]> checks = EnvironmentDoctor.checklist();
-        // probes run off the EDT and stream into the table as they land
+        // probes run off the EDT and stream into the table as they land;
+        // the drop-in scan (~/.nmox/doctor.d, v1.305.0) is file IO and
+        // rides the same lane — the dir is read fresh on every open
         RequestProcessor.getDefault().post(() -> {
-            int found = 0;
+            java.util.Set<String> taken = new java.util.HashSet<>();
             for (String[] check : checks) {
-                EnvironmentDoctor.Finding f =
-                        EnvironmentDoctor.probe(check[0], check[1], check[2]);
-                if (f.found()) {
-                    found++;
-                }
-                int soFar = found;
-                int done = model.getRowCount() + 1;
-                SwingUtilities.invokeLater(() -> {
-                    model.addRow(new Object[]{f.found() ? "✓" : "✗", f.tool(),
-                        f.detail(), f.purpose(), f.found() ? "" : f.installHint()});
-                    status.setText(done < checks.size()
-                            ? "Probing…  " + done + "/" + checks.size()
-                            : soFar + " of " + checks.size() + " tools present");
-                });
+                taken.add(check[0]);
+            }
+            org.nmox.studio.rack.projectstudio.UserProbes.Loaded yours =
+                    org.nmox.studio.rack.projectstudio.UserProbes.load(taken);
+            int total = checks.size() + yours.probes().size();
+            List<EnvironmentDoctor.Finding> findings = new java.util.ArrayList<>();
+            for (String[] check : checks) {
+                findings.add(EnvironmentDoctor.probe(check[0], check[1], check[2]));
+                publish(model, status, findings, yours.skipped(), total);
+            }
+            for (org.nmox.studio.rack.projectstudio.UserProbes.Custom custom
+                    : yours.probes()) {
+                findings.add(EnvironmentDoctor.probeCustom(custom));
+                publish(model, status, findings, yours.skipped(), total);
             }
         });
 
         DialogDescriptor descriptor = new DialogDescriptor(panel, "Environment Doctor",
                 false, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
+    }
+
+    /**
+     * Streams the newest finding into the table; on the LAST one, appends
+     * a visible row per skipped drop-in file (the family's skip-with-note
+     * law: a refused probe is said where the user is looking, never a
+     * silent absence) and settles the status line.
+     */
+    private static void publish(DefaultTableModel model, JLabel status,
+            List<EnvironmentDoctor.Finding> findings, List<String> skipped,
+            int total) {
+        EnvironmentDoctor.Finding f = findings.get(findings.size() - 1);
+        int done = findings.size();
+        long found = findings.stream()
+                .filter(EnvironmentDoctor.Finding::found).count();
+        SwingUtilities.invokeLater(() -> {
+            model.addRow(new Object[]{f.found() ? "✓" : "✗", f.tool(),
+                f.detail(), f.purpose(), f.found() ? "" : f.installHint()});
+            if (done < total) {
+                status.setText("Probing…  " + done + "/" + total);
+            } else {
+                for (String note : skipped) {
+                    model.addRow(new Object[]{"—", "doctor.d",
+                        "skipped — " + note, "", ""});
+                }
+                status.setText(found + " of " + total + " tools present");
+            }
+        });
     }
 }
