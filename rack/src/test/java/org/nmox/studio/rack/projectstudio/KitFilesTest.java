@@ -60,4 +60,40 @@ class KitFilesTest {
         assertThat(w.status()).contains("both exist");
         assertThat(Files.readString(root.resolve("f.txt.suggested"))).isEqualTo("old proposal");
     }
+
+    @Test
+    @DisplayName("shortName: a short name is kept verbatim (stripped)")
+    void shortNameKeepsShort() {
+        assertThat(KitFiles.shortName("Acme")).isEqualTo("Acme");
+        assertThat(KitFiles.shortName("  Acme  ")).isEqualTo("Acme");
+        assertThat(KitFiles.shortName("Twelve chars")).isEqualTo("Twelve chars"); // exactly 12
+    }
+
+    @Test
+    @DisplayName("shortName: a long name is cut to 12 code points with no trailing space")
+    void shortNameTruncatesCleanly() {
+        // "Acme Rocket Shipping Co" cut at 12 lands on a space -> stripped
+        assertThat(KitFiles.shortName("Acme Rocket Shipping Co"))
+                .isEqualTo("Acme Rocket")
+                .doesNotEndWith(" ");
+    }
+
+    @Test
+    @DisplayName("shortName: truncation never strands a lone surrogate (v1.287.0 class)")
+    void shortNameNeverSplitsSurrogate() {
+        // 11 ASCII then an astral emoji (the 12th code point). The buggy
+        // substring(0,12) keeps 11 chars + the emoji's HIGH surrogate ALONE
+        // — a stranded unit that mints an invalid JSON string. A code-point
+        // cut keeps the emoji WHOLE (both surrogate units) as the 12th glyph.
+        String name = "AAAAAAAAAAA🚀Rocket"; // 11 'A' + 🚀 + Rocket
+        String out = KitFiles.shortName(name);
+        assertThat(out).isEqualTo("AAAAAAAAAAA🚀"); // emoji kept whole
+        // a lone (unpaired) surrogate does not survive a UTF-8 round trip —
+        // it decodes back as U+FFFD. The buggy substring(0,12) would strand
+        // the emoji's high surrogate and fail this; a code-point cut passes.
+        assertThat(new String(out.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                java.nio.charset.StandardCharsets.UTF_8))
+                .as("no lone surrogate: the string round-trips through UTF-8")
+                .isEqualTo(out);
+    }
 }

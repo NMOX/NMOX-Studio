@@ -61,7 +61,7 @@ public final class StandardsKit {
     public static String manifest(String siteName) {
         JSONObject m = new JSONObject();
         m.put("name", siteName);
-        m.put("short_name", siteName.length() > 12 ? siteName.substring(0, 12) : siteName);
+        m.put("short_name", KitFiles.shortName(siteName));
         m.put("start_url", "/");
         m.put("display", "standalone");
         m.put("background_color", "#1a1a1e");

@@ -84,6 +84,18 @@ class PwaKitTest {
                         "/offline.html", "/site.webmanifest", "/icon-192.png", "/icon-512.png")
                 .doesNotContain("/sw.js", "/.env", "/src", "/eslint.config.mjs");
         assertThat(list).doesNotHaveDuplicates();
+        // v1.309.0: EVERY icon the kit writes must be precached, not just
+        // the two "any" icons — the manifest references the maskable pair
+        // and index.html the apple-touch icon, so an offline install missing
+        // them shows broken home-screen/splash art
+        assertThat(list)
+                .as("all five generated icons precached, or offline install"
+                        + " breaks its home-screen/splash art")
+                .contains("/icon-maskable-192.png", "/icon-maskable-512.png",
+                        "/apple-touch-icon.png");
+        for (String icon : PwaKit.ICON_FILES) {
+            assertThat(list).contains("/" + icon);
+        }
     }
 
     @Test

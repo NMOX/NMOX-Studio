@@ -78,8 +78,7 @@ public final class PwaKit {
     public static String manifest(Options opts) {
         JSONObject m = new JSONObject();
         m.put("name", opts.name());
-        m.put("short_name", opts.shortName().length() > 12
-                ? opts.shortName().substring(0, 12) : opts.shortName());
+        m.put("short_name", KitFiles.shortName(opts.shortName()));
         m.put("start_url", "/");
         m.put("scope", "/");
         m.put("display", "standalone");
@@ -239,8 +238,15 @@ public final class PwaKit {
             out.add("/site.webmanifest");
         }
         if (opts.icons()) {
-            out.add("/icon-192.png");
-            out.add("/icon-512.png");
+            // precache EVERY icon the kit writes, not just the two "any"
+            // icons: the manifest references the maskable pair and
+            // index.html references apple-touch-icon, so an offline install
+            // missing them shows broken home-screen/splash art — the kit's
+            // whole promise is "install and work offline". Keyed off
+            // ICON_FILES so precache can't drift from what write() emits.
+            for (String icon : ICON_FILES) {
+                out.add("/" + icon);
+            }
         }
         return out;
     }
