@@ -9,13 +9,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 The floors ratchet: a week of new tests is locked in.
 
 ### Changed
-- **Eight JaCoCo line-coverage floors raised to measured-minus-margin**
-  — core .88→.89, editor .66→.67, project .83→.87, rack .75→.77,
+- **Seven JaCoCo line-coverage floors raised to measured-minus-margin**
+  — core .88→.89, editor .66→.67, project .83→.87,
   apiclient .90→.92, dbstudio .89→.91, web3 .93→.94, infra .83→.85 —
   locking in the tests the persona walks and the extensibility arc
   added since the v1.180.0 ratchet (the forget round-trips, the
   discard guards, the route outline, three drop-in suites). tools
-  (.74) and ui (.55) stay where measured leaves no honest margin;
+  (.74) and ui (.55) stay where measured leaves no honest margin, and
+  rack stays at .75 — the windows lane is its BINDING measurement
+  (POSIX-gated tests skip there and it measures .76 against the .78 the
+  unix lanes see), and a floor must clear the lowest honest lane;
   **no floor was lowered and no exclusion changed.** A test-shedding
   regression in any of the eight now fails the build. All ten checks
   verified green against the raised minimums.
