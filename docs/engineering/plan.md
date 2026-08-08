@@ -1108,9 +1108,59 @@ releases.
   manual tag+release. **The branch-first law — `git checkout -b` before
   the FIRST commit of every unit — exists exactly to prevent this.**
 
+## Addendum — 2026-08-08 day, laws need retroactive sweeps (v1.309–v1.311)
+
+Three releases that chain into one lesson: **a law only protects the
+code written after it, unless someone goes back for the rest.**
+
+- **v1.309.0** walked the Standards and PWA kits as the site-launch
+  persona — the first walk since they shipped in v1.20/v1.21, ~290
+  releases earlier. The method is worth keeping for pure-builder
+  surfaces: instead of reading the generator, **generate a real site
+  and validate the artifact**. That immediately showed the service
+  worker precaching only 2 of the 5 icons the kit writes — the manifest
+  references the maskable pair and index.html the apple-touch icon, so
+  an installed PWA gone offline showed broken home-screen and splash
+  art, defeating the kit's entire "install and work offline" promise.
+  Precache is now keyed off the same `ICON_FILES` constant `write()`
+  uses, so the two can't drift. The walk also found both kits cutting
+  a long manifest `short_name` with a raw `substring(0, 12)` — a
+  trailing space and a possible mid-surrogate cut (the v1.287.0
+  code-point class) — now one shared `KitFiles.shortName`.
+
+- **v1.310.0** carried the walk into Learning Spaces and found that the
+  community-catalog drop-in (`~/.nmox/learn-catalog.d`) — the FIRST
+  drop-in surface, v1.53.0, five surfaces and 240 releases before the
+  path law was written in v1.293.0 — passed sample-file paths straight
+  to `new File(dir, path)`. A catalog with `"path": "../../../.zshrc"`
+  wrote its content over a file elsewhere on disk at space-creation
+  time. `LearningSpace.resolveInside` now canonicalizes and refuses any
+  path that escapes the space. **The standing lesson: when a law is
+  introduced, sweep the surfaces that PREDATE it — they are exactly the
+  ones nobody thinks to check.**
+
+- **v1.311.0** turned that lesson on the previous night's own law. The
+  v1.306/v1.307 html-render sweeps closed the `<html><img src>`
+  paint-time-fetch class in tables and IRC, but the gate enumerated
+  `new JTable`, so JLabel-based CELL RENDERERS were never checked.
+  Three were live: API Studio's collections tree (names imported from
+  Postman/HAR/OpenAPI), its send history (imported URLs), and the
+  Navigator outline — which escaped the item name in one branch and set
+  it RAW in the other, and outline names come from parsed source (since
+  v1.292.0 even string literals out of it), so opening a cloned repo's
+  file could trigger the fetch.
+
+  **What made this a good unit rather than a blanket sweep:** DB
+  Studio's tree and saved-query renderers use `<html>` DELIBERATELY for
+  bold and colour and already escape every external value — disabling
+  HTML there would show users raw markup. The rule is therefore
+  *escape or disable depending on whether the renderer MEANS its
+  markup*, and the correct renderers are recorded as verified-clean
+  rather than "fixed".
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.307.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.311.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
