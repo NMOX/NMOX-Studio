@@ -6,6 +6,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.310.0] - 2026-08-08
+
+A community learning-space catalog can't write outside its space.
+
+### Fixed
+- **The oldest drop-in surface gets the path law.** A JSON catalog
+  dropped into `~/.nmox/learn-catalog.d` (community learning spaces,
+  the FIRST drop-in surface, v1.53.0 — predating the path law the
+  later drop-ins enforce, v1.293+) is data from anywhere, and its
+  sample-file paths reached `new File(dir, path)` unvalidated. A
+  catalog with `"path": "../../../.zshrc"` would write its content over
+  a file elsewhere on disk when the space was created. `create()` now
+  resolves every sample-file path canonically and writes it only if it
+  stays inside the space directory — `../` traversal is refused, never
+  written outside; built-in spaces use plain relative paths and are
+  unaffected. Mutation-proven: removing the guard lets the traversal
+  file escape.
+
 ## [1.309.0] - 2026-08-08
 
 The PWA kit precaches the icons it generates; short_name truncates cleanly.

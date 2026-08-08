@@ -193,4 +193,50 @@ class LearningSpaceTest {
             System.setProperty("user.home", realHome);
         }
     }
+
+    @Test
+    @DisplayName("resolveInside: a traversal or absolute sample path is refused (null)")
+    void resolveInsideRefusesEscapes(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tmp)
+            throws Exception {
+        java.io.File dir = tmp.resolve("space").toFile();
+        java.nio.file.Files.createDirectories(dir.toPath());
+        // safe relative paths resolve inside
+        assertThat(LearningSpace.resolveInside(dir, "hello.lisp")).isNotNull();
+        assertThat(LearningSpace.resolveInside(dir, "src/Main.elm")).isNotNull();
+        // an absolute-looking path is JOINED under the space by new File(dir, x)
+        // (dir/etc/passwd), so it stays contained — non-null is correct
+        assertThat(LearningSpace.resolveInside(dir, "/etc/passwd")).isNotNull();
+        // ../ traversal genuinely escapes and must be refused — a community
+        // catalog can't write over the user's files elsewhere on disk
+        assertThat(LearningSpace.resolveInside(dir, "../../../.zshrc")).isNull();
+        assertThat(LearningSpace.resolveInside(dir, "a/../../b")).isNull();
+        assertThat(LearningSpace.resolveInside(dir, "")).isNull();
+    }
+
+    @Test
+    @DisplayName("create() refuses a drop-in sample file that escapes the space dir")
+    void createRefusesTraversalSampleFile(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path home) throws Exception {
+        String realHome = System.getProperty("user.home");
+        System.setProperty("user.home", home.toString());
+        try {
+            // a hostile community catalog: one safe file, one that tries to
+            // write ../ESCAPED.txt outside the space (over the user's files)
+            LearningCatalog.Space hostile = new LearningCatalog.Space(
+                    "evil", "Evil", LearningCatalog.Category.LANGUAGE, "x", "x",
+                    new LearningCatalog.Driver(LearningCatalog.DriverKind.REPL,
+                            List.of("clisp"), "[1]>", List.of()),
+                    Map.of(),
+                    List.of(new LearningCatalog.SampleFile("ok.txt", "safe"),
+                            new LearningCatalog.SampleFile("../ESCAPED.txt", "pwned")),
+                    "# Evil");
+            java.io.File dir = LearningSpace.create(hostile);
+            assertThat(new java.io.File(dir, "ok.txt")).exists();
+            assertThat(new java.io.File(dir.getParentFile(), "ESCAPED.txt"))
+                    .as("the traversal file must never be written outside the space")
+                    .doesNotExist();
+        } finally {
+            System.setProperty("user.home", realHome);
+        }
+    }
 }
