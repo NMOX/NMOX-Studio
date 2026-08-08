@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.305.0] - 2026-08-08
+
+The Doctor takes your probes — the sixth drop-in surface.
+
+### Added
+- **`~/.nmox/doctor.d` probes join the Environment Doctor** — the last
+  named candidate from the extensibility arc's list. Each `.json` file
+  (`tool`, `purpose`, optional `args`, `install`) adds one row, probed
+  through the SAME hardened 4-second launcher and honest status
+  wording (v1.303.0's `detailFor`) as the built-ins, marked `· yours`.
+  A team whose stack leans on terraform, kubectl, or an in-house CLI
+  gets a Doctor that speaks for it. The safety law is stricter than
+  the sibling surfaces' because a probe is a command the Doctor
+  EXECUTES on open: the tool must be a bare PATH-resolved name (never
+  a path), args must be flag-shaped, one bad field disqualifies the
+  whole file, and a tool the product already probes is skipped — one
+  authoritative row per tool. Refused and malformed files render as
+  visible `skipped — …` rows in the table itself, never a silent
+  absence. Mutation-proven ×3 (tool-path guard, args-shape guard,
+  args-carry) and live-proven in the dev build.
+
 ## [1.304.0] - 2026-08-08
 
 Docs truth — the drop-in family's night, on the record.

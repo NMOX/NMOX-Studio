@@ -143,6 +143,27 @@ public final class EnvironmentDoctor {
         return probeWith(tool, purpose, installHint, versionCommand(tool));
     }
 
+    /**
+     * Probes one user-authored drop-in probe (v1.305.0, ~/.nmox/doctor.d).
+     * Rides the same launcher, leash, and honest {@link #detailFor} wording
+     * as the built-ins; the purpose carries the family's provenance marker
+     * so the table says whose row this is. The command is the validated
+     * bare tool name plus its flag-shaped args — {@link UserProbes} refuses
+     * anything else before this is ever called.
+     */
+    public static Finding probeCustom(UserProbes.Custom custom) {
+        return probeWith(custom.tool(), custom.purpose() + " · yours",
+                custom.install(), customCommand(custom.tool(), custom.args()));
+    }
+
+    /** The argv for a drop-in probe: the tool, then its declared args. */
+    static List<String> customCommand(String tool, List<String> args) {
+        List<String> cmd = new ArrayList<>();
+        cmd.add(tool);
+        cmd.addAll(args);
+        return cmd;
+    }
+
     /** The version-query dialect for a tool: {@code --version} or its holdout form. */
     static List<String> versionCommand(String tool) {
         // most tools speak --version; the holdouts get their own dialect
