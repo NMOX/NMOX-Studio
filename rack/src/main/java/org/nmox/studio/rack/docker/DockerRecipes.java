@@ -126,6 +126,24 @@ public final class DockerRecipes {
         return target;
     }
 
+    /**
+     * The current on-disk recipe with this name, if it still exists.
+     * Regenerate must preview the FRESH file, not the object the combo
+     * captured at the last refill — the v1.302.0 review found that
+     * editing a recipe and pressing Regenerate showed the old content,
+     * which defeats the button's whole purpose; and a recipe deleted
+     * mid-session must fall back to the detected generator instead of
+     * ghost-writing from memory.
+     */
+    public static java.util.Optional<Recipe> findByName(List<Recipe> recipes, String name) {
+        for (Recipe r : recipes) {
+            if (r.name().equals(name)) {
+                return java.util.Optional.of(r);
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
     /** The recipe's files with {@code {{name}}} substituted, ready to preview. */
     public static Map<String, String> materialize(Recipe recipe, String imageName) {
         Map<String, String> out = new LinkedHashMap<>();

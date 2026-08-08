@@ -760,9 +760,15 @@ public final class DockerPanelTopComponent extends TopComponent {
             DockerRecipes.Loaded loaded = DockerRecipes.load();
             Map<String, String> files;
             String source;
-            if (selected instanceof DockerRecipes.Recipe recipe) {
-                files = DockerRecipes.materialize(recipe, image);
-                source = "recipe: " + recipe.name() + " · yours";
+            java.util.Optional<DockerRecipes.Recipe> fresh =
+                    selected instanceof DockerRecipes.Recipe recipe
+                            ? DockerRecipes.findByName(loaded.recipes(), recipe.name())
+                            : java.util.Optional.empty();
+            if (fresh.isPresent()) {
+                // ALWAYS the fresh on-disk parse: Regenerate must show edits,
+                // and a deleted recipe falls through to the detected branch
+                files = DockerRecipes.materialize(fresh.get(), image);
+                source = "recipe: " + fresh.get().name() + " · yours";
             } else {
                 files = DockerizeGenerator.generate(kind, image, statics);
                 source = "detected toolchain: " + kind
