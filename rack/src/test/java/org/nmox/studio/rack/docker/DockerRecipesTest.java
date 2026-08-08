@@ -73,6 +73,23 @@ class DockerRecipesTest {
     }
 
     @Test
+    @DisplayName("resolveInside refuses escapes BEHAVIORALLY — not by prose")
+    void resolveInsideRefusesEscapes(@TempDir Path tmp) throws Exception {
+        java.io.File dir = tmp.toFile();
+        // the happy path resolves under the project
+        assertThat(DockerRecipes.resolveInside(dir, "docker/nginx.conf"))
+                .satisfies(p -> assertThat(p.startsWith(tmp)).isTrue());
+        // the divergent inputs: a mutant that skips the check RETURNS a
+        // path outside tmp instead of throwing — behavior, not a string
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> DockerRecipes.resolveInside(dir, "../outside"))
+                .isInstanceOf(java.io.IOException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> DockerRecipes.resolveInside(dir, "a/../../b"))
+                .isInstanceOf(java.io.IOException.class);
+    }
+
+    @Test
     @DisplayName("the panel wires the combo, the shared law, and the writer guard")
     void panelWiring() throws Exception {
         // CRLF checkouts (the windows lane) — normalize before asserting
@@ -87,10 +104,9 @@ class DockerRecipesTest {
                         + " the same bytes Write will write")
                 .contains("DockerRecipes.materialize(recipe, image)");
         assertThat(src)
-                .as("the WRITER carries its own resolved-path guard: recipes"
-                        + " are parse-time checked, but the writer must refuse"
-                        + " escapes no matter which producer fed it")
-                .contains("Refusing to write outside the project");
+                .as("the writer must route every file through the ONE"
+                        + " behaviorally-tested resolver below")
+                .contains("DockerRecipes.resolveInside(dir, e.getKey())");
 
         String recipes = Files.readString(Path.of("src", "main", "java", "org",
                 "nmox", "studio", "rack", "docker", "DockerRecipes.java"),

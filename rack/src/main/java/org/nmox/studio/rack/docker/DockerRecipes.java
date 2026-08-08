@@ -110,6 +110,22 @@ public final class DockerRecipes {
         return new Recipe(name, map);
     }
 
+    /**
+     * Resolves a declared filename strictly inside {@code dir}, or
+     * throws. The writer routes EVERY file through this — recipes are
+     * parse-time path-law checked, but the writer must refuse escapes
+     * no matter which producer fed it, and a guard that lives in a
+     * private UI method cannot be behaviorally tested (the v1.290.0
+     * count-the-guards lesson, resolved structurally this time).
+     */
+    public static java.nio.file.Path resolveInside(File dir, String name) throws IOException {
+        java.nio.file.Path target = new File(dir, name).toPath().normalize();
+        if (!target.startsWith(dir.toPath())) {
+            throw new IOException("Refusing to write outside the project: " + name);
+        }
+        return target;
+    }
+
     /** The recipe's files with {@code {{name}}} substituted, ready to preview. */
     public static Map<String, String> materialize(Recipe recipe, String imageName) {
         Map<String, String> out = new LinkedHashMap<>();
