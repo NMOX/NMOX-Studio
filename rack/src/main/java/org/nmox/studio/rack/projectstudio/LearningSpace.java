@@ -64,7 +64,16 @@ public final class LearningSpace {
         WorkspaceTrust.trust(root()); // parent-path match pre-trusts every space
         writeMarker(dir, space);
         for (LearningCatalog.SampleFile f : space.files()) {
-            File target = new File(dir, f.path());
+            // A community catalog dropped into ~/.nmox/learn-catalog.d is
+            // data from anywhere (the drop-in family's standing law, v1.293+),
+            // and this is its oldest surface (v1.53) — a sample file whose
+            // path escapes the space dir (../../.zshrc, an absolute path)
+            // must not let it write outside the space. Built-in spaces use
+            // plain relative paths and are unaffected.
+            File target = resolveInside(dir, f.path());
+            if (target == null) {
+                continue; // path escapes the space — refuse, never write outside
+            }
             Files.createDirectories(target.getParentFile().toPath());
             if (!target.exists()) {
                 Files.writeString(target.toPath(), f.content(), StandardCharsets.UTF_8);
@@ -74,6 +83,23 @@ public final class LearningSpace {
                 tutorialWithInstall(space), StandardCharsets.UTF_8);
         writeRack(dir, space);
         return dir;
+    }
+
+    /**
+     * Resolves a sample-file path against the space directory and returns
+     * the target only if it stays INSIDE that directory; otherwise null.
+     * Canonicalizes both sides so {@code ../} traversal, an absolute path,
+     * or a symlinked segment can't escape — the strongest guard against a
+     * malicious drop-in catalog writing over files elsewhere on disk.
+     * Package-private so the traversal refusal is behaviorally testable.
+     */
+    static File resolveInside(File dir, String path) throws IOException {
+        File base = dir.getCanonicalFile();
+        File target = new File(dir, path).getCanonicalFile();
+        java.nio.file.Path basePath = base.toPath();
+        java.nio.file.Path targetPath = target.toPath();
+        return targetPath.startsWith(basePath) && !targetPath.equals(basePath)
+                ? new File(dir, path) : null;
     }
 
     /**
