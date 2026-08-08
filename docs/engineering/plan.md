@@ -976,9 +976,28 @@ source-gate assertion died on the CRLF checkout (the v1.42.0 class) —
 normalize `\r\n` → `\n` after every `Files.readString` a source-gate
 asserts on.
 
+**The arc's tail (v1.295–v1.299), same evening.** v1.295 stated the
+direction above in this file; v1.296 reviewed the arc (two finds: the
+Presets double-click stacked two popups — the off-EDT menu hop lets each
+click post its own scan, so the button now disables until its menu is
+up — and a verbatim `.nmoxrack.json` copy displayed as "Name.nmoxrack");
+v1.297 shipped the third loop, the request library
+(`~/.nmox/api-library.d`, and the format is `.http` DELIBERATELY — the
+workspace file is keychain-coupled, the dialect is the sharing format,
+so the secrets law holds at both ends with zero new code); v1.298
+re-proved the update center headlessly across the whole stretch (stock
+v1.288.0 → in-app → 1.297.0, updates=11, clean converge, eleven modules
+Enabled on restart, cluster manifests byte-verified; observation: a
+WRITABLE cluster installs in place rather than shadowing in the
+userdir); v1.299 ratcheted seven JaCoCo floors — and taught a ratchet
+law red-first: **a floor must clear the LOWEST honest lane, and the
+windows lane is rack's binding measurement** (.76 there vs .78 on unix,
+POSIX-gated tests skip), so rack held at .75. Measure against the
+windows lane before ratcheting.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.294.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.299.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
