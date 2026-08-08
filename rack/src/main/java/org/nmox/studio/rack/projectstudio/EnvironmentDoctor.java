@@ -204,7 +204,12 @@ public final class EnvironmentDoctor {
      * of quoting it.
      */
     static String detailFor(int exitCode, String firstLine) {
-        if (exitCode != 0) {
+        // exitCode -1 is the TIMEOUT sentinel (BoundedResult contract): a
+        // wedged tool that already printed its version keeps it — the
+        // pre-existing wedged-pipe test pins that, and it caught this rule
+        // over-reaching on its first run. Only a real nonzero exit means
+        // the output is an error rather than a version.
+        if (exitCode > 0) {
             return "found — but its version command failed (exit " + exitCode + ")";
         }
         if (firstLine.isBlank()) {

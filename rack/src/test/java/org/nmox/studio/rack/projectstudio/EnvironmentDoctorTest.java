@@ -125,6 +125,11 @@ class EnvironmentDoctorTest {
         org.assertj.core.api.Assertions.assertThat(
                 EnvironmentDoctor.detailFor(0, ""))
                 .isEqualTo("found (version unknown)");
+        // -1 is the TIMEOUT sentinel: a wedged tool that already printed
+        // its version keeps it (the wedged-pipe test's own case)
+        org.assertj.core.api.Assertions.assertThat(
+                EnvironmentDoctor.detailFor(-1, "NMOX-DOCTOR 9.9.9"))
+                .isEqualTo("NMOX-DOCTOR 9.9.9");
         String longLine = "x".repeat(100);
         org.assertj.core.api.Assertions.assertThat(
                 EnvironmentDoctor.detailFor(0, longLine))
