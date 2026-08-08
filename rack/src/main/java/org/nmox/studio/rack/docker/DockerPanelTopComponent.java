@@ -1,6 +1,7 @@
 package org.nmox.studio.rack.docker;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Desktop;
@@ -112,6 +113,12 @@ public final class DockerPanelTopComponent extends TopComponent {
     private final JTextArea composePreview = preview();
     private final JLabel dockerizeInfo = new JLabel(" ");
     private Map<String, String> dockerizeFiles = Map.of();
+    /**
+     * Detected-toolchain generator plus any ~/.nmox/dockerize.d recipes
+     * (v1.301.0). Item 0 is always the built-in; DockerRecipes.Recipe
+     * entries follow. Selecting re-previews; Write writes what previews.
+     */
+    private final javax.swing.JComboBox<Object> recipeCombo = new javax.swing.JComboBox<>();
 
     public DockerPanelTopComponent() {
         setName("Docker Panel");
@@ -658,7 +665,16 @@ public final class DockerPanelTopComponent extends TopComponent {
         p.setBackground(BG);
         dockerizeInfo.setForeground(TEXT);
         dockerizeInfo.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
-        p.add(dockerizeInfo, BorderLayout.NORTH);
+        JPanel north = new JPanel(new BorderLayout());
+        north.setBackground(BG);
+        north.add(dockerizeInfo, BorderLayout.CENTER);
+        recipeCombo.setToolTipText("Detected toolchain, or a recipe from ~/.nmox/dockerize.d");
+        recipeCombo.addActionListener(e -> regenerateDockerize());
+        JPanel comboHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        comboHolder.setBackground(BG);
+        comboHolder.add(recipeCombo);
+        north.add(comboHolder, BorderLayout.EAST);
+        p.add(north, BorderLayout.NORTH);
 
         JTabbedPane previews = new JTabbedPane();
         previews.addTab("Dockerfile", wrap(dockerfilePreview));
@@ -732,25 +748,70 @@ public final class DockerPanelTopComponent extends TopComponent {
         // detectKind + buildsStatic walk the project directory; on a $HOME aim
         // that would touch the TCC-protected folders on the EDT during startup
         // (this panel opens at startup). Detect on the background thread and
-        // apply the previews on the EDT.
+        // apply the previews on the EDT. The drop-in recipe scan rides the
+        // same lane (the v1.33.1 law).
         File dir = projectDir();
+        Object selected = recipeCombo.getSelectedItem();
         DOCKERIZE_RP.post(() -> {
             ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(dir);
             boolean statics = DockerizeGenerator.buildsStatic(dir);
             String image = dir.getName().toLowerCase().replaceAll("[^a-z0-9_-]", "-");
             int port = DockerizeGenerator.defaultPort(kind, statics);
-            Map<String, String> files = DockerizeGenerator.generate(kind, image, statics);
+            DockerRecipes.Loaded loaded = DockerRecipes.load();
+            Map<String, String> files;
+            String source;
+            if (selected instanceof DockerRecipes.Recipe recipe) {
+                files = DockerRecipes.materialize(recipe, image);
+                source = "recipe: " + recipe.name() + " · yours";
+            } else {
+                files = DockerizeGenerator.generate(kind, image, statics);
+                source = "detected toolchain: " + kind
+                        + (statics ? " (static bundle → nginx)" : "");
+            }
             SwingUtilities.invokeLater(() -> {
                 dockerizeFiles = files;
+                refillRecipeCombo(kind, loaded, selected);
                 dockerizeInfo.setText("Project: " + dir.getName()
-                        + "   ·   detected toolchain: " + kind
-                        + (statics ? " (static bundle → nginx)" : "")
+                        + "   ·   " + source
                         + "   ·   image: " + image + "   ·   port: " + port);
                 dockerfilePreview.setText(files.getOrDefault("Dockerfile", ""));
                 ignorePreview.setText(files.getOrDefault(".dockerignore", ""));
                 composePreview.setText(files.getOrDefault("compose.yaml", ""));
+                for (DockerRecipes.Skipped skip : loaded.skipped()) {
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                            "Recipe " + skip.file() + " skipped: " + skip.reason());
+                }
             });
         });
+    }
+
+    /**
+     * Rebuilds the combo (built-in first, recipes after) without firing
+     * the selection listener back into {@link #regenerateDockerize} — a
+     * refill is a repaint, not a choice.
+     */
+    private void refillRecipeCombo(ProjectInspector.ProjectKind kind,
+            DockerRecipes.Loaded loaded, Object keepSelected) {
+        java.awt.event.ActionListener[] listeners = recipeCombo.getActionListeners();
+        for (java.awt.event.ActionListener l : listeners) {
+            recipeCombo.removeActionListener(l);
+        }
+        recipeCombo.removeAllItems();
+        recipeCombo.addItem("Detected (" + kind + ")");
+        for (DockerRecipes.Recipe r : loaded.recipes()) {
+            recipeCombo.addItem(r);
+        }
+        if (keepSelected instanceof DockerRecipes.Recipe recipe) {
+            for (DockerRecipes.Recipe r : loaded.recipes()) {
+                if (r.name().equals(recipe.name())) {
+                    recipeCombo.setSelectedItem(r);
+                    break;
+                }
+            }
+        }
+        for (java.awt.event.ActionListener l : listeners) {
+            recipeCombo.addActionListener(l);
+        }
     }
 
     private void writeDockerizeFiles() {
@@ -766,7 +827,12 @@ public final class DockerPanelTopComponent extends TopComponent {
         }
         try {
             for (Map.Entry<String, String> e : dockerizeFiles.entrySet()) {
-                java.nio.file.Path target = new File(dir, e.getKey()).toPath();
+                java.nio.file.Path target = new File(dir, e.getKey()).toPath().normalize();
+                if (!target.startsWith(dir.toPath())) {
+                    // recipes are parse-time path-law checked; this guards the
+                    // writer itself so no future producer can reopen the hole
+                    throw new IOException("Refusing to write outside the project: " + e.getKey());
+                }
                 Files.createDirectories(target.getParent()); // PHP ships docker/nginx.conf
                 Files.writeString(target, e.getValue(), java.nio.charset.StandardCharsets.UTF_8);
             }
