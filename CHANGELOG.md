@@ -6,6 +6,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 <<<<<<< HEAD
 =======
+## [1.312.0] - 2026-08-08
+
+Docs truth — the day's retroactive-sweep arc, on the record.
+
+### Changed
+- **plan.md carries v1.309–v1.311** in a new addendum, and its standing
+  header moves to v1.311.0. The three releases chain into one lesson —
+  *a law only protects the code written after it, unless someone goes
+  back for the rest*: the PWA kit's precache/manifest correctness
+  (found by generating a real site rather than reading the generator),
+  the oldest drop-in surface finally getting the path law written 240
+  releases later, and that same lesson turned back on the previous
+  night's html-render law to reach the cell renderers it never
+  enumerated. The escape-or-disable distinction (a renderer that MEANS
+  its markup is verified clean, not "fixed") is recorded with it.
+  Documentation only — no product code changes.
+
 ## [1.311.0] - 2026-08-08
 
 The html-render sweep reaches the cell renderers.
