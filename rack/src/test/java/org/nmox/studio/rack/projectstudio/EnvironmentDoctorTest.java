@@ -101,4 +101,33 @@ class EnvironmentDoctorTest {
         assertThat(EnvironmentDoctor.versionCommand("nginx")).containsExactly("nginx", "-v");
         assertThat(EnvironmentDoctor.versionCommand("apachectl")).containsExactly("apachectl", "-v");
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("cwebp gets the -version dialect — --version dumps a usage banner")
+    void cwebpDialect() {
+        org.assertj.core.api.Assertions.assertThat(EnvironmentDoctor.versionCommand("cwebp"))
+                .containsExactly("cwebp", "-version");
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a failing version command is SAID, never quoted as a version")
+    void failingVersionCommandIsSaidNotQuoted() {
+        // the v1.303.0 Doctor walk: a crashing corepack pnpm shim printed a
+        // stack-trace path and the Doctor showed it as the version with a ✓;
+        // cwebp's usage banner rendered as "Usage:". Divergent input: the
+        // mutant that drops the exit check QUOTES the garbage line instead.
+        org.assertj.core.api.Assertions.assertThat(
+                EnvironmentDoctor.detailFor(1, "Usage: cwebp [options] in_file"))
+                .isEqualTo("found — but its version command failed (exit 1)");
+        org.assertj.core.api.Assertions.assertThat(
+                EnvironmentDoctor.detailFor(0, "1.6.0"))
+                .isEqualTo("1.6.0");
+        org.assertj.core.api.Assertions.assertThat(
+                EnvironmentDoctor.detailFor(0, ""))
+                .isEqualTo("found (version unknown)");
+        String longLine = "x".repeat(100);
+        org.assertj.core.api.Assertions.assertThat(
+                EnvironmentDoctor.detailFor(0, longLine))
+                .hasSize(73).endsWith("…");
+    }
 }
