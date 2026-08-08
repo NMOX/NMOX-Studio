@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.297.0] - 2026-08-07
+
+The request library.
+
+### Added
+- **`.http`/`.rest` files in `~/.nmox/api-library.d/` join API
+  Studio's Import… menu** — the extensibility arc's third
+  capture-once loop, after templates.d and presets.d: export a
+  collection to .http (v1.179.0), drop the file in the library, and it
+  is one click from joining any project's workspace, labelled
+  "· library".
+  The library speaks .http DELIBERATELY, not .nmoxapi.json: the
+  workspace file is keychain-coupled (its requests carry ids whose
+  auth tokens live in the OS keychain, v1.97.0), so copying it between
+  machines ships dangling references. The .http dialect is the
+  product's sharing format on purpose — export omits auth, import
+  lifts a pasted Authorization into the keychain — so the secrets law
+  holds at both ends of the loop with zero new code.
+  A library item imports through the ONE `importHttpFrom`
+  implementation the file chooser and the editor gesture already
+  share, so the off-EDT read, the honest refusals, and the
+  Authorization lift reach the library by construction. The menu scan
+  runs off the EDT and the Import… button disables until the menu
+  shows — the v1.296.0 double-open class, prevented on day one
+  instead of re-learned.
+  Live-proven in the dev build: "hn-api · library" in the menu, and
+  one click imported both requests ("Imported 2 requests.", the
+  collection in the tree with its real URLs). Mutation-proven ×2: a
+  library item re-routed around the shared seam, and a widened
+  extension filter, each fail a named test.
+
 ## [1.296.0] - 2026-08-07
 
 The extensibility-arc review.
