@@ -164,6 +164,38 @@ class OutlineNgRouteTest {
     }
 
     @Test
+    @DisplayName("a path key inside a data object is not a route (v1.316.0 review find)")
+    void nestedDataPathIsNotARoute() {
+        // Found by probe during the arc review: `data:` objects commonly
+        // carry breadcrumbs, titles, canonical paths — and a `path:` key in
+        // one, written on its own line, listed as a phantom child route.
+        // The structural truth the fix leans on: a route object is always an
+        // ARRAY element ([ or , precedes its brace), never the `key: {`
+        // value object of some other key — so a path inside any :-opened
+        // brace is data, not a route.
+        List<OutlineModel.Item> items = ts("""
+                import { Routes } from '@angular/router';
+                export const routes: Routes = [
+                  {
+                    path: 'seo',
+                    component: SeoComponent,
+                    data: {
+                      path: '/canonical',
+                      breadcrumb: 'SEO',
+                    },
+                  },
+                  { path: 'next', component: NextComponent },
+                ];
+                """);
+        assertThat(items.stream().map(OutlineModel.Item::name))
+                .as("the data object's path key must not list, and the route"
+                        + " AFTER the data object must still list — the"
+                        + " suppression state has to unwind when the brace"
+                        + " closes")
+                .containsExactly("/seo", "/next");
+    }
+
+    @Test
     @DisplayName("guards and helpers in a routes file still outline")
     void classicShapesUnaffected() {
         assertThat(names("""
