@@ -247,6 +247,14 @@ public final class OutlineModel {
         boolean ngRoutes = looksLikeAngularRoutes(lines);
         int pendingRoute = -1;
         int pendingLine = -1;
+        // Tracks, for each open brace, whether it was opened as a VALUE
+        // object (`key: {`) rather than an array element. A route object is
+        // always an array element — `[` or `,` precedes its brace — so a
+        // `path:` inside any :-opened brace is data, not a route (the
+        // v1.316.0 review find: `data: { path: '/canonical' }` written
+        // multi-line listed a phantom child route).
+        java.util.ArrayDeque<Boolean> ngValueStack = new java.util.ArrayDeque<>();
+        char ngPrev = 0;
         int brace = 0;
         // carries across lines: are we inside a /* */ block comment or a
         // `backtick` template literal? Without this, a declaration that only
@@ -257,7 +265,8 @@ public final class OutlineModel {
             String code = stripNonCode(lines[i], state);
             int depthHere = brace;
             Matcher m;
-            if (ngRoutes && (m = NG_ROUTE_PATH.matcher(code)).find()) {
+            if (ngRoutes && (m = NG_ROUTE_PATH.matcher(code)).find()
+                    && !insideValueObject(code, m.start(), ngValueStack, ngPrev)) {
                 // A route written on one line carries its own opening brace,
                 // so depthHere is already the depth OUTSIDE the route object.
                 // A multi-line route opened its brace on an earlier line, so
@@ -312,12 +321,50 @@ public final class OutlineModel {
                     }
                 }
             }
+            if (ngRoutes) {
+                ngPrev = advanceValueStack(code, code.length(), ngValueStack, ngPrev);
+            }
             brace += netBraces(code);
             if (brace < 0) {
                 brace = 0;
             }
         }
         return out;
+    }
+
+    /**
+     * True when position {@code end} of this line sits inside a brace that
+     * was opened as a {@code key: {} } value object — walked on a COPY of
+     * the carried stack so the real one advances exactly once per line.
+     */
+    private static boolean insideValueObject(String code, int end,
+            java.util.ArrayDeque<Boolean> stack, char prev) {
+        java.util.ArrayDeque<Boolean> copy = new java.util.ArrayDeque<>(stack);
+        advanceValueStack(code, end, copy, prev);
+        return copy.contains(Boolean.TRUE);
+    }
+
+    /**
+     * Walks {@code code} up to {@code end}: each {@code '{'} pushes whether
+     * the previous significant character was {@code ':'} (a value object),
+     * each {@code '}'} pops. Returns the last significant character so the
+     * state carries across lines ({@code data:} and its brace can sit on
+     * different lines).
+     */
+    private static char advanceValueStack(String code, int end,
+            java.util.ArrayDeque<Boolean> stack, char prev) {
+        for (int j = 0; j < end; j++) {
+            char c = code.charAt(j);
+            if (c == '{') {
+                stack.push(prev == ':');
+            } else if (c == '}' && !stack.isEmpty()) {
+                stack.pop();
+            }
+            if (!Character.isWhitespace(c)) {
+                prev = c;
+            }
+        }
+        return prev;
     }
 
     /**

@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.316.0] - 2026-08-08
+
+The day-arc review — one phantom route, killed structurally.
+
+### Fixed
+- **A `path:` key inside a route's `data:` object no longer lists as a
+  phantom route.** Found by probe during the review of v1.309–v1.315:
+  `data:` objects commonly carry breadcrumbs, titles and canonical
+  URLs, and a `path:` key in one — written on its own line, the common
+  multi-line style — listed as a child route that does not exist
+  (`/canonical` nested under `/seo`), exactly the wrong-entry class the
+  v1.314.0 narrowing rule was written to avoid. The fix leans on a
+  structural truth instead of a keyword list: **a route object is
+  always an ARRAY element** (`[` or `,` precedes its brace), **never
+  the `key: {` value object of some other key** — so the scanner now
+  carries a per-brace stack of "was this brace opened by a colon" and
+  suppresses any path match sitting inside a :-opened brace. The state
+  unwinds when the brace closes, so the route AFTER a data object still
+  lists — the test pins both halves, and removing the guard fails it by
+  name.
+
+### Verified clean, and one blessing
+- The rest of the arc's fresh surface held under review: `NgSwitch`
+  styles/spec resolution and its actions (reads on the RP, the
+  action-count-tied gate), the PWA precache keyed off `ICON_FILES`,
+  `LearningSpace.resolveInside`'s canonical containment, and the
+  v1.311.0 escape-or-disable renderer rule. A probe also confirmed a
+  parent route whose `component:` line follows its `children:` array
+  degrades to an honest null target, never a wrong one.
+- Blessed in writing: `ConflictMarkerGateTest`'s exact-line `=======`
+  check would flag a Markdown setext underline of exactly seven equals
+  signs. No document in the repository uses setext headings (measured),
+  a collision would fail loudly with the file and line named, and the
+  fix on that day is one extra `=` in the underline — while loosening
+  the check would blind it to the real marker, which is always exactly
+  seven.
+
 ## [1.315.0] - 2026-08-08
 
 Docs truth — the day's Angular units and the marker that rode six
