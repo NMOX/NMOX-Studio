@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.315.0] - 2026-08-08
+
+Docs truth — the day's Angular units and the marker that rode six
+releases.
+
+### Changed
+- `docs/engineering/plan.md` gains the 2026-08-08 day addendum for
+  v1.313–v1.314: the four-file switcher and the css-prep mime
+  recurrence, the routes outline and its two-signals-that-co-occur
+  narrowing rule, the sixth mutation-divergence instance restated as
+  *fallbacks are the usual masker*, and the conflict-marker find with
+  the reason nothing caught it — **a substring survives a marker
+  sitting above it**, so content assertions cannot see structural
+  damage. Standing header moves to v1.314.0. Docs only.
+
 ## [1.314.0] - 2026-08-08
 
 The outline sees your Angular routes — and a gate for the marker that
