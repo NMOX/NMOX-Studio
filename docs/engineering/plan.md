@@ -1158,9 +1158,77 @@ code written after it, unless someone goes back for the rest.**
   markup*, and the correct renderers are recorded as verified-clean
   rather than "fixed".
 
+## Addendum — 2026-08-08 day, the Angular files a developer actually moves between (v1.313–v1.314)
+
+Two releases on the framework bet, and one process find that mattered
+more than either.
+
+- **v1.313.0** finished the component switcher. v1.219.0 had given
+  component ↔ template; the other two members of the four-file set —
+  the stylesheet and the spec — had no gesture at all. Resolution lives
+  in the pure `NgSwitch` (both decorator spellings, `styleUrl` and
+  `styleUrls`, first entry wins; the sibling convention in any
+  extension `ng new --style` offers; a spec has no spec of its own),
+  and every absence is a status line rather than a guess.
+
+  **The live walk paid for itself.** "Open Component Class" was
+  registered on `Editors/text/css/Popup` only, and css-prep resolves
+  `.scss`/`.less` to their OWN mimes before our resolvers see them
+  (the v1.230.0 finding, where the same gap had silently kept the
+  colour swatches, the picker and the Prettier menu off real SCSS
+  files). On a real `.scss` editor the menu item simply wasn't there.
+  All three mimes are now registered and gate-pinned. *The recurrence
+  says the css-prep mime rule deserves to be the first thing checked
+  whenever anything is registered on `text/css`.*
+
+  The mutation lesson repeated too, for the sixth time and with a
+  sharper formulation: the first styles proof SURVIVED because the test
+  used a `styleUrl` that ALSO matched the sibling convention, so
+  breaking the pattern let the FALLBACK return the same file.
+  **Fallbacks are the usual masker** — when a function has one, the
+  divergent input is the one where fallback and primary disagree.
+
+- **v1.314.0** did for `app.routes.ts` what v1.292.0 did for Express
+  server files. Probed first, as the method now requires: a real routes
+  file outlined as ZERO items. The extractor was right (one exported
+  array, no functions, no classes) and useless, because the structure
+  of that file IS its route table. Routes now list as `/`, `/heroes`,
+  `/admin`, `/**` with their targets — eager component, lazy symbol, or
+  redirect — children nested, click landing on the `path:` line.
+
+  The narrowing rule is worth keeping: fire only where the file BOTH
+  imports `@angular/router` AND annotates a `Routes` type. Either alone
+  is too weak (half the components in a workspace import `RouterLink`;
+  `path:` is an ordinary key) and the AND costs nothing, because
+  `: Routes` cannot be written without the import. **When a heuristic
+  needs narrowing, look for two signals that co-occur by construction
+  rather than one signal made stricter.**
+
+- **The find: conflict markers were sitting in two committed files.**
+  The v1.307.0 process slip left a `<<<<<<<` / `=======` / `>>>>>>>`
+  triple wrapping the top of `CHANGELOG.md` and inside
+  `PlainTables.java`'s javadoc, and both rode v1.308 through v1.313 —
+  six releases published a changelog whose first visible line was a
+  merge artifact.
+
+  Why nothing caught it is the lesson. Every docs gate in this project
+  asserts that a document CONTAINS a substring, and **a substring
+  survives a marker sitting above it**. Content assertions cannot see
+  structural damage. `ConflictMarkerGateTest` now reads the shape
+  instead, repo-wide, and it found the second instance the first time
+  it ran — which is the entire argument for shape checks alongside
+  content checks. (It builds its own forbidden patterns at runtime, so
+  the gate never has to exempt itself; an exemption is how the next
+  real marker would hide.)
+
+  The process half: the slip happened because wip commits landed on
+  `main` before the unit's branch existed. `git checkout -b` before the
+  first commit of a unit is not bookkeeping — it is what keeps a
+  half-resolved merge from reaching the default branch.
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.311.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.314.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)
