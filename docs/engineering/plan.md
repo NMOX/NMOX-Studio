@@ -1226,9 +1226,56 @@ more than either.
   first commit of a unit is not bookkeeping — it is what keeps a
   half-resolved merge from reaching the default branch.
 
+## Addendum — 2026-08-08/09, the walks move into the shipped app (v1.316–v1.318)
+
+Three releases that changed WHERE verification happens: the persona
+walks now run in the installed build, right after it ships, and each
+one paid immediately.
+
+- **v1.316.0** was the arc review over the day's own fresh code — and
+  the probe-first method turned on itself found a real one: a nested
+  `data: { path: '…' }` object whose key sat on its OWN line listed as
+  a phantom route (the single-line form was safe only because the
+  chain matches once per line). Fixed structurally with an
+  inside-a-value-object guard rather than a special case. *Probe the
+  code you wrote this morning with the inputs you didn't think of this
+  morning.*
+
+- **v1.317.0** walked the framework bet end to end in the INSTALLED
+  1.316.0 — template → silent install of the proven 21.2 pins → all
+  three switcher gestures → the routes outline with the v1.316.0 fix
+  observed live in the release that shipped it. The find hid on the
+  NEIGHBORING surface: the switcher opened the product's own template
+  stylesheet and the Navigator said "No structure to show" — `CSS_SEL`
+  demanded the brace END the line, so every single-line rule
+  (`main { text-align: center; }`) had been invisible since the
+  outline shipped in v1.4.3, ~300 releases. **Walking a feature in the
+  shipped app catches what the dev build already blessed, and the find
+  usually hides one surface over.**
+
+- **v1.318.0** completed the serving leg in the shipped build: Run →
+  `ng serve` in 0.8s → the ⇄ chip → the Browser auto-opening at
+  `http://[::1]:4200/` (the v1.259.0 loopback rewrite visibly at work
+  — ng binds `::1` only) → the app rendering through the h2c-flagged
+  FX 26 WebView → the DevTools Angular pane reading the live tree
+  (Angular 21.2.19, `<_App>`). Zero orphans after Stop.
+
+  The wall it hit first became the grant: **`ng serve` hard-refuses
+  node below 20.19/22.12 while `npm install` sails through** — npm
+  does not enforce engines — so the refusal lands at first Run, in raw
+  red CLI text, exactly where a newcomer stands. The CommandExecutor
+  pump now translates the refusal shape Angular's CLI and Vite share
+  (`requires … Node.js version`) once per run with the way out
+  (nvm/brew, and Environment Doctor to see which node the IDE found).
+  npm's `EBADENGINE` WARNING is deliberately not rescued: it stops
+  nothing. Two rules pinned in the tests: verbatim captured lines, not
+  paraphrases; and a pump-WIRING gate, because **a predicate with
+  green tests and no call site is a payload without a gate** (the
+  v1.216.0 class — deleting the pump block now fails a test by name).
+
 ## Where the project stands
 
-NMOX Studio is a shipping NetBeans RCP IDE (v1.314.0, Apache-2.0, bundled JDK 25 LTS +
+NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +
 OpenJFX 26 runtime since v1.253.0, 19 release assets per
 tag — six installers/SBOM plus the update-center catalog and the 11 module
 NBMs — Homebrew cask, a windows-latest CI lane that runs the full verify)

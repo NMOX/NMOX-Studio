@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.319.0] - 2026-08-09
+
+Docs truth — the walks move into the shipped app, and CLAUDE.md
+catches up fifteen releases.
+
+### Changed
+- `docs/engineering/plan.md` gains the 2026-08-08/09 addendum for
+  v1.316–v1.318: the arc review that probed its own morning's code
+  (the phantom-route find), the shipped-app walks and the rule they
+  earned — *walking a feature in the installed build catches what the
+  dev build already blessed, and the find usually hides one surface
+  over* (the 300-release CSS one-liner) — and the Node-floor wall with
+  its two pinned test rules (verbatim captured lines, and the
+  pump-wiring gate, because a predicate with green tests and no call
+  site is a payload without a gate). Standing header moves to
+  v1.318.0.
+- `CLAUDE.md` catches up: the Status line moves from v1.303.0 to
+  v1.318.0 with the run's lead paragraph (verification moved into the
+  INSTALLED build; the drop-in family and html-render arcs closed),
+  and the version history gains the fifteen missing entries
+  v1.304–v1.318. Docs only.
+
 ## [1.318.0] - 2026-08-09
 
 The serving leg of the Angular walk — and the wall it hit speaks human.
