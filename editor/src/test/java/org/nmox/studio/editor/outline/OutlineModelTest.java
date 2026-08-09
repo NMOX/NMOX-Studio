@@ -1129,6 +1129,37 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("a rule written on one line still outlines (v1.317.0 walk find)")
+    void cssSingleLineRules() {
+        // The Angular persona walk opened the product's OWN template
+        // stylesheet — two rules, both single-line — and the Navigator said
+        // "No structure to show". The selector pattern demanded the brace
+        // END the line, so every `sel { decls }` one-liner had been
+        // invisible since the extractor shipped. Both writing styles must
+        // outline identically, and the closing brace on the same line must
+        // keep the NEXT rule at depth 0 (the brace math is per-line either
+        // way, but pin it so the anchor can't come back "for depth
+        // reasons").
+        List<Item> items = outline("text/css", """
+                main { text-align: center; }
+                button { font-size: 1.25rem; cursor: pointer; }
+                .multi {
+                  color: red;
+                }
+                """);
+        assertThat(items).extracting(Item::name)
+                .containsExactly("main", "button", ".multi");
+        assertThat(items).allSatisfy(i -> {
+            assertThat(i.kind()).isEqualTo(OutlineKind.SELECTOR);
+            assertThat(i.depth()).isEqualTo(0);
+        });
+        // a declaration line inside a multi-line rule still has no brace,
+        // so it cannot start matching by accident — pin the boundary
+        assertThat(outline("text/css", ".a {\n  color: red;\n}\n"))
+                .extracting(Item::name).containsExactly(".a");
+    }
+
+    @Test
     @DisplayName("CSS comments spanning lines hide the selectors inside them")
     void cssMultiLineComment() {
         String src = """

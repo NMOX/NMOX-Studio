@@ -486,7 +486,16 @@ public final class OutlineModel {
 
     private static final Pattern CSS_AT = Pattern.compile(
             "^\\s*(@(?:media|supports|mixin|include|function|keyframes|font-face|page)\\b[^{]*)\\{");
-    private static final Pattern CSS_SEL = Pattern.compile("^\\s*([^{}@;]+?)\\s*\\{\\s*$");
+    /**
+     * A selector opening a rule. Deliberately NOT anchored to
+     * end-of-line after the brace: {@code main { text-align: center; }}
+     * written on one line is how formatters and the product's own
+     * Angular template emit small rules, and the old {@code \{\s*$}
+     * anchor made every such rule invisible to the outline since the
+     * extractor shipped (v1.317.0, found by the Angular persona walk —
+     * a two-rule stylesheet said "No structure to show").
+     */
+    private static final Pattern CSS_SEL = Pattern.compile("^\\s*([^{}@;]+?)\\s*\\{");
 
     private static List<Item> css(String[] lines) {
         List<Item> out = new ArrayList<>();

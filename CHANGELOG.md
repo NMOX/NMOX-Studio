@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.317.0] - 2026-08-09
+
+The Angular developer walk in the shipped app — and the stylesheet
+rule that was invisible for 300 releases.
+
+### Fixed
+- **A CSS rule written on one line outlines.** The Angular persona walk
+  through the installed 1.316.0 opened the product's OWN template
+  stylesheet — two rules, both single-line (`main { text-align:
+  center; }`) — and the Navigator said "No structure to show". The
+  selector pattern demanded the opening brace END the line
+  (`\{\s*$`), so every `sel { decls }` one-liner — the style formatters
+  and the template itself emit — had been invisible since the outline
+  shipped in v1.4.3. The anchor is gone; both writing styles outline
+  identically, at the same depth, and a mutant restoring the anchor
+  fails the new test by name.
+
+### Verified live, in the shipped 1.316.0
+- The whole Angular loop, end to end, for the first time in an
+  INSTALLED build: the wizard's Angular (standalone) template scaffolds
+  the four-file component set and silently npm-installs the proven
+  21.2 pins; all three switcher gestures work from the editor popup —
+  component → styles (through the singular `styleUrl` spelling the
+  template itself uses), styles → component, component → spec; and
+  `app.routes.ts` outlines as its route table — `/ App`,
+  `/heroes lazy App`, `/** → /` — with a
+  `data: { path: … }` object correctly NOT listing, the v1.316.0 fix
+  observed live in the release that shipped it.
+
 ## [1.316.0] - 2026-08-08
 
 The day-arc review — one phantom route, killed structurally.
