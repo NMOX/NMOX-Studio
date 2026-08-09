@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.318.0] - 2026-08-09
+
+The serving leg of the Angular walk — and the wall it hit speaks human.
+
+### Added
+- **A Node-too-old refusal is translated where every lane's output
+  flows.** The walk's first Run died in raw red CLI text: `The Angular
+  CLI requires a minimum Node.js version of v20.19 or v22.12.` —
+  `[exit 3]`. The trap is that `npm install` sails through (npm does
+  not enforce engines), so the wall appears only at first Run, exactly
+  where a newcomer stands. The CommandExecutor pump now recognizes the
+  refusal shape both Angular's CLI and Vite print (`requires …
+  Node.js version`) and follows it, once per run, with the way out:
+  `↳ Your Node.js is older than this tool's minimum (the line above
+  names it). Install a newer Node — nvm install --lts, or brew install
+  node — then Run again. (Tools ▸ Environment Doctor shows which node
+  the IDE found.)` The v1.264.0 EADDRINUSE idiom, applied to the
+  second wall of the same class. npm's `EBADENGINE` WARNING is
+  deliberately not rescued — installs proceed past it, and a warning
+  that stopped nothing needs no rescue. Mutation-proven ×2 — including
+  a wiring gate, because a predicate with green tests and no call site
+  is a payload without a gate (the v1.216.0 class); deleting the pump
+  block now fails a test by name.
+
+### Verified live, in the shipped 1.317.0
+- The serving leg, end to end, for the first time in an installed
+  build: Run on the wizard's Angular project → `ng serve` builds in
+  0.8s → the `⇄ serving: http://localhost:4200/` chip appears → the
+  in-app Browser AUTO-OPENS (v1.212.0's OpenOnServe) at
+  `http://[::1]:4200/` — the v1.259.0 loopback rewrite visibly doing
+  its job, since `ng serve` binds `::1` only — and the Angular app
+  renders through the h2c-flagged FX 26 WebView (v1.226.0). The
+  DevTools Angular pane reads the live tree: `Angular 21.2.19 —
+  1 component, <_App>`. Stop left the port refused and zero orphans.
+
 ## [1.317.0] - 2026-08-09
 
 The Angular developer walk in the shipped app — and the stylesheet

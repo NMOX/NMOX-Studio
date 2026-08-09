@@ -207,6 +207,7 @@ public final class CommandExecutor {
     private static void pumpStream(java.io.InputStream stream, OutputWriter writer,
             boolean isErr, String tabName, File dir, Consumer<String> onLine) {
         boolean portExplained = false;
+        boolean nodeFloorExplained = false;
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
@@ -233,6 +234,21 @@ public final class CommandExecutor {
                 if (!portExplained && looksLikePortInUse(clean)) {
                     portExplained = true;
                     String human = friendlyPortInUse(clean);
+                    if (writer != null) {
+                        writer.println(human);
+                    }
+                    RackBus.publish(tabName, human, isErr);
+                }
+                // The second wall of the same class (v1.318.0, found by the
+                // Angular walk in the shipped app): a toolchain that
+                // hard-refuses the user's Node. npm install sails through —
+                // npm doesn't enforce engines — so the refusal appears only
+                // at first Run, as raw red CLI text. Angular's CLI and Vite
+                // both print a "requires ... Node.js version" line; translate
+                // it once with the concrete way out.
+                if (!nodeFloorExplained && looksLikeNodeTooOld(clean)) {
+                    nodeFloorExplained = true;
+                    String human = friendlyNodeTooOld();
                     if (writer != null) {
                         writer.println(human);
                     }
@@ -266,6 +282,35 @@ public final class CommandExecutor {
                 + " earlier run that is still going. Stop that program and Run"
                 + " again, or change the port. (Task Rack \u25b8 SONAR shows"
                 + " who owns every port.)";
+    }
+
+    /**
+     * True when a tool line reports that the running Node.js is below the
+     * tool's minimum. Pinned to the two spellings measured live (both name
+     * the same 20.19/22.12 floor): the Angular CLI's
+     * {@code "The Angular CLI requires a minimum Node.js version of ..."}
+     * and Vite's {@code "Vite requires Node.js version 20.19+ ..."}. The
+     * shared shape is {@code requires ... Node.js version}; npm's
+     * {@code EBADENGINE} WARNING is deliberately out — installs proceed
+     * past it, and a warning that didn't stop anything needs no rescue.
+     */
+    static boolean looksLikeNodeTooOld(String line) {
+        return line.contains("Node.js version")
+                && line.contains("requires");
+    }
+
+    /**
+     * The plain-language way out. The refusing tool's own line (printed
+     * just above this one) already names the exact minimum, so this
+     * message carries the ACTIONS: how to get a newer Node, and where to
+     * see which Node the IDE found.
+     */
+    static String friendlyNodeTooOld() {
+        return "↳ Your Node.js is older than this tool's minimum (the"
+                + " line above names it). Install a newer Node —"
+                + " nvm install --lts, or brew install node — then Run"
+                + " again. (Tools ▸ Environment Doctor shows which node"
+                + " the IDE found.)";
     }
 
     /**

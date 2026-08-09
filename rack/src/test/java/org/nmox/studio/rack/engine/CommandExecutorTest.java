@@ -112,4 +112,51 @@ class CommandExecutorTest {
                 CommandExecutor.friendlyPortInUse("EADDRINUSE"))
                 .startsWith("\u21b3 This port");
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a Node-too-old refusal is recognized and translated (v1.318.0)")
+    void nodeFloorSpeaksHuman() {
+        // The two spellings measured live on node 22.9.0 \u2014 the Angular
+        // walk in the shipped 1.317.0 hit the first one at first Run,
+        // raw and red, after npm install had sailed through (npm does
+        // not enforce engines). Verbatim lines, not paraphrases.
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeNodeTooOld(
+                "The Angular CLI requires a minimum Node.js version of v20.19 or v22.12."))
+                .isTrue();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeNodeTooOld(
+                "Vite requires Node.js version 20.19+ or 22.12+. "
+                + "Please upgrade your Node.js version."))
+                .isTrue();
+        // the CLI's preceding "detected" line must NOT trip it \u2014 only the
+        // refusal names a requirement
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeNodeTooOld(
+                "Node.js version v22.9.0 detected."))
+                .isFalse();
+        // npm's EBADENGINE is a WARNING the install proceeds past \u2014
+        // deliberately not rescued
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeNodeTooOld(
+                "npm warn EBADENGINE Unsupported engine"))
+                .isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeNodeTooOld(
+                "compiled successfully"))
+                .isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.friendlyNodeTooOld())
+                .startsWith("\u21b3 ")
+                .contains("nvm install --lts")
+                .contains("Environment Doctor");
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("both humanizers are wired into the pump, not just defined")
+    void humanizersAreWiredIntoThePump() throws Exception {
+        // A predicate with green tests and no call site is a payload
+        // without a gate (the v1.216.0 class): deleting the pump block
+        // would leave every test above passing while the product says
+        // nothing. Pin the WIRING for both translations.
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/rack/engine/CommandExecutor.java"));
+        org.assertj.core.api.Assertions.assertThat(src)
+                .contains("looksLikePortInUse(clean)")
+                .contains("looksLikeNodeTooOld(clean)");
+    }
 }
