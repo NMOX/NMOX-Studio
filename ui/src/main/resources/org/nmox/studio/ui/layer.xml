@@ -92,7 +92,18 @@
                  Editors/Keybindings tree, which Keymaps can't reach.
                  The unbind ships in the editor module beside the other
                  Editors registrations. -->
-            <!-- Menu accelerators come from Keymaps-profile shadows, not
+            <!-- Cmd+I reach into the Task Board (v1.323.0): card titles of the
+         aimed project; Enter opens the Tasks window. Bundle lives in a
+         search subpackage so it cannot clobber the @Messages-generated
+         bundle of the tasks package itself (the v1.79.0 lesson). -->
+    <folder name="QuickSearch">
+        <folder name="Tasks">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.tasks.search.Bundle"/>
+            <attr name="position" intvalue="360"/>
+            <file name="org-nmox-studio-ui-tasks-TasksSearchProvider.instance"/>
+        </folder>
+    </folder>
+    <!-- Menu accelerators come from Keymaps-profile shadows, not
                  from Shortcuts/ registrations (the v1.38.1 finding, debt
                  #28): without these the Window menu shows "Task Rack" /
                  "Docker Panel" (and File shows "Open Folder…") with no
@@ -115,6 +126,9 @@
             </file>
             <file name="DA-4.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
+            </file>
+            <file name="DA-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-tasks-TasksTopComponent.instance"/>
             </file>
             <file name="DA-3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>

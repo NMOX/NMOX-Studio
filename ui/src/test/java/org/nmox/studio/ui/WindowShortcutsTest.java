@@ -65,6 +65,8 @@ class WindowShortcutsTest {
                 new String[] {"DA-4", "Browser  ⌥⌘4"});
         WINDOWS.put("src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java",
                 new String[] {"DA-3", "IRC  ⌥⌘3"});
+        WINDOWS.put("src/main/java/org/nmox/studio/ui/tasks/TasksTopComponent.java",
+                new String[] {"DA-1", "Tasks  ⌥⌘1"});
     }
 
     /**
@@ -94,6 +96,8 @@ class WindowShortcutsTest {
         KEYMAP_LAYERS.put("../rack/src/main/java/org/nmox/studio/rack/blockstudio/BlockStudioTopComponent.java",
                 "src/main/resources/org/nmox/studio/ui/layer.xml");
         KEYMAP_LAYERS.put("src/main/java/org/nmox/studio/ui/browser/WebBrowserTopComponent.java",
+                "src/main/resources/org/nmox/studio/ui/layer.xml");
+        KEYMAP_LAYERS.put("src/main/java/org/nmox/studio/ui/tasks/TasksTopComponent.java",
                 "src/main/resources/org/nmox/studio/ui/layer.xml");
         KEYMAP_LAYERS.put("src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java",
                 "src/main/resources/org/nmox/studio/ui/layer.xml");

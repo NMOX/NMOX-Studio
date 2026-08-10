@@ -13,8 +13,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Ledger 23 gate: org.json's VERSION STRING is centralized in one root
- * {@code <orgjson.version>} property so Dependabot bumps all eight module
- * copies in a single PR. The eight copies themselves STAY — module
+ * {@code <orgjson.version>} property so Dependabot bumps all nine module
+ * copies in a single PR. The nine copies themselves STAY — module
  * classloaders make a shared org.json wrapper ClassCastException territory
  * (ledger items 3 and 23); only the version literal is DRY.
  *
@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OrgJsonVersionGateTest {
 
-    /** The eight modules that wrap their own org.json copy. */
+    /** The nine modules that wrap their own org.json copy. */
     private static final List<String> MODULES = List.of(
             "core", "rack", "tools", "editor",
-            "apiclient", "dbstudio", "web3", "infra");
+            "apiclient", "dbstudio", "web3", "infra", "ui");
 
     /** Captures the &lt;version&gt; declared inside the org.json dependency. */
     private static final Pattern ORGJSON_VERSION = Pattern.compile(
