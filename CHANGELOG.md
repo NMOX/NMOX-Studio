@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.327.0] - 2026-08-10
+
+Docs truth for the Task Board arc.
+
+### Docs
+- The user guide learns the Task Board: a §6 studios section (⌥⌘1,
+  keyboard moves, advisory WIP limits, the reload-over-clobber rule for
+  outside edits, plain-rendered titles), Task Board cards join §9's list
+  of what ⌘I reaches, and `.nmoxtasks.json` joins the appendix table of
+  files-and-whether-to-commit-them — the guide's studios chapter had
+  skipped the newest studio entirely.
+- CLAUDE.md's headline moves v1.318.0 → v1.326.0 and carries the
+  2026-08-09/10 run: the learner walk's probed ports, the two-proof seam
+  law, the debt sprint, the Task Board's build→walk→review→walk arc, the
+  drag-enabled-popup finding, and the staged-content pipeline scar with
+  its committed-content gate rule.
+
 ## [1.326.0] - 2026-08-10
 
 The Task Board walked again in the shipped app — the review's three

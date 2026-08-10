@@ -427,6 +427,26 @@ shows up in the Projects and Files windows too), so every project-sensitive
 verb has real context without selecting anything first. In-editor change
 stripes appear in the gutter as you edit a tracked file.
 
+### Task Board (⌥⌘1)
+
+A per-project kanban. Columns of cards, dragged **or keyed** between
+them — with a card selected, **⌘←/⌘→** moves it a column over and
+**⌘↑/⌘↓** reorders it, and the moved card keeps focus so the gesture
+repeats without the mouse. **Enter** edits a card, **Delete** removes it
+(after asking, with No as the default), **N** starts a new one in that
+column. Each column's header menu renames it, sets an **advisory WIP
+limit** (the header turns red past the limit — it never blocks a move),
+shuffles it left/right, or deletes it with its cards after a confirm.
+Card titles match in ⌘I, with the column riding along.
+
+The board persists to `.nmoxtasks.json` beside the project — commit it
+and the team shares one board; ignore it and it stays personal. Edits
+made outside the IDE (a pull, a teammate's push, a text editor) win over
+a stale gesture: the board reloads instead of overwriting them, and the
+status line says so. Because a checked-in board arrives with clones,
+card text always renders as plain characters — an `<html>`-shaped title
+is just its letters, never markup.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the
@@ -749,7 +769,7 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
 and known), every rack device (jump straight to a device's controls),
 **live servers** (anything currently serving — hit Enter to open it in
 the browser), API Studio requests, DB connections and tables, contracts,
-and infra nodes.
+infra nodes, and Task Board cards (the hit names the card's column).
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to
@@ -821,6 +841,7 @@ project root, designed to be shared with your team:
 | `.nmoxdb.json` | DB connection specs, saved queries, history | **Yes** — passwords are *never* in it (OS keychain only) |
 | `.nmoxweb3.json` | Contract Studio networks + deployment address book | **Yes** — secret RPC URLs are *never* in it (keychain only) |
 | `.nmoxinfra.json` | The infra canvas: nodes, wiring, properties | **Yes** — API tokens are *never* in it (keychain only) |
+| `.nmoxtasks.json` | The Task Board: columns, cards, WIP limits | **Yes** — the team shares one board; leave it ignored to keep it personal |
 | `.gas-snapshot` | Foundry per-test gas baselines (GOVERNOR gates on it) | **Yes** — that's how gas regressions get caught in review |
 | `.env` | Your environment variables | **No** — that's the whole point of `.env` |
 | `*.bak` | A workspace file that failed to parse, kept for you | No — recover what you need, then delete |
