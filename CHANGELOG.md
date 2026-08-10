@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.321.0] - 2026-08-10
+
+The night-arc review (v1.317–v1.320) — the probe was proven, the
+wiring wasn't.
+
+### Fixed
+- **The probed-port fix is now gated at its call sites.** The review's
+  find, and it is yesterday's own lesson in mirror image: v1.318.0
+  pinned that *a predicate with green tests and no call site is a
+  payload without a gate*; v1.320.0 shipped the reverse — call sites
+  with green SEAM tests and no gate. `FreePortsTest` proves the probe
+  diverges when the port is busy and `BannerPortTest` proves the
+  announce parse, but nothing referenced `firstFreeFrom` at any of the
+  three spawn sites, so a mutant reverting a lane to its pinned
+  constant passed the whole suite whenever 8000 happened to be free —
+  which is most machines, most of the time. New wiring gates in rack
+  (`ProbedPortWiringGateTest`: both RunDevice lanes probe AND both
+  announces read the banner) and tools (the IDE Run lane's probe + the
+  provider's banner-read). Both proven by mutation: reverting either
+  lane to its constant fails a gate by name.
+
+### Verified clean, by probe
+- `ServeUrls.bannerPort` on every measured banner shape: python
+  dual-stack (`port 8001` prose wins), php (URL pattern wins), python
+  on 0.0.0.0, a timestamp before the banner (the `port ` prefix
+  anchors past it), and a banner naming no number (honest fallback).
+  Both call sites gate on the banner substring before the parse runs.
+- `FreePorts`: the wildcard-address probe is deliberately conservative
+  for the php lane (a port busy only on ::1 skips forward — harmless,
+  since the banner announces the truth); two lanes probing
+  concurrently can still collide, which degrades to exactly the
+  pre-v1.320 behavior plus the port-in-use humanizer — blessed.
+- The v1.317 CSS anchor removal against at-rules: a one-line
+  `@media (…) { .card { … } }` lists the RULE and honestly skips the
+  nested selector (one pattern per line), and the net-zero brace math
+  keeps the following rule at depth 0 — blessed with the note.
+- The v1.318 humanizer: both verbatim refusal shapes fire on single
+  lines; ordering beside the port humanizer is consistent.
+
 ## [1.320.0] - 2026-08-09
 
 The learner walk — the front-door space survives a busy port.

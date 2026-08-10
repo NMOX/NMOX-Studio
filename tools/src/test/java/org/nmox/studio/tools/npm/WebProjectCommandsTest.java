@@ -513,4 +513,25 @@ class WebProjectCommandsTest {
             }
         }
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("the static lane's probe and the announce's banner-read stay wired (v1.321.0)")
+    void probedPortStaysWired() throws Exception {
+        // The night-arc review's find: the seam tests (FreePortsTest,
+        // BannerPortTest) are green even when the SPAWN site reverts to the
+        // pinned constant — on any machine where 8000 is free, probe and
+        // constant agree, so only a wiring gate diverges. Pin both halves.
+        String commands = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/tools/npm/WebProjectCommands.java"));
+        org.assertj.core.api.Assertions.assertThat(commands)
+                .as("the IDE Run button's static lane probes for a free port"
+                        + " — python's http.server has no upward scan")
+                .contains("firstFreeFrom");
+        String provider = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/tools/npm/WebProjectActionProvider.java"));
+        org.assertj.core.api.Assertions.assertThat(provider)
+                .as("the announce reads the port the banner NAMES, so a"
+                        + " shifted port registers truthfully")
+                .contains("bannerPort");
+    }
 }
