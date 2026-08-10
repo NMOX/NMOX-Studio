@@ -79,4 +79,49 @@ class TasksLawsGateTest {
         assertThat(ctor).doesNotContain("buildUi").doesNotContain("reload");
         assertThat(src).contains("protected void componentShowing()");
     }
+
+    @Test
+    @DisplayName("EVERY board mutation rides mutate() — the save path is the only path")
+    void everyMutationRidesTheSavePath() throws Exception {
+        // v1.324.0 review: Delete Column called board.removeColumn() DIRECTLY,
+        // so the column vanished from the model while the screen kept showing
+        // it and the file kept it — and because no rebuild ran, the header
+        // popups still carried their OLD indices, so a second click on the
+        // same "dead" menu deleted a DIFFERENT column. mutate() is what
+        // repaints, saves, and checks for a foreign edit; a mutation outside
+        // it is invisible until some unrelated later gesture persists it.
+        // The house form is one line: mutate(() -> board.x(...)).
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "board\\.(addCard|editCard|removeCard|moveCard|addColumn"
+                + "|renameColumn|setWipLimit|removeColumn|moveColumn)\\(")
+                .matcher(tc());
+        int checked = 0;
+        while (m.find()) {
+            String line = lineAt(tc(), m.start());
+            assertThat(line)
+                    .as("this board mutation is outside the save path — put it"
+                            + " on a mutate(() -> ...) line: %s", line.strip())
+                    .contains("mutate(");
+            checked++;
+        }
+        assertThat(checked).as("the mutators are still named as written")
+                .isGreaterThanOrEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("a moved card keeps focus so the keyboard gesture can repeat")
+    void keyboardMoveKeepsSelection() throws Exception {
+        // rebuild() discards every JList, so without this the first ⌘↓ moved
+        // the card and dropped the selection — the gesture worked exactly
+        // once and then needed the mouse again.
+        assertThat(tc())
+                .contains("focusCardId")
+                .contains("requestFocusInWindow");
+    }
+
+    private static String lineAt(String src, int offset) {
+        int from = src.lastIndexOf('\n', offset) + 1;
+        int to = src.indexOf('\n', offset);
+        return src.substring(from, to < 0 ? src.length() : to);
+    }
 }

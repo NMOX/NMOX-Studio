@@ -128,4 +128,45 @@ class TaskBoardTest {
                 "{\"columns\":[{\"name\":\"A\",\"cards\":[{\"title\":\"t\"}]}]}");
         assertThat(b.column(0).cards().get(0).id()).isNotBlank();
     }
+
+    @Test
+    @DisplayName("duplicate ids in the file become distinct cards (git-merge safety)")
+    void duplicateIdsAreSeparated() {
+        // The board file is checked in, so a merge resolved by KEEPING BOTH
+        // sides — or a hand copy-paste of a card block, which the parser
+        // deliberately tolerates — produces two cards carrying one id.
+        // Ids are internal identity, not user data (see fromJson), so the
+        // second occurrence must get a fresh one; otherwise deleting one
+        // card deletes BOTH (removeCard removes every match in a column)
+        // and editing one appears to do nothing to its twin.
+        String json = """
+            {"version":1,"columns":[{"name":"To Do","cards":[
+              {"id":"same","title":"ours","created":1},
+              {"id":"same","title":"theirs","created":2}]}]}
+            """;
+        TaskBoard b = TaskBoard.fromJson(json);
+        assertThat(b.column(0).cards()).extracting(TaskBoard.Card::title)
+                .as("both cards survive the merge")
+                .containsExactly("ours", "theirs");
+        String a = b.column(0).cards().get(0).id();
+        String c = b.column(0).cards().get(1).id();
+        assertThat(a).as("the ids are now distinct").isNotEqualTo(c);
+        assertThat(b.removeCard(a)).isTrue();
+        assertThat(b.column(0).cards()).extracting(TaskBoard.Card::title)
+                .as("deleting one card takes exactly one card")
+                .containsExactly("theirs");
+    }
+
+    @Test
+    @DisplayName("an empty id string is treated as absent, not as a shared id")
+    void blankIdsAreSeparated() {
+        String json = """
+            {"version":1,"columns":[{"name":"To Do","cards":[
+              {"id":"","title":"one"},{"id":"","title":"two"}]}]}
+            """;
+        TaskBoard b = TaskBoard.fromJson(json);
+        assertThat(b.column(0).cards().get(0).id())
+                .isNotBlank()
+                .isNotEqualTo(b.column(0).cards().get(1).id());
+    }
 }

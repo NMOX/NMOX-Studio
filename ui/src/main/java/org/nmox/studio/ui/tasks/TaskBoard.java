@@ -294,12 +294,16 @@ public final class TaskBoard {
      * Parses a board. Throws on malformed JSON (the IO layer .baks and
      * falls back to {@link #starter()}); tolerates missing OPTIONAL
      * keys, because a hand-edited file that dropped "notes" should not
-     * cost the user their board. A card without an id gets a fresh one
-     * — ids are internal identity, not user data.
+     * cost the user their board. A card without an id — or one REPEATING
+     * an id already seen — gets a fresh one: ids are internal identity,
+     * not user data, and this file is checked in, so a merge resolved by
+     * keeping both sides hands us two cards wearing one id. Left alone,
+     * deleting either would delete both.
      */
     public static TaskBoard fromJson(String json) {
         JSONObject root = new JSONObject(json);
         TaskBoard b = new TaskBoard();
+        java.util.Set<String> seenIds = new java.util.HashSet<>();
         JSONArray cols = root.getJSONArray("columns");
         for (int i = 0; i < cols.length(); i++) {
             JSONObject jc = cols.getJSONObject(i);
@@ -309,8 +313,13 @@ public final class TaskBoard {
             if (cards != null) {
                 for (int k = 0; k < cards.length(); k++) {
                     JSONObject j = cards.getJSONObject(k);
+                    String id = j.optString("id", "").strip();
+                    if (id.isEmpty() || !seenIds.add(id)) {
+                        id = UUID.randomUUID().toString();
+                        seenIds.add(id);
+                    }
                     col.cards.add(new Card(
-                            j.optString("id", UUID.randomUUID().toString()),
+                            id,
                             j.getString("title"),
                             j.optString("notes", ""),
                             j.optLong("created", 0L)));
