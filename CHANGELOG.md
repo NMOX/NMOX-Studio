@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.329.0] - 2026-08-10
+
+Emmet in the editor — the first of six releases aimed at making NMOX
+Studio the go-to for web developers, designers, and engineers.
+
+### Added
+- **Expand Abbreviation (⌥⌘E)** in HTML and Angular templates: type
+  `ul>li.item$*3` and the chord replaces it with the real, indented
+  markup — caret parked at the first useful empty spot. The v1 grammar,
+  written down so nothing is half-true: elements (custom elements with
+  dashes included), implicit `div` for `.class`/`#id` starts, classes,
+  ids, attributes `[href=/ target=_blank]`, text `{hi}`, child `>`,
+  sibling `+`, multiplication `*3` with `$` numbering (`$$` zero-pads),
+  grouping `(...)`, void elements without closing tags, and Emmet's
+  conventional default attributes for `a`/`img`/`input`/`link`/
+  `iframe`/`label`. Deliberately out, recorded in the core's javadoc:
+  climb-up `^`, CSS abbreviations, context-implied tag names, lorem.
+- **The chord refuses honestly.** A bare word only expands when it IS
+  an HTML element (or a dashed custom element) — pressing ⌥⌘E
+  mid-sentence never turns prose into tags — and anything that does not
+  parse leaves the document untouched with a status-line hint. A chord,
+  NOT Tab, on purpose: Tab already means indentation and code
+  templates, and a third meaning on one key is the v1.38.1 silent
+  keystroke fight.
+
+### Proven
+- 8 grammar tests pin every rule including the refusals; a wiring gate
+  pins the two-mime registration and the exact action-name↔chord pair
+  (the v1.321.0 two-proof law); 3 mutants die by name (numbering
+  frozen, the bare-word guard dropped, the html mime unwired).
+- Live in the dev build: `ul>li.item$*3` + ⌥⌘E on a real HTML pane
+  expanded to the indented three-item list with the caret inside the
+  first `<li>`, and the chord on a non-abbreviation changed nothing.
+
 ## [1.328.0] - 2026-08-10
 
 The Standards Kit artifact walk — the PWA Kit lesson (v1.309.0: for a
