@@ -295,7 +295,14 @@ class ClassicWebDevicesTest {
             // itself (no READY, no URL, no serving chip). See
             // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                    .satisfies(cmd -> {
+                        // probed port since v1.320.0: shape + range, not a literal
+                        java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                        org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                                .containsExactly("python3", "-u", "-m", "http.server");
+                        org.assertj.core.api.Assertions.assertThat(
+                                Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                    });
             assertThat(run.commandDir()).isEqualTo(dir.toFile());
         } finally {
             rack.shutdown();
@@ -315,7 +322,14 @@ class ClassicWebDevicesTest {
             // itself (no READY, no URL, no serving chip). See
             // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                    .satisfies(cmd -> {
+                        // probed port since v1.320.0: shape + range, not a literal
+                        java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                        org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                                .containsExactly("python3", "-u", "-m", "http.server");
+                        org.assertj.core.api.Assertions.assertThat(
+                                Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                    });
         } finally {
             rack.shutdown();
         }
@@ -335,7 +349,14 @@ class ClassicWebDevicesTest {
             // itself (no READY, no URL, no serving chip). See
             // ServingDevicesTest#ignitionStaticLaneIsUnbuffered.
             assertThat(run.buildCommand())
-                    .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                    .satisfies(cmd -> {
+                        // probed port since v1.320.0: shape + range, not a literal
+                        java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                        org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                                .containsExactly("python3", "-u", "-m", "http.server");
+                        org.assertj.core.api.Assertions.assertThat(
+                                Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                    });
         } finally {
             rack.shutdown();
         }

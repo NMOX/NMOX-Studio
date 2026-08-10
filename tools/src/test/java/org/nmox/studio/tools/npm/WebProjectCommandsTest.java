@@ -318,7 +318,14 @@ class WebProjectCommandsTest {
         // HTTP on" banner without it (v1.37.0, relearned v1.216.0), and
         // the banner is what triggers the serving announce.
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_RUN))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_BUILD)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_TEST)).isNull();
         assertThat(WebProjectCommands.commandFor(d, ProjectKind.STATIC, ActionProvider.COMMAND_CLEAN)).isNull();

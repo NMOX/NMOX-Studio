@@ -85,6 +85,16 @@
         <Bug pattern="REDOS"/>
     </Match>
 
+    <!-- FreePorts (v1.320.0) binds a ServerSocket and closes it immediately —
+         a pure availability probe for the serving lanes that pick their port.
+         No connection is ever accepted and no byte ever flows, so there is
+         nothing to encrypt. Scoped to the one probe class; any new
+         unencrypted server socket elsewhere still fails the gate. -->
+    <Match>
+        <Class name="org.nmox.studio.core.util.FreePorts"/>
+        <Bug pattern="UNENCRYPTED_SERVER_SOCKET"/>
+    </Match>
+
     <!-- The debug adapter (DAP) connects to a debug server on 127.0.0.1 — local
          IPC, like LSP over stdio; an unencrypted localhost socket is expected.
          The server-socket flag is also a false positive: `new ServerSocket(0)`

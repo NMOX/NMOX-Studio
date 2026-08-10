@@ -25,11 +25,17 @@ public class RunDevice extends CommandDevice {
     // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
     private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "clarity", "tact"};
 
-    /** The static lane's fixed port: python3 -m http.server on 8000. */
+    /** The static lane's preferred port; probed upward when busy (v1.320.0). */
     private static final String STATIC_PORT = "8000";
 
-    /** The php lane's fixed address: php -S serves here (docroot-aware). */
-    private static final String PHP_ADDRESS = "127.0.0.1:8000";
+    /** The php lane's preferred port; probed upward when busy (v1.320.0). */
+    private static final int PHP_PORT = 8000;
+
+    /** php -S's bind address for this launch — port probed, not pinned. */
+    private static String phpAddress() {
+        return "127.0.0.1:" + org.nmox.studio.core.util.FreePorts
+                .firstFreeFrom(PHP_PORT);
+    }
 
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
@@ -84,20 +90,26 @@ public class RunDevice extends CommandDevice {
      * The serving lanes' announcements: python's http.server prints
      * "Serving HTTP on ..." the moment it listens, webpack-dev-server
      * prints its local URL, php -S prints its "Development Server"
-     * banner (the URL is the lane's pinned address — the shared
-     * {@link ServeUrls} scan would drag the banner's closing paren,
+     * banner (its port is read via {@link ServeUrls#bannerPort} — the
+     * shared full-URL scan would drag the banner's closing paren,
      * the ARTISAN problem) — READY fires once and the URL jack carries
      * the address, SURGE-style. Other lanes announce nothing.
      */
     @Override
     protected void onLine(String line) {
+        // Both fixed-port lanes became probed-port lanes (v1.320.0), so the
+        // announce reads the port from the server's OWN banner instead of a
+        // constant — announcing 8000 while the server bound 8001 would put
+        // the serving chip on a port nothing listens on (the v1.93.0 class).
         if (line.contains("Serving HTTP") && readyFired.compareAndSet(false, true)) {
-            announceServing("http://localhost:" + STATIC_PORT);
+            announceServing("http://localhost:" + ServeUrls.bannerPort(
+                    line, Integer.parseInt(STATIC_PORT)));
             return;
         }
         if (phpLane && line.contains("Development Server")
                 && readyFired.compareAndSet(false, true)) {
-            announceServing("http://" + PHP_ADDRESS);
+            announceServing("http://127.0.0.1:" + ServeUrls.bannerPort(
+                    line, PHP_PORT));
             return;
         }
         if (webpackLane && !readyFired.get()) {
@@ -297,8 +309,8 @@ public class RunDevice extends CommandDevice {
             // composer-era layout serves the public/ docroot; a bare tree
             // serves from the project root
             case "php" -> new File(commandDir(), "public").isDirectory()
-                    ? List.of("php", "-S", PHP_ADDRESS, "-t", "public")
-                    : List.of("php", "-S", PHP_ADDRESS);
+                    ? List.of("php", "-S", phpAddress(), "-t", "public")
+                    : List.of("php", "-S", phpAddress());
             case "make" -> List.of("make", "run");
             // the 2005 stack: serve the folder itself; python3 is a
             // Doctor-probed staple, and READY/URL fire on its banner
@@ -308,7 +320,13 @@ public class RunDevice extends CommandDevice {
             // sees it, and the lane serves without ever announcing itself —
             // no READY, no URL jack, no serving chip. (The access log is
             // stderr, so output looked fine while the announcement was lost.)
-            case "static" -> List.of("python3", "-u", "-m", "http.server", STATIC_PORT);
+            // port probed, not pinned (v1.320.0): python has no upward scan,
+            // so a busy 8000 killed space #89's first Run — the front-door
+            // space whose promise is "nothing to configure". READY/URL ride
+            // the banner, so a shifted port announces itself correctly.
+            case "static" -> List.of("python3", "-u", "-m", "http.server",
+                    String.valueOf(org.nmox.studio.core.util.FreePorts
+                            .firstFreeFrom(Integer.parseInt(STATIC_PORT))));
             case "webpack" -> List.of("npx", "webpack", "serve", "--mode", "development");
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")
