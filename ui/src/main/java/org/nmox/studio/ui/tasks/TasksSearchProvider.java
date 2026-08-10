@@ -30,13 +30,30 @@ public class TasksSearchProvider implements SearchProvider {
         if (dir == null || !TasksIO.fileFor(dir).isFile()) {
             return;
         }
-        String needle = q.strip().toLowerCase(Locale.ROOT);
-        TaskBoard board = TasksIO.load(dir);
+        evaluate(q, TasksIO.load(dir),
+                (action, label) -> response.addResult(action, label));
+    }
+
+    /**
+     * The match behavior, seamed off the platform types (v1.324.0): the
+     * quicksearch SPI's {@code SearchRequest}/{@code SearchResponse} are
+     * constructible only inside the platform module, so a plain
+     * {@link BiPredicate} sink (returning false = stop, the SPI contract)
+     * lets a unit test prove the reach the shipped-app walk could not —
+     * a card title matches case-insensitively by containment and the hit
+     * carries its column, exactly as the four sibling studio providers do.
+     */
+    void evaluate(String query, TaskBoard board,
+            java.util.function.BiPredicate<Runnable, String> addResult) {
+        String needle = query == null ? "" : query.strip().toLowerCase(Locale.ROOT);
+        if (needle.length() < 2 || board == null) {
+            return;
+        }
         for (TaskBoard.Column col : board.columns()) {
             for (TaskBoard.Card c : col.cards()) {
                 if (c.title().toLowerCase(Locale.ROOT).contains(needle)) {
                     String label = c.title() + " — " + col.name() + " (Tasks)";
-                    if (!response.addResult(TasksSearchProvider::openTasks, label)) {
+                    if (!addResult.test(TasksSearchProvider::openTasks, label)) {
                         return;
                     }
                 }
