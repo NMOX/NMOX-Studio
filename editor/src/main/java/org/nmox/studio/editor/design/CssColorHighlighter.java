@@ -67,7 +67,13 @@ public final class CssColorHighlighter implements DocumentListener {
             }
         });
         OffsetsBag fresh = new OffsetsBag(doc);
-        for (CssColors.ColorSpan span : CssColors.scan(text[0])) {
+        java.util.List<CssColors.ColorSpan> spans =
+                new java.util.ArrayList<>(CssColors.scan(text[0]));
+        // v1.330.0: var(--token) usages paint as the color their token
+        // declares — the indirection resolved document-locally, so the
+        // recompute lane still never touches disk
+        spans.addAll(CssTokens.varUsageColorSpans(text[0]));
+        for (CssColors.ColorSpan span : spans) {
             AttributeSet attrs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, opaque(span.color()),
                     StyleConstants.Foreground, CssColors.readableTextOn(opaque(span.color())));
