@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.330.0] - 2026-08-10
+
+Design tokens become first-class — the designer release of the six.
+
+### Added
+- **Token completion inside `var(`** in every stylesheet dialect (css/
+  scss/less, both mime spellings): the project's custom properties
+  appear with name, value, and a color swatch icon when the value is a
+  color — the popup doubles as a legend of the design system. Document
+  tokens list first (the cascade the designer sees); the rest of the
+  project follows through a BOUNDED, mtime-cached scan (60 files ×
+  256KB, node_modules and friends skipped) that runs on the async
+  completion thread, never the EDT. Accepting inserts the name and
+  closes the `var(` call.
+- **⌘-click a `var(--token)` usage → its declaration**, same file or
+  across the project; a token declared nowhere says so on the status
+  line. The project fallback resolves on a named RP with only the jump
+  hopping to the EDT (the v1.220.0 law).
+- **Swatches resolve THROUGH the token**: `color: var(--ink)` paints as
+  the color `--ink` declares. Document-local by design, recorded in the
+  javadoc — the highlighter runs on every edit and must never touch
+  disk; cross-file resolution belongs to the surfaces that run off the
+  EDT. `CssColors` has said "var() indirections are not resolved" in
+  its javadoc since v1.227.0; `CssTokens` is the indirection it
+  pointed at.
+
+### Proven
+- 7 core tests + a wiring gate that earned its keep on its FIRST run:
+  the highlighter's token pass could be deleted with every test still
+  green until the gate pinned it (the v1.321.0 two-proof law, caught
+  in-unit this time). A second mutation survivor exposed genuine DEAD
+  CODE — an inside-var() guard the declaration regex's required colon
+  already made unreachable — which was DELETED, not tested around, with
+  the proof recorded at the site.
+- The ReDoS finding on the var( context matcher fixed by idiom (a hand
+  scan), never exclusion — the v1.32.0 law.
+- Live in the dev build, all three surfaces: `var(--local-ink)` painted
+  as its declared ink; ⌃Space inside `var(` offered `--brand-accent`/
+  `--brand-primary` FROM ANOTHER FILE behind orange and purple swatch
+  icons with `--spacing-lg` honestly swatch-less; Enter inserted and
+  closed the call; ⌘-click on the token opened tokens.css at the
+  declaration, caret 3:1.
+
 ## [1.329.0] - 2026-08-10
 
 Emmet in the editor — the first of six releases aimed at making NMOX
