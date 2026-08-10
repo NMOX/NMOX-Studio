@@ -110,6 +110,9 @@ public final class StandardsKitAction implements ActionListener {
                 for (StandardsKit.Outcome o : outcomes) {
                     report.append(o.written() ? "  ✓ " : "  – ").append(o.path())
                             .append(o.written() ? "" : "  (already exists, untouched)").append('\n');
+                    if (!o.note().isEmpty()) {
+                        report.append("      ").append(o.note()).append('\n');
+                    }
                 }
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message("Standards Kit:\n\n" + report,

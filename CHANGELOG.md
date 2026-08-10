@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.328.0] - 2026-08-10
+
+The Standards Kit artifact walk — the PWA Kit lesson (v1.309.0: for a
+pure-builder surface, generate the real artifact and VALIDATE it)
+applied to its sibling, same vintage, never walked (~300 releases).
+
+### Fixed
+- **The manifest referenced icons nothing writes.** The Standards Kit
+  forges no icons — that is the PWA Kit's job — yet its
+  `site.webmanifest` hardcoded `/icon-192.png` and `/icon-512.png`
+  regardless, so a Standards-Kit-only run produced a manifest whose
+  icon references 404, failing installability: the very thing the
+  wizard's checkbox advertises. Icon entries now reference ONLY files
+  present in the project, drawn from the PWA Kit's own `ICON_FILES`
+  constant (same package — parity by construction, the v1.309.0
+  precache idiom), with sizes and the `maskable` purpose derived per
+  file. With no icons on disk the manifest is still written and still
+  VALID — icons gate installability, not validity — and the wizard's
+  report says so honestly, including the never-clobber consequence:
+  *forge icons with the PWA Kit, and delete this manifest first if you
+  want the PWA Kit's fuller one, because kits never overwrite.*
+  Mutation-proven ×3 (the shipped hardcoding restored, the note
+  swallowed, the maskable purpose dropped — each dies by name).
+
+### Validated against the specs, artifact by artifact
+- All five files generated through the real `write()` path and held to
+  their standards: `sitemap.xml` well-formed under xmllint with the
+  sitemaps.org namespace; `security.txt` carrying RFC 9116's REQUIRED
+  Contact and Expires with the horizon inside a year; `robots.txt`
+  RFC 9309-shaped with the absolute Sitemap pointer; the manifest a
+  strict-JSON parse with no reference to any file that does not exist.
+
+### Blessed in writing
+- `StandardsKit.writeOne` stays its own skip-if-exists implementation
+  rather than adopting `KitFiles.writeNeverClobber`: the two contracts
+  genuinely differ — KitFiles writes `.suggested` siblings on content
+  mismatch, while this wizard's dialog promises "existing files are
+  never overwritten", full stop. Same family, different law; a dedupe
+  would change shipped behavior for tidiness.
+
 ## [1.327.0] - 2026-08-10
 
 Docs truth for the Task Board arc.

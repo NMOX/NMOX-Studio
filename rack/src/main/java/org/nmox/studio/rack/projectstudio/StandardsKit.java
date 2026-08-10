@@ -32,7 +32,10 @@ public final class StandardsKit {
     }
 
     /** One generated (or skipped) file, for the wizard's report. */
-    public record Outcome(String path, boolean written) {
+    public record Outcome(String path, boolean written, String note) {
+        public Outcome(String path, boolean written) {
+            this(path, written, "");
+        }
     }
 
     public static String robots(String siteUrl) {
@@ -57,8 +60,19 @@ public final class StandardsKit {
                 """.formatted(trimSlash(siteUrl), lastmod.format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
-    /** W3C Web App Manifest with the members installability requires. */
-    public static String manifest(String siteName) {
+    /**
+     * W3C Web App Manifest. Icon entries reference ONLY files that exist
+     * (v1.328.0): this kit forges no icons — the PWA Kit does — and the
+     * manifest used to hardcode {@code /icon-192.png} + {@code
+     * /icon-512.png} regardless, so a Standards-Kit-only run produced a
+     * manifest whose icons 404, failing installability, the very thing
+     * the wizard's checkbox advertises. The candidate set IS the PWA
+     * Kit's {@link PwaKit#ICON_FILES} (same package, parity by
+     * construction), filtered to what is on disk; with none present the
+     * manifest is still VALID — icons gate installability, not validity
+     * — and the wizard's report says where to forge them.
+     */
+    public static String manifest(String siteName, List<String> presentIcons) {
         JSONObject m = new JSONObject();
         m.put("name", siteName);
         m.put("short_name", KitFiles.shortName(siteName));
@@ -66,13 +80,31 @@ public final class StandardsKit {
         m.put("display", "standalone");
         m.put("background_color", "#1a1a1e");
         m.put("theme_color", "#1a1a1e");
-        JSONArray icons = new JSONArray();
-        icons.put(new JSONObject().put("src", "/icon-192.png").put("sizes", "192x192")
-                .put("type", "image/png"));
-        icons.put(new JSONObject().put("src", "/icon-512.png").put("sizes", "512x512")
-                .put("type", "image/png"));
-        m.put("icons", icons);
+        if (!presentIcons.isEmpty()) {
+            JSONArray icons = new JSONArray();
+            for (String file : presentIcons) {
+                String size = file.contains("512") ? "512x512" : "192x192";
+                JSONObject icon = new JSONObject().put("src", "/" + file)
+                        .put("sizes", size).put("type", "image/png");
+                if (file.contains("maskable")) {
+                    icon.put("purpose", "maskable");
+                }
+                icons.put(icon);
+            }
+            m.put("icons", icons);
+        }
         return m.toString(2) + "\n";
+    }
+
+    /** The PWA Kit icon files actually present in the project root. */
+    static List<String> presentIcons(File projectDir) {
+        List<String> present = new ArrayList<>();
+        for (String file : PwaKit.ICON_FILES) {
+            if (new File(projectDir, file).isFile()) {
+                present.add(file);
+            }
+        }
+        return present;
     }
 
     /**
@@ -123,7 +155,17 @@ public final class StandardsKit {
             outcomes.add(writeOne(projectDir, "sitemap.xml", sitemap(opts.siteUrl(), today)));
         }
         if (opts.manifest()) {
-            outcomes.add(writeOne(projectDir, "site.webmanifest", manifest(opts.siteName())));
+            List<String> icons = presentIcons(projectDir);
+            Outcome o = writeOne(projectDir, "site.webmanifest",
+                    manifest(opts.siteName(), icons));
+            if (o.written() && icons.isEmpty()) {
+                o = new Outcome(o.path(), true,
+                        "no icons yet, so none are listed — File ▸ PWA Kit"
+                        + " (Web)… forges them (delete this manifest first if"
+                        + " you want the PWA Kit's fuller one: kits never"
+                        + " overwrite)");
+            }
+            outcomes.add(o);
         }
         if (opts.securityTxt()) {
             outcomes.add(writeOne(projectDir, ".well-known/security.txt",
