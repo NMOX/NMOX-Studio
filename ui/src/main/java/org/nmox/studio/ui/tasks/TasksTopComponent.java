@@ -122,6 +122,14 @@ public final class TasksTopComponent extends TopComponent {
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
     private ProjectAim.Listener aimListener;
+    /**
+     * The card to re-select after the next rebuild. Every mutation
+     * rebuilds the whole strip, which discards the JLists and with them
+     * the selection — so without this a ⌘↓ moved the card once and then
+     * needed the mouse again. Set it before the mutation; {@link
+     * #rebuild()} consumes it.
+     */
+    private String focusCardId;
 
     public TasksTopComponent() {
         setName(Bundle.CTL_TasksTopComponent());
@@ -236,6 +244,7 @@ public final class TasksTopComponent extends TopComponent {
                 : boundDir.getName() + " — " + board.cardCount() + " cards");
         columnsPanel.revalidate();
         columnsPanel.repaint();
+        focusCardId = null; // consumed by the panels just built
     }
 
     private JPanel columnPanel(int index, TaskBoard.Column col) {
@@ -265,6 +274,18 @@ public final class TasksTopComponent extends TopComponent {
         list.setCellRenderer(new CardRenderer());
         list.getAccessibleContext().setAccessibleName(col.name() + " cards");
         wireList(list, index);
+        // a just-moved card keeps selection and focus, so ⌘↓ ⌘↓ ⌘→ reads
+        // as one continuous gesture instead of one move per mouse click
+        if (focusCardId != null) {
+            for (int r = 0; r < model.size(); r++) {
+                if (model.get(r).id().equals(focusCardId)) {
+                    list.setSelectedIndex(r);
+                    list.ensureIndexIsVisible(r);
+                    java.awt.EventQueue.invokeLater(list::requestFocusInWindow);
+                    break;
+                }
+            }
+        }
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         return panel;
     }
@@ -368,6 +389,7 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         int toColumn = fromColumn + dCol;
+        focusCardId = sel.id();
         if (dCol != 0) {
             if (toColumn < 0 || toColumn >= board.columnCount()) {
                 return;
@@ -442,6 +464,7 @@ public final class TasksTopComponent extends TopComponent {
                     }
                 }
                 int finalAt = at;
+                focusCardId = id; // the dropped card stays selected where it landed
                 mutate(() -> board.moveCard(id, columnIndex, finalAt));
                 return true;
             } catch (Exception ex) {
@@ -565,11 +588,20 @@ public final class TasksTopComponent extends TopComponent {
                     "Delete Column", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null,
                     NotifyDescriptor.NO_OPTION);
-            if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION
-                    && !board.removeColumn(index)) {
+            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                return;
+            }
+            // the refusal is checked BEFORE the mutation so the message is
+            // the only outcome; the delete itself must ride mutate() like
+            // every other mutation, or it repaints nothing and saves
+            // nothing (v1.325.0 — it did neither, and the stale header
+            // menus then aimed a second click at a different column)
+            if (board.columnCount() <= 1) {
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
                         "A board keeps at least one column");
+                return;
             }
+            mutate(() -> board.removeColumn(index));
         });
         menu.add(rename);
         menu.add(wip);
