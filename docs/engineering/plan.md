@@ -1273,6 +1273,57 @@ one paid immediately.
   green tests and no call site is a payload without a gate** (the
   v1.216.0 class — deleting the pump block now fails a test by name).
 
+## Addendum — 2026-08-10, the Task Board and what walking it twice found (v1.320–v1.326)
+
+Six releases. A new surface, its review, and its walk — in that order,
+which is the order that keeps paying.
+
+**The releases.** v1.320 the learner walk of space #89 (probed ports +
+banner-truth announce); v1.321 the arc review that found the mirror of
+its own law (*every seam fix needs two proofs — the seam diverges, and
+the call site exists*); v1.322 a debt sprint (ledger 66 closed, floors
+ratcheted); v1.323 the **Task Board** — a per-project kanban on ⌥⌘1
+persisted as `.nmoxtasks.json`, the sixth studio file; v1.324 its walk in
+the shipped app; v1.325 its arc review; v1.326 the walk of THAT.
+
+**The review's find is the v1.212.0 class, and enumeration is what found
+it.** Listing all twelve `board.<mutator>(` call sites showed eleven
+inside `mutate()` — the one path that repaints, saves, and checks for a
+foreign edit — and one bare. That one was Delete Column, so the column
+left the model while the screen kept showing it and the file kept it;
+and because no rebuild ran, the header menus still held pre-delete
+indices, so a second click removed a *different* column. Fixed
+structurally: a gate now fails the build on any board mutation not on a
+`mutate(` line. **Enumerate the call sites of the thing that must always
+happen; the exception is the bug.**
+
+**The walk's find sat underneath all three fixes.** `Popups.selectOnTrigger`
+is inert on a drag-enabled JList, so the card menu's Edit…/Delete… were
+dead on any card the user had not already left-clicked. What made this
+provable was choosing an assertion the helper alone can satisfy: a
+right-click in EMPTY SPACE must CLEAR the selection. It didn't — so the
+listener never ran, and no reading of Swing internals was needed. The
+fix hooks `getPopupLocation`, which Swing calls inside the popup path
+itself. **When a helper might not be running, test the side effect only
+that helper produces.**
+
+**Two process lessons, both about believing evidence.**
+- *A known-good control term first.* v1.324's ⌘I came back empty for a
+  task card — and empty for `Docker` too, through the same field. Two
+  empties with one control means the harness, not the product; the reach
+  moved to a query-level unit test instead of a fabricated fix.
+- *A working-tree grep cannot prove a file shipped.* v1.325's changelog
+  entry never landed: `reset --soft` + `commit` commits only STAGED
+  content, and the entry was written after that release's wip commit.
+  The docs-landed gate greps the working tree, which held the unstaged
+  edit, so it passed. Gate on committed content (`git show HEAD:<file>`).
+
+**Also recorded, not fixed:** repeated synthesized right-clicks at one
+coordinate do not re-open a popup in this automation (a different column
+header opens on the first try every time), so a menu that "won't open"
+on the second attempt is the harness. This cost real time before a
+control experiment settled it.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +

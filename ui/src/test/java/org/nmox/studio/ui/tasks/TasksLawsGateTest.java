@@ -35,7 +35,14 @@ class TasksLawsGateTest {
     @Test
     @DisplayName("the card popup targets the clicked card (v1.270.0)")
     void clickedCardWins() throws Exception {
-        assertThat(tc()).contains("Popups.selectOnTrigger(list)");
+        // v1.326.0: the listener form is INERT on a drag-enabled list
+        // (measured in shipped 1.325.0 — an empty-space right-click did
+        // not clear the selection, so Edit…/Delete… were dead on a card
+        // the user had not left-clicked). The popup-path hook replaces it.
+        assertThat(tc()).contains("Popups.popupTargetList(model)");
+        assertThat(tc())
+                .as("the inert form must not creep back onto this list")
+                .doesNotContain("Popups.selectOnTrigger(list)");
     }
 
     @Test

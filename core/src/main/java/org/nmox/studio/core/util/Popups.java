@@ -110,18 +110,59 @@ public final class Popups {
                 if (!e.isPopupTrigger()) {
                     return;
                 }
-                // locationToIndex returns the CLOSEST index even for a
-                // point past the last entry — only a point inside the
-                // cell's real bounds counts as a hit
-                Point p = e.getPoint();
-                int index = list.locationToIndex(p);
-                Rectangle cell = index >= 0 ? list.getCellBounds(index, index) : null;
-                if (cell != null && cell.contains(p)) {
-                    list.setSelectedIndex(index);
-                } else {
-                    list.clearSelection();
-                }
+                selectAt(list, e.getPoint());
             }
         });
+    }
+
+    /**
+     * Selects whatever entry covers {@code p}; a point in empty space
+     * clears the selection. Shared by both install forms so the
+     * hit-testing rule lives once.
+     *
+     * <p>{@code locationToIndex} returns the CLOSEST index even for a
+     * point past the last entry, so only a point inside the cell's real
+     * bounds counts as a hit — otherwise a right-click in the blank
+     * area below the list would act on the last row.
+     */
+    public static void selectAt(JList<?> list, Point p) {
+        int index = list.locationToIndex(p);
+        Rectangle cell = index >= 0 ? list.getCellBounds(index, index) : null;
+        if (cell != null && cell.contains(p)) {
+            list.setSelectedIndex(index);
+        } else {
+            list.clearSelection();
+        }
+    }
+
+    /**
+     * A list whose context menu acts on the item under the pointer even
+     * when the list has drag enabled.
+     *
+     * <p>Use this instead of {@link #selectOnTrigger(JList)} whenever
+     * the list calls {@code setDragEnabled(true)}. Measured in the
+     * shipped 1.325.0 Task Board (v1.326.0): on a drag-enabled list the
+     * trigger mouse listener never runs — proven not by reading Swing
+     * but by behaviour, because a right-click in empty space failed to
+     * CLEAR the selection, which that listener is the only thing that
+     * does. The consequence was a dead menu: right-clicking a card the
+     * user had not already left-clicked left the selection empty, so
+     * Edit… and Delete… silently did nothing.
+     *
+     * <p>{@code getPopupLocation} is the hook Swing itself calls on the
+     * way to showing a component popup, handing over the very event
+     * that triggered it — so it cannot be bypassed by listener ordering
+     * or event consumption, whatever the drag machinery does first.
+     */
+    public static <T> JList<T> popupTargetList(javax.swing.ListModel<T> model) {
+        return new JList<T>(model) {
+            @Override
+            public Point getPopupLocation(MouseEvent event) {
+                if (event != null) {
+                    selectAt(this, event.getPoint());
+                }
+                return super.getPopupLocation(event);
+            }
+        };
     }
 }

@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PopupTargetGateTest {
 
     @Test
-    @DisplayName("every setComponentPopupMenu site installs Popups.selectOnTrigger")
+    @DisplayName("every setComponentPopupMenu site targets the clicked item")
     void everyPopupSiteTargetsTheClickedItem() throws IOException {
         Path root = Path.of("..").toRealPath();
         List<String> offenders = new ArrayList<>();
@@ -64,16 +64,26 @@ class PopupTargetGateTest {
                     continue;
                 }
                 sites += src.split("setComponentPopupMenu\\(", -1).length - 1;
+                // TWO lawful forms since v1.326.0: the trigger listener,
+                // and popupTargetList for DRAG-ENABLED lists where that
+                // listener is inert (measured in the shipped 1.325.0 Task
+                // Board — an empty-space right-click failed to clear the
+                // selection, so Edit…/Delete… were dead on any card the
+                // user had not already left-clicked). The law is the same:
+                // the menu acts on the item under the pointer.
                 if (!src.contains("Popups.selectOnTrigger(")
+                        && !src.contains("Popups.popupTargetList(")
                         && !src.contains("POPUP-PER-ROW:")) {
                     offenders.add(root.relativize(p).toString());
                 }
             }
         }
         assertThat(offenders)
-                .as("a component popup menu without Popups.selectOnTrigger acts "
-                        + "on the STALE selection, not the clicked item — install "
-                        + "the targeting listener beside setComponentPopupMenu")
+                .as("a component popup menu that neither installs "
+                        + "Popups.selectOnTrigger nor builds its list with "
+                        + "Popups.popupTargetList acts on the STALE selection, "
+                        + "not the clicked item — use whichever form fits "
+                        + "(popupTargetList when the list is drag-enabled)")
                 .isEmpty();
         assertThat(sites)
                 .as("the gate has subjects (the four v1.270.0 sites exist)")
