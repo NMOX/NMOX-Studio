@@ -1152,18 +1152,12 @@ public final class IrcTopComponent extends TopComponent {
                     appendStatus(key(network, ""),
                             "(query overflow) <" + MircFormat.stripToText(sender) + "> " + body,
                             stamp);
-                    logger.chat(network, targetName, sender, body);
-                    break;
+                    break; // (logged by IrcLogTap)
                 }
                 ensureTargetNode(network, targetName);
                 boolean highlight = !fromSelf && Highlights.matches(me,
                         IrcConfig.getDefault().highlightKeywords(), body);
                 appendChat(k, sender, body, action, stamp, highlight);
-                if (action) {
-                    logger.action(network, targetName, sender, body);
-                } else {
-                    logger.chat(network, targetName, sender, body);
-                }
                 if (highlight) {
                     notifyMention(network, targetName, sender, body);
                 }
@@ -1191,7 +1185,6 @@ public final class IrcTopComponent extends TopComponent {
                     }
                     appendStatus(k, "→ " + who + " joined", stamp);
                 }
-                logger.event(network, chan, who + " joined");
             }
             case "PART" -> {
                 String chan = msg.param(0);
@@ -1201,7 +1194,6 @@ public final class IrcTopComponent extends TopComponent {
                 appendStatus(k, who.equalsIgnoreCase(me)
                         ? "You left " + chan
                         : "← " + who + " left", stamp);
-                logger.event(network, chan, who + " left");
             }
             case "KICK" -> {
                 String chan = msg.param(0);
@@ -1210,7 +1202,6 @@ public final class IrcTopComponent extends TopComponent {
                 removeNick(k, victim);
                 appendStatus(k, victim + " was kicked by "
                         + (msg.nick() == null ? "?" : msg.nick()), stamp);
-                logger.event(network, chan, victim + " was kicked");
             }
             case "QUIT" -> {
                 String who = msg.nick() == null ? "?" : msg.nick();
@@ -1219,7 +1210,6 @@ public final class IrcTopComponent extends TopComponent {
                     if (e.getKey().startsWith(network + '\u0000')
                             && e.getValue().remove(lowerWho) != null) {
                         appendStatus(e.getKey(), "← " + who + " quit", stamp);
-                        logger.event(network, targetOfKey(e.getKey()), who + " quit");
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
                         }
@@ -1481,6 +1471,12 @@ public final class IrcTopComponent extends TopComponent {
             client = new IrcClient(new IrcClient.Profile(saved.name(), saved.host(),
                     saved.port(), saved.tls(), saved.nick(), null, null,
                     saved.saslAccount()));
+            // logging is a CLIENT-lifetime concern (v1.322.0, ledger 66):
+            // the tap listener lives as long as the connection does, so an
+            // enabled log keeps recording while the window is closed — the
+            // Bridge below renders only, it no longer logs inbound traffic
+            client.addListener(new org.nmox.studio.ui.irc.engine.IrcLogTap(
+                    saved.name(), logger));
             SESSIONS.put(network, client);
         }
         client.setIgnoredNicks(config.ignoredNicks(network));

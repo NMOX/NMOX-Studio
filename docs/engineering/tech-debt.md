@@ -68,7 +68,7 @@ modules, not runtimes).
 
 ## Closed by v1.273.0 (the ledger-75 layout pass)
 
-### 75. The narrow-width clip class — both instances
+### 75. ~~The narrow-width clip class — both instances~~ — CLOSED v1.273.0
 The deferral's trigger was "a layout pass"; the second instance
 (v1.271.0's Infra walk) supplied it. DB Studio's console toolbar now
 installs `core.util.WrapLayout` — a FlowLayout whose
@@ -160,7 +160,20 @@ cheaply detectable before spawn, for eslint or any other server.
 Deferred: a spawn-probe per file-open would cost every healthy install
 to guard a broken one; the platform's retry policy is the platform's.
 
-### 66. IRC messages during a closed tab are neither rendered nor logged
+### 66. ~~IRC messages during a closed tab are neither rendered nor logged~~ — CLOSED v1.322.0 (the logging half)
+Logging moved from the window's Bridge to the engine: `IrcLogTap` is a
+second `IrcClient.Listener` attached at CLIENT creation, so it lives as
+long as the connection does — an enabled log keeps recording while the
+tab is closed. It keeps its own minimal channel-membership map
+(353-seeded, JOIN/PART/KICK/NICK-maintained) because QUIT names no
+channels; the Bridge renders only and no longer logs inbound traffic
+(one writer per line), and the send path's existing
+`!capEnabled("echo-message")` guard composes so echo-capable servers
+log the echoed copy via the tap instead. The RENDERING half (transcript
+backfill into a reopened window) stays out by design — the transcripts
+are window furniture; the durable record is the log. Mutation-proven ×2
+(353 seeding deleted → the seeded-quit test errors; a Bridge event log
+restored → the wiring gate fails by name).
 By design the connections outlive the window (v1.204.0), but ALL
 transcript and log writes ride the window's Bridge — so with logging
 enabled and the tab closed, traffic in that window-closed period is

@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.322.0] - 2026-08-10
+
+The debt sprint — IRC logging survives a closed tab, two floors
+ratchet, the ledger tells the truth.
+
+### Fixed
+- **Ledger 66 closed (the logging half): an enabled IRC log keeps
+  recording while the tab is closed.** Connections deliberately
+  outlive the window (v1.204.0), but every `IrcLogger` call lived in
+  the window's Bridge listener — so traffic in a window-closed period
+  was silently lost from the log files the user turned on. Logging is
+  now a CLIENT-lifetime concern: `IrcLogTap`, a second
+  `IrcClient.Listener` attached when the client is created, translates
+  PRIVMSG/ACTION/JOIN/PART/KICK/QUIT into log lines with its own
+  minimal channel-membership map (353-seeded, NICK-followed — QUIT
+  names no channels, so the fan-out needs state, and the map is the
+  tap's own precisely because the window may not exist). The Bridge
+  renders only and no longer logs inbound traffic (one writer per
+  line); the send path keeps its logging because a send requires a
+  window by construction, and its existing `!capEnabled("echo-message")`
+  guard composes — echo-capable servers log the echoed copy via the
+  tap instead, no double lines in either mode. Seven behavior tests
+  drive the tap windowless with parsed protocol lines; the two-proof
+  seam law applied (the 353-seeding mutant errors the seeded-quit
+  test, a Bridge event-log restore fails the wiring gate by name).
+
+### Changed
+- **Two JaCoCo floors ratchet** on fresh measurements: ui .55 → .56
+  (the tap tests land here) and apiclient .92 → .93. The other eight
+  floors hold — measured margins under a point are not honest ratchet
+  room, and rack stays at .75 because its WINDOWS lane is the binding
+  measurement (the v1.299.0 law). No floor lowered, no exclusion
+  changed.
+- **The debt ledger tells the truth**: item 75's entry has described
+  its own completed fix since v1.273.0 — the header now says CLOSED;
+  item 66 records this sprint's close, with the rendering half
+  (transcript backfill into a reopened window) written down as
+  deliberately out — the transcripts are window furniture, the durable
+  record is the log.
+
 ## [1.321.0] - 2026-08-10
 
 The night-arc review (v1.317–v1.320) — the probe was proven, the
