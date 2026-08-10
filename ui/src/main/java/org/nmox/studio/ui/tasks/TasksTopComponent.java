@@ -269,7 +269,10 @@ public final class TasksTopComponent extends TopComponent {
 
         DefaultListModel<TaskBoard.Card> model = new DefaultListModel<>();
         col.cards().forEach(model::addElement);
-        JList<TaskBoard.Card> list = new JList<>(model);
+        // drag is enabled below, and on a drag-enabled list the plain
+        // selectOnTrigger listener never runs (v1.326.0, measured in the
+        // shipped app) — this form hooks the popup path itself
+        JList<TaskBoard.Card> list = Popups.popupTargetList(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new CardRenderer());
         list.getAccessibleContext().setAccessibleName(col.name() + " cards");
@@ -373,7 +376,8 @@ public final class TasksTopComponent extends TopComponent {
         });
         menu.add(edit);
         menu.add(delete);
-        Popups.selectOnTrigger(list);
+        // no selectOnTrigger here: the list is drag-enabled, so the
+        // clicked card is claimed by popupTargetList's getPopupLocation
         list.setComponentPopupMenu(menu);
 
         // drag & drop between and within columns

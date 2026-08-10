@@ -137,4 +137,49 @@ class PopupsTest {
                 .as("past the last entry is empty space, not entry 2")
                 .isEqualTo(-1);
     }
+
+    @Test
+    @DisplayName("a drag-enabled list claims the clicked card through the popup hook")
+    void popupTargetListSelectsUnderPointer() {
+        javax.swing.DefaultListModel<String> model =
+                new javax.swing.DefaultListModel<>();
+        model.addElement("first");
+        model.addElement("second");
+        javax.swing.JList<String> list = Popups.popupTargetList(model);
+        // NOTE: setDragEnabled(true) — the production condition that
+        // makes the listener form inert — throws HeadlessException in a
+        // test JVM, so it is left off here. The hook under test does not
+        // depend on it: getPopupLocation is called by Swing on the popup
+        // path either way, which is exactly why it is the robust form.
+        list.setFixedCellHeight(20);
+        list.setFixedCellWidth(200);
+        list.setSize(200, 40);
+
+        // Swing calls getPopupLocation on its way to showing the menu,
+        // handing over the triggering event — nothing the drag machinery
+        // does can bypass it (v1.326.0, measured in the shipped app).
+        list.getPopupLocation(popupAt(list, 5, 30));
+        assertThat(list.getSelectedValue())
+                .as("the SECOND row was under the pointer")
+                .isEqualTo("second");
+
+        list.getPopupLocation(popupAt(list, 5, 10));
+        assertThat(list.getSelectedValue()).isEqualTo("first");
+
+        // and empty space below the last row clears, so a menu that
+        // reads the selection honestly no-ops instead of acting on a
+        // row the user is not pointing at
+        list.getPopupLocation(popupAt(list, 5, 300));
+        assertThat(list.getSelectedValue())
+                .as("empty space clears rather than snapping to the last row")
+                .isNull();
+    }
+
+    private static java.awt.event.MouseEvent popupAt(
+            javax.swing.JComponent c, int x, int y) {
+        return new java.awt.event.MouseEvent(c,
+                java.awt.event.MouseEvent.MOUSE_PRESSED, 0,
+                java.awt.event.InputEvent.BUTTON3_DOWN_MASK,
+                x, y, 1, true);
+    }
 }

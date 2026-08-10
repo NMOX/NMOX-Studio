@@ -4,6 +4,94 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.326.0] - 2026-08-10
+
+The Task Board walked again in the shipped app — the review's three
+fixes confirmed live, and one more found underneath them.
+
+### Verified live in shipped 1.325.0
+- **Delete Column** now removes the column the moment you confirm, takes
+  its card with it, and the file on disk agrees. **A keyboard move**
+  repeats: ⌘→ ⌘→ carried a card across two columns without touching the
+  mouse, and ⌘← brought one back. **Duplicate ids** from a simulated
+  merge loaded as distinct cards, and deleting one took exactly one —
+  its twin survived, wearing a freshly minted id in the saved file.
+
+### Fixed
+- **A card's context menu was dead unless you left-clicked the card
+  first.** `Popups.selectOnTrigger` — the v1.270.0 helper whose whole
+  job is making a menu act on the item under the pointer — never runs on
+  these lists, because they enable drag. Proven by behaviour rather than
+  by reading Swing: a right-click in empty space failed to CLEAR the
+  selection, and clearing is the one thing only that listener does. The
+  consequence was silent: right-click a card you had not already
+  selected, choose Delete…, and nothing happened at all. The lists now
+  use `Popups.popupTargetList`, which hooks `getPopupLocation` — the
+  method Swing itself calls on the way to showing a component popup,
+  handing over the triggering event, so no listener ordering or event
+  consumption can bypass it. The hit-testing rule is shared with the
+  listener form, and a gate keeps the inert form off these lists. The
+  repo-wide v1.270.0 popup gate — which caught this change on its first
+  run, exactly as designed — now knows both lawful forms, since the law
+  is the outcome (the menu acts on the item under the pointer), not the
+  mechanism.
+- **The 1.325.0 changelog entry, which never shipped.** `git reset
+  --soft` followed by `git commit` commits only what is STAGED, and that
+  release's changelog was written after its wip commit, so it stayed an
+  unstaged working-tree edit while the code and tests went out without
+  it. The ship gate could not see the difference because it greps the
+  working tree — where the edit was sitting. The entry is restored above;
+  the gate now reads committed content instead.
+
+### Docs
+- plan.md carries v1.320–v1.325.
+
+## [1.325.0] - 2026-08-10
+
+The arc review over the Task Board (v1.322–v1.324). Three fixes in
+day-old code, each mutation-proven.
+
+### Fixed
+- **Delete Column deleted nothing you could see, and then deleted the
+  wrong one.** Eleven of the board's twelve mutation sites ran inside
+  `mutate()` — the one path that repaints, saves, and checks for a
+  foreign edit. Delete Column called `board.removeColumn(index)`
+  DIRECTLY: the column left the model while the screen kept showing it
+  and the file kept it, so the gesture read as broken. Clicking again
+  was worse than useless — because no rebuild ran, the header menus
+  still carried their pre-delete indices, so the second click removed a
+  DIFFERENT column, and both losses landed on disk later, riding some
+  unrelated gesture's save. This is the v1.212.0 class (a gesture wired
+  to a call that never reaches the path that matters), and the fix is
+  structural: `TasksLawsGateTest` now reads every
+  `board.<mutator>(` occurrence in the window and fails the build when
+  one is not on a `mutate(` line.
+- **A card moved by keyboard lost its selection.** Every mutation
+  rebuilds the column strip, which discards the JLists holding the
+  selection — so ⌘↓ moved a card once and then wanted the mouse back.
+  The moved (or dropped) card now keeps selection and focus, making
+  ⌘↓ ⌘↓ ⌘→ one continuous gesture.
+- **Two cards could share an id, and deleting either deleted both.**
+  `.nmoxtasks.json` is checked in, so a merge resolved by keeping both
+  sides — or the hand copy-paste the parser deliberately tolerates —
+  yields duplicate ids; `removeCard` removes every match in a column.
+  Ids are internal identity, not user data (the parser already said so
+  for absent ids), so a repeated id now gets a fresh one at parse, which
+  kills the class rather than the instance. Blank `"id": ""` counts as
+  absent.
+
+### Verified clean, or blessed in writing
+- The drag-and-drop index math, including the same-column downward
+  adjustment, is correct in every direction (walked case by case).
+- A no-op `Move Left` at the first column still saves; the bytes are
+  identical, so this stays as-is rather than growing a guard.
+- `mutate()` stats the board file on the EDT to detect a foreign edit.
+  That is one stat per user gesture, not per paint or tab switch (the
+  v1.111.0 incident), so it stays — recorded here so the next reviewer
+  need not re-derive it.
+- An aim that goes null leaves the board bound to the last real
+  project rather than blanking; that board is still that project's.
+
 ## [1.324.0] - 2026-08-10
 
 The Task Board walk in the shipped app.
