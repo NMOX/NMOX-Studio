@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.324.0] - 2026-08-10
+
+The Task Board walk in the shipped app.
+
+### Verified live, in the shipped 1.323.0
+- The day-old kanban walked end to end in the installed build: ⌥⌘1
+  opens the board on the aimed project; a card DRAGGED from To Do to
+  Done persisted to `.nmoxtasks.json`; a column RENAMED through its
+  header menu persisted; an over-limit column showed its `2/1` header
+  in red; and a card titled `<html><img src=http://evil.example/x>` —
+  planted via an external write to the board file, the exact
+  cloned-repo threat — rendered as literal CHARACTERS, never fetched
+  (the v1.311.0 plain-render law holding on a real hostile title).
+
+### Added
+- A unit test for the ⌘I reach. The walk could drive every gesture
+  except the Quick Search POPUP, which does not respond to programmatic
+  typing in this automation (a known-good term returned empty too), so
+  the reach was live-unproven. `TasksSearchProvider` now exposes the
+  same package-private, sink-seamed match the apiclient/dbstudio
+  providers use, and `TasksSearchTest` pins it — case-insensitive
+  containment, the column travelling with each hit, the two-char floor,
+  and the SPI's stop-when-full back-pressure. Mutation-proven
+  (containment → equality fails three assertions). The lesson, recorded:
+  *a Quick Search popup is unverifiable by this automation — back the
+  reach with a query-level test rather than trust an empty popup.*
+
 ## [1.323.0] - 2026-08-10
 
 The Task Board — a per-project kanban, fully featured (David's ask).
