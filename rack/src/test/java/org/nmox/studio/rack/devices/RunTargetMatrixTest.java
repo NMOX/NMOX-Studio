@@ -107,7 +107,14 @@ class RunTargetMatrixTest {
         assertThat(commandFor("bun")).containsExactly("bun", "run", "start");
         assertThat(commandFor("deno")).containsExactly("deno", "task", "start");
         assertThat(commandFor("static"))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(commandFor("gleam")).containsExactly("gleam", "run");
         assertThat(commandFor("julia")).containsExactly("julia", "--project=.", "main.jl");
         assertThat(commandFor("nim")).containsExactly("nimble", "run");
@@ -132,9 +139,26 @@ class RunTargetMatrixTest {
         assertThat(commandFor("ruby")).containsExactly("ruby", "main.rb");
         assertThat(commandFor("ruby", "app.rb")).containsExactly("ruby", "app.rb");
         assertThat(commandFor("ruby", "config.ru")).containsExactly("rackup");
-        assertThat(commandFor("php")).containsExactly("php", "-S", "127.0.0.1:8000");
+        assertThat(commandFor("php")).satisfies(cmd -> {
+                    // probed port since v1.320.0
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 2))
+                            .containsExactly("php", "-S");
+                    org.assertj.core.api.Assertions.assertThat(c.get(2))
+                            .matches("127\\.0\\.0\\.1:80[0-1][0-9]");
+                    org.assertj.core.api.Assertions.assertThat(c).hasSize(3);
+                });
         assertThat(commandFor("php", "public/index.php"))
-                .containsExactly("php", "-S", "127.0.0.1:8000", "-t", "public");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 2))
+                            .containsExactly("php", "-S");
+                    org.assertj.core.api.Assertions.assertThat(c.get(2))
+                            .matches("127\\.0\\.0\\.1:80[0-1][0-9]");
+                    org.assertj.core.api.Assertions.assertThat(
+                            c.subList(3, 5)).containsExactly("-t", "public");
+                });
         assertThat(commandFor("node")).containsExactly("node", "index.js");
         assertThat(commandFor("node", "main.js")).containsExactly("node", "main.js");
     }
@@ -175,18 +199,54 @@ class RunTargetMatrixTest {
         assertThat(autoCommand("build.gradle")).containsExactly("gradle", "run", "--quiet");
         assertThat(autoCommand("pyproject.toml")).containsExactly("python3", "main.py");
         assertThat(autoCommand("Gemfile")).containsExactly("ruby", "main.rb");
-        assertThat(autoCommand("composer.json")).containsExactly("php", "-S", "127.0.0.1:8000");
+        assertThat(autoCommand("composer.json")).satisfies(cmd -> {
+                    // probed port since v1.320.0
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 2))
+                            .containsExactly("php", "-S");
+                    org.assertj.core.api.Assertions.assertThat(c.get(2))
+                            .matches("127\\.0\\.0\\.1:80[0-1][0-9]");
+                    org.assertj.core.api.Assertions.assertThat(c).hasSize(3);
+                });
         assertThat(autoCommand("Makefile")).containsExactly("make", "run");
         assertThat(autoCommand("CMakeLists.txt")).containsExactly("make", "run");
         // classic web kinds run by serving the folder itself
         assertThat(autoCommand("Gruntfile.js"))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(autoCommand("gulpfile.js"))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(autoCommand("bower.json"))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(autoCommand("index.html"))
-                .containsExactly("python3", "-u", "-m", "http.server", "8000");
+                .satisfies(cmd -> {
+                    // probed port since v1.320.0: shape + range, not a literal
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 4))
+                            .containsExactly("python3", "-u", "-m", "http.server");
+                    org.assertj.core.api.Assertions.assertThat(
+                            Integer.parseInt(c.get(4))).isBetween(8000, 8019);
+                });
         assertThat(autoCommand("webpack.config.js"))
                 .containsExactly("npx", "webpack", "serve", "--mode", "development");
         assertThat(autoCommand("bunfig.toml")).containsExactly("bun", "run", "start");

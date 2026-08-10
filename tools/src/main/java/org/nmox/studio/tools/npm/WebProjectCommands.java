@@ -167,9 +167,15 @@ final class WebProjectCommands {
                 // relearned): piped python block-buffers its "Serving
                 // HTTP on" banner, so without it the line consumer never
                 // sees the announce and the serving chain stays dark.
+                // the port is PROBED, not pinned (v1.320.0): python's
+                // http.server refuses a busy port outright — it has no
+                // http-server-style upward scan — and the learner walk of
+                // space #89 died on exactly that. The banner parse carries
+                // whatever port actually bound, so the serving chain follows.
                 return ActionProvider.COMMAND_RUN.equals(action)
                         ? List.of("python3", "-u", "-m", "http.server",
-                                String.valueOf(STATIC_PORT)) : null;
+                                String.valueOf(org.nmox.studio.core.util.FreePorts
+                                        .firstFreeFrom(STATIC_PORT))) : null;
             // ---- v1.163.0: the kinds the rack always spoke but F6/F11
             // silently greyed — commands mirror the rack device tables ----
             case BUN:

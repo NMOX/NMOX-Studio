@@ -52,8 +52,13 @@ final class WebProjectActionProvider implements ActionProvider {
      */
     static String servingUrlFor(String line) {
         String plain = stripAnsi(line);
+        // the STATIC lane's port is probed, not pinned (v1.320.0), so the
+        // URL comes from the port the banner NAMES — announcing the old
+        // constant while python bound the next port up would register a
+        // serving nothing listens on (the v1.93.0 class)
         return plain.contains("Serving HTTP")
-                ? "http://localhost:" + WebProjectCommands.STATIC_PORT + "/"
+                ? "http://localhost:" + org.nmox.studio.rack.devices.ServeUrls
+                        .bannerPort(plain, WebProjectCommands.STATIC_PORT) + "/"
                 : org.nmox.studio.rack.devices.ServeUrls.firstLocalUrl(plain);
     }
 

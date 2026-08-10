@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.320.0] - 2026-08-09
+
+The learner walk — the front-door space survives a busy port.
+
+### Fixed
+- **Learning space #89's first Run no longer dies on a busy port.**
+  The walk of "Your First Web Page" — the catalog's front door, whose
+  whole promise is "nothing to configure" — hit `[exit 1]` on its very
+  first click in the shipped 1.319.0: the STATIC lane runs
+  `python3 -m http.server 8000`, something on the machine held 8000,
+  and python — unlike `http-server` (the v1.264.0 fix) — refuses a
+  busy port outright. The v1.264.0 humanizer fired and was honest, but
+  "change the port" is unactionable in a space with nothing to
+  configure. The STATIC and PHP lanes now PROBE for the first free
+  port from their preferred one (`core.util.FreePorts`, a bind-test on
+  the wildcard address python itself uses), in both spawn homes — the
+  IDE Run button and IGNITION's lane.
+- **The announce reads the server's own banner, not a constant.** The
+  probe alone would have moved the bug: the lanes announced their
+  pinned address on the banner trigger, so a server bound to 8001
+  would have put the ⇄ chip on 8000 — a port nothing listens on (the
+  v1.93.0 serving-truth class). `ServeUrls.bannerPort` now reads the
+  port python (`port 8001`) and php (`(http://127.0.0.1:8001)`) print,
+  at all three announce sites, with the preferred port as the honest
+  fallback. Probe and banner-read are two halves of one truth, and the
+  wiring gate pins BOTH — un-wiring either fails a test by name.
+- **The space's tutorial stops naming a port the lane never used.** It
+  said the address would look like `http://127.0.0.1:8080`; the lane
+  binds 8000-and-up. It now says `http://localhost:8000` — "use the
+  one IT prints; the number can differ when 8000 is busy."
+
+### Verified live, in the dev build, with 8000 genuinely held
+- Space #89 → Run → python binds **8001** → the page serves
+  (`<h1>Hello, web!</h1>`) → the status line reads
+  `⇄ serving: http://localhost:8001/`. The exact machine condition
+  that killed the walk, now a non-event. Mutation-proven ×3 (probe
+  always-free, banner-branch removed, announce un-wired — each dies
+  by name).
+
 ## [1.319.0] - 2026-08-09
 
 Docs truth — the walks move into the shipped app, and CLAUDE.md

@@ -195,8 +195,14 @@ class ServingDevicesTest {
             // "Serving HTTP on" banner is a stdout print(). Without -u it
             // sits in the buffer: the lane serves, the access log (stderr)
             // scrolls, and READY/URL/serving-chip never fire. Observed live.
-            assertThat(cmd).containsExactly(
-                    "python3", "-u", "-m", "http.server", "8000");
+            // the port is PROBED since v1.320.0 (8000 upward), so the test
+            // pins the command SHAPE and that the port is in the probe range
+            // — a literal here would flake on any machine where 8000 is busy,
+            // which is exactly the condition the probe exists for
+            assertThat(cmd.subList(0, 4)).containsExactly(
+                    "python3", "-u", "-m", "http.server");
+            assertThat(Integer.parseInt(cmd.get(4)))
+                    .isBetween(8000, 8019);
             assertThat(cmd.indexOf("-u")).isLessThan(cmd.indexOf("-m"));
         } finally {
             rack.shutdown();

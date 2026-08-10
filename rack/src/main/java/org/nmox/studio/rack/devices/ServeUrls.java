@@ -48,6 +48,31 @@ public final class ServeUrls {
      * the real banner registers on a later line, which is the correct
      * order.
      */
+    /**
+     * The port a server's own startup banner announces, or
+     * {@code fallback} when the line names none (v1.320.0).
+     *
+     * <p>Exists because the fixed-port lanes became probed-port lanes:
+     * once the STATIC lane may bind 8001 instead of 8000, announcing
+     * the old constant would be a serving-truth violation — the ⇄ chip
+     * would point at a port nothing listens on. The truth is IN the
+     * banner: python prints {@code "Serving HTTP on :: port 8001"},
+     * php prints {@code "(http://127.0.0.1:8001) started"}. Read it.
+     */
+    public static int bannerPort(String line, int fallback) {
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\bport (\\d{2,5})\\b").matcher(line);
+        if (m.find()) {
+            return Integer.parseInt(m.group(1));
+        }
+        m = java.util.regex.Pattern
+                .compile("://[^\\s/]*:(\\d{2,5})").matcher(line);
+        if (m.find()) {
+            return Integer.parseInt(m.group(1));
+        }
+        return fallback;
+    }
+
     public static String firstLocalUrl(String line) {
         Matcher m = LOCAL_URL.matcher(line);
         while (m.find()) {

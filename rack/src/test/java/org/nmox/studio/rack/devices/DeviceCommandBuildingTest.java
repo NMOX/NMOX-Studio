@@ -234,14 +234,31 @@ class DeviceCommandBuildingTest {
             // no public/ dir: built-in server from the project root
             RunDevice bare = aim(rack, new RunDevice(), Map.of()); // target=auto → php
             assertThat(bare.buildCommand())
-                    .containsExactly("php", "-S", "127.0.0.1:8000");
+                    .satisfies(cmd -> {
+                    // probed port since v1.320.0
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 2))
+                            .containsExactly("php", "-S");
+                    org.assertj.core.api.Assertions.assertThat(c.get(2))
+                            .matches("127\\.0\\.0\\.1:80[0-1][0-9]");
+                    org.assertj.core.api.Assertions.assertThat(c).hasSize(3);
+                });
 
             // composer-era layout: serve the public/ docroot
             Files.createDirectory(projectDir.resolve("public"));
             // TARGETS index 19 = php (explicit knob, same command as auto)
             RunDevice docroot = aim(rack, new RunDevice(), Map.of("target", "19"));
             assertThat(docroot.buildCommand())
-                    .containsExactly("php", "-S", "127.0.0.1:8000", "-t", "public");
+                    .satisfies(cmd -> {
+                    // probed port since v1.320.0
+                    java.util.List<String> c = new java.util.ArrayList<>(cmd);
+                    org.assertj.core.api.Assertions.assertThat(c.subList(0, 2))
+                            .containsExactly("php", "-S");
+                    org.assertj.core.api.Assertions.assertThat(c.get(2))
+                            .matches("127\\.0\\.0\\.1:80[0-1][0-9]");
+                    org.assertj.core.api.Assertions.assertThat(
+                            c.subList(3, 5)).containsExactly("-t", "public");
+                });
         } finally {
             rack.shutdown();
         }
