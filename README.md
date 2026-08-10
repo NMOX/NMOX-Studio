@@ -37,7 +37,7 @@ phosphor styling, for a browser.*
 | ![Ask ORACLE](docs/images/oracle-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
 | ***Ask ORACLE*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
 | ![Block Studio](docs/images/tabs/block-studio.png) | ![DB Studio](docs/images/tabs/db-studio.png) |
-| ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs* |
+| ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***Task Board** (⌥⌘1 per-project kanban — columns, drag/keyboard moves, WIP limits, `.nmoxtasks.json` beside the project), **DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs* |
 
 ## Download
 

@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.323.0] - 2026-08-10
+
+The Task Board — a per-project kanban, fully featured (David's ask).
+
+### Added
+- **Tasks (⌥⌘1)**: a kanban board persisted beside the project as
+  `.nmoxtasks.json` — check it in and the board is the team's, ignore
+  it and it stays personal. Columns hold cards you drag between them
+  or move with the keyboard (⌘←/→ across columns, ⌘↑/↓ within one);
+  double-click or Enter edits, N adds, Delete asks first with No as
+  the default. Columns rename, reorder, carry an ADVISORY WIP limit
+  (the header shows count/limit and turns red over it — a kanban limit
+  signals the human, it never blocks), and delete with a confirm that
+  names how many cards go with them; the last column refuses to go,
+  because a board with nowhere to put a card is not a board. ⌘I
+  reaches card titles of the aimed project and Enter opens the board.
+- The whole studio-law family applies from day one, each law with its
+  incident behind it: pure `TaskBoard` core with a byte-stable JSON
+  round-trip; atomic writes, self-write discrimination and
+  .bak-before-fallback in `TasksIO`; a foreign edit (git pull, editor
+  save) WINS over a stale gesture — the board reloads instead of
+  clobbering the file; disk rides one named lane, never the EDT; the
+  tab is default-open but builds nothing before first show; card text
+  renders PLAIN because a checked-in board arrives with clones
+  (v1.311.0); the card popup targets the clicked card (v1.270.0); and
+  the Welcome launchpad, Window menu and Keymaps shadow all advertise
+  the same real chord (v1.38.1). Written v1 limit: no live file
+  watcher — an external edit is picked up on next show or mutation.
+- ui joins the org.json family as its ninth member (the version still
+  reads from the one root property; gate extended), and the
+  `TasksLawsGateTest` pins every wiring above at the source — the
+  two-proof seam rule (v1.321.0) applied on day one. Live-proven in
+  the dev build: add → ⌘→ → the JSON follows each gesture.
+  Mutation-proven ×3 — and the clamp mutant SURVIVED first, because no
+  test passed a negative index until one did (clamps are fallbacks:
+  the divergent input is where the halves disagree).
+
 ## [1.322.0] - 2026-08-10
 
 The debt sprint — IRC logging survives a closed tab, two floors
