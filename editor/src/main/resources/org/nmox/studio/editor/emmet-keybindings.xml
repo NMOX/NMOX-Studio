@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!-- Expand Abbreviation (v1.329.0): Alt+Cmd+E on markup panes. A
+     mime-scoped binding, the v1.219.0 recipe - the kit's action map is
+     what keybindings resolve on CSL panes, so each markup mime carries
+     the action and this chord. DA-E is unclaimed by the window family
+     (they use DA-digits) and by the Keymaps profile. NOT Tab: Tab is
+     already indentation + code templates, and a third meaning on one
+     key is the silent keystroke fight of v1.38.1. -->
+<bindings>
+    <bind actionName="nmox-expand-abbreviation" key="DA-E"/>
+</bindings>

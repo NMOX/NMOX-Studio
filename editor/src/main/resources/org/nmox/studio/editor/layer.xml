@@ -38,6 +38,24 @@
                         <folder name="Defaults">
                             <file name="ng-template-keybindings.xml"
                                   url="ng-template-keybindings.xml"/>
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
+                                 in Angular templates, the framework bet's
+                                 editor face -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="html">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
+                                 file as the ng-template registration: one
+                                 chord, one action name, two mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
                 </folder>
