@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.341.0] - 2026-08-11
+
+Climb-up lands — the Emmet grammar's outs list is empty.
+
+### Added
+- **`^` returns one level per caret**: `header>h1^main` puts main
+  BESIDE header; `div>ul>li^^footer` climbs two; the climbed unit is a
+  full citizen (`div>p^section>i` nests into it, `a>b^i+em` chains
+  siblings after it). Implementation: a `pendingClimbs` counter the
+  `^` run sets and each enclosing level's `>` branch consumes one of —
+  the recursion unwinds exactly as far as the carets say.
+- **Two honest refusals where real Emmet silently clamps**: climbing
+  PAST THE ROOT refuses (`a>b^^i` — the extra caret is a typo, not a
+  wish), and a group is a wall (`(a>b^^i)` refuses — put the sibling
+  after the group). A dangling `^` with nothing to land also refuses.
+  With this, the v1.329.0 grammar's deliberately-out list ("climb-up,
+  CSS abbreviations, lorem") is EMPTY — each out closed as its own
+  release with its own laws.
+
+### Verified
+- Live in the dev build with the whole family composing in one press:
+  `header>h1^main>lorem3` → main beside header carrying the
+  placeholder text, caret parked in the empty h1.
+- The shipped 1.340.0 walk (differential surfaces): lorem on
+  text/x-ng-template (`div.note>lorem4`) and the + chain on css-prep
+  .scss (`posr+ovh+bdrs8`) — both clean in the installed app.
+- Mutation-proven ×3, each verified applied then failing: the
+  top-level climb refusal deleted (the group-swallow case caught it),
+  propagate→land-immediately, and the caret-run collapsed to one.
+
 ## [1.340.0] - 2026-08-11
 
 Docs truth — the Emmet family's night on the record.

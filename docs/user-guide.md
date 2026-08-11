@@ -312,8 +312,12 @@ honestly: a bare word only expands when it *is* an HTML element, and
 anything unparseable leaves your text untouched with a status-line
 hint. `lorem` and `lorem5` emit deterministic placeholder text — the
 canonical passage, capitalized and period-closed, the same every press
-so diffs stay honest; `ul>li*3>lorem4` fills a whole mock list.
-Deliberately out (recorded in the code): climb-up `^`.
+so diffs stay honest; `ul>li*3>lorem4` fills a whole mock list. And
+climb-up `^` returns one level per caret — `header>h1^main` puts main
+beside header, `div>ul>li^^footer` climbs two — with two honest
+refusals where real Emmet silently clamps: climbing past the root, and
+climbing out of a `(...)` group (put the sibling after the group). The
+grammar's deliberately-out list is now empty.
 
 The same chord speaks **CSS** in stylesheets (v1.336.0 closed the
 grammar's recorded "CSS abbreviations" out): in any CSS/SCSS/Less pane,
