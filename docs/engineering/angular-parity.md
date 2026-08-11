@@ -30,7 +30,7 @@ kept current every time the Angular surface changes.
 | Angular-aware Run Focused Test | ✅ v1.223.0 — `ng test --include`, file-level (Karma has no name filter) | ✅ method-level where runner allows | ⚠️ extension-dependent |
 | Language-service install friction | ✅ Tools ▸ Language Servers Install proven live in shipped 1.347 (@angular/language-server@18.1.2 into the project, trust-gated); the notification entry point unblocked by the ledger-79 fix | ✅ bundled | ⚠️ extension global, version skew possible |
 | Starter that actually installs | ✅ template npm-proven on default node (v1.241.0), node-floor refusals translated to human (v1.318.0) | ✅ | n/a |
-| Rename symbol across template + class | ⚠️ ⌃R reaches ngserver and REWRITES the template usage (live-proven post-ledger-79 fix) — but the class declaration double-applies where two servers share the mime (ledger 81) | ✅ | ✅ |
+| Rename symbol across template + class | ✅ ⌃R renames the declaration ONCE and rewrites the template usage (v1.349.0: ngserver is the single rename authority in Angular workspaces — ledger 81 closed, live-proven) | ✅ | ✅ |
 | Quick-fixes / code actions in templates | ❌ not offered | ✅ | ✅ |
 
 ## Where we are genuinely ahead
@@ -48,17 +48,20 @@ kept current every time the Angular surface changes.
 
 ## Honest gaps, in priority order
 
-1. **Ledger 78 remainder — ⌘B on identifiers.** Tags now jump natively
-   (the DeclarationFinder unit); the identifier case should route to
-   ngserver inside the same CSL flow, queued with rename.
-2. **Ledger 77 — suffixless template panes.** Content-detected templates
-   get coloring and completion but not chord gestures (and the resolver's
-   verdict looked session-dependent in the dev build). The
-   `.component.html` majority case is unaffected.
-3. **Rename across template + class, template quick-fixes.** ngserver
-   exposes these over LSP; the platform client supports rename — this is
-   wiring work, not research, and it is the next competitive tranche.
-4. **Karma name-level test focus** is structurally capped at file level.
+1. **Ledger 82 — suffixless template MIME.** The v1.346.0 content
+   resolver was proven structurally inert (declarative XML resolvers
+   always precede Lookup-provided ones in the platform's MIMESupport),
+   so suffixless `widget.html` files ride plain html for coloring and
+   chords. The `.component.html` majority case is unaffected, and the
+   switcher / ng generate / Run Focused Test all handle suffixless
+   sets by their own file logic.
+2. **Template quick-fixes.** ngserver exposes code actions over LSP;
+   surfacing them in templates is the next competitive tranche.
+3. **Karma name-level test focus** is structurally capped at file level.
+
+Closed since this list was written: ⌘B on template identifiers routes
+to ngserver through the CSL finder (ledger 78, v1.349.0) and rename is
+single-authority in Angular workspaces (ledger 81, v1.349.0).
 
 ## Method note
 

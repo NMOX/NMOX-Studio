@@ -40,6 +40,27 @@ class NgSelectorDeclarationFinderTest {
     }
 
     @Test
+    @DisplayName("identifiers are claimed only when a language server can answer")
+    void identifierClaimGated() throws Exception {
+        NgSelectorDeclarationFinder finder = new NgSelectorDeclarationFinder();
+        PlainDocument doc = new PlainDocument();
+        doc.insertString(0, "{{ user.name }}", null);
+        // in a unit test no LSP provider is registered for the mime, so
+        // the claim must decline — a false claim would make CSL call
+        // findDeclaration and dead-end the chord
+        assertThat(finder.getReferenceSpan(doc, 4))
+                .isEqualTo(org.netbeans.modules.csl.api.OffsetRange.NONE);
+        String src = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/editor/angular/"
+                + "NgSelectorDeclarationFinder.java"));
+        assertThat(src)
+                .as("the identifier half must route through the LSP provider"
+                        + " (ledger 78 remainder)")
+                .contains("lspProvider()")
+                .contains("performClickAction");
+    }
+
+    @Test
     @DisplayName("wiring gate: the ng-template CSL language registers the parser AND the finder")
     void wiringGate() throws Exception {
         String lang = Files.readString(Path.of(

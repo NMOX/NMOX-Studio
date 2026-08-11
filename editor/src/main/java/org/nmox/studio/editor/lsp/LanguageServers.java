@@ -167,12 +167,46 @@ public final class LanguageServers {
         return project == null ? null : FileUtil.toFile(project.getProjectDirectory());
     }
 
-    /** TypeScript + JavaScript via typescript-language-server. */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
-    })
+    /**
+     * TypeScript via typescript-language-server — except in Angular
+     * workspaces, where the mime is ngserver's ALONE (ledger 81).
+     *
+     * <p>Why suppression and not capability games: the platform's rename
+     * refactoring collects edit sets from EVERY server bound to the mime
+     * — decompiled, {@code RenameRefactoringPlugin.lambda$prepare$6},
+     * the capability predicate it filters bindings with, is
+     * {@code iconst_1; ireturn}: always true, renameProvider never
+     * consulted. With tsserver AND ngserver both bound, a class-property
+     * rename applied tsserver's declaration edit AND ngserver's
+     * declaration+template edits — {@code headingheading}, proven live
+     * twice (the second time through a filter that verifiably stripped
+     * tsserver's renameProvider, which changed nothing). The only lever
+     * the platform leaves is WHICH servers are bound; ngserver wraps the
+     * TypeScript language service (that is what --tsProbeLocations is
+     * for), so it serves the .ts intelligence itself.
+     */
+    @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
     public static final class TypeScriptServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            boolean angular = angularRootAbove(projectDir(lookup)) != null;
+            ngProbe("tsserver start: projectDir=" + projectDir(lookup)
+                    + " angular=" + angular);
+            if (angular) {
+                return null; // ngserver owns TypeScript here
+            }
+            return launchNpm(lookup, "typescript-language-server", "--stdio");
+        }
+    }
+
+    /**
+     * JavaScript rides the same typescript-language-server, registered
+     * separately so the ledger-81 Angular suppression above cannot take
+     * plain .js files down with it (ngserver serves .ts and templates,
+     * not .js).
+     */
+    @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
+    public static final class JavaScriptTsServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             return launchNpm(lookup, "typescript-language-server", "--stdio");

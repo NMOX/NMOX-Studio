@@ -22,14 +22,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LspFormatTrustGateTest {
 
     private static String read(String rel) throws Exception {
-        return Files.readString(Path.of(rel), StandardCharsets.UTF_8);
+        // .gitattributes text=auto gives the windows lane CRLF sources;
+        // \n-carrying anchors must see one line-ending dialect
+        return Files.readString(Path.of(rel), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
     }
 
     @Test
     @DisplayName("launchNpm only prefers the project-local server binary when the workspace is trusted")
     void lspGatesLocalBinaryOnTrust() throws Exception {
         String src = read("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
-        int m = src.indexOf("launchNpm(");
+        int m = src.indexOf("launchNpm(\n            Lookup lookup, String bin");
         assertThat(m).as("launchNpm exists").isPositive();
         String body = src.substring(m, src.indexOf("\n    }", m));
         assertThat(body)

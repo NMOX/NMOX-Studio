@@ -78,15 +78,23 @@ ngserver started with the project's own probe locations, and the
 platform rename dialog reached the TEMPLATE ({{ title }} → {{ heading }}
 rewritten across files). The property-gated -Dnmox.ng.probe probes stay.
 
-### 81. LSP rename DOUBLE-APPLIES where two servers share a mime (found by the rename probe)
+### 81. CLOSED v1.349.0 — LSP rename double-apply: ngserver owns text/typescript in Angular workspaces
 With tsserver AND ngserver both bound to text/typescript, Refactor ▸
 Rename (⌃R) collected BOTH servers' edit sets and applied both: the
 class declaration became `headingheading` while the template usage
-(ngserver's edit alone) renamed correctly. The platform lsp-client's
-refactoring merges per-binding edits without range dedup. Options:
-dedup identical (file,range,newText) edits in a wrapper, filter rename
-capability from one binding, or upstream fix; until then rename on
-Angular workspaces needs a post-check of the declaration line.
+(ngserver's edit alone) renamed correctly. CLOSED the structural way:
+the "filter rename capability" option was BUILT and REFUTED live — a
+stream filter that verifiably stripped tsserver's renameProvider from
+its initialize response changed nothing, because the platform's
+RenameRefactoringPlugin queries EVERY binding on the mime with an
+always-true capability predicate (decompiled: lambda$prepare$6 is
+iconst_1; ireturn — renameProvider never consulted). The only lever
+the platform leaves is WHICH servers are bound, so tsserver now yields
+text/typescript to ngserver in Angular workspaces (ngserver wraps the
+TypeScript language service; .ts intelligence stays) while plain .js
+keeps its own unsuppressed registration. Live-proven: title→heading
+applied ONCE at the declaration, {{ title }} rewritten in the
+template; TsServerAngularSuppressionTest gates it, mutation-proven.
 
 ### 80. Popup position 95 collision on ng-template panes (v1.347.0)
 messages.log: "Found same position 95 for both
@@ -96,7 +104,7 @@ arc's Go to Component and the v1.313 switcher's Open Angular Template
 claim the same popup slot. Cosmetic ordering nondeterminism; move
 nmox-ng-goto-component to a free position.
 
-### 77. Content-resolved template panes don't load mime keybindings (found in the Angular-top arc, 2026-08-11)
+### 77. CLOSED v1.349.0 — the bisect: content-resolved panes never existed
 A file claimed by the PROGRAMMATIC NgTemplateContentResolver (suffixless
 `usage.html`) gets text/x-ng-template for LEXING — the Angular grammar
 paints — but its editor pane does not dispatch the mime's Keybindings:
@@ -107,13 +115,37 @@ colors and completion but not chord gestures. Suspected split-brain
 between the document's lexer mime and the editor-kit/keybinding mime
 for .instance-resolved files; needs a dedicated bisect of the platform's
 kit-selection path. The popup-menu entries still work everywhere.
-Second datum (same day, dev build): in a fresh dev userdir the SAME
-usage.html pane rode plain text/html end to end (platform HTML
-validator hints active, no ng grammar) — the content resolver's verdict
-appears session-dependent, so the bisect must first pin WHEN the
-programmatic resolver actually wins before touching keybindings.
+The bisect landed at the bytecode: MIMESupport$CachedFileObject.
+getResolvers() builds its chain as declarativeResolvers() FIRST — a
+walk of Services/MIMEResolver taking only .xml children — then appends
+Lookup-provided instances, so the platform's declarative ext=html
+claim answers before ANY .instance resolver regardless of its position
+attribute (position orders only within the declarative group). The
+programmatic resolver never won in any session; the "session
+dependence" was misattributed observation. Reproduced deterministically
+(usage.html = plain html in a fresh dev userdir, unchanged after
+touch+reopen). The keybinding half is therefore moot — no
+content-resolved pane can exist. The inert resolver is deleted with a
+tombstone gate (SuffixlessAngularGateTest); the GOAL reopens as 82.
 
-### 78. ⌘B on templates — SOLVED same day for tags, identifier half open
+### 82. Suffixless template MIME recognition needs a viable mechanism (reopens ledger 73's goal)
+David's call stands — the Angular bet means ALL Angular repos, and
+Angular 21's CLI generates suffixless widget.html files — but the
+v1.346.0 content resolver could never run (see 77: declarative XML
+resolvers always precede Lookup-provided ones in decompiled
+MIMESupport, so the platform's ext=html claim wins first). Candidate
+mechanisms, none free: (a) a DECLARATIVE resolver before html's
+position using <pattern> content rules — only catches templates
+carrying Angular-only syntax (*ngIf=, @if () — a partial, mushy match
+that risks claiming other frameworks' files; refused for now under the
+wrong-guess-mutates law), (b) an upstream MIMESupport change letting
+positioned instances interleave, (c) rerouting at the editor layer
+(DataObject/kit) instead of MIME. The four-file switcher, Run Focused
+Test, and ng generate all already handle suffixless sets by their own
+file logic — this ledger is ONLY the mime/coloring/chords surface.
+
+
+### 78. CLOSED v1.349.0 — ⌘B on templates: tags AND identifiers
 The bisect landed: the chord was never shadowed — on CSL panes ⌘B is
 CSL's OWN Go to Declaration, which consults the language's
 DeclarationFinder and silently no-ops when there is none (so the
@@ -121,10 +153,12 @@ v1.219.0 mime action never saw the key; its era of "working" was
 likely always the popup). The ng-template language now registers a
 snapshot-only Parser + NgSelectorDeclarationFinder, and the native ⌘B
 jumps <app-hero> → its component (live-proven, caret on the selector
-line). REMAINING: for non-tag identifiers the finder returns NONE and
-CSL stops — routing that case to ngserver's textDocument/definition
-inside the CSL flow is the identifier half, queued with the
-template-rename tranche.
+line). The identifier half closed v1.349.0: NgSelectorDeclarationFinder
+claims identifier spans (only when an LSP hyperlink provider exists)
+and routes them to the platform LSP client's performClickAction —
+CSL stays quiet on the returned NONE while ngserver answers the
+definition. Live-proven: ⌘B on `heading` inside {{ heading }} in
+app.component.html landed the caret on the class property (12:3).
 
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 

@@ -46,13 +46,18 @@ class EslintServerTest {
     @DisplayName("eslint does NOT displace typescript-language-server")
     void tsserverStillRegisteredOnBothMimes() throws IOException {
         String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
+        // since the ledger-81 suppression the two mimes ride SEPARATE
+        // registrations (TS yields to ngserver in Angular workspaces,
+        // JS never does) — both must still exist
         int tsAt = src.indexOf("class TypeScriptServer");
         assertThat(tsAt).isGreaterThan(0);
-        String block = src.substring(Math.max(0, tsAt - 400), tsAt);
-        assertThat(block)
+        assertThat(src.substring(Math.max(0, tsAt - 400), tsAt))
                 .as("types keep arriving; eslint is additive, not a swap")
-                .contains("text/javascript")
                 .contains("text/typescript");
+        int jsAt = src.indexOf("class JavaScriptTsServer");
+        assertThat(jsAt).isGreaterThan(0);
+        assertThat(src.substring(Math.max(0, jsAt - 400), jsAt))
+                .contains("text/javascript");
     }
 
     @Test
