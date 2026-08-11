@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.332.0] - 2026-08-10
+
+The shipped-app walk of the two new editor powers — aimed at exactly
+the surfaces the dev-build proofs skipped, because that is where the
+mime-family class has bitten twice before.
+
+### Verified live in shipped 1.331.0
+- **Emmet on Angular templates** (text/x-ng-template — the framework
+  bet's mime, unproven until now): `nav>a.link*2` + ⌥⌘E in a real
+  `.component.html` expanded to the nested nav with the caret inside
+  the first empty `href=""`; the chord on a non-abbreviation refused
+  with the status hint and touched nothing.
+- **Design tokens on `.scss`** (the css-prep mime, unproven until now):
+  `var(--panel-local)` painted as its declared teal; ⌃Space inside
+  `var(` offered `--brand-primary` and `--panel-bg` FROM tokens.css
+  behind their color swatch icons beside the document-local token;
+  Enter inserted and closed the call; ⌘-click on the token opened
+  tokens.css with the caret on the declaration line.
+
+### Fixed
+- **The auto-pair trap: `{text}` abbreviations refused.** The walk
+  typed `a.link{Item $*3}` the way anyone does — and the editor's own
+  pair intelligence closed the `{`, leaving the caret BEFORE the
+  auto-inserted `}`. The text up to the caret was an unclosed
+  abbreviation, so the chord refused (honestly — the document was
+  untouched, status line said so, caret column 2:22 was the tell).
+  `Emmet.abbreviationAt` now folds a run of trailing closers
+  (`}` `)` `]`) after the caret into the abbreviation when that makes
+  it parse, and the action's replacement span extends past the caret by
+  exactly the folded count — without which the auto-closed brace would
+  SURVIVE the expansion as a stray `}`. Mutation-proven ×2 (folding
+  disabled restores the shipped refusal; the span offset dropped fails
+  the wiring gate by name).
+
 ## [1.331.0] - 2026-08-10
 
 The Classic Kit artifact walk — the engineers' release of the six, and
