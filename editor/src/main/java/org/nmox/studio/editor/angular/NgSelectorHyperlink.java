@@ -26,8 +26,13 @@ import org.openide.util.RequestProcessor;
  * Angular Language Service — the v1.219.0 ⌘B rides ngserver and goes
  * dead when it isn't installed; this provider rides {@link
  * NgSelectors}' own index, so the gesture is alive on a bare install.
- * When ALS is present both answer; the platform runs each provider's
- * own span, and an ALS jump from the same tag lands in the same file.
+ * Position 90 — BEFORE the v1.219.0 ALS enabler at 100, which claims
+ * any identifier span and delegates to the language-server provider:
+ * without a running server that delegation dies silently, swallowing
+ * the click (proven live, first round of this arc). This provider's
+ * claim is narrow — dashed tags only — so plain identifiers still
+ * flow to the enabler and ALS; a dashed-tag jump lands where ALS
+ * would have landed anyway: the component that declares the selector.
  *
  * <p>Hover work is EDT work: the span test is a pure text parse (a
  * dashed tag name under the caret — Angular convention guarantees the
@@ -36,7 +41,7 @@ import org.openide.util.RequestProcessor;
  * happens only on click, on a named RP, with an honest status miss.
  */
 @MimeRegistration(mimeType = "text/x-ng-template",
-        service = HyperlinkProviderExt.class, position = 150)
+        service = HyperlinkProviderExt.class, position = 90)
 public final class NgSelectorHyperlink implements HyperlinkProviderExt {
 
     private static final RequestProcessor RP =
@@ -63,6 +68,22 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
         return "Go to the component that declares this selector";
     }
 
+    /**
+     * The chord entry (⌘B rides this — the proven navigation path on
+     * this CSL mime): true when the caret sits on a dashed tag and the
+     * jump was DISPATCHED (resolution is async; a miss reports on the
+     * status line). False = not a tag, caller should try its next path.
+     */
+    public static boolean jumpToSelector(Document doc, int offset) {
+        String text = textOf(doc);
+        int[] span = text == null ? null : tagSpanAt(text, offset);
+        if (span == null) {
+            return false;
+        }
+        dispatchJump(doc, text.substring(span[0], span[1]));
+        return true;
+    }
+
     @Override
     public void performClickAction(Document doc, int offset, HyperlinkType type) {
         String text = textOf(doc);
@@ -70,7 +91,13 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
         if (span == null) {
             return;
         }
-        String tag = text.substring(span[0], span[1]);
+        dispatchJump(doc, text.substring(span[0], span[1]));
+    }
+
+    private static void dispatchJump(Document doc, String tag) {
+        if (Boolean.getBoolean("nmox.ng.probe")) {
+            System.err.println("[ng-probe] dispatchJump tag=" + tag);
+        }
         File root = projectDirOf(doc);
         RP.post(() -> {
             NgSelectors.Decl found = NgSelectors.find(root, tag);

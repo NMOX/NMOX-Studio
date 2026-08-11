@@ -51,6 +51,27 @@ only — never through `UIManager`, which would restyle the whole IDE.
 Seam + wiring pinned by `PhosphorTipTest` (the v1.321.0 two-proof
 law).
 
+### 77. Content-resolved template panes don't load mime keybindings (found in the Angular-top arc, 2026-08-11)
+A file claimed by the PROGRAMMATIC NgTemplateContentResolver (suffixless
+`usage.html`) gets text/x-ng-template for LEXING — the Angular grammar
+paints — but its editor pane does not dispatch the mime's Keybindings:
+⌥⌘E and ⌥⌘B are dead there, while the SAME chords in the SAME session
+work on a declaratively-resolved `.component.html` pane (differential
+proven live, both directions). Suffixless templates therefore have
+colors and completion but not chord gestures. Suspected split-brain
+between the document's lexer mime and the editor-kit/keybinding mime
+for .instance-resolved files; needs a dedicated bisect of the platform's
+kit-selection path. The popup-menu entries still work everywhere.
+
+### 78. The v1.219.0 D-B goto chord no longer dispatches at all
+A property-gated probe (`-Dnmox.ng.probe`) showed ng-goto-declaration's
+actionPerformed NEVER fires on ⌘B — even on declarative panes where
+⌥⌘E and ⌥⌘B dispatch fine. Last live-proven in v1.219.0 (~130 releases
+ago); silent regression, cause unknown (Keymaps-profile shadowing of
+D-B is the lead suspect — DA- chords are unclaimed and work). The new
+⌥⌘B Go to Component covers the tag-jump gesture; the LSP identifier
+goto via ⌘B needs the bisect before it can be called alive.
+
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
 ### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0

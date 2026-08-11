@@ -10,4 +10,5 @@
      of this mime only. -->
 <bindings>
     <bind actionName="ng-goto-declaration" key="D-B"/>
+    <bind actionName="nmox-ng-goto-component" key="DA-B"/>
 </bindings>
