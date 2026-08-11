@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.345.0] - 2026-08-11
+
+Docs truth — the walks after the shift.
+
+### Docs
+- plan.md gains the v1.344–v1.345 addendum: the IRC walk that proved
+  v1.322's engine-side logging live and had its finding fixed
+  same-night, and the clean API Studio walk — the walk→fix loop
+  closing inside one night.
+- CLAUDE.md's headline moves v1.342.0 → v1.344.0.
+
 ## [1.344.0] - 2026-08-11
 
 The reopened IRC scrollback says what it missed.

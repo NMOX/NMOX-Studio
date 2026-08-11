@@ -1324,6 +1324,27 @@ header opens on the first try every time), so a menu that "won't open"
 on the second attempt is the harness. This cost real time before a
 control experiment settled it.
 
+## Addendum — 2026-08-11, the walks after the shift (v1.344–v1.345)
+
+**The walk→fix loop closed inside one night.** The live IRC walk of
+shipped 1.343.0 against Libera.Chat PROVED the v1.322.0 IrcLogTap
+(window closed, log still growing with real network events) and found
+its one gap: the reopened scrollback silently omitted the
+closed-period messages. v1.344.0 fixed it before morning — one dim
+marker line per restored transcript ("view was closed; the full
+record is in ~/.nmox/irc-logs"), discriminated structurally (a live
+session with NO bridge is a reopen; bridges survive tab switches,
+only componentClosed clears them), written directly to the documents
+so bookkeeping never bolds the tree or counts as unread. Live-proven
+in the dev build against Libera; the marker visible in the reopened
+transcript.
+
+**The API Studio walk came back CLEAN** (shipped 1.344.0, live HN
+API): send 200, history persisting across sessions, the Standards tab
+grading the live endpoint honestly, and the v1.263.0 rename fix
+holding on a fresh request. Two walks in one night — one finding
+fixed same-night, one clean — is the cadence working as designed.
+
 ## Addendum — 2026-08-11, the Emmet family completes (v1.341–v1.343)
 
 **v1.341.0 climb-up `^`** emptied the v1.329.0 grammar's
