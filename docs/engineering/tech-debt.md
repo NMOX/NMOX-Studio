@@ -62,6 +62,11 @@ colors and completion but not chord gestures. Suspected split-brain
 between the document's lexer mime and the editor-kit/keybinding mime
 for .instance-resolved files; needs a dedicated bisect of the platform's
 kit-selection path. The popup-menu entries still work everywhere.
+Second datum (same day, dev build): in a fresh dev userdir the SAME
+usage.html pane rode plain text/html end to end (platform HTML
+validator hints active, no ng grammar) — the content resolver's verdict
+appears session-dependent, so the bisect must first pin WHEN the
+programmatic resolver actually wins before touching keybindings.
 
 ### 78. The v1.219.0 D-B goto chord no longer dispatches at all
 A property-gated probe (`-Dnmox.ng.probe`) showed ng-goto-declaration's
