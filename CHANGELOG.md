@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.331.0] - 2026-08-10
+
+The Classic Kit artifact walk — the engineers' release of the six, and
+the second all-clean walk in the product's history. Clean is a result,
+not a non-event: every claim below was executed, not read.
+
+### Verified against today's real toolchains, artifact by artifact
+- The kit ran end to end against a script-tag fixture (`ClassicKit.write`
+  through the real path): vendored `jquery-3.7.1.min.js` + `<head>`
+  wiring, `webpack.config.js`, `Gruntfile.js`, `gulpfile.js` all landed.
+- **webpack 5.109.2** built the generated config as-is — entry
+  auto-detected (`./js/app.js`), `dist/bundle.js` emitted minified.
+- **grunt 1.6.3 + grunt-contrib-uglify 5.2.2** (the Gruntfile's own
+  install comment, verbatim): `npx grunt build` minified — including an
+  ES6 const/arrow file, which uglify-js has quietly learned since the
+  kit was written.
+- **gulp 5.0.1 + gulp-uglify 3.0.2**: a MAJOR released after the kit
+  shipped still runs the generated gulp-4-style file unchanged, output
+  correctly minified.
+- **The never-clobber law, live**: a locally edited Gruntfile got a
+  `Gruntfile.js.suggested` sibling with the original untouched.
+- **NPM mode merges, never clobbers**: `jquery ^3.7.1` joined
+  `dependencies` while all seven existing `devDependencies` survived.
+- **Vendored bytes = the official pin**: the delivered jQuery hashes to
+  the published 3.7.1 sha256; the provenance table (source, license,
+  SHA-256) rides beside the files and the v1.92.1 full-file tripwire
+  gates identity in CI.
+
+The kit-walk work-list opened at v1.309.0 (PWA → Standards → Classic)
+is now complete: every pure-builder kit has had its artifacts held to
+what they promise.
+
 ## [1.330.0] - 2026-08-10
 
 Design tokens become first-class — the designer release of the six.
