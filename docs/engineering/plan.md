@@ -1324,6 +1324,39 @@ header opens on the first try every time), so a menu that "won't open"
 on the second attempt is the harness. This cost real time before a
 control experiment settled it.
 
+## Addendum — 2026-08-11, the overnight tail (v1.335–v1.337)
+
+**v1.335.0 — the floors ratchet, and the update center crosses the
+marathon.** The ui line floor rose 0.56 → 0.57 (everything else
+sub-point — not ratchet room; rack Windows-bound). The gauntlet: a
+stock 1.323.0 portable self-updated headlessly through the real update
+center across exactly the twelve marathon releases — installed **in
+place** (writable cluster, the v1.298.0 behavior), all eleven module
+jars byte-verified at 1.334.0, clean reboot. The false alarm worth
+keeping: the log TAIL reads "Updates not found. updates=0" — that is
+the second refresh converging AFTER the successful install. Read the
+whole log before calling a gauntlet red.
+
+**v1.336.0 — Emmet speaks CSS**, the v1.329 grammar's own recorded out
+closed. CssEmmet is a written-down exact-match subset (keyword table,
+numeric family with longest-prefix and unit suffixes, colors, `!`)
+because a fuzzy match that guesses wrong mutates the stylesheet; a
+token after `:` never expands. Live-proven in the dev build on
+text/css and .scss — with the v1.227 swatch layer painting the freshly
+expanded `#f00`, two features composing on screen — and mutation-proven
+×3 by name. The SHIPPED 1.336.0 walk covered the third surface
+(.less): three-value box, `dib`, and the value-position refusal, all
+clean.
+
+**The gate-literal law's fifth strike, new failure mode.** The v1.336
+docs gate died on `**CSS**` — regex metacharacters ("repetition-
+operator operand invalid") — AFTER the merge and BEFORE the tag,
+leaving a merged PR with no release; a hand-written resume script
+(main-green → tag → assets) completed it. Rules now: docs gates grep
+with **`-Fq`** (fixed strings), the pre-launch proof must run the EXACT
+gate line (proving an escaped variant proves nothing), and a gate that
+dies after "merged" is resumed from the failed stage, never re-run.
+
 ## Addendum — 2026-08-10/11, the six-release iteration (v1.329–v1.334)
 
 David's ask, verbatim: six releases toward "the go-to product for web
