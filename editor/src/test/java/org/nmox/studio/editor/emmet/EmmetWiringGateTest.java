@@ -47,4 +47,16 @@ class EmmetWiringGateTest {
                         + " (html + x-ng-template), each as name + url")
                 .isGreaterThanOrEqualTo(4);
     }
+
+    @Test
+    @DisplayName("the action's replacement span extends past the caret by the folded closers")
+    void spanExtensionWired() throws Exception {
+        String src = Files.readString(new File(
+                "src/main/java/org/nmox/studio/editor/emmet/ExpandAbbreviationAction.java")
+                .toPath());
+        assertThat(src)
+                .as("v1.332.0: without the trailingClosers offset the auto-"
+                        + "closed brace SURVIVES the expansion as a stray }")
+                .contains("caret + at.trailingClosers() - abbrev.length()");
+    }
 }

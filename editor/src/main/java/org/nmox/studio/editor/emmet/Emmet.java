@@ -123,6 +123,44 @@ public final class Emmet {
     }
 
     /**
+     * The abbreviation AT the caret, auto-pair aware (v1.332.0): the
+     * shipped-app walk typed {@code a.link{Item}} the way anyone does —
+     * and the editor's pair intelligence closed the brace, leaving the
+     * caret BEFORE the auto-inserted {@code }}, so the text up to the
+     * caret was an unclosed abbreviation and the chord refused. When
+     * the caret is followed by a run of closers ({@code } ) ]}), they
+     * are folded into the abbreviation if that makes it parse; the
+     * returned span end tells the action how far past the caret the
+     * replacement reaches.
+     */
+    public record AtCaret(String abbrev, int trailingClosers) {
+    }
+
+    public static AtCaret abbreviationAt(String lineBeforeCaret, String lineAfterCaret) {
+        String plain = abbreviationIn(lineBeforeCaret);
+        if (plain != null) {
+            return new AtCaret(plain, 0);
+        }
+        int closers = 0;
+        while (closers < lineAfterCaret.length()
+                && isCloser(lineAfterCaret.charAt(closers))) {
+            closers++;
+        }
+        for (int take = 1; take <= closers; take++) {
+            String extended = abbreviationIn(
+                    lineBeforeCaret + lineAfterCaret.substring(0, take));
+            if (extended != null) {
+                return new AtCaret(extended, take);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isCloser(char c) {
+        return c == '}' || c == ')' || c == ']';
+    }
+
+    /**
      * The abbreviation ending at the caret, given the line text before
      * it: the LONGEST suffix that parses. Trying suffixes (started
      * after whitespace, {@code >} of a real tag, or {@code "}) beats

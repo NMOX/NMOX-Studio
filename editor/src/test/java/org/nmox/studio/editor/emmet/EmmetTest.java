@@ -108,4 +108,30 @@ class EmmetTest {
                 .isEqualTo("ul>li");
         assertThat(Emmet.abbreviationIn("hello world")).isNull();
     }
+
+    @Test
+    @DisplayName("auto-pair aware: the caret before an auto-closed } still expands")
+    void autoPairClosers() {
+        // the shipped-app walk (v1.332.0): typing a.link{Item} the way
+        // anyone does leaves the caret BEFORE the editor's auto-closed
+        // brace — the abbreviation must fold the trailing closer in
+        Emmet.AtCaret at = Emmet.abbreviationAt("  nav>a.link{Item $*3", "}");
+        assertThat(at).isNotNull();
+        assertThat(at.abbrev()).isEqualTo("nav>a.link{Item $*3}");
+        assertThat(at.trailingClosers()).isEqualTo(1);
+
+        // nested pairs: (dt+dd)*2 typed with auto-paren leaves ")*2"? No —
+        // the common case is the caret before ONE closer; multiple closers
+        // fold only as far as parsing needs
+        Emmet.AtCaret group = Emmet.abbreviationAt("(dt+dd", ")");
+        assertThat(group.abbrev()).isEqualTo("(dt+dd)");
+
+        // a complete abbreviation before the caret ignores what follows
+        Emmet.AtCaret plain = Emmet.abbreviationAt("ul>li*2", "</section>");
+        assertThat(plain.abbrev()).isEqualTo("ul>li*2");
+        assertThat(plain.trailingClosers()).isZero();
+
+        // still honest: closers that don't complete anything refuse
+        assertThat(Emmet.abbreviationAt("hello world", "}")).isNull();
+    }
 }

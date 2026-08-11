@@ -52,13 +52,18 @@ public class ExpandAbbreviationAction extends BaseAction {
         try {
             int caret = target.getCaretPosition();
             int lineStart = Utilities.getRowStart(target, caret);
+            int lineEnd = Utilities.getRowEnd(target, caret);
             String before = doc.getText(lineStart, caret - lineStart);
-            String abbrev = Emmet.abbreviationIn(before);
-            if (abbrev == null) {
+            String after = doc.getText(caret, lineEnd - caret);
+            // auto-pair aware (v1.332.0): typing {text} leaves the caret
+            // BEFORE the auto-closed brace — fold trailing closers in
+            Emmet.AtCaret at = Emmet.abbreviationAt(before, after);
+            if (at == null) {
                 StatusDisplayer.getDefault().setStatusText(
                         "No abbreviation at the caret (try ul>li*3)");
                 return;
             }
+            String abbrev = at.abbrev();
             // indentation: the line's leading whitespace prefixes every
             // generated line after the first, so the fragment sits at
             // the caret's own depth
@@ -72,7 +77,7 @@ public class ExpandAbbreviationAction extends BaseAction {
                     .chars().filter(c -> c == '\n').count();
             int caretInIndented = e.caretOffset()
                     + (int) newlinesBeforeCaret * leading.length();
-            int abbrevStart = caret - abbrev.length();
+            int abbrevStart = caret + at.trailingClosers() - abbrev.length();
             doc.runAtomicAsUser(() -> {
                 try {
                     doc.remove(abbrevStart, abbrev.length());
