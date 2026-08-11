@@ -22,7 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LspFormatTrustGateTest {
 
     private static String read(String rel) throws Exception {
-        return Files.readString(Path.of(rel), StandardCharsets.UTF_8);
+        // .gitattributes text=auto gives the windows lane CRLF sources;
+        // \n-carrying anchors must see one line-ending dialect
+        return Files.readString(Path.of(rel), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
     }
 
     @Test

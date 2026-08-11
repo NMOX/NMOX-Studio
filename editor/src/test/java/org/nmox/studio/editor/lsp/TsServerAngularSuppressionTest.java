@@ -25,9 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TsServerAngularSuppressionTest {
 
     private static String src() throws Exception {
+        // CRLF-normalize: the windows lane checks out with text=auto
         return Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
     }
 
     @Test
