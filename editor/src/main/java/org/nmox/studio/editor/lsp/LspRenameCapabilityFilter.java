@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.json.JSONObject;
@@ -31,33 +29,39 @@ import org.json.JSONObject;
  * (possibly rewritten) bytes into a pipe; consumers read the pipe with
  * ordinary partial-read semantics and can never be held hostage to
  * frame assembly.
+ *
+ * <p><b>Why the pipe is hand-rolled.</b> {@code PipedInputStream} pins
+ * thread IDENTITIES: it remembers the last reader thread and the
+ * writer throws "Pipe broken" the moment that thread is no longer
+ * alive. lsp4j reads server output from an executor POOL whose threads
+ * retire between messages, so a JDK pipe dies mid-session (observed
+ * live: pump gone, tsserver deaf). {@link BytePipe} is the same
+ * bounded producer/consumer contract with no liveness checks.
  */
 final class LspRenameCapabilityFilter extends FilterInputStream {
 
-    LspRenameCapabilityFilter(InputStream raw) throws IOException {
+    LspRenameCapabilityFilter(InputStream raw) {
         super(openPumped(raw));
     }
 
-    private static InputStream openPumped(InputStream raw) throws IOException {
-        PipedInputStream sink = new PipedInputStream(64 * 1024);
-        PipedOutputStream feed = new PipedOutputStream(sink);
-        Thread pump = new Thread(() -> pump(raw, feed), "nmox-lsp-rename-filter");
+    private static InputStream openPumped(InputStream raw) {
+        BytePipe pipe = new BytePipe();
+        Thread pump = new Thread(() -> pump(raw, pipe), "nmox-lsp-rename-filter");
         pump.setDaemon(true);
         pump.start();
-        return sink;
+        return pipe;
     }
 
-    private static void pump(InputStream raw, PipedOutputStream feed) {
+    private static void pump(InputStream raw, BytePipe feed) {
         boolean filtering = true;
-        try (feed) {
+        try {
             while (true) {
                 if (!filtering) {
                     // zero-parse passthrough for the rest of the session
                     byte[] buf = new byte[8192];
                     int n;
                     while ((n = raw.read(buf)) >= 0) {
-                        feed.write(buf, 0, n);
-                        feed.flush();
+                        feed.put(buf, 0, n);
                     }
                     return;
                 }
@@ -69,18 +73,21 @@ final class LspRenameCapabilityFilter extends FilterInputStream {
                 String text = new String(body, StandardCharsets.UTF_8);
                 if (text.contains("\"capabilities\"")) {
                     byte[] rewritten = stripRenameProvider(text);
-                    feed.write(("Content-Length: " + rewritten.length + "\r\n\r\n")
-                            .getBytes(StandardCharsets.US_ASCII));
-                    feed.write(rewritten);
+                    byte[] header = ("Content-Length: " + rewritten.length + "\r\n\r\n")
+                            .getBytes(StandardCharsets.US_ASCII);
+                    feed.put(header, 0, header.length);
+                    feed.put(rewritten, 0, rewritten.length);
                     filtering = false;
                 } else {
-                    feed.write((headers + "\r\n").getBytes(StandardCharsets.US_ASCII));
-                    feed.write(body);
+                    byte[] header = (headers + "\r\n").getBytes(StandardCharsets.US_ASCII);
+                    feed.put(header, 0, header.length);
+                    feed.put(body, 0, body.length);
                 }
-                feed.flush();
             }
         } catch (IOException done) {
             // consumer closed or stream died: the pump's job is over
+        } finally {
+            feed.closeFeed();
         }
     }
 
@@ -133,5 +140,95 @@ final class LspRenameCapabilityFilter extends FilterInputStream {
             }
         }
         throw new IOException("Frame without Content-Length");
+    }
+
+    /**
+     * A bounded byte pipe with NO thread-identity coupling: any thread
+     * may write, any thread may read, at any time. Closing the read
+     * side makes the writer throw (so the pump exits); closing the
+     * write side drains the buffer then reports EOF.
+     */
+    static final class BytePipe extends InputStream {
+
+        private final byte[] buf = new byte[64 * 1024];
+        private int head;      // next read index
+        private int count;     // bytes buffered
+        private boolean feedClosed;
+        private boolean readClosed;
+
+        synchronized void put(byte[] src, int off, int len) throws IOException {
+            int remaining = len;
+            int at = off;
+            while (remaining > 0) {
+                while (count == buf.length && !readClosed) {
+                    try {
+                        wait();
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("interrupted", ie);
+                    }
+                }
+                if (readClosed) {
+                    throw new IOException("read side closed");
+                }
+                int chunk = Math.min(remaining, buf.length - count);
+                for (int i = 0; i < chunk; i++) {
+                    buf[(head + count + i) % buf.length] = src[at + i];
+                }
+                count += chunk;
+                at += chunk;
+                remaining -= chunk;
+                notifyAll();
+            }
+        }
+
+        synchronized void closeFeed() {
+            feedClosed = true;
+            notifyAll();
+        }
+
+        @Override
+        public synchronized int read() throws IOException {
+            byte[] one = new byte[1];
+            int n = read(one, 0, 1);
+            return n < 0 ? -1 : one[0] & 0xFF;
+        }
+
+        @Override
+        public synchronized int read(byte[] dst, int off, int len) throws IOException {
+            if (len == 0) {
+                return 0;
+            }
+            while (count == 0) {
+                if (feedClosed || readClosed) {
+                    return -1;
+                }
+                try {
+                    wait();
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("interrupted", ie);
+                }
+            }
+            int chunk = Math.min(len, count);
+            for (int i = 0; i < chunk; i++) {
+                dst[off + i] = buf[(head + i) % buf.length];
+            }
+            head = (head + chunk) % buf.length;
+            count -= chunk;
+            notifyAll();
+            return chunk;
+        }
+
+        @Override
+        public synchronized int available() {
+            return count;
+        }
+
+        @Override
+        public synchronized void close() {
+            readClosed = true;
+            notifyAll();
+        }
     }
 }

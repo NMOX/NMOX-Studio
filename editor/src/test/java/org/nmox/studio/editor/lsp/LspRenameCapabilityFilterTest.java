@@ -112,6 +112,34 @@ class LspRenameCapabilityFilterTest {
     }
 
     @Test
+    @DisplayName("the pipe outlives its reader threads — lsp4j reads from a POOL")
+    void pipeSurvivesReaderThreadDeath() throws Exception {
+        // PipedInputStream pins the last reader thread and kills the pipe
+        // when that thread dies ("Pipe broken") — which is exactly what a
+        // pool-fed lsp4j consumer does between messages. The hand-rolled
+        // BytePipe must not care who reads or writes.
+        LspRenameCapabilityFilter.BytePipe pipe = new LspRenameCapabilityFilter.BytePipe();
+        pipe.put(new byte[]{'a', 'b'}, 0, 2);
+        int[] first = new int[1];
+        Thread reader1 = new Thread(() -> {
+            try {
+                first[0] = pipe.read();
+            } catch (Exception e) {
+                first[0] = -99;
+            }
+        });
+        reader1.start();
+        reader1.join();
+        assertThat(first[0]).isEqualTo('a');
+        // the first reader thread is DEAD; writes and reads must go on
+        pipe.put(new byte[]{'c'}, 0, 1);
+        assertThat(pipe.read()).isEqualTo('b');
+        assertThat(pipe.read()).isEqualTo('c');
+        pipe.closeFeed();
+        assertThat(pipe.read()).isEqualTo(-1);
+    }
+
+    @Test
     @DisplayName("wiring gate: tsserver launches filtered ONLY in Angular workspaces")
     void wiringGate() throws Exception {
         String src = java.nio.file.Files.readString(java.nio.file.Path.of(

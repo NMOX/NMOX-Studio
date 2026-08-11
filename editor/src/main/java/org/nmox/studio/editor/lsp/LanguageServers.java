@@ -56,6 +56,7 @@ public final class LanguageServers {
                 // authority (class AND template); stripping tsserver's
                 // renameProvider stops the platform applying BOTH edit sets
                 serverOut = new LspRenameCapabilityFilter(serverOut);
+                ngProbe("rename filter armed for " + command);
             }
             // the Lookup carries the languageId mapping: without it the
             // client sends the RAW MIME as didOpen's languageId and
@@ -197,6 +198,8 @@ public final class LanguageServers {
             // ledger 81: only in Angular workspaces, where ngserver shares
             // the mime and owns rename end to end
             boolean angular = angularRootAbove(projectDir(lookup)) != null;
+            ngProbe("tsserver start: projectDir=" + projectDir(lookup)
+                    + " angular=" + angular);
             return launchNpm(lookup, angular, "typescript-language-server", "--stdio");
         }
     }
