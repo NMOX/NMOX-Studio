@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.344.0] - 2026-08-11
+
+The reopened IRC scrollback says what it missed.
+
+### Fixed
+- **A reattached IRC window marks its gap**: connections deliberately
+  outlive the window, and since v1.322.0 the engine-side IrcLogTap
+  keeps logging while the view is closed — but the reopened scrollback
+  silently omitted the closed-period messages, found by the live
+  Libera.Chat walk of shipped 1.343.0 (two real events in the log,
+  absent from the view, no hint anything was missed). On reopen, each
+  restored transcript (status + every joined channel) now carries one
+  dim line: "— view was closed; the full record is in
+  ~/.nmox/irc-logs —". The discriminator is structural: a live session
+  with NO bridge is a reopen (bridges survive tab switches; only
+  componentClosed clears them), so tab-switching never marks. The
+  marker writes the documents directly, never through the message
+  path — bookkeeping must not bold the tree, count as unread, or ring
+  a mention.
+
+### Verified
+- Seam driven headless (marker lands once per transcript, other
+  networks untouched) + the wiring gate pinning the reattach branch
+  and the not-through-append() law; mutation-proven ×2 (un-wired call,
+  status transcript dropped), both verified applied first.
+- Live in the dev build: connect → close the IRC tab → reopen — the
+  marker line present in the status and channel transcripts.
+
 ## [1.343.0] - 2026-08-11
 
 Docs truth — the eight-release overnight shift on the record.
