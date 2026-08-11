@@ -42,6 +42,18 @@ public class NgTemplateGotoDeclaration extends BaseAction {
         }
         Document doc = target.getDocument();
         int offset = target.getCaretPosition();
+        if (Boolean.getBoolean("nmox.ng.probe")) {
+            System.err.println("[ng-probe] chord fired at offset " + offset);
+        }
+        // a dashed TAG under the caret is a component selector — jump via
+        // the project's own selector index (Angular-top arc, 2026-08-11),
+        // which works WITHOUT the language service; this is the proven
+        // chord path, and the live rounds showed the ⌘-click hyperlink
+        // chain is not consulted on this CSL mime at all
+        if (org.nmox.studio.editor.angular.NgSelectorHyperlink
+                .jumpToSelector(doc, offset)) {
+            return;
+        }
         if (NgTemplateHyperlinkEnabler.identifierSpan(doc, offset) == null) {
             return; // caret not in a word: nothing to ask the server about
         }

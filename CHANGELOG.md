@@ -4,6 +4,62 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.347.0] - 2026-08-11
+
+The Angular-top arc — David's mandate: make the Angular support top in
+the industry. Four units, one structural editor fix underneath:
+
+### Added
+- **Go to Component — the native ⌘B**: with the caret on `<app-hero>`
+  in a template, the standard Go to Declaration jumps to the component
+  that declares that selector — no language service required. The
+  ledger-78 bisect found ⌘B on CSL panes is CSL's own gesture, which
+  silently no-ops for a language without a DeclarationFinder; the
+  ng-template language now registers a snapshot-only parser plus a
+  finder over the selector index, so the chord, the Navigate menu, and
+  CSL's ⌘-hover underline all work. ⌥⌘B carries the same jump. The selector index scans the workspace's
+  own `.ts` sources (decorator-gated so a `selector:` key in arbitrary
+  code never becomes a target; comma-list selectors and `[attribute]`
+  directives match; mtime-cached). ⌘-click on a dashed tag rides the
+  same index. Live-proven: the jump landed on the `selector:` line.
+- **Emmet in inline templates**: ⌥⌘E expands abbreviations inside a
+  component's `template: \`...\`` literal on TypeScript panes, at the
+  literal's own indent — and refuses honestly anywhere else in the
+  file, so the chord can never mangle code. Backtick literals only,
+  `template:` key only, `@Component` files only (recorded limits).
+  Live-proven in both directions; region parser mutation-proven ×2.
+- **Component-selector completion**: typing `<app-` in a template (or
+  ⌃Space at any tag-name position) offers the project's own component
+  selectors — from the same service-free index as the ⌘B jump.
+  Accepting writes the whole `<sel></sel>` pair with the caret inside.
+  Attribute-directive and dashless selectors deliberately excluded;
+  mutation-proven.
+- **One-click language-server install**: the "intelligence unavailable"
+  notification now RUNS the install when the catalog knows the exact
+  command and its package manager is present — for Angular that is one
+  click to a trust-gated `npm install -D` INTO the project, so the
+  service always matches the workspace's own Angular. Servers without
+  a runnable command keep click-to-copy, and the notification says
+  which it will do. Mutation-proven ×2.
+- **docs/engineering/angular-parity.md**: the honest scorecard vs
+  WebStorm and VS Code + ALS — every claim carries its proving release,
+  the gaps are ranked, and template-rename is named as the next tranche.
+
+### Fixed
+- **JS/TS panes never resolved mime-action chords** — the structural
+  find under the Emmet unit: unlike the ~60 CSL languages whose
+  registration generates an editor kit, JavaScript and TypeScript never
+  registered one, so their panes' keymaps could not resolve ANY
+  mime-registered action: ⌘/ and every editor chord was dead on the
+  exact files a web IDE opens most, while the same actions worked from
+  the popup. Real `NbEditorKit`s are now registered for both mimes
+  (chord live-proven post-fix), and the product-wide Defaults file
+  carries the ⌥⌘E/⌥⌘B binds so kits without the action simply ignore
+  them (gate-pinned).
+- Ledgers 77 (content-resolved panes skip mime keybindings; verdict
+  session-dependent) and 78 (the v1.219.0 ⌘B chord never dispatches)
+  opened with the differential evidence for their own bisects.
+
 ## [1.346.0] - 2026-08-11
 
 The reviewed batch — an interactive session with David shaped every

@@ -31,11 +31,31 @@ class GoToFileKeyUnbindTest {
     @DisplayName("the keybindings file removes the editor's D-P claim, key-only")
     void removesTheDPClaim() throws Exception {
         String xml = Files.readString(BINDINGS, StandardCharsets.UTF_8);
+        // the REMOVE entry is key-only per the 1.1 DTD; naming an action
+        // there would be a different (and wrong) statement. The file also
+        // carries POSITIVE binds now (Angular-top arc) — those must name
+        // their action, so the key-only rule is pinned per-line
         assertThat(xml).contains("<bind key=\"D-P\" remove=\"true\"/>");
-        // remove entries are key-only per the 1.1 DTD; naming an action
-        // here would be a different (and wrong) statement
-        assertThat(xml).doesNotContain("actionName");
+        assertThat(xml).doesNotContain("actionName=\"\" ");
+        for (String line : xml.lines().toList()) {
+            if (line.contains("remove=\"true\"")) {
+                assertThat(line).as("remove entries stay key-only")
+                        .doesNotContain("actionName");
+            }
+        }
         assertThat(xml).contains("Editor KeyBindings settings 1.1");
+    }
+
+    @Test
+    @DisplayName("the global chords carry the Angular-top actions (kits without them ignore the chord)")
+    void globalChordsBound() throws Exception {
+        String xml = Files.readString(BINDINGS, StandardCharsets.UTF_8);
+        assertThat(xml)
+                .as("⌥⌘E must reach kits whose mime-scoped Keybindings never load"
+                        + " (the TypeScript pane, proven live)")
+                .contains("<bind actionName=\"nmox-expand-abbreviation\" key=\"DA-E\"/>");
+        assertThat(xml)
+                .contains("<bind actionName=\"nmox-ng-goto-component\" key=\"DA-B\"/>");
     }
 
     @Test

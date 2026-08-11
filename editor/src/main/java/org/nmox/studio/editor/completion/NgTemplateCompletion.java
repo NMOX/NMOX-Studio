@@ -85,6 +85,52 @@ public final class NgTemplateCompletion {
         return out;
     }
 
+    /**
+     * The partial ELEMENT name being typed after an open {@code <}, or
+     * null when the caret is not at a tag-name position (Angular-top
+     * arc: this is where the project's own component selectors
+     * complete). Empty string means the {@code <} was just typed —
+     * every selector is a candidate. Closing tags and positions past
+     * the tag name (attributes) return null; the HTML provider owns
+     * those.
+     */
+    public static String tagPrefix(String lineToCaret) {
+        if (lineToCaret == null) {
+            return null;
+        }
+        int open = lineToCaret.lastIndexOf('<');
+        int close = lineToCaret.lastIndexOf('>');
+        if (open < 0 || open < close) {
+            return null;
+        }
+        String rest = lineToCaret.substring(open + 1);
+        // closing tags (</app-) fall out here too: '/' is not a name
+        // character — a separate startsWith("/") guard was proven
+        // equivalent by mutation and deleted (the v1.333.0 rule)
+        boolean nameShaped = rest.chars()
+                .allMatch(c -> Character.isLetterOrDigit(c) || c == '-');
+        return nameShaped ? rest : null;
+    }
+
+    /**
+     * The element selectors matching {@code prefix}, from raw selector
+     * strings as declared (comma-lists split, attribute forms like
+     * {@code [appThing]} excluded — they are not tags), deduped and
+     * sorted. Only DASHED names offer: a component selector without a
+     * dash is nonstandard and would collide with real HTML tags.
+     */
+    public static List<String> selectorMatches(List<String> declaredSelectors,
+            String prefix) {
+        return declaredSelectors.stream()
+                .flatMap(s -> java.util.Arrays.stream(s.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty() && !s.startsWith("[")
+                        && s.indexOf('-') > 0 && s.startsWith(prefix))
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
     /** The insert offset: where the trigger character sits on the line. */
     public static int triggerOffset(String lineToCaret) {
         int at = lineToCaret.lastIndexOf('@');
@@ -110,12 +156,17 @@ public final class NgTemplateCompletion {
      * hand-written page would be noise claiming knowledge we don't have.
      */
     public static boolean inAngularWorkspace(File file) {
+        return workspaceRoot(file) != null;
+    }
+
+    /** The directory carrying {@code angular.json} above {@code file}, or null. */
+    public static File workspaceRoot(File file) {
         File dir = file == null ? null : file.getParentFile();
         for (int i = 0; dir != null && i < 12; i++, dir = dir.getParentFile()) {
             if (new File(dir, "angular.json").isFile()) {
-                return true;
+                return dir;
             }
         }
-        return false;
+        return null;
     }
 }

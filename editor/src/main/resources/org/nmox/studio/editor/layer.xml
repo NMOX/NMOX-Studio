@@ -115,6 +115,20 @@
                     </folder>
                 </folder>
             </folder>
+            <!-- Expand Abbreviation ⌥⌘E on TypeScript panes (Angular-top
+                 arc): the action itself only fires inside a component's
+                 inline template: `...` literal and refuses everywhere
+                 else, so the chord is safe to carry mime-wide -->
+            <folder name="typescript">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
         <!-- Frees Cmd+P from the editor kit's tooltip-show claim so the
              global Go to File shortcut receives it (v1.216.0; see the

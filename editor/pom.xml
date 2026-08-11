@@ -128,6 +128,19 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- Angular-top arc: the ng-template CSL language gains a
+                 Parser + DeclarationFinder so the PLATFORM's own ⌘B /
+                 Navigate ▸ Go to Declaration works natively -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-csl-types</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-api</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-editor-errorstripe</artifactId>
             <version>${netbeans.version}</version>

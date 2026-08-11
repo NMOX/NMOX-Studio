@@ -56,13 +56,74 @@ public final class LanguageServerHealth {
         String install = s != null ? s.install()
                 : "install " + binary + " and put it on your PATH";
         String title = language + " intelligence unavailable";
-        String detail = "Install " + binary
+        NotificationDisplayer.getDefault().notify(title, ICON, detail(s, binary, install),
+                e -> {
+                    if (clickInstalls(s)) {
+                        runInstall(s);
+                    } else {
+                        Toolkit.getDefaultToolkit().getSystemClipboard()
+                                .setContents(new StringSelection(install), null);
+                        StatusDisplayer.getDefault().setStatusText("Copied: " + install);
+                    }
+                });
+    }
+
+    /**
+     * The zero-friction question (Angular-top arc): when the catalog
+     * knows the exact argv AND its package manager is here, the click
+     * should RUN the install — the trust-gated, project-aware
+     * {@link LanguageServerInstaller} the Tools panel already uses —
+     * instead of handing the developer a string to paste somewhere.
+     * Everything else keeps click-to-copy.
+     */
+    static boolean clickInstalls(Server s) {
+        return s != null && s.autoInstallable()
+                && LanguageServerCatalog.isInstalled(s.installer());
+    }
+
+    /** The notification body, matched to what the click will actually do. */
+    static String detail(Server s, String binary, String install) {
+        if (clickInstalls(s)) {
+            return "Click to install " + binary
+                    + (s.projectLocal() ? " into the project" : "")
+                    + " — runs: " + install;
+        }
+        return "Install " + binary
                 + " for go-to-definition, hover, rename and live errors  —  click to copy: "
                 + install;
-        NotificationDisplayer.getDefault().notify(title, ICON, detail, e -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard()
-                    .setContents(new StringSelection(install), null);
-            StatusDisplayer.getDefault().setStatusText("Copied: " + install);
+    }
+
+    private static void runInstall(Server s) {
+        LanguageServerInstaller.install(s, new LanguageServerInstaller.Listener() {
+            @Override
+            public void onStarted(Server server) {
+                status("Installing " + server.binary() + "…");
+            }
+
+            @Override
+            public void onFinished(Server server, LanguageServerInstaller.Result result,
+                    int exitCode) {
+                switch (result) {
+                    case INSTALLED -> {
+                        // the LSP client resolves servers per open file, so a
+                        // reopen is what actually starts the fresh install
+                        REPORTED.remove(server.binary());
+                        status("Installed " + server.binary()
+                                + " — reopen the file to start it");
+                    }
+                    case NEEDS_PROJECT -> status("Open the project first — "
+                            + server.binary() + " installs into the project");
+                    case NEEDS_TOOLCHAIN -> status(server.installer()
+                            + " not found — install it first");
+                    default -> status("Install of " + server.binary()
+                            + " failed (exit " + exitCode + ") — see Output");
+                }
+            }
+
+            private void status(String text) {
+                java.awt.EventQueue.invokeLater(() ->
+                        StatusDisplayer.getDefault().setStatusText(text));
+            }
         });
     }
 

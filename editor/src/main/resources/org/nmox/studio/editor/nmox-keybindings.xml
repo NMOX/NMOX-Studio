@@ -17,4 +17,15 @@
 -->
 <bindings>
     <bind key="D-P" remove="true"/>
+    <!-- Angular-top arc (2026-08-11): the mime-scoped Keybindings
+         folders load for CSL kits but NOT for the TypeScript kit or
+         for content-resolved ng-template panes (ledger 77) - proven
+         live: the ACTIONS are in those kits (popup works), only the
+         chord never dispatches. A binding in this root Defaults file
+         reaches every kit; a kit that does not carry the action name
+         simply ignores the chord, so these are safe product-wide. The
+         mime-scoped copies stay: they are the documented per-mime
+         story and harmless where they already work. -->
+    <bind actionName="nmox-expand-abbreviation" key="DA-E"/>
+    <bind actionName="nmox-ng-goto-component" key="DA-B"/>
 </bindings>

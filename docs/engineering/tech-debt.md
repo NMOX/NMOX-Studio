@@ -51,6 +51,36 @@ only — never through `UIManager`, which would restyle the whole IDE.
 Seam + wiring pinned by `PhosphorTipTest` (the v1.321.0 two-proof
 law).
 
+### 77. Content-resolved template panes don't load mime keybindings (found in the Angular-top arc, 2026-08-11)
+A file claimed by the PROGRAMMATIC NgTemplateContentResolver (suffixless
+`usage.html`) gets text/x-ng-template for LEXING — the Angular grammar
+paints — but its editor pane does not dispatch the mime's Keybindings:
+⌥⌘E and ⌥⌘B are dead there, while the SAME chords in the SAME session
+work on a declaratively-resolved `.component.html` pane (differential
+proven live, both directions). Suffixless templates therefore have
+colors and completion but not chord gestures. Suspected split-brain
+between the document's lexer mime and the editor-kit/keybinding mime
+for .instance-resolved files; needs a dedicated bisect of the platform's
+kit-selection path. The popup-menu entries still work everywhere.
+Second datum (same day, dev build): in a fresh dev userdir the SAME
+usage.html pane rode plain text/html end to end (platform HTML
+validator hints active, no ng grammar) — the content resolver's verdict
+appears session-dependent, so the bisect must first pin WHEN the
+programmatic resolver actually wins before touching keybindings.
+
+### 78. ⌘B on templates — SOLVED same day for tags, identifier half open
+The bisect landed: the chord was never shadowed — on CSL panes ⌘B is
+CSL's OWN Go to Declaration, which consults the language's
+DeclarationFinder and silently no-ops when there is none (so the
+v1.219.0 mime action never saw the key; its era of "working" was
+likely always the popup). The ng-template language now registers a
+snapshot-only Parser + NgSelectorDeclarationFinder, and the native ⌘B
+jumps <app-hero> → its component (live-proven, caret on the selector
+line). REMAINING: for non-tag identifiers the finder returns NONE and
+CSL stops — routing that case to ngserver's textDocument/definition
+inside the CSL flow is the identifier half, queued with the
+template-rename tranche.
+
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
 ### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0
