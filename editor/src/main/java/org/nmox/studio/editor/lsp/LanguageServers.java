@@ -31,6 +31,12 @@ public final class LanguageServers {
 
     /** Launches a server command in the project root; null when unavailable. */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup, List<String> command) {
+        return launch(lookup, command, false);
+    }
+
+    /** As {@link #launch}, optionally stripping the server's renameProvider (ledger 81). */
+    static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
+            List<String> command, boolean filterRename) {
         try {
             File dir = projectDir(lookup);
             List<String> resolved = ToolLocator.resolveCommand(command);
@@ -44,12 +50,19 @@ public final class LanguageServers {
             pb.environment().put("PATH", ToolLocator.augmentedPath());
             pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
+            java.io.InputStream serverOut = process.getInputStream();
+            if (filterRename) {
+                // ledger 81: in Angular workspaces ngserver is the rename
+                // authority (class AND template); stripping tsserver's
+                // renameProvider stops the platform applying BOTH edit sets
+                serverOut = new LspRenameCapabilityFilter(serverOut);
+            }
             // the Lookup carries the languageId mapping: without it the
             // client sends the RAW MIME as didOpen's languageId and
             // id-keyed servers (ngserver above all) silently ignore the
             // document — see LspLanguageIds
             return LanguageServerProvider.LanguageServerDescription.create(
-                    process.getInputStream(), process.getOutputStream(), process,
+                    serverOut, process.getOutputStream(), process,
                     org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
@@ -96,6 +109,12 @@ public final class LanguageServers {
      */
     static LanguageServerProvider.LanguageServerDescription launchNpm(
             Lookup lookup, String bin, String... args) {
+        return launchNpm(lookup, false, bin, args);
+    }
+
+    /** As {@link #launchNpm}, optionally rename-filtered (ledger 81). */
+    static LanguageServerProvider.LanguageServerDescription launchNpm(
+            Lookup lookup, boolean filterRename, String bin, String... args) {
         File dir = projectDir(lookup);
         File local = dir == null ? null : new File(dir, "node_modules/.bin/" + bin);
         // A committed node_modules/.bin/<server> is attacker-controlled
@@ -111,7 +130,7 @@ public final class LanguageServers {
         cmd.add(useLocal ? local.getAbsolutePath() : bin);
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
-        return reported(launch(lookup, cmd), bin);
+        return reported(launch(lookup, cmd, filterRename), bin);
     }
 
     /**
@@ -175,7 +194,10 @@ public final class LanguageServers {
     public static final class TypeScriptServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchNpm(lookup, "typescript-language-server", "--stdio");
+            // ledger 81: only in Angular workspaces, where ngserver shares
+            // the mime and owns rename end to end
+            boolean angular = angularRootAbove(projectDir(lookup)) != null;
+            return launchNpm(lookup, angular, "typescript-language-server", "--stdio");
         }
     }
 

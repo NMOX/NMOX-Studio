@@ -31,6 +31,26 @@ public final class NgSelectorDeclarationFinder implements DeclarationFinder {
         String text = info.getSnapshot().getText().toString();
         int[] span = NgSelectorHyperlink.tagSpanAt(text, caretOffset);
         if (span == null) {
+            // the ledger-78 identifier half: a non-tag identifier goes to
+            // ngserver — the lsp-client's provider navigates ITSELF, and
+            // CSL is quiet on NONE (decompiled: no status, no beep), so
+            // triggering the jump here and returning NONE is clean. The
+            // shipped lsp-client implements no HyperlinkLocationProvider,
+            // so a location-returning route does not exist to prefer.
+            javax.swing.text.Document doc =
+                    info.getSnapshot().getSource().getDocument(false);
+            if (doc != null
+                    && org.nmox.studio.editor.lsp.NgTemplateHyperlinkEnabler
+                            .identifierSpan(doc, caretOffset) != null) {
+                org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt lsp =
+                        org.nmox.studio.editor.lsp.NgTemplateHyperlinkEnabler
+                                .lspProvider();
+                if (lsp != null) {
+                    lsp.performClickAction(doc, caretOffset,
+                            org.netbeans.lib.editor.hyperlink.spi.HyperlinkType
+                                    .GO_TO_DECLARATION);
+                }
+            }
             return DeclarationLocation.NONE;
         }
         String tag = text.substring(span[0], span[1]);
@@ -52,6 +72,18 @@ public final class NgSelectorDeclarationFinder implements DeclarationFinder {
         String text = NgSelectorHyperlink.textOf(doc);
         int[] span = text == null ? null
                 : NgSelectorHyperlink.tagSpanAt(text, caretOffset);
-        return span == null ? OffsetRange.NONE : new OffsetRange(span[0], span[1]);
+        if (span != null) {
+            return new OffsetRange(span[0], span[1]);
+        }
+        // identifiers must be CLAIMED here or CSL never calls
+        // findDeclaration for them and ⌘B stays dead on {{ user.name }};
+        // claim only when a language server can actually answer
+        int[] id = org.nmox.studio.editor.lsp.NgTemplateHyperlinkEnabler
+                .identifierSpan(doc, caretOffset);
+        if (id != null && org.nmox.studio.editor.lsp.NgTemplateHyperlinkEnabler
+                .lspProvider() != null) {
+            return new OffsetRange(id[0], id[1]);
+        }
+        return OffsetRange.NONE;
     }
 }

@@ -63,7 +63,7 @@ public class NgTemplateHyperlinkEnabler implements HyperlinkProviderExt {
     }
 
     /** The platform LSP client's provider, found beside us in MimeLookup. */
-    static HyperlinkProviderExt lspProvider() {
+    public static HyperlinkProviderExt lspProvider() {
         for (HyperlinkProviderExt provider : MimeLookup
                 .getLookup(MimePath.parse("text/x-ng-template"))
                 .lookupAll(HyperlinkProviderExt.class)) {
@@ -79,7 +79,7 @@ public class NgTemplateHyperlinkEnabler implements HyperlinkProviderExt {
      * outside a word. Pure text scan (letters, digits, {@code _},
      * {@code $}) so it needs nothing from the lexer or the client.
      */
-    static int[] identifierSpan(Document doc, int offset) {
+    public static int[] identifierSpan(Document doc, int offset) {
         try {
             int length = doc.getLength();
             if (offset < 0 || offset > length) {
