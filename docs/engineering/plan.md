@@ -1324,6 +1324,31 @@ header opens on the first try every time), so a menu that "won't open"
 on the second attempt is the harness. This cost real time before a
 control experiment settled it.
 
+## Addendum — 2026-08-11, the overnight tail continues (v1.338–v1.340)
+
+**The Emmet family closes its own outs.** v1.338.0 the `+` combinator
+(`df+aic+jcc` → three declarations at the line's indent, ALL-OR-NOTHING
+— one bad part refuses the whole chain, because a partial expansion is
+a stylesheet mutation on a typo). v1.339.0 deterministic `lorem`
+(canonical passage, default 12 words, capitalized and period-closed —
+real Emmet randomizes, but output that changes between presses cannot
+be pinned by a test or trusted in a diff; decorated lorem refuses
+whole). The markup grammar's recorded outs are down to climb-up `^`.
+
+**Method notes.**
+- A mutation run is only a proof when the mutant VERIFIABLY applied:
+  v1.338's second mutant was first applied with a perl pattern that
+  silently didn't match, and the gate ran green against unmutated code.
+  Grep-count the mutated pattern (1→0) before trusting any result.
+- ProcessSupportTest's grandchild-reap assertion flakes on a LOADED box
+  (dev-app walks + builds running beside the verify). Kill walk
+  instances before `mvn verify`; a core flake on an editor-only diff is
+  the tell.
+- The windows DAP pair (JsDebugServerTest + RealChromeIntegrationTest)
+  flaked main on a DOCS-ONLY diff (v1.337); `gh run rerun --failed`
+  healed it and the resume-script (main-green → tag → assets) finished
+  the release.
+
 ## Addendum — 2026-08-11, the overnight tail (v1.335–v1.337)
 
 **v1.335.0 — the floors ratchet, and the update center crosses the
