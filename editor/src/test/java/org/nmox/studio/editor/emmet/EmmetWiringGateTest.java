@@ -87,5 +87,10 @@ class EmmetWiringGateTest {
         assertThat(src)
                 .contains("CssEmmet.abbreviationIn(")
                 .contains("CssEmmet.expand(");
+        // and a + chain's continuation lines must take the line's own
+        // indent (v1.338.0) — without this replace, the second
+        // declaration lands at column zero
+        assertThat(src.substring(src.indexOf("expandCss")))
+                .contains(".css().replace(\"\\n\", \"\\n\" + leading)");
     }
 }

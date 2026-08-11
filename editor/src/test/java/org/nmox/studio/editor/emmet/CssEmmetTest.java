@@ -116,4 +116,27 @@ class CssEmmetTest {
         CssEmmet.Expansion e = CssEmmet.expand("df");
         assertThat(e.caretOffset()).isEqualTo(e.css().length());
     }
+
+    @Test
+    @DisplayName("the + combinator chains declarations, one per line")
+    void chains() {
+        assertThat(css("df+aic+jcc")).isEqualTo(
+                "display: flex;\nalign-items: center;\njustify-content: center;");
+        assertThat(css("m0a+maw960")).isEqualTo(
+                "margin: 0 auto;\nmax-width: 960px;");
+        // ! rides its own part
+        assertThat(css("dn!+m0")).isEqualTo(
+                "display: none !important;\nmargin: 0;");
+        assertThat(CssEmmet.abbreviationIn("  df+aic")).isEqualTo("df+aic");
+    }
+
+    @Test
+    @DisplayName("one bad part refuses the WHOLE chain — no partial mutation")
+    void chainAllOrNothing() {
+        assertThat(css("df+qqq")).isNull();
+        assertThat(css("qqq+df")).isNull();
+        assertThat(css("df+")).isNull();
+        assertThat(css("+df")).isNull();
+        assertThat(css("df++aic")).isNull();
+    }
 }

@@ -136,19 +136,25 @@ public class ExpandAbbreviationAction extends BaseAction {
             return;
         }
         CssEmmet.Expansion e = CssEmmet.expand(abbrev);
+        // a + chain expands to multiple lines (v1.338.0); continuation
+        // lines take the abbreviation line's own indent, the same idiom
+        // as the markup path above
+        String leading = before.substring(0,
+                before.length() - before.stripLeading().length());
+        String indented = e.css().replace("\n", "\n" + leading);
         int abbrevStart = caret - abbrev.length();
         boolean[] landed = {false};
         doc.runAtomicAsUser(() -> {
             try {
                 doc.remove(abbrevStart, abbrev.length());
-                doc.insertString(abbrevStart, e.css(), null);
+                doc.insertString(abbrevStart, indented, null);
                 landed[0] = true;
             } catch (BadLocationException ex) {
                 // rolled back by runAtomic; nothing to do
             }
         });
         if (landed[0]) {
-            target.setCaretPosition(abbrevStart + e.caretOffset());
+            target.setCaretPosition(abbrevStart + indented.length());
         }
     }
 }
