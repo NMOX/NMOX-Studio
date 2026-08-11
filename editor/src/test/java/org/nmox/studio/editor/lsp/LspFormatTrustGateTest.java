@@ -29,8 +29,11 @@ class LspFormatTrustGateTest {
     @DisplayName("launchNpm only prefers the project-local server binary when the workspace is trusted")
     void lspGatesLocalBinaryOnTrust() throws Exception {
         String src = read("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
-        int m = src.indexOf("launchNpm(");
-        assertThat(m).as("launchNpm exists").isPositive();
+        // the FIRST launchNpm is a delegating overload since the
+        // ledger-81 filter; the trust gate lives in the filterRename
+        // variant, so extract THAT body
+        int m = src.indexOf("launchNpm(\n            Lookup lookup, boolean filterRename");
+        assertThat(m).as("the filterRename launchNpm exists").isPositive();
         String body = src.substring(m, src.indexOf("\n    }", m));
         assertThat(body)
                 .as("the local node_modules/.bin binary is used only when trusted")
