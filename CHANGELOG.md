@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.340.0] - 2026-08-11
+
+Docs truth — the Emmet family's night on the record.
+
+### Docs
+- plan.md's overnight addendum extends through v1.339: the `+`
+  combinator's all-or-nothing law, deterministic lorem and why it
+  refuses to randomize, and three method notes — the mutant-applied
+  grep check (a mutation run is only a proof when the mutant
+  verifiably applied), the loaded-box ProcessSupportTest flake, and
+  the windows DAP rerun recipe.
+- CLAUDE.md's headline moves v1.336.0 → v1.339.0.
+
 ## [1.339.0] - 2026-08-11
 
 Lorem joins the Emmet grammar — deterministic on purpose.
