@@ -34,6 +34,23 @@ public class NgTemplateLanguage extends DefaultLanguageConfig {
         return "Angular Template";
     }
 
+    // Angular-top arc: CSL routes the NATIVE ⌘B / Navigate ▸ Go to
+    // Declaration through the language's DeclarationFinder, and only
+    // consults it when the language has a Parser — without one the
+    // whole gesture family silently no-ops (the v1.219.0 measurement).
+    // The parser is snapshot-only (no diagnostics), the finder is the
+    // selector index, so the standard chord jumps <app-hero> → its
+    // component with no language service installed.
+    @Override
+    public org.netbeans.modules.parsing.spi.Parser getParser() {
+        return new org.nmox.studio.editor.angular.NgTemplateParser();
+    }
+
+    @Override
+    public org.netbeans.modules.csl.api.DeclarationFinder getDeclarationFinder() {
+        return new org.nmox.studio.editor.angular.NgSelectorDeclarationFinder();
+    }
+
     // no getLineCommentPrefix: HTML has only block comments. The CSL
     // kit installs its OWN toggle-comment action which SHADOWS any
     // same-named Actions-folder registration (measured live: the menu

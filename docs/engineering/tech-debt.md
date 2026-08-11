@@ -68,14 +68,18 @@ validator hints active, no ng grammar) — the content resolver's verdict
 appears session-dependent, so the bisect must first pin WHEN the
 programmatic resolver actually wins before touching keybindings.
 
-### 78. The v1.219.0 D-B goto chord no longer dispatches at all
-A property-gated probe (`-Dnmox.ng.probe`) showed ng-goto-declaration's
-actionPerformed NEVER fires on ⌘B — even on declarative panes where
-⌥⌘E and ⌥⌘B dispatch fine. Last live-proven in v1.219.0 (~130 releases
-ago); silent regression, cause unknown (Keymaps-profile shadowing of
-D-B is the lead suspect — DA- chords are unclaimed and work). The new
-⌥⌘B Go to Component covers the tag-jump gesture; the LSP identifier
-goto via ⌘B needs the bisect before it can be called alive.
+### 78. ⌘B on templates — SOLVED same day for tags, identifier half open
+The bisect landed: the chord was never shadowed — on CSL panes ⌘B is
+CSL's OWN Go to Declaration, which consults the language's
+DeclarationFinder and silently no-ops when there is none (so the
+v1.219.0 mime action never saw the key; its era of "working" was
+likely always the popup). The ng-template language now registers a
+snapshot-only Parser + NgSelectorDeclarationFinder, and the native ⌘B
+jumps <app-hero> → its component (live-proven, caret on the selector
+line). REMAINING: for non-tag identifiers the finder returns NONE and
+CSL stops — routing that case to ngserver's textDocument/definition
+inside the CSL flow is the identifier half, queued with the
+template-rename tranche.
 
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 

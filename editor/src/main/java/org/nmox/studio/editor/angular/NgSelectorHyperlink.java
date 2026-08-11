@@ -161,7 +161,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
 
     // ---- document text, edit-version cached (v1.234 law) -----------------
 
-    private static String textOf(Document doc) {
+    static String textOf(Document doc) {
         if (doc.getLength() > MAX_SCAN_CHARS) {
             return null;
         }
@@ -211,10 +211,11 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
     private static File projectDirOf(Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
         File f = fo == null ? null : FileUtil.toFile(fo);
-        if (f == null) {
-            return null;
-        }
-        File dir = f.getParentFile();
+        return f == null ? null : projectDirAbove(f.getParentFile());
+    }
+
+    /** The nearest enclosing workspace root above {@code dir} (shared with the CSL finder). */
+    static File projectDirAbove(File dir) {
         File cursor = dir;
         for (int up = 0; cursor != null && up < 8; up++, cursor = cursor.getParentFile()) {
             if (new File(cursor, "angular.json").isFile()
