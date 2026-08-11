@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.343.0] - 2026-08-11
+
+Docs truth — the eight-release overnight shift on the record.
+
+### Docs
+- plan.md gains the v1.341–v1.343 addendum: climb-up emptying the
+  grammar's outs list (with the group-swallow case that justified the
+  top-level refusal), the probes-first review method, the full
+  eight-release shift ledger, and the python-derived-gates hygiene.
+- CLAUDE.md's headline moves v1.339.0 → v1.342.0.
+
 ## [1.342.0] - 2026-08-11
 
 The Emmet-arc review — probes first, then the pins.
