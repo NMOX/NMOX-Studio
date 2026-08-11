@@ -346,6 +346,17 @@ final class BlockCanvas extends JComponent {
             select(fresh);
             host.changed();
             scrollToSelection();
+            // David's call (2026-08-11): you insert a Text piece because
+            // you are about to type its text — a menu insert of any
+            // parameterized kind opens the param editor immediately,
+            // instead of leaving the defaults in and the keystrokes
+            // falling on the canvas (which is exactly what fooled the
+            // v1.345 walk into typing into nothing). Kinds without
+            // params (nothing to ask) stay quiet. Drag-drops from the
+            // palette keep their quick-lay-out-then-edit rhythm.
+            if (!kind.params().isEmpty()) {
+                host.editParams(fresh);
+            }
         }
         repaint();
         return ok;

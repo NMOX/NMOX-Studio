@@ -303,6 +303,15 @@ public abstract class RackDevice extends JPanel {
         return super.getToolTipText(e);
     }
 
+    /**
+     * Rack tips wear the phosphor face — see
+     * {@link org.nmox.studio.rack.ui.controls.RackStyle#phosphorTip}.
+     */
+    @Override
+    public javax.swing.JToolTip createToolTip() {
+        return org.nmox.studio.rack.ui.controls.RackStyle.phosphorTip(super.createToolTip());
+    }
+
     // ---- signals ----
 
     /** Emits a signal from one of this device's output ports. */

@@ -22,33 +22,34 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
 
-### 76. Tooltips never reach an LCD on a rack faceplate
-Found while live-verifying v1.282.0 in the shipped app. `LcdDisplay`
-carries the full text as a tooltip when the glass had to cut it, and
-the method is correct in isolation — a headless probe on a 215px
-display returns the whole `UNTRUSTED WORKSPACE — EXECUTION REFUSED`
-string. In the running IDE the tooltip never appears.
+### 76. ~~Tooltips never reach an LCD on a rack faceplate~~ — CLOSED 2026-08-11 (the bisect with David)
+The bug was in the VERDICT, not the code. A property-gated probe
+(`-Dnmox.tooltip.probe`) in the running app, with David at a real
+mouse, traced every link live: `addNotify` registration ✓, mouse
+events delivered to the LCD ✓, `ToolTipManager` querying
+`getToolTipText(MouseEvent)` and receiving the full non-null string on
+thirteen consecutive moves ✓ — and the tip window SHOWED ✓ (David's
+eyes). The tooltip has worked at least since v1.283.0's registration
+fix. Three live checks said "never fires" because of two compounding
+observation failures:
 
-What the evidence rules in and out:
-- **Not the synthetic hover.** The same hover shows `RackButton`'s
-  command-transparency tooltip (`$ npm test / in …`) immediately, so
-  events and the manager both work in that window.
-- **Not v1.282.0's code.** REFLEX's *editable* LCD calls
-  `setToolTipText("Double-click to edit")` and has since v1.0 — it
-  shows nothing either. **No LcdDisplay tooltip has ever fired.**
-- **Not the registration site alone.** v1.283.0 moved registration
-  from the constructor (which runs off the EDT, where the Swing
-  singleton must not be touched) to `addNotify`/`removeNotify`, which
-  is the right place regardless. The behaviour did not change.
+- **Synthesized hovers can never see a tooltip.** `ToolTipManager`
+  restarts its 750 ms timer on every `mouseMoved`; a tip appears only
+  after the pointer holds completely still. Automation that glides and
+  clicks never dwells. (The recipe that CAN verify tooltips from
+  automation: one move onto the target, then wait > 750 ms without
+  moving.)
+- **The tip was camouflaged.** The LAF's default tooltip is near-black
+  with plain text — over the rack's near-black faceplate it is
+  functionally invisible, so even human spot-checks looked through it.
 
-The remaining suspects are the interaction between `RackDevice`'s own
-`ToolTipManager` registration plus its `getToolTipText(MouseEvent)`
-override (which answers for the patch bay and the rear jacks) and a
-registered child underneath it. That needs a real bisect against the
-manager's dispatch, not another guess — which is why this is a ledger
-entry and not a fix. Nothing is broken by the current state: the
-tooltip is inert, and the truncation it backs up is live-proven, so
-the visible text is honest with or without it.
+The second failure was the real product defect, and it is fixed:
+`RackStyle.phosphorTip` styles rack tips like the LCDs they sit beside
+(phosphor green on glass black, visible bezel line, LCD font), wired
+via `createToolTip()` on `LcdDisplay`, `RackButton`, and `RackDevice`
+only — never through `UIManager`, which would restyle the whole IDE.
+Seam + wiring pinned by `PhosphorTipTest` (the v1.321.0 two-proof
+law).
 
 ## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
 
@@ -86,22 +87,20 @@ three; mutation-proven ×3.
 
 ## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
 
-### 73. Suffixless Angular templates (`app.html`) are invisible to the IDE's template intelligence
-Angular 20+ scaffolds components without the `.component` suffix by
-default, but the v1.217.0 declarative mime resolver keys on the
-`.component.html` name substring — a stock `ng new` project's
-templates open as plain HTML: no @-block completion, no ALS
-type-checking, no ⌘B. MITIGATED for everything WE generate: the
-ANGULAR project template and the angular learning space both pin
-`@schematics/angular:component {"type": "component"}` so HALO GEN and
-File ▸ New Angular Schematic… keep producing recognized files
-(proven live on Angular 21's CLI, v1.241.0). The remaining gap is
-externally-scaffolded suffixless projects. A name-only resolver
-cannot close it — `app.html` is not distinguishable from generic
-HTML by name; closing it needs a programmatic resolver consulting
-the sibling `.ts` (templateUrl) or the workspace's angular.json,
-weighed against resolver-per-file-open cost. Take it up when a real
-suffixless repo shows up in use.
+### 73. ~~Suffixless Angular templates are invisible to the template intelligence~~ — CLOSED 2026-08-11 (David's call: invest)
+The programmatic resolver the deferral asked for exists:
+`NgTemplateContentResolver` claims `text/x-ng-template` for an
+`.html` whose same-basename `.ts` sibling carries `@Component`
+(`NgTemplates`: capped 8 KB sniff, verdicts cached by mtime+size,
+ONE sibling stat for ordinary html — the per-file-open cost the
+deferral weighed). Registered as an `.instance` IN the ordered
+`Services/MIMEResolver` layer folder at position 260 — the one
+channel that beats the platform's declarative html claim (the
+v1.217.0 ServiceProvider lesson, this time proven live POSITIVELY:
+a suffixless `hero.html` opened wearing the Angular grammar). The
+four-file switcher was already suffix-agnostic and is now pinned by
+`SuffixlessAngularGateTest`; index.html has no `.ts` twin and stays
+plain. Our own generators keep pinning the suffix regardless.
 
 ## Open — deferred deliberately, with reasons (added v1.235.0, the ambient-selection release)
 

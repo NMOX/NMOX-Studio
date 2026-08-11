@@ -204,4 +204,24 @@ class BlockCanvasKeyboardTest {
         key(canvas[0], KeyEvent.VK_F3, 0);
         assertThat(jumps).containsExactly("other-widget");
     }
+
+    @Test
+    @DisplayName("a menu insert of a parameterized kind opens the param editor at once")
+    void insertOpensEditor() throws Exception {
+        // David's call, 2026-08-11: you insert a Text piece because you
+        // are about to type its text — the keystrokes must have a field,
+        // not the canvas (what fooled the v1.345 walk)
+        Object[] cd = canvasWithDoc();
+        BlockCanvas canvas = (BlockCanvas) cd[0];
+        BlockDoc doc = (BlockDoc) cd[1];
+        java.util.concurrent.atomic.AtomicInteger changes =
+                (java.util.concurrent.atomic.AtomicInteger) cd[2];
+
+        int before = changes.get();
+        SwingUtilities.invokeAndWait(() ->
+                canvas.insertKind(BlockKind.TEXT, doc.root(), 0));
+        // the +1000 marker is the host stub's editParams — the editor
+        // opened without any F2
+        assertThat(changes.get() - before).isGreaterThanOrEqualTo(1001);
+    }
 }

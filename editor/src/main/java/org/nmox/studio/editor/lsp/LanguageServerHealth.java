@@ -26,13 +26,30 @@ public final class LanguageServerHealth {
     private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();
     private static final Icon ICON = dot();
 
+    /**
+     * Languages whose missing LSP is NOT worth a notification (David's
+     * review, 2026-08-11): the stylesheet family ships first-class
+     * BUILT-IN intelligence — color swatches, design-token completion
+     * with swatch icons, the ⌘-click token jump, the color picker, and
+     * ⌥⌘E — so greeting a designer's first .css open with
+     * "intelligence unavailable" undersells the product's own feature
+     * set to nag about a server that is merely additive (stylelint-lsp
+     * still attaches silently when present). Languages stay on this
+     * list only when the built-ins genuinely cover the daily loop; for
+     * Go or Rust the LSP IS the intelligence and the notification
+     * stays.
+     */
+    private static final Set<String> QUIET_BINARIES = Set.of(
+            "vscode-css-language-server");
+
     private LanguageServerHealth() {
     }
 
     /** Called when a server binary failed to launch; notifies at most once per binary. */
     public static void reportMissing(String binary) {
-        if (binary == null || !REPORTED.add(binary)) {
-            return; // already told them this session
+        if (binary == null || QUIET_BINARIES.contains(binary)
+                || !REPORTED.add(binary)) {
+            return; // already told them, or built-ins cover this family
         }
         Server s = LanguageServerCatalog.forBinary(binary);
         String language = s != null ? s.language() : binary;

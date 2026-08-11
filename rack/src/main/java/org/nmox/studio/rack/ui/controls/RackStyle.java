@@ -153,4 +153,28 @@ public final class RackStyle {
                 new float[]{0f, 0.5f, 1f},
                 new Color[]{new Color(120, 122, 126), new Color(205, 207, 211), new Color(105, 107, 111)});
     }
+
+    /**
+     * The rack's tooltip face (ledger 76's real finding): the LAF's
+     * default tooltip is a near-black window with plain text — over a
+     * near-black faceplate it is functionally invisible, which is how
+     * "the tooltip never fires" survived three live checks when every
+     * link of the tooltip chain was in fact working. Rack surfaces
+     * style their tips like the LCDs they sit beside: phosphor green
+     * on glass black with a visible bezel line, so a tip over the rack
+     * reads as part of the hardware instead of vanishing into it.
+     * Scoped via each surface's {@code createToolTip()} override —
+     * never through UIManager, which would restyle the whole IDE.
+     */
+    public static javax.swing.JToolTip phosphorTip(javax.swing.JToolTip tip) {
+        tip.setBackground(LCD_BG);
+        tip.setForeground(LCD_TEXT);
+        tip.setOpaque(true);
+        tip.setFont(LCD_FONT);
+        tip.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(
+                        new Color(58, 128, 70), 1),
+                javax.swing.BorderFactory.createEmptyBorder(4, 6, 4, 6)));
+        return tip;
+    }
 }
