@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.348.0] - 2026-08-11
+
+The ALS resurrection — the v1.347.0 gauntlet found the entire Angular
+Language Service chain silently inert on real workspaces, and the probe
+bisect landed the cause in one round:
+
+### Fixed
+- **ngserver attempts again**: the LSP provider resolved the workspace
+  from the file's OWNER project — and Angular's `src/index.html` is a
+  STATIC-kind manifest, so that owner is `src/`, where `angular.json`
+  does not exist. The provider silently declined on every pane, killing
+  template intelligence, the missing-server notification, AND rename
+  (the v1.223.0 class, second consumer). The workspace is now located
+  by walking up for `angular.json` itself; live-proven — ngserver
+  started with the project's own probe locations, and the platform
+  rename (⌃R) REACHED THE TEMPLATE: `{{ title }}` rewritten across
+  files by ngserver.
+- The Go to Component popup entry moved off position 95 (it collided
+  with Open Angular Template — ledger 80).
+
+### Added
+- Property-gated `-Dnmox.ng.probe` diagnostics along the ALS decline
+  points — the instrument that found the bug stays for the next bisect.
+- Ledger 81 with evidence: the platform lsp-client rename merges edit
+  sets from BOTH servers sharing text/typescript without dedup, so the
+  class declaration renamed twice while the template renamed once.
+- Live-proven in shipped 1.347: the Tools ▸ Language Servers one-click
+  Install put `@angular/language-server@18.1.2` INTO the project,
+  trust-gated, matching the workspace's Angular major.
+
 ## [1.347.0] - 2026-08-11
 
 The Angular-top arc — David's mandate: make the Angular support top in
