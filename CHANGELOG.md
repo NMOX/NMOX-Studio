@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.334.0] - 2026-08-11
+
+Docs truth and the go-to story — the six-release iteration closes.
+
+### Docs
+- The user guide's editor chapter gains **Expand Abbreviation (⌥⌘E)**
+  (the full v1 grammar, the auto-pair awareness, and the refusals as
+  features) and **Design tokens** (project-wide `var(` completion with
+  swatch icons, ⌘-click usage→declaration, swatches through the
+  indirection with its document-local design stated).
+- The README opens the studio roll-call with **the go-to strip, by
+  audience** — what a web developer, a designer, and an engineer each
+  get on day one, in their own vocabulary.
+- CLAUDE.md's headline moves v1.326.0 → v1.333.0 carrying the whole
+  iteration; plan.md's addendum records the arc and its method notes —
+  the status-bar-column diagnostic, the law-regressing-beside-its-own-
+  cure lesson, and the three-strikes rule on gate literals (proven
+  against `git show HEAD:`, never from memory).
+
+### The iteration, in one place
+- v1.329 Emmet · v1.330 design tokens · v1.331 the Classic Kit walk
+  (all-clean, kit work-list closed) · v1.332 the shipped-app walk (the
+  auto-pair trap found and fixed) · v1.333 the arc review (five
+  findings, four fixed) · v1.334 this close. Every feature was
+  live-proven before its PR, walked in the shipped build after, and
+  reviewed within the day.
+
 ## [1.333.0] - 2026-08-10
 
 The arc review over the six-release iteration's fresh code

@@ -1324,6 +1324,51 @@ header opens on the first try every time), so a menu that "won't open"
 on the second attempt is the harness. This cost real time before a
 control experiment settled it.
 
+## Addendum — 2026-08-10/11, the six-release iteration (v1.329–v1.334)
+
+David's ask, verbatim: six releases toward "the go-to product for web
+developers, designers, and engineers." The slate: two flagship grants,
+one lens walk, then the walk→review→docs quality tail.
+
+**The grants.** v1.329 Emmet (⌥⌘E, HTML + Angular templates — a
+written-down grammar subset where the refusals are features: bare words
+expand only when they ARE elements, unparseable text is never touched).
+v1.330 design tokens (var( completion with swatch icons, ⌘-click
+usage→declaration, swatches through the indirection — extending the
+v1.227 design package exactly where its own javadoc said it stopped).
+
+**The walks paid, again.** v1.331's Classic Kit artifact walk came back
+all-clean against 2026 toolchains — the second clean walk ever, and the
+kit work-list (PWA→Standards→Classic) closed. v1.332 walked the two new
+features in the SHIPPED app on the mime surfaces the dev proofs skipped
+and found the auto-pair trap: typing {text} the way anyone does leaves
+the caret before the auto-closed brace, and the chord refused. The
+diagnostic tell was the STATUS BAR COLUMN (2:22 on a 22-char line) —
+when a gesture refuses, check where the caret actually is before
+blaming the gesture.
+
+**The review paid, again — and its headline is a law regressing in
+day-old code.** CssVarHyperlink paid a full getText per ⌘-mouse-move —
+the exact class the v1.234 review fixed in its SIBLING, whose javadoc
+carries the whole rationale. Fresh code next to a documented cure still
+regressed it; gates that name laws (the new hyperlinkTextCached test)
+are the only thing that scales. Also: the token cache hoarded a stale
+entry PER SAVE (key carried the freshness stamp; now path-keyed with
+the stamp in the value), completion accept bypassed the declared house
+splice (CompletionEdits public on its second consumer — the KitFiles
+precedent), and the var( auto-popup got a plausible-cause fix recorded
+honestly as unverified.
+
+**Method notes worth keeping.**
+- The committed-content docs gate caught a bad literal on THREE
+  consecutive derivations (casing, wrong-source phrase). Literals must
+  be proven against `git show HEAD:` — never trusted from memory.
+- `open_application` on macOS launches the DEFAULT-userdir instance —
+  refocusing a --userdir walk instance needs a window click, never the
+  app-level open.
+- Focus theft mid-`type` aborts keystroke delivery cleanly (the harness
+  says how many landed); re-check the document, don't re-type blind.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +
