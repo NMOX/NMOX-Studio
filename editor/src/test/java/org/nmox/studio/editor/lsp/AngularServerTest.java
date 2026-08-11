@@ -69,9 +69,12 @@ class AngularServerTest {
     @DisplayName("it only starts inside an Angular workspace")
     void onlyInAngularWorkspaces() throws IOException {
         String body = angularBody(source());
+        // the gate moved spellings in the ledger-79 fix: the workspace is
+        // located by walking UP for angular.json (the owner project is
+        // often src/), and a null root still declines — the law holds
         assertThat(body)
                 .as("every other TypeScript project would otherwise pay for it")
-                .contains("hasAngular(dir)");
+                .contains("angularRootAbove(projectDir(lookup))");
     }
 
     @Test

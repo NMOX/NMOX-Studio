@@ -51,7 +51,7 @@ only — never through `UIManager`, which would restyle the whole IDE.
 Seam + wiring pinned by `PhosphorTipTest` (the v1.321.0 two-proof
 law).
 
-### 79. ngserver never ATTEMPTS in the shipped app on a real workspace (v1.347.0 walk, 2026-08-11)
+### 79. CLOSED same day — ngserver never attempted because the file's OWNER project is src/ (the v1.223.0 class)
 The ALS gauntlet on ~/NMOX/ngdemo found the whole chain silently inert:
 across three sessions (incl. fresh JVMs), on both text/typescript and
 text/x-ng-template panes, with EVERY externally-checkable precondition
@@ -68,6 +68,25 @@ and Refactor ▸ Rename over ngserver is untestable. Template
 intelligence was last live-proven in v1.218.0. Next step is a
 property-gated probe bisect of AngularServer.startServer's five decline
 points in a dev build — external observation is exhausted.
+RESOLUTION (same day, one probe round): projectDir(lookup) returns the
+file's OWNER project — and Angular's src/index.html is a STATIC-kind
+manifest, so that owner is ngdemo/src, where src/angular.json does not
+exist → silent decline (the v1.223.0 class, second consumer). Fix:
+AngularServer resolves the workspace by walking UP for angular.json
+itself (angularRootAbove, the v1.223.0 cure). Live-proven post-fix:
+ngserver started with the project's own probe locations, and the
+platform rename dialog reached the TEMPLATE ({{ title }} → {{ heading }}
+rewritten across files). The property-gated -Dnmox.ng.probe probes stay.
+
+### 81. LSP rename DOUBLE-APPLIES where two servers share a mime (found by the rename probe)
+With tsserver AND ngserver both bound to text/typescript, Refactor ▸
+Rename (⌃R) collected BOTH servers' edit sets and applied both: the
+class declaration became `headingheading` while the template usage
+(ngserver's edit alone) renamed correctly. The platform lsp-client's
+refactoring merges per-binding edits without range dedup. Options:
+dedup identical (file,range,newText) edits in a wrapper, filter rename
+capability from one binding, or upstream fix; until then rename on
+Angular workspaces needs a post-check of the declaration line.
 
 ### 80. Popup position 95 collision on ng-template panes (v1.347.0)
 messages.log: "Found same position 95 for both

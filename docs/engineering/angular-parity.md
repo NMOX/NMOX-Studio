@@ -28,9 +28,9 @@ kept current every time the Angular surface changes.
 | `ng serve` → browser loop in-app | ✅ v1.318.0 — Run → serving chip → in-app Browser at the CLI's own URL (loopback + h2c fixes underneath) | ⚠️ external browser | ⚠️ external browser |
 | DevTools component tree of the running app | ✅ v1.222.0 — dev builds; prod build honestly says so | ❌ (browser extension) | ❌ (browser extension) |
 | Angular-aware Run Focused Test | ✅ v1.223.0 — `ng test --include`, file-level (Karma has no name filter) | ✅ method-level where runner allows | ⚠️ extension-dependent |
-| Language-service install friction | ✅ one click on the notification installs it INTO the project, trust-gated (Angular-top arc, mutation-proven); versions match the workspace by construction | ✅ bundled | ⚠️ extension global, version skew possible |
+| Language-service install friction | ✅ Tools ▸ Language Servers Install proven live in shipped 1.347 (@angular/language-server@18.1.2 into the project, trust-gated); the notification entry point unblocked by the ledger-79 fix | ✅ bundled | ⚠️ extension global, version skew possible |
 | Starter that actually installs | ✅ template npm-proven on default node (v1.241.0), node-floor refusals translated to human (v1.318.0) | ✅ | n/a |
-| Rename symbol across template + class | ❌ not offered | ✅ | ✅ |
+| Rename symbol across template + class | ⚠️ ⌃R reaches ngserver and REWRITES the template usage (live-proven post-ledger-79 fix) — but the class declaration double-applies where two servers share the mime (ledger 81) | ✅ | ✅ |
 | Quick-fixes / code actions in templates | ❌ not offered | ✅ | ✅ |
 
 ## Where we are genuinely ahead

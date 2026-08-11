@@ -140,6 +140,28 @@ public final class LanguageServers {
         return false;
     }
 
+    /**
+     * The nearest directory at-or-above {@code start} carrying
+     * {@code angular.json}, or null. Bounded walk — the v1.223.0 cure
+     * applied to the LSP consumer.
+     */
+    static File angularRootAbove(File start) {
+        File cursor = start;
+        for (int up = 0; cursor != null && up < 8; up++, cursor = cursor.getParentFile()) {
+            if (new File(cursor, "angular.json").isFile()) {
+                return cursor;
+            }
+        }
+        return null;
+    }
+
+    /** Diagnostics for the ALS chain, silent unless -Dnmox.ng.probe. */
+    private static void ngProbe(String msg) {
+        if (Boolean.getBoolean("nmox.ng.probe")) {
+            System.err.println("[ng-probe] AngularServer " + msg);
+        }
+    }
+
     private static File projectDir(Lookup lookup) {
         Project project = lookup.lookup(Project.class);
         return project == null ? null : FileUtil.toFile(project.getProjectDirectory());
@@ -369,9 +391,15 @@ public final class LanguageServers {
     public static final class AngularServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            File dir = projectDir(lookup);
-            if (dir == null
-                    || !org.nmox.studio.rack.devices.ProjectInspector.hasAngular(dir)) {
+            // Angular's src/index.html is a STATIC-kind manifest, so the
+            // file's OWNER project is often src/ rather than the
+            // workspace (the v1.223.0 class, found again here by probe:
+            // dir=.../ngdemo/src declined on src/angular.json) — locate
+            // the real root by walking up for angular.json itself
+            File dir = angularRootAbove(projectDir(lookup));
+            ngProbe("startServer angular root=" + dir);
+            if (dir == null) {
+                ngProbe("decline: no angular.json above the owner project");
                 return null; // not an Angular workspace: nothing to do, quietly
             }
             // v1.216.0 (arc review): the probe locations make ngserver
@@ -381,10 +409,12 @@ public final class LanguageServers {
             // binary. Same silent gate as launchNpm; there is no safe
             // global fallback because the probe dirs ARE the point.
             if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                ngProbe("decline: workspace not trusted");
                 return null;
             }
             File modules = angularProbeDir(dir);
             if (modules == null) {
+                ngProbe("decline: no probe dir (no typescript install)");
                 return null; // no install yet — npm install first, then reopen
             }
             if (!new File(modules, "typescript/lib/tsserverlibrary.js").isFile()) {
@@ -403,6 +433,7 @@ public final class LanguageServers {
             // could never find.)
             File local = new File(modules, ".bin/ngserver");
             String bin = local.canExecute() ? local.getAbsolutePath() : "ngserver";
+            ngProbe("launching bin=" + bin);
             return reported(launch(lookup, List.of(bin, "--stdio",
                     "--tsProbeLocations", modules.getAbsolutePath(),
                     "--ngProbeLocations", modules.getAbsolutePath())), "ngserver");
