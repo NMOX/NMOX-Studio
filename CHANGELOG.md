@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.337.0] - 2026-08-11
+
+Docs truth — the overnight tail on the record.
+
+### Docs
+- plan.md gains the 2026-08-11 overnight addendum: the v1.335.0 floors
+  ratchet + update-center gauntlet (with the read-the-whole-log false
+  alarm), the v1.336.0 CSS Emmet story (incl. the shipped-app .less
+  walk — three-value box, `dib`, and the value-position refusal, all
+  clean in the installed 1.336.0), and the gate-literal law's fifth
+  strike (regex metacharacters killed the docs grep AFTER the merge;
+  gates now grep with `-Fq` and a post-merge death is resumed, never
+  re-run).
+- CLAUDE.md's headline moves v1.333.0 → v1.336.0 carrying the tail.
+
 ## [1.336.0] - 2026-08-11
 
 Emmet speaks CSS — the grammar's own recorded out, closed.
