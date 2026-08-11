@@ -68,8 +68,12 @@ public class ExpandAbbreviationAction extends BaseAction {
         }
         try {
             int caret = target.getCaretPosition();
-            int lineStart = Utilities.getRowStart(target, caret);
-            int lineEnd = Utilities.getRowEnd(target, caret);
+            // the DOCUMENT row overloads, deliberately: the component
+            // overloads resolve VISUAL rows, which need a laid-out UI
+            // and — worse — split a soft-wrapped line at the wrap, so an
+            // abbreviation before a wrap boundary would be truncated
+            int lineStart = Utilities.getRowStart(doc, caret);
+            int lineEnd = Utilities.getRowEnd(doc, caret);
             String before = doc.getText(lineStart, caret - lineStart);
             String after = doc.getText(caret, lineEnd - caret);
             // stylesheet panes speak the CSS grammar (v1.336.0); the mime

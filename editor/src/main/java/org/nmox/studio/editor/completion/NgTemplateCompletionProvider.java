@@ -122,6 +122,17 @@ public class NgTemplateCompletionProvider implements CompletionProvider {
     }
 
     /**
+     * Test seam: one instance of each row type, so the render/width
+     * surface is exercisable headlessly (the windows JaCoCo lane's
+     * margin law — see NgArcSurfaceTest).
+     */
+    public static List<Object> itemsForTest() {
+        return List.of(
+                new SelectorItem("app-test", 0, 0),
+                new NgItem(new NgTemplateCompletion.Item("@if", "block"), 0, 0));
+    }
+
+    /**
      * A component-selector row: accepting {@code app-card} writes the
      * whole pair {@code app-card></app-card>} from the typed prefix and
      * parks the caret between the tags — the same landing WebStorm
