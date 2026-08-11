@@ -28,10 +28,15 @@ import java.util.Set;
  * period-terminated — so tests can pin it and two presses agree.
  * Lorem takes no decorations: {@code lorem.big} or {@code lorem{x}}
  * refuses, because a class on placeholder text is a typo, not intent.
- * Deliberately OUT, recorded here so nobody re-derives the boundary:
- * climb-up {@code ^} (write a group instead), CSS abbreviations live
- * in {@link CssEmmet}, and implicit tag names by context
- * ({@code ul>.x} makes a div, not an li).
+ * Climb-up {@code ^} (v1.341.0) returns one level per caret:
+ * {@code header>h1^main} puts main beside header, {@code
+ * div>ul>li^^footer} climbs two. Two documented refusals instead of
+ * Emmet's clamping: climbing PAST THE ROOT refuses (the extra {@code
+ * ^} is a typo, not a wish), and a group is a wall — {@code ^} cannot
+ * climb out of {@code (...)} (put the sibling after the group
+ * instead). Deliberately OUT, recorded here so nobody re-derives the
+ * boundary: CSS abbreviations live in {@link CssEmmet}, and implicit
+ * tag names by context ({@code ul>.x} makes a div, not an li).
  */
 public final class Emmet {
 
@@ -105,6 +110,12 @@ public final class Emmet {
             Parser p = new Parser(trimmed);
             List<Node> roots = p.parseSiblings();
             if (!p.atEnd() || roots.isEmpty()) {
+                return null;
+            }
+            // climbs that outlived every level would step past the root
+            // (or out of a group — a group is a wall, use a sibling):
+            // refuse rather than clamp (v1.341.0)
+            if (p.pendingClimbs > 0) {
                 return null;
             }
             // a lone word must BE an element (see KNOWN_ELEMENTS' javadoc);
@@ -216,7 +227,15 @@ public final class Emmet {
             return i >= s.length();
         }
 
-        /** siblings := unit (('+'|'>') ...) — '>' nests into the LAST unit. */
+        /**
+         * Climbs still owed to enclosing levels (v1.341.0): {@code ^}
+         * sets this and unwinds the sibling recursion; each level's
+         * {@code >} branch consumes one. Left over at the top =
+         * climbing past the root = refusal, never a clamp.
+         */
+        int pendingClimbs;
+
+        /** siblings := unit (('+'|'>'|'^') ...) — '>' nests into the LAST unit. */
         List<Node> parseSiblings() {
             List<Node> list = new ArrayList<>();
             list.add(parseUnit());
@@ -229,6 +248,21 @@ public final class Emmet {
                     i++;
                     Node parent = list.get(list.size() - 1);
                     parent.children.addAll(parseSiblings());
+                    if (pendingClimbs > 0) {
+                        pendingClimbs--;
+                        if (pendingClimbs > 0) {
+                            break;             // keep climbing through the caller
+                        }
+                        list.add(parseUnit()); // landed: a sibling at THIS level
+                    }
+                } else if (c == '^') {
+                    // climb-up: count the run, unwind to the level that
+                    // owns the landing spot ('a>b^c' puts c beside a)
+                    while (!atEnd() && s.charAt(i) == '^') {
+                        i++;
+                        pendingClimbs++;
+                    }
+                    break;
                 } else {
                     break;
                 }

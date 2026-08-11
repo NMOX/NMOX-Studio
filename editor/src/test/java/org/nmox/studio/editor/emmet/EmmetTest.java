@@ -165,4 +165,36 @@ class EmmetTest {
         // the lone-word law is untouched for every OTHER non-element
         assertThat(Emmet.expand("world", "  ")).isNull();
     }
+
+    @Test
+    @DisplayName("climb-up ^ returns one level per caret")
+    void climbUp() {
+        // the canonical case: main lands BESIDE header, not inside it
+        assertThat(Emmet.expand("header>h1^main", "  ").html()).isEqualTo(
+                "<header>\n  <h1></h1>\n</header>\n<main></main>");
+        // two carets climb two levels
+        assertThat(Emmet.expand("div>ul>li^^footer", "  ").html()).isEqualTo(
+                "<div>\n  <ul>\n    <li></li>\n  </ul>\n</div>\n<footer></footer>");
+        // the climbed unit is a full citizen: siblings and children follow
+        assertThat(Emmet.expand("div>p^section>i", "  ").html()).isEqualTo(
+                "<div>\n  <p></p>\n</div>\n<section>\n  <i></i>\n</section>");
+        assertThat(Emmet.expand("a>b^i+em", "  ").html()).isEqualTo(
+                "<a href=\"\">\n  <b></b>\n</a>\n<i></i>\n<em></em>");
+    }
+
+    @Test
+    @DisplayName("climbing past the root or out of a group refuses, never clamps")
+    void climbRefusals() {
+        // one level deep, two carets: past the root — a typo, not a wish
+        assertThat(Emmet.expand("a>b^^i", "  ")).isNull();
+        // a group is a wall
+        assertThat(Emmet.expand("(a>b^^i)", "  ")).isNull();
+        // dangling climb with nothing to land
+        assertThat(Emmet.expand("a>b^", "  ")).isNull();
+        // ^ with no descent at all
+        assertThat(Emmet.expand("a^b", "  ")).isNull();
+        // climbs that survive a CLOSED group must not be swallowed —
+        // without the top-level check this renders (a>b) silently
+        assertThat(Emmet.expand("(a>b^^)", "  ")).isNull();
+    }
 }
