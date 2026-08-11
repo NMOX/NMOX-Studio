@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.339.0] - 2026-08-11
+
+Lorem joins the Emmet grammar — deterministic on purpose.
+
+### Added
+- **`lorem` / `loremN` emit placeholder text** in ⌥⌘E expansions:
+  the canonical passage, N words (default 12), capitalized and
+  period-closed — `ul>li*3>lorem4` fills a whole mock list. Real
+  Emmet randomizes its lorem; ours is DETERMINISTIC by design (a
+  generator whose output changes between presses cannot be pinned by
+  a test or trusted in a diff), so every press and every repetition
+  agree. `lorem` is the one non-element bare word the lone-word gate
+  admits; every other bare non-element still refuses.
+- **Decorated lorem refuses the whole abbreviation** — `lorem.big`,
+  `lorem{x}`, `p>lorem2.x` all leave the text untouched: a class on
+  placeholder text is a typo, not intent. Out-of-range counts
+  (`lorem0`, above 200) and non-numeric suffixes refuse too.
+
+### Verified
+- Live in the dev build: `lorem3` → "Lorem ipsum dolor." and
+  `ul>li*2>lorem2` → the nested list with text in each item, indented.
+- Mutation-proven ×3, each verified applied then failing: the
+  decoration-refusal throw deleted, the lone-word gate exception
+  dropped, and the capitalization removed.
+
 ## [1.338.0] - 2026-08-11
 
 CSS abbreviations chain — the + combinator.

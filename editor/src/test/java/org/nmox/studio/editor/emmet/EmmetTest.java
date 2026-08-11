@@ -134,4 +134,35 @@ class EmmetTest {
         // still honest: closers that don't complete anything refuse
         assertThat(Emmet.abbreviationAt("hello world", "}")).isNull();
     }
+
+    @Test
+    @DisplayName("lorem emits deterministic placeholder text, not a tag")
+    void lorem() {
+        // lone lorem: the one non-element bare word; default 12 words,
+        // capitalized, period-closed — pinned so two presses agree
+        assertThat(Emmet.expand("lorem", "  ").html()).isEqualTo(
+                "Lorem ipsum dolor sit amet consectetur adipiscing elit"
+                + " sed do eiusmod tempor.");
+        assertThat(Emmet.expand("lorem3", "  ").html())
+                .isEqualTo("Lorem ipsum dolor.");
+        // as a child, the text nests inside the element
+        assertThat(Emmet.expand("p>lorem2", "  ").html())
+                .isEqualTo("<p>\n  Lorem ipsum.\n</p>");
+        // multiplication repeats the (same) text — deterministic by design
+        assertThat(Emmet.expand("ul>li*2>lorem2", "  ").html()).isEqualTo(
+                "<ul>\n  <li>\n    Lorem ipsum.\n  </li>\n"
+                + "  <li>\n    Lorem ipsum.\n  </li>\n</ul>");
+    }
+
+    @Test
+    @DisplayName("decorated or malformed lorem refuses the whole abbreviation")
+    void loremRefusals() {
+        assertThat(Emmet.expand("lorem.big", "  ")).isNull();
+        assertThat(Emmet.expand("lorem{x}", "  ")).isNull();
+        assertThat(Emmet.expand("p>lorem2.x", "  ")).isNull();
+        assertThat(Emmet.expand("lorem0", "  ")).isNull();
+        assertThat(Emmet.expand("loremx", "  ")).isNull();
+        // the lone-word law is untouched for every OTHER non-element
+        assertThat(Emmet.expand("world", "  ")).isNull();
+    }
 }
