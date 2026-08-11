@@ -296,6 +296,37 @@ or no consent and it says so; nothing is ever sent without your click.
   any web file auto-reloads a local page — the save → see loop with
   no manual refresh. Remote pages never auto-reload.
 
+### Expand Abbreviation (⌥⌘E)
+
+Emmet-style expansion in HTML **and Angular templates**: type
+`ul>li.item$*3` and press **⌥⌘E** — the abbreviation becomes real,
+indented markup with the caret parked at the first useful empty spot.
+The grammar covers elements (dashed custom elements included), `.class`
+and `#id` (a leading `.` or `#` implies a `div`), attributes
+`[href=/ target=_blank]`, text `{hi}`, child `>`, sibling `+`,
+multiplication `*3` with `$` numbering (`$$` zero-pads), grouping
+`(...)`, void elements, and sensible default attributes for
+`a`/`img`/`input`/`link`/`iframe`/`label`. It is auto-pair aware — the
+caret sitting before an auto-closed `}` still expands — and it refuses
+honestly: a bare word only expands when it *is* an HTML element, and
+anything unparseable leaves your text untouched with a status-line
+hint. Deliberately out (recorded in the code): climb-up `^`, CSS
+abbreviations, lorem.
+
+### Design tokens (custom properties)
+
+Your design system's `--tokens` are first-class in every stylesheet
+dialect. Type `var(` and complete from the **whole project's** custom
+properties — each row shows the token's value, behind a color swatch
+when the value is a color, so the popup doubles as a legend of the
+design system (invoke with ⌃Space; document tokens list first).
+**⌘-click** a `var(--token)` usage to jump to its declaration, same
+file or across the project. And `var()` usages whose token declares a
+color **paint as that color** right in the editor — the swatch resolves
+through the indirection (document-local by design; cross-file
+resolution rides the completion and the jump, which run off the paint
+path).
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by

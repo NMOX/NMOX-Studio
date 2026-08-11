@@ -37,6 +37,17 @@ phosphor styling, for a browser.*
 | ![Ask ORACLE](docs/images/oracle-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
 | ***Ask ORACLE*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
 | ![Block Studio](docs/images/tabs/block-studio.png) | ![DB Studio](docs/images/tabs/db-studio.png) |
+**The go-to studio, by audience.** *Web developers*: Emmet expansion
+(⌥⌘E) in HTML and Angular templates, tsserver/eslint/Prettier out of the
+box, breakpoints in Node and Chrome, a Task Board (⌥⌘1) beside the code.
+*Designers*: color swatches on every literal **and through `var()`
+tokens**, project-wide token completion with swatch icons, ⌘-click from
+usage to declaration, a click-to-pick color chooser, live viewport
+presets, save-to-reload. *Engineers*: a 53-device task rack, PREFLIGHT
+ship gates, CI export, six-engine DB Studio, multi-cloud infra designer,
+and an update center that has upgraded itself across every release since
+v1.51.
+
 | ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***Task Board** (⌥⌘1 per-project kanban — columns, drag/keyboard moves, WIP limits, `.nmoxtasks.json` beside the project), **DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs* |
 
 ## Download
