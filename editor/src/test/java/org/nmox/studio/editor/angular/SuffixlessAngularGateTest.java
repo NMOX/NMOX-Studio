@@ -11,33 +11,35 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Ledger 73's two-proof wiring (v1.321.0 law): {@link NgTemplatesTest}
- * proves the sniff diverges; this gate proves the call sites exist —
- * the resolver rides the sniff, the LAYER carries the .instance in the
- * ordered folder (the ONLY registration channel that beats the
- * platform's html claim, proven live twice in v1.217.0 and again,
- * positively this time, on 2026-08-11), and the four-file switcher
- * handles a suffixless set.
+ * Suffixless Angular sets (ledger 73 → 82). The four-file switcher
+ * speaks suffixless by its own file logic; the MIME half is a
+ * TOMBSTONE: v1.346.0 shipped a programmatic content resolver as an
+ * {@code .instance} in {@code Services/MIMEResolver}, and the ledger-77
+ * bisect (2026-08-11) proved it structurally inert — decompiled,
+ * {@code MIMESupport$CachedFileObject.getResolvers()} builds the chain
+ * as declarative-XML resolvers FIRST (only {@code .xml} children of the
+ * folder), then appends Lookup-provided instances, so the platform's
+ * declarative ext=html claim answers before any {@code .instance}
+ * regardless of position. The resolver was deleted; this gate keeps it
+ * from coming back through the door that cannot work.
  */
 class SuffixlessAngularGateTest {
 
     @Test
-    @DisplayName("the resolver delegates to the sniff and the layer registers it at 260")
-    void resolverWired() throws Exception {
-        String resolver = Files.readString(new File(
-                "src/main/java/org/nmox/studio/editor/grammars/NgTemplateContentResolver.java").toPath());
-        assertThat(resolver).contains("NgTemplates.isAngularTemplate(");
+    @DisplayName("tombstone: no .instance MIMEResolver registration — that channel is structurally dead")
+    void noInstanceResolverRegistration() throws Exception {
         String layer = Files.readString(new File(
                 "src/main/resources/org/nmox/studio/editor/layer.xml").toPath());
         assertThat(layer)
-                .as("the .instance must sit in the ordered Services/MIMEResolver"
-                        + " folder — a ServiceProvider registration loses to the"
-                        + " platform's html claim (v1.217.0, proven live)")
-                .contains("org-nmox-studio-editor-grammars-NgTemplateContentResolver.instance");
-        int at = layer.indexOf("NgTemplateContentResolver.instance");
-        assertThat(layer.indexOf("intvalue=\"260\"", at))
-                .as("position 260: after our name-keyed 250, before html at 300")
-                .isBetween(at, at + 400);
+                .as("an .instance in Services/MIMEResolver never precedes the"
+                        + " declarative ext=html claim (decompiled getResolvers)"
+                        + " — re-adding one ships dead code")
+                .doesNotContain("MIMEResolver\">");
+        assertThat(new File(
+                "src/main/java/org/nmox/studio/editor/grammars/NgTemplateContentResolver.java"))
+                .as("the inert resolver stays deleted; see ledger 82 for the"
+                        + " mechanisms a real fix could use")
+                .doesNotExist();
     }
 
     @Test

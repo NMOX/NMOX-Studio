@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.349.0] - 2026-08-11
+
+The "do it all" close of the Angular-top arc — ledgers 77, 78, and 81
+worked to root cause in one sitting, each ending in a decompiled fact
+rather than a guess:
+
+### Fixed
+- **Rename applies ONCE (ledger 81 closed)**: with tsserver and
+  ngserver both bound to `text/typescript`, ⌃R applied BOTH servers'
+  edit sets — the class declaration became `headingheading` while the
+  template renamed once. The "strip tsserver's renameProvider" cure was
+  BUILT and REFUTED live: a stream filter that verifiably removed the
+  capability from tsserver's initialize response changed nothing,
+  because the platform's rename plugin queries EVERY binding with an
+  always-true capability predicate (decompiled:
+  `RenameRefactoringPlugin.lambda$prepare$6` is `iconst_1; ireturn`).
+  The only lever the platform leaves is WHICH servers are bound, so
+  tsserver now yields the TypeScript mime to ngserver in Angular
+  workspaces — ngserver wraps the TypeScript language service, so .ts
+  intelligence stays — while plain JavaScript keeps its own
+  unsuppressed registration. Live-proven: `title`→`heading` landed once
+  at the declaration with `{{ title }}` rewritten in the template;
+  gate mutation-proven.
+- **⌘B jumps from template identifiers (ledger 78 closed)**: the CSL
+  DeclarationFinder now claims identifier spans and routes them to
+  ngserver's definition through the platform LSP client — ⌘B on
+  `heading` inside `{{ heading }}` lands on the class property.
+  Selector tags kept their native jump from v1.347.0.
+- **The suffixless-template "session dependence" was no such thing
+  (ledger 77 closed, goal reopened as 82)**: the v1.346.0 programmatic
+  content resolver NEVER ran — decompiled,
+  `MIMESupport$CachedFileObject.getResolvers()` consults every
+  declarative XML resolver (including the platform's ext=html claim)
+  before any Lookup-provided `.instance`, regardless of position. The
+  inert resolver is deleted with a tombstone gate so the dead channel
+  cannot return; suffixless recognition needs a different mechanism
+  (candidates recorded in ledger 82). The four-file switcher, ng
+  generate, and Run Focused Test already speak suffixless by their own
+  file logic and are unaffected.
+
+### Internal
+- The refuted rename filter's post-mortem left one keeper lesson in the
+  ledger: `PipedInputStream` pins reader-thread identities and dies
+  under a pool-fed consumer like lsp4j — any future LSP stream shim
+  needs a thread-identity-free pipe.
+
 ## [1.348.0] - 2026-08-11
 
 The ALS resurrection — the v1.347.0 gauntlet found the entire Angular
@@ -12002,6 +12048,75 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.349.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.348.0...v1.349.0
+[1.348.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.347.0...v1.348.0
+[1.347.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.346.0...v1.347.0
+[1.346.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.345.0...v1.346.0
+[1.345.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.344.0...v1.345.0
+[1.344.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.343.0...v1.344.0
+[1.343.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.342.0...v1.343.0
+[1.342.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.341.0...v1.342.0
+[1.341.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.340.0...v1.341.0
+[1.340.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.339.0...v1.340.0
+[1.339.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.338.0...v1.339.0
+[1.338.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.337.0...v1.338.0
+[1.337.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.336.0...v1.337.0
+[1.336.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.335.0...v1.336.0
+[1.335.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.334.0...v1.335.0
+[1.334.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.333.0...v1.334.0
+[1.333.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.332.0...v1.333.0
+[1.332.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.331.0...v1.332.0
+[1.331.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.330.0...v1.331.0
+[1.330.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.329.0...v1.330.0
+[1.329.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.328.0...v1.329.0
+[1.328.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.327.0...v1.328.0
+[1.327.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.326.0...v1.327.0
+[1.326.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.325.0...v1.326.0
+[1.325.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.324.0...v1.325.0
+[1.324.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.323.0...v1.324.0
+[1.323.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.322.0...v1.323.0
+[1.322.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.321.0...v1.322.0
+[1.321.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.320.0...v1.321.0
+[1.320.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.319.0...v1.320.0
+[1.319.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.318.0...v1.319.0
+[1.318.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.317.0...v1.318.0
+[1.317.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.316.0...v1.317.0
+[1.316.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.315.0...v1.316.0
+[1.315.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.314.0...v1.315.0
+[1.314.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.313.0...v1.314.0
+[1.313.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.312.0...v1.313.0
+[1.312.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.311.0...v1.312.0
+[1.311.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.310.0...v1.311.0
+[1.310.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.309.0...v1.310.0
+[1.309.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.308.0...v1.309.0
+[1.308.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.307.0...v1.308.0
+[1.307.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.306.0...v1.307.0
+[1.306.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.305.0...v1.306.0
+[1.305.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.304.0...v1.305.0
+[1.304.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.303.0...v1.304.0
+[1.303.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.302.0...v1.303.0
+[1.302.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.301.0...v1.302.0
+[1.301.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.300.0...v1.301.0
+[1.300.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.299.0...v1.300.0
+[1.299.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.298.0...v1.299.0
+[1.298.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.297.0...v1.298.0
+[1.297.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.296.0...v1.297.0
+[1.296.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.295.0...v1.296.0
+[1.295.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.294.0...v1.295.0
+[1.294.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.293.0...v1.294.0
+[1.293.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.292.0...v1.293.0
+[1.292.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.291.0...v1.292.0
+[1.291.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.290.0...v1.291.0
+[1.290.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.289.0...v1.290.0
+[1.289.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.288.0...v1.289.0
+[1.288.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.287.0...v1.288.0
+[1.287.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.286.0...v1.287.0
+[1.286.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.285.0...v1.286.0
+[1.285.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.284.0...v1.285.0
+[1.284.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.283.0...v1.284.0
+[1.283.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.282.0...v1.283.0
+[1.282.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.281.0...v1.282.0
+[1.281.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.280.0...v1.281.0
 [1.280.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.279.0...v1.280.0
 [1.279.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.278.0...v1.279.0
 [1.278.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.277.0...v1.278.0
