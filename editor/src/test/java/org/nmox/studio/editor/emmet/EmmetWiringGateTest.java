@@ -59,4 +59,33 @@ class EmmetWiringGateTest {
                         + "closed brace SURVIVES the expansion as a stray }")
                 .contains("caret + at.trailingClosers() - abbrev.length()");
     }
+
+    @Test
+    @DisplayName("the CSS branch is registered and bound on all five css-family mimes")
+    void cssBranchWired() throws Exception {
+        String src = Files.readString(new File(
+                "src/main/java/org/nmox/studio/editor/emmet/ExpandAbbreviationAction.java")
+                .toPath());
+        String layer = Files.readString(new File(
+                "src/main/resources/org/nmox/studio/editor/layer.xml").toPath());
+        for (String mime : new String[] {
+            "text/css", "text/scss", "text/less", "text/x-scss", "text/x-less"}) {
+            assertThat(src)
+                    .as("action registration for %s — the css-prep mimes are"
+                            + " the ones REAL .scss/.less files resolve to"
+                            + " (v1.230.0, twice bitten)", mime)
+                    .contains("mimeType = \"" + mime + "\"");
+        }
+        for (String folder : new String[] {"css", "scss", "less", "x-scss", "x-less"}) {
+            assertThat(layer)
+                    .as("layer keybinding folder for %s", folder)
+                    .contains("<folder name=\"" + folder + "\">");
+        }
+        // the action must actually DISPATCH to the CSS grammar — a
+        // registration whose handler never branches is a chord that
+        // says "No abbreviation" on every stylesheet
+        assertThat(src)
+                .contains("CssEmmet.abbreviationIn(")
+                .contains("CssEmmet.expand(");
+    }
 }

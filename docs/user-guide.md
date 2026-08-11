@@ -310,8 +310,19 @@ multiplication `*3` with `$` numbering (`$$` zero-pads), grouping
 caret sitting before an auto-closed `}` still expands — and it refuses
 honestly: a bare word only expands when it *is* an HTML element, and
 anything unparseable leaves your text untouched with a status-line
-hint. Deliberately out (recorded in the code): climb-up `^`, CSS
-abbreviations, lorem.
+hint. Deliberately out (recorded in the code): climb-up `^`, lorem.
+
+The same chord speaks **CSS** in stylesheets (v1.336.0 closed the
+grammar's recorded "CSS abbreviations" out): in any CSS/SCSS/Less pane,
+`m10-20` → `margin: 10px 20px;`, `df` → `display: flex;`, `c#f00` →
+`color: #f00;`, `w100p!` → `width: 100% !important;`. The grammar is an
+exact-match subset — a keyword table of the declarations designers type
+all day plus a numeric family (`px` default; `p`/`e`/`r` suffixes for
+`%`/`em`/`rem`; margin and padding take up to four `-`-separated
+values) — because a fuzzy match that guesses wrong mutates your
+stylesheet. Anything it can't expand exactly is refused with the same
+status-line hint, and a token after a `:` never expands — that's a
+value being typed, not an abbreviation.
 
 ### Design tokens (custom properties)
 

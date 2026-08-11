@@ -35,7 +35,20 @@ import org.openide.awt.StatusDisplayer;
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
             mimeType = "text/html", popupPath = "", popupPosition = 95),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-ng-template", popupPath = "", popupPosition = 95)
+            mimeType = "text/x-ng-template", popupPath = "", popupPosition = 95),
+    // the css family (v1.336.0): all five mimes because css-prep resolves
+    // real .scss/.less to its own text/scss / text/less while ours serve
+    // .sass and friends — the v1.230.0 finding, twice bitten
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/css", popupPath = "", popupPosition = 95),
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/scss", popupPath = "", popupPosition = 95),
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/less", popupPath = "", popupPosition = 95),
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/x-scss", popupPath = "", popupPosition = 95),
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/x-less", popupPath = "", popupPosition = 95)
 })
 public class ExpandAbbreviationAction extends BaseAction {
 
@@ -55,6 +68,14 @@ public class ExpandAbbreviationAction extends BaseAction {
             int lineEnd = Utilities.getRowEnd(target, caret);
             String before = doc.getText(lineStart, caret - lineStart);
             String after = doc.getText(caret, lineEnd - caret);
+            // stylesheet panes speak the CSS grammar (v1.336.0); the mime
+            // rides the document property BaseDocument sets from its kit
+            Object mime = doc.getProperty("mimeType");
+            if (mime instanceof String m
+                    && (m.contains("css") || m.contains("scss") || m.contains("less"))) {
+                expandCss(target, doc, caret, before);
+                return;
+            }
             // auto-pair aware (v1.332.0): typing {text} leaves the caret
             // BEFORE the auto-closed brace — fold trailing closers in
             Emmet.AtCaret at = Emmet.abbreviationAt(before, after);
@@ -97,6 +118,37 @@ public class ExpandAbbreviationAction extends BaseAction {
             }
         } catch (BadLocationException ex) {
             // caret math raced an edit; refuse silently rather than guess
+        }
+    }
+
+    /**
+     * The CSS branch (v1.336.0): a single-line declaration replaces the
+     * abbreviation token before the caret. No auto-pair folding — the
+     * CSS grammar's tokens carry no closers — and no indentation math:
+     * the declaration stays on the abbreviation's own line.
+     */
+    private static void expandCss(JTextComponent target, BaseDocument doc,
+            int caret, String before) {
+        String abbrev = CssEmmet.abbreviationIn(before);
+        if (abbrev == null) {
+            StatusDisplayer.getDefault().setStatusText(
+                    "No CSS abbreviation at the caret (try m10, df, c#f00)");
+            return;
+        }
+        CssEmmet.Expansion e = CssEmmet.expand(abbrev);
+        int abbrevStart = caret - abbrev.length();
+        boolean[] landed = {false};
+        doc.runAtomicAsUser(() -> {
+            try {
+                doc.remove(abbrevStart, abbrev.length());
+                doc.insertString(abbrevStart, e.css(), null);
+                landed[0] = true;
+            } catch (BadLocationException ex) {
+                // rolled back by runAtomic; nothing to do
+            }
+        });
+        if (landed[0]) {
+            target.setCaretPosition(abbrevStart + e.caretOffset());
         }
     }
 }
