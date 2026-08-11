@@ -48,7 +48,11 @@ import org.openide.awt.StatusDisplayer;
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
             mimeType = "text/x-scss", popupPath = "", popupPosition = 95),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-less", popupPath = "", popupPosition = 95)
+            mimeType = "text/x-less", popupPath = "", popupPosition = 95),
+    // inline templates (the Angular-top arc): a component's
+    // template: `...` literal is markup living on a TypeScript pane
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/typescript", popupPath = "", popupPosition = 95)
 })
 public class ExpandAbbreviationAction extends BaseAction {
 
@@ -75,6 +79,27 @@ public class ExpandAbbreviationAction extends BaseAction {
                     && (m.contains("css") || m.contains("scss") || m.contains("less"))) {
                 expandCss(target, doc, caret, before);
                 return;
+            }
+            // a TypeScript pane speaks markup ONLY inside a component's
+            // inline template literal (Angular-top arc); everywhere else
+            // the chord refuses honestly — it must never mangle code
+            if (mime instanceof String m && m.contains("typescript")) {
+                int[] span = org.nmox.studio.editor.angular.NgInlineTemplate
+                        .spanAt(doc.getText(0, doc.getLength()), caret);
+                if (span == null) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            "Emmet expands inside a component's inline"
+                            + " template: `...` literal");
+                    return;
+                }
+                // clip the caret's line to the literal so the abbreviation
+                // can never reach past a backtick into TypeScript
+                if (lineStart < span[0]) {
+                    before = doc.getText(span[0], caret - span[0]);
+                }
+                if (lineEnd > span[1]) {
+                    after = doc.getText(caret, span[1] - caret);
+                }
             }
             // auto-pair aware (v1.332.0): typing {text} leaves the caret
             // BEFORE the auto-closed brace — fold trailing closers in
