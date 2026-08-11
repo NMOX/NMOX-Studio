@@ -51,6 +51,32 @@ only — never through `UIManager`, which would restyle the whole IDE.
 Seam + wiring pinned by `PhosphorTipTest` (the v1.321.0 two-proof
 law).
 
+### 79. ngserver never ATTEMPTS in the shipped app on a real workspace (v1.347.0 walk, 2026-08-11)
+The ALS gauntlet on ~/NMOX/ngdemo found the whole chain silently inert:
+across three sessions (incl. fresh JVMs), on both text/typescript and
+text/x-ng-template panes, with EVERY externally-checkable precondition
+met — angular.json present, workspace trusted (Run spawns with no
+prompt), typescript/lib/tsserverlibrary.js present, and (after install)
+node_modules/.bin/ngserver executable — no ngserver process ever
+started, no "intelligence unavailable" notification fired, and the log
+carries no LSP attempt. typescript-language-server started fine in the
+same sessions, so the provider chain itself runs. Consequences: the
+one-click install NOTIFICATION entry point can never fire for ngserver
+(the Tools ▸ Language Servers panel path works — live-proven installing
+@angular/language-server@18.1.2 into the project, trust-gated, exit 0),
+and Refactor ▸ Rename over ngserver is untestable. Template
+intelligence was last live-proven in v1.218.0. Next step is a
+property-gated probe bisect of AngularServer.startServer's five decline
+points in a dev build — external observation is exhausted.
+
+### 80. Popup position 95 collision on ng-template panes (v1.347.0)
+messages.log: "Found same position 95 for both
+nmox-ng-goto-component.shadow and
+org-nmox-studio-editor-angular-OpenComponent.shadow" — the Angular-top
+arc's Go to Component and the v1.313 switcher's Open Angular Template
+claim the same popup slot. Cosmetic ordering nondeterminism; move
+nmox-ng-goto-component to a free position.
+
 ### 77. Content-resolved template panes don't load mime keybindings (found in the Angular-top arc, 2026-08-11)
 A file claimed by the PROGRAMMATIC NgTemplateContentResolver (suffixless
 `usage.html`) gets text/x-ng-template for LEXING — the Angular grammar
