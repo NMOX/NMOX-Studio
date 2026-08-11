@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.342.0] - 2026-08-11
+
+The Emmet-arc review — probes first, then the pins.
+
+### Verified
+- The review over the v1.336–v1.341 fresh lines (CssEmmet, the `+`
+  chain, lorem, climb-up, the action's mime dispatch) ran as SIX open
+  probes — compositions no single feature's build tests tried
+  together: a climbed unit under `*N`, climb inside a times'd group,
+  lorem-then-climb, suffix extraction past a real tag ahead of a
+  climb, a mid-chain `!important`, and the group wall under `*N`.
+  Every probe matched the documented laws; **no finding**. The probes
+  are kept as `EmmetArcProbeTest`, pinned at their observed values, so
+  the compositions stay law — the v1.333.0 review found five bugs in
+  inline-reviewed code, and probes-first is how a CLEAN verdict earns
+  trust.
+
 ## [1.341.0] - 2026-08-11
 
 Climb-up lands — the Emmet grammar's outs list is empty.
