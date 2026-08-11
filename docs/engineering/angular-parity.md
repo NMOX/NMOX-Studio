@@ -17,8 +17,8 @@ kept current every time the Angular surface changes.
 | Template syntax highlighting (`.component.html`) | ✅ the Angular team's own grammars, v1.217.0, live-proven | ✅ | ✅ |
 | Suffixless template highlighting (content-detected) | ✅ v1.346.0 (@Component sniff) — with the ledger-77 caveat below | ✅ | ⚠️ needs the naming convention |
 | Template type-checking against the component class | ✅ via ngserver, v1.218.0, live-proven ("Did you mean 'loggedIn'?") | ✅ built in | ✅ |
-| **Selector navigation** — `<app-hero>` → its component | ✅ ⌥⌘B + ⌘-click, **works WITHOUT the language service** (own selector index, decorator-gated, comma-lists + attribute directives), live-proven | ✅ | ✅ (needs ALS running) |
-| Go to definition on `{{ user.name }}` | ⚠️ ngserver-backed; ⌘B chord itself is dead (ledger 78) — popup path works | ✅ | ✅ |
+| **Selector navigation** — `<app-hero>` → its component | ✅ native ⌘B (CSL DeclarationFinder) + ⌥⌘B + ⌘-click, **works WITHOUT the language service** (own selector index, decorator-gated, comma-lists + attribute directives), live-proven | ✅ | ✅ (needs ALS running) |
+| Go to definition on `{{ user.name }}` | ⚠️ ngserver-backed via popup; routing the ⌘B identifier case through CSL is queued (ledger 78 remainder) | ✅ | ✅ |
 | Component ↔ template ↔ styles ↔ spec switching | ✅ v1.313.0, all four files, both decorator spellings | ✅ | ⚠️ extension-dependent |
 | **Emmet in templates** | ✅ ⌥⌘E, v1.329.0, grammar-pinned | ✅ | ✅ |
 | **Emmet in INLINE templates** (`template:` backticks in .ts) | ✅ Angular-top arc, decorator-gated, refuses outside the literal — live-proven both directions | ✅ | ⚠️ needs settings |
@@ -47,9 +47,9 @@ kept current every time the Angular surface changes.
 
 ## Honest gaps, in priority order
 
-1. **Ledger 78 — the ⌘B chord.** Identifier go-to-definition rides the
-   popup only; the muscle-memory chord never dispatches. The ⌥⌘B
-   selector jump covers tags; identifiers need the bisect.
+1. **Ledger 78 remainder — ⌘B on identifiers.** Tags now jump natively
+   (the DeclarationFinder unit); the identifier case should route to
+   ngserver inside the same CSL flow, queued with rename.
 2. **Ledger 77 — suffixless template panes.** Content-detected templates
    get coloring and completion but not chord gestures (and the resolver's
    verdict looked session-dependent in the dev build). The

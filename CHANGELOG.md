@@ -10,9 +10,14 @@ The Angular-top arc — David's mandate: make the Angular support top in
 the industry. Four units, one structural editor fix underneath:
 
 ### Added
-- **Go to Component (⌥⌘B)**: with the caret on `<app-hero>` in a
-  template, jump to the component that declares that selector — no
-  language service required. The selector index scans the workspace's
+- **Go to Component — the native ⌘B**: with the caret on `<app-hero>`
+  in a template, the standard Go to Declaration jumps to the component
+  that declares that selector — no language service required. The
+  ledger-78 bisect found ⌘B on CSL panes is CSL's own gesture, which
+  silently no-ops for a language without a DeclarationFinder; the
+  ng-template language now registers a snapshot-only parser plus a
+  finder over the selector index, so the chord, the Navigate menu, and
+  CSL's ⌘-hover underline all work. ⌥⌘B carries the same jump. The selector index scans the workspace's
   own `.ts` sources (decorator-gated so a `selector:` key in arbitrary
   code never becomes a target; comma-list selectors and `[attribute]`
   directives match; mtime-cached). ⌘-click on a dashed tag rides the

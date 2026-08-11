@@ -82,6 +82,25 @@ public class NgTemplateCompletionProvider implements CompletionProvider {
                         resultSet.addItem(new NgItem(item, trigger, caretOffset - trigger));
                     }
                 }
+                // the project's own component selectors complete at a
+                // tag-name position (Angular-top arc) — from the same
+                // decorator-gated index the ⌘B jump rides, so this works
+                // with no language service; the disk scan is safe here
+                // because AsyncCompletionQuery runs off the EDT
+                String prefix = NgTemplateCompletion.tagPrefix(toCaret);
+                if (prefix != null) {
+                    File root = NgTemplateCompletion.workspaceRoot(file);
+                    List<String> declared =
+                            org.nmox.studio.editor.angular.NgSelectors
+                                    .scanProject(root).stream()
+                                    .map(d -> d.selector()).toList();
+                    int tagStart = lineStart + toCaret.lastIndexOf('<') + 1;
+                    for (String sel : NgTemplateCompletion
+                            .selectorMatches(declared, prefix)) {
+                        resultSet.addItem(new SelectorItem(sel, tagStart,
+                                caretOffset - tagStart));
+                    }
+                }
             } catch (BadLocationException ex) {
                 // caret moved under us; offer nothing rather than throw
             } finally {
@@ -100,6 +119,84 @@ public class NgTemplateCompletionProvider implements CompletionProvider {
             return FileUtil.toFile(fo);
         }
         return null;
+    }
+
+    /**
+     * A component-selector row: accepting {@code app-card} writes the
+     * whole pair {@code app-card></app-card>} from the typed prefix and
+     * parks the caret between the tags — the same landing WebStorm
+     * gives, so muscle memory transfers.
+     */
+    private static final class SelectorItem implements CompletionItem {
+
+        private final String selector;
+        private final int startOffset;
+        private final int length;
+
+        SelectorItem(String selector, int startOffset, int length) {
+            this.selector = selector;
+            this.startOffset = startOffset;
+            this.length = length;
+        }
+
+        @Override
+        public void defaultAction(JTextComponent component) {
+            String insert = selector + "></" + selector + ">";
+            if (CompletionEdits.replace(component.getDocument(),
+                    startOffset, length, insert)) {
+                component.setCaretPosition(startOffset + selector.length() + 1);
+            }
+            Completion.get().hideAll();
+        }
+
+        @Override
+        public void processKeyEvent(KeyEvent evt) {
+        }
+
+        @Override
+        public int getPreferredWidth(Graphics g, Font defaultFont) {
+            return CompletionUtilities.getPreferredWidth(
+                    selector + " [component]", null, g, defaultFont);
+        }
+
+        @Override
+        public void render(Graphics g, Font defaultFont, Color defaultColor,
+                Color backgroundColor, int width, int height, boolean selected) {
+            CompletionUtilities.renderHtml(null, selector, "[component]",
+                    g, defaultFont,
+                    selected ? Color.WHITE : new Color(0xDD, 0x00, 0x31),
+                    width, height, selected);
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return null;
+        }
+
+        @Override
+        public CompletionTask createToolTipTask() {
+            return null;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 0; // the project's own components outrank generic tags
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return selector;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return selector;
+        }
     }
 
     /** One Angular row: replaces from the trigger char with the construct. */
