@@ -50,8 +50,12 @@ public class CssVarCompletionProvider implements CompletionProvider {
 
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        // "(" after var — the moment the token list is wanted
-        return "(".equals(typedText) ? COMPLETION_QUERY_TYPE : 0;
+        // "(" after var — the moment the token list is wanted. startsWith,
+        // not equals (v1.333.0 review): with pair-completion the insert
+        // can reach this hook as "()" and an exact match never fires.
+        // Recorded limit: the auto-popup remains unverified LIVE either
+        // way — ⌃Space is the proven path in both walks.
+        return typedText.startsWith("(") ? COMPLETION_QUERY_TYPE : 0;
     }
 
     private static final class Query extends AsyncCompletionQuery {

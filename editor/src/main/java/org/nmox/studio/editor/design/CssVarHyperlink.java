@@ -105,12 +105,60 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
         return text == null ? null : CssTokens.varNameSpanAt(text, offset);
     }
 
+    /**
+     * Document text, cached by edit-version (v1.333.0 review): the
+     * platform calls {@code isHyperlinkPoint}/{@code getHyperlinkSpan}
+     * synchronously ON THE EDT for every ⌘-mouse-move, and this used to
+     * pay a full {@code getText} copy per hover — the exact class the
+     * v1.234.0 review fixed in {@link CssColorHyperlink}, whose javadoc
+     * carries the whole rationale, regressed here in day-old code. Same
+     * cure: a document-property cache whose version listener is held
+     * only by the document (collected with it), EDT-confined by the
+     * hyperlink SPI's contract.
+     */
     private static String textOf(Document doc) {
+        if (doc.getLength() > MAX_SCAN_CHARS) {
+            return null;
+        }
+        TextCache cache = (TextCache) doc.getProperty(TextCache.class);
+        if (cache == null) {
+            cache = new TextCache();
+            doc.putProperty(TextCache.class, cache);
+            doc.addDocumentListener(cache);
+        }
+        long version = cache.version.get();
+        if (cache.cachedVersion == version) {
+            return cache.text;
+        }
         try {
-            int len = doc.getLength();
-            return len > MAX_SCAN_CHARS ? null : doc.getText(0, len);
+            cache.text = doc.getText(0, doc.getLength());
+            cache.cachedVersion = version;
+            return cache.text;
         } catch (BadLocationException ex) {
             return null;
+        }
+    }
+
+    /** Edit counter + memoized text; attribute-only changes don't bump. */
+    private static final class TextCache implements javax.swing.event.DocumentListener {
+
+        final java.util.concurrent.atomic.AtomicLong version =
+                new java.util.concurrent.atomic.AtomicLong();
+        volatile long cachedVersion = -1;
+        volatile String text = "";
+
+        @Override
+        public void insertUpdate(javax.swing.event.DocumentEvent e) {
+            version.incrementAndGet();
+        }
+
+        @Override
+        public void removeUpdate(javax.swing.event.DocumentEvent e) {
+            version.incrementAndGet();
+        }
+
+        @Override
+        public void changedUpdate(javax.swing.event.DocumentEvent e) {
         }
     }
 

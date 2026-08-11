@@ -49,12 +49,18 @@ public class CssVarCompletionItem implements CompletionItem {
             String after = doc.getText(startOffset + prefixLength,
                     Math.min(1, doc.getLength() - startOffset - prefixLength));
             String insertion = name + (after.startsWith(")") ? "" : ")");
-            doc.remove(startOffset, prefixLength);
-            doc.insertString(startOffset, insertion, null);
-            component.setCaretPosition(startOffset + insertion.length()
-                    + (after.startsWith(")") ? 1 : 0));
+            // the ONE splice every completion item performs (v1.333.0
+            // review: this item hand-rolled the remove+insert and would
+            // have repositioned the caret on stale offsets when the
+            // document moved under the pick — CompletionEdits is the
+            // house law, its false return the skip signal)
+            if (org.nmox.studio.editor.completion.CompletionEdits.replace(
+                    doc, startOffset, prefixLength, insertion)) {
+                component.setCaretPosition(startOffset + insertion.length()
+                        + (after.startsWith(")") ? 1 : 0));
+            }
         } catch (BadLocationException ignore) {
-            // document changed mid-accept; insert nothing
+            // the probe read raced an edit; offer nothing
         }
         Completion.get().hideAll();
     }

@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.333.0] - 2026-08-10
+
+The arc review over the six-release iteration's fresh code
+(v1.329–v1.332) — five findings, four fixed, one honestly limited.
+
+### Fixed
+- **The token hyperlink regressed the v1.234.0 hover law in day-old
+  code**: `isHyperlinkPoint` runs per ⌘-mouse-move ON THE EDT, and the
+  new `CssVarHyperlink` paid a full `getText` document copy on every
+  hover — the exact class the v1.234.0 review fixed in
+  `CssColorHyperlink`, whose javadoc carries the whole rationale. Same
+  cure applied: a document-property text cache bumped by edit-version,
+  now pinned by a gate that names the law.
+- **The token cache hoarded stale versions**: keyed by (path, mtime,
+  size), every save added a NEW entry and old parses accumulated for
+  the life of the session — unbounded growth on exactly the file a
+  designer edits most. Now keyed by path with the freshness stamp in
+  the value: one entry per stylesheet, ever. Behaviorally proven (an
+  edited sheet re-parses; the stale-serve mutant dies).
+- **Token completion accept rides the house splice**: the item
+  hand-rolled its remove+insert and would have repositioned the caret
+  on stale offsets when the document moved under the pick.
+  `CompletionEdits` — whose javadoc declares itself "the one document
+  splice every completion item performs" — went public for its second
+  package (the KitFiles precedent) and its false return now skips the
+  caret move.
+- **Emmet's caret waits for the edit to land**: after a rolled-back
+  atomic edit the unguarded `setCaretPosition` used math for a document
+  that no longer existed.
+
+### Changed, with a written limit
+- The `var(` auto-popup trigger matches `startsWith("(")` instead of
+  equality — with pair-completion the typed-text hook can receive
+  `"()"` and an exact match never fires. Recorded honestly: the
+  auto-popup remains UNVERIFIED live either way; ⌃Space is the proven
+  path in both walks, and the tolerant match is a plausible cause, not
+  a demonstrated one.
+
 ## [1.332.0] - 2026-08-10
 
 The shipped-app walk of the two new editor powers — aimed at exactly
