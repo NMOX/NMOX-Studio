@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.338.0] - 2026-08-11
+
+CSS abbreviations chain — the + combinator.
+
+### Added
+- **`df+aic+jcc` expands to three declarations**, one per line at the
+  abbreviation line's own indent — the way a flex centering block is
+  actually typed. `!` rides its own part (`dn!+m0`). The law:
+  **all-or-nothing** — one bad part refuses the WHOLE chain
+  (`m0a+qqq` leaves the text untouched with the status-line hint),
+  because a partial expansion would mutate the stylesheet on a typo,
+  the exact failure the v1.336.0 exact-match design exists to prevent.
+  The `+` combinator leaves CssEmmet's deliberately-out list; still
+  out: fuzzy matching, vendor prefixes, negative leading values,
+  `@` modifiers.
+
+### Verified
+- Live in the dev build: the three-part chain landing indented, and
+  the bad-part chain refused whole with line intact.
+- Mutation-proven ×2, each failing by name: the skip-bad-parts mutant
+  (partial expansion — 7 test failures incl. chainAllOrNothing) and
+  the un-indent mutant (continuation lines at column zero — the
+  wiring gate). The second mutant's first application silently did
+  not match; the grep-count check (1→0) before trusting the run is
+  part of the proof.
+
 ## [1.337.0] - 2026-08-11
 
 Docs truth — the overnight tail on the record.

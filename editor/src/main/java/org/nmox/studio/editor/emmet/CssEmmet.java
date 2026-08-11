@@ -36,13 +36,16 @@ import java.util.Map;
  *     (3/4/6/8 hex digits, validated).</li>
  * <li><b>{@code !}</b> — a trailing bang appends
  *     {@code !important}.</li>
+ * <li><b>{@code +}</b> — chains declarations (v1.338.0): {@code
+ *     df+aic+jcc} expands to three lines. All-or-nothing: one bad part
+ *     refuses the whole chain, because a partial expansion would
+ *     mutate the stylesheet on a typo.</li>
  * </ul>
  *
- * <p>Deliberately out, recorded here: fuzzy property matching, the
- * {@code +} declaration combinator, vendor prefixes, negative leading
- * values ({@code m-10} — the {@code -} is this grammar's value
- * separator), {@code @} unit modifiers, and lorem. Each can join later
- * without breaking what's pinned.
+ * <p>Deliberately out, recorded here: fuzzy property matching, vendor
+ * prefixes, negative leading values ({@code m-10} — the {@code -} is
+ * this grammar's value separator), {@code @} unit modifiers, and
+ * lorem. Each can join later without breaking what's pinned.
  */
 public final class CssEmmet {
 
@@ -153,6 +156,31 @@ public final class CssEmmet {
         if (abbrev == null || abbrev.isEmpty()) {
             return null;
         }
+        // the + combinator (v1.338.0): df+aic+jcc chains declarations,
+        // one per line. ALL parts must parse or the WHOLE chain refuses —
+        // a partial expansion would mutate the stylesheet on a typo,
+        // exactly what the exact-match design exists to prevent.
+        String[] parts = abbrev.split("\\+", -1);
+        StringBuilder out = new StringBuilder();
+        for (String part : parts) {
+            String decl = expandSingle(part);
+            if (decl == null) {
+                return null;
+            }
+            if (out.length() > 0) {
+                out.append('\n');
+            }
+            out.append(decl);
+        }
+        String css = out.toString();
+        return new Expansion(css, css.length());
+    }
+
+    /** One declaration ({@code !} handled per part), or null to refuse. */
+    private static String expandSingle(String abbrev) {
+        if (abbrev.isEmpty()) {
+            return null;
+        }
         boolean important = abbrev.endsWith("!");
         String body = important ? abbrev.substring(0, abbrev.length() - 1) : abbrev;
         if (body.isEmpty()) {
@@ -165,7 +193,7 @@ public final class CssEmmet {
         if (important) {
             decl = decl.substring(0, decl.length() - 1) + " !important;";
         }
-        return new Expansion(decl, decl.length());
+        return decl;
     }
 
     private static String declarationFor(String body) {
@@ -298,6 +326,6 @@ public final class CssEmmet {
     private static boolean isAbbrevChar(char c) {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
                 || (c >= '0' && c <= '9') || c == '#' || c == '.'
-                || c == '-' || c == '!';
+                || c == '-' || c == '!' || c == '+';
     }
 }

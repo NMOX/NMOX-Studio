@@ -320,7 +320,9 @@ exact-match subset — a keyword table of the declarations designers type
 all day plus a numeric family (`px` default; `p`/`e`/`r` suffixes for
 `%`/`em`/`rem`; margin and padding take up to four `-`-separated
 values) — because a fuzzy match that guesses wrong mutates your
-stylesheet. Anything it can't expand exactly is refused with the same
+stylesheet. Chain declarations with `+`: `df+aic+jcc` expands to three
+lines at your indent, and one bad part refuses the whole chain — never
+a partial expansion. Anything it can't expand exactly is refused with the same
 status-line hint, and a token after a `:` never expands — that's a
 value being typed, not an abbreviation.
 
