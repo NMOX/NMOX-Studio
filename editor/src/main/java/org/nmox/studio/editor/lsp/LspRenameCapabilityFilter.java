@@ -1,8 +1,11 @@
 package org.nmox.studio.editor.lsp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.json.JSONObject;
@@ -17,71 +20,68 @@ import org.json.JSONObject;
  * strips {@code renameProvider} from TSSERVER's initialize response,
  * making the platform route rename through ngserver alone.
  *
- * <p>Mechanically: an InputStream over the server's stdout that parses
- * LSP frames ({@code Content-Length: N\r\n\r\n{json}}) until it has
- * rewritten the first frame whose result carries {@code capabilities},
- * then degrades to a zero-copy passthrough. JSON surgery rides
- * org.json — string splicing on protocol traffic is how corruptions
- * are born.
+ * <p><b>Threading — the shape that matters.</b> The first cut of this
+ * class assembled whole LSP frames ON THE CALLER'S THREAD, and the
+ * caller is lsp4j's reader — which the platform blocks behind the
+ * global {@code LSPBindings} class lock during initialize. One stall
+ * in that arrangement froze the EDT of the whole IDE (observed live:
+ * jstack showed focusGained → didOpen → getBindings BLOCKED behind
+ * initServer's timedGet). This version is the DapProxy idiom instead:
+ * a daemon pump thread parses frames at its own pace and writes the
+ * (possibly rewritten) bytes into a pipe; consumers read the pipe with
+ * ordinary partial-read semantics and can never be held hostage to
+ * frame assembly.
  */
-final class LspRenameCapabilityFilter extends InputStream {
+final class LspRenameCapabilityFilter extends FilterInputStream {
 
-    private final InputStream raw;
-    private byte[] pending = new byte[0];
-    private int pos;
-    private boolean filtering = true;
-
-    LspRenameCapabilityFilter(InputStream raw) {
-        this.raw = raw;
+    LspRenameCapabilityFilter(InputStream raw) throws IOException {
+        super(openPumped(raw));
     }
 
-    @Override
-    public int read() throws IOException {
-        byte[] one = new byte[1];
-        int n = read(one, 0, 1);
-        return n < 0 ? -1 : one[0] & 0xFF;
+    private static InputStream openPumped(InputStream raw) throws IOException {
+        PipedInputStream sink = new PipedInputStream(64 * 1024);
+        PipedOutputStream feed = new PipedOutputStream(sink);
+        Thread pump = new Thread(() -> pump(raw, feed), "nmox-lsp-rename-filter");
+        pump.setDaemon(true);
+        pump.start();
+        return sink;
     }
 
-    @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        if (pos < pending.length) {
-            int n = Math.min(len, pending.length - pos);
-            System.arraycopy(pending, pos, b, off, n);
-            pos += n;
-            return n;
+    private static void pump(InputStream raw, PipedOutputStream feed) {
+        boolean filtering = true;
+        try (feed) {
+            while (true) {
+                if (!filtering) {
+                    // zero-parse passthrough for the rest of the session
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = raw.read(buf)) >= 0) {
+                        feed.write(buf, 0, n);
+                        feed.flush();
+                    }
+                    return;
+                }
+                String headers = readHeaders(raw);
+                if (headers == null) {
+                    return; // EOF
+                }
+                byte[] body = raw.readNBytes(contentLengthOf(headers));
+                String text = new String(body, StandardCharsets.UTF_8);
+                if (text.contains("\"capabilities\"")) {
+                    byte[] rewritten = stripRenameProvider(text);
+                    feed.write(("Content-Length: " + rewritten.length + "\r\n\r\n")
+                            .getBytes(StandardCharsets.US_ASCII));
+                    feed.write(rewritten);
+                    filtering = false;
+                } else {
+                    feed.write((headers + "\r\n").getBytes(StandardCharsets.US_ASCII));
+                    feed.write(body);
+                }
+                feed.flush();
+            }
+        } catch (IOException done) {
+            // consumer closed or stream died: the pump's job is over
         }
-        if (!filtering) {
-            return raw.read(b, off, len);
-        }
-        byte[] frame = nextFrame();
-        if (frame == null) {
-            return -1;
-        }
-        pending = frame;
-        pos = 0;
-        return read(b, off, len);
-    }
-
-    /** One whole re-emitted frame (headers + body), or null at EOF. */
-    private byte[] nextFrame() throws IOException {
-        String headers = readHeaders();
-        if (headers == null) {
-            return null;
-        }
-        int contentLength = contentLengthOf(headers);
-        byte[] body = raw.readNBytes(contentLength);
-        if (body.length < contentLength) {
-            // truncated stream: emit what we have verbatim and stop filtering
-            filtering = false;
-            return concat(headers, body);
-        }
-        String text = new String(body, StandardCharsets.UTF_8);
-        if (text.contains("\"capabilities\"")) {
-            byte[] rewritten = stripRenameProvider(text);
-            filtering = false;
-            return frame(rewritten);
-        }
-        return concat(headers, body);
     }
 
     /** Removes result.capabilities.renameProvider; body unchanged on any surprise. */
@@ -101,27 +101,10 @@ final class LspRenameCapabilityFilter extends InputStream {
         return body.getBytes(StandardCharsets.UTF_8);
     }
 
-    private static byte[] frame(byte[] body) {
-        byte[] header = ("Content-Length: " + body.length + "\r\n\r\n")
-                .getBytes(StandardCharsets.US_ASCII);
-        byte[] out = new byte[header.length + body.length];
-        System.arraycopy(header, 0, out, 0, header.length);
-        System.arraycopy(body, 0, out, header.length, body.length);
-        return out;
-    }
-
-    private static byte[] concat(String headers, byte[] body) {
-        byte[] h = (headers + "\r\n").getBytes(StandardCharsets.US_ASCII);
-        byte[] out = new byte[h.length + body.length];
-        System.arraycopy(h, 0, out, 0, h.length);
-        System.arraycopy(body, 0, out, h.length, body.length);
-        return out;
-    }
-
     /** Raw header block up to (not including) the blank line; null at EOF. */
-    private String readHeaders() throws IOException {
+    private static String readHeaders(InputStream raw) throws IOException {
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        int state = 0; // counts the \r\n\r\n terminator
+        int state = 0;
         int c;
         while ((c = raw.read()) >= 0) {
             buf.write(c);
@@ -150,10 +133,5 @@ final class LspRenameCapabilityFilter extends InputStream {
             }
         }
         throw new IOException("Frame without Content-Length");
-    }
-
-    @Override
-    public void close() throws IOException {
-        raw.close();
     }
 }
