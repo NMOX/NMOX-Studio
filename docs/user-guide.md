@@ -310,7 +310,10 @@ multiplication `*3` with `$` numbering (`$$` zero-pads), grouping
 caret sitting before an auto-closed `}` still expands — and it refuses
 honestly: a bare word only expands when it *is* an HTML element, and
 anything unparseable leaves your text untouched with a status-line
-hint. Deliberately out (recorded in the code): climb-up `^`, lorem.
+hint. `lorem` and `lorem5` emit deterministic placeholder text — the
+canonical passage, capitalized and period-closed, the same every press
+so diffs stay honest; `ul>li*3>lorem4` fills a whole mock list.
+Deliberately out (recorded in the code): climb-up `^`.
 
 The same chord speaks **CSS** in stylesheets (v1.336.0 closed the
 grammar's recorded "CSS abbreviations" out): in any CSS/SCSS/Less pane,

@@ -22,10 +22,16 @@ import java.util.Set;
  * {@code [href=/ target=_blank]}, inner text {@code {hi}}, child
  * {@code >}, sibling {@code +}, multiplication {@code *3} with
  * {@code $} numbering (1-based; {@code $$} zero-pads), and grouping
- * {@code (...)}. Deliberately OUT, recorded here so nobody re-derives
- * the boundary: climb-up {@code ^} (write a group instead), CSS
- * abbreviations, implicit tag names by context ({@code ul>.x} makes a
- * div, not an li), and lorem generators.
+ * {@code (...)}, plus the {@code lorem} generator (v1.339.0):
+ * {@code lorem} or {@code lorem5} emits DETERMINISTIC placeholder text
+ * — the canonical passage, N words (default 12), capitalized and
+ * period-terminated — so tests can pin it and two presses agree.
+ * Lorem takes no decorations: {@code lorem.big} or {@code lorem{x}}
+ * refuses, because a class on placeholder text is a typo, not intent.
+ * Deliberately OUT, recorded here so nobody re-derives the boundary:
+ * climb-up {@code ^} (write a group instead), CSS abbreviations live
+ * in {@link CssEmmet}, and implicit tag names by context
+ * ({@code ul>.x} makes a div, not an li).
  */
 public final class Emmet {
 
@@ -101,11 +107,13 @@ public final class Emmet {
             if (!p.atEnd() || roots.isEmpty()) {
                 return null;
             }
-            // a lone word must BE an element (see KNOWN_ELEMENTS' javadoc)
+            // a lone word must BE an element (see KNOWN_ELEMENTS' javadoc);
+            // lorem/loremN is the one non-element bare word (v1.339.0)
             boolean bareWord = trimmed.chars().allMatch(
                     c -> Character.isLetterOrDigit(c) || c == '-');
             if (bareWord && !KNOWN_ELEMENTS.contains(trimmed)
-                    && trimmed.indexOf('-') < 0) {
+                    && trimmed.indexOf('-') < 0
+                    && loremWords(trimmed) < 0) {
                 return null;
             }
             Out out = new Out(indentUnit);
@@ -405,6 +413,17 @@ public final class Emmet {
                 }
                 continue;
             }
+            int loremCount = loremWords(n.name);
+            if (loremCount >= 0) {            // lorem emits TEXT, not a tag
+                if (n.id != null || !n.classes.isEmpty() || !n.attrs.isEmpty()
+                        || n.text != null || !n.children.isEmpty()) {
+                    // a decorated lorem is a typo, not intent — refuse the
+                    // whole abbreviation (expand() catches this as null)
+                    throw new IllegalStateException("lorem takes no decorations");
+                }
+                out.sb.append(loremText(loremCount));
+                continue;
+            }
             out.sb.append('<').append(n.name);
             if (n.id != null) {
                 out.sb.append(" id=\"").append(number(n.id, idx, total)).append('"');
@@ -451,6 +470,53 @@ public final class Emmet {
             }
             out.sb.append("</").append(n.name).append('>');
         }
+    }
+
+    /**
+     * The canonical passage, one source for every {@code lorem}
+     * expansion — DETERMINISTIC by design (real Emmet randomizes; a
+     * generator whose output changes between presses cannot be pinned
+     * by a test or trusted in a diff).
+     */
+    private static final String[] LOREM_WORDS = ("lorem ipsum dolor sit amet"
+            + " consectetur adipiscing elit sed do eiusmod tempor incididunt"
+            + " ut labore et dolore magna aliqua enim ad minim veniam quis"
+            + " nostrud exercitation ullamco laboris nisi aliquip ex ea"
+            + " commodo consequat duis aute irure in reprehenderit voluptate"
+            + " velit esse cillum eu fugiat nulla pariatur excepteur sint"
+            + " occaecat cupidatat non proident sunt culpa qui officia"
+            + " deserunt mollit anim id est laborum").split(" ");
+
+    /** Word count for a {@code lorem}/{@code loremN} name, or -1 if not lorem. */
+    private static int loremWords(String name) {
+        if (name == null || !name.startsWith("lorem")) {
+            return -1;
+        }
+        String n = name.substring(5);
+        if (n.isEmpty()) {
+            return 12;
+        }
+        try {
+            int v = Integer.parseInt(n);
+            return (v >= 1 && v <= 200) ? v : -1;
+        } catch (NumberFormatException notANumber) {
+            return -1;
+        }
+    }
+
+    /** N words from the passage (cycling), capitalized, period-closed. */
+    private static String loremText(int words) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < words; i++) {
+            String w = LOREM_WORDS[i % LOREM_WORDS.length];
+            if (i == 0) {
+                w = Character.toUpperCase(w.charAt(0)) + w.substring(1);
+            } else {
+                sb.append(' ');
+            }
+            sb.append(w);
+        }
+        return sb.append('.').toString();
     }
 
     /** {@code $} numbering: {@code item$} → item1..itemN; {@code $$} pads. */
