@@ -1324,6 +1324,36 @@ header opens on the first try every time), so a menu that "won't open"
 on the second attempt is the harness. This cost real time before a
 control experiment settled it.
 
+## Addendum — 2026-08-11, the Emmet family completes (v1.341–v1.343)
+
+**v1.341.0 climb-up `^`** emptied the v1.329.0 grammar's
+deliberately-out list — each out (CSS abbreviations, lorem, climb-up)
+closed as its own release with its own laws. The implementation is a
+`pendingClimbs` counter the `^` run sets and each enclosing level's
+`>` branch consumes one of; climbing past the root or out of a
+`(...)` group REFUSES where real Emmet silently clamps. The
+group-swallow case (`(a>b^^)` rendering with the climbs silently
+eaten) is why the top-level refusal exists — a mutation proof caught
+that only after the case was added.
+
+**v1.342.0, the arc review, ran probes-first**: six compositions no
+single feature's tests tried together (climb×times, climb-in-group,
+lorem×climb, extraction past a real tag, mid-chain `!important`, the
+group wall under `*N`) printed OPEN, judged against the documented
+laws, then pinned at their observed values as EmmetArcProbeTest. All
+clean — the arc's first no-finding review, and the method is the
+point: a CLEAN verdict earns trust by showing its probes.
+
+**Shift ledger 2026-08-10/11 overnight: EIGHT releases**
+(v1.335 floors+gauntlet · v1.336 CSS Emmet · v1.337 docs · v1.338 the
+`+` combinator · v1.339 deterministic lorem · v1.340 docs · v1.341
+climb-up · v1.342 review), every one live-proven before ship and
+walked in the shipped app on the surfaces the dev proofs skipped.
+Pipeline hygiene that came out of it: gates derive via PYTHON (sed
+quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
+-F a dot is a dot), and the exact gate line is executed verbatim
+against committed HEAD before every launch.
+
 ## Addendum — 2026-08-11, the overnight tail continues (v1.338–v1.340)
 
 **The Emmet family closes its own outs.** v1.338.0 the `+` combinator
