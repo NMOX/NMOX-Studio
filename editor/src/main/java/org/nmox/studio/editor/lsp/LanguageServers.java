@@ -31,12 +31,6 @@ public final class LanguageServers {
 
     /** Launches a server command in the project root; null when unavailable. */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup, List<String> command) {
-        return launch(lookup, command, false);
-    }
-
-    /** As {@link #launch}, optionally stripping the server's renameProvider (ledger 81). */
-    static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
-            List<String> command, boolean filterRename) {
         try {
             File dir = projectDir(lookup);
             List<String> resolved = ToolLocator.resolveCommand(command);
@@ -50,20 +44,12 @@ public final class LanguageServers {
             pb.environment().put("PATH", ToolLocator.augmentedPath());
             pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
-            java.io.InputStream serverOut = process.getInputStream();
-            if (filterRename) {
-                // ledger 81: in Angular workspaces ngserver is the rename
-                // authority (class AND template); stripping tsserver's
-                // renameProvider stops the platform applying BOTH edit sets
-                serverOut = new LspRenameCapabilityFilter(serverOut);
-                ngProbe("rename filter armed for " + command);
-            }
             // the Lookup carries the languageId mapping: without it the
             // client sends the RAW MIME as didOpen's languageId and
             // id-keyed servers (ngserver above all) silently ignore the
             // document — see LspLanguageIds
             return LanguageServerProvider.LanguageServerDescription.create(
-                    serverOut, process.getOutputStream(), process,
+                    process.getInputStream(), process.getOutputStream(), process,
                     org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
@@ -110,12 +96,6 @@ public final class LanguageServers {
      */
     static LanguageServerProvider.LanguageServerDescription launchNpm(
             Lookup lookup, String bin, String... args) {
-        return launchNpm(lookup, false, bin, args);
-    }
-
-    /** As {@link #launchNpm}, optionally rename-filtered (ledger 81). */
-    static LanguageServerProvider.LanguageServerDescription launchNpm(
-            Lookup lookup, boolean filterRename, String bin, String... args) {
         File dir = projectDir(lookup);
         File local = dir == null ? null : new File(dir, "node_modules/.bin/" + bin);
         // A committed node_modules/.bin/<server> is attacker-controlled
@@ -131,7 +111,7 @@ public final class LanguageServers {
         cmd.add(useLocal ? local.getAbsolutePath() : bin);
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
-        return reported(launch(lookup, cmd, filterRename), bin);
+        return reported(launch(lookup, cmd), bin);
     }
 
     /**
@@ -187,20 +167,49 @@ public final class LanguageServers {
         return project == null ? null : FileUtil.toFile(project.getProjectDirectory());
     }
 
-    /** TypeScript + JavaScript via typescript-language-server. */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
-    })
+    /**
+     * TypeScript via typescript-language-server — except in Angular
+     * workspaces, where the mime is ngserver's ALONE (ledger 81).
+     *
+     * <p>Why suppression and not capability games: the platform's rename
+     * refactoring collects edit sets from EVERY server bound to the mime
+     * — decompiled, {@code RenameRefactoringPlugin.lambda$prepare$6},
+     * the capability predicate it filters bindings with, is
+     * {@code iconst_1; ireturn}: always true, renameProvider never
+     * consulted. With tsserver AND ngserver both bound, a class-property
+     * rename applied tsserver's declaration edit AND ngserver's
+     * declaration+template edits — {@code headingheading}, proven live
+     * twice (the second time through a filter that verifiably stripped
+     * tsserver's renameProvider, which changed nothing). The only lever
+     * the platform leaves is WHICH servers are bound; ngserver wraps the
+     * TypeScript language service (that is what --tsProbeLocations is
+     * for), so it serves the .ts intelligence itself.
+     */
+    @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
     public static final class TypeScriptServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            // ledger 81: only in Angular workspaces, where ngserver shares
-            // the mime and owns rename end to end
             boolean angular = angularRootAbove(projectDir(lookup)) != null;
             ngProbe("tsserver start: projectDir=" + projectDir(lookup)
                     + " angular=" + angular);
-            return launchNpm(lookup, angular, "typescript-language-server", "--stdio");
+            if (angular) {
+                return null; // ngserver owns TypeScript here
+            }
+            return launchNpm(lookup, "typescript-language-server", "--stdio");
+        }
+    }
+
+    /**
+     * JavaScript rides the same typescript-language-server, registered
+     * separately so the ledger-81 Angular suppression above cannot take
+     * plain .js files down with it (ngserver serves .ts and templates,
+     * not .js).
+     */
+    @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
+    public static final class JavaScriptTsServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "typescript-language-server", "--stdio");
         }
     }
 
