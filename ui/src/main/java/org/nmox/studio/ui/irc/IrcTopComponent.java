@@ -260,10 +260,21 @@ public final class IrcTopComponent extends TopComponent {
         // re-attach to whatever is still connected (reopen case): one
         // bridge per network per window, so no double-delivery
         for (Map.Entry<String, IrcClient> e : SESSIONS.entrySet()) {
+            // a live session with NO bridge means the window was CLOSED
+            // and is reopening (bridges survive tab switches — only
+            // componentClosed clears them; the connect path attaches its
+            // own bridge immediately). Messages kept arriving engine-side
+            // (IrcLogTap, v1.322.0) but this view missed them — say so
+            // instead of showing a silently gap-less scrollback (v1.344.0,
+            // found by the live Libera walk of shipped 1.343.0)
+            boolean reattach = !bridges.containsKey(e.getKey());
             attachBridge(e.getKey(), e.getValue());
             ensureNetworkNode(e.getKey());
             for (String chan : e.getValue().joinedChannels()) {
                 ensureTargetNode(e.getKey(), chan);
+            }
+            if (reattach) {
+                appendGapMarkers(e.getKey(), e.getValue().joinedChannels());
             }
         }
         refreshConnectButton();
@@ -603,6 +614,11 @@ public final class IrcTopComponent extends TopComponent {
         return docs.computeIfAbsent(k, x -> new DefaultStyledDocument());
     }
 
+    /** Test seam: the transcript document for a network/target pair. */
+    StyledDocument docForKeyTest(String network, String target) {
+        return docForKey(key(network, target));
+    }
+
     /**
      * Transcript retention ceiling per tab, in characters. The engine
      * caps a LINE at 8k, but a connection deliberately outlives the
@@ -646,6 +662,42 @@ public final class IrcTopComponent extends TopComponent {
     private static void capPut(Map<String, String> map, String k, String v) {
         if (map.size() < NICK_SET_CAP || map.containsKey(k)) {
             map.put(k, v);
+        }
+    }
+
+    /**
+     * The reattach gap line (v1.344.0). While the window was closed the
+     * engine kept receiving — and logging — this network's traffic, but
+     * the scrollback did not; a transcript that silently omits messages
+     * it could have shown misleads. One dim line per restored transcript
+     * says so and points at the record. Package-private constant + seam
+     * so the marker is pinnable headless (the class's UI paths are
+     * source-gated, not driven, in tests).
+     */
+    static final String GAP_MARKER =
+            "— view was closed; the full record is in ~/.nmox/irc-logs —";
+
+    /**
+     * Appends {@link #GAP_MARKER} to the network's status transcript and
+     * each given channel's transcript. Writes the documents DIRECTLY
+     * (not via {@code append}): a marker is bookkeeping, not a message —
+     * it must not bold the tree, count as unread, or ring a mention.
+     */
+    void appendGapMarkers(String network, java.util.Collection<String> channels) {
+        SimpleAttributeSet dim = attrs(new Color(0x88, 0x88, 0x88), false, true, false);
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        keys.add(key(network, ""));
+        for (String chan : channels) {
+            keys.add(key(network, chan));
+        }
+        for (String k : keys) {
+            StyledDocument doc = docForKey(k);
+            try {
+                doc.insertString(doc.getLength(), GAP_MARKER + "\n", dim);
+                trimTranscript(doc);
+            } catch (BadLocationException ex) {
+                // appending at getLength() cannot be out of bounds
+            }
         }
     }
 
