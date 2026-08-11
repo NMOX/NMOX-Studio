@@ -28,6 +28,12 @@ the industry. Four units, one structural editor fix underneath:
   file, so the chord can never mangle code. Backtick literals only,
   `template:` key only, `@Component` files only (recorded limits).
   Live-proven in both directions; region parser mutation-proven ×2.
+- **Component-selector completion**: typing `<app-` in a template (or
+  ⌃Space at any tag-name position) offers the project's own component
+  selectors — from the same service-free index as the ⌘B jump.
+  Accepting writes the whole `<sel></sel>` pair with the caret inside.
+  Attribute-directive and dashless selectors deliberately excluded;
+  mutation-proven.
 - **One-click language-server install**: the "intelligence unavailable"
   notification now RUNS the install when the catalog knows the exact
   command and its package manager is present — for Angular that is one

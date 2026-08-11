@@ -19,6 +19,7 @@ kept current every time the Angular surface changes.
 | Template type-checking against the component class | ✅ via ngserver, v1.218.0, live-proven ("Did you mean 'loggedIn'?") | ✅ built in | ✅ |
 | **Selector navigation** — `<app-hero>` → its component | ✅ native ⌘B (CSL DeclarationFinder) + ⌥⌘B + ⌘-click, **works WITHOUT the language service** (own selector index, decorator-gated, comma-lists + attribute directives), live-proven | ✅ | ✅ (needs ALS running) |
 | Go to definition on `{{ user.name }}` | ⚠️ ngserver-backed via popup; routing the ⌘B identifier case through CSL is queued (ledger 78 remainder) | ✅ | ✅ |
+| Component-selector completion (`<app-` offers your components) | ✅ Angular-top arc — from the selector index, works service-free; accepting writes the tag pair, caret inside (live-proven) | ✅ | ✅ (needs ALS) |
 | Component ↔ template ↔ styles ↔ spec switching | ✅ v1.313.0, all four files, both decorator spellings | ✅ | ⚠️ extension-dependent |
 | **Emmet in templates** | ✅ ⌥⌘E, v1.329.0, grammar-pinned | ✅ | ✅ |
 | **Emmet in INLINE templates** (`template:` backticks in .ts) | ✅ Angular-top arc, decorator-gated, refuses outside the literal — live-proven both directions | ✅ | ⚠️ needs settings |
