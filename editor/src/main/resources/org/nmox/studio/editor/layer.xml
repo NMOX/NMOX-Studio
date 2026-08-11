@@ -252,4 +252,15 @@
             </folder>
         </folder>
     </folder>
+    <!-- Suffixless Angular templates (ledger 73): a PROGRAMMATIC resolver
+         must sit IN this ordered folder to be consulted before the
+         platform's declarative ext=html claim at 300 (the v1.217.0
+         ServiceProvider lesson). 260 = after our cheap name-keyed 250. -->
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="org-nmox-studio-editor-grammars-NgTemplateContentResolver.instance">
+                <attr name="position" intvalue="260"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

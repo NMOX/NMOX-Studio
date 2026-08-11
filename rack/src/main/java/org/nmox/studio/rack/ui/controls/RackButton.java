@@ -137,6 +137,12 @@ public class RackButton extends JComponent implements javax.accessibility.Access
         return super.getToolTipText(e);
     }
 
+    /** Rack tips wear the phosphor face — see {@link RackStyle#phosphorTip}. */
+    @Override
+    public javax.swing.JToolTip createToolTip() {
+        return RackStyle.phosphorTip(super.createToolTip());
+    }
+
     public void setLit(boolean lit) {
         if (this.lit != lit) {
             this.lit = lit;

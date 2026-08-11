@@ -54,4 +54,27 @@ class LanguageServerHealthTest {
             LanguageServerHealth.reportMissing("nmox-reset-check");
         }).doesNotThrowAnyException();
     }
+
+    @Test
+    @DisplayName("the css server stays quiet — built-ins cover the family (David, 2026-08-11)")
+    void cssFamilyIsQuiet() throws Exception {
+        // the quiet-list literal must be the EXACT binary the launcher
+        // spawns — a renamed binary would silently resurrect the nag
+        // (two-proof: the list exists AND names the launch-site string)
+        String health = java.nio.file.Files.readString(new java.io.File(
+                "src/main/java/org/nmox/studio/editor/lsp/LanguageServerHealth.java").toPath());
+        String launchers = java.nio.file.Files.readString(new java.io.File(
+                "src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java").toPath());
+        assertThat(health).contains("QUIET_BINARIES")
+                .contains("\"vscode-css-language-server\"");
+        assertThat(launchers)
+                .as("the launch site must still spawn the exact name the quiet list holds")
+                .contains("launchNpm(lookup, \"vscode-css-language-server\"");
+        // and behaviorally: reporting it must NOT consume a REPORTED slot
+        // (a quiet binary short-circuits before the once-per-session set)
+        LanguageServerHealth.resetForTest();
+        assertThatCode(() ->
+                LanguageServerHealth.reportMissing("vscode-css-language-server"))
+                .doesNotThrowAnyException();
+    }
 }

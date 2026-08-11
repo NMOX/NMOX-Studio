@@ -102,18 +102,69 @@ public final class NgSchematicAction implements ActionListener {
             if (!WorkspaceTrust.requestTrust(root)) {
                 return; // Keep Safe: no spawn, no output tab
             }
-            // the empty line consumer is DELIBERATE (v1.212.0 lesson noted,
-            // not repeated): a generate has no serving URL to announce and
-            // no chain waiting on its lines — the Output tab itself is fed
-            // by CommandExecutor regardless
+            // the CREATE lines are the CLI's own receipt of what it made
+            // (Angular batch, 2026-08-11): collect them so a successful
+            // generate ends in the file the dev came for, open in the
+            // editor — the terminal habit this gesture replaces at least
+            // left the path on screen
+            java.util.List<String> lines =
+                    java.util.Collections.synchronizedList(new java.util.ArrayList<>());
             CommandExecutor.run("Angular: generate " + schematic + " — " + rawName.trim(),
                     target, Map.of(), NgSchematic.argv(schematic, rawName),
-                    line -> {
-                    },
-                    exit -> java.awt.EventQueue.invokeLater(() ->
-                            StatusDisplayer.getDefault().setStatusText(exit == 0
-                                    ? "ng generate " + schematic + " " + rawName.trim() + " — done."
-                                    : "ng generate failed (exit " + exit + ") — see Output.")));
+                    lines::add,
+                    exit -> java.awt.EventQueue.invokeLater(() -> {
+                        String created = exit == 0
+                                ? NgSchematic.primaryCreated(lines) : null;
+                        // the status must report what HAPPENED, not what was
+                        // parsed — the first live proof (2026-08-11) said
+                        // "opened livegen.component.ts" while no tab opened,
+                        // because toFileObject was null for the file the CLI
+                        // had just created OUTSIDE the filesystem cache
+                        // the receipt's paths are WORKSPACE-ROOT-relative even
+                        // when ng runs in a subfolder (proven by hand,
+                        // 2026-08-11: cwd=src/app still prints "CREATE
+                        // src/app/..."), so resolve against root first; the
+                        // target fallback covers any schematic that prints
+                        // cwd-relative instead
+                        File createdFile = created == null ? null
+                                : new File(root, created);
+                        if (createdFile != null && !createdFile.isFile()) {
+                            createdFile = new File(target, created);
+                        }
+                        boolean opened = createdFile != null
+                                && openInEditor(createdFile);
+                        StatusDisplayer.getDefault().setStatusText(exit == 0
+                                ? "ng generate " + schematic + " " + rawName.trim()
+                                        + (opened
+                                                ? " — opened " + new File(created).getName()
+                                                : " — done.")
+                                : "ng generate failed (exit " + exit + ") — see Output.");
+                    }));
         });
+    }
+
+    /** Open a generated file in the editor; true only if a tab really opened. */
+    private static boolean openInEditor(File file) {
+        try {
+            File normal = org.openide.filesystems.FileUtil.normalizeFile(file);
+            // the CLI wrote this file moments ago from an external process;
+            // without a refresh the FileObject layer hasn't seen it and
+            // toFileObject returns null (the first live proof's finding)
+            org.openide.filesystems.FileUtil.refreshFor(normal.getParentFile());
+            org.openide.filesystems.FileObject fo =
+                    org.openide.filesystems.FileUtil.toFileObject(normal);
+            if (fo == null) {
+                return false; // ng said CREATE but the cache still can't see it
+            }
+            org.openide.cookies.OpenCookie open = org.openide.loaders.DataObject
+                    .find(fo).getLookup().lookup(org.openide.cookies.OpenCookie.class);
+            if (open == null) {
+                return false;
+            }
+            open.open();
+            return true;
+        } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+            return false; // opening is a courtesy on top of a successful generate
+        }
     }
 }

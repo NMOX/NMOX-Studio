@@ -4,6 +4,53 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.346.0] - 2026-08-11
+
+The reviewed batch — an interactive session with David shaped every
+item: two of his decisions implemented, one 60-release verdict
+overturned at a real mouse, one nag his own eyes caught, and the
+Angular bet extended to repos we didn't generate.
+
+### Fixed
+- **Ledger 76 closed — the tooltip verdict was the bug, and the fix
+  is a visible face.** A property-gated probe with David at a real
+  mouse traced every link of the LCD tooltip chain LIVE: registration,
+  delivery, thirteen consecutive `getToolTipText` queries answering
+  the full string — and the window showing. The tooltip had worked
+  since v1.283.0; three "never fires" verdicts came from synthesized
+  hovers that never dwell (ToolTipManager restarts its 750 ms timer on
+  every move) and a near-black LAF tip camouflaged over the near-black
+  rack. The real defect is fixed: `RackStyle.phosphorTip` gives rack
+  tips the LCD face — phosphor green on glass black with a visible
+  bezel — via `createToolTip()` on LcdDisplay, RackButton and
+  RackDevice only, never UIManager. Human-verified.
+- **The css family stops nagging about its optional LSP** (David's
+  review find): the missing-server balloon on a `.css` open undersold
+  the product's own first-class stylesheet intelligence to advertise
+  an additive server. `QUIET_BINARIES` in LanguageServerHealth;
+  stylelint-lsp still attaches silently when present; Go/Rust keep
+  their notification because there the LSP IS the intelligence.
+
+### Added
+- **Suffixless Angular templates are citizens** (ledger 73, David's
+  call: the Angular bet means ALL Angular repos). Angular 21 generates
+  `widget.html` beside `widget.ts` with no `.component` suffix; the
+  new content resolver claims the template mime when the same-basename
+  `.ts` sibling carries `@Component` — capped 8 KB sniff, mtime+size
+  cached, one sibling stat for ordinary html, `index.html` untouched.
+  Registered inside the ordered resolver layer folder (the only
+  channel that outranks the platform's html claim — the v1.217.0
+  lesson, proven positively live this time). The four-file switcher
+  was already suffix-agnostic and is now pinned.
+- **`ng generate` opens what it made**: the schematic gesture parses
+  the CLI's `CREATE` receipt and opens the primary generated file
+  (first non-spec `.ts`, else first created; `UPDATE`-only runs open
+  nothing). Mutation-proven ×2.
+- **Block Studio: a menu insert opens the param editor at once**
+  (David's call) — you insert a Text piece because you're about to
+  type its text; the keystrokes get a field, not the canvas. Kinds
+  without params stay quiet; palette drags unchanged.
+
 ## [1.345.0] - 2026-08-11
 
 Docs truth — the walks after the shift.

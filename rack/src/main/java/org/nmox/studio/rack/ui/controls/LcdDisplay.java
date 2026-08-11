@@ -207,6 +207,12 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         javax.swing.ToolTipManager.sharedInstance().registerComponent(this);
     }
 
+    /** Rack tips wear the phosphor face — see {@link RackStyle#phosphorTip}. */
+    @Override
+    public javax.swing.JToolTip createToolTip() {
+        return RackStyle.phosphorTip(super.createToolTip());
+    }
+
     @Override
     public void removeNotify() {
         javax.swing.ToolTipManager.sharedInstance().unregisterComponent(this);

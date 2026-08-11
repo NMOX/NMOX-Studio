@@ -72,4 +72,41 @@ final class NgSchematic {
     static List<String> argv(String schematic, String name) {
         return List.of("npx", "ng", "generate", schematic, name.trim());
     }
+
+    /**
+     * The file a dev edits FIRST after {@code ng generate}, parsed from
+     * the CLI's own {@code CREATE path (N bytes)} lines (Angular batch,
+     * 2026-08-11): the primary source file — the first created
+     * {@code .ts} that is not a spec — else the first created file at
+     * all, else null when the run created nothing (an {@code UPDATE}-
+     * only run, or a failure). Paths come back exactly as ng printed
+     * them, relative to the folder it ran in; the caller resolves and
+     * opens. Generation without the open leaves the dev hunting the
+     * tree for the file they just asked for — the terminal habit this
+     * gesture replaces put the path right there in the output.
+     */
+    static String primaryCreated(List<String> outputLines) {
+        String firstAny = null;
+        for (String line : outputLines) {
+            String t = line == null ? "" : line.trim();
+            if (!t.startsWith("CREATE ")) {
+                continue;
+            }
+            String path = t.substring("CREATE ".length()).trim();
+            int paren = path.lastIndexOf(" (");
+            if (paren > 0) {
+                path = path.substring(0, paren).trim();
+            }
+            if (path.isEmpty()) {
+                continue;
+            }
+            if (firstAny == null) {
+                firstAny = path;
+            }
+            if (path.endsWith(".ts") && !path.endsWith(".spec.ts")) {
+                return path;
+            }
+        }
+        return firstAny;
+    }
 }
