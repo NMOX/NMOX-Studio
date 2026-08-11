@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.335.0] - 2026-08-11
+
+The floors ratchet, and the update center crosses the marathon.
+
+### Changed
+- **JaCoCo floors**: ui's line-coverage minimum rises 0.56 → 0.57 (measured
+  .5859 — the Task Board arc and its walks locked in). Every other module
+  sits within a sub-point of its floor, and **sub-point margins are not
+  ratchet room** (the v1.322.0 rule): core .9024/.90, editor .6755/.67,
+  tools .7506/.75, project .8857/.88, apiclient .9408/.94, dbstudio
+  .9237/.92, web3 .9565/.95, infra .8655/.86 all HOLD. Rack holds at .75
+  by standing law — the WINDOWS lane is its binding measurement
+  (POSIX-gated tests skip there), so the unix .7827 is not the number
+  that matters. No floor lowered, no exclusion changed.
+
+### Verified
+- **The update-center gauntlet, v1.323.0 → v1.334.0** — the in-app
+  upgrade proof across exactly the twelve releases this marathon
+  shipped: a stock 1.323.0 portable zip, run headlessly with
+  `--nogui --modules --refresh --update-all -J-Dnetbeans.close=true`,
+  pulled the live catalog (11 modules, spec 1.334.0, absolute
+  release-pinned NBM URLs), installed **in place** (the writable-cluster
+  behavior first recorded at v1.298.0 — the cluster is writable, so the
+  platform updates it directly instead of shadowing into the userdir),
+  and left all ELEVEN
+  `nmoxstudio/modules/org-nmox-NMOX-Studio-*.jar` manifests at spec
+  **1.334.0**, byte-verified, with originals preserved under
+  `update/backup`. The log's closing "Updates not found. updates=0" is
+  the SECOND refresh converging to zero after the successful first-pass
+  install — the healthy signature, not a failure (a false alarm worth
+  recording: read the whole log, not the tail). The updated install then
+  **rebooted clean**: exit 0, zero module-system failure phrases, the
+  1.334.0 modules registered in messages.log. The spec-version chain
+  (v1.47.0) holds across its longest single hop yet.
+
 ## [1.334.0] - 2026-08-11
 
 Docs truth and the go-to story — the six-release iteration closes.
