@@ -23,7 +23,7 @@ import org.openide.awt.StatusDisplayer;
  */
 @EditorActionRegistration(name = "nmox-ng-goto-component",
         mimeType = "text/x-ng-template",
-        popupPath = "", popupPosition = 95)
+        popupPath = "", popupPosition = 96) // 95 = the v1.313 switcher (ledger 80)
 public class NgGoToComponentAction extends BaseAction {
 
     public NgGoToComponentAction() {
