@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.336.0] - 2026-08-11
+
+Emmet speaks CSS — the grammar's own recorded out, closed.
+
+### Added
+- **⌥⌘E expands CSS abbreviations in stylesheets** — the v1.329.0
+  grammar recorded "CSS abbreviations" as a deliberate out; `CssEmmet`
+  closes it as its own pure core on all five css-family mimes (text/css
+  plus the css-prep pair text/scss·text/less and our x- pair — the
+  v1.230.0 finding, twice bitten, honored on day one). The grammar is a
+  **written-down exact-match subset**: a keyword table of the
+  declarations designers type all day (`df` → `display: flex;`, `aic`,
+  `jcsb`, `posa`, `ttu`, `m0a`, …), a numeric family (`m10-20` →
+  `margin: 10px 20px;`, `w100p` → `width: 100%;`, `fz1.2r` →
+  `font-size: 1.2rem;`, bare `0`, unitless `z`/`op`, margin/padding up
+  to four `-`-separated values, longest-prefix so `miw320` is never a
+  margin), colors (`c#f00`, `bgc#1a2b3c`, hex validated), and a
+  trailing `!` for `!important`. Real Emmet fuzzy-matches letter soup
+  onto its property list; a fuzzy match that guesses wrong MUTATES YOUR
+  STYLESHEET, so this core only expands what it can expand exactly —
+  refusals leave the text untouched with the status-line hint, and a
+  token after a `:` never expands (that's a value being typed).
+  Deliberately out, recorded at the class: fuzzy matching, the `+`
+  combinator, vendor prefixes, negative leading values, `@` modifiers.
+- The existing action dispatches by mime (stylesheet panes take the CSS
+  branch; no auto-pair folding — these tokens carry no closers) and the
+  ⌥⌘E chord is layer-bound on all five mimes.
+
+### Verified
+- Live in the dev build on BOTH surfaces: styles.css — `m10-20`, `df`,
+  `c#f00` (the expanded literal immediately painted by the v1.227.0
+  swatch layer — the two features composing), and `qqq` refused with
+  the honest status line, text untouched; hero.scss (the css-prep
+  mime) — `m0a` and `w100p!`.
+- Mutation-proven ×3, each failing by name: the value-position guard
+  deleted (abbreviationIn), the default unit flipped px→em (4 tests),
+  and the action's CSS dispatch un-wired (the two-proof seam law's
+  gate, cssBranchWired).
+
 ## [1.335.0] - 2026-08-11
 
 The floors ratchet, and the update center crosses the marathon.

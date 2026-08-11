@@ -38,7 +38,7 @@ phosphor styling, for a browser.*
 | ***Ask ORACLE*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
 | ![Block Studio](docs/images/tabs/block-studio.png) | ![DB Studio](docs/images/tabs/db-studio.png) |
 **The go-to studio, by audience.** *Web developers*: Emmet expansion
-(⌥⌘E) in HTML and Angular templates, tsserver/eslint/Prettier out of the
+(⌥⌘E) in HTML, Angular templates, and stylesheets, tsserver/eslint/Prettier out of the
 box, breakpoints in Node and Chrome, a Task Board (⌥⌘1) beside the code.
 *Designers*: color swatches on every literal **and through `var()`
 tokens**, project-wide token completion with swatch icons, ⌘-click from

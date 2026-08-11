@@ -60,6 +60,61 @@
                     </folder>
                 </folder>
             </folder>
+            <!-- Expand Abbreviation ⌥⌘E in stylesheets (v1.336.0) — the
+                 CSS grammar; all five css-family mimes because css-prep
+                 resolves real .scss/.less to text/scss and text/less
+                 while ours serve .sass and friends (the v1.230.0
+                 finding, twice bitten) -->
+            <folder name="css">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="scss">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="less">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-scss">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-less">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
         </folder>
         <!-- Frees Cmd+P from the editor kit's tooltip-show claim so the
              global Go to File shortcut receives it (v1.216.0; see the
