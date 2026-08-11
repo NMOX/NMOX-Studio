@@ -104,10 +104,17 @@ public final class CssTokens {
 
     // ---- project-wide -----------------------------------------------------
 
-    private record CacheKey(String path, long mtime, long size) {
+    /**
+     * Per-file parse cache keyed by PATH with the freshness stamp in the
+     * value (v1.333.0 review): the first cut keyed by (path, mtime,
+     * size), so every save added a new entry and stale versions
+     * accumulated for the life of the session — replacing per path
+     * keeps the cache exactly one entry per stylesheet.
+     */
+    private record CacheEntry(long mtime, long size, List<ProjectToken> tokens) {
     }
 
-    private static final Map<CacheKey, List<ProjectToken>> CACHE =
+    private static final Map<String, CacheEntry> CACHE =
             new ConcurrentHashMap<>();
 
     /**
@@ -125,13 +132,15 @@ public final class CssTokens {
         List<File> sheets = new ArrayList<>();
         collect(root, sheets, 0);
         for (File f : sheets) {
-            CacheKey key = new CacheKey(f.getAbsolutePath(), f.lastModified(), f.length());
-            List<ProjectToken> cached = CACHE.get(key);
-            if (cached == null) {
-                cached = parseFile(f);
-                CACHE.put(key, cached);
+            String path = f.getAbsolutePath();
+            long mtime = f.lastModified();
+            long size = f.length();
+            CacheEntry entry = CACHE.get(path);
+            if (entry == null || entry.mtime() != mtime || entry.size() != size) {
+                entry = new CacheEntry(mtime, size, parseFile(f));
+                CACHE.put(path, entry);
             }
-            out.addAll(cached);
+            out.addAll(entry.tokens());
         }
         return out;
     }

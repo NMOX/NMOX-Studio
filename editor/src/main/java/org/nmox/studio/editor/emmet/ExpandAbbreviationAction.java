@@ -78,16 +78,23 @@ public class ExpandAbbreviationAction extends BaseAction {
             int caretInIndented = e.caretOffset()
                     + (int) newlinesBeforeCaret * leading.length();
             int abbrevStart = caret + at.trailingClosers() - abbrev.length();
+            boolean[] landed = {false};
             doc.runAtomicAsUser(() -> {
                 try {
                     doc.remove(abbrevStart, abbrev.length());
                     doc.insertString(abbrevStart, indented, null);
+                    landed[0] = true;
                 } catch (BadLocationException ex) {
                     // the document changed under the atomic edit; the
                     // runAtomic rollback restores it — nothing to do
                 }
             });
-            target.setCaretPosition(abbrevStart + caretInIndented);
+            if (landed[0]) {
+                // caret math is only valid for the document the edit
+                // actually produced (v1.333.0 review: an unguarded set
+                // after a rolled-back edit threw out-of-bounds)
+                target.setCaretPosition(abbrevStart + caretInIndented);
+            }
         } catch (BadLocationException ex) {
             // caret math raced an edit; refuse silently rather than guess
         }

@@ -123,4 +123,20 @@ class CssTokensTest {
                 .contains("color: var(");
         assertThat(spans.get(0).color().getRed()).isEqualTo(0xff);
     }
+
+    @Test
+    @DisplayName("an edited stylesheet re-parses AND replaces its cache entry")
+    void cacheFollowsEdits(@TempDir Path dir) throws Exception {
+        Path sheet = dir.resolve("t.css");
+        Files.writeString(sheet, ":root { --a: red; }");
+        assertThat(CssTokens.scanProject(dir.toFile()))
+                .extracting(CssTokens.ProjectToken::name).containsExactly("--a");
+        // an edit with a DIFFERENT size (mtime granularity can be 1s —
+        // size divergence is what makes this deterministic)
+        Files.writeString(sheet, ":root { --a: red; --b: blue; }");
+        assertThat(CssTokens.scanProject(dir.toFile()))
+                .as("the stale parse must not be served after the edit")
+                .extracting(CssTokens.ProjectToken::name)
+                .containsExactly("--a", "--b");
+    }
 }

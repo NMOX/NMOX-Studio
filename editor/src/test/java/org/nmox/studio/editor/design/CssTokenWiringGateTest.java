@@ -56,4 +56,17 @@ class CssTokenWiringGateTest {
                 .contains("CssTokens.varNameSpanAt(")
                 .contains("CssTokens.scanProject(");
     }
+
+    @Test
+    @DisplayName("the hyperlink's per-hover text read is version-cached (v1.234 law)")
+    void hyperlinkTextCached() throws Exception {
+        String s = src("CssVarHyperlink.java");
+        assertThat(s)
+                .as("isHyperlinkPoint runs per ⌘-mouse-move ON THE EDT — an"
+                        + " uncached getText copies the document every hover,"
+                        + " the exact class the v1.234.0 review fixed in"
+                        + " CssColorHyperlink")
+                .contains("cachedVersion == version")
+                .contains("addDocumentListener");
+    }
 }

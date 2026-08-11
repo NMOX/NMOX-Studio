@@ -13,7 +13,7 @@ import javax.swing.text.Document;
  * document; the completion simply doesn't apply. That routine race must
  * never raise the exception dialog.
  */
-final class CompletionEdits {
+public final class CompletionEdits {
 
     private static final Logger LOG = Logger.getLogger(CompletionEdits.class.getName());
 
@@ -27,7 +27,10 @@ final class CompletionEdits {
      *         moved on under the completion — callers must skip caret
      *         repositioning in that case, the offsets are stale
      */
-    static boolean replace(Document doc, int start, int len, String text) {
+    // public since v1.333.0: the design package's token completion is the
+    // second consumer — the KitFiles precedent, a helper goes public the
+    // moment a sibling package needs the same law
+    public static boolean replace(Document doc, int start, int len, String text) {
         try {
             doc.remove(start, len);
             doc.insertString(start, text, null);
