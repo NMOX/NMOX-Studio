@@ -50,7 +50,7 @@ class TsServerAngularSuppressionTest {
     }
 
     @Test
-    @DisplayName("plain JavaScript keeps its server — the suppression is TS-mime only")
+    @DisplayName("plain JavaScript keeps its server; only Deno workspaces take it away")
     void javascriptUnaffected() throws Exception {
         String src = src();
         int js = src.indexOf("class JavaScriptTsServer");
@@ -62,9 +62,16 @@ class TsServerAngularSuppressionTest {
                 .isPositive();
         String body = src.substring(js, src.indexOf("\n    }", src.indexOf("startServer", js)));
         assertThat(body)
-                .as("the JS provider launches unconditionally")
+                .as("the Angular suppression must not reach .js (ngserver doesn't serve it)")
                 .doesNotContain("angularRootAbove")
                 .contains("launchNpm(lookup, \"typescript-language-server\", \"--stdio\")");
+        // DenoServer is registered on text/javascript too and returns
+        // non-null in Deno workspaces; without this yield BOTH servers
+        // bind the mime — the ledger-81 double-authority (duplicate
+        // diagnostics, rename edits applied twice)
+        assertThat(body)
+                .as("a Deno workspace gets NO tsserver on .js — deno lsp owns the mime")
+                .containsPattern("if \\(denoRootAbove\\(projectDir\\(lookup\\)\\) != null\\) \\{\\s*\\n\\s*return null;");
     }
 
     @Test

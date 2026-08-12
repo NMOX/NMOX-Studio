@@ -176,13 +176,25 @@ public final class LanguageServers {
         return rootAbove(start, "deno.json", "deno.jsonc");
     }
 
-    private static File rootAbove(File start, String... markers) {
+    /**
+     * Climb from {@code start} looking for a marker file, BOUNDED both
+     * ways: at most 8 levels, and never past the first {@code .git}
+     * directory — the repo boundary. Markers are checked before the
+     * boundary in the same directory, so a marker AT the repo root
+     * still wins; a marker ABOVE the repo (a stray ~/deno.json — a
+     * real pattern, deno's own config discovery reads ancestors) must
+     * never flip another project's server authority.
+     */
+    public static File rootAbove(File start, String... markers) {
         File cursor = start;
         for (int up = 0; cursor != null && up < 8; up++, cursor = cursor.getParentFile()) {
             for (String marker : markers) {
                 if (new File(cursor, marker).isFile()) {
                     return cursor;
                 }
+            }
+            if (new File(cursor, ".git").exists()) {
+                return null; // repo boundary: anything above belongs to someone else
             }
         }
         return null;
@@ -268,12 +280,19 @@ public final class LanguageServers {
      * JavaScript rides the same typescript-language-server, registered
      * separately so the ledger-81 Angular suppression above cannot take
      * plain .js files down with it (ngserver serves .ts and templates,
-     * not .js).
+     * not .js). Deno workspaces are different: {@link DenoServer} is
+     * registered on text/javascript too and deno lsp serves .js there,
+     * so tsserver must yield or BOTH servers bind the mime — the exact
+     * double-authority ledger 81 proved (duplicate diagnostics, and the
+     * platform rename applies every bound server's edits).
      */
     @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
     public static final class JavaScriptTsServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            if (denoRootAbove(projectDir(lookup)) != null) {
+                return null; // deno lsp owns JavaScript here (DenoServer)
+            }
             return launchNpm(lookup, "typescript-language-server", "--stdio");
         }
     }

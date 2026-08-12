@@ -60,6 +60,25 @@ class GoLanesTest {
     }
 
     @Test
+    @DisplayName("a ROSETTA override to GO beats a deno.json — the dialed kind owns PURITY too")
+    void rosettaOverrideBeatsStrayDenoManifest() throws IOException {
+        // v1.354.0 review fix: PURITY resolved hasDeno BEFORE the dialed
+        // kind while GLOSS resolved kind first, so a mixed repo explicitly
+        // steered to GO with ROSETTA still got deno lint beside gofmt —
+        // one project, two owners. Kind checks now come first in both.
+        Rack rack = aimedGoRack();
+        Files.writeString(dir.resolve("deno.json"), "{}");
+        rack.setToolchainOverride("GO");
+        try {
+            LintDevice lint = new LintDevice();
+            rack.addDevice(lint);
+            assertThat(lint.buildCommand()).containsExactly("go", "vet", "./...");
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("GLOSS writes with gofmt -w and checks with gofmt -l")
     void glossCommands() throws IOException {
         Rack rack = aimedGoRack();
