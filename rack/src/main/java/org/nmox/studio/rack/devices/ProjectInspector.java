@@ -270,6 +270,18 @@ public final class ProjectInspector {
     }
 
     /**
+     * True when the project is a Deno workspace — deno ships its own
+     * lint, fmt, test, and language server, so every AUTO lane must
+     * speak {@code deno <verb>} instead of reaching for npx-resolved
+     * Node tooling that may not even have a node_modules to live in.
+     */
+    public static boolean hasDeno(File projectDir) {
+        File dir = kindDir(projectDir, ProjectKind.DENO);
+        return new File(dir, "deno.json").isFile()
+                || new File(dir, "deno.jsonc").isFile();
+    }
+
+    /**
      * The Node package manager this project actually uses. The corepack
      * {@code "packageManager"} pin in package.json wins (it is the
      * project's explicit contract), then the lockfile on disk, then npm.

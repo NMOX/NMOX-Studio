@@ -31,6 +31,17 @@ public final class LanguageServers {
 
     /** Launches a server command in the project root; null when unavailable. */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup, List<String> command) {
+        return launch(lookup, command, false);
+    }
+
+    /**
+     * As {@link #launch}; {@code injectDenoInit} additionally rewrites
+     * the client's initialize request to carry deno lsp's
+     * {@code initializationOptions.enable=true} — without it the server
+     * boots and stays silent (see {@link DenoInitOptionsInjector}).
+     */
+    static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
+            List<String> command, boolean injectDenoInit) {
         try {
             File dir = projectDir(lookup);
             List<String> resolved = ToolLocator.resolveCommand(command);
@@ -44,12 +55,16 @@ public final class LanguageServers {
             pb.environment().put("PATH", ToolLocator.augmentedPath());
             pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
+            java.io.OutputStream serverIn = process.getOutputStream();
+            if (injectDenoInit) {
+                serverIn = new DenoInitOptionsInjector(serverIn);
+            }
             // the Lookup carries the languageId mapping: without it the
             // client sends the RAW MIME as didOpen's languageId and
             // id-keyed servers (ngserver above all) silently ignore the
             // document — see LspLanguageIds
             return LanguageServerProvider.LanguageServerDescription.create(
-                    process.getInputStream(), process.getOutputStream(), process,
+                    process.getInputStream(), serverIn, process,
                     org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
@@ -146,10 +161,28 @@ public final class LanguageServers {
      * applied to the LSP consumer.
      */
     static File angularRootAbove(File start) {
+        return rootAbove(start, "angular.json");
+    }
+
+    /**
+     * The nearest directory at-or-above {@code start} carrying a Deno
+     * manifest — the workspace where {@code deno lsp} is the honest
+     * TypeScript authority (the Angular rule of v1.349.0, second
+     * consumer: two servers must not share a mime, and tsserver's view
+     * of Deno code is actively WRONG — {@code Deno} globals and
+     * {@code jsr:}/{@code npm:}/{@code https:} specifiers all flag).
+     */
+    static File denoRootAbove(File start) {
+        return rootAbove(start, "deno.json", "deno.jsonc");
+    }
+
+    private static File rootAbove(File start, String... markers) {
         File cursor = start;
         for (int up = 0; cursor != null && up < 8; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "angular.json").isFile()) {
-                return cursor;
+            for (String marker : markers) {
+                if (new File(cursor, marker).isFile()) {
+                    return cursor;
+                }
             }
         }
         return null;
@@ -195,7 +228,39 @@ public final class LanguageServers {
             if (angular) {
                 return null; // ngserver owns TypeScript here
             }
+            if (denoRootAbove(projectDir(lookup)) != null) {
+                return null; // deno lsp owns TypeScript here (DenoServer)
+            }
             return launchNpm(lookup, "typescript-language-server", "--stdio");
+        }
+    }
+
+    /**
+     * The Deno language server — {@code deno lsp} from the user's own
+     * deno on PATH, only in workspaces carrying deno.json/deno.jsonc.
+     * It understands what tsserver cannot: the {@code Deno} global,
+     * {@code jsr:}/{@code npm:}/{@code https:} import specifiers, and
+     * the workspace's own compilerOptions from deno.json. tsserver
+     * yields the mimes here ({@link TypeScriptServer}); registration
+     * order between the two providers doesn't matter because exactly
+     * one of them returns non-null for any given workspace.
+     *
+     * <p>No trust gate: like the global tsserver, the binary is the
+     * USER'S tool, and deno.json is inert configuration — nothing in
+     * the workspace executes on file-open (imports are fetched for
+     * type information, never run).
+     */
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
+    })
+    public static final class DenoServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            if (denoRootAbove(projectDir(lookup)) == null) {
+                return null;
+            }
+            return reported(launch(lookup, List.of("deno", "lsp"), true), "deno");
         }
     }
 

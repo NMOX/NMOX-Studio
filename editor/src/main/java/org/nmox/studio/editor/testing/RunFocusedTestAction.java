@@ -112,6 +112,31 @@ public class RunFocusedTestAction extends BaseAction {
         String path = file.getAbsolutePath();
         return switch (mime) {
             case "text/javascript", "text/typescript" -> {
+                // Deno workspaces test with the runtime's own runner. The
+                // --filter argument is a SUBSTRING match unless wrapped in
+                // /slashes/ as a regex (the v1.257.0 lesson: metacharacters
+                // in real test names must be escaped or the filter silently
+                // matches nothing and reports a false green).
+                File denoRoot = null;
+                for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
+                    if (new File(d, "deno.json").isFile()
+                            || new File(d, "deno.jsonc").isFile()) {
+                        denoRoot = d;
+                        break;
+                    }
+                }
+                if (denoRoot != null) {
+                    // "/" additionally escaped: it would terminate deno's
+                    // /.../ regex wrapper (JS regex accepts \/; the shared
+                    // escaper must NOT learn it — go's RE2 rejects it)
+                    String pattern = name == null ? null
+                            : org.nmox.studio.rack.devices.TestDevice
+                                    .regexLiteral(name).replace("/", "\\/");
+                    yield pattern == null
+                            ? new Focused(List.of("deno", "test", path), denoRoot)
+                            : new Focused(List.of("deno", "test", "--filter",
+                                    "/^" + pattern + "$/", path), denoRoot);
+                }
                 // The Angular workspace root is found by walking up for
                 // angular.json ITSELF — the generic manifest walk above
                 // stops at src/ because Angular's src/index.html is a

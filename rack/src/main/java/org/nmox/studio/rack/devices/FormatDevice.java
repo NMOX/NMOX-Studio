@@ -41,6 +41,14 @@ public class FormatDevice extends CommandDevice {
                     ? List.of("forge", "fmt")
                     : List.of("forge", "fmt", "--check");
         }
+        // Deno lane: the runtime ships its own formatter and the
+        // workspace may have no node_modules for npx to resolve
+        // prettier from at all. deno fmt --check exits 1 when dirty.
+        if (ProjectInspector.hasDeno(projectDir())) {
+            return writeSwitch.isOn()
+                    ? List.of("deno", "fmt")
+                    : List.of("deno", "fmt", "--check");
+        }
         // Biome lane: a biome.json means the project formats with biome,
         // not prettier — same respect-their-toolchain rule as v1.60.0's
         // package managers. format without --write exits 1 when dirty,
