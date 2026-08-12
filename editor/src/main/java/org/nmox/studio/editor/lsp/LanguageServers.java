@@ -617,14 +617,24 @@ public final class LanguageServers {
             return provide(lookup, List.of("rust-analyzer"));
         }
 
-        /** One probe per session — the LSP client calls this per file. */
+        /**
+         * SUCCESS is cached for the session (the LSP client calls this
+         * per file); FAILURE is re-probed every time — a broken proxy
+         * or missing binary answers in milliseconds, and re-probing is
+         * what lets the one-click install self-heal WITHOUT a restart:
+         * caching the failure made the "reopen the file to start it"
+         * message a lie (found live on this box's own broken proxy).
+         */
         static boolean analyzerAnswers() {
             Boolean cached = analyzerAnswers;
-            if (cached == null) {
-                cached = versionExitsZero(List.of("rust-analyzer", "--version"));
-                analyzerAnswers = cached;
+            if (cached != null && cached) {
+                return true;
             }
-            return cached;
+            boolean now = versionExitsZero(List.of("rust-analyzer", "--version"));
+            if (now) {
+                analyzerAnswers = true;
+            }
+            return now;
         }
 
         static boolean versionExitsZero(List<String> command) {
