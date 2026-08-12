@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.354.0] - 2026-08-12
+
+The arc review over v1.349–v1.353 (David's ask: assess the project,
+develop what needs it — five releases of fresh LSP-filter and lane code
+had shipped without a review, and the review found the day's own
+pattern repeated). Three fixes, each mutation-proven by name.
+
+### Fixed
+- **A Deno workspace no longer binds TWO servers to text/javascript.**
+  v1.350.0 made tsserver yield the TypeScript mime to deno lsp but the
+  separately-registered JavaScript provider never yielded — and
+  DenoServer registers on text/javascript too, so opening a .js file
+  in a Deno project bound BOTH servers: duplicate diagnostics
+  (tsserver erroring on the `Deno` global beside deno's correct
+  answers) and the ledger-81 rename double-apply, since the platform's
+  rename collects edits from every server on the mime. The JS provider
+  now yields exactly like its TS sibling.
+- **The marker walks are bounded by the repo.** The LSP authority
+  checks (deno.json/angular.json above the project) and Run Focused
+  Test's runner selection climbed ancestor directories — the
+  focused-test walks all the way to the filesystem root. A stray
+  `~/deno.json` (a real pattern: deno's own config discovery reads
+  ancestors) would flip every project under $HOME to deno lsp and
+  send every JS/TS focused test through `deno test`. One shared
+  bounded walk now serves all of it: markers are found at or below
+  the first `.git` directory (checked marker-first, so a marker AT
+  the repo root still wins) and never more than 8 levels up; the two
+  hand-rolled unbounded walks in the focused-test action were
+  replaced with calls to it.
+- **A ROSETTA override owns PURITY too.** The lint lane resolved
+  "is this a Deno workspace" BEFORE the dialed toolchain kind while
+  the format lane resolved kind first — so a mixed repo explicitly
+  steered to GO still got `deno lint` beside `gofmt`: one project,
+  two owners. Both lanes now agree that the kind (which the ROSETTA
+  override feeds) outranks a stray manifest.
+
 ## [1.353.0] - 2026-08-12
 
 The senior DevOps pass (David's ask: look through the eyes of a senior
@@ -12245,6 +12281,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.354.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.353.0...v1.354.0
 [1.353.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.352.0...v1.353.0
 [1.352.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.351.0...v1.352.0
 [1.351.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.350.0...v1.351.0
