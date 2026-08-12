@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.353.0] - 2026-08-12
+
+The senior DevOps pass (David's ask: look through the eyes of a senior
+DevOps, grant their wishes) — every Dockerfile the product generates was
+BUILT against a real daemon, and the walk paid on its first fan-out.
+
+### Fixed
+- **The generated Go Dockerfile failed on any real module.** Dockerize's
+  Go recipe ran `go build -o /name ./...`, and `-o` with a file target
+  refuses the moment the module grows a second package — `go: cannot
+  write multiple packages to non-directory` — so the toy single-package
+  case was the ONLY shape that built. The recipe now builds the root
+  main package (`go build -o /name .`) with a comment pointing at
+  `./cmd/<name>` layouts, proven by building the generated file against
+  a multi-package module on Docker 29.
+
+### Added
+- **Static SPA deep links stop 404ing.** Dockerize's static-Node recipe
+  served the built bundle through stock nginx, and every tool
+  `buildsStatic()` keys on (vite, angular, svelte, …) builds a
+  single-page app — so refreshing any client route returned nginx's
+  404. The recipe now ships a `docker/nginx.conf` with the
+  `try_files $uri $uri/ /index.html` fallback, installed by the
+  Dockerfile; live-proven — `/some/client/route` returns 200 with the
+  shell.
+- **Rust images build through BuildKit cache mounts.** The Rust recipe
+  recompiled every dependency on every code edit; the build now rides
+  `--mount=type=cache` for the cargo registry and target dir (the
+  binary is `cp`'d out inside the same RUN — `COPY --from` can't see
+  cache mounts). Measured live: a one-line edit rebuilt in 1s where the
+  cold build took 16s, and the rebuilt binary was verified fresh by
+  running it.
+
+### Changed
+- **Base images moved to current majors**, each tag existence-checked
+  on Docker Hub and each Dockerfile built for real: golang 1.25→1.26,
+  rust 1.89→1.95, python 3.13→3.14, php-fpm 8.4→8.5, and the compose
+  nginx sidecar 1.27→1.29; node:24-alpine stays — it is the active LTS
+  line. A new `baseImageCurrency` test pins the tags so the next
+  currency pass is a one-file diff.
+
+All three generator fixes are mutation-proven by name (the `./...`
+regression, the stripped cache mounts, and the un-emitted SPA conf each
+fail the build). The rest of the walk came back clean: nodeserver,
+python, deno (with AND without a deno.lock — the `COPY deno.lock*` glob
+tolerates a fresh project), and the php composer stage all build; the
+CI exporter's action pins stayed current by the v1.236.0 gate.
+
 ## [1.352.0] - 2026-08-12
 
 The Go pass (David's ask: the go-to software for Go developers) — the
@@ -12197,6 +12245,10 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.353.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.352.0...v1.353.0
+[1.352.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.351.0...v1.352.0
+[1.351.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.350.0...v1.351.0
+[1.350.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.349.0...v1.350.0
 [1.349.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.348.0...v1.349.0
 [1.348.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.347.0...v1.348.0
 [1.347.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.346.0...v1.347.0
