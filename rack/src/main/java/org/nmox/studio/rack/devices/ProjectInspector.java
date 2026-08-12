@@ -275,6 +275,21 @@ public final class ProjectInspector {
      * speak {@code deno <verb>} instead of reaching for npx-resolved
      * Node tooling that may not even have a node_modules to live in.
      */
+    /**
+     * True when the project opts into golangci-lint — the Go
+     * community's aggregate linter. Config spellings per its docs.
+     */
+    public static boolean hasGolangci(File projectDir) {
+        File dir = kindDir(projectDir, ProjectKind.GO);
+        for (String name : new String[]{".golangci.yml", ".golangci.yaml",
+                ".golangci.toml", ".golangci.json"}) {
+            if (new File(dir, name).isFile()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean hasDeno(File projectDir) {
         File dir = kindDir(projectDir, ProjectKind.DENO);
         return new File(dir, "deno.json").isFile()

@@ -20,7 +20,7 @@ public class LintDevice extends CommandDevice {
 
 // "biome"/"auto"/"deno"/"clippy" appended, never inserted: knob positions
     // persist by index in saved patches (the v1.59.0 law). New devices default to auto.
-    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno", "clippy"};
+    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno", "clippy", "govet", "golangci"};
     private static final Pattern SUMMARY =
             Pattern.compile("(\\d+)\\s+problems?\\s*\\((\\d+)\\s+errors?,\\s*(\\d+)\\s+warnings?\\)");
     // with and without the fixable suffix: "Found 2 problems" and
@@ -68,6 +68,13 @@ public class LintDevice extends CommandDevice {
             if (effectiveKind() == ProjectInspector.ProjectKind.RUST) {
                 return "clippy";
             }
+            // a Go module lints with the community's linter when the
+            // project opted in (a .golangci config), else go vet — the
+            // toolchain's own correctness checker
+            if (effectiveKind() == ProjectInspector.ProjectKind.GO) {
+                return ProjectInspector.hasGolangci(projectDir())
+                        ? "golangci" : "govet";
+            }
             // a biome.json means the project lints with biome
             return ProjectInspector.hasBiome(projectDir()) ? "biome" : "eslint";
         }
@@ -83,10 +90,14 @@ public class LintDevice extends CommandDevice {
             case "biome" -> cmd.addAll(List.of("npx", "@biomejs/biome", "lint", "."));
             case "deno" -> cmd.addAll(List.of("deno", "lint"));
             case "clippy" -> cmd.addAll(List.of("cargo", "clippy"));
+            case "govet" -> cmd.addAll(List.of("go", "vet", "./..."));
+            case "golangci" -> cmd.addAll(List.of("golangci-lint", "run"));
             default -> cmd.addAll(List.of("npx", "eslint", "."));
         }
         if (fixSwitch.isOn()) {
-            if ("clippy".equals(linter)) {
+            if ("govet".equals(linter)) {
+                // go vet has no autofix; the switch is honest by doing nothing
+            } else if ("clippy".equals(linter)) {
                 // clippy --fix refuses a dirty working tree by default,
                 // and an IDE's tree is dirty by definition mid-edit
                 cmd.addAll(List.of("--fix", "--allow-dirty"));

@@ -41,6 +41,17 @@ public class FormatDevice extends CommandDevice {
                     ? List.of("forge", "fmt")
                     : List.of("forge", "fmt", "--check");
         }
+        // Go lane: gofmt ships with the toolchain. WRITE rewrites in
+        // place; CHECK runs gofmt -l, whose output lists unformatted
+        // files — but gofmt exits ZERO either way (pinned live on go
+        // 1.26), so the verdict override below turns any listed file
+        // into a FAIL, restoring the exit contract every other
+        // formatter honors.
+        if (effectiveKind() == ProjectInspector.ProjectKind.GO) {
+            return writeSwitch.isOn()
+                    ? List.of("gofmt", "-w", ".")
+                    : List.of("gofmt", "-l", ".");
+        }
         // Rust lane: rustfmt via cargo — the toolchain's own formatter.
         // cargo fmt --check exits 1 when anything needs formatting
         // (pinned live on cargo 1.95).
@@ -67,5 +78,46 @@ public class FormatDevice extends CommandDevice {
                     : List.of("npx", "@biomejs/biome", "format", ".");
         }
         return List.of("npx", "prettier", writeSwitch.isOn() ? "--write" : "--check", ".");
+    }
+
+    private volatile boolean goCheckRun;
+    private final java.util.concurrent.atomic.AtomicInteger unformattedFiles =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    @Override
+    protected void primaryAction() {
+        goCheckRun = effectiveKind() == ProjectInspector.ProjectKind.GO
+                && !writeSwitch.isOn();
+        unformattedFiles.set(0);
+        super.primaryAction();
+    }
+
+    @Override
+    protected void onLine(String line) {
+        super.onLine(line);
+        if (goCheckRun && !line.isBlank()) {
+            unformattedFiles.incrementAndGet();
+        }
+    }
+
+    /** gofmt -l exits 0 even when files need formatting; its OUTPUT is the verdict. */
+    @Override
+    protected boolean overallSuccess(int exitCode) {
+        return super.overallSuccess(exitCode)
+                && (!goCheckRun || unformattedFiles.get() == 0);
+    }
+
+    /** Test seams for the gofmt -l verdict (no process spawn needed). */
+    void beginGoCheckForTest() {
+        goCheckRun = true;
+        unformattedFiles.set(0);
+    }
+
+    boolean verdictForTest(int exitCode) {
+        return overallSuccess(exitCode);
+    }
+
+    void feedLineForTest(String line) {
+        onLine(line);
     }
 }

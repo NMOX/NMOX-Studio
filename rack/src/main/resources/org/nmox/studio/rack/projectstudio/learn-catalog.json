@@ -262,13 +262,13 @@
    "name": "Go",
    "category": "LANGUAGE",
    "family": "Go",
-   "blurb": "Simple, fast, and built for concurrency — one binary out, no fuss, compiles in the blink of an eye.",
+   "blurb": "Simple, fast, built for teams — and a toolchain where the formatter, vet, and test runner all come in the box.",
    "driver": {
     "kind": "run",
     "command": [
      "go",
      "run",
-     "hello.go"
+     "."
     ],
     "prompt": "",
     "snippets": []
@@ -280,11 +280,19 @@
    },
    "files": [
     {
-     "path": "hello.go",
-     "content": "package main\n\nimport \"fmt\"\n\nfunc greet(name string) string {\n\treturn fmt.Sprintf(\"Hello, %s!\", name)\n}\n\nfunc squares(n int) []int {\n\tout := make([]int, n)\n\tfor i := 0; i < n; i++ {\n\t\tout[i] = i * i\n\t}\n\treturn out\n}\n\nfunc main() {\n\tfmt.Println(greet(\"world\"))\n\tfmt.Println(\"first five squares:\", squares(5))\n}\n"
+     "path": "go.mod",
+     "content": "module hello\n\ngo 1.22\n"
+    },
+    {
+     "path": "main.go",
+     "content": "package main\n\nimport \"fmt\"\n\nfunc greet(name string) string {\n\treturn fmt.Sprintf(\"Hello, %s!\", name)\n}\n\nfunc main() {\n\tfmt.Println(greet(\"world\"))\n}\n"
+    },
+    {
+     "path": "main_test.go",
+     "content": "package main\n\nimport \"testing\"\n\nfunc TestGreet(t *testing.T) {\n\tif got := greet(\"Go\"); got != \"Hello, Go!\" {\n\t\tt.Errorf(\"greet(Go) = %q\", got)\n\t}\n}\n"
     }
    ],
-   "tutorial": "# Go\n\nGo (golang) is a small, fast, statically typed language from Google. It compiles almost instantly to a single self-contained binary, has garbage collection, and makes concurrency easy with goroutines. There's no REPL in the standard toolchain — you learn Go by editing and running.\n\n## Your REPL\n\nGo has no built-in REPL, so this space uses **run** mode. Click **RUN** to compile and run `hello.go` with `go run hello.go`. Edit the file, click RUN again, and see your changes immediately.\n\n## The sample\n\nOpen `hello.go`:\n\n```go\npackage main\n\nimport \"fmt\"\n```\n\nEvery Go program lives in a package; `main` is the entry package. `fmt` is the formatting/printing library.\n\n```go\nfunc greet(name string) string {\n\treturn fmt.Sprintf(\"Hello, %s!\", name)\n}\n```\n\nTypes come **after** the name (`name string`). `Sprintf` formats a string; `%s` is a string placeholder.\n\n```go\nfunc squares(n int) []int {\n\tout := make([]int, n)\n\tfor i := 0; i < n; i++ {\n\t\tout[i] = i * i\n\t}\n\treturn out\n}\n```\n\n`[]int` is a slice of ints. `:=` declares and infers a type. The classic `for` loop fills it.\n\n```go\nfunc main() {\n\tfmt.Println(greet(\"world\"))\n\tfmt.Println(\"first five squares:\", squares(5))\n}\n```\n\n`main` runs when you execute the program.\n\n## Try this\n\n1. Add a `cubes(n int) []int` function and print it from `main`.\n2. Change the `for` loop to use `range`: `for i := range out { out[i] = i * i }`.\n3. Add a second import and print the current time with `time.Now()`.\n\n## Going further\n\nA Tour of Go: https://go.dev/tour/\n"
+   "tutorial": "# Go\n\nGo is built for straightforward, fast, maintainable software — and its toolchain philosophy matches: the formatter (`gofmt`), the correctness checker (`go vet`), and the test runner (`go test`) all ship with the compiler. This space is a real **Go module** (see `go.mod`), which is what lights up the whole studio around it.\n\n## Run it\n\nClick **RUN** — the rack runs `go run .`, compiling and executing the module. Edit, RUN, repeat.\n\n## The sample\n\n`main.go` holds a `greet` function and `main`; `main_test.go` holds a real test in Go's table-free simplest form. Note the naming convention: a test file ends `_test.go` and a test function starts `Test`.\n\n## The studio speaks Go\n\n- **Tests**: `go test ./...` from VERITAS, or right-click inside a `TestXxx` function and choose **Run Focused Test** to run exactly that one (`go test -run ^TestGreet$`).\n- **Lint**: PURITY's AUTO lane runs `go vet ./...` — or `golangci-lint run` automatically when the project carries a `.golangci.yml`.\n- **Format**: GLOSS runs `gofmt -w .`; CHECK mode lists unformatted files and fails honestly (gofmt itself always exits 0 — the studio reads the list).\n- **Ship gate**: PREFLIGHT checks tests, build, and vet.\n- **Editor intelligence** comes from `gopls`; if it's missing, the notification installs it with one click (`go install golang.org/x/tools/gopls@latest`).\n\n## Try this\n\n1. Add a `shout(name string) string` returning upper-case, plus a test.\n2. Break the test and watch `go test` name the failure — then fix it with **Run Focused Test**.\n3. Mis-indent a line and run GLOSS in CHECK mode; then WRITE mode to fix it.\n\n## Going further\n\nThe Go tour: https://go.dev/tour/\n"
   },
   {
    "slug": "rust",
