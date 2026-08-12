@@ -59,11 +59,10 @@ public class LintDevice extends CommandDevice {
     private String effectiveLinter() {
         String linter = linterKnob.getSelectedOption();
         if ("auto".equals(linter)) {
-            // a Deno workspace lints with the runtime's own linter — no
-            // node_modules exists for npx to resolve anything from
-            if (ProjectInspector.hasDeno(projectDir())) {
-                return "deno";
-            }
+            // KIND OUTRANKS A STRAY MANIFEST — the same resolution order
+            // FormatDevice uses, so PURITY and GLOSS never disagree about
+            // whose project this is (a Go module carrying a deno.json for
+            // scripts is still a Go module)
             // a Cargo project lints with clippy, the toolchain's own linter
             if (effectiveKind() == ProjectInspector.ProjectKind.RUST) {
                 return "clippy";
@@ -74,6 +73,11 @@ public class LintDevice extends CommandDevice {
             if (effectiveKind() == ProjectInspector.ProjectKind.GO) {
                 return ProjectInspector.hasGolangci(projectDir())
                         ? "golangci" : "govet";
+            }
+            // a Deno workspace lints with the runtime's own linter — no
+            // node_modules exists for npx to resolve anything from
+            if (ProjectInspector.hasDeno(projectDir())) {
+                return "deno";
             }
             // a biome.json means the project lints with biome
             return ProjectInspector.hasBiome(projectDir()) ? "biome" : "eslint";

@@ -131,14 +131,12 @@ public class RunFocusedTestAction extends BaseAction {
                 // /slashes/ as a regex (the v1.257.0 lesson: metacharacters
                 // in real test names must be escaped or the filter silently
                 // matches nothing and reports a false green).
-                File denoRoot = null;
-                for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
-                    if (new File(d, "deno.json").isFile()
-                            || new File(d, "deno.jsonc").isFile()) {
-                        denoRoot = d;
-                        break;
-                    }
-                }
+                // BOUNDED walk (LanguageServers.rootAbove): stops at the
+                // repo's .git and at 8 levels — a stray ~/deno.json (real:
+                // deno's config discovery reads ancestors) must never
+                // hijack another project's test runner
+                File denoRoot = org.nmox.studio.editor.lsp.LanguageServers
+                        .rootAbove(file.getParentFile(), "deno.json", "deno.jsonc");
                 if (denoRoot != null) {
                     // "/" additionally escaped: it would terminate deno's
                     // /.../ regex wrapper (JS regex accepts \/; the shared
@@ -157,13 +155,8 @@ public class RunFocusedTestAction extends BaseAction {
                 // STATIC-kind manifest (v1.34.0), which both mislocates
                 // the root and hides angular.json (found LIVE: the trust
                 // prompt named ngdemo/src, and the branch fell to jest).
-                File ngRoot = null;
-                for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
-                    if (new File(d, "angular.json").isFile()) {
-                        ngRoot = d;
-                        break;
-                    }
-                }
+                File ngRoot = org.nmox.studio.editor.lsp.LanguageServers
+                        .rootAbove(file.getParentFile(), "angular.json");
                 File depRoot = ngRoot != null ? ngRoot : root;
                 boolean vitest = ProjectInspector.firstDependency(depRoot, "vitest") != null;
                 boolean jest = ProjectInspector.firstDependency(depRoot, "jest") != null;

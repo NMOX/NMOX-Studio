@@ -1375,6 +1375,26 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-12, the arc review of the pass day (v1.354)
+
+**The review found the day's own pattern, repeated.** v1.350 made
+tsserver yield text/typescript to deno lsp and wrote "exactly one of
+them returns non-null" — but the separately-registered JavaScript
+provider (split out precisely so the Angular suppression couldn't
+take .js down) never yielded, so a Deno workspace bound BOTH servers
+on .js: the ledger-81 double-authority reborn one mime over, five
+days after it was cured. The general form for the checklist: **when a
+provider yields a mime, grep for its SIBLING registrations — the
+suppression must cover every provider that shares the resource, and
+the sibling that was split out for a good reason is exactly the one
+the fix forgets.** Also found: the focused-test marker walks were
+unbounded (a stray ~/deno.json — deno's own config discovery reads
+ancestors — would hijack every project under $HOME; the walk now
+stops at the repo's .git, marker-checked-first, shared with the LSP
+checks), and PURITY resolved hasDeno before the ROSETTA-dialed kind
+while GLOSS resolved kind-first (an override steered to GO still got
+deno lint — the lanes now agree kind outranks a stray manifest).
+
 ## Addendum — 2026-08-12, the toolchain passes + the DevOps artifact walk (v1.346–v1.353)
 
 **Four David-directed passes in one day, one recipe.** "Ideal for
