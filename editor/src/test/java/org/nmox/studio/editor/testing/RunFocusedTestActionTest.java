@@ -351,4 +351,45 @@ class RunFocusedTestActionTest {
         Files.writeString(f.toPath(), "", StandardCharsets.UTF_8);
         assertThat(RunFocusedTestAction.commandFor("text/x-ruby", f, "foo", 1)).isNull();
     }
+
+    @Test
+    @DisplayName("a Deno workspace runs deno test with an exact-match /regex/ filter")
+    void denoFilterCommand(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "deno.json").toPath(),
+                "{}", StandardCharsets.UTF_8);
+        File testFile = new File(project, "greet_test.ts");
+        Files.writeString(testFile.toPath(),
+                "Deno.test('x', () => {})", StandardCharsets.UTF_8);
+
+        // metacharacters AND the slash escaped: "/" would terminate
+        // deno's /.../ wrapper (the v1.257.0 false-green class)
+        Focused f = RunFocusedTestAction.commandFor(
+                "text/typescript", testFile, "adds (a/b) totals", 1);
+        assertThat(f.command()).containsExactly("deno", "test", "--filter",
+                "/^adds \\(a\\/b\\) totals$/", testFile.getAbsolutePath());
+        assertThat(f.dir()).isEqualTo(project);
+    }
+
+    @Test
+    @DisplayName("Deno with no test name under the caret still focuses the FILE")
+    void denoFileLevel(@TempDir File project) throws Exception {
+        Files.writeString(new File(project, "deno.jsonc").toPath(),
+                "{}", StandardCharsets.UTF_8);
+        File testFile = new File(project, "greet_test.ts");
+        Files.writeString(testFile.toPath(), "", StandardCharsets.UTF_8);
+
+        Focused f = RunFocusedTestAction.commandFor(
+                "text/typescript", testFile, null, 1);
+        assertThat(f.command()).containsExactly("deno", "test",
+                testFile.getAbsolutePath());
+    }
+
+    @Test
+    @DisplayName("the JS test-name pattern reads Deno.test('name', ...) declarations")
+    void denoTestNamePattern() {
+        var m = RunFocusedTestAction.patternFor("text/typescript")
+                .matcher("Deno.test(\"greets by name\", () => {");
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("greets by name");
+    }
 }

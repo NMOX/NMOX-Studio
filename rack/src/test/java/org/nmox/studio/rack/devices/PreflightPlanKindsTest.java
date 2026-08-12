@@ -181,8 +181,11 @@ class PreflightPlanKindsTest {
         // BUN: tests always, build only with a build script
         assertThat(commands(project("bunfig.toml"))).containsExactly(
                 List.of("bun", "test"));
-        // DENO: tests are the portable gate
+        // DENO: lint, fmt, and test all ship in the runtime — zero-config
+        // full gate (v1.350.0)
         assertThat(commands(project("deno.json"))).containsExactly(
+                List.of("deno", "lint"),
+                List.of("deno", "fmt", "--check"),
                 List.of("deno", "test"));
         // ADA: no universal test verb — build is the gate
         assertThat(commands(project("alire.toml"))).containsExactly(

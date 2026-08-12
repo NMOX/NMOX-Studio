@@ -187,7 +187,7 @@ public class TestDevice extends CommandDevice {
      * Backslash-escaping each metacharacter is the one dialect all of
      * them share.
      */
-    static String regexLiteral(String name) {
+    public static String regexLiteral(String name) {
         StringBuilder sb = new StringBuilder(name.length() + 8);
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
@@ -216,8 +216,12 @@ public class TestDevice extends CommandDevice {
             case "bun" -> List.of("bun", "test", "-t", alternation);
             // deno's --filter is a SUBSTRING match unless wrapped in
             // slashes, so the bare "a|b" join could never match two
-            // names — the /.../ form makes it the regex the join needs
-            case "deno" -> List.of("deno", "test", "--filter", "/" + alternation + "/");
+            // names — the /.../ form makes it the regex the join needs.
+            // "/" inside a NAME is additionally escaped here (it would
+            // terminate the wrapper; JS regex accepts \/ — go's RE2
+            // rejects it, so the shared escaper must not learn it)
+            case "deno" -> List.of("deno", "test", "--filter",
+                    "/" + alternation.replace("/", "\\/") + "/");
             case "vitest" -> List.of("npx", "vitest", "run", "-t", alternation);
             case "pytest" -> {
                 List<String> cmd = new ArrayList<>(List.of("python3", "-m", "pytest"));

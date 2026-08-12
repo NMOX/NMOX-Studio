@@ -18,11 +18,15 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class LintDevice extends CommandDevice {
 
-// "biome"/"auto" appended, never inserted: knob positions persist by
-    // index in saved patches (the v1.59.0 law). New devices default to auto.
-    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto"};
+// "biome"/"auto"/"deno" appended, never inserted: knob positions persist
+    // by index in saved patches (the v1.59.0 law). New devices default to auto.
+    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno"};
     private static final Pattern SUMMARY =
             Pattern.compile("(\\d+)\\s+problems?\\s*\\((\\d+)\\s+errors?,\\s*(\\d+)\\s+warnings?\\)");
+    // with and without the fixable suffix: "Found 2 problems" and
+    // "Found 2 problems (2 fixable via --fix)"
+    private static final Pattern DENO_SUMMARY =
+            Pattern.compile("^Found (\\d+) problems?\\b");
 
     private final Knob linterKnob;
     private final ToggleSwitch fixSwitch;
@@ -51,6 +55,11 @@ public class LintDevice extends CommandDevice {
     private String effectiveLinter() {
         String linter = linterKnob.getSelectedOption();
         if ("auto".equals(linter)) {
+            // a Deno workspace lints with the runtime's own linter — no
+            // node_modules exists for npx to resolve anything from
+            if (ProjectInspector.hasDeno(projectDir())) {
+                return "deno";
+            }
             // a biome.json means the project lints with biome
             return ProjectInspector.hasBiome(projectDir()) ? "biome" : "eslint";
         }
@@ -64,6 +73,7 @@ public class LintDevice extends CommandDevice {
         switch (linter) {
             case "stylelint" -> cmd.addAll(List.of("npx", "stylelint", "**/*.css"));
             case "biome" -> cmd.addAll(List.of("npx", "@biomejs/biome", "lint", "."));
+            case "deno" -> cmd.addAll(List.of("deno", "lint"));
             default -> cmd.addAll(List.of("npx", "eslint", "."));
         }
         if (fixSwitch.isOn()) {
@@ -137,6 +147,18 @@ public class LintDevice extends CommandDevice {
                 countLcd.setTextColor("0".equals(errors)
                         ? org.nmox.studio.rack.ui.controls.RackStyle.LCD_TEXT : new Color(255, 90, 80));
                 countLcd.setText("E:" + errors + " W:" + warnings);
+            });
+        }
+        // deno lint's summary shape, pinned live against deno 2.9.4:
+        // "Found 2 problems" (all deno lint findings are errors; a clean
+        // run prints only "Checked N files", which the exit-0 path shows)
+        Matcher deno = DENO_SUMMARY.matcher(line);
+        if (deno.find()) {
+            String errors = deno.group(1);
+            onEdt(() -> {
+                countLcd.setTextColor("0".equals(errors)
+                        ? org.nmox.studio.rack.ui.controls.RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                countLcd.setText("E:" + errors + " W:0");
             });
         }
     }

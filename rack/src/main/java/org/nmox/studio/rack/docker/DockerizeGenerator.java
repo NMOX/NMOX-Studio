@@ -40,6 +40,10 @@ public final class DockerizeGenerator {
                 files.put("Dockerfile", python());
                 files.put(".dockerignore", ignore("__pycache__", ".venv", ".git"));
             }
+            case DENO -> {
+                files.put("Dockerfile", deno());
+                files.put(".dockerignore", ignore(".git", "coverage"));
+            }
             case PHP -> {
                 files.put("Dockerfile", php());
                 files.put("docker/nginx.conf", phpNginxConf(name));
@@ -63,7 +67,7 @@ public final class DockerizeGenerator {
         return switch (kind) {
             case NODE -> nodeBuildsStatic ? 80 : 3000;
             case GO, RUST -> 8080;
-            case PYTHON -> 8000;
+            case PYTHON, DENO -> 8000;
             case PHP -> 80; // the nginx sidecar fronts the fpm container
             default -> 8080;
         };
@@ -159,6 +163,19 @@ public final class DockerizeGenerator {
                 COPY . .
                 EXPOSE 8000
                 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+                """;
+    }
+
+    private static String deno() {
+        return """
+                FROM denoland/deno:alpine
+                WORKDIR /app
+                # cache dependencies first so code edits don't re-download them
+                COPY deno.json* deno.lock* ./
+                COPY . .
+                RUN deno cache main.ts || true
+                EXPOSE 8000
+                CMD ["deno", "task", "start"]
                 """;
     }
 

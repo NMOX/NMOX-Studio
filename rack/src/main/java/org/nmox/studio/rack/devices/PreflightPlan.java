@@ -154,8 +154,11 @@ public final class PreflightPlan {
                 }
             }
             case DENO -> {
-                // deno tasks live in deno.json, not package.json — tests
-                // are the portable gate
+                // deno ships lint, fmt, and test in the runtime itself —
+                // no config file needed for any of them, so all three are
+                // honest ship gates on every Deno project
+                checks.add(new Check("LINT", List.of("deno", "lint"), Pass.EXIT_ZERO, false));
+                checks.add(new Check("FORMAT", List.of("deno", "fmt", "--check"), Pass.EXIT_ZERO, false));
                 checks.add(new Check("TESTS", List.of("deno", "test"), Pass.EXIT_ZERO, false));
             }
             case JULIA -> {

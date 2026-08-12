@@ -58,6 +58,11 @@ public final class LanguageServerCatalog {
         add("TypeScript / JavaScript", "typescript-language-server",
                 "npm install -g typescript-language-server typescript",
                 List.of("npm", "install", "-g", "typescript-language-server", "typescript"));
+        // in Deno workspaces (deno.json/deno.jsonc) the runtime's own
+        // server replaces tsserver — see LanguageServers.DenoServer
+        add("TypeScript / JavaScript (Deno workspaces)", "deno",
+                "brew install deno",
+                List.of());
         // eslint rides ALONGSIDE tsserver on the same mimes (v1.213.0) —
         // types from one, lint rules from the other. The binary lives in
         // vscode-langservers-extracted, which is why the install hint

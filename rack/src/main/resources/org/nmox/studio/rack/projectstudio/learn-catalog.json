@@ -177,6 +177,53 @@
    "tutorial": "# TypeScript\n\nTypeScript is JavaScript with **static types**. You annotate variables and functions, and the compiler catches whole categories of bugs — typos, wrong argument types, missing fields — before your code ever runs. It compiles down to plain JavaScript, so it runs anywhere JS does.\n\n## Your REPL\n\nClick **START** on the REPL device to launch `npx ts-node` (the first run downloads it; give it a moment). At the `>` prompt, try these in order:\n\n```typescript\nconst greet = (name: string): string => `Hello, ${name}!`\ngreet('TypeScript')\nconst nums: number[] = [1, 2, 3, 4]\nnums.map(n => n * n)\ntype Point = { x: number; y: number }\nconst p: Point = { x: 3, y: 4 }; Math.hypot(p.x, p.y)\n```\n\nTry giving `greet` a number instead of a string — the REPL will complain, which is the whole point.\n\n## The sample\n\nOpen `hello.ts`:\n\n```typescript\nfunction greet(name: string): string {\n  return `Hello, ${name}!`;\n}\n```\n\n`name: string` is a **parameter type**; `: string` after the parens is the **return type**.\n\n```typescript\ntype Point = { x: number; y: number };\n```\n\nA `type` alias names an object shape. Now `Point` is reusable anywhere.\n\n```typescript\nfunction distance(a: Point, b: Point): number {\n  return Math.hypot(b.x - a.x, b.y - a.y);\n}\n```\n\nThe compiler guarantees `a` and `b` always have `x` and `y`. Run with `npx ts-node hello.ts`.\n\n## Try this\n\n1. Add a field `z: number` to `Point` and update `distance` — notice the compiler flags every call site.\n2. Write a `type Shape = 'circle' | 'square'` union and a function that switches on it.\n3. Make `distance` generic-free but add `readonly` to the `Point` fields.\n\n## Going further\n\nThe TypeScript Handbook: https://www.typescriptlang.org/docs/handbook/intro.html\n"
   },
   {
+   "slug": "deno",
+   "name": "Deno (TypeScript)",
+   "category": "LANGUAGE",
+   "family": "JavaScript",
+   "blurb": "TypeScript with zero setup — a secure runtime with the type checker, linter, formatter, and test runner all built in.",
+   "driver": {
+    "kind": "repl",
+    "command": [
+     "deno",
+     "repl"
+    ],
+    "prompt": ">",
+    "snippets": [
+     "const greet = (name: string): string => `Hello, ${name}!`",
+     "greet('Deno')",
+     "Deno.version.deno",
+     "[1, 2, 3, 4].map((n: number) => n * n)",
+     "await Promise.resolve('top-level await just works')",
+     "new TextEncoder().encode('bytes').length"
+    ]
+   },
+   "install": {
+    "mac": "brew install deno",
+    "linux": "curl -fsSL https://deno.land/install.sh | sh",
+    "windows": "winget install DenoLand.Deno"
+   },
+   "files": [
+    {
+     "path": "deno.json",
+     "content": "{\n  \"tasks\": {\n    \"start\": \"deno run main.ts\"\n  }\n}\n"
+    },
+    {
+     "path": "main.ts",
+     "content": "import { greet } from \"./greet.ts\";\n\nconst who: string = Deno.args[0] ?? \"world\";\nconsole.log(greet(who));\n"
+    },
+    {
+     "path": "greet.ts",
+     "content": "export function greet(name: string): string {\n  return `Hello, ${name}!`;\n}\n"
+    },
+    {
+     "path": "greet_test.ts",
+     "content": "import { assertEquals } from \"jsr:@std/assert\";\nimport { greet } from \"./greet.ts\";\n\nDeno.test(\"greets by name\", () => {\n  assertEquals(greet(\"Deno\"), \"Hello, Deno!\");\n});\n"
+    }
+   ],
+   "tutorial": "# Deno (TypeScript)\n\n**Deno** runs TypeScript directly — no tsconfig, no bundler, no node_modules. The runtime ships its own type checker, linter (`deno lint`), formatter (`deno fmt`), and test runner (`deno test`), and it is secure by default: a program gets no file, network, or environment access unless you grant it a `--allow-*` flag.\n\n## Try the REPL\n\nThe rack below has a REPL wired to `deno repl`. Press its snippets in order — typed arrow functions, the `Deno` global, and top-level `await` all work immediately.\n\n## The sample workspace\n\nThis space is a real Deno workspace:\n\n- `deno.json` — the manifest. Its presence is what makes NMOX Studio treat the folder as a Deno project: the editor's TypeScript intelligence comes from `deno lsp` (so `Deno.args` and `jsr:` imports check cleanly), and the rack's lint/format/test lanes speak `deno lint`, `deno fmt`, and `deno test`.\n- `main.ts` — imports a sibling module *with its extension* (`./greet.ts`), the Deno convention.\n- `greet_test.ts` — a test importing the standard library from **JSR** (`jsr:@std/assert`). Run it with `deno test`; the first run fetches and caches the dependency.\n\n## Run it\n\n- `deno run main.ts` prints the greeting (no flags needed — it touches nothing protected).\n- `deno run main.ts Ada` reads `Deno.args`.\n- `deno test` runs the test file.\n- Right-click inside a `Deno.test(...)` body in the editor and choose **Run Focused Test** to run exactly that one.\n\n## Permissions in one minute\n\nDeno's flags are the security model: `--allow-net` for sockets, `--allow-read`/`--allow-write` for the filesystem, `--allow-env` for environment variables. A script that needs none of them runs with none — which is most of the code you'll write while learning.\n"
+  },
+  {
    "slug": "ruby",
    "name": "Ruby",
    "category": "LANGUAGE",

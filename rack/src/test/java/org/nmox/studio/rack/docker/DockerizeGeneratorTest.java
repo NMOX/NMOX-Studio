@@ -92,4 +92,16 @@ class DockerizeGeneratorTest {
                 new DockerClient.DfRow("Containers", "3", "1", "10MB", "0B"));
         assertThat(DockerDevice.totalReclaimable(rows)).isEqualTo("4.7GB");
     }
+
+    @Test
+    @DisplayName("Deno projects ride the official denoland image and cache deps first")
+    void deno() {
+        Map<String, String> files = DockerizeGenerator.generate(ProjectKind.DENO, "api", false);
+        assertThat(files.get("Dockerfile"))
+                .contains("FROM denoland/deno")
+                .contains("deno cache")
+                .contains("CMD [\"deno\", \"task\", \"start\"]")
+                .contains("EXPOSE 8000");
+        assertThat(files.get("compose.yaml")).contains("\"8000:8000\"");
+    }
 }
