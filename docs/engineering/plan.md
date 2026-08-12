@@ -1375,6 +1375,33 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-12, the walks move into the shipped app again (v1.356)
+
+**The three toolchain passes walked installed, all legs green.** The
+day-shift walk of shipped 1.355.0 proved each pass where it ships,
+process-level and headless (spawn evidence + orphan checks, no UI
+automation needed): **deno** — `deno lsp` spawned from the user's PATH
+deno on file-open, the injector's rewritten initialize frame was
+ACCEPTED by the real server (the post-handshake
+`deno/didRefreshDenoConfigurationTree` notifications carry the
+workspace's own deno.json — a corrupted frame never reaches that
+exchange), a .ts open bound ZERO tsserver (v1.350 suppression live)
+and a .js open ALSO bound zero (the v1.354 single-authority fix's
+first real-world proof); **rust** — rust-analyzer + its
+proc-macro-srv spawned through the rustup toolchain path (the v1.351
+probe chain resolving the real binary, not the proxy); **go** — gopls
+spawned via ~/go/bin (ToolLocator's minimal-PATH resolution). All
+three apps exited with ZERO orphaned servers. One observation became
+ledger 83: the platform runs one LSP server per mime per project, so
+a mixed .ts/.js deno workspace runs two `deno lsp` processes —
+pre-existing for every multi-mime language, correctness-neutral,
+recorded with a dedup-seam premise rather than fixed blind. The walk
+idiom worth keeping: **for LSP surfaces, process census + handshake
+side-effects are a complete headless walk** — spawn proves the
+probe/authority chain, protocol notifications prove the frame
+surgery, and the orphan check proves teardown, all without driving a
+single pixel.
+
 ## Addendum — 2026-08-12, the arc review of the pass day (v1.354)
 
 **The review found the day's own pattern, repeated.** v1.350 made

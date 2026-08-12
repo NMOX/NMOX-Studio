@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.356.0] - 2026-08-12
+
+The toolchain walks (docs only): the Deno, Rust, and Go passes proven
+in the INSTALLED 1.355.0 app, process-level and headless. Deno —
+`deno lsp` spawned on file-open, the v1.350 injector's rewritten
+initialize frame accepted by the real server (proven by its
+post-handshake config-tree notifications), zero tsserver on .ts AND on
+.js (the v1.354 single-authority fix's first real-world proof). Rust —
+rust-analyzer + proc-macro-srv through the rustup toolchain path. Go —
+gopls via ~/go/bin (ToolLocator's minimal-PATH resolution). All three
+sessions exited with zero orphaned servers. New ledger 83 records the
+one observation: the platform runs one LSP server per mime per
+project (two `deno lsp` for a mixed .ts/.js workspace) — pre-existing
+for every multi-mime language, correctness-neutral, deferred with a
+dedup-seam premise.
+
 ## [1.355.0] - 2026-08-12
 
 Docs truth for the six-release day (docs only). CLAUDE.md's standing
@@ -12293,6 +12309,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.356.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.355.0...v1.356.0
 [1.355.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.354.0...v1.355.0
 [1.354.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.353.0...v1.354.0
 [1.353.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.352.0...v1.353.0

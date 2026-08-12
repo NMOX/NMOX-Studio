@@ -20,6 +20,25 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
+
+### 83. One LSP server process per mime per project — measured, not fixed
+
+The platform's LSPBindings keys server instances by (mime type,
+project), so a language whose provider is registered on two mimes runs
+TWO copies of its server for one workspace: the deno walk (v1.356.0)
+measured two `deno lsp` processes for a single .ts+.js workspace, and
+the same holds for typescript-language-server in any mixed JS/TS Node
+project — since the LSP wiring shipped. Cost is memory and duplicate
+analysis, not correctness: rename collects edits per mime, so the
+ledger-81 double-apply cannot happen across mimes. A fix would be a
+dedup seam in `LanguageServers.launch` keyed on (project, command),
+handing both mimes one LanguageServerDescription — but the platform
+may tear down a shared description when either mime's last editor
+closes, so the seam needs a recon of LSPBindings' lifecycle first.
+Deferred: cost is bounded (one extra process per polyglot project),
+correctness is unaffected, and the recon is its own unit of work.
+
 ## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
 
 ### 76. ~~Tooltips never reach an LCD on a rack faceplate~~ — CLOSED 2026-08-11 (the bisect with David)
