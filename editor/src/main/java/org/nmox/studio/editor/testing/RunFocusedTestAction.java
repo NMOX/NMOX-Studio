@@ -47,7 +47,14 @@ public class RunFocusedTestAction extends BaseAction {
             "(?:it|test|describe)(?:\\.\\w+)?\\(\\s*['\"`](.+?)['\"`]");
     private static final Pattern PY_TEST = Pattern.compile("def\\s+(test_\\w+)");
     private static final Pattern GO_TEST = Pattern.compile("func\\s+(Test\\w+)");
-    private static final Pattern RS_TEST = Pattern.compile("fn\\s+(\\w+)\\s*\\(");
+    // A bare `fn` is NOT a test: `cargo test <helper-fn>` matches nothing,
+    // exits ZERO ("0 passed; 0 failed", measured on cargo 1.95), and the
+    // action would report "Focused test PASSED" for code that never ran —
+    // the v1.257.0 false-green class. Only a fn under a test attribute
+    // counts: #[test], #[tokio::test], #[rstest], #[test_case(...)], with
+    // optional further attributes (#[ignore]) between it and the fn.
+    private static final Pattern RS_TEST = Pattern.compile(
+            "#\\[[^\\]]*test[^\\]]*\\]\\s*(?:#\\[[^\\]]*\\]\\s*)*(?:pub\\s+)?(?:async\\s+)?fn\\s+(\\w+)");
     private static final Pattern EX_TEST = Pattern.compile("test\\s+\"(.+?)\"");
     // PHPUnit's two declaration shapes: the classic test-prefixed method
     // and the PHP 8 #[Test] attribute on an arbitrarily named method.

@@ -53,7 +53,8 @@ class PreflightPlanKindsTest {
         assertThat(commands(project("Cargo.toml"))).containsExactly(
                 List.of("cargo", "test"),
                 List.of("cargo", "build", "--release"),
-                List.of("cargo", "clippy", "--", "-D", "warnings"));
+                List.of("cargo", "clippy", "--", "-D", "warnings"),
+                List.of("cargo", "fmt", "--check"));
         assertThat(commands(project("go.mod"))).containsExactly(
                 List.of("go", "test", "./..."),
                 List.of("go", "build", "./..."),

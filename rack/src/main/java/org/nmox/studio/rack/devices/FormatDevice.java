@@ -41,6 +41,14 @@ public class FormatDevice extends CommandDevice {
                     ? List.of("forge", "fmt")
                     : List.of("forge", "fmt", "--check");
         }
+        // Rust lane: rustfmt via cargo — the toolchain's own formatter.
+        // cargo fmt --check exits 1 when anything needs formatting
+        // (pinned live on cargo 1.95).
+        if (effectiveKind() == ProjectInspector.ProjectKind.RUST) {
+            return writeSwitch.isOn()
+                    ? List.of("cargo", "fmt")
+                    : List.of("cargo", "fmt", "--check");
+        }
         // Deno lane: the runtime ships its own formatter and the
         // workspace may have no node_modules for npx to resolve
         // prettier from at all. deno fmt --check exits 1 when dirty.

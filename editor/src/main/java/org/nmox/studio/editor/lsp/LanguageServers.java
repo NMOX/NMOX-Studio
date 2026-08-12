@@ -588,12 +588,58 @@ public final class LanguageServers {
         }
     }
 
-    /** Rust via rust-analyzer. */
+    /**
+     * Rust via rust-analyzer — with the rustup-proxy honesty check.
+     *
+     * <p>rustup installs a PROXY named {@code rust-analyzer} on PATH
+     * that exists and executes even when the component was never
+     * added, then dies instantly with "Unknown binary ... in official
+     * toolchain" on stderr (which launch() discards). The binary being
+     * present proves nothing: without this probe a Rust developer
+     * opens main.rs, gets zero intelligence, and — worse — never sees
+     * the missing-server notification, because reportMissing only
+     * fires when the launch fails outright. Only a {@code --version}
+     * that EXITS ZERO proves the server is real; a broken proxy now
+     * routes to the same one-click notification as a missing binary
+     * (the catalog's {@code rustup component add rust-analyzer} is
+     * already runnable — it just never had a chance to fire).
+     */
     @MimeRegistration(mimeType = "text/x-rust", service = LanguageServerProvider.class)
     public static final class RustServer implements LanguageServerProvider {
+
+        private static volatile Boolean analyzerAnswers;
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            if (!analyzerAnswers()) {
+                return reported(null, "rust-analyzer");
+            }
             return provide(lookup, List.of("rust-analyzer"));
+        }
+
+        /** One probe per session — the LSP client calls this per file. */
+        static boolean analyzerAnswers() {
+            Boolean cached = analyzerAnswers;
+            if (cached == null) {
+                cached = versionExitsZero(List.of("rust-analyzer", "--version"));
+                analyzerAnswers = cached;
+            }
+            return cached;
+        }
+
+        static boolean versionExitsZero(List<String> command) {
+            try {
+                List<String> resolved = ToolLocator.resolveCommand(command);
+                return org.nmox.studio.core.process.ProcessSupport
+                        .runBounded(resolved, null, java.time.Duration.ofSeconds(4))
+                        .exitCode() == 0;
+            } catch (Exception missingOrWedged) {
+                return false;
+            }
+        }
+
+        static void resetProbeForTest() {
+            analyzerAnswers = null;
         }
     }
 
