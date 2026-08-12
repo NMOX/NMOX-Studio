@@ -81,13 +81,14 @@ public class FormatDevice extends CommandDevice {
     }
 
     private volatile boolean goCheckRun;
-    private volatile int unformattedFiles;
+    private final java.util.concurrent.atomic.AtomicInteger unformattedFiles =
+            new java.util.concurrent.atomic.AtomicInteger();
 
     @Override
     protected void primaryAction() {
         goCheckRun = effectiveKind() == ProjectInspector.ProjectKind.GO
                 && !writeSwitch.isOn();
-        unformattedFiles = 0;
+        unformattedFiles.set(0);
         super.primaryAction();
     }
 
@@ -95,7 +96,7 @@ public class FormatDevice extends CommandDevice {
     protected void onLine(String line) {
         super.onLine(line);
         if (goCheckRun && !line.isBlank()) {
-            unformattedFiles++;
+            unformattedFiles.incrementAndGet();
         }
     }
 
@@ -103,13 +104,13 @@ public class FormatDevice extends CommandDevice {
     @Override
     protected boolean overallSuccess(int exitCode) {
         return super.overallSuccess(exitCode)
-                && (!goCheckRun || unformattedFiles == 0);
+                && (!goCheckRun || unformattedFiles.get() == 0);
     }
 
     /** Test seams for the gofmt -l verdict (no process spawn needed). */
     void beginGoCheckForTest() {
         goCheckRun = true;
-        unformattedFiles = 0;
+        unformattedFiles.set(0);
     }
 
     boolean verdictForTest(int exitCode) {
