@@ -4,6 +4,63 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.351.0] - 2026-08-12
+
+The Rust premier pass (David's ask: the premier software for working
+with Rust) — the whole toolchain-native loop, with the one bug every
+rustup machine ships with fixed at its root.
+
+### Fixed
+- **rust-analyzer's rustup-proxy trap.** rustup puts a rust-analyzer
+  PROXY on PATH that exists and executes even when the component was
+  never added, then dies instantly with "Unknown binary ... in official
+  toolchain" — stderr discarded. A Rust developer opened main.rs, got
+  zero intelligence, and never saw the missing-server notification,
+  because the health check only fires when a launch fails outright.
+  RustServer now probes `rust-analyzer --version` and only a ZERO exit
+  claims the mime; a broken proxy routes to the same notification as a
+  missing binary — whose one-click `rustup component add rust-analyzer`
+  install was runnable all along and simply never had a trigger.
+  SUCCESS is cached for the session; FAILURE re-probes (milliseconds),
+  so the one-click install self-heals without a restart — the cached
+  failure making "reopen the file to start it" a lie was itself found
+  live on this machine's own broken proxy. Live-proven end to end: the
+  notification fired (for the first time ever on a proxy-broken box),
+  the click ran rustup to [exit 0], and reopening delivered
+  rust-analyzer's real mismatched-types diagnostic on a planted error.
+- **Run Focused Test's Rust false-green.** A bare `fn` is not a test:
+  `cargo test <helper-fn>` matches nothing, prints "0 passed; 0
+  failed", and exits ZERO (measured on cargo 1.95) — the action
+  reported "Focused test PASSED" for code that never ran. The Rust
+  extractor now requires a test attribute above the fn (#[test],
+  #[tokio::test], #[rstest], #[test_case(...)], with #[ignore] and
+  friends allowed between); a helper fn under the caret is an honest
+  "No test found above the caret".
+
+### Added
+- **PURITY and GLOSS speak cargo.** The AUTO lint lane resolves to
+  `cargo clippy` on Cargo projects (FIX runs `--fix --allow-dirty` —
+  an IDE's tree is dirty by definition mid-edit) with the findings LCD
+  reading clippy's "generated N warnings" summary, pinned live on
+  cargo 1.95; the format lane runs `cargo fmt` / `cargo fmt --check`.
+- **PREFLIGHT gains a FORMAT check** for Rust: `cargo fmt --check`,
+  soft like the clippy LINT — a style nit warns the shipper, never
+  blocks the ship.
+- **Doctor probes rust-analyzer** — on a proxy-broken machine the row
+  reads the v1.303.0 honest form ("found — but its version command
+  failed"), with the rustup hint beside it.
+- **The Rust learning space is a real Cargo workspace** — Cargo.toml
+  detection lights up the whole studio (clippy/fmt/test lanes,
+  PREFLIGHT, Run Focused Test), the sample carries a #[cfg(test)]
+  module, and the tutorial walks the toolchain-native loop.
+
+### Verification
+- Mutation-proven ×2 by name: RustServer without its probe gate fails
+  the wiring gate; RS_TEST reverted to bare `fn` fails the false-green
+  test.
+- The star proof ran on this machine's own genuinely broken proxy:
+  notification -> one-click install [exit 0] -> real diagnostics.
+
 ## [1.350.0] - 2026-08-12
 
 The Deno pass — TypeScript with zero setup becomes a first-class citizen

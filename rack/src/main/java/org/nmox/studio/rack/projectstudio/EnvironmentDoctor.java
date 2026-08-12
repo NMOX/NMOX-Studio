@@ -44,6 +44,10 @@ public final class EnvironmentDoctor {
                 new String[]{"java", "JVM — Maven lanes, jshell space", "brew install openjdk"},
                 new String[]{"mvn", "Maven builds", "brew install maven"},
                 new String[]{"cargo", "Rust toolchain", "brew install rustup && rustup default stable"},
+                // rustup ships a rust-analyzer PROXY that exists but dies
+                // until the component is added — the v1.303.0 honesty row
+                // ("found — but its version command failed") is the point
+                new String[]{"rust-analyzer", "Rust language server", "rustup component add rust-analyzer"},
                 new String[]{"stellar", "Stellar/Soroban CLI (smart contracts)", "brew install stellar-cli"},
                 new String[]{"solana", "Solana CLI (keys, airdrops, deploys)", "brew install solana"},
                 new String[]{"anchor", "Anchor framework CLI (Solana programs)", "cargo install avm && avm install latest"},

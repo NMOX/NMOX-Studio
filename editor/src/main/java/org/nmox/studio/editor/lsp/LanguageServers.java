@@ -588,12 +588,68 @@ public final class LanguageServers {
         }
     }
 
-    /** Rust via rust-analyzer. */
+    /**
+     * Rust via rust-analyzer — with the rustup-proxy honesty check.
+     *
+     * <p>rustup installs a PROXY named {@code rust-analyzer} on PATH
+     * that exists and executes even when the component was never
+     * added, then dies instantly with "Unknown binary ... in official
+     * toolchain" on stderr (which launch() discards). The binary being
+     * present proves nothing: without this probe a Rust developer
+     * opens main.rs, gets zero intelligence, and — worse — never sees
+     * the missing-server notification, because reportMissing only
+     * fires when the launch fails outright. Only a {@code --version}
+     * that EXITS ZERO proves the server is real; a broken proxy now
+     * routes to the same one-click notification as a missing binary
+     * (the catalog's {@code rustup component add rust-analyzer} is
+     * already runnable — it just never had a chance to fire).
+     */
     @MimeRegistration(mimeType = "text/x-rust", service = LanguageServerProvider.class)
     public static final class RustServer implements LanguageServerProvider {
+
+        private static volatile Boolean analyzerAnswers;
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            if (!analyzerAnswers()) {
+                return reported(null, "rust-analyzer");
+            }
             return provide(lookup, List.of("rust-analyzer"));
+        }
+
+        /**
+         * SUCCESS is cached for the session (the LSP client calls this
+         * per file); FAILURE is re-probed every time — a broken proxy
+         * or missing binary answers in milliseconds, and re-probing is
+         * what lets the one-click install self-heal WITHOUT a restart:
+         * caching the failure made the "reopen the file to start it"
+         * message a lie (found live on this box's own broken proxy).
+         */
+        static boolean analyzerAnswers() {
+            Boolean cached = analyzerAnswers;
+            if (cached != null && cached) {
+                return true;
+            }
+            boolean now = versionExitsZero(List.of("rust-analyzer", "--version"));
+            if (now) {
+                analyzerAnswers = true;
+            }
+            return now;
+        }
+
+        static boolean versionExitsZero(List<String> command) {
+            try {
+                List<String> resolved = ToolLocator.resolveCommand(command);
+                return org.nmox.studio.core.process.ProcessSupport
+                        .runBounded(resolved, null, java.time.Duration.ofSeconds(4))
+                        .exitCode() == 0;
+            } catch (Exception missingOrWedged) {
+                return false;
+            }
+        }
+
+        static void resetProbeForTest() {
+            analyzerAnswers = null;
         }
     }
 

@@ -58,6 +58,9 @@ public final class PreflightPlan {
                 checks.add(new Check("TESTS", List.of("cargo", "test"), Pass.EXIT_ZERO, false));
                 checks.add(new Check("BUILD", List.of("cargo", "build", "--release"), Pass.EXIT_ZERO, false));
                 checks.add(new Check("LINT", List.of("cargo", "clippy", "--", "-D", "warnings"), Pass.EXIT_ZERO, true));
+                // soft like LINT: rustfmt ships with the toolchain, but a
+                // style nit should warn the shipper, not block the ship
+                checks.add(new Check("FORMAT", List.of("cargo", "fmt", "--check"), Pass.EXIT_ZERO, true));
             }
             case GO -> {
                 checks.add(new Check("TESTS", List.of("go", "test", "./..."), Pass.EXIT_ZERO, false));

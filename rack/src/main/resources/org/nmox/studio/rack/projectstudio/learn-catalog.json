@@ -291,13 +291,12 @@
    "name": "Rust",
    "category": "LANGUAGE",
    "family": "Rust",
-   "blurb": "Memory safety without a garbage collector — fearless concurrency and C-level speed, guaranteed at compile time.",
+   "blurb": "Memory safety without a garbage collector — and cargo, the toolchain that ships its own linter, formatter, and test runner.",
    "driver": {
     "kind": "run",
     "command": [
-     "sh",
-     "-c",
-     "rustc --edition 2021 hello.rs -o /tmp/nmox_rust_hello && /tmp/nmox_rust_hello"
+     "cargo",
+     "run"
     ],
     "prompt": "",
     "snippets": []
@@ -309,11 +308,19 @@
    },
    "files": [
     {
-     "path": "hello.rs",
-     "content": "fn greet(name: &str) -> String {\n    format!(\"Hello, {name}!\")\n}\n\nfn squares(n: u32) -> Vec<u32> {\n    (0..n).map(|x| x * x).collect()\n}\n\nfn main() {\n    println!(\"{}\", greet(\"world\"));\n    println!(\"first five squares: {:?}\", squares(5));\n}\n"
+     "path": "Cargo.toml",
+     "content": "[package]\nname = \"hello_rust\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\n"
+    },
+    {
+     "path": "src/main.rs",
+     "content": "fn greet(name: &str) -> String {\n    format!(\"Hello, {name}!\")\n}\n\nfn squares(n: u32) -> Vec<u32> {\n    (0..n).map(|x| x * x).collect()\n}\n\nfn main() {\n    println!(\"{}\", greet(\"world\"));\n    println!(\"first five squares: {:?}\", squares(5));\n}\n\n#[cfg(test)]\nmod tests {\n    use super::*;\n\n    #[test]\n    fn greets_by_name() {\n        assert_eq!(greet(\"Rust\"), \"Hello, Rust!\");\n    }\n\n    #[test]\n    fn first_squares() {\n        assert_eq!(squares(4), vec![0, 1, 4, 9]);\n    }\n}\n"
+    },
+    {
+     "path": ".gitignore",
+     "content": "/target\n"
     }
    ],
-   "tutorial": "# Rust\n\nRust gives you C-level performance with a compiler that **guarantees memory safety** — no null pointers, no data races — all without a garbage collector. Its ownership system takes practice, but it catches bugs at compile time that other languages only find at runtime. There's no standard REPL, so you learn by editing and running.\n\n## Your REPL\n\nRust ships no REPL in its standard toolchain, so this space uses **run** mode. Click **RUN** to compile `hello.rs` with `rustc` and execute the resulting binary. Edit, RUN, repeat.\n\n## The sample\n\nOpen `hello.rs`:\n\n```rust\nfn greet(name: &str) -> String {\n    format!(\"Hello, {name}!\")\n}\n```\n\n`&str` is a borrowed string slice; `-> String` is the return type. `format!` builds an owned `String`, interpolating `{name}` directly.\n\n```rust\nfn squares(n: u32) -> Vec<u32> {\n    (0..n).map(|x| x * x).collect()\n}\n```\n\n`(0..n)` is a range. `.map(|x| ...)` transforms each item; `.collect()` gathers the results into a `Vec<u32>` (a growable vector).\n\n```rust\nfn main() {\n    println!(\"{}\", greet(\"world\"));\n    println!(\"first five squares: {:?}\", squares(5));\n}\n```\n\n`{}` prints via `Display`; `{:?}` prints via `Debug` (needed for the vector).\n\n## Try this\n\n1. Add a `cubes(n: u32) -> Vec<u32>` function using `x * x * x`.\n2. Filter to even squares: `.filter(|x| x % 2 == 0)` before `.collect()`.\n3. Try making `greet` take ownership: change `&str` to `String` and see what the compiler says.\n\n## Going further\n\nThe Rust Book: https://doc.rust-lang.org/book/\n"
+   "tutorial": "# Rust\n\nRust gives you C-level performance with a compiler that **guarantees memory safety** — no null pointers, no data races — without a garbage collector. This space is a real **Cargo** project, which means the whole studio lights up around it: the Cargo.toml is what NMOX Studio detects.\n\n## Run it\n\nClick **RUN** — the rack runs `cargo run`, which compiles and executes `src/main.rs`. Edit, RUN, repeat (Rust has no standard REPL; the edit-run loop IS the workflow).\n\n## The sample\n\n`greet` takes `&str` (a borrowed string slice) and returns an owned `String`. `squares` maps a range through a closure and `.collect()`s it into a `Vec<u32>`. At the bottom, a `#[cfg(test)]` module holds two real tests.\n\n## The toolchain is built in — and so is the studio\n\n- **Tests**: run `cargo test` from the rack's VERITAS device, or right-click inside a `#[test]` function in the editor and choose **Run Focused Test** to run exactly that one.\n- **Lint**: PURITY's AUTO lane runs `cargo clippy` on Cargo projects — the community's standard linter, part of the toolchain.\n- **Format**: GLOSS runs `cargo fmt` (or `cargo fmt --check` in check mode).\n- **Ship gate**: PREFLIGHT checks tests, a release build, clippy, and formatting.\n- **Editor intelligence** comes from `rust-analyzer`. rustup installs a placeholder that only works after `rustup component add rust-analyzer` — if it's missing, NMOX Studio tells you and the notification can run that command for you.\n\n## Try this\n\n1. Add a `cubes(n: u32) -> Vec<u32>` function and a test for it.\n2. Break a test on purpose (`vec![0, 1, 4, 8]`) and watch `cargo test` name the failure.\n3. Add an unused variable and run PURITY — clippy flags it; the FIX switch runs `cargo clippy --fix`.\n\n## Going further\n\nThe Rust Book: https://doc.rust-lang.org/book/\n"
   },
   {
    "slug": "java",

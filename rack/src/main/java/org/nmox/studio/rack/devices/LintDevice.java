@@ -18,15 +18,19 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class LintDevice extends CommandDevice {
 
-// "biome"/"auto"/"deno" appended, never inserted: knob positions persist
-    // by index in saved patches (the v1.59.0 law). New devices default to auto.
-    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno"};
+// "biome"/"auto"/"deno"/"clippy" appended, never inserted: knob positions
+    // persist by index in saved patches (the v1.59.0 law). New devices default to auto.
+    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno", "clippy"};
     private static final Pattern SUMMARY =
             Pattern.compile("(\\d+)\\s+problems?\\s*\\((\\d+)\\s+errors?,\\s*(\\d+)\\s+warnings?\\)");
     // with and without the fixable suffix: "Found 2 problems" and
     // "Found 2 problems (2 fixable via --fix)"
     private static final Pattern DENO_SUMMARY =
             Pattern.compile("^Found (\\d+) problems?\\b");
+    // clippy's per-crate summary, pinned live on cargo 1.95:
+    // warning: `rsprobe` (bin "rsprobe") generated 3 warnings (...)
+    private static final Pattern CLIPPY_SUMMARY =
+            Pattern.compile("generated (\\d+) warnings?\\b");
 
     private final Knob linterKnob;
     private final ToggleSwitch fixSwitch;
@@ -60,6 +64,10 @@ public class LintDevice extends CommandDevice {
             if (ProjectInspector.hasDeno(projectDir())) {
                 return "deno";
             }
+            // a Cargo project lints with clippy, the toolchain's own linter
+            if (effectiveKind() == ProjectInspector.ProjectKind.RUST) {
+                return "clippy";
+            }
             // a biome.json means the project lints with biome
             return ProjectInspector.hasBiome(projectDir()) ? "biome" : "eslint";
         }
@@ -74,11 +82,18 @@ public class LintDevice extends CommandDevice {
             case "stylelint" -> cmd.addAll(List.of("npx", "stylelint", "**/*.css"));
             case "biome" -> cmd.addAll(List.of("npx", "@biomejs/biome", "lint", "."));
             case "deno" -> cmd.addAll(List.of("deno", "lint"));
+            case "clippy" -> cmd.addAll(List.of("cargo", "clippy"));
             default -> cmd.addAll(List.of("npx", "eslint", "."));
         }
         if (fixSwitch.isOn()) {
-            // biome spells autofix --write, the others --fix
-            cmd.add("biome".equals(linter) ? "--write" : "--fix");
+            if ("clippy".equals(linter)) {
+                // clippy --fix refuses a dirty working tree by default,
+                // and an IDE's tree is dirty by definition mid-edit
+                cmd.addAll(List.of("--fix", "--allow-dirty"));
+            } else {
+                // biome spells autofix --write, the others --fix
+                cmd.add("biome".equals(linter) ? "--write" : "--fix");
+            }
         }
         return cmd;
     }
@@ -159,6 +174,17 @@ public class LintDevice extends CommandDevice {
                 countLcd.setTextColor("0".equals(errors)
                         ? org.nmox.studio.rack.ui.controls.RackStyle.LCD_TEXT : new Color(255, 90, 80));
                 countLcd.setText("E:" + errors + " W:0");
+            });
+        }
+        // clippy findings are warnings (hard errors fail the compile and
+        // the exit code drives the FAIL LED before any summary prints)
+        Matcher clippy = CLIPPY_SUMMARY.matcher(line);
+        if (clippy.find()) {
+            String warnings = clippy.group(1);
+            onEdt(() -> {
+                countLcd.setTextColor("0".equals(warnings)
+                        ? org.nmox.studio.rack.ui.controls.RackStyle.LCD_TEXT : new Color(255, 90, 80));
+                countLcd.setText("E:0 W:" + warnings);
             });
         }
     }

@@ -212,7 +212,12 @@ more. Deno workspaces get the full treatment: `deno lsp` is the
 TypeScript authority there (the `Deno` global and `jsr:` imports check
 clean, tsserver yields), lint/format/test lanes speak `deno lint`,
 `deno fmt`, and `deno test`, Run Focused Test filters single
-`Deno.test` cases, and the ship gate runs all three built-in checks. 70+ languages with syntax highlighting (85 TextMate grammars through NetBeans
+`Deno.test` cases, and the ship gate runs all three built-in checks.
+Rust gets the same toolchain-native loop: rust-analyzer with the
+rustup-proxy trap fixed (a component-less proxy now triggers the
+one-click `rustup component add rust-analyzer` notification instead of
+silent nothing), `cargo clippy` and `cargo fmt` on the lint/format
+lanes, single-`#[test]` focused runs, and a four-check ship gate. 70+ languages with syntax highlighting (85 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class

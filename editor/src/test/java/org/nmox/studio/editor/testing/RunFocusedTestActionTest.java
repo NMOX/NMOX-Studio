@@ -392,4 +392,31 @@ class RunFocusedTestActionTest {
         assertThat(m.find()).isTrue();
         assertThat(m.group(1)).isEqualTo("greets by name");
     }
+
+    @Test
+    @DisplayName("Rust: a bare fn is NOT a test — cargo test <helper> exits 0 on zero tests")
+    void rustHelperFnIsNotATest() {
+        // measured on cargo 1.95: a filter matching nothing reports
+        // "0 passed; 0 failed" and exits ZERO — a false green
+        var p = RunFocusedTestAction.patternFor("text/x-rust");
+        assertThat(p.matcher("fn helper_not_a_test() -> i32 {").find()).isFalse();
+        assertThat(p.matcher("pub fn also_not_a_test() {").find()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Rust: fns under test attributes ARE tests, in all the common spellings")
+    void rustTestAttributeShapes() {
+        var p = RunFocusedTestAction.patternFor("text/x-rust");
+        var m = p.matcher("    #[test]\n    fn greets_by_name() {");
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("greets_by_name");
+
+        m = p.matcher("#[tokio::test]\nasync fn fetches() {");
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("fetches");
+
+        m = p.matcher("#[test]\n#[ignore]\nfn slow_one() {");
+        assertThat(m.find()).isTrue();
+        assertThat(m.group(1)).isEqualTo("slow_one");
+    }
 }
