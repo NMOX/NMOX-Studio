@@ -1375,6 +1375,40 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-12, the toolchain passes + the DevOps artifact walk (v1.346–v1.353)
+
+**Four David-directed passes in one day, one recipe.** "Ideal for
+Deno+TS" (v1.350), "premier for Rust" (v1.351), "go-to for Go"
+(v1.352) each ran the same loop: recon the four surfaces (LSP
+authority + honest degradation, PURITY/GLOSS AUTO lanes, Run Focused
+Test, PREFLIGHT plan), bisect the real server/tool headlessly BEFORE
+building, then lanes + catalog + Doctor + learning-space currency.
+The per-toolchain facts worth keeping: deno lsp answers nothing
+without initializationOptions.enable=true (frame-injected at the one
+launch seam); rustup's rust-analyzer proxy exists-but-dies until the
+component installs, so only a --version exit 0 proves the server and
+the probe caches success only; gofmt -l exits ZERO with unformatted
+files, so GLOSS CHECK's verdict reads the output. v1.349 closed the
+Angular ledgers (rename single-authority, identifier ⌘B, resolver
+truth) before the passes began.
+
+**v1.353.0, the senior DevOps pass: build what the product
+generates.** Every Dockerize Dockerfile was built against a real
+Docker 29 daemon from the real generator bytes, and the walk's first
+fan-out found the defect code review had blessed for ~350 releases:
+the Go recipe's `go build -o /name ./...` refuses ANY module with a
+second package ("cannot write multiple packages to non-directory") —
+the toy single-package case was the only shape that ever built. Fixed
+to build the root main package. Granted while there: the static-SPA
+nginx conf (stock nginx 404s every client-route refresh; try_files
+fallback live-proven with a 200 on a deep link), BuildKit cache
+mounts for Rust (16s cold → 1s after a code edit, rebuilt binary
+verified by running it), and base-image currency
+(golang 1.26 / rust 1.95 / python 3.14 / php 8.5 / nginx 1.29, each
+tag existence-checked AND built). The law this re-proves, now for
+generators: **a Dockerfile that was never built is a claim, not a
+product** — the same v1.241.0 lesson that hit the Angular starters.
+
 ## Addendum — 2026-08-11, the overnight tail continues (v1.338–v1.340)
 
 **The Emmet family closes its own outs.** v1.338.0 the `+` combinator

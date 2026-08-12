@@ -26,6 +26,9 @@ public final class DockerizeGenerator {
         switch (kind) {
             case NODE -> {
                 files.put("Dockerfile", nodeBuildsStatic ? nodeStatic() : nodeServer());
+                if (nodeBuildsStatic) {
+                    files.put("docker/nginx.conf", nodeNginxConf());
+                }
                 files.put(".dockerignore", ignore("node_modules", "dist", ".git", "*.log"));
             }
             case GO -> {
@@ -102,8 +105,33 @@ public final class DockerizeGenerator {
                 RUN npm run build
 
                 FROM nginx:alpine
+                COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
                 COPY --from=build /app/dist /usr/share/nginx/html
                 EXPOSE 80
+                """;
+    }
+
+    /**
+     * The static-site server block. The tools buildsStatic() keys on
+     * (vite, angular, svelte, ...) all build single-page apps, and a
+     * client-routed SPA under stock nginx 404s on every deep-link
+     * refresh - unknown paths must serve the shell.
+     */
+    private static String nodeNginxConf() {
+        return """
+                server {
+                    listen 80;
+                    server_name _;
+
+                    root /usr/share/nginx/html;
+                    index index.html;
+
+                    location / {
+                        # single-page app: client routes serve the shell.
+                        # For a plain multi-page site, change the fallback to =404.
+                        try_files $uri $uri/ /index.html;
+                    }
+                }
                 """;
     }
 
@@ -123,40 +151,50 @@ public final class DockerizeGenerator {
     }
 
     private static String go(String name) {
+        // NOT `go build ./...`: -o with a file refuses the moment the module
+        // grows a second package ("cannot write multiple packages to
+        // non-directory") - proven by building the generated file for real
         return """
                 # Static binary in a distroless image - ~10MB, no shell to exploit
-                FROM golang:1.25 AS build
+                FROM golang:1.26 AS build
                 WORKDIR /src
                 COPY go.* ./
                 RUN go mod download
                 COPY . .
-                RUN CGO_ENABLED=0 go build -o /%s ./...
+                # builds the root main package; point at ./cmd/%s if yours lives there
+                RUN CGO_ENABLED=0 go build -o /%s .
 
                 FROM gcr.io/distroless/static-debian12
                 COPY --from=build /%s /%s
                 EXPOSE 8080
                 ENTRYPOINT ["/%s"]
-                """.formatted(name, name, name, name);
+                """.formatted(name, name, name, name, name);
     }
 
     private static String rust(String name) {
+        // target/ lives in a cache mount, so the binary must be copied out
+        // inside the same RUN - COPY --from can't see cache mounts
         return """
                 # Release build, then a minimal runtime layer
-                FROM rust:1.89 AS build
+                FROM rust:1.95 AS build
                 WORKDIR /src
                 COPY . .
-                RUN cargo build --release
+                # BuildKit cache mounts keep the registry and target dir across
+                # builds - a code edit recompiles your crate, not every dependency
+                RUN --mount=type=cache,target=/usr/local/cargo/registry \\
+                    --mount=type=cache,target=/src/target \\
+                    cargo build --release && cp target/release/%s /%s
 
                 FROM debian:trixie-slim
-                COPY --from=build /src/target/release/%s /usr/local/bin/%s
+                COPY --from=build /%s /usr/local/bin/%s
                 EXPOSE 8080
                 CMD ["%s"]
-                """.formatted(name, name, name);
+                """.formatted(name, name, name, name, name);
     }
 
     private static String python() {
         return """
-                FROM python:3.13-slim
+                FROM python:3.14-slim
                 WORKDIR /app
                 COPY requirements.txt ./
                 RUN pip install --no-cache-dir -r requirements.txt
@@ -188,7 +226,7 @@ public final class DockerizeGenerator {
                 COPY . .
                 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-                FROM php:8.4-fpm-alpine
+                FROM php:8.5-fpm-alpine
                 WORKDIR /var/www/html
                 COPY --from=deps /app/vendor ./vendor
                 COPY . .
@@ -229,7 +267,7 @@ public final class DockerizeGenerator {
                     restart: unless-stopped
 
                   nginx:
-                    image: nginx:1.27-alpine
+                    image: nginx:1.29-alpine
                     ports:
                       - "80:80"
                     volumes:
