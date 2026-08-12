@@ -4,6 +4,59 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.350.0] - 2026-08-12
+
+The Deno pass — TypeScript with zero setup becomes a first-class citizen
+(David's ask: ideal for developers using Deno with TypeScript).
+
+### Added
+- **deno lsp is the TypeScript authority in Deno workspaces.** A project
+  carrying deno.json/deno.jsonc gets its editor intelligence from the
+  runtime's own language server: the `Deno` global, `jsr:`/`npm:`/`https:`
+  import specifiers, and extension imports (`./greet.ts`) all check
+  clean, and real type errors arrive as deno-ts diagnostics.
+  typescript-language-server YIELDS the mime there (the v1.349.0
+  single-authority law, second consumer) — before this, every Deno file
+  lit up with false errors from a server that doesn't know Deno exists.
+  The platform's LSP client cannot pass initializationOptions and deno
+  lsp is silent without `enable: true` (proven headlessly both ways
+  against deno 2.9.4), so `DenoInitOptionsInjector` rewrites the
+  client's first outgoing frame — the initialize request — to carry the
+  option, then becomes a byte passthrough. Live-proven in the app: a
+  planted `const n: number = "..."` flagged TS2322 while valid Deno code
+  showed zero squiggles, with deno lsp the only server running.
+- **PURITY and GLOSS speak deno.** The AUTO lint lane resolves to
+  `deno lint` (findings LCD reads deno's "Found N problems" summary,
+  pinned live) and the format lane to `deno fmt` / `deno fmt --check` —
+  before, a Deno project's GLOSS ran `npx prettier` against a workspace
+  that may not even have a node_modules. deno outranks biome by design:
+  deno.json IS the project kind.
+- **Run Focused Test speaks deno test.** Right-click inside a
+  `Deno.test("name", ...)` body runs exactly that test via
+  `deno test --filter /^name$/ <file>` — metacharacters escaped per the
+  v1.257.0 false-green law, plus `/` (it would terminate deno's /.../
+  wrapper; escaped at the deno sites only because go's RE2 rejects
+  `\/`). The same slash hazard is closed in VERITAS's re-run-failed.
+- **PREFLIGHT ships Deno honestly**: `deno lint`, `deno fmt --check`,
+  and `deno test` — all three built into the runtime, so every Deno
+  project gets the full gate with zero config.
+- **Dockerize knows Deno**: `denoland/deno:alpine` recipe with a
+  dependency-cache layer and a `deno task start` entrypoint, port 8000.
+- **Learning space #90: Deno (TypeScript)** — a real deno.json
+  workspace with a jsr:@std/assert test, a `deno repl` rack (snippets
+  self-print, verified against deno 2.9.4), and a tutorial covering
+  permissions, JSR, and the built-in toolchain.
+
+### Verification
+- deno lsp enablement bisected headlessly: plain initialize = silence,
+  `initializationOptions.enable=true` = real TS2322 — then the
+  production injector proven against the real server, then the whole
+  chain live in the app (deno lsp the ONLY ts server, red badge on the
+  planted error, clean valid file).
+- Mutation-proven ×2 by name: the injector without its `enable` put
+  fails the byte-level tests; tsserver without its Deno yield fails the
+  wiring gate.
+
 ## [1.349.0] - 2026-08-11
 
 The "do it all" close of the Angular-top arc — ledgers 77, 78, and 81
