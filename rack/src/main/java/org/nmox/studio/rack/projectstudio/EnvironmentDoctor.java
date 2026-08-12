@@ -48,6 +48,7 @@ public final class EnvironmentDoctor {
                 // until the component is added — the v1.303.0 honesty row
                 // ("found — but its version command failed") is the point
                 new String[]{"rust-analyzer", "Rust language server", "rustup component add rust-analyzer"},
+                new String[]{"golangci-lint", "Go aggregate linter", "brew install golangci-lint"},
                 new String[]{"stellar", "Stellar/Soroban CLI (smart contracts)", "brew install stellar-cli"},
                 new String[]{"solana", "Solana CLI (keys, airdrops, deploys)", "brew install solana"},
                 new String[]{"anchor", "Anchor framework CLI (Solana programs)", "cargo install avm && avm install latest"},
