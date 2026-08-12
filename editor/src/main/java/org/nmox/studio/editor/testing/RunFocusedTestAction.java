@@ -53,8 +53,15 @@ public class RunFocusedTestAction extends BaseAction {
     // the v1.257.0 false-green class. Only a fn under a test attribute
     // counts: #[test], #[tokio::test], #[rstest], #[test_case(...)], with
     // optional further attributes (#[ignore]) between it and the fn.
+    // No nested quantifiers (the v1.32.0 ReDOS-by-idiom rule, and the
+    // find-sec-bugs detector is syntactic — it flags the (group-star)*
+    // SHAPE even written possessively): after the test attribute one
+    // lazy single-class scan reaches the fn. `;{}` are excluded so the
+    // scan can neither cross into a body (a helper fn after a test's
+    // `{` never matches) nor leak from `#[cfg(test)] mod tests {` to
+    // the fns inside — the brace blocks it.
     private static final Pattern RS_TEST = Pattern.compile(
-            "#\\[[^\\]]*test[^\\]]*\\]\\s*(?:#\\[[^\\]]*\\]\\s*)*(?:pub\\s+)?(?:async\\s+)?fn\\s+(\\w+)");
+            "#\\[(?=[^\\]]*test)[^\\]]*\\][^;{}]*?\\bfn\\s+(\\w+)");
     private static final Pattern EX_TEST = Pattern.compile("test\\s+\"(.+?)\"");
     // PHPUnit's two declaration shapes: the classic test-prefixed method
     // and the PHP 8 #[Test] attribute on an arbitrarily named method.
