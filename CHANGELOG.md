@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.355.0] - 2026-08-12
+
+Docs truth for the six-release day (docs only). CLAUDE.md's standing
+header and version history catch up from v1.344.0 to v1.354.0 — the
+Angular do-it-all close, the Deno/Rust/Go toolchain passes with their
+per-toolchain facts (the enable=true frame injection, the rustup-proxy
+probe law, the gofmt exit contract), the DevOps artifact walk and its
+law (*a Dockerfile that was never built is a claim, not a product*),
+and the v1.354.0 arc review's sibling-registration lesson. README's
+learning-space counts corrected 88 → 90 (spaces #89 and #90 had
+shipped without them).
+
 ## [1.354.0] - 2026-08-12
 
 The arc review over v1.349–v1.353 (David's ask: assess the project,
@@ -12281,6 +12293,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.355.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.354.0...v1.355.0
 [1.354.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.353.0...v1.354.0
 [1.353.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.352.0...v1.353.0
 [1.352.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.351.0...v1.352.0

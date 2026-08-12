@@ -19,7 +19,7 @@ FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
 **Ask ORACLE** — select code in any language and hold an AI conversation about
 it (consent-gated, keys keychain-only), **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
-proven against its real toolchain, and **88 learning spaces** with in-rack
+proven against its real toolchain, and **90 learning spaces** with in-rack
 REPLs. Built on the NetBeans Rich Client Platform, shipped through a gated
 pipeline where the house laws are enforced by tests, not intentions: private
 keys never touch the IDE, a cloned repo's code never runs without your yes,
@@ -277,7 +277,7 @@ Workspace Trust first — the same gate the rack uses.
 
 ### 🎓 Learning Spaces
 Projects that exist to be learned from. **File → New Learning Space…**
-(⇧⌘L) opens a searchable picker of **88 built-in tutorials** across
+(⇧⌘L) opens a searchable picker of **90 built-in tutorials** across
 languages, frameworks, and libraries; choose one — say Common Lisp —
 and the studio generates a real project: sample code, a TUTORIAL.md
 that walks it (with the install command for your OS), and a rack
