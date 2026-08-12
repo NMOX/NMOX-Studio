@@ -217,7 +217,11 @@ Rust gets the same toolchain-native loop: rust-analyzer with the
 rustup-proxy trap fixed (a component-less proxy now triggers the
 one-click `rustup component add rust-analyzer` notification instead of
 silent nothing), `cargo clippy` and `cargo fmt` on the lint/format
-lanes, single-`#[test]` focused runs, and a four-check ship gate. 70+ languages with syntax highlighting (85 TextMate grammars through NetBeans
+lanes, single-`#[test]` focused runs, and a four-check ship gate. Go
+modules get `go vet` (or `golangci-lint` when the project opts in) on
+the lint lane and `gofmt` on the format lane — including an honest
+CHECK verdict that reads gofmt's file list, since gofmt itself exits 0
+even when files need formatting. 70+ languages with syntax highlighting (85 TextMate grammars through NetBeans
 CSL) — code plus the whole config layer: `.editorconfig`, dotenv, ignore
 files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars, Liquid, nginx,
 Makefile, Protocol Buffers, Prisma, YAML, TOML, Dockerfile. First-class

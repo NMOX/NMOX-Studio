@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.352.0] - 2026-08-12
+
+The Go pass (David's ask: the go-to software for Go developers) — the
+toolchain-in-the-box philosophy, honored lane by lane.
+
+### Added
+- **PURITY speaks Go.** The AUTO lint lane runs `go vet ./...` on Go
+  modules — the toolchain's own correctness checker (exits 1 on
+  findings, pinned live on go 1.26 after the first measurement was
+  corrupted by a shell pipe eating the exit code) — and upgrades to
+  `golangci-lint run` automatically when the project carries a
+  .golangci config (any of the four spellings). FIX on go vet honestly
+  does nothing: vet has no autofix, and a switch that silently changes
+  the command would be a lie.
+- **GLOSS speaks gofmt — with its exit contract repaired.** WRITE runs
+  `gofmt -w .`; CHECK runs `gofmt -l .`, which lists unformatted files
+  but exits ZERO either way (pinned live). The device's verdict now
+  reads the OUTPUT: any listed file is a FAIL, restoring the contract
+  every other formatter honors, via the overallSuccess hook rather
+  than a shell wrapper.
+- **The Go learning space is a real module** — go.mod detection lights
+  up the whole studio (vet/gofmt/test lanes, PREFLIGHT, Run Focused
+  Test), the sample carries a real `TestGreet`, and the tutorial walks
+  the toolchain-native loop including the gofmt exit-code story.
+- **Doctor probes golangci-lint** beside the existing go/gopls rows.
+
+### Already strong, verified in passing
+gopls with a runnable one-click install, `go test -run ^Name$` focused
+tests, the `--- FAIL:` VERITAS tally with RE2-escaped re-runs, a
+tests/build/vet PREFLIGHT gate, delve wiring on INSPECTOR, and the Go
+Service template — the Go floor was high; this release closes the
+lint/format gap and makes the entry path a real module.
+
+### Verification
+- Mutation-proven ×2 by name: the GO auto-lint branch and the gofmt
+  output-verdict override each fail their named test when removed.
+- gofmt -l / go vet / golangci-lint output and exit shapes pinned
+  live against go 1.26.5 and golangci-lint on this machine.
+
 ## [1.351.0] - 2026-08-12
 
 The Rust premier pass (David's ask: the premier software for working
