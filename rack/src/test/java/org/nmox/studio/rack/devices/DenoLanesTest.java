@@ -51,12 +51,15 @@ class DenoLanesTest {
     }
 
     @Test
-    @DisplayName("GLOSS checks with deno fmt --check and writes with deno fmt")
+    @DisplayName("GLOSS writes with deno fmt (default) and checks with deno fmt --check")
     void glossAuto() throws IOException {
         Rack rack = aimedDenoRack();
         try {
             FormatDevice fmt = new FormatDevice();
             rack.addDevice(fmt);
+            // the device defaults its MODE switch to WRITE
+            assertThat(fmt.buildCommand()).containsExactly("deno", "fmt");
+            fmt.applyState(java.util.Map.of("write", "false"));
             assertThat(fmt.buildCommand()).containsExactly("deno", "fmt", "--check");
         } finally {
             rack.shutdown();
