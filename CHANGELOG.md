@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.358.0] - 2026-08-12
+
+The elevation arc closes its loop: STYLE WRITE-BACK. A style tweaked
+in the DevTools DOM tab lands in the source stylesheet — nobody
+re-types DevTools changes into their editor anymore, and with
+save-to-reload (v1.228.0) already watching, the served page reloads
+from the very file the tweak just landed in.
+
+### Added
+- **Edit Style… on the selected element.** A property/value dialog in
+  the DOM tab applies the tweak INLINE in the page first (instant
+  feedback, independent of the write), then writes it into the source:
+  the page itself is asked which stylesheet rules matched the element
+  (el.matches over document.styleSheets, cascade order — write-back
+  never guesses specificity), the last matching rule's stylesheet is
+  resolved through the same vouched channels as inspect-to-source, and
+  the declaration is REPLACED in place or inserted with the block's
+  own indentation. Selector comparison is CSSOM-normalized, comments
+  are neutralized (a selector in /* … */ is not a rule), @media
+  nesting is depth-tracked, and property matching is whole-word so
+  `color` can never hit `background-color`.
+- **The refusal list is the honesty:** a rule in an inline <style>
+  refuses; a stylesheet not served from a project here refuses; a
+  .css with a preprocessor sibling refuses ("compiled output — edit
+  the preprocessor source instead", because v1.230.0's
+  recompile-on-save would immediately lose the edit); a file with
+  unsaved editor changes refuses ("save it first"); values carrying
+  structural characters refuse before they can corrupt the file. Every
+  refusal still leaves the inline preview applied and says exactly why
+  the source was not touched.
+
+Pure core (StyleWriteback), 7 behavioral tests, mutation ×3 by name
+(dropped comment-neutralize, dropped whole-word boundary,
+replace-turned-append). Writes ride AtomicFiles with a FileObject
+refresh so open editors and save-to-reload both see the change.
+
 ## [1.357.0] - 2026-08-12
 
 The elevation arc opens (David's ask: take it to the next level —
@@ -12346,6 +12382,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.358.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.357.0...v1.358.0
 [1.357.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.356.0...v1.357.0
 [1.356.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.355.0...v1.356.0
 [1.355.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.354.0...v1.355.0

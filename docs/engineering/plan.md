@@ -1375,6 +1375,23 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-12, the elevation loop closes (v1.358)
+
+**Style write-back ships.** Edit Style… on the picked element applies
+inline instantly, then lands the declaration in the SOURCE stylesheet
+— rule chosen by the page's own cascade answer (el.matches over
+document.styleSheets, last match wins), file resolved through the
+inspect-to-source channels, replace-in-place or indent-matched
+insert. The refusals carry the design: inline <style>, unserved
+sheets, compiled .css with a preprocessor sibling (the edit would be
+LOST on recompile — v1.230's recompile-on-save would do the losing
+immediately), unsaved editor buffers, and structural characters all
+refuse with reasons while the inline preview stays. With v1.228's
+save-to-reload watching, the loop is: pick in page → tweak → source
+updated → page reloads from source. The elevation arc (v1.357–v1.358)
+is the product's answer to the oldest split in web development — the
+browser and the editor knowing different things.
+
 ## Addendum — 2026-08-12, the elevation arc opens (v1.357)
 
 **The Browser becomes source-aware.** David's directive ("take it to
