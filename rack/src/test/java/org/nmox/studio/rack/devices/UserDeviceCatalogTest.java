@@ -88,4 +88,24 @@ class UserDeviceCatalogTest {
         assertThat(DeviceCatalog.all()).extracting(DeviceCatalog.Entry::title)
                 .contains("FIRST").doesNotContain("SECOND");
     }
+
+    @Test
+    @DisplayName("mounting uses the file's CURRENT contents, not the parse the shelf listed")
+    void mountUsesFreshParse(@TempDir File dir) throws Exception {
+        write(dir, "hello.json", "com.example.hello", "HELLO");
+        DeviceCatalog.Entry entry = DeviceCatalog.byId("com.example.hello").orElseThrow();
+
+        // the user edits the file while the palette still holds the old
+        // entry — the v2.0.0 walk's stale-mount finding: the next mount
+        // must reflect THIS content, not the capture
+        Files.writeString(new File(dir, "hello.json").toPath(),
+                "{\"id\":\"com.example.hello\",\"title\":\"HELLO\",\"tagline\":\"t\","
+                + "\"category\":\"AUTOMATE\",\"units\":3,\"usage\":\"" + USAGE + "\","
+                + "\"buttons\":[{\"label\":\"GO\",\"role\":\"GO\",\"command\":[\"npm\"]}]}");
+        UserDevices.invalidate();
+
+        assertThat(entry.create().getUnits())
+                .as("the stale entry must mount the edited file's 3U face")
+                .isEqualTo(3);
+    }
 }

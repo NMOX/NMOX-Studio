@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.1] - 2026-08-13
+
+The v2.0.0 GUI walk — mount the tutorial's device, press its button —
+paid the way walks always do. The happy path held end to end: the trust
+prompt fired on the press naming the right project, the failure leg lit
+FAIL with git's real stderr honestly ellipsized, and the success leg put
+`main.js` on the LCD from a real `git ls-files` in the aimed repo. The
+two findings were in the seams:
+
+### Fixed
+- **The fit law moved from the first click to the load.** The tutorial's
+  own knob-carrying example — which declares no `units` — parsed, passed
+  validation, reached the shelf, and then threw `IllegalStateException`
+  at the first mount, because a knob face does not fit the silent 1U
+  default and the fit check ran only at build time. The load path now
+  builds the face for real (a throwaway, never attached): a file with no
+  `units` auto-sizes to the smallest height that fits, and a file whose
+  DECLARED height cannot hold its controls is skipped at load with the
+  fit message as its logged reason — never an exception at a click.
+  `DeviceFileDocsTest` now requires every documented example to BUILD,
+  not merely parse: the docs gate had stopped one level short of the
+  mount the reader will actually attempt.
+- **Mount reads the file's current contents.** Editing a device file and
+  mounting again used the parse captured when the palette listed the
+  entry — the walk edited `units` 1→2 and the next double-click threw
+  the same 1U error. A JSON device now re-resolves through the drop-in
+  reader at mount time, so the file on disk is what reaches the rack.
+- **`units` honesty: 1–4 → 1–3.** The parser accepted 4 while the host
+  silently clamped faces to 3U; the accepted range now matches what the
+  plate really honors, in the parser, its message, and the reference.
+
+Dismissed with evidence: the "missing controls" scare — the knob and
+button were rendered exactly where the headless probe said, just past
+the right edge of a default-width window (the rack has scrolled
+horizontally since v1.95). And the walk doubles as the live proof the
+unit suite could not give: palette listing, 2U faceplate, per-project
+trust, per-project patch swap with a JSON device mounted, and both exit
+legs, all in the installed 2.0.0.
+
 ## [2.0.0] - 2026-08-13
 
 **The programmable rack.** The Task Rack is what makes NMOX Studio
@@ -12559,6 +12598,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.362.0...v2.0.0
 [1.362.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.361.0...v1.362.0
 [1.361.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.360.0...v1.361.0

@@ -1719,6 +1719,54 @@ plugins load unchanged; the drop-in directory does not exist until a
 user makes one. The major version marks the identity change, and the
 CHANGELOG says so rather than implying a break.
 
+## Addendum — 2026-08-13, v2.0.0 and its walk (v2.0.0–v2.0.1)
+
+David delegated the call: *decide what would make a good v2.0.0 and
+build it.* The decision was grounded in this plan's own recorded
+direction — every shipped catalog gets a user-writable drop-in
+sibling — and the grep for the seventh sibling found the omission: the
+DEVICE catalog, the rack the product is named for. v2.0.0 makes a JSON
+file in `~/.nmox/devices.d/` a real device: knobs, buttons, LEDs,
+ports, patch cables, trust-gated spawns, flight-recorded. The
+architecture made a major version cheap: because the v1.55.0 shape-B
+host enforces every law itself, the JSON adapter added no law of its
+own. **When the host holds the laws, a new plugin LANGUAGE costs
+almost nothing.**
+
+**The GUI walk (same day) paid immediately.** Following the tutorial
+verbatim in the installed 2.0.0: the tutorial's own knob-carrying
+example — which declares no `units` — parsed, passed validation,
+reached the shelf, and threw `IllegalStateException` at the first
+mount, because the fit law ran only at face-build time and a knob does
+not fit the silent 1U default. Editing the file and re-mounting used
+the STALE parse captured at palette-listing time. And a third scare —
+no knob or button visible on the mounted plate — was dismissed by
+measurement: the headless probe's bounds matched the GUI exactly, with
+the controls past the right edge of a default-width window (the rack
+scrolls; known since v1.95). The happy path held: trust prompt on the
+press naming the right root, FAIL leg showing git's real stderr
+honestly ellipsized (the v1.282 law, observed live), success leg
+putting `main.js` on the LCD from a real spawn.
+
+**v2.0.1 made both findings structural.** The load path now dry-builds
+the real face: absent `units` auto-sizes to the smallest height that
+fits, a declared-too-small height is skipped at load with the fit
+message as its reason, and `DeviceFileDocsTest` requires every
+documented example to BUILD, not merely parse — the docs gate had
+stopped one level short of the mount the reader will attempt. Mount
+re-resolves a JSON device through the drop-in reader, so an edited
+file mounts from its current contents. The `units` range now tells the
+truth (1–3, matching the host's clamp). Mutation-proven ×2, each
+failing by name.
+
+Two lessons for the failure-pattern list. *A validation gate that
+stops one stage short of what the user will actually do is a gate on
+the wrong door* — parse-level docs fixtures blessed an example that
+could never mount; the fixture must exercise the reader's next step.
+And *a scare in a walk deserves a measurement before a fix*: the
+"missing controls" would have sent a rendering hunt; printing the real
+bounds headlessly took two minutes and dismissed it.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +

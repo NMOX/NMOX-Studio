@@ -57,6 +57,14 @@ class DeviceFileDocsTest {
             assertThat(r.problem())
                     .as("example in %s must parse:%n%s", doc, example)
                     .isNull();
+            // Parsing is not enough: the v2.0.0 walk followed the
+            // tutorial verbatim and its example threw at the first
+            // mount because the face did not fit its default height.
+            // A worked example must MOUNT — build it through the same
+            // load path the shelf uses (which auto-sizes units).
+            assertThat(UserDevices.loadForTest(r.device()))
+                    .as("example in %s must build a mountable face:%n%s", doc, example)
+                    .isNotNull();
         }
     }
 

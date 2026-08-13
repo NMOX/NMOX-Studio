@@ -112,10 +112,63 @@ public final class UserDevices {
                         new Object[]{f.getName(), result.problem()});
                 continue;
             }
-            found.add(new JsonDeviceExtension(result.device()));
+            DeviceFile fitted = fitted(f.getName(), result.device());
+            if (fitted == null) {
+                continue; // fitted() logged the reason
+            }
+            found.add(new JsonDeviceExtension(fitted));
         }
         signature = nowSig;
         cached = List.copyOf(found);
         return cached;
+    }
+
+    /**
+     * The fit law, enforced at LOAD: builds the face for real (a
+     * throwaway device, never attached) so a file whose controls
+     * overflow the plate is skipped HERE with its reason — not thrown
+     * as an exception at the user's first click, which is where the
+     * v2.0.0 walk found it landing. When the file does not declare
+     * "units", the smallest height that fits wins: an author should
+     * not need to know the widgets' pixel metrics, and the tutorial's
+     * own knob-carrying example could not mount at the silent 1U
+     * default. A DECLARED height that is too small still refuses —
+     * the file said something the plate cannot honor.
+     */
+    private static DeviceFile fitted(String name, DeviceFile device) {
+        String problem = fitProblem(device);
+        if (problem == null) {
+            return device;
+        }
+        if (!device.unitsDeclared()) {
+            for (int u = device.units() + 1; u <= DeviceFile.MAX_UNITS; u++) {
+                DeviceFile taller = device.withUnits(u);
+                if (fitProblem(taller) == null) {
+                    return taller;
+                }
+            }
+        }
+        LOG.log(Level.WARNING, "device file {0} skipped: {1}",
+                new Object[]{name, problem});
+        return null;
+    }
+
+    /**
+     * The load path's fit judgement, reachable by tests: what the shelf
+     * would make of this parsed device — the fitted (possibly
+     * auto-sized) device, or null when it can never mount.
+     */
+    static DeviceFile loadForTest(DeviceFile device) {
+        return fitted("(test)", device);
+    }
+
+    /** Builds the real face once, discarded; the thrown message is the verdict. */
+    private static String fitProblem(DeviceFile device) {
+        try {
+            new ExtensionDevice(new JsonDeviceExtension(device)).dispose();
+            return null;
+        } catch (RuntimeException ex) {
+            return ex.getMessage();
+        }
     }
 }
