@@ -1767,6 +1767,38 @@ And *a scare in a walk deserves a measurement before a fix*: the
 "missing controls" would have sent a rendering hunt; printing the real
 bounds headlessly took two minutes and dismissed it.
 
+## Addendum — 2026-08-13, the WeeChat-power arc opens (v2.2.0)
+
+David's directive: *give IRC all the power of WeeChat.* The tranche was
+scoped by an honest parity read against WeeChat's real feature set, not
+by cloning its menu. Already present before this arc (don't rebuild):
+multi-network sessions, queries + channel tree, SASL/TLS/IRCv3 caps
+(echo-message, away-notify), mention badges with counts, unread bold,
+nick hash-colours, logging with reattach gap markers (v1.344.0), tab
+completion, /list, WHOIS, ignore, the network editor. The true gaps —
+WeeChat's signature moves — became tranche 1:
+
+- **Smart join/part/quit filter** (`SmartFilter`, pure + clock-seamed,
+  ON by default like WeeChat): presence lines show only for nicks that
+  spoke in that channel within five minutes; renames carry history;
+  kicks and self always show; the log tap keeps everything.
+- **Ctrl+J hotlist jump** (`Hotlist.pick`): mentions outrank unread,
+  tree order within a tier.
+- **Operator toolkit** (`OpModes`): /op /deop /voice /devoice batch one
+  MODE line; /kick /ban /unban /invite /mode with WeeChat's
+  bare-flags-mean-this-channel shorthand; bare nick bans as nick!*@*.
+- **/alias**: persisted user commands, ONE expansion level by
+  construction (no loops possible), built-ins unshadowable.
+
+Design note worth keeping: the filter sits at the TRANSCRIPT append
+sites only — nick-list bookkeeping and the engine-side IrcLogTap are
+upstream of it, so hiding a line never loses data. Both new pure cores
+are mutation-proven by name (always-show SmartFilter mutant dies by
+five tests; Hotlist without its mention tier dies by
+`mentionsOutrankUnread`). Candidate tranche 2, recorded not promised:
+custom text filters (WeeChat `/filter` regex form), triggers, buffer
+merge, /lastlog.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +
