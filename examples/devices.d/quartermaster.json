@@ -1,0 +1,18 @@
+{
+  "id": "com.nmox.examples.quartermaster",
+  "title": "QUARTERMASTER",
+  "tagline": "toolchain roll call, one press per tool",
+  "accent": "#9AA75C",
+  "category": "UTILITY",
+  "usage": "Each button asks one tool for its version; a missing tool lights FAIL instead of pretending. One button per tool is the LAW, not a limitation — a knob may never choose the tool name, so the command can be read before it runs.\nPatch OUT into MONITOR to keep the roll call on screen.",
+  "ports": [
+    { "id": "roll", "label": "ROLL", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "NODE", "role": "QUERY", "command": ["node", "--version"], "trigger": "roll" },
+    { "label": "GIT", "role": "QUERY", "command": ["git", "--version"] },
+    { "label": "DENO", "role": "QUERY", "command": ["deno", "--version"] },
+    { "label": "DOCKER", "role": "QUERY", "command": ["docker", "--version"] }
+  ]
+}

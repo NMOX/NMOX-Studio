@@ -1,0 +1,26 @@
+{
+  "id": "com.nmox.examples.chronicle",
+  "title": "CHRONICLE",
+  "tagline": "the repo's story on three buttons",
+  "accent": "#7FB3D5",
+  "category": "OBSERVE",
+  "usage": "LOG shows the last SPAN commits one per line, STATUS the working tree in porcelain shorthand, AUTHORS the commit counts per contributor.\nPatch OUT into MONITOR to read full listings — the LCD keeps only the last line.",
+  "knobs": [
+    { "key": "span", "label": "SPAN", "options": ["5", "10", "20", "50"] }
+  ],
+  "ports": [
+    { "id": "status", "label": "STATUS", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "done", "label": "DONE", "direction": "OUT", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "LOG", "role": "QUERY",
+      "command": ["git", "log", "--oneline", "-n", "{{span}}"],
+      "emit": "done" },
+    { "label": "STATUS", "role": "QUERY",
+      "command": ["git", "status", "--short", "--branch"],
+      "trigger": "status" },
+    { "label": "AUTHORS", "role": "QUERY",
+      "command": ["git", "shortlog", "-sn", "--no-merges", "HEAD"] }
+  ]
+}

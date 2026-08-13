@@ -62,7 +62,7 @@ class DeviceFileDocsTest {
             // mount because the face did not fit its default height.
             // A worked example must MOUNT — build it through the same
             // load path the shelf uses (which auto-sizes units).
-            assertThat(UserDevices.loadForTest(r.device()))
+            assertThat(UserDevices.fit(r.device()))
                     .as("example in %s must build a mountable face:%n%s", doc, example)
                     .isNotNull();
         }

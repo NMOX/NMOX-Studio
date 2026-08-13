@@ -1,0 +1,21 @@
+{
+  "id": "com.nmox.examples.groundskeeper",
+  "title": "GROUNDSKEEPER",
+  "tagline": "repo hygiene: verify first, then tidy",
+  "accent": "#C97B7B",
+  "category": "AUTOMATE",
+  "usage": "FSCK checks the object store's integrity and touches nothing; GC repacks and prunes — a mutation, so its button wears the mutation colour by law, not by choice.\nPatch FSCK's DONE into GC's trigger to tidy only after a clean check, and OUT into MONITOR to read the findings.",
+  "ports": [
+    { "id": "gc", "label": "GC", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "done", "label": "DONE", "direction": "OUT", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "FSCK", "role": "QUERY",
+      "command": ["git", "fsck", "--no-progress"],
+      "emit": "done" },
+    { "label": "GC", "role": "MUTATE",
+      "command": ["git", "gc"],
+      "trigger": "gc" }
+  ]
+}

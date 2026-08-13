@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2026-08-13
+
+### Added
+- **A gallery of example devices, shipped installed and active** — six
+  ready-made JSON devices that together exercise the whole v2 format,
+  bundled INTO the rack module at build time so every install's shelf
+  already holds them (`BundledDevices` reads them from the classpath
+  through the same judge, fit law, and trust gate as any drop-in; a
+  user file reusing a bundled id is skipped — the gallery wins its own
+  ids). The files stay at `examples/devices.d/` as the single visible
+  source and as templates for your own:
+  **AUDITOR** (`npm audit` with a severity knob — the FAIL lamp is the
+  verdict), **CHRONICLE** (git log/status/authors on one plate),
+  **QUARTERMASTER** (one version button per tool — deliberately not a
+  TOOL knob, because the format refuses a knob-built tool name),
+  **WATCHTOWER** (a true long-runner with a real STOP, wearing the
+  transport law), **PROBE** (a `curl` status probe whose UP trigger
+  fires only on success), and **GROUNDSKEEPER** (`git fsck` → `git gc`
+  chained by cable, the mutation wearing the mutation colour).
+- **`ExampleDevicesGateTest`** makes the gallery fixtures, not prose:
+  every example is parsed by the real judge, mounted through the real
+  load path, and cleared against the shelf laws on every build — a
+  rule change that breaks an example fails CI naming the file, instead
+  of failing the first user who opens the shelf. The default catalog is
+  itself pinned: `galleryShipsInstalledAndActive` resolves all six by
+  id with the drop-in directory pointed at nowhere.
+
 ## [2.0.2] - 2026-08-13
 
 The v2 arc review — fresh lenses over DeviceFile, UserDevices,
@@ -12630,6 +12657,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.362.0...v2.0.0

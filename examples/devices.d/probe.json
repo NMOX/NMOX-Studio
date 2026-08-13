@@ -1,0 +1,22 @@
+{
+  "id": "com.nmox.examples.probe",
+  "title": "PROBE",
+  "tagline": "is the dev server answering, and with what",
+  "accent": "#B085C9",
+  "category": "OBSERVE",
+  "usage": "PING asks http://localhost:TARGET/ for its status code — the LCD shows the code, FAIL lights when nothing answers within five seconds, and UP pulses only on success.\nPatch UP into a test device's trigger to run the suite the moment the server responds.",
+  "knobs": [
+    { "key": "target", "label": "TARGET", "options": ["3000", "4200", "5173", "8080"] }
+  ],
+  "ports": [
+    { "id": "ping", "label": "PING", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "up", "label": "UP", "direction": "OUT", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "PING", "role": "QUERY",
+      "command": ["curl", "-sS", "--max-time", "5", "-o", "/dev/null",
+                  "-w", "%{http_code}", "http://localhost:{{target}}/"],
+      "emit": "up", "trigger": "ping" }
+  ]
+}

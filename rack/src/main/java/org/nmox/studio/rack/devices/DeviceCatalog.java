@@ -76,11 +76,13 @@ public final class DeviceCatalog {
             entries.add(new EnumEntry(t));
             ids.add(t.getId());
         }
-        // Installed plugins first, then the user's own device files: both
-        // arrive as DeviceExtension and both face the same validate()
+        // The bundled gallery first (it ships installed and active, and
+        // must win an id collision with a user's stale copy of itself),
+        // then installed plugins, then the user's own device files: all
+        // three arrive as DeviceExtension and face the same validate()
         // below, so a JSON device is a citizen, not a second class.
-        List<DeviceExtension> extensions =
-                new ArrayList<>(Lookup.getDefault().lookupAll(DeviceExtension.class));
+        List<DeviceExtension> extensions = new ArrayList<>(BundledDevices.all());
+        extensions.addAll(Lookup.getDefault().lookupAll(DeviceExtension.class));
         extensions.addAll(UserDevices.all());
         for (DeviceExtension ext : extensions) {
             DeviceDescriptor d;

@@ -52,7 +52,7 @@ class FaceRenderProbeTest {
         // the walk's finding: at the silent 1U default this face does
         // not fit and 2.0.0 threw at the first click — the load path
         // now picks the smallest height that fits instead
-        DeviceFile fitted = UserDevices.loadForTest(r.device());
+        DeviceFile fitted = UserDevices.fit(r.device());
         assertThat(fitted).as("a knob file with no declared units must fit itself").isNotNull();
         assertThat(fitted.units()).isEqualTo(2);
     }
@@ -60,7 +60,7 @@ class FaceRenderProbeTest {
     @Test
     @DisplayName("every declared control lands on the plate, inside it")
     void allControlsOnPlate() {
-        DeviceFile fitted = UserDevices.loadForTest(
+        DeviceFile fitted = UserDevices.fit(
                 DeviceFile.read(COUNTER_NO_UNITS).device());
         ExtensionDevice dev = new ExtensionDevice(new JsonDeviceExtension(fitted));
         List<String> names = new ArrayList<>();
@@ -89,7 +89,7 @@ class FaceRenderProbeTest {
         assertThat(r.problem()).isNull();
         // the file SAID 1U; honoring it is impossible, so the load
         // refuses — auto-size never overrides an explicit declaration
-        assertThat(UserDevices.loadForTest(r.device())).isNull();
+        assertThat(UserDevices.fit(r.device())).isNull();
     }
 
     @Test
@@ -98,7 +98,7 @@ class FaceRenderProbeTest {
         var oldGate = ExtensionDevice.trustGate;
         try {
             ExtensionDevice.trustGate = dir -> false;
-            DeviceFile fitted = UserDevices.loadForTest(
+            DeviceFile fitted = UserDevices.fit(
                     DeviceFile.read(COUNTER_NO_UNITS).device());
             ExtensionDevice dev = new ExtensionDevice(new JsonDeviceExtension(fitted));
             org.nmox.studio.rack.ui.controls.RackButton count = null;
