@@ -64,12 +64,21 @@ class PageSourceResolverTest {
     @Test
     @DisplayName("remote pages and traversal paths refuse")
     void refusals() throws Exception {
-        Files.writeString(dir.resolve("index.html"), "<html></html>");
-        List<Serving> s = List.of(serving("http://localhost:8000/"));
+        // the secret sits ONE LEVEL ABOVE the served root and EXISTS —
+        // an escape that reaches nothing can't tell a guard from luck
+        // (the mutation-divergence lesson: the first version of this
+        // test let a guard-less mutant survive)
+        Path project = Files.createDirectories(dir.resolve("project"));
+        Files.writeString(project.resolve("index.html"), "<html></html>");
+        Files.writeString(dir.resolve("secret.txt"), "hands off");
+        Serving s0 = new Serving("ignition", "IGNITION", "http://localhost:8000/",
+                Kind.WEB, project.toFile());
+        List<Serving> s = List.of(s0);
         assertThat(PageSourceResolver.resolve("https://example.com/", s)).isNull();
-        // an encoded escape must never leave the project root
         assertThat(PageSourceResolver.resolve(
-                "http://localhost:8000/..%2F..%2Fetc%2Fpasswd", s)).isNull();
+                "http://localhost:8000/..%2Fsecret.txt", s))
+                .as("the escape reaches a real file; only the containment guard refuses it")
+                .isNull();
         assertThat(PageSourceResolver.resolve(null, s)).isNull();
         assertThat(PageSourceResolver.resolve("not a url", s)).isNull();
     }
