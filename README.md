@@ -262,6 +262,34 @@ side is HALO, the Angular console (serve/build/test/generate/update
 with version currency), and **New Project** ships an Angular
 standalone template.
 
+### 🔍 The source-aware Browser
+
+The oldest split in web development — the browser knows *which element
+you mean*, the editor knows *where the code lives*, and you carry
+information between them by hand — is closed inside the IDE. In the
+in-app Browser's DevTools DOM tab (since v1.357.0):
+
+- **Pick element**: a crosshair in the live page — click any element
+  and the DOM tree selects it, highlights it, and shows its computed
+  styles (with a WCAG contrast verdict).
+- **Open Source**: the selected element opens the HTML file that
+  produced it, *at the line*. It only trusts pages it can trace to
+  your disk (`file://` pages and anything served by a rack serve
+  device), and it refuses honestly otherwise — a remote page says
+  "not served from a project here," a script-generated element says
+  so instead of jumping somewhere wrong.
+- **Edit Style…**: a property/value tweak applies inline in the page
+  *instantly*, then lands in the source stylesheet — the rule chosen
+  by asking the page which selectors matched (the cascade's own
+  answer), replaced in place with every other byte untouched. Compiled
+  CSS with a preprocessor sibling refuses with "edit the preprocessor
+  source instead," because a write there would be lost on the next
+  compile.
+
+With save-to-reload already watching, the loop closes: pick → tweak →
+source updated → page reloads from that source. The walkthrough:
+[Browser to Source](docs/tutorials/browser-to-source.md).
+
 ### 🐞 Breakpoints that actually stop
 
 Click the gutter, right-click → **Debug File**, and your program pauses

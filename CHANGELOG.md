@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.361.0] - 2026-08-13
+
+The documentation pass (docs only, David's ask: current and
+instructive). The product's newest capabilities now teach themselves:
+
+- **New tutorial: [Browser to Source](docs/tutorials/browser-to-source.md)**
+  — a one-sitting walkthrough of the source-aware loop: make a page,
+  pick an element in the live Browser, jump to the producing line,
+  restyle from DevTools and watch the stylesheet change on disk, with
+  the honest-limits table (inline <style>, remote pages, preprocessor
+  siblings, unsaved buffers) spelled out as a reference.
+- **README** gains "The source-aware Browser" — the elevation arc's
+  capability as a first-class feature section beside Angular and
+  debugging, with the refusal philosophy stated up front.
+- **User guide**: the DevTools DOM bullet carries Pick element / Open
+  Source / Edit Style… with every refusal named; the rack chapter
+  gains "Toolchain-native lanes" (deno lint/fmt, cargo clippy/fmt,
+  go vet/golangci + the gofmt exit-contract note, biome, and the
+  ROSETTA-override-outranks-a-stray-manifest rule); the DevTools tab
+  count corrected six → seven (the Angular pane joined in v1.222.0 and
+  the sentence never noticed).
+- **CLAUDE.md** standing header and version history caught up
+  v1.355 → v1.360 (the elevation arc, the toolchain walks, the review
+  lessons).
+
 ## [1.360.0] - 2026-08-13
 
 The elevation walk (docs only): the whole source-aware loop
@@ -12423,6 +12448,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.361.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.360.0...v1.361.0
 [1.360.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.359.0...v1.360.0
 [1.359.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.358.0...v1.359.0
 [1.358.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.357.0...v1.358.0
