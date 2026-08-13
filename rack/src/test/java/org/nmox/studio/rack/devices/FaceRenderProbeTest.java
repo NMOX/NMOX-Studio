@@ -91,4 +91,38 @@ class FaceRenderProbeTest {
         // refuses — auto-size never overrides an explicit declaration
         assertThat(UserDevices.loadForTest(r.device())).isNull();
     }
+
+    @Test
+    @DisplayName("declining trust says why on the LCD, not a bare EXIT -1")
+    void trustDeclineSpeaksHuman() throws Exception {
+        var oldGate = ExtensionDevice.trustGate;
+        try {
+            ExtensionDevice.trustGate = dir -> false;
+            DeviceFile fitted = UserDevices.loadForTest(
+                    DeviceFile.read(COUNTER_NO_UNITS).device());
+            ExtensionDevice dev = new ExtensionDevice(new JsonDeviceExtension(fitted));
+            org.nmox.studio.rack.ui.controls.RackButton count = null;
+            org.nmox.studio.rack.ui.controls.LcdDisplay screen = null;
+            for (Component c : dev.getComponents()) {
+                if (c instanceof org.nmox.studio.rack.ui.controls.RackButton b
+                        && "COUNT".equals(b.getAccessibleContext().getAccessibleName())) {
+                    count = b;
+                }
+                if (c instanceof org.nmox.studio.rack.ui.controls.LcdDisplay l) {
+                    screen = l;
+                }
+            }
+            assertThat(count).isNotNull();
+            assertThat(screen).isNotNull();
+            count.getAccessibleContext().getAccessibleAction().doAccessibleAction(0);
+            // LCD writes marshal to the EDT; drain it before reading
+            javax.swing.SwingUtilities.invokeAndWait(() -> { });
+            assertThat(screen.getText())
+                    .as("a decline must speak the host's refusal, not a fake exit code")
+                    .contains("EXECUTION REFUSED");
+            dev.dispose();
+        } finally {
+            ExtensionDevice.trustGate = oldGate;
+        }
+    }
 }

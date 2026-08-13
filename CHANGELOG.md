@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.2] - 2026-08-13
+
+The v2 arc review — fresh lenses over DeviceFile, UserDevices,
+JsonDeviceExtension, ExtensionDevice, and the v2.0.1 fixes themselves
+(day-old code has produced a finding in nearly every review this
+project has run). Two fixes; three verdicts blessed in writing.
+
+### Fixed
+- **Declining trust says why, for every extension.** When the user
+  picked Keep Safe, a JSON device's LCD read `EXIT -1` — a decline
+  indistinguishable from a crashed tool, next to VERITAS's
+  `UNTRUSTED WORKSPACE — EXECUTION REFUSED`. The plugin cannot tell
+  the difference, so the HOST now says it: `ExtensionDevice`'s exec
+  emits the refusal line before the exit callback, for Java and JSON
+  extensions alike. Behaviorally pinned by pressing the real button
+  through its accessible action with trust denied and reading the LCD.
+- **The fit probe's cleanup left the judgment.** The load-time
+  dry-build disposed its throwaway device inside the same try that
+  judges fit, so a dispose failure could masquerade as a fit refusal
+  for a good device; cleanup now rides a finally of its own.
+
+### Verified clean, blessed in writing
+- The last-line `tail` is written on the exec pump and read in the
+  exit callback — safe because the v1.57.0 exec lane sequences exit
+  after the pump drains; the assumption is now stated in a comment
+  where the next reader needs it.
+- Per-line LCD updates post one EDT runnable per output line — the
+  same pattern as every built-in command device, noted not new.
+- A device file edited into an INVALID state after listing mounts the
+  last good parse rather than refusing — graceful by choice; the next
+  shelf refresh drops the entry, and the skip note names the reason.
+
 ## [2.0.1] - 2026-08-13
 
 The v2.0.0 GUI walk — mount the tutorial's device, press its button —
@@ -12598,6 +12630,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.362.0...v2.0.0
 [1.362.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.361.0...v1.362.0
