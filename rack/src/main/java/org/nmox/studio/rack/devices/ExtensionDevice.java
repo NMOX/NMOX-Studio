@@ -136,6 +136,14 @@ public final class ExtensionDevice extends RackDevice {
             // a stranger's tasks asks the human first, exactly like every
             // built-in command device
             if (!trustGate.test(projectDir())) {
+                // say WHY, in the host's own words: a bare exit -1 reads
+                // as a crashed tool, and the plugin cannot tell a decline
+                // from a kill (the v2.0.0 walk saw "EXIT -1" where
+                // VERITAS says the truth) — the host owns this message
+                // for every extension, Java or JSON
+                if (onLine != null) {
+                    onLine.accept("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
+                }
                 if (onExit != null) {
                     onExit.accept(-1);
                 }

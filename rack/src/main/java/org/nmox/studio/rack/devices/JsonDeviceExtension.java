@@ -104,6 +104,9 @@ final class JsonDeviceExtension implements DeviceExtension {
             screen.setText(String.join(" ", argv));
             failed.setOn(false);
             running.setOn(true);
+            // written per line on the exec pump, read once in the exit
+            // callback — safe because the v1.57.0 exec lane fires exit
+            // strictly after the pump drains (AsyncExecTest pins the order)
             List<String> tail = new ArrayList<>(1);
             services.exec(argv,
                     line -> {

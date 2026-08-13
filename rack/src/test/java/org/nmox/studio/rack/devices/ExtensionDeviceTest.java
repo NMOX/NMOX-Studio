@@ -220,8 +220,12 @@ class ExtensionDeviceTest {
         });
         assertThat(refused.await(5, TimeUnit.SECONDS)).isTrue();
         assertThat(code[0]).isEqualTo(-1);
-        assertThat(lines).as("nothing may spawn without trust").isEmpty();
+        // the ONLY line a decline may carry is the host's own refusal —
+        // the command's output ("must-not-run") proves a spawn happened
+        assertThat(lines).as("nothing may spawn without trust")
+                .containsExactly("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
         assertThat(svc[0].isRunning()).isFalse();
+        lines.clear();
 
         // trusted: the same call really runs and streams
         ExtensionDevice.trustGate = f -> true;

@@ -164,11 +164,21 @@ public final class UserDevices {
 
     /** Builds the real face once, discarded; the thrown message is the verdict. */
     private static String fitProblem(DeviceFile device) {
+        ExtensionDevice probe = null;
         try {
-            new ExtensionDevice(new JsonDeviceExtension(device)).dispose();
+            probe = new ExtensionDevice(new JsonDeviceExtension(device));
             return null;
         } catch (RuntimeException ex) {
             return ex.getMessage();
+        } finally {
+            // cleanup stays OUT of the judgment: a dispose failure must
+            // not masquerade as a fit refusal for a good device
+            if (probe != null) {
+                try {
+                    probe.dispose();
+                } catch (RuntimeException ignore) {
+                }
+            }
         }
     }
 }
