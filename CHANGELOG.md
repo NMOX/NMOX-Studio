@@ -4,6 +4,56 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] - 2026-08-13
+
+David's directive: *give IRC all the power of WeeChat.* Recon against
+WeeChat's real feature set found the client already carries most of it
+(multi-network, queries, SASL/TLS/IRCv3 caps, echo-message, away-notify,
+mention badges with counts, unread bold, nick colours, logging with gap
+markers, a large command set); this tranche closes the four signature
+gaps — the smart filter, the hotlist jump, the operator toolkit, and
+user-defined aliases.
+
+### Added
+- **The smart join/part/quit filter, on by default** — WeeChat's
+  best-loved behaviour: a join, part, quit, or rename only earns a
+  transcript line when that nick has SPOKEN in that channel within the
+  last five minutes (WeeChat's own `smart_filter_delay`); the rest is
+  churn that buries conversation in busy channels. Your own lines and
+  kicks always show (moderation is signal), a rename carries the speech
+  history to the new nick, nick-list bookkeeping is untouched, and the
+  engine-side log tap still records everything — the filter hides lines
+  from the SCREEN, never from history. `/filter smart on|off` toggles
+  it, persisted; the pure `SmartFilter` core is clock-seamed, prunes
+  itself past 8k entries, and is mutation-proven (an always-show mutant
+  dies by five test names).
+- **Ctrl+J jumps to activity** — WeeChat's hotlist distilled: the next
+  buffer where someone said your name, then the next merely-unread
+  buffer, tree order within each tier so repeated jumps sweep top to
+  bottom. Pure `Hotlist.pick`, mutation-proven (removing the mention
+  tier fails `mentionsOutrankUnread` by name).
+- **The operator toolkit** — `/op /deop /voice /devoice nick…` batch
+  into ONE mode line (`MODE #chan +oo alice bob`, the form servers
+  actually parse), `/kick nick [reason]`, `/ban`/`/unban` (a bare nick
+  bans as `nick!*@*`, a real hostmask passes through), `/invite nick
+  [#chan]`, and `/mode` where bare `+m` flags apply to the channel you
+  are looking at. `OpModes` is pure string-out, every spelling tested
+  without a socket.
+- **`/alias name command…`** — your own commands, persisted per-user:
+  `/alias opme msg chanserv op` then `/opme`. One level of expansion by
+  construction (an alias cannot loop), names are letters and digits
+  only, and a built-in command can never be shadowed — `/alias` lists,
+  `/alias -name` removes.
+- **Round-out commands** — `/j` (join), `/clear` (empty this
+  transcript), `/close` (part and drop the tab, maps cleaned, landing
+  on network status), `/cycle` (part+rejoin), `/back` (clear away);
+  `/help` teaches all of it including Ctrl+J.
+
+### Changed
+- `IrcConfig` gains the smart-filter switch and the alias store (one
+  preferences entry per alias, the 8 KB-cap law), both round-trip
+  tested against a throwaway node.
+
 ## [2.1.0] - 2026-08-13
 
 ### Added
@@ -12657,6 +12707,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.0...v2.0.1
