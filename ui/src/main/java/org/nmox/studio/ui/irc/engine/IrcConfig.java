@@ -229,6 +229,41 @@ public final class IrcConfig {
         }
     }
 
+    // ---- the smart join/part/quit filter (WeeChat's signature) ----
+
+    /** Whether presence churn from silent nicks is hidden. Default ON. */
+    public boolean smartFilterEnabled() {
+        return root.getBoolean("smartFilter", true);
+    }
+
+    public void setSmartFilterEnabled(boolean enabled) {
+        root.putBoolean("smartFilter", enabled);
+    }
+
+    // ---- command aliases (/alias — one preferences entry per alias) ----
+
+    /** Saved aliases, name → expansion, in name order. */
+    public java.util.Map<String, String> aliases() {
+        java.util.Map<String, String> out = new java.util.TreeMap<>();
+        Preferences n = root.node("aliases");
+        try {
+            for (String key : n.keys()) {
+                out.put(key, n.get(key, ""));
+            }
+        } catch (BackingStoreException ex) {
+            // an unreadable store means no aliases, not a broken client
+        }
+        return out;
+    }
+
+    public void saveAlias(String name, String expansion) {
+        root.node("aliases").put(name.toLowerCase(java.util.Locale.ROOT), expansion);
+    }
+
+    public void removeAlias(String name) {
+        root.node("aliases").remove(name.toLowerCase(java.util.Locale.ROOT));
+    }
+
     // ---- global highlight keywords (one entry per keyword) ----
 
     /** Extra words that highlight like the nick does, in saved order. */

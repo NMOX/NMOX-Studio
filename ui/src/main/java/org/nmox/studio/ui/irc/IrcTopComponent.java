@@ -180,6 +180,18 @@ public final class IrcTopComponent extends TopComponent {
     private final Set<String> notifiedMentions = new HashSet<>();
     /** key → unread MENTION count (distinct from the plain-unread bold). */
     private final Map<String, Integer> mentions = new HashMap<>();
+
+    /** WeeChat's smart filter: who spoke where, recently (pure core). */
+    private final SmartFilter smartFilter = new SmartFilter();
+    private boolean smartFilterOn = IrcConfig.getDefault().smartFilterEnabled();
+
+    /** The dispatch switch's own labels; an alias may not shadow one. */
+    private static final Set<String> BUILTIN_COMMANDS = Set.of(
+            "connect", "join", "j", "part", "msg", "query", "me", "nick", "topic",
+            "whois", "list", "ignore", "unignore", "away", "back", "log", "notice",
+            "ctcp", "quit", "raw", "help", "filter", "alias", "kick", "mode",
+            "invite", "op", "deop", "voice", "devoice", "ban", "unban", "clear",
+            "close", "cycle");
     /** network → lowercased nicks currently marked away (away-notify + 301). */
     private final Map<String, Set<String>> awayNicks = new HashMap<>();
     /** per-target input recall (never persisted). */
@@ -300,6 +312,16 @@ public final class IrcTopComponent extends TopComponent {
         rootNode = new DefaultMutableTreeNode("irc");
         treeModel = new DefaultTreeModel(rootNode);
         tree = new JTree(treeModel);
+        // WeeChat's hotlist jump: Ctrl+J hops to the next mention, else
+        // the next unread buffer, sweeping the tree top to bottom
+        getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
+                javax.swing.KeyStroke.getKeyStroke("control J"), "irc-jump-activity");
+        getActionMap().put("irc-jump-activity", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                jumpToActivity();
+            }
+        });
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -1193,6 +1215,10 @@ public final class IrcTopComponent extends TopComponent {
                     targetName = sender;
                 }
                 String k = key(network, targetName);
+                if (isChannel(targetName)) {
+                    // speech is what makes later presence lines signal
+                    smartFilter.spoke(network, targetName, sender);
+                }
                 // A server minting sender nicks could otherwise create
                 // unbounded query tabs (tree nodes + documents) with zero
                 // user gestures; past the cap, overflow speech lands in
@@ -1235,7 +1261,9 @@ public final class IrcTopComponent extends TopComponent {
                     if (k.equals(activeKey)) {
                         rebuildNickModel();
                     }
-                    appendStatus(k, "→ " + who + " joined", stamp);
+                    if (showPresence(network, chan, who)) {
+                        appendStatus(k, "→ " + who + " joined", stamp);
+                    }
                 }
             }
             case "PART" -> {
@@ -1243,9 +1271,11 @@ public final class IrcTopComponent extends TopComponent {
                 String who = msg.nick() == null ? "?" : msg.nick();
                 String k = key(network, chan);
                 removeNick(k, who);
-                appendStatus(k, who.equalsIgnoreCase(me)
-                        ? "You left " + chan
-                        : "← " + who + " left", stamp);
+                if (who.equalsIgnoreCase(me)) {
+                    appendStatus(k, "You left " + chan, stamp);
+                } else if (showPresence(network, chan, who)) {
+                    appendStatus(k, "← " + who + " left", stamp);
+                }
             }
             case "KICK" -> {
                 String chan = msg.param(0);
@@ -1261,7 +1291,9 @@ public final class IrcTopComponent extends TopComponent {
                 for (Map.Entry<String, Map<String, String>> e : nickLists.entrySet()) {
                     if (e.getKey().startsWith(network + '\u0000')
                             && e.getValue().remove(lowerWho) != null) {
-                        appendStatus(e.getKey(), "← " + who + " quit", stamp);
+                        if (showPresence(network, targetOfKey(e.getKey()), who)) {
+                            appendStatus(e.getKey(), "← " + who + " quit", stamp);
+                        }
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
                         }
@@ -1272,6 +1304,7 @@ public final class IrcTopComponent extends TopComponent {
                 String who = msg.nick() == null ? "?" : msg.nick();
                 String now = msg.trailing() != null ? msg.trailing() : msg.param(0);
                 String lowerWho = who.toLowerCase(Locale.ROOT);
+                smartFilter.rename(network, who, now);
                 for (Map.Entry<String, Map<String, String>> e : nickLists.entrySet()) {
                     if (!e.getKey().startsWith(network + '\u0000')) {
                         continue;
@@ -1280,7 +1313,10 @@ public final class IrcTopComponent extends TopComponent {
                     if (display != null) {
                         String prefix = display.substring(0, display.length() - who.length());
                         e.getValue().put(now.toLowerCase(Locale.ROOT), prefix + now);
-                        appendStatus(e.getKey(), who + " is now known as " + now, stamp);
+                        if (who.equalsIgnoreCase(me) || now.equalsIgnoreCase(me)
+                                || showPresence(network, targetOfKey(e.getKey()), who)) {
+                            appendStatus(e.getKey(), who + " is now known as " + now, stamp);
+                        }
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
                         }
@@ -1567,9 +1603,20 @@ public final class IrcTopComponent extends TopComponent {
         int sp = raw.indexOf(' ');
         String cmd = (sp < 0 ? raw.substring(1) : raw.substring(1, sp)).toLowerCase(Locale.ROOT);
         String args = sp < 0 ? "" : raw.substring(sp + 1).trim();
+        // /alias expansion, ONE level: the expansion is re-parsed but
+        // never re-expanded, so an alias cannot loop; a name matching a
+        // built-in never expands (aliases may not shadow the switch)
+        String expansion = IrcConfig.getDefault().aliases().get(cmd);
+        if (expansion != null && !BUILTIN_COMMANDS.contains(cmd)) {
+            String rewritten = "/" + expansion + (args.isEmpty() ? "" : " " + args);
+            int sp0 = rewritten.indexOf(' ');
+            cmd = (sp0 < 0 ? rewritten.substring(1) : rewritten.substring(1, sp0))
+                    .toLowerCase(Locale.ROOT);
+            args = sp0 < 0 ? "" : rewritten.substring(sp0 + 1).trim();
+        }
         switch (cmd) {
             case "connect" -> commandConnect(args);
-            case "join" -> {
+            case "join", "j" -> {
                 IrcClient c = liveClient();
                 if (c != null && !args.isEmpty()) {
                     c.join(args.split(" ")[0]);
@@ -1672,6 +1719,69 @@ public final class IrcTopComponent extends TopComponent {
                     c.sendRaw(args);
                 }
             }
+            case "filter" -> commandFilter(args);
+            case "alias" -> commandAlias(args);
+            case "kick" -> {
+                IrcClient c = liveClient();
+                String chan = activeTarget();
+                if (c != null && isChannel(chan) && !args.isEmpty()) {
+                    String[] parts = args.split(" ", 2);
+                    c.sendRaw("KICK " + chan + " " + parts[0]
+                            + (parts.length > 1 ? " :" + parts[1] : ""));
+                }
+            }
+            case "mode" -> {
+                IrcClient c = liveClient();
+                if (c != null && !args.isEmpty()) {
+                    // WeeChat's shorthand: flags with no target apply to
+                    // the channel you are looking at
+                    boolean bare = args.startsWith("+") || args.startsWith("-");
+                    c.sendRaw("MODE " + (bare ? activeTarget() + " " : "") + args);
+                }
+            }
+            case "invite" -> {
+                IrcClient c = liveClient();
+                if (c != null && !args.isEmpty()) {
+                    String[] parts = args.split(" ");
+                    String chan = parts.length > 1 ? parts[1] : activeTarget();
+                    if (isChannel(chan)) {
+                        c.sendRaw("INVITE " + parts[0] + " " + chan);
+                    }
+                }
+            }
+            case "op", "deop", "voice", "devoice" -> commandOpish(cmd, args);
+            case "ban", "unban" -> {
+                IrcClient c = liveClient();
+                String chan = activeTarget();
+                if (c != null && isChannel(chan) && !args.isEmpty()) {
+                    c.sendRaw(OpModes.mode(chan, cmd.equals("ban"), 'b',
+                            List.of(OpModes.banMask(args.split(" ")[0]))));
+                }
+            }
+            case "clear" -> {
+                StyledDocument doc = docForKey(activeKey);
+                try {
+                    doc.remove(0, doc.getLength());
+                } catch (BadLocationException ex) {
+                    // removing the whole document cannot be out of bounds
+                }
+            }
+            case "cycle" -> {
+                IrcClient c = liveClient();
+                String chan = activeTarget();
+                if (c != null && isChannel(chan)) {
+                    c.part(chan);
+                    c.join(chan);
+                }
+            }
+            case "back" -> {
+                IrcClient c = liveClient();
+                if (c != null) {
+                    c.sendRaw("AWAY");
+                    appendStatus(key(activeNetwork(), ""), "You are no longer marked away");
+                }
+            }
+            case "close" -> commandClose();
             case "help" -> commandHelp();
             default ->
                 appendStatus(key(activeNetwork(), ""), "Unknown command: /" + cmd
@@ -1749,6 +1859,119 @@ public final class IrcTopComponent extends TopComponent {
         }
     }
 
+    /** The smart filter's verdict for one presence line (self is the caller's call). */
+    private boolean showPresence(String network, String channel, String nick) {
+        return !smartFilterOn || !isChannel(channel)
+                || smartFilter.shouldShow(network, channel, nick);
+    }
+
+    /** Ctrl+J: hop to the next buffer with a mention, else plain unread. */
+    private void jumpToActivity() {
+        List<String> order = new ArrayList<>();
+        java.util.Enumeration<?> en =
+                ((DefaultMutableTreeNode) treeModel.getRoot()).preorderEnumeration();
+        while (en.hasMoreElements()) {
+            Object user = ((DefaultMutableTreeNode) en.nextElement()).getUserObject();
+            if (user instanceof TargetRef ref) {
+                order.add(key(ref.network(), ref.target()));
+            }
+        }
+        Hotlist.pick(order, mentions, unread).ifPresent(k -> {
+            int sep = k.indexOf('\u0000');
+            selectTarget(k.substring(0, sep), k.substring(sep + 1));
+        });
+    }
+
+    /** {@code /filter [smart] on|off}; bare {@code /filter} reports state. */
+    private void commandFilter(String args) {
+        String a = args.trim().toLowerCase(Locale.ROOT).replace("smart", "").trim();
+        if (a.equals("on") || a.equals("off")) {
+            smartFilterOn = a.equals("on");
+            IrcConfig.getDefault().setSmartFilterEnabled(smartFilterOn);
+        }
+        appendStatus(key(activeNetwork(), ""), "Smart join/part/quit filter is "
+                + (smartFilterOn ? "ON" : "OFF") + " (/filter smart on|off). Joins, parts,"
+                + " quits, and renames from nicks silent for 5 minutes are hidden;"
+                + " kicks and your own lines always show, and logs keep everything.");
+    }
+
+    /** {@code /alias} lists; {@code /alias name cmd} defines; {@code /alias -name} removes. */
+    private void commandAlias(String args) {
+        IrcConfig config = IrcConfig.getDefault();
+        String statusKey = key(activeNetwork(), "");
+        if (args.isEmpty()) {
+            var all = config.aliases();
+            if (all.isEmpty()) {
+                appendStatus(statusKey, "No aliases yet: /alias name command defines one");
+            } else {
+                all.forEach((n, e) -> appendStatus(statusKey, "/" + n + " = /" + e));
+            }
+            return;
+        }
+        if (args.startsWith("-")) {
+            String name = args.substring(1).trim().toLowerCase(Locale.ROOT);
+            config.removeAlias(name);
+            appendStatus(statusKey, "Alias removed: /" + name);
+            return;
+        }
+        int sp2 = args.indexOf(' ');
+        if (sp2 < 0) {
+            appendStatus(statusKey,
+                    "Usage: /alias name command, /alias -name removes, /alias lists");
+            return;
+        }
+        String name = args.substring(0, sp2).toLowerCase(Locale.ROOT).replaceFirst("^/", "");
+        String body = args.substring(sp2 + 1).trim().replaceFirst("^/", "");
+        if (!name.matches("[a-z0-9]+")) {
+            appendStatus(statusKey, "Alias names are letters and digits only");
+            return;
+        }
+        if (BUILTIN_COMMANDS.contains(name)) {
+            appendStatus(statusKey, "/" + name + " is built in; an alias may not shadow it");
+            return;
+        }
+        config.saveAlias(name, body);
+        appendStatus(statusKey, "/" + name + " = /" + body);
+    }
+
+    /** {@code /op nick...} and friends: one batched MODE line via OpModes. */
+    private void commandOpish(String cmd, String args) {
+        IrcClient c = liveClient();
+        String chan = activeTarget();
+        if (c == null || !isChannel(chan) || args.isEmpty()) {
+            return;
+        }
+        boolean grant = !cmd.startsWith("de");
+        char flag = cmd.endsWith("voice") ? 'v' : 'o';
+        c.sendRaw(OpModes.mode(chan, grant, flag, List.of(args.trim().split("\\s+"))));
+    }
+
+    /** {@code /close}: part a channel, drop the tab, land on network status. */
+    private void commandClose() {
+        TargetRef ref = selectedRef();
+        if (ref == null || ref.target().isEmpty()) {
+            appendStatus(key(activeNetwork(), ""), "/close closes a channel or query tab");
+            return;
+        }
+        String network = ref.network();
+        String target = ref.target();
+        IrcClient c = SESSIONS.get(network);
+        if (isChannel(target) && c != null) {
+            c.part(target);
+        }
+        String k = key(network, target);
+        DefaultMutableTreeNode node = targetNodes.remove(k);
+        if (node != null) {
+            treeModel.removeNodeFromParent(node);
+        }
+        docs.remove(k);
+        nickLists.remove(k);
+        topics.remove(k);
+        unread.remove(k);
+        mentions.remove(k);
+        selectTarget(network, "");
+    }
+
     private void commandHelp() {
         String statusKey = key(activeNetwork(), "");
         String[] lines = {
@@ -1761,10 +1984,17 @@ public final class IrcTopComponent extends TopComponent {
             "  /whois nick — who is that (card)  /ctcp nick VERSION|PING [arg]",
             "  /list [pattern] — browse channels (double-click to join)",
             "  /ignore [nick] — list or add      /unignore nick — remove",
-            "  /away [message] — mark away / back",
-            "  /log [on|off] — per-channel logging (~/.nmox/irc-logs)",
+            "  /away [message] — mark away       /back — clear away",
+            "  /kick nick [reason] · /mode [target] flags · /invite nick [#chan]",
+            "  /op /deop /voice /devoice nick… — one batched MODE line",
+            "  /ban /unban nick-or-mask — a bare nick bans as nick!*@*",
+            "  /filter smart on|off — hide join/part/quit noise from silent nicks",
+            "  /alias name command… — your own commands (/alias lists, -name removes)",
+            "  /clear — empty this transcript    /close — close this tab",
+            "  /cycle — part and rejoin          /log [on|off] — logging (~/.nmox/irc-logs)",
             "  /raw LINE — send a raw IRC line   /quit [message] — disconnect for good",
             "Tab completes nicks · Up/Down recall input · Ctrl+U clears the line",
+            "Ctrl+J jumps to the next mention, then the next unread buffer",
             "⌘F finds in the transcript (⌘F again closes)"
         };
         for (String line : lines) {
