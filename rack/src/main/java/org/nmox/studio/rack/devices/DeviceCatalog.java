@@ -76,7 +76,13 @@ public final class DeviceCatalog {
             entries.add(new EnumEntry(t));
             ids.add(t.getId());
         }
-        for (DeviceExtension ext : Lookup.getDefault().lookupAll(DeviceExtension.class)) {
+        // Installed plugins first, then the user's own device files: both
+        // arrive as DeviceExtension and both face the same validate()
+        // below, so a JSON device is a citizen, not a second class.
+        List<DeviceExtension> extensions =
+                new ArrayList<>(Lookup.getDefault().lookupAll(DeviceExtension.class));
+        extensions.addAll(UserDevices.all());
+        for (DeviceExtension ext : extensions) {
             DeviceDescriptor d;
             try {
                 d = ext.descriptor();

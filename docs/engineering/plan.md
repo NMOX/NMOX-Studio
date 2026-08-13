@@ -1666,6 +1666,59 @@ bounds gives 60. The lesson is the familiar one in a new place: *a
 number produced by a one-off shell command is a guess until something
 in the build recomputes it.*
 
+## Addendum — 2026-08-13, v2.0.0: the programmable rack
+
+David's directive: *decide what would make this software a good v2.0.0
+and build that.* The decision was delegated, so it was grounded rather
+than invented.
+
+**How the call was made.** The gap list here is drained — what remains
+is settled won't-fixes with written verdicts — so a 2.0 could not come
+from debt. It came from the extensibility arc's own recorded direction:
+*every shipped catalog gets a user-writable drop-in sibling.* Six had
+one by v1.305.0. A grep for the seventh found the omission: the DEVICE
+catalog — the rack, the thing the product is named for — could only be
+extended by authoring a NetBeans plugin in Java. That is the one
+extension point whose absence changes what the product *is*, which is
+what a major version should mark.
+
+**What shipped.** `~/.nmox/devices.d/*.json` → a real device on the
+shelf. `DeviceFile` is the pure judge (parse + validate, no I/O, no
+Swing); `JsonDeviceExtension` is a deliberately thin adapter onto the
+frozen SPI; `UserDevices` is the drop-in reader with the family's lazy
+signature cache and skip-with-note law; `DeviceCatalog.all()` merges
+them beside Lookup extensions so both face the same `validate()`.
+
+**The design decision worth keeping: the host already held the laws.**
+Because `ExtensionDevice` gates every `exec` on workspace trust, derives
+button colour from role, and demands accessible names, JSON devices
+inherited the entire security and consistency model on day one — the
+adapter adds no law of its own. *When a host enforces the rules instead
+of trusting its plugins, a new plugin LANGUAGE costs almost nothing.*
+The v1.55.0 shape-B decision (a small declarative contract hosted by the
+rack, rather than freezing `RackDevice`) is what made a 2.0 buildable in
+a single session, three hundred releases later.
+
+**The validation posture.** A device file executes commands, so it is
+the strictest drop-in: argv only (no shell metacharacters), a bare tool
+name (never a path), no knob-built tool names, no unknown `{{vars}}`,
+declared ports only — and any breach skips the file WHOLE with the
+reason logged against its filename. Three mutation proofs pin the ones
+that matter (shell refusal, tool-path refusal, catalog wiring).
+
+**A gate worth copying.** `DeviceFileDocsTest` reads the fenced JSON out
+of `device-files.md` and the tutorial and feeds it to the real parser,
+so a documented example cannot rot into syntax the product rejects; it
+also asserts the tutorial's deliberately-refused example really is
+refused. *Worked examples are fixtures, not prose.* Its first run caught
+the gate's own too-loose heuristic — ports carry `"id"` too, so the
+discriminator had to be `"buttons"`.
+
+**Compatibility.** Additive: 1.x patches, presets, workspaces and SPI
+plugins load unchanged; the drop-in directory does not exist until a
+user makes one. The major version marks the identity change, and the
+CHANGELOG says so rather than implying a break.
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +

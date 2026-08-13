@@ -104,6 +104,32 @@ persist per project, ship as presets, and export to GitHub Actions.
 **[The full device reference](docs/devices.md)** is generated from the
 catalog itself — CI fails if it drifts.
 
+### 🔧 Write your own device — *new in 2.0.0*
+The fleet is no longer fixed. Drop a JSON file in `~/.nmox/devices.d/`
+and a real device appears on the shelf: knobs, buttons, LEDs, ports,
+patch cables, saved into the project's patch, found by ⌘I, recorded by
+the flight recorder. No Java, no plugin build, no restart.
+
+```json
+{
+  "id": "com.example.hello", "title": "HELLO", "tagline": "greets the project",
+  "category": "AUTOMATE",
+  "usage": "GO prints a greeting using the project's own node.\nPatch DONE onward to chain another device after it.",
+  "buttons": [{ "label": "GO", "role": "GO", "command": ["node", "-e", "console.log('hello')"] }]
+}
+```
+
+The **host keeps the laws, not the file**: workspace trust gates every
+spawn, the role picks the colour, ports are validated against the same
+lexicon as the built-ins. And the format refuses what it cannot read
+honestly — shell lines (`|`, `&&`, backticks), tools named by path,
+unknown `{{variables}}` — skipping a bad file whole, with the reason in
+the log, rather than putting a control on your shelf whose label lies.
+
+**[Reference](docs/device-files.md)** ·
+**[Tutorial](docs/tutorials/your-own-device.md)** ·
+**[Java SPI](docs/device-spi.md)** for devices that need real state.
+
 ### 🚦 Quality is a shipping gate
 Four floors, each a knob on a faceplate, each able to close the OK jack:
 **VITALS** (Lighthouse performance/a11y/best-practices/SEO), **VERITAS

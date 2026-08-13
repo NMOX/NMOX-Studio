@@ -173,6 +173,23 @@ the explicit knob positions always win over AUTO. A ROSETTA override
 outranks a stray manifest, so a Go module that keeps a `deno.json`
 around for scripts still vets as Go.
 
+**Your own devices (new in 2.0.0).** The shelf is extensible with a
+text editor: any `*.json` in `~/.nmox/devices.d/` becomes a real device
+— knobs, buttons, LEDs, ports, patch cables, saved into the patch and
+reachable from ⌘I. Declare a command as an argv array, name a knob, and
+`{{knob}}` substitutes into it when the button is pressed.
+
+The laws stay with the host, not your file: **workspace trust gates the
+first spawn in a project exactly as it does for a built-in**, the button
+role picks its colour, and ports are checked against the same lexicon.
+The format refuses what it cannot read honestly — a shell line, a tool
+named by path, an unknown variable — and skips that file whole with the
+reason in the IDE log, so a device on your shelf always does what its
+label says. See [device-files.md](device-files.md) for the reference and
+[Write your own device](tutorials/your-own-device.md) for a walkthrough;
+for devices that need real state (custom painting, polling, long-lived
+connections) the Java [Device SPI](device-spi.md) is still there.
+
 **Quality gates** turn "looks done" into "is done":
 - **VITALS** runs Lighthouse against your served app and *gates* on a
   floor — performance, accessibility, best-practices, SEO, or all.

@@ -4,6 +4,83 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-08-13
+
+**The programmable rack.** The Task Rack is what makes NMOX Studio
+itself: every task is a device with knobs, LEDs, and patch cables, and
+for 362 releases the fleet was fixed at fifty-three unless you were
+willing to author a NetBeans plugin in Java. From 2.0.0, a device is a
+file you can write in a text editor.
+
+```json
+{
+  "id": "com.example.hello", "title": "HELLO", "tagline": "greets the project",
+  "category": "AUTOMATE",
+  "usage": "GO prints a greeting using the project's own node.\nPatch DONE onward to chain another device after it.",
+  "buttons": [{ "label": "GO", "role": "GO", "command": ["node", "-e", "console.log('hello')"] }]
+}
+```
+
+Drop that in `~/.nmox/devices.d/` and HELLO is on the shelf: draggable,
+patchable, undoable, saved into `.nmoxrack.json`, found by ⌘I, recorded
+by the flight recorder. No Java, no plugin build, no restart.
+
+### Why this is the 2.0
+
+The extensibility arc (v1.293–v1.305) gave six shipped catalogs a
+user-writable drop-in sibling — templates, presets, learning spaces, the
+API library, Dockerize recipes, Doctor probes — and recorded the
+direction plainly: *every shipped catalog gets one.* The rack was the
+one that never did, and it is the one the product is named for. Closing
+that changes what NMOX Studio **is**: not an IDE with fifty-three
+devices, but an IDE whose task surface you write yourself.
+
+### The laws live in the host, not in your file
+
+A device file names commands that really execute, so it is held to the
+strictest validation in the drop-in family — and everything that could
+be a law is enforced somewhere a file cannot reach:
+
+- **Workspace trust gates every spawn.** A user device's first command
+  in a project raises the same prompt a built-in does; declining starts
+  no process. This is enforced by the host (`ExtensionDevice`), which is
+  also why JSON devices inherited it correctly on day one.
+- **The role picks the colour** — you cannot paint a red GO.
+- **Ports face the same lexicon** as the built-in fleet, and the same
+  shelf laws (`DeviceCatalog.validate`) judge the descriptor.
+
+### Refusals, because a device that lies is worse than no device
+
+A file breaking any rule is **skipped whole**, never half-loaded, with
+the reason logged against its filename:
+
+| Refused | Why |
+|---------|-----|
+| `["sh", "a \| b"]`, `;`, `&&`, `` ` ``, `$( )`, newlines | A command is argv, never a shell line — so a reader can see what runs. |
+| `["./deploy.sh"]`, `["/usr/local/bin/x"]` | The tool is a bare name from PATH, readable before it runs. |
+| `["{{tool}}", …]` | A knob cannot build the tool name. |
+| `{{nope}}` with no such knob | An unknown variable would run as a literal argument. |
+| `"emit": "ghost"` | Emit and trigger must name declared ports. |
+| A one-line `usage`, an un-dotted or taken `id` | The shelf law, and identity. |
+
+### Also
+
+- **`docs/device-files.md`** (reference) and **[Write your own
+  device](docs/tutorials/your-own-device.md)** (tutorial) — and every
+  whole device shown in either is parsed by the build, so a documented
+  example cannot rot into wrong syntax. The tutorial's deliberately
+  refused example is asserted to really be refused.
+- README and the user guide carry the format beside the Java SPI, which
+  remains the answer for devices needing real state — custom painting,
+  polling, long-lived connections.
+
+### Compatibility
+
+Nothing is removed and no format changes: 1.x patches, presets,
+workspaces, and SPI plugins all load unchanged, and `~/.nmox/devices.d/`
+simply does not exist until you create it. The major version marks the
+change in what the product is, not a break in what it reads.
+
 ## [1.362.0] - 2026-08-13
 
 ### Added
@@ -12482,6 +12559,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.362.0...v2.0.0
 [1.362.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.361.0...v1.362.0
 [1.361.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.360.0...v1.361.0
 [1.360.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.359.0...v1.360.0

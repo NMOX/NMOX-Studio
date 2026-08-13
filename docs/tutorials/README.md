@@ -13,6 +13,7 @@ For the wide reference (install, every menu, every safety net) see the
 | Tutorial | What you'll do | Opens with |
 |----------|----------------|------------|
 | [The Task Rack](the-task-rack.md) | Wire a run→monitor patch and watch it fire | ⌥⌘6-family / Rack tab |
+| [Write your own device](your-own-device.md) | Add a rack device with a text editor — no Java, no restart | `~/.nmox/devices.d/` |
 | [Workbench](workbench.md) | Use the home base to jump between projects and tools | ⌥⌘0 |
 | [Project Studio](project-studio.md) | Scaffold a project and run it with no terminal | ⌥⌘6 |
 | [API Studio](api-studio.md) | Send a request, assert on it, read the security grade | ⌥⌘8 |
