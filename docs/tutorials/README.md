@@ -21,6 +21,7 @@ For the wide reference (install, every menu, every safety net) see the
 | [Infra Designer](infra-designer.md) | Draw a droplet + firewall and dry-run the deploy | ⌥⌘9 |
 | [Block Studio](block-studio.md) | Build a Web Component from interlocking blocks | ⌥⌘5 |
 | [Polyglot editing & debugging](polyglot-editing-and-debugging.md) | Set a breakpoint in a Node app and hit it | open any project |
+| [Browser to Source](browser-to-source.md) | Click an element in the page, land in its source, restyle it from DevTools | ⌥⌘4 → DevTools → DOM |
 | [The Docker panel](docker-panel.md) | Inspect containers and dockerize a project | Docker tab |
 | [ORACLE](oracle.md) | Ask the AI why a run failed | Rack → ORACLE |
 | [Explain anything](explain-anything.md) | Use ORACLE's four faces: runs, code, API responses, DB errors | anywhere something fails |

@@ -161,6 +161,18 @@ an LCD tells you what happened in words.
 - **ROSETTA** picks the toolchain lane in mixed repos (the rack detects
   Node/Rust/Go/PHP/… per directory and aims each device accordingly).
 
+**Toolchain-native lanes.** The lint and format devices (PURITY,
+GLOSS) on AUTO speak your project's own toolchain rather than reaching
+for Node tooling everywhere: a Deno workspace lints and formats with
+`deno lint` / `deno fmt`, a Cargo project with `cargo clippy` /
+`cargo fmt`, a Go module with `go vet` (or `golangci-lint` when the
+project carries a `.golangci` config) and `gofmt` — whose
+list-only-exits-zero quirk the CHECK verdict compensates for by
+reading the output. A `biome.json` flips the Node lanes to Biome, and
+the explicit knob positions always win over AUTO. A ROSETTA override
+outranks a stray manifest, so a Go module that keeps a `deno.json`
+around for scripts still vets as Go.
+
 **Quality gates** turn "looks done" into "is done":
 - **VITALS** runs Lighthouse against your served app and *gates* on a
   floor — performance, accessibility, best-practices, SEO, or all.
@@ -718,7 +730,7 @@ The in-app browser is a real WebKit engine (JavaFX WebView, shipped in
 the bundled runtime) with the chrome you expect — URL bar (a bare
 `example.com` gets `https://`), back/forward, reload/stop, load
 progress, zoom buttons — and, since v1.206.0, **developer tools**: the
-**DevTools** button in the toolbar opens a bottom pane with six tabs.
+**DevTools** button in the toolbar opens a bottom pane with seven tabs.
 A bare open lands on your project's live dev server when one is
 running, else a home page; the rack's SCOPE device and every
 Open-in-Browser action route here too.
@@ -733,7 +745,29 @@ Open-in-Browser action route here too.
 - **DOM** — press Refresh for a tree of the live document (bounded:
   depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
   a node outlines it in the page and shows its attributes plus a
-  curated 15-property computed-style summary.
+  curated 15-property computed-style summary. Since v1.357.0 the tab
+  is **source-aware**:
+  - **Pick element** arms a crosshair in the page — click any element
+    and the tree selects it, outlined and detailed, with the click
+    swallowed so the page doesn't navigate.
+  - **Open Source** (or double-click a tree node) opens the HTML file
+    that produced the element, at the line. It only trusts pages it
+    can trace to your disk — `file://` pages and anything served by a
+    rack serve device — and it refuses honestly otherwise: a remote
+    page says "not served from a project here," and an element that
+    only exists because a script created it says "likely
+    script-generated" instead of jumping somewhere wrong.
+  - **Edit Style…** applies a property/value tweak inline in the page
+    instantly, then writes it into the source stylesheet — the rule
+    chosen by asking the page which selectors matched (the cascade's
+    own answer, last match wins), replaced in place or inserted with
+    the block's own indentation. The refusals keep it safe: inline
+    `<style>` rules, unserved stylesheets, a `.css` with a
+    preprocessor sibling ("compiled output — edit the preprocessor
+    source instead"), and files with unsaved editor changes all
+    decline with the reason on the status bar while the preview stays
+    visible. The walkthrough:
+    [Browser to Source](tutorials/browser-to-source.md).
 - **Network** — requests the page makes via `fetch` or
   `XMLHttpRequest` **after** the DevTools instrumentation injects (on
   page load): method, URL, status, duration, size when the response
