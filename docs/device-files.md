@@ -1,5 +1,12 @@
 # Device files — write your own rack device
 
+> **Gallery:** six ready-made devices live in
+> [`examples/devices.d/`](../examples/devices.d/) and **ship installed and
+> active** — every install's shelf already holds them. Copy one as a
+> template for your own. Each is parsed and mounted by the build on
+> every commit.
+
+
 *New in 2.0.0.*
 
 A **device file** is a JSON file in `~/.nmox/devices.d/`. Drop one there

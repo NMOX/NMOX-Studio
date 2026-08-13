@@ -1,0 +1,23 @@
+{
+  "id": "com.nmox.examples.auditor",
+  "title": "AUDITOR",
+  "tagline": "npm security audit as a rack lane",
+  "accent": "#D98E4A",
+  "category": "VERIFY",
+  "usage": "AUDIT runs npm audit at the dialled LEVEL — the FAIL lamp is the verdict, because npm audit exits nonzero when vulnerabilities meet the threshold. FIX applies npm's safe upgrades.\nPatch DONE into another device's trigger to gate work on a clean audit, and OUT into MONITOR to read the report.",
+  "knobs": [
+    { "key": "level", "label": "LEVEL", "options": ["low", "moderate", "high", "critical"] }
+  ],
+  "ports": [
+    { "id": "audit", "label": "AUDIT", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "done", "label": "DONE", "direction": "OUT", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "AUDIT", "role": "QUERY",
+      "command": ["npm", "audit", "--audit-level={{level}}"],
+      "emit": "done", "trigger": "audit" },
+    { "label": "FIX", "role": "MUTATE",
+      "command": ["npm", "audit", "fix"] }
+  ]
+}

@@ -154,12 +154,13 @@ public final class UserDevices {
     }
 
     /**
-     * The load path's fit judgement, reachable by tests: what the shelf
+     * The load path's fit judgement, shared by every source of JSON
+     * devices (drop-ins, the bundled gallery, tests): what the shelf
      * would make of this parsed device — the fitted (possibly
      * auto-sized) device, or null when it can never mount.
      */
-    static DeviceFile loadForTest(DeviceFile device) {
-        return fitted("(test)", device);
+    static DeviceFile fit(DeviceFile device) {
+        return fitted("(in-memory)", device);
     }
 
     /** Builds the real face once, discarded; the thrown message is the verdict. */

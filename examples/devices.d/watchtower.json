@@ -1,0 +1,22 @@
+{
+  "id": "com.nmox.examples.watchtower",
+  "title": "WATCHTOWER",
+  "tagline": "a static file server with a real STOP",
+  "accent": "#5CA7A0",
+  "category": "SERVE",
+  "usage": "SERVE runs python's http.server on the dialled PORT from the aimed project — a true long-runner, RUN stays lit until STOP. The start IN demands the stop IN beside it: anything a cable can start, a cable must be able to stop (the transport law).\nPatch a build device's DONE into START to serve fresh output, and OUT into MONITOR for the request log.",
+  "knobs": [
+    { "key": "port", "label": "PORT", "options": ["8000", "8001", "8080", "9000"] }
+  ],
+  "ports": [
+    { "id": "start", "label": "START", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "stop", "label": "STOP", "direction": "IN", "signal": "TRIGGER" },
+    { "id": "out", "label": "OUT", "direction": "OUT", "signal": "DATA" }
+  ],
+  "buttons": [
+    { "label": "SERVE", "role": "GO",
+      "command": ["python3", "-u", "-m", "http.server", "{{port}}"],
+      "trigger": "start" },
+    { "label": "STOP", "role": "STOP", "trigger": "stop" }
+  ]
+}

@@ -188,6 +188,26 @@
     </dependencies>
 
     <build>
+        <resources>
+            <!-- declaring <resources> replaces the default, so the
+                 standard directory must be restated alongside -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!-- the example device gallery ships INSIDE the module so
+                 the six JSON devices are on every install's shelf, out
+                 of the box — one source of truth at examples/devices.d,
+                 read by humans in the repo and by BundledDevices from
+                 the classpath at runtime -->
+            <resource>
+                <directory>../examples/devices.d</directory>
+                <targetPath>org/nmox/studio/rack/devices/bundled</targetPath>
+                <includes>
+                    <include>*.json</include>
+                    <include>index</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
