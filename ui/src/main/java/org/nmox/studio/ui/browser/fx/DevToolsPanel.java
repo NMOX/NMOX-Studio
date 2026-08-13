@@ -256,10 +256,12 @@ public final class DevToolsPanel extends JPanel {
         refresh.addActionListener(e -> refreshDom());
         javax.swing.JToggleButton pick = new javax.swing.JToggleButton("Pick element");
         JButton openSource = new JButton("Open Source");
+        JButton editStyle = new JButton("Edit Style…");
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
         bar.add(pick);
         bar.add(openSource);
+        bar.add(editStyle);
         bar.add(domStatus);
         panel.add(bar, BorderLayout.NORTH);
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
@@ -303,6 +305,7 @@ public final class DevToolsPanel extends JPanel {
             }
         });
         openSource.addActionListener(e -> openSource(selectedDom(tree)));
+        editStyle.addActionListener(e -> editStyle(selectedDom(tree)));
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent me) {
@@ -312,6 +315,133 @@ public final class DevToolsPanel extends JPanel {
             }
         });
         return panel;
+    }
+
+    /**
+     * Style write-back (v1.358.0): a small property/value dialog; on
+     * OK the tweak is (1) applied INLINE in the page for instant
+     * feedback, then (2) written into the source stylesheet — the rule
+     * chosen by asking the PAGE which selectors matched the element
+     * (cascade order, last match wins), the file resolved only through
+     * vouched channels, and every impossible case refused on the
+     * status label with its reason.
+     */
+    private void editStyle(DomNode node) {
+        if (node == null || node.isPlaceholder()) {
+            domStatus.setText("Select an element first");
+            return;
+        }
+        javax.swing.JComboBox<String> prop = new javax.swing.JComboBox<>(
+                StyleSummary.KEYS.toArray(String[]::new));
+        prop.setEditable(true);
+        JTextField value = new JTextField(18);
+        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        form.add(new JLabel("Property:"));
+        form.add(prop);
+        form.add(new JLabel("Value:"));
+        form.add(value);
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+                form, "Edit Style on <" + node.tag + ">");
+        if (org.openide.DialogDisplayer.getDefault().notify(dd)
+                != org.openide.DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        String property = String.valueOf(prop.getEditor().getItem()).trim();
+        String newValue = value.getText().trim();
+        if (property.isEmpty() || newValue.isEmpty()) {
+            domStatus.setText("Property and value are both required");
+            return;
+        }
+        // live preview first — the page shows the tweak even when the
+        // source write refuses (the user sees WHAT they asked for, the
+        // status says WHY it isn't saved)
+        runner.run(DevScripts.applyInlineStyle(node.path, property, newValue), r -> { }, err -> { });
+        runner.run(DevScripts.matchedRules(node.path),
+                json -> RP.post(() -> writeBack(json, property, newValue)),
+                err -> domStatus.setText("No page: " + err));
+    }
+
+    /** RP-side: pick the last cascade-matching rule with a writable source. */
+    private void writeBack(String rulesJson, String property, String value) {
+        java.util.List<Object> rules = org.nmox.studio.ui.browser.devtools.JsonLite.asArray(
+                org.nmox.studio.ui.browser.devtools.JsonLite.parse(rulesJson));
+        if (rules.isEmpty()) {
+            status("Applied in page only — no stylesheet rule matches this element");
+            return;
+        }
+        org.nmox.studio.core.spi.LiveServings servings = org.nmox.studio.core.spi.LiveServings.find();
+        java.util.List<org.nmox.studio.core.spi.LiveServings.Serving> snapshot =
+                servings == null ? java.util.List.of() : servings.snapshot();
+        String firstReason = null;
+        // cascade order: the LAST matching rule wins, so walk backwards
+        for (int i = rules.size() - 1; i >= 0; i--) {
+            if (!(rules.get(i) instanceof java.util.Map)) {
+                continue;
+            }
+            java.util.Map<String, Object> rule = org.nmox.studio.ui.browser.devtools.JsonLite.asObject(rules.get(i));
+            String href = org.nmox.studio.ui.browser.devtools.JsonLite.str(rule, "h", "");
+            String selector = org.nmox.studio.ui.browser.devtools.JsonLite.str(rule, "s", "");
+            if (selector.isEmpty()) {
+                continue;
+            }
+            if (href.isEmpty()) {
+                firstReason = keep(firstReason, "rule lives in an inline <style>, not a stylesheet file");
+                continue;
+            }
+            org.nmox.studio.ui.browser.devtools.PageSourceResolver.Resolved resolved =
+                    org.nmox.studio.ui.browser.devtools.PageSourceResolver.resolve(href, snapshot);
+            if (resolved == null) {
+                firstReason = keep(firstReason, "stylesheet " + href + " is not served from a project here");
+                continue;
+            }
+            java.io.File cssFile = resolved.file();
+            // a compiled sibling means the .css is BUILD OUTPUT — writing
+            // there is silently lost on the next compile (v1.230.0's
+            // recompile-on-save would even do the losing immediately)
+            String base = cssFile.getName().replaceFirst("[.]css$", "");
+            java.io.File dir = cssFile.getParentFile();
+            if (new java.io.File(dir, base + ".scss").isFile()
+                    || new java.io.File(dir, base + ".less").isFile()
+                    || new java.io.File(dir, base + ".sass").isFile()) {
+                firstReason = keep(firstReason, cssFile.getName()
+                        + " is compiled output — edit the preprocessor source instead");
+                continue;
+            }
+            try {
+                org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil
+                        .toFileObject(org.openide.filesystems.FileUtil.normalizeFile(cssFile));
+                if (fo != null) {
+                    org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
+                    if (dobj.isModified()) {
+                        firstReason = keep(firstReason, cssFile.getName()
+                                + " has unsaved editor changes — save it first");
+                        continue;
+                    }
+                }
+                String css = java.nio.file.Files.readString(cssFile.toPath());
+                org.nmox.studio.ui.browser.devtools.StyleWriteback.Result result =
+                        org.nmox.studio.ui.browser.devtools.StyleWriteback.apply(
+                                css, selector, property, value);
+                if (!result.ok()) {
+                    firstReason = keep(firstReason, result.reason());
+                    continue;
+                }
+                org.nmox.studio.core.util.AtomicFiles.writeString(cssFile.toPath(), result.css());
+                if (fo != null) {
+                    fo.refresh();
+                }
+                status("Saved to " + cssFile.getName() + "  (" + selector + ")");
+                return;
+            } catch (java.io.IOException ex) {
+                firstReason = keep(firstReason, cssFile.getName() + ": " + ex.getMessage());
+            }
+        }
+        status("Applied in page only — "
+                + (firstReason != null ? firstReason : "no writable stylesheet rule found"));
+    }
+
+    private static String keep(String existing, String candidate) {
+        return existing != null ? existing : candidate;
     }
 
     /**

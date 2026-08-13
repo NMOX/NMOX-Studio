@@ -490,6 +490,48 @@ public final class DevScripts {
             + "return 'ok';})()";
 
     /**
+     * Which stylesheet rules MATCH the element at {@code path} —
+     * the page's own cascade answer ({@code el.matches}), so
+     * write-back never guesses specificity. Returns a JSON array of
+     * {@code {h: sheetHref-or-empty, s: selectorText}} in cascade
+     * order (grouping rules like @media descended into; cross-origin
+     * sheets, whose cssRules throw, skipped). Capped at 200 rules.
+     */
+    public static String matchedRules(List<Integer> path) {
+        return "(function(){\n"
+                + "var path=" + pathJson(path) + ";\n"
+                + "var el=document.documentElement;\n"
+                + "for(var i=0;i<path.length&&el;i++){el=el.children[path[i]];}\n"
+                + "if(!el||!el.matches){return '[]';}\n"
+                + "var out=[];\n"
+                + "function collect(rules,href){\n"
+                + " for(var r=0;r<rules.length&&out.length<200;r++){var rule=rules[r];\n"
+                + "  if(rule.selectorText){\n"
+                + "   try{if(el.matches(rule.selectorText)){out.push({h:href,s:''+rule.selectorText});}}catch(e){}\n"
+                + "  } else if(rule.cssRules){collect(rule.cssRules,href);}}}\n"
+                + "var sheets=document.styleSheets;\n"
+                + "for(var s=0;s<sheets.length;s++){\n"
+                + " var rules;try{rules=sheets[s].cssRules;}catch(e){continue;}\n"
+                + " if(rules){collect(rules,sheets[s].href||'');}}\n"
+                + "return JSON.stringify(out);})()";
+    }
+
+    /**
+     * Live preview for style write-back: sets the inline style on the
+     * element at {@code path} so the page shows the tweak instantly,
+     * before (and independent of) the source write.
+     */
+    public static String applyInlineStyle(List<Integer> path, String property, String value) {
+        return "(function(){\n"
+                + "var path=" + pathJson(path) + ";\n"
+                + "var el=document.documentElement;\n"
+                + "for(var i=0;i<path.length&&el;i++){el=el.children[path[i]];}\n"
+                + "if(!el||!el.style){return 'gone';}\n"
+                + "el.style.setProperty(" + quote(property) + "," + quote(value) + ");\n"
+                + "return 'ok';})()";
+    }
+
+    /**
      * Reads the {@link StyleSummary#KEYS curated 15} computed-style
      * properties of the element at {@code path} as one JSON object;
      * a stale path answers "{}".
