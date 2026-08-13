@@ -86,6 +86,23 @@ class StyleWritebackTest {
     }
 
     @Test
+    @DisplayName("a duplicated selector edits the LAST block — the one the cascade applies")
+    void duplicateSelectorLastWins() {
+        // editing the first block would land in dead CSS: the later rule
+        // keeps overriding and the page never changes (v1.359.0 review)
+        String css = ".a {\n    color: red;\n}\n\n.a {\n    color: blue;\n}\n";
+        StyleWriteback.Result r = StyleWriteback.apply(css, ".a", "color", "green");
+        assertThat(r.ok()).isTrue();
+        assertThat(r.css())
+                .as("the first (dead) rule is untouched")
+                .contains("color: red;");
+        assertThat(r.css())
+                .as("the last (live) rule carries the edit")
+                .contains("color: green;")
+                .doesNotContain("color: blue");
+    }
+
+    @Test
     @DisplayName("refusals: missing selector, structural characters, blanks")
     void refusals() {
         assertThat(StyleWriteback.apply(CSS, ".absent", "color", "red").ok()).isFalse();

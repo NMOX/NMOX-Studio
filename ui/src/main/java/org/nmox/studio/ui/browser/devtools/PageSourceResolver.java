@@ -113,12 +113,10 @@ public final class PageSourceResolver {
      * checked on every candidate so no decoded path escapes the root.
      */
     static File fileForPath(File projectDir, String rawPath) {
+        // getRawPath never carries the query or fragment — those are
+        // separate URI components, so no stripping is needed here
         String path = rawPath == null || rawPath.isEmpty() ? "/"
                 : URLDecoder.decode(rawPath, StandardCharsets.UTF_8);
-        int q = path.indexOf('?');
-        if (q >= 0) {
-            path = path.substring(0, q);
-        }
         String rel = path.startsWith("/") ? path.substring(1) : path;
         String[] candidates = rel.isEmpty() || path.endsWith("/")
                 ? new String[]{rel + "index.html", "public/" + rel + "index.html"}
