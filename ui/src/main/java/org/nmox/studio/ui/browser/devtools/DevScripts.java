@@ -447,6 +447,48 @@ public final class DevScripts {
             "(function(){var ov=document.getElementById('__nmox_hl');"
             + "if(ov){ov.style.display='none';}return 'ok';})()";
 
+    /** The page's own idea of its URL — truthful across redirects. */
+    public static final String PAGE_URL = "document.location.href";
+
+    /**
+     * Arms inspect-pick (v1.357.0): one capture-phase click listener
+     * that swallows the click, records the clicked element's
+     * child-index path (the {@link #DOM_SNAPSHOT} convention —
+     * documentElement is the empty path) into
+     * {@code window.__nmoxPickResult}, and disarms itself. The cursor
+     * flips to crosshair while armed so the mode is visible.
+     */
+    public static final String PICK_ARM =
+            "(function(){\n"
+            + "if(window.__nmoxPickCancel){return 'armed';}\n"
+            + "window.__nmoxPickResult='';\n"
+            + "var prev=document.documentElement.style.cursor;\n"
+            + "document.documentElement.style.cursor='crosshair';\n"
+            + "function path(el){var p=[];\n"
+            + " while(el&&el.parentElement){var kids=el.parentElement.children;\n"
+            + "  for(var i=0;i<kids.length;i++){if(kids[i]===el){p.unshift(i);break;}}\n"
+            + "  el=el.parentElement;}\n"
+            + " return p;}\n"
+            + "function disarm(){document.removeEventListener('click',onClick,true);\n"
+            + " document.documentElement.style.cursor=prev;\n"
+            + " window.__nmoxPickCancel=null;}\n"
+            + "function onClick(ev){ev.preventDefault();ev.stopPropagation();\n"
+            + " disarm();\n"
+            + " window.__nmoxPickResult=JSON.stringify(path(ev.target));}\n"
+            + "window.__nmoxPickCancel=disarm;\n"
+            + "document.addEventListener('click',onClick,true);\n"
+            + "return 'armed';})()";
+
+    /** One poll of the pick result; reads AND clears (empty = none yet). */
+    public static final String PICK_POLL =
+            "(function(){var r=window.__nmoxPickResult||'';"
+            + "window.__nmoxPickResult='';return r;})()";
+
+    /** Disarms an armed pick without consuming a click. */
+    public static final String PICK_CANCEL =
+            "(function(){if(window.__nmoxPickCancel){window.__nmoxPickCancel();}"
+            + "return 'ok';})()";
+
     /**
      * Reads the {@link StyleSummary#KEYS curated 15} computed-style
      * properties of the element at {@code path} as one JSON object;

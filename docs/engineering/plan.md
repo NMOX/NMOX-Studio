@@ -1375,6 +1375,21 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-12, the elevation arc opens (v1.357)
+
+**The Browser becomes source-aware.** David's directive ("take it to
+the next level — elevate web development") chose the loop every web
+developer pays daily: what the browser knows about an element never
+reaches the editor. Tranche 1 ships inspect-to-source — Pick element
+(crosshair in the page, one-way-bridge poll, DOM tree selection) and
+Open Source (page URL → file via file:// or the serving registry
+ONLY, element → line via id or Nth-same-tag with comments/script
+bodies neutralized line-true). The refusals carry the honesty:
+remote pages and script-generated elements refuse instead of
+guessing. Tranche 2 is style write-back: a declaration edited in the
+DOM pane lands in the source stylesheet (selector-matched, sass
+refuses honestly) — designed, not yet built.
+
 ## Addendum — 2026-08-12, the walks move into the shipped app again (v1.356)
 
 **The three toolchain passes walked installed, all legs green.** The

@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.357.0] - 2026-08-12
+
+The elevation arc opens (David's ask: take it to the next level —
+elevate web development): the in-app Browser becomes SOURCE-AWARE.
+The loop every web developer pays daily — the browser knows which
+element you mean, the editor doesn't — closes inside the IDE, using
+only surfaces the product already owns.
+
+### Added
+- **Pick element.** A new toggle in the DevTools DOM tab arms a
+  crosshair in the page: click any element and the DOM tree selects
+  it, highlights it, and aims every DOM-tab verb at it. The pick rides
+  the same one-way bridge as every snapshot (a capture-phase listener
+  records the element's child-index path; a 300ms poll collects it),
+  so it works on any page the Browser can render.
+- **Open Source: the element opens the file that produced it.** The
+  selected DOM node jumps to the HTML source line — the page URL maps
+  to a file only through channels the IDE can vouch for (file:// pages
+  and the rack's own serving registry, loopback spellings unified,
+  the public/ docroot convention tried, every decoded path held inside
+  the project by the canonical-containment law), and the element is
+  located by its id when it has one or as the Nth same-tag occurrence
+  in document order when it doesn't, with comments and script/style
+  bodies neutralized line-true so a <div> in a comment or a JS string
+  can't shadow the real one. The refusals are the feature's honesty:
+  a remote page says "not served from a project here," and an element
+  the source doesn't contain says "likely script-generated" instead of
+  jumping somewhere wrong.
+
+Both cores are pure and behavior-tested (10 tests); three mutants die
+by name — the dropped containment guard (killed by a REAL secret file
+one level above the served root: the first test version let it survive
+because the escape reached nothing, the divergence lesson re-applied),
+the un-neutralized comment, and the refusal-turned-clamp. Style
+write-back (DOM-pane edits landing in the source stylesheet) is the
+arc's tranche 2.
+
 ## [1.356.0] - 2026-08-12
 
 The toolchain walks (docs only): the Deno, Rust, and Go passes proven
@@ -12309,6 +12346,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.357.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.356.0...v1.357.0
 [1.356.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.355.0...v1.356.0
 [1.355.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.354.0...v1.355.0
 [1.354.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.353.0...v1.354.0
