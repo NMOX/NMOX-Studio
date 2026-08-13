@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.359.0] - 2026-08-13
+
+The elevation-arc review (two lenses over v1.357–v1.358's fresh code).
+Three findings, the pattern paying again on day-old work.
+
+### Fixed
+- **The pick poll never stopped after a successful pick.** The success
+  path disarmed the toggle with setSelected(false) — which fires no
+  ActionListener, so the toggle-off branch (the only stop) never ran
+  and the 300ms PICK_POLL hammered every future page for the life of
+  the DevTools panel (the v1.33.x runaway-timer class in a new home).
+  Every exit path now stops the timer explicitly, a self-stopping
+  backstop guards the disarmed state, and removeNotify stops it on
+  panel close; pinned by a behavioral test that drives the REAL panel
+  through the fake-runner seam and asserts the poll count FREEZES
+  after the page answers — proven to fail against the original shape.
+- **A duplicated selector now edits the LAST rule — the one the
+  cascade applies.** findRuleBlock returned the first match, so a file
+  with the same selector twice took the edit in the DEAD earlier rule
+  and the page never changed; the scan now keeps the last block,
+  mutation-proven by name.
+- **Page-controlled selector strings are re-clipped Java-side** (the
+  sibling-parser rule): a selector too long to be honest is SKIPPED,
+  not truncated — a truncated selector would silently match the wrong
+  rule. Plus one cleanup: the resolver's provably-dead query-strip
+  removed (getRawPath never carries a query).
+
 ## [1.358.0] - 2026-08-12
 
 The elevation arc closes its loop: STYLE WRITE-BACK. A style tweaked
@@ -12382,6 +12409,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.359.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.358.0...v1.359.0
 [1.358.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.357.0...v1.358.0
 [1.357.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.356.0...v1.357.0
 [1.356.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.355.0...v1.356.0

@@ -1375,6 +1375,24 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-13, the elevation-arc review (v1.359)
+
+**The review pays on day-old code, again.** Three finds over
+v1.357–v1.358: the pick poll ran FOREVER after a successful pick
+(setSelected(false) fires no ActionListener — the programmatic-disarm
+trap; every timer exit path now stops explicitly, with a self-stop
+backstop and a removeNotify), a duplicated selector edited the DEAD
+first rule while the cascade honors the last (findRuleBlock keeps the
+last match now), and page-controlled selector strings gained the
+Java-side re-clip the sibling parsers already had — skipped, not
+truncated, because a truncated selector silently matches the wrong
+rule. The lifecycle find generalizes: **a programmatic
+setSelected/setValue never fires the ActionListener that user
+gestures do — any cleanup living only in the action handler is
+skipped by every programmatic path.** The poll-freeze proof idiom
+(fake-runner seam, count must stop growing) is the cheap way to pin
+any timer-lifecycle law.
+
 ## Addendum — 2026-08-12, the elevation loop closes (v1.358)
 
 **Style write-back ships.** Edit Style… on the picked element applies
