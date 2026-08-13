@@ -81,6 +81,7 @@ public final class DevToolsPanel extends JPanel {
     private final JTextArea domDetails = readOnlyArea();
     private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
+    private javax.swing.Timer pickPoll;
 
     // Storage tab
     private final DefaultTableModel storageTable = readOnlyTable("Area", "Key", "Value");
@@ -118,6 +119,14 @@ public final class DevToolsPanel extends JPanel {
         tabs.addTab("Svelte", svelteTab());
         tabs.addTab("Angular", angularTab());
         add(tabs, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        if (pickPoll != null) {
+            pickPoll.stop();
+        }
     }
 
     // ---- Console -------------------------------------------------------
@@ -280,22 +289,36 @@ public final class DevToolsPanel extends JPanel {
         });
         // inspect-to-source (v1.357.0): a 300ms poll while pick is armed —
         // the bridge is one-way (page JS can't call into Swing), so the
-        // result rides window.__nmoxPickResult like every snapshot does
-        javax.swing.Timer pickPoll = new javax.swing.Timer(300, e -> runner.run(DevScripts.PICK_POLL, r -> {
-            if (r != null && !r.isBlank()) {
-                SwingUtilities.invokeLater(() -> {
-                    pick.setSelected(false);
-                    onPicked(tree, r);
-                });
+        // result rides window.__nmoxPickResult like every snapshot does.
+        // EVERY exit path must stop the timer EXPLICITLY: setSelected(false)
+        // fires no ActionListener, so the toggle-off branch below never runs
+        // for programmatic disarms — the v1.359.0 review found the success
+        // path leaving the poll running forever
+        pickPoll = new javax.swing.Timer(300, e -> {
+            if (!pick.isSelected()) {
+                pickPoll.stop(); // backstop: never poll for a disarmed pick
+                return;
             }
-        }, err -> { }));
+            runner.run(DevScripts.PICK_POLL, r -> {
+                if (r != null && !r.isBlank()) {
+                    SwingUtilities.invokeLater(() -> {
+                        pickPoll.stop();
+                        pick.setSelected(false);
+                        onPicked(tree, r);
+                    });
+                }
+            }, err -> { });
+        });
         pickPoll.setRepeats(true);
         pick.addActionListener(e -> {
             if (pick.isSelected()) {
                 domStatus.setText("Click an element in the page…");
                 runner.run(DevScripts.PICK_ARM, r -> { }, err -> {
                     domStatus.setText("Pick failed: " + err);
-                    SwingUtilities.invokeLater(() -> pick.setSelected(false));
+                    SwingUtilities.invokeLater(() -> {
+                        pickPoll.stop();
+                        pick.setSelected(false);
+                    });
                 });
                 pickPoll.start();
             } else {
@@ -381,7 +404,11 @@ public final class DevToolsPanel extends JPanel {
             java.util.Map<String, Object> rule = org.nmox.studio.ui.browser.devtools.JsonLite.asObject(rules.get(i));
             String href = org.nmox.studio.ui.browser.devtools.JsonLite.str(rule, "h", "");
             String selector = org.nmox.studio.ui.browser.devtools.JsonLite.str(rule, "s", "");
-            if (selector.isEmpty()) {
+            // page-side caps are page-controlled (the sibling parsers'
+            // rule): a hostile selectorText re-clipped Java-side, and a
+            // selector too long to be honest is skipped, not truncated —
+            // a truncated selector would silently match the wrong rule
+            if (selector.isEmpty() || selector.length() > 1000 || href.length() > 2000) {
                 continue;
             }
             if (href.isEmpty()) {

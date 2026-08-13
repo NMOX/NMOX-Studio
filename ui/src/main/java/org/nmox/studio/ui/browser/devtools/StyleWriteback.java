@@ -90,9 +90,15 @@ public final class StyleWriteback {
      * offset} in the ORIGINAL text, or null. Nested blocks (media
      * queries) are handled by tracking depth: selectors are read at
      * any depth, and the matching close brace is found by counting.
+     *
+     * <p>When the SAME selector appears twice in one file the LAST
+     * block wins — that is the rule the cascade actually applies, so
+     * an edit to the first one would land in dead CSS and the page
+     * would never change (the v1.359.0 review's find).
      */
     static int[] findRuleBlock(String neutral, String selectorText) {
         String wanted = normalizeSelector(selectorText);
+        int[] last = null;
         int segStart = 0;
         for (int i = 0; i < neutral.length(); i++) {
             char c = neutral.charAt(i);
@@ -101,7 +107,7 @@ public final class StyleWriteback {
                 if (sel.equals(wanted)) {
                     int close = matchingClose(neutral, i);
                     if (close > i) {
-                        return new int[]{i, close};
+                        last = new int[]{i, close};
                     }
                 }
                 segStart = i + 1;
@@ -109,7 +115,7 @@ public final class StyleWriteback {
                 segStart = i + 1;
             }
         }
-        return null;
+        return last;
     }
 
     private static int matchingClose(String text, int open) {
