@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.360.0] - 2026-08-13
+
+The elevation walk (docs only): the whole source-aware loop
+(v1.357–v1.359) click-proven in the INSTALLED 1.359.0 app, driving the
+real UI. Pick element armed the crosshair, a click on the page's
+headline swallowed the navigation and auto-selected h1#headline in the
+DOM tree with the highlight ringing it; Open Source landed the editor
+at index.html:9 — the exact line that produced the element (the
+id-anchored locator, dead-on); Edit Style… on the tagline repainted
+the page tomato INSTANTLY and reported "Saved to style.css (.tagline)"
+— and the file on disk showed color: gray replaced by color: tomato in
+place, every other byte identical. Three tranches, one loop, proven
+where it ships: the browser and the editor, one surface.
+
 ## [1.359.0] - 2026-08-13
 
 The elevation-arc review (two lenses over v1.357–v1.358's fresh code).
@@ -12409,6 +12423,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.360.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.359.0...v1.360.0
 [1.359.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.358.0...v1.359.0
 [1.358.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.357.0...v1.358.0
 [1.357.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.356.0...v1.357.0
