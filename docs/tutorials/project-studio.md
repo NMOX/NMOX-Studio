@@ -38,8 +38,9 @@ opening a terminal.
 
 ## What you just learned
 
-- New projects are recognized by any of ~50 manifests (package.json,
-  Cargo.toml, go.mod, pom.xml, gleam.toml, …) — even a script-tag site
+- New projects are recognized by any of 60 manifest names (package.json,
+  Cargo.toml, go.mod, pom.xml, gleam.toml, …) plus four detected by glob
+  (`.csproj`, `.fsproj`, `.sln`, `.nimble`) — even a script-tag site
   with no manifest opens as a STATIC project.
 - Run/Build/Test/Clean and the rack are **one mechanism**; the first time
   they run project code you'll get a Workspace Trust prompt.

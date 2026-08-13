@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [1.362.0] - 2026-08-13
+
+### Added
+- **The counts the docs quote are now gated.** The v1.361.0 documentation
+  pass found a tutorial still promising 51 devices (two device releases
+  ago) and another promising 78 learning spaces (twelve spaces ago) —
+  numbers that had been wrong for months because nothing in the build
+  ever read those sentences. `DocsCountGateTest` (application) binds
+  every count claim in the LIVE documents to its ground truth: devices
+  from the generated device reference, learning spaces from the
+  learn-catalog's slugs, manifest names from `WebProjectFactory`'s own
+  array. A release that adds a device and forgets the docs now fails
+  the build, naming the file and line to fix.
+
+  Scope is deliberately the live documents — README, the user guide,
+  the codebase guide, the tutorials. The historical logs (CHANGELOG,
+  the plan's dated addenda, `docs/hack`, `docs/product`) quote the
+  counts that were true the day they were written and are left alone:
+  *a record that silently updates itself is not a record.*
+
+### Fixed
+- Three stale counts, each caught by the new gate or the sweep that
+  built it: the Task Rack tutorial's device count (51 → 53), the
+  Learning Spaces tutorial's space count (78 → 90, and its screenshot
+  caption no longer quotes a number that will rot), and the Project
+  Studio tutorial's manifest count (`~50` → the measured 60 names, plus
+  the four glob-detected suffixes it never mentioned).
+
+  The manifest fix is the gate's own first catch: the count written by
+  hand while building it was 64, taken from a shell one-liner whose
+  line range had swept in the adjacent `GLOB_SUFFIXES` array. The gate
+  read the real array bounds and failed on its first run — the docs
+  edit that created the gate was the first thing the gate rejected.
+
 ## [1.361.0] - 2026-08-13
 
 The documentation pass (docs only, David's ask: current and
@@ -12448,6 +12482,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[1.362.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.361.0...v1.362.0
 [1.361.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.360.0...v1.361.0
 [1.360.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.359.0...v1.360.0
 [1.359.0]: https://github.com/NMOX/NMOX-Studio/compare/v1.358.0...v1.359.0

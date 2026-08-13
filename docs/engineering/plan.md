@@ -1624,6 +1624,48 @@ honestly as unverified.
 - Focus theft mid-`type` aborts keystroke delivery cleanly (the harness
   says how many landed); re-check the document, don't re-type blind.
 
+## Addendum — 2026-08-13, the documentation pass (v1.361–v1.362)
+
+David's ask: "we've made lots of changes to the product — let's go over
+the documentation and make sure it's current and instructive." Two
+releases, and the second one exists because of what the first one found.
+
+**Instructive (v1.361.0).** The elevation arc (v1.357–v1.360) had
+shipped a source-aware Browser that no document explained. The new
+`docs/tutorials/browser-to-source.md` walks the whole loop in one
+sitting on a page the reader builds in two minutes — pick an element,
+land on the producing line, restyle from DevTools, watch the stylesheet
+change on disk — and ends with a limits table naming every refusal, so
+a reader who hits one knows it is a decision and not a failure. Before
+shipping it, every claim was checked against `DevToolsPanel`: the
+button labels, the double-click gesture, and all six refusal strings
+match the code verbatim. *A tutorial promising a gesture the product
+does not have is worse than no tutorial.*
+
+**Current (v1.361.0).** The user guide's DevTools bullet, a new
+toolchain-native-lanes paragraph (the v1.350–v1.352 deno/rust/go
+passes, including the gofmt exit-contract note), the seven-tab
+correction, a README feature section, CLAUDE.md caught up over six
+releases.
+
+**The finding, and the structural answer (v1.362.0).** Sweeping the
+tutorials turned up counts that had been wrong for months: 51 devices
+(two device releases stale), 78 learning spaces (twelve stale), "~50"
+manifests. Nothing in the build had ever read those sentences. So the
+pass ended in a gate rather than another sweep: `DocsCountGateTest`
+binds every count claim in the LIVE documents to its ground truth —
+devices from the generated device reference, spaces from the catalog's
+slugs, manifests from `WebProjectFactory`'s own array — while the
+historical logs are deliberately excluded, because *a record that
+silently updates itself is not a record*.
+
+The gate's first run rejected the docs edit that created it. The
+manifest count written by hand was 64, taken from a shell range that
+had swept in the adjacent `GLOB_SUFFIXES` array; reading the real array
+bounds gives 60. The lesson is the familiar one in a new place: *a
+number produced by a one-off shell command is a guess until something
+in the build recomputes it.*
+
 ## Where the project stands
 
 NMOX Studio is a shipping NetBeans RCP IDE (v1.318.0, Apache-2.0, bundled JDK 25 LTS +

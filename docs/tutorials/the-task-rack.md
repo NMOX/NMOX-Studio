@@ -55,7 +55,7 @@ so every device runs in that project's directory.
 
 ## Next
 
-- There are 51 devices — browse them in [devices.md](../devices.md) or
+- There are 53 devices — browse them in [devices.md](../devices.md) or
   the palette's How-to-use cards.
 - Ask [ORACLE](oracle.md) to explain a failed run.
 - Export a patch to a GitHub Actions workflow: the rack's **CI export**.
