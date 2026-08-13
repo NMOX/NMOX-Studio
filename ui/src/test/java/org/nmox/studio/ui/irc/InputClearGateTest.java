@@ -43,6 +43,24 @@ class InputClearGateTest {
     }
 
     @Test
+    @DisplayName("Ctrl+J rides the input field's WHEN_FOCUSED map — window-level bindings die in a docked TC")
+    void ctrlJBindsOnTheInputField() throws Exception {
+        String s = tc();
+        assertThat(s)
+                .as("the v2.2.0 Libera walk proved the WHEN_IN_FOCUSED_WINDOW "
+                        + "binding never fires in the shipped app (the Escape "
+                        + "layer, again) — the jump must be bound where the "
+                        + "user's focus lives, the input field")
+                .contains("KeyEvent.VK_J, InputEvent.CTRL_DOWN_MASK");
+        int at = s.indexOf("KeyEvent.VK_J, InputEvent.CTRL_DOWN_MASK");
+        String around = s.substring(Math.max(0, at - 300), Math.min(s.length(), at + 300));
+        assertThat(around)
+                .as("the chord must map to the jump action on the FIELD's maps")
+                .contains("irc-jump-activity")
+                .contains("WHEN_FOCUSED");
+    }
+
+    @Test
     @DisplayName("no user-facing surface advertises Escape as the clear key")
     void escapeIsNotAdvertised() throws Exception {
         int at = tc().indexOf("private void commandHelp");
