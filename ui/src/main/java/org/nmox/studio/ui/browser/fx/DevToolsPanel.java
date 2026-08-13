@@ -79,6 +79,8 @@ public final class DevToolsPanel extends JPanel {
     // DOM tab
     private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
     private final JTextArea domDetails = readOnlyArea();
+    private final JLabel domStatus = new JLabel(" ");
+    private volatile DomNode lastDomRoot;
 
     // Storage tab
     private final DefaultTableModel storageTable = readOnlyTable("Area", "Key", "Value");
@@ -252,9 +254,13 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(e -> refreshDom());
+        javax.swing.JToggleButton pick = new javax.swing.JToggleButton("Pick element");
+        JButton openSource = new JButton("Open Source");
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
-        bar.add(new JLabel("Select a node to highlight it in the page"));
+        bar.add(pick);
+        bar.add(openSource);
+        bar.add(domStatus);
         panel.add(bar, BorderLayout.NORTH);
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 new JScrollPane(tree), new JScrollPane(domDetails));
@@ -270,7 +276,165 @@ public final class DevToolsPanel extends JPanel {
                     css -> domDetails.setText(domDetailsText(node, css)),
                     err -> domDetails.setText(domDetailsText(node, "{}")));
         });
+        // inspect-to-source (v1.357.0): a 300ms poll while pick is armed —
+        // the bridge is one-way (page JS can't call into Swing), so the
+        // result rides window.__nmoxPickResult like every snapshot does
+        javax.swing.Timer pickPoll = new javax.swing.Timer(300, e -> runner.run(DevScripts.PICK_POLL, r -> {
+            if (r != null && !r.isBlank()) {
+                SwingUtilities.invokeLater(() -> {
+                    pick.setSelected(false);
+                    onPicked(tree, r);
+                });
+            }
+        }, err -> { }));
+        pickPoll.setRepeats(true);
+        pick.addActionListener(e -> {
+            if (pick.isSelected()) {
+                domStatus.setText("Click an element in the page…");
+                runner.run(DevScripts.PICK_ARM, r -> { }, err -> {
+                    domStatus.setText("Pick failed: " + err);
+                    SwingUtilities.invokeLater(() -> pick.setSelected(false));
+                });
+                pickPoll.start();
+            } else {
+                pickPoll.stop();
+                domStatus.setText(" ");
+                runner.run(DevScripts.PICK_CANCEL, r -> { }, err -> { });
+            }
+        });
+        openSource.addActionListener(e -> openSource(selectedDom(tree)));
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent me) {
+                if (me.getClickCount() == 2) {
+                    openSource(selectedDom(tree));
+                }
+            }
+        });
         return panel;
+    }
+
+    /**
+     * A page click while pick was armed: refresh the snapshot (the
+     * page may have changed since the tree was built), then select
+     * the picked node so highlight + details + Open Source all aim at
+     * it. Timer already stopped by the caller.
+     */
+    private void onPicked(JTree tree, String pathJson) {
+        List<Integer> path = new java.util.ArrayList<>();
+        for (Object o : org.nmox.studio.ui.browser.devtools.JsonLite.asArray(
+                org.nmox.studio.ui.browser.devtools.JsonLite.parse(pathJson))) {
+            if (o instanceof Double d) {
+                path.add((int) (double) d);
+            }
+        }
+        runner.run(DevScripts.DOM_SNAPSHOT, json -> RP.post(() -> {
+            DomNode root = DomSnapshotParser.parse(json);
+            DefaultMutableTreeNode swingRoot = toSwing(root);
+            SwingUtilities.invokeLater(() -> {
+                domTree.setRoot(swingRoot);
+                lastDomRoot = root;
+                DefaultMutableTreeNode hit = findByPath(swingRoot, path);
+                if (hit != null) {
+                    javax.swing.tree.TreePath tp = new javax.swing.tree.TreePath(hit.getPath());
+                    tree.setSelectionPath(tp);
+                    tree.scrollPathToVisible(tp);
+                    domStatus.setText(" ");
+                } else {
+                    domStatus.setText("Picked element not in the snapshot (page changed?)");
+                }
+            });
+        }), err -> domStatus.setText("Pick failed: " + err));
+    }
+
+    private static DefaultMutableTreeNode findByPath(DefaultMutableTreeNode swingRoot, List<Integer> path) {
+        java.util.Enumeration<?> all = swingRoot.depthFirstEnumeration();
+        while (all.hasMoreElements()) {
+            Object o = all.nextElement();
+            if (o instanceof DefaultMutableTreeNode n
+                    && n.getUserObject() instanceof DomNode dn
+                    && !dn.isPlaceholder() && dn.path.equals(path)) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Inspect-to-source: the selected DOM node opens the HTML file
+     * that produced it, at the line. Honest refusals on the status
+     * label — a remote page has no local source, and an element the
+     * source doesn't contain (script-generated) must not jump
+     * somewhere wrong. File IO rides the RP; the editor opens on the
+     * EDT.
+     */
+    private void openSource(DomNode node) {
+        if (node == null || node.isPlaceholder()) {
+            domStatus.setText("Select an element first");
+            return;
+        }
+        DomNode root = lastDomRoot;
+        runner.run(DevScripts.PAGE_URL, url -> RP.post(() -> {
+            org.nmox.studio.core.spi.LiveServings servings =
+                    org.nmox.studio.core.spi.LiveServings.find();
+            java.util.List<org.nmox.studio.core.spi.LiveServings.Serving> snapshot =
+                    servings == null ? java.util.List.of() : servings.snapshot();
+            org.nmox.studio.ui.browser.devtools.PageSourceResolver.Resolved resolved =
+                    org.nmox.studio.ui.browser.devtools.PageSourceResolver.resolve(url, snapshot);
+            if (resolved == null) {
+                status("No local source for " + url + " (not served from a project here)");
+                return;
+            }
+            String html;
+            try {
+                html = java.nio.file.Files.readString(resolved.file().toPath());
+            } catch (java.io.IOException ex) {
+                status("Cannot read " + resolved.file().getName() + ": " + ex.getMessage());
+                return;
+            }
+            int line = org.nmox.studio.ui.browser.devtools.HtmlSourceLocator.lineOf(html, node, root);
+            if (line < 0) {
+                status("<" + node.tag + "> not found in " + resolved.file().getName()
+                        + " — likely script-generated");
+                return;
+            }
+            openAt(resolved.file(), line);
+        }), err -> domStatus.setText("No page URL: " + err));
+    }
+
+    private void status(String text) {
+        SwingUtilities.invokeLater(() -> domStatus.setText(text));
+    }
+
+    /** Opens the file in the editor at the 1-based line (EDT). */
+    private void openAt(java.io.File file, int line) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                org.openide.filesystems.FileObject fo =
+                        org.openide.filesystems.FileUtil.toFileObject(
+                                org.openide.filesystems.FileUtil.normalizeFile(file));
+                if (fo == null) {
+                    domStatus.setText("File vanished: " + file.getName());
+                    return;
+                }
+                org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
+                org.openide.cookies.LineCookie lc = dobj.getLookup().lookup(org.openide.cookies.LineCookie.class);
+                if (lc != null) {
+                    org.openide.text.Line l = lc.getLineSet().getOriginal(Math.max(0, line - 1));
+                    l.show(org.openide.text.Line.ShowOpenType.OPEN,
+                            org.openide.text.Line.ShowVisibilityType.FOCUS);
+                    domStatus.setText(file.getName() + ":" + line);
+                } else {
+                    org.openide.cookies.OpenCookie oc = dobj.getLookup().lookup(org.openide.cookies.OpenCookie.class);
+                    if (oc != null) {
+                        oc.open();
+                        domStatus.setText(file.getName());
+                    }
+                }
+            } catch (org.openide.loaders.DataObjectNotFoundException | IndexOutOfBoundsException ex) {
+                domStatus.setText("Cannot open " + file.getName() + ": " + ex.getMessage());
+            }
+        });
     }
 
     private static DomNode selectedDom(JTree tree) {
@@ -316,7 +480,10 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.DOM_SNAPSHOT, json -> RP.post(() -> {
             DomNode root = DomSnapshotParser.parse(json);
             DefaultMutableTreeNode swingRoot = toSwing(root);
-            SwingUtilities.invokeLater(() -> domTree.setRoot(swingRoot));
+            SwingUtilities.invokeLater(() -> {
+                domTree.setRoot(swingRoot);
+                lastDomRoot = root;
+            });
         }), err -> domTree.setRoot(new DefaultMutableTreeNode("(no page: " + err + ")")));
     }
 
