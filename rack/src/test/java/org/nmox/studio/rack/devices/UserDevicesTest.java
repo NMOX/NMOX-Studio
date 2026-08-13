@@ -85,6 +85,18 @@ class UserDevicesTest {
     }
 
     @Test
+    @DisplayName("the real drop-in directory is ~/.nmox/devices.d")
+    void realPath() {
+        // Every other test aims dirOverride somewhere temporary, which would
+        // happily mask a typo in the ONE path users are told to create. The
+        // documented location is part of the contract, so assert it.
+        UserDevices.dirOverride = null;
+        assertThat(UserDevices.dropInDir().getPath())
+                .isEqualTo(new File(System.getProperty("user.home"),
+                        ".nmox/devices.d").getPath());
+    }
+
+    @Test
     @DisplayName("a missing directory is simply no devices, never an error")
     void missingDirectory(@TempDir File dir) {
         aim(new File(dir, "does-not-exist"));
