@@ -1375,6 +1375,21 @@ quoting produced a `.`-wildcard inside a `grep -Fq` literal — under
 -F a dot is a dot), and the exact gate line is executed verbatim
 against committed HEAD before every launch.
 
+## Addendum — 2026-08-13, the elevation walk closes the arc (v1.360)
+
+**The loop, click-proven where it ships.** The installed 1.359.0 app
+walked the whole source-aware loop with real UI gestures: Pick element
+→ page click swallowed, h1#headline auto-selected and highlighted;
+Open Source → editor at index.html:9, the exact producing line; Edit
+Style… color: tomato on the tagline → instant in-page repaint +
+"Saved to style.css (.tagline)" + the on-disk file showing gray
+replaced by tomato IN PLACE with every other byte identical. The
+elevation arc (v1.357 inspect-to-source, v1.358 style write-back,
+v1.359 review fixes, v1.360 this walk) is complete: build → review →
+walk, all three findings caught by the review were invisible to the
+walk (the poll leak has no pixels) and the walk proved what the tests
+cannot (the real WebKit bridge, the real editor, the real file).
+
 ## Addendum — 2026-08-13, the elevation-arc review (v1.359)
 
 **The review pays on day-old code, again.** Three finds over
