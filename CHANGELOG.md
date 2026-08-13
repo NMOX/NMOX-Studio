@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.2.1] - 2026-08-13
+
+The v2.2.0 Libera walk — the shipped app against the real network, and
+the one thing the walk could catch that no unit test could.
+
+### Fixed
+- **Ctrl+J now actually fires** — the hotlist jump was bound at the
+  window level (`WHEN_IN_FOCUSED_WINDOW`), and the walk proved that
+  binding never fires in a docked TopComponent: #linux sat BOLD with
+  unread while Ctrl+J did nothing, from the input field and from the
+  tree alike. This is the v1.205.0 Escape lesson one chord over — keys
+  must ride the input field's OWN `WHEN_FOCUSED` map, the layer the
+  window system cannot consume. Bound exactly like the working Ctrl+U,
+  and `InputClearGateTest` now pins the field-level binding so it
+  cannot regress to the window level.
+
+### Verified live (shipped 2.2.0, real Libera)
+- Smart filter, both directions: three minutes in ~800-nick `#linux`
+  painted ZERO join/part/quit lines while real messages flowed; the
+  moment `/filter smart off` ran, `→ marcel joined` / `← tacooooo
+  quit` churn appeared. Toggle messages and persistence confirmed.
+- `/alias wave me waves at the rack` → `/wave` rendered the action
+  line; the saved-alias confirmation logged.
+- The op toolkit round-trips through the real server: fresh channel
+  granted +o, `/deop nmox-user` was APPLIED by Libera — proven by the
+  next `/mode +m` coming back `You're not a channel operator` (482).
+- Recorded limitation (pre-existing, not new in 2.2.x): the nick list
+  does not re-render `@`/`+` prefixes on MODE changes — candidate for
+  the next tranche.
+
 ## [2.2.0] - 2026-08-13
 
 David's directive: *give IRC all the power of WeeChat.* Recon against
@@ -12707,6 +12737,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.2.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.1...v2.0.2

@@ -1042,6 +1042,19 @@ public final class IrcTopComponent extends TopComponent {
         input.getInputMap(JComponent.WHEN_FOCUSED).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK),
                 "nmox-irc-clear");
+        // Ctrl+J must ride the input field's OWN map: the v2.2.0 walk
+        // proved the window-level binding never fires in a docked
+        // TopComponent (the v1.205.0 Escape lesson, same layer) — the
+        // field is where the user's fingers already are
+        input.getInputMap(JComponent.WHEN_FOCUSED).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_J, InputEvent.CTRL_DOWN_MASK),
+                "irc-jump-activity");
+        input.getActionMap().put("irc-jump-activity", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                jumpToActivity();
+            }
+        });
         input.getActionMap().put("nmox-irc-clear", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
