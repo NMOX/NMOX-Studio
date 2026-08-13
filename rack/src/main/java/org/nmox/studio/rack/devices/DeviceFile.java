@@ -42,8 +42,12 @@ public final class DeviceFile {
     private static final List<String> SHELL_METACHARS =
             List.of("|", "&", ";", ">", "<", "`", "$(", "\n", "\r");
 
-    /** A faceplate taller than this is a design smell, not a device. */
-    private static final int MAX_UNITS = 4;
+    /**
+     * A faceplate taller than this is a design smell, not a device.
+     * Matches the host's own clamp in ExtensionDevice — accepting a
+     * height here that the host would silently shrink would be a lie.
+     */
+    static final int MAX_UNITS = 3;
 
     private final String id;
     private final String title;
@@ -51,6 +55,7 @@ public final class DeviceFile {
     private final Color accent;
     private final DeviceCategory category;
     private final int units;
+    private final boolean unitsDeclared;
     private final String usage;
     private final List<PortSpec> ports;
     private final List<Knob> knobs;
@@ -59,14 +64,16 @@ public final class DeviceFile {
     private final int lcdWidth;
 
     private DeviceFile(String id, String title, String tagline, Color accent,
-            DeviceCategory category, int units, String usage, List<PortSpec> ports,
-            List<Knob> knobs, List<Button> buttons, String lcdLabel, int lcdWidth) {
+            DeviceCategory category, int units, boolean unitsDeclared, String usage,
+            List<PortSpec> ports, List<Knob> knobs, List<Button> buttons,
+            String lcdLabel, int lcdWidth) {
         this.id = id;
         this.title = title;
         this.tagline = tagline;
         this.accent = accent;
         this.category = category;
         this.units = units;
+        this.unitsDeclared = unitsDeclared;
         this.usage = usage;
         this.ports = List.copyOf(ports);
         this.knobs = List.copyOf(knobs);
@@ -117,6 +124,23 @@ public final class DeviceFile {
 
     public int units() {
         return units;
+    }
+
+    /**
+     * Whether the file spelled out "units" itself. When it did not, the
+     * loader is free to pick the smallest height whose face fits — a
+     * device author should not need to know the widgets' pixel metrics
+     * (the v2.0.0 walk: the tutorial's own knob-carrying example could
+     * not mount at the silent 1U default).
+     */
+    boolean unitsDeclared() {
+        return unitsDeclared;
+    }
+
+    /** A copy of this device at a different faceplate height. */
+    DeviceFile withUnits(int newUnits) {
+        return new DeviceFile(id, title, tagline, accent, category, newUnits,
+                unitsDeclared, usage, ports, knobs, buttons, lcdLabel, lcdWidth);
     }
 
     public String usage() {
@@ -231,6 +255,7 @@ public final class DeviceFile {
         }
         accent = Color.decode(hex);
 
+        boolean unitsDeclared = o.has("units");
         int units = o.optInt("units", 1);
         if (units < 1 || units > MAX_UNITS) {
             return new Result(null, "\"units\" must be 1–" + MAX_UNITS + ", not " + units);
@@ -397,6 +422,6 @@ public final class DeviceFile {
         }
 
         return new Result(new DeviceFile(id, title, tagline, accent, category, units,
-                usage, ports, knobs, buttons, lcdLabel, lcdWidth), null);
+                unitsDeclared, usage, ports, knobs, buttons, lcdLabel, lcdWidth), null);
     }
 }

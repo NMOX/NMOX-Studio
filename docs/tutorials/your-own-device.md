@@ -60,6 +60,10 @@ format insists on two real lines.
 
 ## 4. Press it
 
+> Notice there is no `units` line: the shelf measures the face and
+> picks the smallest height that fits (this one needs 2U for the
+> knob). Declare `units` only when you want extra room.
+
 Aim the rack at a git project, dial **KIND** to `js`, and press
 **COUNT**.
 

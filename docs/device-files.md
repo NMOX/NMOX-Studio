@@ -68,7 +68,7 @@ on the shelf under **Automate**.
 | `usage` | yes | The How-to-use card. Two lines or more, over 60 characters: what it does, then a patch recipe. |
 | `category` | yes | `AUTOMATE`, `VERIFY`, `SERVE`, `FRAMEWORKS`, `OBSERVE`, `SHIP`, or `UTILITY` — which shelf drawer it sits in. |
 | `accent` | no | `#RRGGBB` faceplate accent. Defaults to a neutral green. |
-| `units` | no | Faceplate height, 1–4. Default 1. |
+| `units` | no | Faceplate height, 1–3. When absent, the shelf picks the smallest height whose face fits — declare it only to reserve extra room. A declared height too small for the controls refuses at load. |
 | `lcd` | no | `{ "label": ..., "widthPx": 60–900 }`. Defaults to `STATUS` at 420. |
 
 ### Knobs

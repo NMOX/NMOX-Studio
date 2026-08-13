@@ -289,6 +289,20 @@ public final class DeviceCatalog {
 
         @Override
         public RackDevice create() {
+            // A user device may have been edited since this entry was
+            // listed (the palette keeps entries across repaints), so a
+            // JSON device mounts from the file's CURRENT contents, not
+            // the parse captured at listing time — the v2.0.0 walk's
+            // stale-mount finding. A deleted file falls back to the
+            // captured parse; the next shelf refresh drops the entry.
+            if (extension instanceof JsonDeviceExtension) {
+                for (DeviceExtension fresh : UserDevices.all()) {
+                    if (fresh instanceof JsonDeviceExtension
+                            && fresh.descriptor().id().equals(d.id())) {
+                        return new ExtensionDevice(fresh);
+                    }
+                }
+            }
             return new ExtensionDevice(extension);
         }
 
