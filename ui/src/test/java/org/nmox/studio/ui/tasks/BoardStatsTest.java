@@ -107,9 +107,11 @@ class BoardStatsTest {
     @Test
     @DisplayName("WIP now counts the middle columns only — never To Do, never Done")
     void wipIsTheMiddle() {
-        BoardStats s = BoardStats.of(board(), NOW, UTC, 14, 5);
+        // Done must be NON-empty here: a mutant that counts the last
+        // column only diverges when there is something in it to count
+        BoardStats s = BoardStats.of(board(daysAgo(1), daysAgo(2)), NOW, UTC, 14, 5);
         assertThat(s.wipNow()).isEqualTo(2);
-        assertThat(s.totalCards()).isEqualTo(4);
+        assertThat(s.totalCards()).isEqualTo(6);
     }
 
     @Test

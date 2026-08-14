@@ -212,13 +212,16 @@ final class OverviewPanel extends JPanel {
         return new Font(Font.MONOSPACED, style, Math.round(size));
     }
 
-    /** One column's count bar; red when over its advisory limit. */
-    private static final class Bar extends JComponent {
+    /** One column's count bar; red when over its advisory limit.
+     *  A JPanel, not a bare JComponent: JComponent has NO accessible
+     *  context of its own, and the walk found the null the hard way. */
+    private static final class Bar extends JPanel {
         private final int count;
         private final int max;
         private final boolean over;
 
         Bar(int count, int max, boolean over) {
+            setOpaque(false);
             this.count = count;
             this.max = Math.max(1, max);
             this.over = over;
@@ -241,12 +244,14 @@ final class OverviewPanel extends JPanel {
         }
     }
 
-    /** The N-day painted flow strip: one bar per day, oldest first. */
-    private static final class FlowStrip extends JComponent {
+    /** The N-day painted flow strip: one bar per day, oldest first.
+     *  JPanel for the same accessible-context reason as Bar. */
+    private static final class FlowStrip extends JPanel {
         private final int[] bins;
         private final int max;
 
         FlowStrip(int[] bins) {
+            setOpaque(false);
             this.bins = bins;
             int m = 1;
             for (int b : bins) {
