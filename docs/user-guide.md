@@ -546,6 +546,14 @@ unblock action. Finishing a blocked card clears it from the register.
 The overview also keeps board-level **retro notes** (Edit Retro…),
 saved with the board so a checked-in retro is the team's.
 
+**The time clock:** right-click a card → **Clock In** to start
+tracking (⏱ appears on the card and the header shows the running
+elapsed); **Clock Out** stops it. Only one clock runs at a time —
+clocking in elsewhere closes the running session. The overview's
+**TIME** section is the report: clocked today and last-7-days totals,
+then per-card rows, most-today first. Sessions live in
+`.nmoxtasks.json`, so a running clock survives a restart.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the

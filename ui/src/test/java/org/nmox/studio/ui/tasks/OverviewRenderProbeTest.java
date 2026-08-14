@@ -40,6 +40,10 @@ class OverviewRenderProbeTest {
         board.block(w.id(), "alice", "needs the cert");
         board.setLabel(w.id(), "auth");
         board.setRetro("went well: everything");
+        // the TIME section renders too: one closed session + one running
+        board.clockIn(w.id(), System.currentTimeMillis() - 7_200_000L);
+        board.clockOut(w.id(), System.currentTimeMillis() - 3_600_000L);
+        board.clockIn(c.id(), System.currentTimeMillis() - 600_000L);
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             OverviewPanel panel = new OverviewPanel(() -> { });
             panel.show(board, "probe");

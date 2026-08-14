@@ -53,6 +53,10 @@ public final class TaskBoard {
         private String blockOwner;
         private String blockAction;
         private long blockedSince;
+        /** Work sessions (v2.6.0): [start, end] pairs, end 0 while the
+         *  clock runs. At most ONE session on the whole board is open —
+         *  clocking in anywhere clocks out whatever was running. */
+        private final List<long[]> sessions = new ArrayList<>();
 
         Card(String id, String title, String notes, long created, long done,
                 String label, String blockOwner, String blockAction,
@@ -106,6 +110,20 @@ public final class TaskBoard {
 
         public boolean blocked() {
             return !blockAction.isEmpty();
+        }
+
+        /** Work sessions as [startMillis, endMillis] pairs (end 0 = running). */
+        public List<long[]> sessions() {
+            List<long[]> out = new ArrayList<>(sessions.size());
+            for (long[] sn : sessions) {
+                out.add(sn.clone());
+            }
+            return out;
+        }
+
+        public boolean clockedIn() {
+            return !sessions.isEmpty()
+                    && sessions.get(sessions.size() - 1)[1] == 0L;
         }
     }
 
@@ -378,6 +396,59 @@ public final class TaskBoard {
         return true;
     }
 
+    // ---- the time clock (v2.6.0) -----------------------------------------
+
+    /** The card whose clock is running, or null. */
+    public Card runningCard() {
+        for (Column col : columns) {
+            for (Card c : col.cards) {
+                if (c.clockedIn()) {
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Starts the clock on {@code id} at {@code now}. Only one clock runs
+     * on the whole board — you are only ever working on one thing — so
+     * clocking in here first clocks out whatever was running. Refused
+     * when the card is unknown or ALREADY running (a double clock-in
+     * would silently fork time).
+     */
+    public boolean clockIn(String id, long now) {
+        Card c = find(id);
+        if (c == null || c.clockedIn()) {
+            return false;
+        }
+        Card running = runningCard();
+        if (running != null) {
+            clockOut(running.id(), now);
+        }
+        c.sessions.add(new long[]{now, 0L});
+        return true;
+    }
+
+    /**
+     * Stops the running clock on {@code id} at {@code now}; refused when
+     * that card's clock is not running. A session shorter than a minute
+     * is DROPPED whole — an accidental in/out is noise, not work.
+     */
+    public boolean clockOut(String id, long now) {
+        Card c = find(id);
+        if (c == null || !c.clockedIn()) {
+            return false;
+        }
+        long[] open = c.sessions.get(c.sessions.size() - 1);
+        if (now - open[0] < 60_000L) {
+            c.sessions.remove(c.sessions.size() - 1);
+        } else {
+            open[1] = now;
+        }
+        return true;
+    }
+
     // ---- persistence -----------------------------------------------------
 
     public String toJson() {
@@ -411,6 +482,16 @@ public final class TaskBoard {
                         j.put("blockOwner", c.blockOwner);
                     }
                     j.put("blockedSince", c.blockedSince);
+                }
+                if (!c.sessions.isEmpty()) {
+                    JSONArray sess = new JSONArray();
+                    for (long[] sn : c.sessions) {
+                        JSONArray pair = new JSONArray();
+                        pair.put(sn[0]);
+                        pair.put(sn[1]);
+                        sess.put(pair);
+                    }
+                    j.put("sessions", sess);
                 }
                 cards.put(j);
             }
@@ -453,7 +534,7 @@ public final class TaskBoard {
                         id = UUID.randomUUID().toString();
                         seenIds.add(id);
                     }
-                    col.cards.add(new Card(
+                    Card card = new Card(
                             id,
                             j.getString("title"),
                             j.optString("notes", ""),
@@ -462,7 +543,24 @@ public final class TaskBoard {
                             j.optString("label", ""),
                             j.optString("blockOwner", ""),
                             j.optString("blockAction", ""),
-                            j.optLong("blockedSince", 0L)));
+                            j.optLong("blockedSince", 0L));
+                    JSONArray sess = j.optJSONArray("sessions");
+                    if (sess != null) {
+                        for (int m = 0; m < sess.length(); m++) {
+                            JSONArray pair = sess.optJSONArray(m);
+                            if (pair != null && pair.length() == 2
+                                    && pair.optLong(0, 0L) > 0L) {
+                                // an open pair (end 0) survives only on the
+                                // LAST session; anything else is a stale
+                                // hand-edit and closes at its own start
+                                long start = pair.optLong(0, 0L);
+                                long end = pair.optLong(1, 0L);
+                                card.sessions.add(new long[]{start,
+                                        end != 0L && end < start ? start : end});
+                            }
+                        }
+                    }
+                    col.cards.add(card);
                 }
             }
             b.columns.add(col);
