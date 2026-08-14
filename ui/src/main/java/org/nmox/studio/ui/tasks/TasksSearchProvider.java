@@ -51,14 +51,34 @@ public class TasksSearchProvider implements SearchProvider {
         }
         for (TaskBoard.Column col : board.columns()) {
             for (TaskBoard.Card c : col.cards()) {
-                if (c.title().toLowerCase(Locale.ROOT).contains(needle)) {
-                    String label = c.title() + " — " + col.name() + " (Tasks)";
-                    if (!addResult.test(TasksSearchProvider::openTasks, label)) {
-                        return;
-                    }
+                if (!matches(c, needle)) {
+                    continue;
+                }
+                String label = (c.blocked() ? "\u26d4 " : "") + c.title()
+                        + (c.label().isEmpty() ? "" : "  [" + c.label() + "]")
+                        + " — " + col.name() + " (Tasks)";
+                if (!addResult.test(TasksSearchProvider::openTasks, label)) {
+                    return;
                 }
             }
         }
+    }
+
+    /**
+     * A card matches on its title, its epic label (searching the epic
+     * name finds the epic's cards), or — for the literal query
+     * "blocked" — on being blocked, so ⌘I blocked is the keyboard road
+     * to the register (v2.7.0).
+     */
+    private static boolean matches(TaskBoard.Card c, String needle) {
+        if (c.title().toLowerCase(Locale.ROOT).contains(needle)) {
+            return true;
+        }
+        if (!c.label().isEmpty()
+                && c.label().toLowerCase(Locale.ROOT).contains(needle)) {
+            return true;
+        }
+        return c.blocked() && "blocked".equals(needle);
     }
 
     private static void openTasks() {

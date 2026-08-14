@@ -138,7 +138,7 @@ public final class ApiClientTopComponent extends TopComponent {
     /** One offer per (url + project) per session — recorded at offer time. */
     private final java.util.Set<String> offeredBaseUrls = new java.util.HashSet<>();
     /** Polls .nmoxapi.json for foreign edits while the tab is open. */
-    private org.nmox.studio.apiclient.api.WorkspaceFilePulse filePulse;
+    private org.nmox.studio.core.util.FilePulse filePulse;
     /** Distinguishes our own saves from foreign edits. */
     private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
             new org.nmox.studio.core.util.SelfWriteTracker();
@@ -2107,11 +2107,11 @@ public final class ApiClientTopComponent extends TopComponent {
         if (!isOpened()) {
             return;
         }
-        filePulse = new org.nmox.studio.apiclient.api.WorkspaceFilePulse(
+        filePulse = new org.nmox.studio.core.util.FilePulse(
                 new File(boundDir(), WorkspaceIO.FILENAME),
                 this::onWorkspaceFileChanged);
         filePulse.start(
-                org.nmox.studio.apiclient.api.WorkspaceFilePulse.DEFAULT_INTERVAL_MS);
+                org.nmox.studio.core.util.FilePulse.DEFAULT_INTERVAL_MS);
     }
 
     /** A fresh registry snapshot, taken off the EDT — offers re-evaluate. */

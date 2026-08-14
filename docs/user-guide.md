@@ -554,6 +554,12 @@ clocking in elsewhere closes the running session. The overview's
 then per-card rows, most-today first. Sessions live in
 `.nmoxtasks.json`, so a running clock survives a restart.
 
+The board also follows the file both ways: edit `.nmoxtasks.json` by
+hand, pull a teammate's changes, or check out another branch, and the
+visible board updates within about a second and a half. And ⌘I reaches
+the board's new dimensions — search an epic label to list its cards,
+or type `blocked` to surface everything in the blocker register.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the
