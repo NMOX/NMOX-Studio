@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.7.1] - 2026-08-14
+
+David's directive: comment the codebase so a Junior Java Developer
+learning NetBeans RCP can follow along — a documentation pass for the
+source itself. Measured first: all 638 public top-level types already
+carry a class javadoc (the v1.202 comments arc held for 300+
+releases), so the real gap was one level up and one level out.
+
+### Added
+- **22 `package-info.java` neighborhood maps** — the level a newcomer
+  actually navigates at. Each answers three questions: what lives in
+  this package, which RCP mechanism it rides (Lookup, TopComponent,
+  MimeRegistration, CompletionProvider…), and what to read first.
+  Covered: `core.util` (the house-law toolbox), `core.spi` (the
+  soft-dependency architecture, THE idea to learn before any
+  cross-module code), the rack's model/engine/service/devices/controls
+  packages, `ui.tasks` / `ui.irc` / `ui.browser`, seven editor
+  packages (grammars, languages, lsp, completion, angular, design,
+  emmet), `tools.npm` (the Lookup lesson), and the four studio engine
+  rooms. IDEs surface these on package hover.
+- **A fifth traced flow in the codebase guide**: "Click Clock In on a
+  task card" — one click crossing every persistence law (clicked-item
+  popups, the one mutate() path, the pure model, the single IO lane,
+  atomic writes, self-write tracking, the live pulse) through five
+  named files in reading order. The guide's counts and module map are
+  current again, and "Where to go next" points at the package maps.
+- **`JuniorDocsGateTest`** makes the standard durable: every public
+  top-level type must carry a class javadoc (annotation-tolerant
+  detector), and the curated onboarding packages must keep their
+  package-info. Package-PRIVATE types are deliberately out of scope —
+  the first mutation attempt proved the boundary by surviving on one.
+
+### Changed
+- The five remaining one-line class headers (Cable, the HTML attribute
+  completion item, and the Aiken/Clarity/Tact language configs) grew
+  into teaching headers — each now explains its platform mechanism and
+  names the law it demonstrates.
+
 ## [2.7.0] - 2026-08-14
 
 David's directive: look at the project as a Senior Java Developer —
@@ -12945,6 +12983,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.7.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.4.0...v2.5.0

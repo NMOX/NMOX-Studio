@@ -10,7 +10,16 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 
-/** One enumerated attribute value, inserted as plain text inside the quotes. */
+/**
+ * One enumerated attribute value, inserted as plain text inside the
+ * quotes — the row you see when completing {@code type="…"} on an
+ * {@code <input>}. This is the smallest useful example of the
+ * platform's {@code CompletionItem} contract: the provider creates one
+ * per candidate, {@code defaultAction} replaces the document span from
+ * {@code startOffset} to the caret, and
+ * {@code CompletionUtilities.renderHtml} paints the row. If you are
+ * writing a new completion, copy this shape before the fancier items.
+ */
 public class HtmlAttributeValueCompletionItem implements CompletionItem {
 
     private final String value;

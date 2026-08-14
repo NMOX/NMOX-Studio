@@ -4,7 +4,14 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 
-/** Tact (TON contracts) as a first-class CSL language. */
+/**
+ * Tact (TON smart contracts) as a first-class CSL language — grammar
+ * highlights, this class supplies the editor kit (comments, brace
+ * pairs, keywords). Tact carries the TON chain here because FunC's
+ * only grammar is GPL-licensed and archived (recorded in NOTICE when
+ * v1.153.0 chose the MIT route). Lexer via {@code Lexers.find} per
+ * the package law.
+ */
 @LanguageRegistration(mimeType = "text/x-tact")
 public class TactLanguage extends DefaultLanguageConfig {
 
