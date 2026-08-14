@@ -40,6 +40,14 @@ final class BoardStats {
     record AgingCard(String title, String column, long ageDays) {
     }
 
+    /** One row of the blocker register (v2.5.0). */
+    record Blocker(String title, String owner, String action, long sinceDays) {
+    }
+
+    /** One epic label and how many cards wear it. */
+    record LabelCount(String label, int count) {
+    }
+
     private final int totalCards;
     private final int wipNow;
     private final int doneToday;
@@ -47,10 +55,13 @@ final class BoardStats {
     private final List<ColumnStat> columnStats;
     private final int[] flow;
     private final List<AgingCard> oldestActive;
+    private final List<Blocker> blockers;
+    private final List<LabelCount> labels;
 
     private BoardStats(int totalCards, int wipNow, int doneToday,
             int doneThisWeek, List<ColumnStat> columnStats, int[] flow,
-            List<AgingCard> oldestActive) {
+            List<AgingCard> oldestActive, List<Blocker> blockers,
+            List<LabelCount> labels) {
         this.totalCards = totalCards;
         this.wipNow = wipNow;
         this.doneToday = doneToday;
@@ -58,6 +69,8 @@ final class BoardStats {
         this.columnStats = columnStats;
         this.flow = flow;
         this.oldestActive = oldestActive;
+        this.blockers = blockers;
+        this.labels = labels;
     }
 
     int totalCards() {
@@ -89,6 +102,23 @@ final class BoardStats {
         return oldestActive;
     }
 
+    /** Blocked cards outside the last column, longest-stuck first. A
+     *  blocked card that reached Done left the register: finishing IS
+     *  the unblock the register was tracking. */
+    List<Blocker> blockers() {
+        return blockers;
+    }
+
+    int blockedCount() {
+        return blockers.size();
+    }
+
+    /** Every label in use with its card count, busiest first, ties by
+     *  name — the overview's derived epic legend. */
+    List<LabelCount> labels() {
+        return labels;
+    }
+
     /**
      * Computes the overview for {@code board} as of {@code nowMillis} in
      * {@code zone}, with a {@code flowDays}-day history and at most
@@ -107,6 +137,8 @@ final class BoardStats {
         int[] bins = new int[Math.max(1, flowDays)];
         List<ColumnStat> stats = new ArrayList<>();
         List<AgingCard> aging = new ArrayList<>();
+        List<Blocker> blockers = new ArrayList<>();
+        java.util.Map<String, Integer> labelCounts = new java.util.TreeMap<>();
 
         for (int i = 0; i < cols.size(); i++) {
             TaskBoard.Column col = cols.get(i);
@@ -118,6 +150,17 @@ final class BoardStats {
                 wip += cards.size();
             }
             for (TaskBoard.Card c : cards) {
+                if (!c.label().isEmpty()) {
+                    labelCounts.merge(c.label(), 1, Integer::sum);
+                }
+                if (c.blocked() && i < last) {
+                    blockers.add(new Blocker(c.title(), c.blockOwner(),
+                            c.blockAction(),
+                            c.blockedSince() > 0L
+                                    ? Math.max(0, (nowMillis - c.blockedSince())
+                                            / 86_400_000L)
+                                    : 0));
+                }
                 if (c.done() > 0L) {
                     LocalDate doneDay = LocalDate.ofInstant(
                             Instant.ofEpochMilli(c.done()), zone);
@@ -146,7 +189,13 @@ final class BoardStats {
         if (aging.size() > agingLimit) {
             aging = new ArrayList<>(aging.subList(0, agingLimit));
         }
+        blockers.sort(Comparator.comparingLong(b -> -b.sinceDays()));
+        List<LabelCount> labels = new ArrayList<>();
+        labelCounts.forEach((l, n) -> labels.add(new LabelCount(l, n)));
+        labels.sort(Comparator.comparingInt((LabelCount l) -> -l.count())
+                .thenComparing(LabelCount::label));
         return new BoardStats(total, wip, dToday, dWeek,
-                List.copyOf(stats), bins, List.copyOf(aging));
+                List.copyOf(stats), bins, List.copyOf(aging),
+                List.copyOf(blockers), List.copyOf(labels));
     }
 }

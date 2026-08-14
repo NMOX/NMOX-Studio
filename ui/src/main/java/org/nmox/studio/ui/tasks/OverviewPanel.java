@@ -47,7 +47,12 @@ final class OverviewPanel extends JPanel {
     private static final int FLOW_DAYS = 14;
     private static final int AGING_ROWS = 5;
 
-    OverviewPanel() {
+    /** Invoked by the Edit Retro button; the window supplies the
+     *  dialog and routes the change through its one mutate() path. */
+    private final Runnable editRetro;
+
+    OverviewPanel(Runnable editRetro) {
+        this.editRetro = editRetro;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(GROUND);
         setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
@@ -64,7 +69,7 @@ final class OverviewPanel extends JPanel {
                 : "BOARD OVERVIEW · " + projectName));
         add(Box.createVerticalStrut(8));
 
-        JPanel tiles = new JPanel(new GridLayout(1, 4, 8, 0));
+        JPanel tiles = new JPanel(new GridLayout(1, 5, 8, 0));
         tiles.setOpaque(false);
         tiles.setAlignmentX(LEFT_ALIGNMENT);
         tiles.setMaximumSize(new Dimension(Integer.MAX_VALUE, 84));
@@ -73,6 +78,14 @@ final class OverviewPanel extends JPanel {
                 "WIP NOW (MIDDLE COLUMNS)"));
         tiles.add(tile(String.valueOf(s.doneToday()), "DONE TODAY"));
         tiles.add(tile(String.valueOf(s.doneThisWeek()), "DONE THIS WEEK"));
+        JComponent blockedTile = tile(String.valueOf(s.blockedCount()),
+                "BLOCKED");
+        if (s.blockedCount() > 0) {
+            // the one number on the board that should read as an alarm
+            ((JLabel) ((JPanel) blockedTile).getComponent(0))
+                    .setForeground(OVER);
+        }
+        tiles.add(blockedTile);
         add(tiles);
         add(Box.createVerticalStrut(10));
 
@@ -101,6 +114,36 @@ final class OverviewPanel extends JPanel {
         add(flow);
         add(Box.createVerticalStrut(10));
 
+        add(sectionLabel("BLOCKER REGISTER — every blocker has an owner"
+                + " and an unblock action"));
+        add(Box.createVerticalStrut(4));
+        if (s.blockers().isEmpty()) {
+            JLabel none = PlainTables.plain(new JLabel(
+                    "No blocked cards — nothing is waiting on anyone."));
+            none.setForeground(DIM);
+            add(none);
+        } else {
+            for (BoardStats.Blocker b : s.blockers()) {
+                add(blockerRow(b));
+                add(Box.createVerticalStrut(2));
+            }
+        }
+        add(Box.createVerticalStrut(10));
+
+        if (!s.labels().isEmpty()) {
+            add(sectionLabel("EPICS — labels in use, busiest first"));
+            add(Box.createVerticalStrut(4));
+            JPanel legend = new JPanel(
+                    new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 14, 2));
+            legend.setOpaque(false);
+            legend.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));
+            for (BoardStats.LabelCount lc : s.labels()) {
+                legend.add(legendChip(lc));
+            }
+            add(legend);
+            add(Box.createVerticalStrut(10));
+        }
+
         add(sectionLabel("NEEDS ATTENTION — oldest unfinished cards"));
         add(Box.createVerticalStrut(4));
         if (s.oldestActive().isEmpty()) {
@@ -115,9 +158,83 @@ final class OverviewPanel extends JPanel {
                 add(Box.createVerticalStrut(2));
             }
         }
+        add(Box.createVerticalStrut(10));
+        JPanel retroHead = new JPanel(new BorderLayout(8, 0));
+        retroHead.setOpaque(false);
+        retroHead.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+        retroHead.add(sectionLabel("RETRO — what went well, what bit us,"
+                + " what changed"), BorderLayout.WEST);
+        javax.swing.JButton edit = new javax.swing.JButton("Edit Retro…");
+        edit.getAccessibleContext().setAccessibleName("Edit retro notes");
+        edit.setFont(mono(Font.PLAIN, 10f));
+        edit.addActionListener(e -> editRetro.run());
+        retroHead.add(edit, BorderLayout.EAST);
+        add(retroHead);
+        add(Box.createVerticalStrut(4));
+        String retro = board.retro();
+        if (retro.isEmpty()) {
+            JLabel none = PlainTables.plain(new JLabel(
+                    "No retro notes yet — Edit Retro… starts them."));
+            none.setForeground(DIM);
+            add(none);
+        } else {
+            javax.swing.JTextArea text = new javax.swing.JTextArea(retro);
+            text.setEditable(false);
+            text.setLineWrap(true);
+            text.setWrapStyleWord(true);
+            text.setOpaque(false);
+            text.setForeground(TEXT);
+            text.setFont(mono(Font.PLAIN, 12f));
+            text.getAccessibleContext().setAccessibleName("Retro notes");
+            add(text);
+        }
         add(Box.createVerticalGlue());
         revalidate();
         repaint();
+    }
+
+    private JComponent blockerRow(BoardStats.Blocker b) {
+        JPanel row = new JPanel(new BorderLayout(8, 0));
+        row.setOpaque(false);
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
+        JLabel title = PlainTables.plain(new JLabel(clip(b.title())));
+        title.setForeground(OVER);
+        title.setFont(mono(Font.PLAIN, 12f));
+        String owner = b.owner().isEmpty() ? "unowned" : b.owner();
+        JLabel meta = PlainTables.plain(new JLabel(
+                owner + " · " + b.sinceDays() + "d · " + clip(b.action())));
+        meta.setForeground(DIM);
+        meta.setFont(mono(Font.PLAIN, 11f));
+        row.add(title, BorderLayout.WEST);
+        row.add(meta, BorderLayout.EAST);
+        row.getAccessibleContext().setAccessibleName("Blocked: " + b.title()
+                + ", owner " + owner + ", " + b.sinceDays()
+                + " days, unblock: " + b.action());
+        return row;
+    }
+
+    private JComponent legendChip(BoardStats.LabelCount lc) {
+        JPanel chip = new JPanel(
+                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        chip.setOpaque(false);
+        JPanel dot = new JPanel();
+        dot.setBackground(labelColor(lc.label()));
+        dot.setPreferredSize(new Dimension(9, 9));
+        JLabel text = PlainTables.plain(new JLabel(
+                lc.label() + " — " + lc.count()));
+        text.setForeground(TEXT);
+        text.setFont(mono(Font.PLAIN, 11f));
+        chip.add(dot);
+        chip.add(text);
+        chip.getAccessibleContext().setAccessibleName(
+                "Epic " + lc.label() + ", " + lc.count() + " cards");
+        return chip;
+    }
+
+    /** A stable per-label hue — same recipe family as IRC nick colors. */
+    static Color labelColor(String label) {
+        float hue = (Math.abs(label.hashCode()) % 360) / 360f;
+        return Color.getHSBColor(hue, 0.55f, 0.85f);
     }
 
     // ---- pieces ----------------------------------------------------------

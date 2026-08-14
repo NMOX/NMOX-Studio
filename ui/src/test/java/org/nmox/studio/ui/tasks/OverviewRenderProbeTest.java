@@ -33,11 +33,15 @@ class OverviewRenderProbeTest {
     @DisplayName("show() builds the whole face — tiles, columns, flow, attention")
     void overviewBuildsWhole() throws Exception {
         TaskBoard board = TaskBoard.starter();
-        board.addCard(0, "waiting card", "");
+        TaskBoard.Card w = board.addCard(0, "waiting card", "");
         TaskBoard.Card c = board.addCard(1, "moving card", "");
         board.moveCard(c.id(), 2, 0); // stamps done → the flow strip has history
+        // the editorial panels (v2.5.0) build too: register, legend, retro
+        board.block(w.id(), "alice", "needs the cert");
+        board.setLabel(w.id(), "auth");
+        board.setRetro("went well: everything");
         javax.swing.SwingUtilities.invokeAndWait(() -> {
-            OverviewPanel panel = new OverviewPanel();
+            OverviewPanel panel = new OverviewPanel(() -> { });
             panel.show(board, "probe");
             // the crash class this pins: a null accessible context inside
             // show() aborts the build partway — the tree then stops early
@@ -49,7 +53,7 @@ class OverviewRenderProbeTest {
     @DisplayName("An empty starter board still builds — the honest no-history face")
     void emptyBoardBuilds() throws Exception {
         javax.swing.SwingUtilities.invokeAndWait(() -> {
-            OverviewPanel panel = new OverviewPanel();
+            OverviewPanel panel = new OverviewPanel(() -> { });
             panel.show(TaskBoard.starter(), null);
             assertThat(deepCount(panel)).isGreaterThan(10);
         });

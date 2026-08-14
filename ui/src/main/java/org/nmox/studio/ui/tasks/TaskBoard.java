@@ -43,13 +43,29 @@ public final class TaskBoard {
          * that really happened, not the board's current shape (v2.4.0).
          */
         private long done;
+        /** Epic/category label, "" = none. Free text; the overview's
+         *  legend derives itself from the distinct labels in use. */
+        private String label;
+        /** The blocker triple (v2.5.0): a card is blocked when
+         *  {@code blockAction} is non-empty. The action says what
+         *  unblocks it, the owner is who is on the hook, and since is
+         *  auto-stamped at block time. Unblocking clears all three. */
+        private String blockOwner;
+        private String blockAction;
+        private long blockedSince;
 
-        Card(String id, String title, String notes, long created, long done) {
+        Card(String id, String title, String notes, long created, long done,
+                String label, String blockOwner, String blockAction,
+                long blockedSince) {
             this.id = id;
             this.title = title;
             this.notes = notes;
             this.created = created;
             this.done = done;
+            this.label = label;
+            this.blockOwner = blockOwner;
+            this.blockAction = blockAction;
+            this.blockedSince = blockedSince;
         }
 
         public String id() {
@@ -70,6 +86,26 @@ public final class TaskBoard {
 
         public long done() {
             return done;
+        }
+
+        public String label() {
+            return label;
+        }
+
+        public String blockOwner() {
+            return blockOwner;
+        }
+
+        public String blockAction() {
+            return blockAction;
+        }
+
+        public long blockedSince() {
+            return blockedSince;
+        }
+
+        public boolean blocked() {
+            return !blockAction.isEmpty();
         }
     }
 
@@ -104,6 +140,8 @@ public final class TaskBoard {
     }
 
     private final List<Column> columns = new ArrayList<>();
+    /** Board-level retro notes (v2.5.0), free multiline text, "" = none. */
+    private String retro = "";
 
     /** The three-column starter every fresh project begins with. */
     public static TaskBoard starter() {
@@ -192,7 +230,7 @@ public final class TaskBoard {
         long now = System.currentTimeMillis();
         Card c = new Card(UUID.randomUUID().toString(), title.strip(),
                 notes == null ? "" : notes, now,
-                column == columns.size() - 1 ? now : 0L);
+                column == columns.size() - 1 ? now : 0L, "", "", "", 0L);
         columns.get(column).cards.add(c);
         return c;
     }
@@ -285,6 +323,61 @@ public final class TaskBoard {
         return n;
     }
 
+    // ---- labels, blockers, retro (v2.5.0) --------------------------------
+
+    public String retro() {
+        return retro;
+    }
+
+    public void setRetro(String text) {
+        this.retro = text == null ? "" : text;
+    }
+
+    /** Sets (or with "" clears) the card's epic label. */
+    public boolean setLabel(String id, String label) {
+        Card c = find(id);
+        if (c == null) {
+            return false;
+        }
+        c.label = label == null ? "" : label.strip();
+        return true;
+    }
+
+    /**
+     * Marks the card blocked. The unblock ACTION is what makes a
+     * blocker actionable (the register's whole point), so a blank one
+     * is refused; the owner may be blank. Re-blocking an already
+     * blocked card updates owner and action but keeps the ORIGINAL
+     * since stamp — the card has been stuck since it first stuck.
+     */
+    public boolean block(String id, String owner, String action) {
+        if (action == null || action.strip().isEmpty()) {
+            return false;
+        }
+        Card c = find(id);
+        if (c == null) {
+            return false;
+        }
+        c.blockOwner = owner == null ? "" : owner.strip();
+        c.blockAction = action.strip();
+        if (c.blockedSince == 0L) {
+            c.blockedSince = System.currentTimeMillis();
+        }
+        return true;
+    }
+
+    /** Clears the whole blocker triple. */
+    public boolean unblock(String id) {
+        Card c = find(id);
+        if (c == null) {
+            return false;
+        }
+        c.blockOwner = "";
+        c.blockAction = "";
+        c.blockedSince = 0L;
+        return true;
+    }
+
     // ---- persistence -----------------------------------------------------
 
     public String toJson() {
@@ -309,12 +402,25 @@ public final class TaskBoard {
                 if (c.done > 0L) {
                     j.put("done", c.done);
                 }
+                if (!c.label.isEmpty()) {
+                    j.put("label", c.label);
+                }
+                if (c.blocked()) {
+                    j.put("blockAction", c.blockAction);
+                    if (!c.blockOwner.isEmpty()) {
+                        j.put("blockOwner", c.blockOwner);
+                    }
+                    j.put("blockedSince", c.blockedSince);
+                }
                 cards.put(j);
             }
             jc.put("cards", cards);
             cols.put(jc);
         }
         root.put("columns", cols);
+        if (!retro.isEmpty()) {
+            root.put("retro", retro);
+        }
         return root.toString(2);
     }
 
@@ -331,6 +437,7 @@ public final class TaskBoard {
     public static TaskBoard fromJson(String json) {
         JSONObject root = new JSONObject(json);
         TaskBoard b = new TaskBoard();
+        b.retro = root.optString("retro", "");
         java.util.Set<String> seenIds = new java.util.HashSet<>();
         JSONArray cols = root.getJSONArray("columns");
         for (int i = 0; i < cols.length(); i++) {
@@ -351,7 +458,11 @@ public final class TaskBoard {
                             j.getString("title"),
                             j.optString("notes", ""),
                             j.optLong("created", 0L),
-                            j.optLong("done", 0L)));
+                            j.optLong("done", 0L),
+                            j.optString("label", ""),
+                            j.optString("blockOwner", ""),
+                            j.optString("blockAction", ""),
+                            j.optLong("blockedSince", 0L)));
                 }
             }
             b.columns.add(col);
