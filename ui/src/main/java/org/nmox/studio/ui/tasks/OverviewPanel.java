@@ -231,9 +231,11 @@ final class OverviewPanel extends JPanel {
         return chip;
     }
 
-    /** A stable per-label hue — same recipe family as IRC nick colors. */
+    /** A stable per-label hue — same recipe family as IRC nick colors.
+     *  floorMod, not Math.abs: abs(Integer.MIN_VALUE) is still negative
+     *  (SpotBugs RV_ABSOLUTE_VALUE_OF_HASHCODE, caught by the verify). */
     static Color labelColor(String label) {
-        float hue = (Math.abs(label.hashCode()) % 360) / 360f;
+        float hue = Math.floorMod(label.hashCode(), 360) / 360f;
         return Color.getHSBColor(hue, 0.55f, 0.85f);
     }
 

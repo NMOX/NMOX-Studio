@@ -537,6 +537,15 @@ stamps the moment; dragging it back out un-finishes it and the history
 forgets it. Old boards just start with an empty flow strip until the
 first card lands in Done.
 
+Cards can carry more than a title: **Set Label…** tags a card with an
+epic (the overview derives a color-dot legend from the labels in use),
+and **Mark Blocked…** records who owns the blocker and what unblocks
+it — the card wears ⛔ on the board, and the overview's **blocker
+register** lists every stuck card with its owner, days stuck, and
+unblock action. Finishing a blocked card clears it from the register.
+The overview also keeps board-level **retro notes** (Edit Retro…),
+saved with the board so a checked-in retro is the team's.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the
