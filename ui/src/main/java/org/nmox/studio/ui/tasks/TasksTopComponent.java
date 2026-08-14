@@ -38,6 +38,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 
 import org.nmox.studio.core.spi.ProjectAim;
+import org.nmox.studio.core.util.FilePulse;
 import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.util.Popups;
 import org.nmox.studio.core.util.SelfWriteTracker;
@@ -69,13 +70,15 @@ import org.openide.windows.TopComponent;
  *       self-write discrimination, corrupt files kept as .bak — see
  *       {@link TasksIO}.</li>
  *   <li><b>External edits reload</b> (v1.35.0 family): the board
- *       re-reads on aim change and re-checks the file whenever the tab
- *       is shown or a mutation is about to stack on top of a foreign
- *       edit. V1 LIMIT, in writing: there is no live file WATCHER — an
- *       external edit while the tab is visible is picked up at the next
- *       show/mutation, not the same instant. The five older studios
- *       ride the rack's watcher; this window deliberately stays
- *       watcher-less until that seam moves to core.</li>
+ *       re-reads on aim change, re-checks the file before stacking a
+ *       mutation on a foreign edit, and — since v2.7.0 — a live
+ *       {@link FilePulse} notices an external edit while the tab is
+ *       visible and reloads within ~1.5 s. The v1.323.0 javadoc
+ *       recorded "no live watcher until that seam moves to core" as a
+ *       written limit; the seam moved (apiclient's pulse was promoted
+ *       to {@code core.util}) and the limit is closed. Self-writes are
+ *       discriminated by the tracker so the studio's own saves never
+ *       bounce back as reloads.</li>
  *   <li><b>Plain rendering</b> (v1.311.0): card and column text comes
  *       from a file a cloned repo can carry, so every renderer routes
  *       through {@link PlainTables#plain} — a {@code <html><img>} title
@@ -128,6 +131,9 @@ public final class TasksTopComponent extends TopComponent {
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
     private ProjectAim.Listener aimListener;
+    /** The live external-edit pulse over the bound .nmoxtasks.json
+     *  (v2.7.0); re-aimed with the project, stopped with the tab. */
+    private FilePulse filePulse;
     /** Ticks the header's running-clock elapsed while the tab shows;
      *  label-only on purpose — see headerText(). */
     private final javax.swing.Timer clockTicker = new javax.swing.Timer(
@@ -170,6 +176,35 @@ public final class TasksTopComponent extends TopComponent {
     @Override
     protected void componentHidden() {
         clockTicker.stop();
+        stopFilePulse();
+    }
+
+    private synchronized void stopFilePulse() {
+        if (filePulse != null) {
+            filePulse.stop();
+            filePulse = null;
+        }
+    }
+
+    /**
+     * (Re)aims the pulse at the bound project's file. The callback runs
+     * on the pulse's own daemon thread: the tracker's isForeign is the
+     * FIRST gate — the studio's own atomic saves change mtime+size too,
+     * and reloading on those would discard the strip's selection for no
+     * reason. Foreign means someone else wrote the file; the file wins.
+     */
+    private synchronized void restartFilePulse() {
+        stopFilePulse();
+        if (boundDir == null || !isOpened()) {
+            return;
+        }
+        filePulse = new FilePulse(TasksIO.fileFor(boundDir),
+                (mtime, size) -> {
+                    if (tracker.isForeign(mtime, size)) {
+                        java.awt.EventQueue.invokeLater(this::reload);
+                    }
+                });
+        filePulse.start(FilePulse.DEFAULT_INTERVAL_MS);
     }
 
     /** Re-reads the aimed project's board off the EDT, newest wins. */
@@ -193,6 +228,7 @@ public final class TasksTopComponent extends TopComponent {
                 board = loaded;
                 boundDir = dir;
                 rebuild();
+                restartFilePulse();
             });
         });
     }

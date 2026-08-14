@@ -1,18 +1,21 @@
-package org.nmox.studio.apiclient.api;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 
 /**
- * A 1.5 s stat-poll over one file — {@code .nmoxapi.json} — so edits
- * made outside the studio (hand edit, git checkout, another tool) are
- * noticed. The first tick primes the baseline and fires nothing; after
+ * A 1.5 s stat-poll over one file so edits made outside the product
+ * (hand edit, git checkout, another tool) are noticed. Born as API
+ * Studio's {@code WorkspaceFilePulse} (v1.35 era); promoted to core in
+ * v2.7.0 when the Task Board became its second consumer — every
+ * per-project studio file wants exactly this shape, and a copy per
+ * module is how the six studios drifted before the v1.35.0 sweep. The first tick primes the baseline and fires nothing; after
  * that, each mtime+size change fires exactly once, on the pulse's own
  * daemon thread (never the EDT — callers marshal themselves).
  *
  * <p>{@link #tick()} is synchronous so tests drive it deterministically;
  * {@link #start} merely loops it.
  */
-public final class WorkspaceFilePulse {
+public final class FilePulse {
 
     /** Called on the pulse thread; -1/-1 means the file is gone. */
     public interface Sink {
@@ -30,7 +33,7 @@ public final class WorkspaceFilePulse {
     private volatile boolean running;
     private Thread thread;
 
-    public WorkspaceFilePulse(File file, Sink sink) {
+    public FilePulse(File file, Sink sink) {
         this.file = file;
         this.sink = sink;
     }
@@ -52,7 +55,7 @@ public final class WorkspaceFilePulse {
                     return;
                 }
             }
-        }, "nmox-api-pulse");
+        }, "nmox-file-pulse");
         thread.setDaemon(true);
         thread.start();
     }

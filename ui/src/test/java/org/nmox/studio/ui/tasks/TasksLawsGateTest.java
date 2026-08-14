@@ -66,6 +66,28 @@ class TasksLawsGateTest {
     }
 
     @Test
+    @DisplayName("the live pulse reloads FOREIGN edits only, and dies with the tab (v2.7.0)")
+    void livePulseLaw() throws Exception {
+        String src = tc();
+        assertThat(src)
+                .as("the Tasks window watches its file with the promoted core"
+                        + " pulse — the v1.323.0 'no live watcher' limit is closed")
+                .contains("new FilePulse(TasksIO.fileFor(boundDir)");
+        assertThat(src)
+                .as("the pulse callback consults the tracker FIRST: the"
+                        + " studio's own atomic saves change mtime+size too,"
+                        + " and reloading on a self-write would drop the"
+                        + " user's selection for no reason")
+                .contains("if (tracker.isForeign(mtime, size))");
+        int hidden = src.indexOf("protected void componentHidden()");
+        assertThat(hidden).isPositive();
+        assertThat(src.substring(hidden, src.indexOf('}', hidden)))
+                .as("the pulse stops when the tab hides — no daemon poll"
+                        + " over a file nobody is looking at")
+                .contains("stopFilePulse()");
+    }
+
+    @Test
     @DisplayName("a foreign edit wins over a stale gesture (never-clobber)")
     void foreignEditGuard() throws Exception {
         assertThat(tc())

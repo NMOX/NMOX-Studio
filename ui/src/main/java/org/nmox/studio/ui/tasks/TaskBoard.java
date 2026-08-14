@@ -45,31 +45,33 @@ public final class TaskBoard {
         private long done;
         /** Epic/category label, "" = none. Free text; the overview's
          *  legend derives itself from the distinct labels in use. */
-        private String label;
+        private String label = "";
         /** The blocker triple (v2.5.0): a card is blocked when
          *  {@code blockAction} is non-empty. The action says what
          *  unblocks it, the owner is who is on the hook, and since is
          *  auto-stamped at block time. Unblocking clears all three. */
-        private String blockOwner;
-        private String blockAction;
+        private String blockOwner = "";
+        private String blockAction = "";
         private long blockedSince;
         /** Work sessions (v2.6.0): [start, end] pairs, end 0 while the
          *  clock runs. At most ONE session on the whole board is open —
          *  clocking in anywhere clocks out whatever was running. */
         private final List<long[]> sessions = new ArrayList<>();
 
-        Card(String id, String title, String notes, long created, long done,
-                String label, String blockOwner, String blockAction,
-                long blockedSince) {
+        /**
+         * Only the four REQUIRED fields ride the constructor; everything
+         * optional defaults empty and is assigned by the enclosing class
+         * (which sees these private fields directly). The v2.4–v2.6
+         * releases each widened the old telescoping constructor by
+         * another parameter — this shape ends that churn: the next
+         * optional field is a declaration and an assignment, not an
+         * arity change at every call site.
+         */
+        Card(String id, String title, String notes, long created) {
             this.id = id;
             this.title = title;
             this.notes = notes;
             this.created = created;
-            this.done = done;
-            this.label = label;
-            this.blockOwner = blockOwner;
-            this.blockAction = blockAction;
-            this.blockedSince = blockedSince;
         }
 
         public String id() {
@@ -247,8 +249,8 @@ public final class TaskBoard {
         }
         long now = System.currentTimeMillis();
         Card c = new Card(UUID.randomUUID().toString(), title.strip(),
-                notes == null ? "" : notes, now,
-                column == columns.size() - 1 ? now : 0L, "", "", "", 0L);
+                notes == null ? "" : notes, now);
+        c.done = column == columns.size() - 1 ? now : 0L;
         columns.get(column).cards.add(c);
         return c;
     }
@@ -538,12 +540,12 @@ public final class TaskBoard {
                             id,
                             j.getString("title"),
                             j.optString("notes", ""),
-                            j.optLong("created", 0L),
-                            j.optLong("done", 0L),
-                            j.optString("label", ""),
-                            j.optString("blockOwner", ""),
-                            j.optString("blockAction", ""),
-                            j.optLong("blockedSince", 0L));
+                            j.optLong("created", 0L));
+                    card.done = j.optLong("done", 0L);
+                    card.label = j.optString("label", "");
+                    card.blockOwner = j.optString("blockOwner", "");
+                    card.blockAction = j.optString("blockAction", "");
+                    card.blockedSince = j.optLong("blockedSince", 0L);
                     JSONArray sess = j.optJSONArray("sessions");
                     if (sess != null) {
                         for (int m = 0; m < sess.length(); m++) {

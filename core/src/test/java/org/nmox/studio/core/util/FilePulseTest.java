@@ -1,4 +1,4 @@
-package org.nmox.studio.apiclient.api;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * is synchronous, so these tests drive it directly; one thread smoke
  * test proves the loop loops.
  */
-class WorkspaceFilePulseTest {
+class FilePulseTest {
 
     @TempDir
     Path dir;
@@ -30,7 +30,7 @@ class WorkspaceFilePulseTest {
         Path file = dir.resolve(".nmoxapi.json");
         Files.writeString(file, "{}");
         List<long[]> events = new ArrayList<>();
-        WorkspaceFilePulse pulse = new WorkspaceFilePulse(file.toFile(),
+        FilePulse pulse = new FilePulse(file.toFile(),
                 (m, s) -> events.add(new long[]{m, s}));
 
         pulse.tick(); // prime
@@ -55,7 +55,7 @@ class WorkspaceFilePulseTest {
         Path file = dir.resolve(".nmoxapi.json");
         Files.writeString(file, "{}");
         List<long[]> events = new ArrayList<>();
-        WorkspaceFilePulse pulse = new WorkspaceFilePulse(file.toFile(),
+        FilePulse pulse = new FilePulse(file.toFile(),
                 (m, s) -> events.add(new long[]{m, s}));
         pulse.tick(); // prime
 
@@ -74,7 +74,7 @@ class WorkspaceFilePulseTest {
     @DisplayName("a missing file that stays missing never fires")
     void missingStaysQuiet() {
         List<long[]> events = new ArrayList<>();
-        WorkspaceFilePulse pulse = new WorkspaceFilePulse(
+        FilePulse pulse = new FilePulse(
                 new File(dir.toFile(), "never.json"),
                 (m, s) -> events.add(new long[]{m, s}));
         pulse.tick();
@@ -89,7 +89,7 @@ class WorkspaceFilePulseTest {
         Path file = dir.resolve(".nmoxapi.json");
         Files.writeString(file, "{}");
         CountDownLatch seen = new CountDownLatch(1);
-        WorkspaceFilePulse pulse = new WorkspaceFilePulse(file.toFile(),
+        FilePulse pulse = new FilePulse(file.toFile(),
                 (m, s) -> seen.countDown());
         pulse.tick(); // prime before the thread races the write below
         pulse.start(50);

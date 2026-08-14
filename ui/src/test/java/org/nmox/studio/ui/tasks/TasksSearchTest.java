@@ -47,6 +47,34 @@ class TasksSearchTest {
     }
 
     @Test
+    @DisplayName("searching an epic label finds the epic's cards (v2.7.0)")
+    void matchesLabel() {
+        TaskBoard b = TaskBoard.starter();
+        TaskBoard.Card c = b.addCard(0, "Ship the client", "");
+        b.setLabel(c.id(), "auth");
+        b.addCard(1, "unrelated", "");
+        List<String> labels = new ArrayList<>();
+        new TasksSearchProvider().evaluate("auth", b,
+                (a, l) -> { labels.add(l); return true; });
+        assertThat(labels)
+                .containsExactly("Ship the client  [auth] — To Do (Tasks)");
+    }
+
+    @Test
+    @DisplayName("the literal query 'blocked' surfaces every blocked card (v2.7.0)")
+    void blockedQueryFindsTheRegister() {
+        TaskBoard b = TaskBoard.starter();
+        TaskBoard.Card stuck = b.addCard(1, "waiting on cert", "");
+        b.block(stuck.id(), "alice", "order the cert");
+        b.addCard(0, "free card", "");
+        List<String> labels = new ArrayList<>();
+        new TasksSearchProvider().evaluate("blocked", b,
+                (a, l) -> { labels.add(l); return true; });
+        assertThat(labels)
+                .containsExactly("\u26d4 waiting on cert — Doing (Tasks)");
+    }
+
+    @Test
     @DisplayName("under two characters, or no board, yields nothing")
     void guards() {
         TaskBoard b = TaskBoard.starter();
