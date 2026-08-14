@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] - 2026-08-13
+
+David's directive: *if NetBeans RCP offers Emacs keyboard shortcuts,
+implement it now.* Recon found the platform already ships the whole
+mechanism in our clusters — the Options ▸ Keymap category
+(options-keymap, platform cluster) and FIVE profiles including Emacs
+(the ide cluster's defaults module: NetBeans, NetBeans 5.5, Eclipse,
+Emacs, IDEA, with per-OS editor keybinding sets). What was missing was
+OUR side of the contract: every NMOX chord was registered in the
+NetBeans profile ONLY, so picking Emacs would have silently killed all
+thirteen window shortcuts, the Emmet chords, and the ⌘P unbind — the
+v1.38.1 profile-shadow law in reverse.
+
+### Added
+- **Keymap profiles are now first-class: Tools ▸ Options ▸ Keymap
+  switches to Emacs (or Eclipse, IDEA, NetBeans 5.5) with every NMOX
+  chord intact.** All thirteen window shadows (⌥⌘0–9 studios, ⌘8/⌘9,
+  ⌥⌘O, ⌘P Go to File) now register in all five profiles across the six
+  module layers that own them, and the editor module's nine
+  Keybindings blocks (Emmet ⌥⌘E on eight mimes, the root
+  nmox-keybindings with ⌥⌘E/⌥⌘B product-wide and the ⌘P tooltip-show
+  unbind) ride every profile too.
+- **`KeymapProfileParityTest`** makes the five-profile lockstep a build
+  law: the shadow set under each profile folder must be IDENTICAL to
+  the NetBeans set in every module layer, and every editor Keybindings
+  block must carry all five profiles — a chord added to one profile
+  fails the build until it rides them all. The jumpto ⌘O mask stays
+  NetBeans-only by written exception (upstream's claim is commented
+  out; masking a nonexistent file masks nothing, the v1.216.0 lesson).
+
+### Fixed
+- **⌘I could never find Task Board cards** — the v1.323.0 QuickSearch
+  provider registration was NESTED inside `Keymaps/NetBeans`, a folder
+  the QuickSearch framework never reads (it consults the ROOT
+  `QuickSearch/` folder only). This is what the v1.324.0 walk hit when
+  the ⌘I reach proved unverifiable. The registration now lives at the
+  filesystem root, and the parity gate fails the build if a QuickSearch
+  folder ever nests under Keymaps again.
+
+### Verified live (assembled 2.3.0 build)
+- Options ▸ Keymap lists all five profiles; switching to Emacs was
+  walked end to end: the Window menu still shows the full NMOX
+  accelerator family, ⌥⌘3 opened the IRC tab, and Ctrl+K — Emacs
+  kill-to-end-of-line — cut a real line in a real editor (with ⌘Z
+  unbound, exactly as an Emacs profile should have it).
+
 ## [2.2.1] - 2026-08-13
 
 The v2.2.0 Libera walk — the shipped app against the real network, and
@@ -12737,6 +12783,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.0.2...v2.1.0

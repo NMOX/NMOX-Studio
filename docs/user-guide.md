@@ -880,6 +880,13 @@ it: the aimed project and toolchain.
 **The Workbench tab** is home base: current project, open and recent
 files, recent projects, and launchers for every tool surface.
 
+**Emacs (and Eclipse, IntelliJ) keyboard shortcuts:** Tools ▸ Options ▸
+Keymap switches the whole keymap profile — Emacs movement and kill/yank
+chords in every editor, or the Eclipse/IDEA sets if those are your
+muscle memory. Every NMOX shortcut (the ⌥⌘ window family, ⌘P Go to
+File, Emmet's ⌥⌘E) is registered in all five profiles, so switching
+keymaps never costs you the studio chords.
+
 ## 10. The safety nets (things you don't have to do anything for)
 
 - **Session resurrection.** The rack snapshots what's running every few
