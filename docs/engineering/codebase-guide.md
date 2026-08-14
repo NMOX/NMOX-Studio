@@ -21,11 +21,11 @@ ships those, and our eleven Maven modules plug features into them.
 | Module | What it owns |
 |---|---|
 | `core` | Shared plumbing every module uses: process spawning (`ProcessSupport`), tool discovery (`ToolLocator`), atomic file writes (`AtomicFiles`), capped HTTP reads (`HttpBodies`), and the **SPI seams** other modules discover at runtime (`core.spi.*`) |
-| `editor` | Everything about editing text: 78 TextMate grammars, lexers, completion, the Navigator outline, LSP clients, the JS/TS debugger |
+| `editor` | Everything about editing text: 85 TextMate grammars, lexers, completion, Emmet, the Navigator outline, LSP clients, the JS/TS debugger |
 | `tools` | Project recognition (58 manifest types) and the NPM explorer |
-| `rack` | The signature UI: a synth-style rack of 53 "devices" that run real dev tools, wired with patch cables |
+| `rack` | The signature UI: a synth-style rack of "devices" that run real dev tools, wired with patch cables — including devices defined by plain JSON files in `~/.nmox/devices.d/` (v2.0.0) |
 | `apiclient` / `dbstudio` / `web3` / `infra` | The studios: Postman-style API client, database suite, smart-contract suite, cloud-infra designer |
-| `project` / `ui` | Project Explorer/Workbench windows; the Welcome launchpad, wizards ("Kits"), Options panels, update checking |
+| `project` / `ui` | Project Explorer/Workbench windows; the Welcome launchpad, wizards ("Kits"), Options panels, update checking — plus the in-app Browser, the IRC client, and the Task Board (`ui.browser`, `ui.irc`, `ui.tasks`) |
 | `branding` / `application` | Icons/splash/name; the final assembly that packages everything into one installable app |
 
 ## 2. The five RCP ideas everything rides on
@@ -143,7 +143,7 @@ RP.post(() -> {                       // 1. hop OFF the EDT
 When you read any class in this codebase and wonder "why the dance?",
 it is almost always this law.
 
-## 3. Four flows, traced through real files
+## 3. Five flows, traced through real files
 
 ### 3.1 Boot
 
@@ -219,6 +219,42 @@ it is almost always this law.
    belongs to the workspace that produced it** (a disclosure bug class
    we closed twice before writing it into law).
 
+### 3.5 Click "Clock In" on a task card
+
+The newest flow is also the best tour of the studio-file laws, because
+one click crosses all of them. Open the Tasks tab (⌥⌘1), right-click a
+card, choose Clock In:
+
+1. The context menu was installed by
+   [TasksTopComponent](../../ui/src/main/java/org/nmox/studio/ui/tasks/TasksTopComponent.java)
+   with the *clicked-card-wins* helper (`Popups.popupTargetList`) — the
+   verb acts on the card under the pointer, not a stale selection.
+2. The menu item calls `mutate(() -> board.clockIn(id, now))`. Every
+   board change goes through this ONE `mutate()` method — it first
+   re-checks the file on disk for a foreign edit (never-clobber: if
+   someone else wrote it, the file wins and your gesture is dropped
+   with a status note), then runs the model change.
+3. The model half lives in
+   [TaskBoard](../../ui/src/main/java/org/nmox/studio/ui/tasks/TaskBoard.java) —
+   pure Java, no Swing: one running session board-wide, a double
+   clock-in refused, sub-minute sessions dropped. All of that is plain
+   unit tests in `TimeClockTest`.
+4. The save posts to a single-threaded `RequestProcessor` lane (the
+   EDT never touches disk), writes atomically via `AtomicFiles`, and
+   notes the file's new mtime+size in a `SelfWriteTracker`.
+5. A `FilePulse` (core.util) is stat-polling that same file. It fires
+   on the save — and does nothing, because the tracker says "that was
+   me". When a TEAMMATE's pull changes the file instead, the same
+   pulse reloads the board within ~1.5 s. Self vs. foreign is the
+   entire trick, and it is one `isForeign(mtime, size)` call.
+6. Back on the EDT, the strip rebuilds (your selection restored via
+   `focusCardId`), the card wears ⏱, and the header shows the running
+   elapsed — ticked by a label-only Swing timer, because rebuilding
+   the strip every 30 s would drop your selection.
+
+Read those five files in that order and you have seen every persistence
+law in the product; the other five studios are the same shape, larger.
+
 ## 4. The house laws (why the code looks the way it does)
 
 Recurring rules you will meet in comments; each earned its place from a
@@ -248,6 +284,11 @@ real bug, and most are pinned by a test that fails the build if broken:
 
 ## 5. Where to go next
 
+- **Every important package now carries a `package-info.java`**
+  (v2.7.1): a neighborhood map naming what lives there, the RCP
+  mechanism it rides, and the reading order. Your IDE shows it when
+  you hover the package — start with `core.util`, `core.spi`, and
+  `ui.tasks`.
 - Add a window / device / grammar / service: recipes in
   [CLAUDE.md §Development Workflow](../../CLAUDE.md).
 - The rack's device catalog and what each jack does:
