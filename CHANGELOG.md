@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.6.0] - 2026-08-14
+
+David's ask: clock in to a ticket, clock out, and get a report on what
+you worked on and for how long.
+
+### Added
+- **The time clock.** Right-click any card → **Clock In** starts its
+  clock; **Clock Out** stops it. One clock runs on the whole board —
+  you are only ever working on one thing — so clocking in elsewhere
+  first clocks out whatever was running. A double clock-in is refused
+  (it would silently fork time), and a session shorter than a minute
+  is dropped whole: an accidental click is not work. Sessions persist
+  in `.nmoxtasks.json` — a running clock survives an app restart.
+- **The running card is visible everywhere**: ⏱ on the card, ⏱ next
+  to its row in the overview's report, and the board header shows
+  "⏱ <card> · 42m" with the elapsed ticking every 30 seconds (label-
+  only on purpose — a strip rebuild would drop your selection).
+- **The time report.** The overview's **TIME** section answers the
+  question directly: clocked today and last-7-days totals in the
+  header, then one row per card — "today 1h 20m · week 3h 05m" —
+  most-today first. A running clock counts up to now, and a session
+  spanning midnight is CLIPPED per day, so today's number is today's
+  work, never the whole session. Durations read human: 1h 05m, 45m,
+  <1m.
+- Additive as always: older boards load unchanged, titles render
+  PLAIN, and the whole feature rides the board's existing one-lane
+  save/load and never-clobber laws.
+
+### Verified live (assembled 2.6.0 build)
+- Clock In on a real card put ⏱ on the card and "⏱ Ship the API
+  client · <1m" in the header; the overview's TIME report read
+  "clocked today 5h 07m · last 7 days 7h 00m" with the running card
+  in phosphor green — and the planted overnight session showed
+  **today 2h 07m · week 4h 00m**, the midnight clip observed in the
+  wild. Clock Out cleared every marker and dropped the sub-minute
+  blip, exactly as specified.
+
 ## [2.5.0] - 2026-08-14
 
 Tranche 2 of the Board Overview (David: "do tranche 2") — the
@@ -12863,6 +12900,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.1...v2.3.0
