@@ -45,11 +45,91 @@
                                   url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="ng-template-keybindings.xml"
+                                  url="ng-template-keybindings.xml"/>
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
+                                 in Angular templates, the framework bet's
+                                 editor face -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="ng-template-keybindings.xml"
+                                  url="ng-template-keybindings.xml"/>
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
+                                 in Angular templates, the framework bet's
+                                 editor face -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="ng-template-keybindings.xml"
+                                  url="ng-template-keybindings.xml"/>
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
+                                 in Angular templates, the framework bet's
+                                 editor face -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="ng-template-keybindings.xml"
+                                  url="ng-template-keybindings.xml"/>
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
+                                 in Angular templates, the framework bet's
+                                 editor face -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="html">
                 <folder name="Keybindings">
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
+                                 file as the ng-template registration: one
+                                 chord, one action name, two mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
+                                 file as the ng-template registration: one
+                                 chord, one action name, two mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
+                                 file as the ng-template registration: one
+                                 chord, one action name, two mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
+                                 file as the ng-template registration: one
+                                 chord, one action name, two mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
                         <folder name="Defaults">
                             <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — same
                                  file as the ng-template registration: one
@@ -73,11 +153,59 @@
                                   url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="scss">
                 <folder name="Keybindings">
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
                         <folder name="Defaults">
                             <file name="emmet-keybindings.xml"
                                   url="emmet-keybindings.xml"/>
@@ -93,6 +221,30 @@
                                   url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-scss">
@@ -103,11 +255,59 @@
                                   url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-less">
                 <folder name="Keybindings">
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
                         <folder name="Defaults">
                             <file name="emmet-keybindings.xml"
                                   url="emmet-keybindings.xml"/>
@@ -127,6 +327,30 @@
                                   url="emmet-keybindings.xml"/>
                         </folder>
                     </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>
@@ -137,6 +361,38 @@
              processed after the bind it removes. -->
         <folder name="Keybindings">
             <folder name="NetBeans">
+                <folder name="Defaults">
+                    <file name="nmox-keybindings.xml"
+                          url="nmox-keybindings.xml">
+                        <attr name="position" intvalue="9999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="Eclipse">
+                <folder name="Defaults">
+                    <file name="nmox-keybindings.xml"
+                          url="nmox-keybindings.xml">
+                        <attr name="position" intvalue="9999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="Emacs">
+                <folder name="Defaults">
+                    <file name="nmox-keybindings.xml"
+                          url="nmox-keybindings.xml">
+                        <attr name="position" intvalue="9999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="Idea">
+                <folder name="Defaults">
+                    <file name="nmox-keybindings.xml"
+                          url="nmox-keybindings.xml">
+                        <attr name="position" intvalue="9999"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="NetBeans55">
                 <folder name="Defaults">
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
