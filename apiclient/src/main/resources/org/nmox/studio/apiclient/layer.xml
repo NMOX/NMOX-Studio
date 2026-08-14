@@ -24,5 +24,25 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
             </file>
         </folder>
+        <folder name="Eclipse">
+            <file name="DA-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
+            </file>
+        </folder>
+        <folder name="Emacs">
+            <file name="DA-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
+            </file>
+        </folder>
+        <folder name="Idea">
+            <file name="DA-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
+            </file>
+        </folder>
+        <folder name="NetBeans55">
+            <file name="DA-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-apiclient-ui-ApiClientTopComponent.instance"/>
+            </file>
+        </folder>
     </folder>
 </filesystem>

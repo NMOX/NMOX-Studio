@@ -92,17 +92,6 @@
                  Editors/Keybindings tree, which Keymaps can't reach.
                  The unbind ships in the editor module beside the other
                  Editors registrations. -->
-            <!-- Cmd+I reach into the Task Board (v1.323.0): card titles of the
-         aimed project; Enter opens the Tasks window. Bundle lives in a
-         search subpackage so it cannot clobber the @Messages-generated
-         bundle of the tasks package itself (the v1.79.0 lesson). -->
-    <folder name="QuickSearch">
-        <folder name="Tasks">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.tasks.search.Bundle"/>
-            <attr name="position" intvalue="360"/>
-            <file name="org-nmox-studio-ui-tasks-TasksSearchProvider.instance"/>
-        </folder>
-    </folder>
     <!-- Menu accelerators come from Keymaps-profile shadows, not
                  from Shortcuts/ registrations (the v1.38.1 finding, debt
                  #28): without these the Window menu shows "Task Rack" /
@@ -145,6 +134,125 @@
                 <attr name="originalFile"
                       stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
+        </folder>
+        <folder name="Eclipse">
+            <file name="D-9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
+            </file>
+            <file name="D-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
+            </file>
+            <file name="DA-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-blockstudio-BlockStudioTopComponent.instance"/>
+            </file>
+            <file name="DA-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
+            </file>
+            <file name="DA-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-tasks-TasksTopComponent.instance"/>
+            </file>
+            <file name="DA-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>
+            </file>
+            <file name="DA-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <file name="D-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+        </folder>
+        <folder name="Emacs">
+            <file name="D-9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
+            </file>
+            <file name="D-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
+            </file>
+            <file name="DA-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-blockstudio-BlockStudioTopComponent.instance"/>
+            </file>
+            <file name="DA-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
+            </file>
+            <file name="DA-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-tasks-TasksTopComponent.instance"/>
+            </file>
+            <file name="DA-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>
+            </file>
+            <file name="DA-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <file name="D-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+        </folder>
+        <folder name="Idea">
+            <file name="D-9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
+            </file>
+            <file name="D-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
+            </file>
+            <file name="DA-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-blockstudio-BlockStudioTopComponent.instance"/>
+            </file>
+            <file name="DA-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
+            </file>
+            <file name="DA-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-tasks-TasksTopComponent.instance"/>
+            </file>
+            <file name="DA-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>
+            </file>
+            <file name="DA-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <file name="D-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+        </folder>
+        <folder name="NetBeans55">
+            <file name="D-9.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
+            </file>
+            <file name="D-8.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-docker-DockerPanelTopComponent.instance"/>
+            </file>
+            <file name="DA-5.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-blockstudio-BlockStudioTopComponent.instance"/>
+            </file>
+            <file name="DA-4.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-browser-WebBrowserTopComponent.instance"/>
+            </file>
+            <file name="DA-1.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-tasks-TasksTopComponent.instance"/>
+            </file>
+            <file name="DA-3.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-ui-irc-IrcTopComponent.instance"/>
+            </file>
+            <file name="DA-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance"/>
+            </file>
+            <file name="D-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+        </folder>
+    </folder>
+    <!-- Cmd+I reach into the Task Board (v1.323.0): card titles of the
+         aimed project; Enter opens the Tasks window. Bundle lives in a
+         search subpackage so it cannot clobber the @Messages-generated
+         bundle of the tasks package itself (the v1.79.0 lesson).
+         Moved OUT of the Keymaps folder where it sat nested since
+         v1.323.0 — the QuickSearch framework reads the root
+         QuickSearch/ folder only, so the nested copy was invisible
+         (the v1.324.0 walk's unverifiable Cmd+I reach, explained). -->
+    <folder name="QuickSearch">
+        <folder name="Tasks">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.tasks.search.Bundle"/>
+            <attr name="position" intvalue="360"/>
+            <file name="org-nmox-studio-ui-tasks-TasksSearchProvider.instance"/>
         </folder>
     </folder>
 </filesystem>
