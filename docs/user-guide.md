@@ -527,6 +527,16 @@ status line says so. Because a checked-in board arrives with clones,
 card text always renders as plain characters — an `<html>`-shaped title
 is just its letters, never markup.
 
+**The Overview toggle** swaps the column strip for a dashboard read of
+the same board: cards on the board, **WIP now** (the middle columns —
+never To Do, never Done), done today and done this week, a per-column
+WIP register with red-when-over verdicts, a 14-day **flow strip** of
+cards finished per day, and the oldest unfinished cards with their
+ages. Finishing a card — moving it into the board's last column —
+stamps the moment; dragging it back out un-finishes it and the history
+forgets it. Old boards just start with an empty flow strip until the
+first card lands in Done.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the

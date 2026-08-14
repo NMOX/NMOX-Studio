@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.4.0] - 2026-08-13
+
+David's ask: the Sprint-Studio dashboard look, in the product, for
+kanban overview. The Task Board already held the data; what it lacked
+was the dashboard read of it.
+
+### Added
+- **Board Overview — a dashboard face on the Task Board (⌥⌘1).** A new
+  Overview toggle beside New Card/New Column swaps the kanban strip for
+  a phosphor-styled dashboard of the SAME `.nmoxtasks.json`: a tile row
+  (cards on the board, WIP now, done today, done this week), a
+  per-column WIP register with count bars and the v1.323.0 advisory
+  red-when-over verdicts, a painted 14-day flow strip of cards finished
+  per day, and a needs-attention list of the oldest unfinished cards
+  with their ages. Every number comes from `BoardStats`, a pure core
+  whose definitions are unit-pinned — WIP now is the middle columns
+  (never To Do, never Done), the done windows are calendar days in the
+  user's zone, and the overview re-renders on every mutation and reload
+  so it can never go stale against the strip.
+- **Cards now carry a `done` stamp** — set the moment a card enters the
+  board's LAST column, cleared if it moves back out (un-finishing a
+  card removes it from history), kept across reorders within Done.
+  Additive to the v1 file format: old boards load unchanged, the stamp
+  is just absent until the first card lands in Done — and the flow
+  strip says so honestly instead of inventing history.
+- Card and column names on the overview render PLAIN (the v1.311.0
+  law): a checked-in board arrives with clones, so a `<html><img>`
+  title paints as characters, never fetches.
+
+### Verified live (assembled 2.4.0 build)
+- The whole loop walked on a real 13-card board: tiles, the red 3/2
+  OVER verdict, flow bars landing on the exact days the stamps name,
+  and the aging list oldest-first — then a card keyed Ready→Build→Done
+  moved every number at once (WIP 5→4, done today 1→2, this week 5→6,
+  today's flow bar 1→2). The walk also caught its own bug before ship:
+  the painted flow strip extended bare JComponent, whose accessible
+  context is null, and the NPE cut the dashboard in half — both painted
+  widgets now ride JPanel, and a headless render probe pins the crash
+  class (mutation-proven by reintroducing it).
+
 ## [2.3.0] - 2026-08-13
 
 David's directive: *if NetBeans RCP offers Emacs keyboard shortcuts,
@@ -12783,6 +12823,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.1.0...v2.2.0

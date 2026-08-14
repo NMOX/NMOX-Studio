@@ -35,12 +35,21 @@ public final class TaskBoard {
         private String title;
         private String notes;
         private final long created;
+        /**
+         * When the card ENTERED the board's last column (0 = it hasn't).
+         * The stamp is the overview's flow history: set on a move or add
+         * into the last column, cleared on a move back out. Column
+         * reorders leave existing stamps alone — they record a moment
+         * that really happened, not the board's current shape (v2.4.0).
+         */
+        private long done;
 
-        Card(String id, String title, String notes, long created) {
+        Card(String id, String title, String notes, long created, long done) {
             this.id = id;
             this.title = title;
             this.notes = notes;
             this.created = created;
+            this.done = done;
         }
 
         public String id() {
@@ -57,6 +66,10 @@ public final class TaskBoard {
 
         public long created() {
             return created;
+        }
+
+        public long done() {
+            return done;
         }
     }
 
@@ -176,8 +189,10 @@ public final class TaskBoard {
                 || column < 0 || column >= columns.size()) {
             return null;
         }
+        long now = System.currentTimeMillis();
         Card c = new Card(UUID.randomUUID().toString(), title.strip(),
-                notes == null ? "" : notes, System.currentTimeMillis());
+                notes == null ? "" : notes, now,
+                column == columns.size() - 1 ? now : 0L);
         columns.get(column).cards.add(c);
         return c;
     }
@@ -222,6 +237,16 @@ public final class TaskBoard {
                     List<Card> dest = columns.get(toColumn).cards;
                     int at = Math.max(0, Math.min(toIndex, dest.size()));
                     dest.add(at, c);
+                    // the done stamp follows the LAST column: entering it
+                    // records the moment (the overview's flow history),
+                    // leaving it clears — the card is work again. A move
+                    // within the last column keeps its original stamp.
+                    boolean intoLast = toColumn == columns.size() - 1;
+                    if (intoLast && c.done == 0L) {
+                        c.done = System.currentTimeMillis();
+                    } else if (!intoLast) {
+                        c.done = 0L;
+                    }
                     return true;
                 }
             }
@@ -281,6 +306,9 @@ public final class TaskBoard {
                     j.put("notes", c.notes);
                 }
                 j.put("created", c.created);
+                if (c.done > 0L) {
+                    j.put("done", c.done);
+                }
                 cards.put(j);
             }
             jc.put("cards", cards);
@@ -322,7 +350,8 @@ public final class TaskBoard {
                             id,
                             j.getString("title"),
                             j.optString("notes", ""),
-                            j.optLong("created", 0L)));
+                            j.optLong("created", 0L),
+                            j.optLong("done", 0L)));
                 }
             }
             b.columns.add(col);

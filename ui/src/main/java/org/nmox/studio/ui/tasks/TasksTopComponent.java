@@ -115,6 +115,11 @@ public final class TasksTopComponent extends TopComponent {
     private final SelfWriteTracker tracker = new SelfWriteTracker();
     private final JPanel columnsPanel = new JPanel();
     private final JLabel boardLabel = new JLabel(" ");
+    /** The v2.4.0 dashboard face; lives beside the strip in a CardLayout. */
+    private final OverviewPanel overviewPanel = new OverviewPanel();
+    private final java.awt.CardLayout faces = new java.awt.CardLayout();
+    private final JPanel center = new JPanel(faces);
+    private javax.swing.JToggleButton overviewToggle;
 
     private TaskBoard board = TaskBoard.starter();
     private File boundDir;
@@ -218,8 +223,18 @@ public final class TasksTopComponent extends TopComponent {
         JButton addColumn = new JButton("New Column…");
         addColumn.getAccessibleContext().setAccessibleName("New column");
         addColumn.addActionListener(e -> newColumnDialog());
+        overviewToggle = new javax.swing.JToggleButton("Overview");
+        overviewToggle.getAccessibleContext().setAccessibleName(
+                "Toggle board overview");
+        overviewToggle.setToolTipText(
+                "Dashboard read of this board: WIP, flow, aging cards");
+        overviewToggle.addActionListener(e -> {
+            faces.show(center, overviewToggle.isSelected() ? "overview" : "board");
+            rebuild();
+        });
         top.add(addCard);
         top.add(addColumn);
+        top.add(overviewToggle);
         top.add(boardLabel);
         add(top, BorderLayout.NORTH);
 
@@ -228,11 +243,24 @@ public final class TasksTopComponent extends TopComponent {
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        add(scroll, BorderLayout.CENTER);
+        JScrollPane overviewScroll = new JScrollPane(overviewPanel,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        overviewScroll.setBorder(BorderFactory.createEmptyBorder());
+        overviewScroll.getViewport().setBackground(OverviewPanel.GROUND);
+        center.add(scroll, "board");
+        center.add(overviewScroll, "overview");
+        add(center, BorderLayout.CENTER);
     }
 
-    /** Rebuilds the whole column strip from the model. Cheap at kanban scale. */
+    /** Rebuilds the visible face from the model. Cheap at kanban scale. */
     private void rebuild() {
+        if (overviewToggle != null && overviewToggle.isSelected()) {
+            // the overview reads the SAME model; every mutation and reload
+            // lands here too, so its numbers can never go stale
+            overviewPanel.show(board,
+                    boundDir == null ? null : boundDir.getName());
+        }
         columnsPanel.removeAll();
         List<TaskBoard.Column> cols = board.columns();
         for (int i = 0; i < cols.size(); i++) {
