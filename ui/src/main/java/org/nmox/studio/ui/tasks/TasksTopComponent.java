@@ -128,6 +128,14 @@ public final class TasksTopComponent extends TopComponent {
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
     private ProjectAim.Listener aimListener;
+    /** Ticks the header's running-clock elapsed while the tab shows;
+     *  label-only on purpose — see headerText(). */
+    private final javax.swing.Timer clockTicker = new javax.swing.Timer(
+            30_000, e -> {
+                if (boundDir != null && board.runningCard() != null) {
+                    boardLabel.setText(headerText());
+                }
+            });
     /**
      * The card to re-select after the next rebuild. Every mutation
      * rebuilds the whole strip, which discards the JLists and with them
@@ -156,6 +164,12 @@ public final class TasksTopComponent extends TopComponent {
             }
         }
         reload();
+        clockTicker.start();
+    }
+
+    @Override
+    protected void componentHidden() {
+        clockTicker.stop();
     }
 
     /** Re-reads the aimed project's board off the EDT, newest wins. */
@@ -269,11 +283,24 @@ public final class TasksTopComponent extends TopComponent {
             columnsPanel.add(Box.createHorizontalStrut(6));
         }
         columnsPanel.add(Box.createHorizontalGlue());
-        boardLabel.setText(boundDir == null ? " "
-                : boundDir.getName() + " — " + board.cardCount() + " cards");
+        boardLabel.setText(boundDir == null ? " " : headerText());
         columnsPanel.revalidate();
         columnsPanel.repaint();
         focusCardId = null; // consumed by the panels just built
+    }
+
+    /** The header line; the running clock's elapsed rides here so the
+     *  30s ticker can refresh it WITHOUT rebuilding the strip (a rebuild
+     *  would drop the list selection every tick). */
+    private String headerText() {
+        String base = boundDir.getName() + " — " + board.cardCount() + " cards";
+        TaskBoard.Card running = board.runningCard();
+        if (running == null) {
+            return base;
+        }
+        long since = running.sessions().get(running.sessions().size() - 1)[0];
+        return base + "   \u23f1 " + running.title() + " · "
+                + BoardStats.duration(System.currentTimeMillis() - since);
     }
 
     private JPanel columnPanel(int index, TaskBoard.Column col) {
@@ -335,6 +362,9 @@ public final class TasksTopComponent extends TopComponent {
             super.getListCellRendererComponent(list, value, index, selected, focus);
             if (value instanceof TaskBoard.Card c) {
                 String head = c.blocked() ? "\u26d4 " + c.title() : c.title();
+                if (c.clockedIn()) {
+                    head = "\u23f1 " + head;
+                }
                 String tail = c.label().isEmpty() ? "" : "  [" + c.label() + "]";
                 setText((c.notes().isEmpty() ? head
                         : head + "  — " + firstLine(c.notes())) + tail);
@@ -414,6 +444,20 @@ public final class TasksTopComponent extends TopComponent {
                 setLabelDialog(list.getSelectedValue());
             }
         });
+        JMenuItem clockIn = new JMenuItem("Clock In");
+        clockIn.addActionListener(e -> {
+            if (list.getSelectedValue() != null) {
+                mutate(() -> board.clockIn(list.getSelectedValue().id(),
+                        System.currentTimeMillis()));
+            }
+        });
+        JMenuItem clockOut = new JMenuItem("Clock Out");
+        clockOut.addActionListener(e -> {
+            if (list.getSelectedValue() != null) {
+                mutate(() -> board.clockOut(list.getSelectedValue().id(),
+                        System.currentTimeMillis()));
+            }
+        });
         JMenuItem block = new JMenuItem("Mark Blocked…");
         block.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
@@ -428,6 +472,9 @@ public final class TasksTopComponent extends TopComponent {
         });
         menu.add(edit);
         menu.add(label);
+        menu.addSeparator();
+        menu.add(clockIn);
+        menu.add(clockOut);
         menu.addSeparator();
         menu.add(block);
         menu.add(unblock);

@@ -130,6 +130,19 @@ final class OverviewPanel extends JPanel {
         }
         add(Box.createVerticalStrut(10));
 
+        if (!s.timeEntries().isEmpty()) {
+            add(sectionLabel("TIME — clocked today "
+                    + BoardStats.duration(s.trackedTodayMs())
+                    + " · last 7 days "
+                    + BoardStats.duration(s.trackedWeekMs())));
+            add(Box.createVerticalStrut(4));
+            for (BoardStats.TimeEntry t : s.timeEntries()) {
+                add(timeRow(t));
+                add(Box.createVerticalStrut(2));
+            }
+            add(Box.createVerticalStrut(10));
+        }
+
         if (!s.labels().isEmpty()) {
             add(sectionLabel("EPICS — labels in use, busiest first"));
             add(Box.createVerticalStrut(4));
@@ -210,6 +223,28 @@ final class OverviewPanel extends JPanel {
         row.getAccessibleContext().setAccessibleName("Blocked: " + b.title()
                 + ", owner " + owner + ", " + b.sinceDays()
                 + " days, unblock: " + b.action());
+        return row;
+    }
+
+    private JComponent timeRow(BoardStats.TimeEntry t) {
+        JPanel row = new JPanel(new BorderLayout(8, 0));
+        row.setOpaque(false);
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
+        JLabel title = PlainTables.plain(new JLabel(
+                (t.running() ? "\u23f1 " : "") + clip(t.title())));
+        title.setForeground(t.running() ? PHOSPHOR : TEXT);
+        title.setFont(mono(Font.PLAIN, 12f));
+        JLabel meta = PlainTables.plain(new JLabel(
+                "today " + BoardStats.duration(t.todayMs())
+                + " · week " + BoardStats.duration(t.weekMs())));
+        meta.setForeground(DIM);
+        meta.setFont(mono(Font.PLAIN, 11f));
+        row.add(title, BorderLayout.WEST);
+        row.add(meta, BorderLayout.EAST);
+        row.getAccessibleContext().setAccessibleName("Time on " + t.title()
+                + (t.running() ? ", clock running" : "")
+                + ": today " + BoardStats.duration(t.todayMs())
+                + ", week " + BoardStats.duration(t.weekMs()));
         return row;
     }
 

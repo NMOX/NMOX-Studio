@@ -48,6 +48,10 @@ final class BoardStats {
     record LabelCount(String label, int count) {
     }
 
+    /** One row of the time report (v2.6.0): tracked work per card. */
+    record TimeEntry(String title, long todayMs, long weekMs, boolean running) {
+    }
+
     private final int totalCards;
     private final int wipNow;
     private final int doneToday;
@@ -57,11 +61,15 @@ final class BoardStats {
     private final List<AgingCard> oldestActive;
     private final List<Blocker> blockers;
     private final List<LabelCount> labels;
+    private final List<TimeEntry> timeEntries;
+    private final long trackedTodayMs;
+    private final long trackedWeekMs;
 
     private BoardStats(int totalCards, int wipNow, int doneToday,
             int doneThisWeek, List<ColumnStat> columnStats, int[] flow,
             List<AgingCard> oldestActive, List<Blocker> blockers,
-            List<LabelCount> labels) {
+            List<LabelCount> labels, List<TimeEntry> timeEntries,
+            long trackedTodayMs, long trackedWeekMs) {
         this.totalCards = totalCards;
         this.wipNow = wipNow;
         this.doneToday = doneToday;
@@ -71,6 +79,9 @@ final class BoardStats {
         this.oldestActive = oldestActive;
         this.blockers = blockers;
         this.labels = labels;
+        this.timeEntries = timeEntries;
+        this.trackedTodayMs = trackedTodayMs;
+        this.trackedWeekMs = trackedWeekMs;
     }
 
     int totalCards() {
@@ -119,6 +130,38 @@ final class BoardStats {
         return labels;
     }
 
+    /** Cards with tracked time in the last 7 days, most-today first,
+     *  ties by week total. A running session counts up to NOW, and a
+     *  session spanning midnight is CLIPPED per day — today's number is
+     *  today's work, not the whole session. */
+    List<TimeEntry> timeEntries() {
+        return timeEntries;
+    }
+
+    long trackedTodayMs() {
+        return trackedTodayMs;
+    }
+
+    long trackedWeekMs() {
+        return trackedWeekMs;
+    }
+
+    /** "1h 05m" / "45m" / "<1m" — the report's one duration spelling. */
+    static String duration(long ms) {
+        long minutes = ms / 60_000L;
+        if (minutes < 1) {
+            return "<1m";
+        }
+        long h = minutes / 60;
+        long m = minutes % 60;
+        return h > 0 ? String.format("%dh %02dm", h, m) : m + "m";
+    }
+
+    /** Overlap of [aStart,aEnd) with [bStart,bEnd), never negative. */
+    private static long overlap(long aStart, long aEnd, long bStart, long bEnd) {
+        return Math.max(0L, Math.min(aEnd, bEnd) - Math.max(aStart, bStart));
+    }
+
     /**
      * Computes the overview for {@code board} as of {@code nowMillis} in
      * {@code zone}, with a {@code flowDays}-day history and at most
@@ -139,6 +182,12 @@ final class BoardStats {
         List<AgingCard> aging = new ArrayList<>();
         List<Blocker> blockers = new ArrayList<>();
         java.util.Map<String, Integer> labelCounts = new java.util.TreeMap<>();
+        List<TimeEntry> time = new ArrayList<>();
+        long todayStart = today.atStartOfDay(zone).toInstant().toEpochMilli();
+        long weekStart = today.minusDays(6).atStartOfDay(zone)
+                .toInstant().toEpochMilli();
+        long trackedToday = 0;
+        long trackedWeek = 0;
 
         for (int i = 0; i < cols.size(); i++) {
             TaskBoard.Column col = cols.get(i);
@@ -152,6 +201,19 @@ final class BoardStats {
             for (TaskBoard.Card c : cards) {
                 if (!c.label().isEmpty()) {
                     labelCounts.merge(c.label(), 1, Integer::sum);
+                }
+                long cardToday = 0;
+                long cardWeek = 0;
+                for (long[] sn : c.sessions()) {
+                    long end = sn[1] == 0L ? nowMillis : sn[1];
+                    cardToday += overlap(sn[0], end, todayStart, nowMillis);
+                    cardWeek += overlap(sn[0], end, weekStart, nowMillis);
+                }
+                if (cardWeek > 0 || c.clockedIn()) {
+                    time.add(new TimeEntry(c.title(), cardToday, cardWeek,
+                            c.clockedIn()));
+                    trackedToday += cardToday;
+                    trackedWeek += cardWeek;
                 }
                 if (c.blocked() && i < last) {
                     blockers.add(new Blocker(c.title(), c.blockOwner(),
@@ -194,8 +256,11 @@ final class BoardStats {
         labelCounts.forEach((l, n) -> labels.add(new LabelCount(l, n)));
         labels.sort(Comparator.comparingInt((LabelCount l) -> -l.count())
                 .thenComparing(LabelCount::label));
+        time.sort(Comparator.comparingLong((TimeEntry t) -> -t.todayMs())
+                .thenComparingLong(t -> -t.weekMs()));
         return new BoardStats(total, wip, dToday, dWeek,
                 List.copyOf(stats), bins, List.copyOf(aging),
-                List.copyOf(blockers), List.copyOf(labels));
+                List.copyOf(blockers), List.copyOf(labels),
+                List.copyOf(time), trackedToday, trackedWeek);
     }
 }
