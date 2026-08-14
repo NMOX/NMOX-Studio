@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.5.0] - 2026-08-14
+
+Tranche 2 of the Board Overview (David: "do tranche 2") — the
+editorial panels from the Sprint-Studio design that needed data the
+board didn't capture yet.
+
+### Added
+- **Blockers with owners.** Mark Blocked… on any card records the
+  triple the register needs: an owner (who is on the hook), an unblock
+  action (required — a blocker without one is a complaint, not a plan),
+  and an auto-stamped since. Re-blocking updates owner and action but
+  keeps the ORIGINAL since — the card has been stuck since it first
+  stuck. Unblock clears the whole triple. On the board face a blocked
+  card wears ⛔ and turns red; the overview gains a red BLOCKED tile
+  and a **blocker register** — card / owner / days stuck / unblock
+  action, longest-stuck first. A blocked card moved into Done leaves
+  the register: finishing IS the unblock the register was tracking.
+- **Epic labels and a derived legend.** Set Label… tags a card with a
+  free-text epic; the card shows it as a suffix, and the overview's
+  **EPICS** section derives its legend from the labels actually in use
+  — a stable per-label color dot plus card counts, busiest first. No
+  configuration: the legend is the board's own vocabulary.
+- **Retro notes.** The overview's RETRO section holds board-level
+  free-text notes (went well / bit us / changed), edited via Edit
+  Retro… and persisted in `.nmoxtasks.json` with the rest of the board
+  — check it in and the retro is the team's.
+- All new fields are ADDITIVE to the file format: v2.4.0 and older
+  boards load unchanged, and every new string renders PLAIN (the
+  v1.311.0 law).
+
+### Verified live (assembled 2.5.0 build)
+- The whole tranche walked on a real board: the red BLOCKED tile, the
+  register reading "unowned · 16d · a Developer ID certificate exists"
+  and "alice · 3d · needs the staging cert" longest-stuck first, the
+  seven-label color-dot legend busiest-first, ⛔ red blocked cards and
+  [label] suffixes on the board face, and an Edit Retro… round trip —
+  a typed line landed in the overview and in the saved file. The
+  verify's own SpotBugs gate caught Math.abs(hashCode()) in the label
+  color (negative at Integer.MIN_VALUE) before the walk — floorMod now.
+
 ## [2.4.0] - 2026-08-13
 
 David's ask: the Sprint-Studio dashboard look, in the product, for
@@ -12823,6 +12863,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.2.0...v2.2.1

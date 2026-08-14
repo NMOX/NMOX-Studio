@@ -116,7 +116,8 @@ public final class TasksTopComponent extends TopComponent {
     private final JPanel columnsPanel = new JPanel();
     private final JLabel boardLabel = new JLabel(" ");
     /** The v2.4.0 dashboard face; lives beside the strip in a CardLayout. */
-    private final OverviewPanel overviewPanel = new OverviewPanel();
+    private final OverviewPanel overviewPanel =
+            new OverviewPanel(this::editRetroDialog);
     private final java.awt.CardLayout faces = new java.awt.CardLayout();
     private final JPanel center = new JPanel(faces);
     private javax.swing.JToggleButton overviewToggle;
@@ -333,8 +334,13 @@ public final class TasksTopComponent extends TopComponent {
                 int index, boolean selected, boolean focus) {
             super.getListCellRendererComponent(list, value, index, selected, focus);
             if (value instanceof TaskBoard.Card c) {
-                setText(c.notes().isEmpty() ? c.title()
-                        : c.title() + "  — " + firstLine(c.notes()));
+                String head = c.blocked() ? "\u26d4 " + c.title() : c.title();
+                String tail = c.label().isEmpty() ? "" : "  [" + c.label() + "]";
+                setText((c.notes().isEmpty() ? head
+                        : head + "  — " + firstLine(c.notes())) + tail);
+                if (c.blocked() && !selected) {
+                    setForeground(new Color(220, 80, 80));
+                }
                 setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
             }
             return this;
@@ -402,7 +408,30 @@ public final class TasksTopComponent extends TopComponent {
                 confirmRemoveCard(list.getSelectedValue());
             }
         });
+        JMenuItem label = new JMenuItem("Set Label…");
+        label.addActionListener(e -> {
+            if (list.getSelectedValue() != null) {
+                setLabelDialog(list.getSelectedValue());
+            }
+        });
+        JMenuItem block = new JMenuItem("Mark Blocked…");
+        block.addActionListener(e -> {
+            if (list.getSelectedValue() != null) {
+                blockDialog(list.getSelectedValue());
+            }
+        });
+        JMenuItem unblock = new JMenuItem("Unblock");
+        unblock.addActionListener(e -> {
+            if (list.getSelectedValue() != null) {
+                mutate(() -> board.unblock(list.getSelectedValue().id()));
+            }
+        });
         menu.add(edit);
+        menu.add(label);
+        menu.addSeparator();
+        menu.add(block);
+        menu.add(unblock);
+        menu.addSeparator();
         menu.add(delete);
         // no selectOnTrigger here: the list is drag-enabled, so the
         // clicked card is claimed by popupTargetList's getPopupLocation
@@ -579,6 +608,54 @@ public final class TasksTopComponent extends TopComponent {
         if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION
                 && !in.getInputText().strip().isEmpty()) {
             mutate(() -> board.addColumn(in.getInputText(), 0));
+        }
+    }
+
+    /** Board-level retro notes (v2.5.0) — the overview's Edit Retro…. */
+    private void editRetroDialog() {
+        JTextArea text = new JTextArea(board.retro(), 10, 44);
+        text.setLineWrap(true);
+        text.setWrapStyleWord(true);
+        text.getAccessibleContext().setAccessibleName("Retro notes");
+        JScrollPane scroll = new JScrollPane(text);
+        scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        DialogDescriptor d = new DialogDescriptor(scroll,
+                "Retro — went well / bit us / changed");
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            mutate(() -> board.setRetro(text.getText()));
+        }
+    }
+
+    private void setLabelDialog(TaskBoard.Card card) {
+        NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(
+                "Label (blank clears):", "Set Label");
+        in.setInputText(card.label());
+        if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION) {
+            mutate(() -> board.setLabel(card.id(), in.getInputText()));
+        }
+    }
+
+    private void blockDialog(TaskBoard.Card card) {
+        JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
+        JTextField owner = new JTextField(card.blockOwner(), 28);
+        owner.getAccessibleContext().setAccessibleName("Blocker owner");
+        JTextField action = new JTextField(card.blockAction(), 28);
+        action.getAccessibleContext().setAccessibleName("Unblock action");
+        form.add(new JLabel("Owner (who is on the hook):"));
+        form.add(owner);
+        form.add(new JLabel("Unblock action (what gets it moving — required):"));
+        form.add(action);
+        form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        DialogDescriptor d = new DialogDescriptor(form, "Mark Blocked");
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            if (action.getText().strip().isEmpty()) {
+                org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                        "A blocker needs an unblock action — that is what"
+                        + " makes the register actionable");
+                return;
+            }
+            mutate(() -> board.block(card.id(), owner.getText(),
+                    action.getText()));
         }
     }
 
