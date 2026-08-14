@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.8.0] - 2026-08-14
+
+David's directive: what's missing from this product? Add it. The
+survey came back mostly full — markdown preview, terminal, the git
+suite, and project-wide search all already ship — but one hole was
+real: the product now RECORDS everything about a working day (time
+sessions, done stamps, blockers, commits) and had no way to TELL
+anyone. The missing feature was the daily standup.
+
+### Added
+- **The Standup.** A Standup… button on the Task Board toolbar
+  generates the classic three-section report as markdown, from data
+  the product already holds: **Yesterday** and **Today** list the
+  cards you finished (done stamps) and worked on (time sessions, with
+  per-day durations — a midnight-spanning session splits between the
+  days exactly like the overview's TIME report, and a running clock
+  shows as "clock running"); **Blockers** is the register — card,
+  owner, unblock action; **Commits (since yesterday)** comes from a
+  bounded, fixed-argv `git log` read (no repo or no git = the section
+  simply doesn't appear). Sections with nothing to say are OMITTED,
+  never rendered empty. One click copies the whole report to the
+  clipboard for Slack, a PR, or an actual standup.
+
+Verified live in the assembled app against a planted repo + board:
+Yesterday carried the 3h session and the done-yesterday card, Today
+the 2h session, Blockers the owner and unblock action, Commits both
+real hashes from `git log`; Copy to Clipboard round-tripped byte-true
+through `pbpaste`. Mutation proofs: an unclipped midnight session and
+a render-empty-sections mutant each killed by the named test.
+
 ## [2.7.1] - 2026-08-14
 
 David's directive: comment the codebase so a Junior Java Developer
@@ -12983,6 +13013,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.1...v2.8.0
 [2.7.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.5.0...v2.6.0
