@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.7.0] - 2026-08-14
+
+David's directive: look at the project as a Senior Java Developer —
+what would you refactor, complete, implement? Do it. The hygiene sweep
+came back clean (no TODOs, no printStackTrace, no swallowed catches —
+the review arcs have kept the floor high), so all three answers are
+structural, and each closes something the code itself had recorded.
+
+### Refactored
+- **`core.util.FilePulse`** — API Studio's `WorkspaceFilePulse` (the
+  1.5 s stat-poll that notices external edits to a studio file) was
+  pure JDK and about to grow a second copy; it is now a core utility,
+  API Studio delegates to it, and its tests moved with it. One pulse
+  implementation for every per-project studio file from here on.
+- **`TaskBoard.Card` de-telescoped** — the v2.4→v2.6 releases each
+  widened the card constructor by another parameter (it had reached
+  NINE). It now takes only the four required fields; optionals default
+  and are assigned by the enclosing class. The next card field is a
+  declaration and an assignment, not an arity change at every call
+  site.
+
+### Completed
+- **The Task Board notices external edits LIVE.** The v1.323.0 javadoc
+  recorded a written limit: "no live file watcher — an external edit
+  is picked up at the next show/mutation … until that seam moves to
+  core." The seam moved (that is what the FilePulse promotion was
+  for), and the limit is closed: a hand edit, git checkout, or
+  teammate's pull updates the visible board within ~1.5 s. The
+  studio's own saves are discriminated by the self-write tracker so
+  they never bounce back as reloads, and the pulse stops when the tab
+  hides. `TasksLawsGateTest` pins all three properties as build law.
+
+### Implemented
+- **⌘I reaches epics and blockers.** Searching an epic label finds the
+  epic's cards (hits show the label), and the literal query `blocked`
+  surfaces every blocked card wearing ⛔ — the keyboard road to the
+  blocker register.
+
+### Verified live (assembled 2.7.0 build)
+- With the Tasks tab visible, a card appended to `.nmoxtasks.json`
+  from a shell appeared on the board within four seconds, no gesture —
+  the header ticked to the new count and the column gained the card.
+  The written v1.323.0 limit is closed in the running product, not
+  just in the javadoc.
+
 ## [2.6.0] - 2026-08-14
 
 David's ask: clock in to a ticket, clock out, and get a report on what
@@ -12900,6 +12945,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.3.0...v2.4.0
