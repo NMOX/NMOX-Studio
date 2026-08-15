@@ -336,7 +336,7 @@ file gets a `.suggested` sibling instead.
 ## 18. Learning Spaces
 
 **Do:** File ▸ New Learning Space… Pick **Your First Web Page** (the
-catalog opens with it) or go exotic — 90 spaces cover everything from
+catalog opens with it) or go exotic — 91 spaces cover everything from
 Angular and Playwright to Clarity contracts and COBOL. Later, File ▸
 Learning Spaces… to open or discard them.
 

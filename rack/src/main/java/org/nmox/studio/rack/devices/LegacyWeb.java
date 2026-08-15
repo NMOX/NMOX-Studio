@@ -49,8 +49,14 @@ public final class LegacyWeb {
 
         /** The honest sentence behind the EOL flag, or null when current. */
         public String eolMessage() {
-            return eol ? "jQuery " + version.charAt(0)
-                    + ".x reached end-of-life — 3.x is the supported line" : null;
+            if (!eol) {
+                return null;
+            }
+            if ("mootools".equals(id)) {
+                return "MooTools is no longer maintained — 1.6.x was the final line";
+            }
+            return "jQuery " + version.charAt(0)
+                    + ".x reached end-of-life — 3.x is the supported line";
         }
     }
 
@@ -90,6 +96,13 @@ public final class LegacyWeb {
 
     /** jQuery major 1 or 2 is end-of-life; everything else is not flagged (v1). */
     private static boolean isEol(String id, String version) {
+        // jQuery's flag is about a VERSION LINE (1.x/2.x dead, 3.x alive),
+        // so it needs a version to make its claim. MooTools' flag is about
+        // the PROJECT — upstream is unmaintained at every version — so the
+        // chip is honest even when the source names no number.
+        if ("mootools".equals(id)) {
+            return true;
+        }
         if (!"jquery".equals(id) || version.isEmpty()) {
             return false;
         }

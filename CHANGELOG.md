@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.13.0] - 2026-08-15
+
+David's directive: *add support for MooTools.* Recon first: the classic
+already had detection, the vendored 1.6.0-compat kit build, and 44
+completion entries — what it lacked was the jQuery treatment. This
+release gives it that.
+
+### Added
+- **MooTools learning space** (#91, right beside jQuery in the picker):
+  a live page that tours what made MooTools MooTools — `new Class` with
+  `initialize`, `Extends`/`Implements` and `this.parent()`, the
+  `$`/`$$`/`document.id` selectors, `click:relay()` delegation, and
+  Fx tweens — served with `npx http-server` (scans past busy ports),
+  compat build from a pinned CDN with the offline route spelled out.
+- **Classic Web (MooTools) project template** — the script-tag era with
+  a real `Class` wired on `domready`; the kit's vendored
+  `mootools-core-1.6.0-compat.min.js` byte-for-byte (pinned files are
+  the era's lockfile, so `vendor/` is committed on purpose), same
+  Classic Web Bench rack wiring as the jQuery template — one definition.
+- **Completion depth 44 → 105 entries**: the Class/Type system
+  (`Extends`, `Implements`, `this.parent`, `.setOptions`), the Fx
+  family (`Fx.Tween`/`Fx.Morph`, `.start`/`.cancel`/`.pause`/`.resume`),
+  the Request shortcuts, Cookie/JSON/Browser, Element traversal and
+  geometry, and the extended natives (Array/Function/String/Number/
+  DOMEvent) — floor gate raised 40 → 100 so the depth can't rot.
+
+### Fixed
+- **The EOL chip speaks the right library's name**: `eolMessage()`
+  hardcoded "jQuery …" for ANY flagged library — latent while jQuery
+  was the only flagger, wrong the moment a second library chips.
+  MooTools now chips honestly at the PROJECT level (upstream is
+  unmaintained at every version, so unlike jQuery's version-line claim
+  it needs no version to be truthful) with its own message.
+- Docs truth: the user guide's learning-space count had drifted to 85
+  (six releases stale — the count gate binds the "learning spaces"
+  phrasing, and this claim says "built-in tutorials"); all five live-doc
+  counts now read 91.
+
+Verified live in the dev-assembled app: the New Project wizard lists
+Classic Web (MooTools) with its description, generation through the UI
+put the vendored compat build, the `new Class` app.js, and an
+un-ignored `vendor/` on disk; ⇧⌘L found "MooTools · libraries ·
+Browser JS" on the search "moo" with its driver probed ("requires npx
+— ✓ found"), and creating it aimed the studio at the space with the
+tutorial open and its section outline in the Navigator.
+
 ## [2.12.0] - 2026-08-15
 
 David's directive: *bring back DHTML — with a full keyframe system and
@@ -13223,6 +13269,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.13.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.11.0...v2.12.0
 [2.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.2...v2.11.0
 [2.10.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.1...v2.10.2

@@ -32,7 +32,7 @@ class ClassicApiCatalogTest {
     @DisplayName("Every library keeps its coverage floor")
     void coverageFloors() {
         assertThat(ClassicApiCatalog.library("jquery").entries()).hasSizeGreaterThanOrEqualTo(80);
-        assertThat(ClassicApiCatalog.library("mootools").entries()).hasSizeGreaterThanOrEqualTo(40);
+        assertThat(ClassicApiCatalog.library("mootools").entries()).hasSizeGreaterThanOrEqualTo(100);
         assertThat(ClassicApiCatalog.library("prototype").entries()).hasSizeGreaterThanOrEqualTo(30);
         assertThat(ClassicApiCatalog.library("backbone").entries()).hasSizeGreaterThanOrEqualTo(30);
         assertThat(ClassicApiCatalog.library("underscore").entries()).hasSizeGreaterThanOrEqualTo(50);
@@ -65,6 +65,9 @@ class ClassicApiCatalogTest {
         assertThat(sigOf("backbone", "Backbone.Model.extend"))
                 .isEqualTo("Backbone.Model.extend(properties[, classProperties])");
         assertThat(sigOf("mootools", "$$")).isEqualTo("$$(selector)");
+        assertThat(sigOf("mootools", "Extends")).isEqualTo("Extends: ParentClass — Class mutator");
+        assertThat(sigOf("mootools", "Fx.Tween")).isEqualTo("new Fx.Tween(element[, options])");
+        assertThat(sigOf("mootools", "Cookie.write")).isEqualTo("Cookie.write(key, value[, options])");
         assertThat(sigOf("prototype", "Ajax.Request")).isEqualTo("new Ajax.Request(url[, options])");
     }
 
