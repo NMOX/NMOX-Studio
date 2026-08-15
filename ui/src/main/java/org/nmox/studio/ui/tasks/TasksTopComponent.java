@@ -283,9 +283,16 @@ public final class TasksTopComponent extends TopComponent {
             faces.show(center, overviewToggle.isSelected() ? "overview" : "board");
             rebuild();
         });
+        JButton standup = new JButton("Standup…");
+        standup.getAccessibleContext().setAccessibleName(
+                "Generate standup report");
+        standup.setToolTipText("Yesterday / today / blockers, from this"
+                + " board's clock and stamps plus the git log — as markdown");
+        standup.addActionListener(e -> showStandup());
         top.add(addCard);
         top.add(addColumn);
         top.add(overviewToggle);
+        top.add(standup);
         top.add(boardLabel);
         add(top, BorderLayout.NORTH);
 
@@ -692,6 +699,71 @@ public final class TasksTopComponent extends TopComponent {
                 && !in.getInputText().strip().isEmpty()) {
             mutate(() -> board.addColumn(in.getInputText(), 0));
         }
+    }
+
+    /**
+     * The standup (v2.8.0): gathers the git log OFF the EDT (a fixed-argv
+     * read-only spawn, the GitFacts family — no project code executes, so
+     * no trust gate), then assembles and shows the markdown on the EDT
+     * where the board may be touched safely.
+     */
+    private void showStandup() {
+        File dir = boundDir;
+        if (dir == null) {
+            return;
+        }
+        IO_RP.post(() -> {
+            List<StandupReport.Commit> commits = new ArrayList<>();
+            try {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult r =
+                        org.nmox.studio.core.process.ProcessSupport.runBounded(
+                                List.of("git", "log", "--since=yesterday.midnight",
+                                        "--format=%ct%x09%h %s"),
+                                dir, java.time.Duration.ofSeconds(5));
+                if (r.exitCode() == 0) {
+                    for (String line : r.stdout().split("\n")) {
+                        int tab = line.indexOf('\t');
+                        if (tab > 0) {
+                            try {
+                                commits.add(new StandupReport.Commit(
+                                        line.substring(tab + 1).strip(),
+                                        Long.parseLong(line.substring(0, tab).strip())
+                                                * 1000L));
+                            } catch (NumberFormatException skip) {
+                                // a malformed line loses itself, not the report
+                            }
+                        }
+                    }
+                }
+            } catch (IOException noGit) {
+                // no repo / no git on PATH: the commits section just
+                // doesn't appear — the report stays honest without it
+            }
+            java.awt.EventQueue.invokeLater(() -> {
+                String md = StandupReport.build(board, commits,
+                        System.currentTimeMillis(),
+                        java.time.ZoneId.systemDefault());
+                JTextArea text = new JTextArea(md, 18, 52);
+                text.setEditable(false);
+                text.setCaretPosition(0);
+                JScrollPane scroll = new JScrollPane(text);
+                scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+                JButton copy = new JButton("Copy to Clipboard");
+                copy.getAccessibleContext().setAccessibleName(
+                        "Copy standup to clipboard");
+                copy.addActionListener(ev -> {
+                    java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                            .setContents(new java.awt.datatransfer
+                                    .StringSelection(text.getText()), null);
+                    org.openide.awt.StatusDisplayer.getDefault()
+                            .setStatusText("Standup copied");
+                });
+                DialogDescriptor d = new DialogDescriptor(scroll, "Standup");
+                d.setOptions(new Object[]{copy, NotifyDescriptor.CANCEL_OPTION});
+                d.setClosingOptions(new Object[]{NotifyDescriptor.CANCEL_OPTION});
+                DialogDisplayer.getDefault().notify(d);
+            });
+        });
     }
 
     /** Board-level retro notes (v2.5.0) — the overview's Edit Retro…. */

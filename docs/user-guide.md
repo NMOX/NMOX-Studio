@@ -560,6 +560,12 @@ visible board updates within about a second and a half. And ⌘I reaches
 the board's new dimensions — search an epic label to list its cards,
 or type `blocked` to surface everything in the blocker register.
 
+**The Standup button** turns all of that into words: yesterday and
+today from your done stamps and tracked time, blockers from the
+register, and the last day's git commits — assembled as markdown with
+one Copy to Clipboard button. Empty sections are omitted, so the
+report only says what actually happened.
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the
