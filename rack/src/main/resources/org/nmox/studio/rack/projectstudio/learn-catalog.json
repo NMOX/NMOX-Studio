@@ -2062,6 +2062,36 @@
    "tutorial": "# jQuery\n\njQuery is a browser library that wraps the DOM in one tidy function: `$`. You\nselect elements with CSS selectors (`$('.item')`), then chain methods to read\nand change them, handle events, animate, and make AJAX calls. Modern browsers\nhave caught up on much of this, but jQuery is still everywhere and a great way\nto learn DOM thinking.\n\n## Get set up\n\njQuery runs *in the browser*, not in a terminal REPL. You need two things: a\nway to serve the page, and the library itself.\n\n- The sample loads jQuery from a **CDN** — that requires an internet\n  connection. Offline? Download `jquery.min.js` from https://jquery.com/download/\n  into this folder and change the `<script src>` to `\"jquery.min.js\"`.\n- To serve the page we use Python's built-in web server (no install beyond\n  Python itself).\n\n## Run it\n\nFrom this folder:\n\n```bash\npython3 -m http.server 8000\n```\n\nThen open **http://localhost:8000** in your browser. Click a list line — it\ncrosses off. Click **Add item** — a new line fades in.\n\n> Opening `index.html` directly (file://) works too for this sample, but\n> serving it is the habit that pays off once you add fetch/AJAX.\n\n## The sample\n\n`index.html` shows three core jQuery ideas:\n\n- **Ready handler** — `$(function () { ... })` runs after the DOM is built.\n- **Event delegation** — `$('#list').on('click', '.item', ...)` handles clicks\n  on items that don't exist yet, which is why new items are clickable.\n- **Chaining + animation** — `$('<li>').text(...).appendTo(...).hide().fadeIn()`\n  builds, inserts, and animates in one expression.\n\n## Try this\n\n1. Add a **Clear done** button that runs `$('.done').remove()`.\n2. Change `.fadeIn(200)` to `.slideDown(200)` and compare.\n3. Log every click with `console.log($(this).text())`.\n\n## Going further\n\nThe official learning center: https://learn.jquery.com/\n"
   },
   {
+   "slug": "mootools",
+   "name": "MooTools",
+   "category": "LIBRARY",
+   "family": "Browser JS",
+   "blurb": "The object-oriented classic: real Class/Extends/Implements and extended natives, years before ES6.",
+   "driver": {
+    "kind": "run",
+    "command": [
+     "npx",
+     "http-server",
+     "-c-1",
+     "."
+    ],
+    "prompt": "",
+    "snippets": []
+   },
+   "install": {
+    "mac": "brew install node    # for npx http-server; MooTools loads from a CDN in index.html",
+    "linux": "sudo apt-get install -y nodejs npm    # for npx http-server; MooTools loads from a CDN in index.html",
+    "windows": "winget install OpenJS.NodeJS.LTS    # for npx http-server; MooTools loads from a CDN in index.html"
+   },
+   "files": [
+    {
+     "path": "index.html",
+     "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>MooTools playground</title>\n  <!-- CDN: needs an internet connection. Offline? Download the compat build\n       next to this file and change src to \"mootools-core-compat.min.js\".\n       (The compat build keeps $ and $$; NMOX's Classic Kit vendors the\n       same 1.6.0-compat file if you prefer no network at all.) -->\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/mootools/1.6.0/mootools-core-compat.min.js\"></script>\n  <style>\n    body { font-family: system-ui, sans-serif; margin: 2rem; }\n    .item { padding: .5rem; cursor: pointer; }\n    .done { text-decoration: line-through; color: #999; }\n  </style>\n</head>\n<body>\n  <h1>Click a line to cross it off</h1>\n  <button id=\"add\">Add item</button>\n  <ul id=\"list\">\n    <li class=\"item\">Learn Elements</li>\n    <li class=\"item\">Learn Classes</li>\n  </ul>\n\n  <script>\n    // MooTools' signature: real classes, years before ES6 had them.\n    var Item = new Class({\n      initialize: function (text) {\n        this.el = new Element('li', { 'class': 'item', text: text });\n      },\n      attach: function (list) {\n        this.el.inject(list);\n        this.el.set('tween', { duration: 200 });\n        this.el.setStyle('opacity', 0).tween('opacity', 1);\n        return this;\n      }\n    });\n\n    window.addEvent('domready', function () {\n      // Event delegation on the list, MooTools spelling.\n      $('list').addEvent('click:relay(.item)', function () {\n        this.toggleClass('done');\n      });\n\n      var n = 3;\n      $('add').addEvent('click', function () {\n        new Item('New item ' + n++).attach($('list'));\n      });\n    });\n  </script>\n</body>\n</html>\n"
+    }
+   ],
+   "tutorial": "# MooTools\n\nMooTools is the classic object-oriented browser library: it gave JavaScript a\nreal `Class` (with `Extends` and `Implements`) years before ES6, and extended\nthe natives — Element, Array, Function, String — so the language itself feels\nbigger. You select with `$('id')` and `$$('.selector')`, chain Element methods,\nand animate with Fx. If jQuery taught DOM thinking, MooTools taught JavaScript\n*architecture*.\n\n## Get set up\n\nMooTools runs *in the browser*. Two things: a way to serve the page, and the\nlibrary itself.\n\n- The sample loads MooTools 1.6.0 (compat build — it keeps `$` and `$$`) from\n  a **CDN**, which needs an internet connection. Offline? NMOX's Classic Kit\n  (File ▸ Classic Web Kit…) vendors the exact same pinned file into\n  `vendor/`, or download it from https://mootools.net/core and change the\n  `<script src>`.\n- To serve the page we use `npx http-server` (comes with Node; picks the next\n  free port on its own and prints the URL it bound).\n\n## Run it\n\nFrom this folder:\n\n```bash\nnpx http-server -c-1 .\n```\n\nOpen the URL it prints. Click a list line — it crosses off. Click **Add\nitem** — a `new Item(...)` fades in.\n\n## What to look at\n\n- **`new Class({...})`** — the heart of MooTools. `initialize` is the\n  constructor; add `Extends: Item` in a second class and `this.parent()` calls\n  the overridden method. `Implements: [Options, Events]` mixes in\n  `setOptions` and `addEvent`/`fireEvent` for your own objects.\n- **`window.addEvent('domready', ...)`** — the MooTools spelling of \"wait for\n  the DOM\".\n- **`$('list')` takes an id**, not a selector — that's `$$('.item')`. Both\n  return real (extended) elements, so `.addEvent`, `.setStyle`, `.inject`,\n  `.tween` hang directly off them.\n- **`click:relay(.item)`** — event delegation; works for items added later.\n- **`.tween('opacity', 1)`** — Fx.Tween through the Element shortcut; try\n  `.morph({ opacity: 1, 'padding-left': '20px' })` for several properties at\n  once.\n\n## Try this\n\n1. Give `Item` an `Extends`-based subclass `UrgentItem` that sets a red\n   `color` in `attach`, and call `this.parent(list)` from it.\n2. Replace `.tween('opacity', 1)` with `.morph({...})` animating two styles.\n3. In the console, try `typeOf([])`, `typeOf($('list'))`, and\n   `[3,1,2].contains(2)` — the extended natives.\n\n## Going further\n\nThe docs live at https://mootools.net/core/docs/1.6.0 — note MooTools is no\nlonger actively maintained; it's a brilliant piece of history that still runs\nfine, and its Class system is the best place to feel where ES6 classes came\nfrom.\n"
+  },
+  {
    "slug": "d3",
    "name": "D3.js",
    "category": "LIBRARY",

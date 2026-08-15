@@ -1602,6 +1602,103 @@ public enum ProjectTemplates {
                 - `vendor/` is committed on purpose — pinned files are the era's lockfile
                 """;
         }
+    },
+
+    CLASSIC_WEB_MOOTOOLS("Classic Web (MooTools)",
+            "the object-oriented classic — Class/Extends from a script tag, no build step") {
+        @Override
+        void writeFiles(Path dir, String name) throws IOException {
+            write(dir, "index.html", """
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                  <meta charset="utf-8">
+                  <title>%s</title>
+                  <link rel="stylesheet" href="css/style.css">
+                  <script src="vendor/mootools-core-1.6.0-compat.min.js"></script>
+                  <script src="js/app.js"></script>
+                </head>
+                <body>
+                  <div id="header">
+                    <h1>%s</h1>
+                  </div>
+                  <div id="content">
+                    <p>A classic page: MooTools from a plain script tag, no build step.</p>
+                    <button id="clicker">clicks: 0</button>
+                  </div>
+                </body>
+                </html>
+                """.formatted(name, name));
+            write(dir, "css/style.css", """
+                body { font-family: Verdana, Geneva, sans-serif; margin: 0; }
+                #header { background: #333; color: #fff; padding: 16px 24px; }
+                #header h1 { margin: 0; font-size: 22px; }
+                #content { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+                button { font: inherit; padding: 6px 14px; cursor: pointer; }
+                """);
+            write(dir, "js/app.js", """
+                // The MooTools starting point: a real Class, then wire up on domready.
+                var Counter = new Class({
+                  initialize: function (button) {
+                    this.clicks = 0;
+                    this.button = button;
+                    this.button.addEvent('click', this.bump.bind(this));
+                  },
+                  bump: function () {
+                    this.clicks += 1;
+                    this.button.set('text', 'clicks: ' + this.clicks);
+                  }
+                });
+
+                window.addEvent('domready', function () {
+                  new Counter($('clicker'));
+                });
+                """);
+            // the bundled pinned build, byte for byte (see the Classic Kit's
+            // NOTICE-vendor.md for provenance and SHA-256)
+            Path vendored = dir.resolve("vendor/mootools-core-1.6.0-compat.min.js");
+            Files.createDirectories(vendored.getParent());
+            Files.write(vendored, ClassicKit.vendorBytes("mootools-core-1.6.0-compat.min.js"));
+        }
+
+        @Override
+        JSONObject buildPatch() {
+            // same script-tag-era wiring as Classic Web (jQuery) - one definition
+            return RackPresets.CLASSIC_WEB.buildPatch();
+        }
+
+        @Override
+        boolean lintable() {
+            return false; // no package.json — nothing to hold an eslint dep
+        }
+
+        @Override
+        boolean prettier() {
+            return false; // script-tag era: no Node toolchain at all
+        }
+
+        @Override
+        String gitignore() {
+            // vendor/ is deliberately NOT ignored: pinned files committed
+            // alongside the code are this era's lockfile
+            return """
+                dist/
+                bower_components/
+                .env
+                """;
+        }
+
+        @Override
+        String readmeHints() {
+            return """
+                - no install, no build: index.html loads `vendor/mootools-core-1.6.0-compat.min.js`
+                  from a plain script tag and `js/app.js` wires a `new Class` on domready
+                - IGNITE on IGNITION serves this folder statically and VITALS scores the page
+                - the compat build keeps `$` and `$$`; `Extends`/`Implements` are where
+                  MooTools shines — see the MooTools learning space for a guided tour
+                - `vendor/` is committed on purpose — pinned files are the era's lockfile
+                """;
+        }
     };
 
     private final String displayName;

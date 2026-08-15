@@ -159,6 +159,48 @@ class ProjectTemplatesTest {
     }
 
     @Test
+    @DisplayName("Classic Web (MooTools) is the Class-based classic: vendored compat build, no package.json")
+    void classicWebMootoolsTemplate() throws Exception {
+        File dir = parent.resolve("classic-moo").toFile();
+
+        ProjectTemplates.CLASSIC_WEB_MOOTOOLS.generate(dir, "retro-oo");
+
+        // the era-honest file set — and deliberately NO Node toolchain
+        assertThat(dir.toPath().resolve("css/style.css")).exists();
+        assertThat(dir.toPath().resolve("package.json")).doesNotExist();
+        assertThat(dir.toPath().resolve("eslint.config.mjs")).doesNotExist();
+
+        // index.html loads the compat build from a plain script tag; app.js
+        // opens with the MooTools signature — a real Class, wired on domready
+        String html = Files.readString(dir.toPath().resolve("index.html"));
+        assertThat(html)
+                .contains("<script src=\"vendor/mootools-core-1.6.0-compat.min.js\"></script>")
+                .doesNotContain("type=\"module\"");
+        String app = Files.readString(dir.toPath().resolve("js/app.js"));
+        assertThat(app).contains("new Class(")
+                .contains("window.addEvent('domready'");
+
+        // the vendored build is byte-equal to the bundled pinned resource
+        assertThat(Files.readAllBytes(
+                dir.toPath().resolve("vendor/mootools-core-1.6.0-compat.min.js")))
+                .isEqualTo(ClassicKit.vendorBytes("mootools-core-1.6.0-compat.min.js"));
+
+        // vendor/ is committed on purpose: the .gitignore must not eat it
+        assertThat(Files.readString(dir.toPath().resolve(".gitignore")))
+                .doesNotContain("vendor/");
+
+        // same script-tag-era wiring as the jQuery template - one definition
+        JSONObject patch = new JSONObject(Files.readString(
+                dir.toPath().resolve(RackIO.DEFAULT_FILENAME)));
+        JSONObject bench = RackPresets.CLASSIC_WEB.buildPatch();
+        assertThat(deviceTypes(patch)).isEqualTo(deviceTypes(bench));
+
+        // no manifest, but it still opens: the STATIC last resort
+        assertThat(ProjectInspector.detectKind(dir))
+                .isEqualTo(ProjectInspector.ProjectKind.STATIC);
+    }
+
+    @Test
     @DisplayName("Vite + Svelte is Svelte 5: runes in App.svelte, mount() in main.js")
     void viteSvelteIsSvelte5() throws Exception {
         File dir = parent.resolve("vite-svelte").toFile();

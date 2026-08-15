@@ -90,6 +90,32 @@ class LegacyWebTest {
     }
 
     @Test
+    @DisplayName("MooTools chips project-level EOL — upstream is unmaintained at every version")
+    void mootoolsProjectLevelEol() throws IOException {
+        // with a version: chip carries it, message names the project not jQuery
+        Files.writeString(dir.resolve("package.json"),
+                "{\"dependencies\":{\"mootools\":\"1.6.0\"}}");
+        var libs = LegacyWeb.scan(dir.toFile());
+        assertThat(libs).hasSize(1);
+        assertThat(libs.get(0).eol()).isTrue();
+        assertThat(libs.get(0).label()).isEqualTo("mootools 1.6.0 — EOL");
+        assertThat(libs.get(0).eolMessage())
+                .isEqualTo("MooTools is no longer maintained — 1.6.x was the final line");
+
+        // versionless: jQuery's no-version-no-claim law is about a VERSION
+        // LINE; MooTools' claim is about the project, so it still chips
+        Files.delete(dir.resolve("package.json"));
+        Files.writeString(dir.resolve("index.html"),
+                "<script src=\"js/mootools.min.js\"></script>");
+        var byTag = LegacyWeb.scan(dir.toFile());
+        assertThat(byTag).hasSize(1);
+        assertThat(byTag.get(0).version()).isEmpty();
+        assertThat(byTag.get(0).eol()).isTrue();
+        assertThat(byTag.get(0).label()).isEqualTo("mootools — EOL");
+        assertThat(byTag.get(0).eolMessage()).contains("no longer maintained");
+    }
+
+    @Test
     @DisplayName("Sources merge to one entry per library; a known version beats an unknown one")
     void dedupeAcrossSources() throws IOException {
         // package.json names jquery without a usable number; the script

@@ -598,6 +598,250 @@
       {
         "name": ".periodical",
         "sig": ".periodical(interval[, bind[, args]]) — Function method"
+      },
+      {
+        "name": "document.id",
+        "sig": "document.id(id)"
+      },
+      {
+        "name": "Extends",
+        "sig": "Extends: ParentClass — Class mutator"
+      },
+      {
+        "name": "Implements",
+        "sig": "Implements: [Options, Events] — Class mutator"
+      },
+      {
+        "name": "this.parent",
+        "sig": "this.parent(args) — call the overridden method"
+      },
+      {
+        "name": ".setOptions",
+        "sig": ".setOptions(options) — Options mixin"
+      },
+      {
+        "name": "Type",
+        "sig": "new Type(name, constructor)"
+      },
+      {
+        "name": "Fx.Tween",
+        "sig": "new Fx.Tween(element[, options])"
+      },
+      {
+        "name": "Fx.Morph",
+        "sig": "new Fx.Morph(element[, options])"
+      },
+      {
+        "name": ".start",
+        "sig": ".start(from[, to]) — Fx method"
+      },
+      {
+        "name": ".cancel",
+        "sig": ".cancel() — Fx/Request method"
+      },
+      {
+        "name": ".pause",
+        "sig": ".pause() — Fx method"
+      },
+      {
+        "name": ".resume",
+        "sig": ".resume() — Fx method"
+      },
+      {
+        "name": ".post",
+        "sig": ".post([data]) — Request shortcut"
+      },
+      {
+        "name": "Cookie.write",
+        "sig": "Cookie.write(key, value[, options])"
+      },
+      {
+        "name": "Cookie.read",
+        "sig": "Cookie.read(key)"
+      },
+      {
+        "name": "Cookie.dispose",
+        "sig": "Cookie.dispose(key[, options])"
+      },
+      {
+        "name": "JSON.encode",
+        "sig": "JSON.encode(obj)"
+      },
+      {
+        "name": "JSON.decode",
+        "sig": "JSON.decode(string[, secure])"
+      },
+      {
+        "name": "Browser",
+        "sig": "Browser.name / Browser.version"
+      },
+      {
+        "name": "domready",
+        "sig": "window.addEvent('domready', fn)"
+      },
+      {
+        "name": ".getParent",
+        "sig": ".getParent([selector])"
+      },
+      {
+        "name": ".getChildren",
+        "sig": ".getChildren([selector])"
+      },
+      {
+        "name": ".getSiblings",
+        "sig": ".getSiblings([selector])"
+      },
+      {
+        "name": ".getNext",
+        "sig": ".getNext([selector])"
+      },
+      {
+        "name": ".getPrevious",
+        "sig": ".getPrevious([selector])"
+      },
+      {
+        "name": ".getFirst",
+        "sig": ".getFirst([selector])"
+      },
+      {
+        "name": ".getLast",
+        "sig": ".getLast([selector])"
+      },
+      {
+        "name": ".getProperty",
+        "sig": ".getProperty(name)"
+      },
+      {
+        "name": ".setProperty",
+        "sig": ".setProperty(name, value)"
+      },
+      {
+        "name": ".removeProperty",
+        "sig": ".removeProperty(name)"
+      },
+      {
+        "name": ".contains",
+        "sig": ".contains(el) — Element method"
+      },
+      {
+        "name": ".match",
+        "sig": ".match(selector)"
+      },
+      {
+        "name": ".toQueryString",
+        "sig": ".toQueryString()"
+      },
+      {
+        "name": ".getSize",
+        "sig": ".getSize() — {x, y}"
+      },
+      {
+        "name": ".getPosition",
+        "sig": ".getPosition([relativeTo])"
+      },
+      {
+        "name": ".getCoordinates",
+        "sig": ".getCoordinates([relativeTo])"
+      },
+      {
+        "name": ".getScroll",
+        "sig": ".getScroll() — {x, y}"
+      },
+      {
+        "name": ".appendText",
+        "sig": ".appendText(text[, where])"
+      },
+      {
+        "name": ".wraps",
+        "sig": ".wraps(el[, where])"
+      },
+      {
+        "name": ".invoke",
+        "sig": ".invoke(method[, args]) — Array method"
+      },
+      {
+        "name": ".clean",
+        "sig": ".clean() — Array/String method"
+      },
+      {
+        "name": ".pick",
+        "sig": ".pick() — Array method"
+      },
+      {
+        "name": ".flatten",
+        "sig": ".flatten() — Array method"
+      },
+      {
+        "name": ".associate",
+        "sig": ".associate(keys) — Array method"
+      },
+      {
+        "name": ".include",
+        "sig": ".include(item) — Array method"
+      },
+      {
+        "name": ".bind",
+        "sig": ".bind(bind[, args]) — Function method"
+      },
+      {
+        "name": ".pass",
+        "sig": ".pass(args[, bind]) — Function method"
+      },
+      {
+        "name": ".attempt",
+        "sig": ".attempt([args[, bind]]) — Function method"
+      },
+      {
+        "name": ".substitute",
+        "sig": ".substitute(object[, regexp]) — String method"
+      },
+      {
+        "name": ".camelCase",
+        "sig": ".camelCase() — String method"
+      },
+      {
+        "name": ".hyphenate",
+        "sig": ".hyphenate() — String method"
+      },
+      {
+        "name": ".capitalize",
+        "sig": ".capitalize() — String method"
+      },
+      {
+        "name": ".test",
+        "sig": ".test(regex[, params]) — String method"
+      },
+      {
+        "name": ".toInt",
+        "sig": ".toInt([base]) — String/Number method"
+      },
+      {
+        "name": ".toFloat",
+        "sig": ".toFloat() — String/Number method"
+      },
+      {
+        "name": ".limit",
+        "sig": ".limit(min, max) — Number method"
+      },
+      {
+        "name": ".round",
+        "sig": ".round([precision]) — Number method"
+      },
+      {
+        "name": ".times",
+        "sig": ".times(fn[, bind]) — Number method"
+      },
+      {
+        "name": ".stop",
+        "sig": ".stop() — DOMEvent method"
+      },
+      {
+        "name": ".preventDefault",
+        "sig": ".preventDefault() — DOMEvent method"
+      },
+      {
+        "name": ".stopPropagation",
+        "sig": ".stopPropagation() — DOMEvent method"
       }
     ]
   },
