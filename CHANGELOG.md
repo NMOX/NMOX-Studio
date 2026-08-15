@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.10.0] - 2026-08-15
+
+WeeChat-power arc, tranche 2 — the two signature moves the v2.2.0
+recon recorded as candidates, built the same lawful way: pure cores at
+the transcript append decision only, the engine-side log tap upstream
+keeping everything.
+
+### Added
+- **Custom /filter regexes.** `/filter add <name> <#channel|*> <regex>`
+  hides matching chat lines and channel notices — WeeChat's custom
+  filters, the honest subset. A filtered line produces NO signal at
+  all: no transcript line, no unread bold, no mention ring, and no
+  query tab minted for a filtered spammer — while the log on disk
+  keeps the full record. Case-insensitive like WeeChat's; the tested
+  text is the displayed form `<nick> body` so a filter can target a
+  nick, a phrase, or both; a bad or over-long regex is refused with
+  the reason and never enters the table; filters persist in the
+  config (a saved form that no longer compiles is skipped on load,
+  never a broken client). `del`, `enable`, `disable`, and `list`
+  complete the family; `/filter smart on|off` keeps its v2.2.0
+  meaning.
+- **`/lastlog <text> [count]`** — WeeChat's scrollback search: the
+  last matching lines of the active transcript (case-insensitive,
+  default 20) printed as a dim block IN the transcript. The block
+  writes the document directly like the v1.344.0 gap marker — a
+  search result is bookkeeping, not a message, so it never bolds the
+  tree or counts as unread.
+
+Honestly out, recorded not promised: triggers (arbitrary command
+execution on message match is an automation/security design of its
+own) and buffer merge (a window-system rework).
+
+Verified live against Libera.Chat in the assembled app: `/lastlog
+libera 3` printed the dim three-match block over the real MOTD;
+`/filter add walktest * zzyzx` confirmed and listed `[on]`; in a
+joined channel a plain line appeared while the line carrying the
+filtered word — sent for real, echoed back by the server — never
+reached the transcript, and the disk log kept it verbatim
+(hidden on screen, kept on disk, observed in the same minute);
+`/filter del` removed it. Mutation ×2 by name: the enabled guard
+removed dies by `toggling`, first-n lastlog dies by `lastlogMatches`.
+
 ## [2.9.1] - 2026-08-14
 
 Docs truth for the 2.x run. No code.
@@ -13065,6 +13107,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.1...v2.8.0

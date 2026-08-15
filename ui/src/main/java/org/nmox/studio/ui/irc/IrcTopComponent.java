@@ -184,6 +184,14 @@ public final class IrcTopComponent extends TopComponent {
     /** WeeChat's smart filter: who spoke where, recently (pure core). */
     private final SmartFilter smartFilter = new SmartFilter();
     private boolean smartFilterOn = IrcConfig.getDefault().smartFilterEnabled();
+    /** Custom /filter regexes (v2.10.0, pure core) — loaded from the
+     *  config at construction; a saved form that no longer compiles is
+     *  skipped there, never a broken client. Applied at the transcript
+     *  append decision only: the engine-side log tap keeps everything. */
+    private final TextFilters textFilters = new TextFilters();
+    {
+        IrcConfig.getDefault().textFilters().forEach(textFilters::addFromStringForm);
+    }
 
     /** The dispatch switch's own labels; an alias may not shadow one. */
     private static final Set<String> BUILTIN_COMMANDS = Set.of(
@@ -191,7 +199,7 @@ public final class IrcTopComponent extends TopComponent {
             "whois", "list", "ignore", "unignore", "away", "back", "log", "notice",
             "ctcp", "quit", "raw", "help", "filter", "alias", "kick", "mode",
             "invite", "op", "deop", "voice", "devoice", "ban", "unban", "clear",
-            "close", "cycle");
+            "close", "cycle", "lastlog");
     /** network → lowercased nicks currently marked away (away-notify + 301). */
     private final Map<String, Set<String>> awayNicks = new HashMap<>();
     /** per-target input recall (never persisted). */
@@ -1232,6 +1240,15 @@ public final class IrcTopComponent extends TopComponent {
                     // speech is what makes later presence lines signal
                     smartFilter.spoke(network, targetName, sender);
                 }
+                // custom /filter regexes: a line the user explicitly
+                // filtered produces NO signal — no transcript line, no
+                // unread, no mention, no query tab; the engine-side
+                // IrcLogTap upstream keeps the full record. The check
+                // sits BELOW smartFilter.spoke so hiding a line never
+                // corrupts the presence bookkeeping.
+                if (textFilters.hides(targetName, "<" + sender + "> " + body)) {
+                    break;
+                }
                 // A server minting sender nicks could otherwise create
                 // unbounded query tabs (tree nodes + documents) with zero
                 // user gestures; past the cap, overflow speech lands in
@@ -1258,6 +1275,12 @@ public final class IrcTopComponent extends TopComponent {
                 String target = msg.param(0);
                 String body = msg.trailing() == null ? "" : msg.trailing();
                 String k = isChannel(target) ? key(network, target) : statusKey;
+                // channel notices honor the custom /filter regexes too
+                // (the classic spam vector); the log tap keeps the line
+                if (isChannel(target)
+                        && textFilters.hides(target, "-" + sender + "- " + body)) {
+                    break;
+                }
                 appendStatus(k, "-" + sender + "- " + body, stamp);
             }
             case "JOIN" -> {
@@ -1733,6 +1756,7 @@ public final class IrcTopComponent extends TopComponent {
                 }
             }
             case "filter" -> commandFilter(args);
+            case "lastlog" -> commandLastlog(args);
             case "alias" -> commandAlias(args);
             case "kick" -> {
                 IrcClient c = liveClient();
@@ -1895,17 +1919,132 @@ public final class IrcTopComponent extends TopComponent {
         });
     }
 
-    /** {@code /filter [smart] on|off}; bare {@code /filter} reports state. */
+    /**
+     * {@code /filter} — the smart toggle plus WeeChat's custom regex
+     * filters (v2.10.0): {@code add <name> <#channel|*> <regex>},
+     * {@code del <name>}, {@code enable|disable <name>}, {@code list};
+     * {@code [smart] on|off} keeps its v2.2.0 meaning and bare
+     * {@code /filter} reports everything. Custom filters persist in the
+     * config and hide matching chat lines with NO signal — the
+     * engine-side log always keeps the full record.
+     */
     private void commandFilter(String args) {
-        String a = args.trim().toLowerCase(Locale.ROOT).replace("smart", "").trim();
-        if (a.equals("on") || a.equals("off")) {
-            smartFilterOn = a.equals("on");
-            IrcConfig.getDefault().setSmartFilterEnabled(smartFilterOn);
+        String statusKey = key(activeNetwork(), "");
+        IrcConfig config = IrcConfig.getDefault();
+        String[] parts = args.trim().split("\\s+", 2);
+        String sub = parts[0].toLowerCase(Locale.ROOT);
+        String rest = parts.length > 1 ? parts[1].trim() : "";
+        switch (sub) {
+            case "add" -> {
+                String[] a = rest.split("\\s+", 3);
+                if (a.length < 3) {
+                    appendStatus(statusKey, "usage: /filter add <name> <#channel|*> <regex>");
+                    return;
+                }
+                String problem = textFilters.add(a[0], a[1], a[2], true);
+                if (problem != null) {
+                    appendStatus(statusKey, "Filter refused: " + problem);
+                    return;
+                }
+                TextFilters.Filter f = textFilters.list().get(textFilters.list().size() - 1);
+                config.saveTextFilter(f.name(), f.stringForm());
+                appendStatus(statusKey, "Filter '" + f.name() + "' hides lines matching /"
+                        + f.regex() + "/ in " + ("*".equals(f.scope()) ? "every channel" : f.scope())
+                        + " (logs keep everything; /filter del " + f.name() + " removes it)");
+            }
+            case "del" -> {
+                if (textFilters.remove(rest)) {
+                    config.removeTextFilter(rest);
+                    appendStatus(statusKey, "Filter removed: " + rest.toLowerCase(Locale.ROOT));
+                } else {
+                    appendStatus(statusKey, "No filter named '" + rest + "' (/filter list)");
+                }
+            }
+            case "enable", "disable" -> {
+                boolean on = sub.equals("enable");
+                if (textFilters.setEnabled(rest, on)) {
+                    textFilters.list().stream()
+                            .filter(f -> f.name().equalsIgnoreCase(rest))
+                            .findFirst()
+                            .ifPresent(f -> config.saveTextFilter(f.name(), f.stringForm()));
+                    appendStatus(statusKey, "Filter '" + rest.toLowerCase(Locale.ROOT)
+                            + "' " + (on ? "enabled" : "disabled"));
+                } else {
+                    appendStatus(statusKey, "No filter named '" + rest + "' (/filter list)");
+                }
+            }
+            case "list" -> {
+                var all = textFilters.list();
+                if (all.isEmpty()) {
+                    appendStatus(statusKey, "No custom filters: /filter add <name> <#channel|*> <regex>");
+                } else {
+                    for (TextFilters.Filter f : all) {
+                        appendStatus(statusKey, (f.enabled() ? "[on]  " : "[off] ")
+                                + f.name() + "  " + f.scope() + "  /" + f.regex() + "/");
+                    }
+                }
+            }
+            default -> {
+                String a = args.trim().toLowerCase(Locale.ROOT).replace("smart", "").trim();
+                if (a.equals("on") || a.equals("off")) {
+                    smartFilterOn = a.equals("on");
+                    IrcConfig.getDefault().setSmartFilterEnabled(smartFilterOn);
+                }
+                appendStatus(statusKey, "Smart join/part/quit filter is "
+                        + (smartFilterOn ? "ON" : "OFF") + " (/filter smart on|off). Joins, parts,"
+                        + " quits, and renames from nicks silent for 5 minutes are hidden;"
+                        + " kicks and your own lines always show, and logs keep everything."
+                        + " Custom filters: " + textFilters.list().size()
+                        + " (/filter add|del|enable|disable|list).");
+            }
         }
-        appendStatus(key(activeNetwork(), ""), "Smart join/part/quit filter is "
-                + (smartFilterOn ? "ON" : "OFF") + " (/filter smart on|off). Joins, parts,"
-                + " quits, and renames from nicks silent for 5 minutes are hidden;"
-                + " kicks and your own lines always show, and logs keep everything.");
+    }
+
+    /**
+     * {@code /lastlog <text> [count]} — WeeChat's scrollback search: the
+     * last matching lines of the ACTIVE transcript (case-insensitive
+     * substring, default 20) printed as a dim block. The block writes
+     * the document DIRECTLY like the gap marker (v1.344.0): a search
+     * result is bookkeeping, not a message — no unread, no mention.
+     */
+    private void commandLastlog(String args) {
+        String[] a = args.trim().split("\\s+");
+        if (a.length == 0 || a[0].isEmpty()) {
+            appendStatus(key(activeNetwork(), ""), "usage: /lastlog <text> [count]");
+            return;
+        }
+        int limit = 20;
+        String pattern = args.trim();
+        if (a.length > 1) {
+            try {
+                limit = Integer.parseInt(a[a.length - 1]);
+                pattern = args.trim().substring(0, args.trim().length()
+                        - a[a.length - 1].length()).trim();
+            } catch (NumberFormatException notACount) {
+                // the whole argument string is the pattern
+            }
+        }
+        StyledDocument doc = docForKey(activeKey);
+        String scrollback;
+        try {
+            scrollback = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            return; // reading [0, length) cannot be out of bounds
+        }
+        java.util.List<String> hits = TextFilters.lastlog(scrollback, pattern, limit);
+        SimpleAttributeSet dim = attrs(new Color(0x88, 0x88, 0x88), false, true, false);
+        try {
+            doc.insertString(doc.getLength(),
+                    "— lastlog: " + hits.size() + " match" + (hits.size() == 1 ? "" : "es")
+                    + " for \"" + pattern + "\" —\n", dim);
+            for (String hit : hits) {
+                doc.insertString(doc.getLength(), "  " + hit + "\n", dim);
+            }
+            trimTranscript(doc);
+        } catch (BadLocationException ex) {
+            // appending at getLength() cannot be out of bounds
+        }
+        transcript.setCaretPosition(doc.getLength());
     }
 
     /** {@code /alias} lists; {@code /alias name cmd} defines; {@code /alias -name} removes. */
@@ -2002,6 +2141,8 @@ public final class IrcTopComponent extends TopComponent {
             "  /op /deop /voice /devoice nick… — one batched MODE line",
             "  /ban /unban nick-or-mask — a bare nick bans as nick!*@*",
             "  /filter smart on|off — hide join/part/quit noise from silent nicks",
+            "  /filter add name #chan|* regex — hide matching lines (del/enable/disable/list)",
+            "  /lastlog text [count] — the last matching scrollback lines, in place",
             "  /alias name command… — your own commands (/alias lists, -name removes)",
             "  /clear — empty this transcript    /close — close this tab",
             "  /cycle — part and rejoin          /log [on|off] — logging (~/.nmox/irc-logs)",

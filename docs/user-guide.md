@@ -778,7 +778,17 @@ ChanServ traffic is **never** written to disk.
 | `/away [message]` | mark yourself away / back |
 | `/log [on\|off]` | per-channel logging |
 | `/ctcp nick VERSION\|PING` | CTCP query |
+| `/filter add name #chan\|* regex` | hide matching lines — your own custom filters (`del`/`enable`/`disable`/`list`) |
+| `/lastlog text [count]` | the last matching scrollback lines, printed dim in place |
 | `/raw LINE` · `/quit [message]` | raw protocol line / disconnect for good |
+
+**Custom filters.** Beyond the smart join/part/quit filter, `/filter
+add` takes a name, a scope (`#channel` or `*` for everywhere), and a
+case-insensitive regex; matching chat lines and channel notices are
+hidden with no signal at all — no unread bold, no mention, no query
+tab — while the log on disk keeps every line. Filters persist across
+restarts, and a filtered line is tested in its displayed form
+(`<nick> body`) so a filter can target a nick, a phrase, or both.
 
 Closing the tab does **not** disconnect — a chat client outlives its
 window; reopen the tab and you're still in every channel. Only
