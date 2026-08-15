@@ -264,6 +264,30 @@ public final class IrcConfig {
         root.node("aliases").remove(name.toLowerCase(java.util.Locale.ROOT));
     }
 
+    // ---- custom text filters (/filter add — one entry per filter, v2.10.0) ----
+
+    /** Saved filters, name → the TextFilters string form, in name order. */
+    public java.util.Map<String, String> textFilters() {
+        java.util.Map<String, String> out = new java.util.TreeMap<>();
+        Preferences n = root.node("textfilters");
+        try {
+            for (String key : n.keys()) {
+                out.put(key, n.get(key, ""));
+            }
+        } catch (BackingStoreException ex) {
+            // an unreadable store means no filters, not a broken client
+        }
+        return out;
+    }
+
+    public void saveTextFilter(String name, String stringForm) {
+        root.node("textfilters").put(name.toLowerCase(java.util.Locale.ROOT), stringForm);
+    }
+
+    public void removeTextFilter(String name) {
+        root.node("textfilters").remove(name.toLowerCase(java.util.Locale.ROOT));
+    }
+
     // ---- global highlight keywords (one entry per keyword) ----
 
     /** Extra words that highlight like the nick does, in saved order. */
