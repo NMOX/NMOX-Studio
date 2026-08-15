@@ -838,6 +838,21 @@ Open-in-Browser action route here too.
     decline with the reason on the status bar while the preview stays
     visible. The walkthrough:
     [Browser to Source](tutorials/browser-to-source.md).
+- **Motion** — DHTML, reborn as a keyframe timeline (v2.12.0). Select
+  an element in the DOM tab, then author a real CSS animation on a
+  timeline strip: one row per property, a diamond per keyframe — drag
+  a diamond to move its stop (it can never pass a neighbor),
+  double-click a track to add a stop, double-click a diamond to edit
+  its value, drag the ruler to scrub the live page to that exact
+  moment (the paused-negative-delay trick — the element really sits
+  there). Seven DHTML-classic presets load with one click: marquee,
+  pulse, fly-in, bounce, shake, spin, rainbow. **Play** previews in
+  the page through a single injected preview style tag;
+  **Apply to Source** lands the `@keyframes` block and the
+  `animation:` shorthand in the source stylesheet in one atomic write,
+  through the same rule-matching and the same refusal ladder as Edit
+  Style — and a same-named `@keyframes` block is replaced at its LAST
+  occurrence, the one the cascade actually uses.
 - **Network** — requests the page makes via `fetch` or
   `XMLHttpRequest` **after** the DevTools instrumentation injects (on
   page load): method, URL, status, duration, size when the response

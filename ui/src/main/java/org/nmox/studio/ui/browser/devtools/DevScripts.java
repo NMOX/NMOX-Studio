@@ -521,6 +521,27 @@ public final class DevScripts {
      * element at {@code path} so the page shows the tweak instantly,
      * before (and independent of) the source write.
      */
+    /**
+     * Installs (or replaces) the Motion pane's preview stylesheet — a
+     * single {@code <style id="__nmox_motion">} holding the timeline's
+     * current {@code @keyframes} block (v2.12.0). Idempotent per call;
+     * {@link #clearMotionPreview()} removes it.
+     */
+    public static String injectMotionKeyframes(String cssBlock) {
+        return "(function(){\n"
+                + "var s=document.getElementById('__nmox_motion');\n"
+                + "if(!s){s=document.createElement('style');s.id='__nmox_motion';\n"
+                + "document.documentElement.appendChild(s);}\n"
+                + "s.textContent=" + quote(cssBlock) + ";\n"
+                + "return 'ok';})()";
+    }
+
+    /** Removes the Motion preview stylesheet and nothing else. */
+    public static String clearMotionPreview() {
+        return "(function(){var s=document.getElementById('__nmox_motion');\n"
+                + "if(s&&s.parentNode){s.parentNode.removeChild(s);}return 'ok';})()";
+    }
+
     public static String applyInlineStyle(List<Integer> path, String property, String value) {
         return "(function(){\n"
                 + "var path=" + pathJson(path) + ";\n"

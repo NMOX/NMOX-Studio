@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.12.0] - 2026-08-15
+
+David's directive: *bring back DHTML — with a full keyframe system and
+timeline strip.* The honest modern shape: a **Motion** pane in the
+Browser's DevTools that authors real CSS `@keyframes` on a timeline
+and lands them in your source stylesheet.
+
+### Added
+- **The Motion pane** — select an element in the DOM tab, then animate
+  it on a timeline strip: one row per property, a diamond per
+  keyframe. Drag a diamond to move its stop (clamped so stops never
+  pass or merge — a drag cannot silently delete a keyframe),
+  double-click a track to add a stop (seeded from its nearest
+  neighbor), double-click a diamond to edit its value, Delete removes
+  the selected one. Dragging the ruler **scrubs the live page** to
+  that exact moment via the paused-negative-delay trick — the element
+  really sits at that point of the real animation.
+- **Play / Stop** previews in the page through a single injected
+  `style#__nmox_motion` tag plus the element's inline `animation` —
+  and edits made while playing re-inject live.
+- **Apply to Source** writes the `@keyframes` block AND the
+  `animation:` shorthand into the source stylesheet in one atomic
+  write, through the same cascade-answer rule matching and the same
+  refusal ladder as Edit Style (now one shared `writeBackWith` seam):
+  inline `<style>`, unserved sheets, compiled output with a
+  preprocessor sibling, and unsaved buffers all refuse with reasons
+  while the preview stays. A same-named `@keyframes` block is
+  replaced at its LAST occurrence — the one the cascade actually uses.
+- **Seven DHTML-classic presets**, one click to load: marquee, pulse,
+  fly-in, bounce, shake, spin, rainbow — minus the `<marquee>` and
+  `<blink>` tags. Every preset is a fixture: the tests feed each
+  through the real emit, apply, and parse.
+- Pure cores throughout: `Keyframes` (emit/parse/replace-last, the
+  StyleWriteback refusal set, strictly-increasing percent stops) and
+  the strip's `TimelineStrip.Model` (clamps, regrouping, round-trip),
+  plus a synthesized-event probe of the strip itself (a ruler press
+  scrubs, a diamond drag rides the clamped model, a double-click adds
+  a seeded stop, the diamond really paints phosphor on a headless
+  image) — 10 new tests, mutation ×2 by name (first-block-wins dies
+  by `replaceLastBlock`; the unclamped drag dies by
+  `moveClampsBetweenNeighbors`).
+
+Verified live in the dev-assembled app on the bundled FX runtime: a
+served two-file page, `h1.banner` picked in the DOM tab, the `marquee`
+preset loaded, Play slid the headline across the viewport in real time,
+a ruler click at 50% froze the page at `translateX(0)` — the exact
+midpoint of the 100vw→-100% journey — and Apply to Source reported
+"Saved to style.css  (.banner)": on disk, `animation: marquee 8s linear
+infinite;` sat indent-matched inside `.banner`, the `@keyframes
+marquee` block appended after, every other byte identical.
+
 ## [2.11.0] - 2026-08-15
 
 David's ask: a Kitchen Sink tutorial that exercises all aspects of the
@@ -13172,6 +13223,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.11.0...v2.12.0
 [2.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.2...v2.11.0
 [2.10.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.1...v2.10.2
 [2.10.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.0...v2.10.1

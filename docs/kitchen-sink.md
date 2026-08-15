@@ -188,6 +188,10 @@ that makes it an IDE browser:
 3. **Edit Style…** — instant inline preview, then the declaration
    lands in the *source* stylesheet, in the rule the page's own
    cascade says wins.
+4. **Motion** — the DHTML timeline: load the `marquee` preset, press
+   Play and watch the element fly; drag keyframe diamonds, scrub the
+   ruler to hold the page mid-animation, then **Apply to Source** and
+   find the `@keyframes` block sitting in your stylesheet.
 
 ## 9. API Studio (⌥⌘8)
 
