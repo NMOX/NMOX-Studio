@@ -552,7 +552,11 @@ elapsed); **Clock Out** stops it. Only one clock runs at a time —
 clocking in elsewhere closes the running session. The overview's
 **TIME** section is the report: clocked today and last-7-days totals,
 then per-card rows, most-today first. Sessions live in
-`.nmoxtasks.json`, so a running clock survives a restart.
+`.nmoxtasks.json`, so a running clock survives a restart. Because that
+file is often checked in, a merge can leave session lists no gesture
+could have made — stray open sessions are healed on load: each closes
+at its own start (no invented time), and if a merge left two cards
+"running", the one clocked in latest keeps the clock.
 
 The board also follows the file both ways: edit `.nmoxtasks.json` by
 hand, pull a teammate's changes, or check out another branch, and the

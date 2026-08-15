@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption;
  * Whole-file text writes that are atomic at the filesystem level.
  *
  * {@code Files.writeString} truncates the target and then writes, so any
- * concurrent reader — our own mtime pollers (WorkspaceFilePulse,
+ * concurrent reader — our own mtime pollers (FilePulse,
  * ArtifactPulse, FileWatcher), an external tool, or the same studio in
  * another IDE instance — can observe an empty or half-written file. Worse,
  * a poll landing between the truncate and the SelfWriteTracker stamp reads
