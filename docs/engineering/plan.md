@@ -2334,3 +2334,60 @@ arc's same-day review (third run, third single-bug catch: STELLAR's
 exit attribution had to capture the launched verb — never consult a
 knob in onFinished). Recorded premise: Move (Aptos/Sui) waits on
 grammar provenance; Sui's CLI side is clean (Apache-2.0, brewed).
+
+## Addendum — 2026-08-13/14, the board becomes a sprint suite (v2.2.1–v2.9.0)
+
+Eight releases in one run, each through the full gate with live proof.
+The WeeChat tranche closed with its Libera walk (v2.2.1: a
+`WHEN_IN_FOCUSED_WINDOW` binding is DEAD inside a docked TopComponent —
+the v1.205.0 Escape law's second strike; bind on the component). The
+keymap release (v2.3.0) made every NMOX chord ride all five platform
+profiles — the recon found the machinery already ships in the defaults
+module, our chords just never joined the non-NetBeans profiles — and
+fixed QuickSearch's actions registered INSIDE the Keymaps folder,
+where they masqueraded as a profile. KeymapProfileParityTest is the
+law: a new chord that misses a profile fails the build.
+
+Then the Task Board arc, from David's screenshot of the Sprint Studio
+artifact ("I'd like that kind of view in the product"):
+- **v2.4.0 Board Overview** — a dashboard face on the Tasks window,
+  every number from stated definitions in pure BoardStats. The walk
+  caught what no unit test could: bare `JComponent.getAccessibleContext()`
+  is NULL, so naming a painted widget NPE'd mid-build — painted
+  widgets extend JPanel now, pinned by a headless render probe.
+- **v2.5.0 tranche 2** — the blocker register (owner / unblock action /
+  auto since; a blank action is refused because a register row must be
+  actionable; finishing IS the unblock), the derived epic legend
+  (SpotBugs killed `abs(hashCode)` — floorMod), retro notes.
+- **v2.6.0 the time clock** — [start,end] session pairs on cards, ONE
+  clock board-wide, sub-minute blips dropped whole, the TIME report
+  clips per calendar day (the live walk read "today 2h 07m · week
+  4h 00m" across a planted midnight session).
+- **v2.7.0 the senior pass** — hygiene sweep came back clean after
+  300+ reviewed releases, so the value was structural: FilePulse
+  promoted to core BEFORE a second copy grew, Card de-telescoped, and
+  the window's own recorded v1 limit (no live watcher) closed and
+  proven live. Lesson: `-pl <module>` resolves siblings from the STALE
+  local repo — install core first after adding a core class.
+- **v2.7.1 the junior comments pass** — measure-first again: 638/638
+  class javadoc already held, the real gap was packages (4/79 had
+  package-info). 22 neighborhood maps + guide Flow 5 +
+  JuniorDocsGateTest.
+- **v2.8.0 the Standup** — the gap analysis pick: the product records
+  the whole working day and had no way to TELL anyone. Pure
+  StandupReport (board + commits + clock in, markdown out); empty
+  sections OMITTED; commits from a bounded fixed-argv git log with the
+  honest no-git path; walk-proven including the clipboard round trip.
+- **v2.9.0 the arc review** — the find: fromJson never enforced its
+  own open-session claims, so a keep-both merge could plant a phantom
+  forever-running session no gesture could reach while TIME and the
+  Standup counted it to NOW. healOpenSessions closes strays at their
+  OWN start; the latest start keeps the clock.
+
+Two patterns worth reusing. **Every runtime invariant over a
+checked-in file needs a parse-time heal** — .nmoxtasks.json's parser
+now carries two (duplicate ids v1.325.0, open sessions v2.9.0); when a
+third invariant lands, its heal lands the same day. And **fixed-clock
+model tests build boards via fromJson**, because the mutation verbs
+stamp wall-clock time — the JSON is the seam where a test controls
+every timestamp.
