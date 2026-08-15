@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.11.0] - 2026-08-15
+
+David's ask: a Kitchen Sink tutorial that exercises all aspects of the
+product.
+
+### Added
+- **The Kitchen Sink tutorial** — `docs/kitchen-sink.md`: every
+  surface in one hands-on sitting, twenty-one do/see stations from
+  first launch through ship. Covers the Doctor, projects, the editor
+  gauntlet (Emmet, swatches/picker, tokens, Navigator routes, Prettier,
+  keymap profiles), the Task Rack (cables, presets, resurrection, CI
+  export), the programmable rack (with the format doc's own
+  parser-proven JSON example), Quick Search, the source-aware Browser
+  loop, all seven studios, debugging, the four kits, learning spaces,
+  ORACLE, the Angular lane, and the ship gates — closing with "the
+  refusals are features" (each refusal named and deliberate) and a
+  where-everything-lives map of the six per-project files and eight
+  `~/.nmox` drop-in dirs. Every claim restates a previously
+  live-proven behavior; chords and labels were checked against the
+  pinned tests and menu sources before writing. Linked from the README
+  tour block and the user guide's opening.
+
 ## [2.10.2] - 2026-08-15
 
 The night review over v2.10.0's fresh code.
@@ -13150,6 +13172,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.2...v2.11.0
 [2.10.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.1...v2.10.2
 [2.10.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.1...v2.10.0
