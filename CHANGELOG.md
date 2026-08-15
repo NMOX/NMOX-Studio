@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.10.2] - 2026-08-15
+
+The night review over v2.10.0's fresh code.
+
+### Fixed
+- **Local echo honors your filters.** On a server without the
+  echo-message capability your own sent line is appended locally, and
+  both local-echo sites (the send path and /msg) bypassed the custom
+  /filter verdict — so whether your OWN matching line hid depended on
+  a server capability you cannot see (on Libera it hid via the echo
+  path; elsewhere it would not have). Both sites now consult the same
+  verdict, the disk log keeps the line either way, and
+  FilterWiringGateTest makes the pairing a build law: every append a
+  chat line can reach must consult textFilters.hides — proven
+  failing-first (the gate fails on the v2.10.0 shape) and
+  mutation-proven by unguarding one site.
+- plan.md carries the night addendum (v2.8.0–v2.10.2) with the
+  echo-message double-path lesson.
+
 ## [2.10.1] - 2026-08-15
 
 The night shift's locks: coverage floors ratcheted and the 2.x
@@ -13131,6 +13150,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.10.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.1...v2.10.2
 [2.10.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.0...v2.9.1
