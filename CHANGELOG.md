@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.9.1] - 2026-08-14
+
+Docs truth for the 2.x run. No code.
+
+### Changed
+- CLAUDE.md caught up eleven releases: the status headline now carries
+  the 2026-08-13/14 run (gallery installed-and-active, the WeeChat
+  tranche + its docked-TC key law, the five keymap profiles, and the
+  Task Board's growth into a sprint suite — overview, blockers, epic
+  legend, retro, the time clock, live reload, the Standup, and the
+  arc review's parse-time heal), and the Version History gained
+  entries for v2.1.0 through v2.9.0.
+- plan.md carries the day addendum: the eight-release board arc with
+  its walk-caught traps and the two reusable patterns — every runtime
+  invariant over a checked-in file needs a parse-time heal, and
+  fixed-clock model tests build boards via fromJson.
+
 ## [2.9.0] - 2026-08-14
 
 The Task Board arc review: two lenses over the fresh v2.5–v2.8 surface
@@ -13048,6 +13065,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.9.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.1...v2.8.0
 [2.7.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.0...v2.7.1
