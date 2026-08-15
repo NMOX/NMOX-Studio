@@ -82,6 +82,20 @@ public final class DevToolsPanel extends JPanel {
     private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
+    /** The DOM tab's tree — the Motion tab animates its selection. */
+    private JTree domTreeView;
+
+    // Motion tab (v2.12.0 — the DHTML keyframe timeline)
+    private final JLabel motionStatus = new JLabel(" ");
+    private final JTextField motionName = new JTextField("my-motion", 10);
+    private final javax.swing.JSpinner motionDuration = new javax.swing.JSpinner(
+            new javax.swing.SpinnerNumberModel(1500, 100, 600_000, 100));
+    private final javax.swing.JComboBox<String> motionEasing = new javax.swing.JComboBox<>(
+            new String[]{"linear", "ease", "ease-in", "ease-out", "ease-in-out"});
+    private final javax.swing.JComboBox<String> motionIterations = new javax.swing.JComboBox<>(
+            new String[]{"infinite", "1", "2", "3"});
+    private TimelineStrip motionStrip;
+    private volatile boolean motionPlaying;
 
     // Storage tab
     private final DefaultTableModel storageTable = readOnlyTable("Area", "Key", "Value");
@@ -113,6 +127,7 @@ public final class DevToolsPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("Console", consoleTab());
         tabs.addTab("DOM", domTab());
+        tabs.addTab("Motion", motionTab());
         tabs.addTab("Network", networkTab());
         tabs.addTab("Storage", storageTab());
         tabs.addTab("Vue", vueTab());
@@ -259,6 +274,7 @@ public final class DevToolsPanel extends JPanel {
     private JPanel domTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JTree tree = safeTree(domTree);
+        domTreeView = tree;
         tree.setRootVisible(true);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton("Refresh");
@@ -386,10 +402,28 @@ public final class DevToolsPanel extends JPanel {
 
     /** RP-side: pick the last cascade-matching rule with a writable source. */
     private void writeBack(String rulesJson, String property, String value) {
+        writeBackWith(rulesJson,
+                (css, selector) -> org.nmox.studio.ui.browser.devtools.StyleWriteback
+                        .apply(css, selector, property, value),
+                this::status);
+    }
+
+    /**
+     * The one refusal ladder every source write rides (v2.12.0 made it
+     * a seam): walk the cascade's matched rules backwards, resolve the
+     * stylesheet only through vouched channels, refuse compiled output
+     * and unsaved buffers, and hand the (css, selector) pair to
+     * {@code transform} for the actual rewrite — Edit Style sets one
+     * declaration, the Motion pane lands a whole keyframe system.
+     */
+    private void writeBackWith(String rulesJson,
+            java.util.function.BiFunction<String, String,
+                    org.nmox.studio.ui.browser.devtools.StyleWriteback.Result> transform,
+            java.util.function.Consumer<String> report) {
         java.util.List<Object> rules = org.nmox.studio.ui.browser.devtools.JsonLite.asArray(
                 org.nmox.studio.ui.browser.devtools.JsonLite.parse(rulesJson));
         if (rules.isEmpty()) {
-            status("Applied in page only — no stylesheet rule matches this element");
+            report.accept("Applied in page only — no stylesheet rule matches this element");
             return;
         }
         org.nmox.studio.core.spi.LiveServings servings = org.nmox.studio.core.spi.LiveServings.find();
@@ -447,8 +481,7 @@ public final class DevToolsPanel extends JPanel {
                 }
                 String css = java.nio.file.Files.readString(cssFile.toPath());
                 org.nmox.studio.ui.browser.devtools.StyleWriteback.Result result =
-                        org.nmox.studio.ui.browser.devtools.StyleWriteback.apply(
-                                css, selector, property, value);
+                        transform.apply(css, selector);
                 if (!result.ok()) {
                     firstReason = keep(firstReason, result.reason());
                     continue;
@@ -457,14 +490,270 @@ public final class DevToolsPanel extends JPanel {
                 if (fo != null) {
                     fo.refresh();
                 }
-                status("Saved to " + cssFile.getName() + "  (" + selector + ")");
+                report.accept("Saved to " + cssFile.getName() + "  (" + selector + ")");
                 return;
             } catch (java.io.IOException ex) {
                 firstReason = keep(firstReason, cssFile.getName() + ": " + ex.getMessage());
             }
         }
-        status("Applied in page only — "
+        report.accept("Applied in page only — "
                 + (firstReason != null ? firstReason : "no writable stylesheet rule found"));
+    }
+
+    // ---- Motion (v2.12.0): DHTML, reborn as a keyframe timeline ---------
+
+    /**
+     * The Motion pane: a timeline strip that authors a real CSS
+     * animation for the DOM tab's selected element. Play/scrub preview
+     * IN the page (a single {@code style#__nmox_motion} tag plus the
+     * element's inline {@code animation}); Apply lands the
+     * {@code @keyframes} block and the {@code animation:} shorthand in
+     * the SOURCE stylesheet through the same {@link #writeBackWith
+     * refusal ladder} as Edit Style — compiled output, inline styles,
+     * unserved sheets, and unsaved buffers all refuse with reasons.
+     */
+    private JPanel motionTab() {
+        JPanel panel = new JPanel(new BorderLayout());
+        motionName.getAccessibleContext().setAccessibleName("Animation name");
+        motionDuration.getAccessibleContext().setAccessibleName("Duration in milliseconds");
+        motionEasing.getAccessibleContext().setAccessibleName("Easing function");
+        motionIterations.getAccessibleContext().setAccessibleName("Iteration count");
+
+        javax.swing.JComboBox<String> presets = new javax.swing.JComboBox<>(
+                org.nmox.studio.ui.browser.devtools.Keyframes.presets().stream()
+                        .map(org.nmox.studio.ui.browser.devtools.Keyframes.Spec::name)
+                        .toArray(String[]::new));
+        presets.getAccessibleContext().setAccessibleName("DHTML preset");
+        JButton load = new JButton("Load");
+        load.getAccessibleContext().setAccessibleName("Load preset");
+        load.addActionListener(e -> {
+            String wanted = String.valueOf(presets.getSelectedItem());
+            org.nmox.studio.ui.browser.devtools.Keyframes.presets().stream()
+                    .filter(spec -> spec.name().equals(wanted)).findFirst()
+                    .ifPresent(spec -> {
+                        motionName.setText(spec.name());
+                        motionDuration.setValue(spec.durationMs());
+                        motionEasing.setSelectedItem(spec.easing());
+                        motionIterations.setSelectedItem(
+                                spec.iterations() <= 0 ? "infinite"
+                                        : String.valueOf(spec.iterations()));
+                        motionStrip.model().load(spec.frames());
+                        motionStrip.refresh();
+                        motionStatus.setText("Loaded \u201c" + wanted
+                                + "\u201d — select an element in the DOM tab, then Play");
+                        motionPreviewIfPlaying();
+                    });
+        });
+
+        javax.swing.JComboBox<String> trackProp = new javax.swing.JComboBox<>(
+                new String[]{"transform", "opacity", "filter", "background-color",
+                    "color", "letter-spacing", "border-radius", "width"});
+        trackProp.setEditable(true);
+        trackProp.getAccessibleContext().setAccessibleName("Track property");
+        JButton addTrack = new JButton("Add Track");
+        addTrack.getAccessibleContext().setAccessibleName("Add property track");
+        addTrack.addActionListener(e -> {
+            String prop = String.valueOf(trackProp.getEditor().getItem()).trim();
+            if (!prop.isEmpty()) {
+                motionStrip.model().addTrack(prop);
+                motionStrip.refresh();
+                motionStatus.setText("Double-click the " + prop + " track to add keyframes");
+            }
+        });
+        JButton delTrack = new JButton("Remove Track");
+        delTrack.getAccessibleContext().setAccessibleName("Remove property track");
+        delTrack.addActionListener(e -> {
+            String prop = motionStrip.selectedProperty() != null
+                    ? motionStrip.selectedProperty()
+                    : String.valueOf(trackProp.getEditor().getItem()).trim();
+            motionStrip.model().removeTrack(prop);
+            motionStrip.refresh();
+            motionPreviewIfPlaying();
+        });
+
+        motionStrip = new TimelineStrip(this::motionScrub, this::motionPreviewIfPlaying,
+                this::editStopValue);
+
+        JButton play = new JButton("Play");
+        play.getAccessibleContext().setAccessibleName("Play animation preview");
+        play.addActionListener(e -> motionPlay());
+        JButton stop = new JButton("Stop");
+        stop.getAccessibleContext().setAccessibleName("Stop animation preview");
+        stop.addActionListener(e -> motionStop());
+        JButton apply = new JButton("Apply to Source");
+        apply.getAccessibleContext().setAccessibleName("Apply animation to source stylesheet");
+        apply.addActionListener(e -> motionApply());
+
+        JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        barTop.add(new JLabel("Preset:"));
+        barTop.add(presets);
+        barTop.add(load);
+        barTop.add(new JLabel("Name:"));
+        barTop.add(motionName);
+        barTop.add(new JLabel("ms:"));
+        barTop.add(motionDuration);
+        barTop.add(motionEasing);
+        barTop.add(motionIterations);
+        JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        barTracks.add(new JLabel("Track:"));
+        barTracks.add(trackProp);
+        barTracks.add(addTrack);
+        barTracks.add(delTrack);
+        JPanel north = new JPanel(new java.awt.GridLayout(2, 1));
+        north.add(barTop);
+        north.add(barTracks);
+        panel.add(north, BorderLayout.NORTH);
+        panel.add(new JScrollPane(motionStrip), BorderLayout.CENTER);
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        south.add(play);
+        south.add(stop);
+        south.add(apply);
+        south.add(motionStatus);
+        panel.add(south, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /** The DOM tab's selection, or a status hint when there is none. */
+    private DomNode motionTarget() {
+        DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
+        if (node == null || node.isPlaceholder()) {
+            motionStatus.setText(
+                    "Select an element in the DOM tab first (Pick element works too)");
+            return null;
+        }
+        return node;
+    }
+
+    /** The spec the pane currently describes. */
+    private org.nmox.studio.ui.browser.devtools.Keyframes.Spec motionSpec() {
+        String iter = String.valueOf(motionIterations.getSelectedItem());
+        return new org.nmox.studio.ui.browser.devtools.Keyframes.Spec(
+                motionName.getText().trim(),
+                (Integer) motionDuration.getValue(),
+                String.valueOf(motionEasing.getSelectedItem()),
+                "infinite".equals(iter) ? 0 : Integer.parseInt(iter),
+                motionStrip.model().frames());
+    }
+
+    private void motionPlay() {
+        DomNode node = motionTarget();
+        if (node == null) {
+            return;
+        }
+        org.nmox.studio.ui.browser.devtools.Keyframes.Spec spec = motionSpec();
+        String bad = org.nmox.studio.ui.browser.devtools.Keyframes.problem(spec);
+        if (bad != null) {
+            motionStatus.setText("Refused: " + bad);
+            return;
+        }
+        motionPlaying = true;
+        runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation-delay", "0s"),
+                r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation-play-state", "running"),
+                r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation", spec.animationValue()),
+                r -> { }, err -> { });
+        motionStatus.setText("Playing: " + spec.animationValue());
+    }
+
+    private void motionStop() {
+        motionPlaying = false;
+        DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
+        if (node != null && !node.isPlaceholder()) {
+            runner.run(DevScripts.applyInlineStyle(node.path, "animation", "none"),
+                    r -> { }, err -> { });
+        }
+        runner.run(DevScripts.clearMotionPreview(), r -> { }, err -> { });
+        motionStatus.setText(" ");
+    }
+
+    /** A timeline edit while the preview runs re-injects it live. */
+    private void motionPreviewIfPlaying() {
+        if (motionPlaying) {
+            motionPlay();
+        }
+    }
+
+    /**
+     * Scrub: hold the page at {@code percent} of the animation — the
+     * paused-with-negative-delay trick, so the element really sits at
+     * that moment of the real animation, not an approximation.
+     */
+    private void motionScrub(int percent) {
+        DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
+        if (node == null || node.isPlaceholder()) {
+            return;
+        }
+        org.nmox.studio.ui.browser.devtools.Keyframes.Spec spec = motionSpec();
+        if (org.nmox.studio.ui.browser.devtools.Keyframes.problem(spec) != null) {
+            return;
+        }
+        motionPlaying = false;
+        double seconds = spec.durationMs() / 1000.0 * percent / 100.0;
+        runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation",
+                spec.name() + " " + spec.durationMs() + "ms " + spec.easing() + " 1"),
+                r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation-play-state", "paused"),
+                r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation-delay",
+                String.format(java.util.Locale.ROOT, "-%.3fs", seconds)),
+                r -> { }, err -> { });
+    }
+
+    /** Double-click on a diamond: edit that stop's value. */
+    private void editStopValue(String property, Integer percent) {
+        String current = motionStrip.model().stops(property).get(percent);
+        JTextField field = new JTextField(current == null ? "" : current, 18);
+        field.getAccessibleContext().setAccessibleName("Keyframe value");
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+                field, property + " at " + percent + "%");
+        if (org.openide.DialogDisplayer.getDefault().notify(dd)
+                == org.openide.DialogDescriptor.OK_OPTION && !field.getText().isBlank()) {
+            motionStrip.model().setStop(property, percent, field.getText().trim());
+            motionStrip.refresh();
+            motionPreviewIfPlaying();
+        }
+    }
+
+    /**
+     * Apply: preview in the page first (the Edit Style law — you see
+     * WHAT you asked for even when the write refuses), then land the
+     * {@code @keyframes} block AND the {@code animation:} shorthand in
+     * the source stylesheet in one atomic write.
+     */
+    private void motionApply() {
+        DomNode node = motionTarget();
+        if (node == null) {
+            return;
+        }
+        org.nmox.studio.ui.browser.devtools.Keyframes.Spec spec = motionSpec();
+        String bad = org.nmox.studio.ui.browser.devtools.Keyframes.problem(spec);
+        if (bad != null) {
+            motionStatus.setText("Refused: " + bad);
+            return;
+        }
+        runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
+        runner.run(DevScripts.applyInlineStyle(node.path, "animation", spec.animationValue()),
+                r -> { }, err -> { });
+        runner.run(DevScripts.matchedRules(node.path),
+                json -> RP.post(() -> writeBackWith(json,
+                        (css, selector) -> {
+                            org.nmox.studio.ui.browser.devtools.Keyframes.Result block =
+                                    org.nmox.studio.ui.browser.devtools.Keyframes
+                                            .applyBlock(css, spec);
+                            if (!block.ok()) {
+                                return new org.nmox.studio.ui.browser.devtools
+                                        .StyleWriteback.Result(null, block.reason());
+                            }
+                            return org.nmox.studio.ui.browser.devtools.StyleWriteback
+                                    .apply(block.css(), selector, "animation",
+                                            spec.animationValue());
+                        },
+                        text -> SwingUtilities.invokeLater(
+                                () -> motionStatus.setText(text)))),
+                err -> motionStatus.setText("No page: " + err));
     }
 
     private static String keep(String existing, String candidate) {
