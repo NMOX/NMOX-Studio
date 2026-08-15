@@ -2391,3 +2391,36 @@ third invariant lands, its heal lands the same day. And **fixed-clock
 model tests build boards via fromJson**, because the mutation verbs
 stamp wall-clock time — the JSON is the seam where a test controls
 every timestamp.
+
+## Addendum — 2026-08-14/15, the night shift (v2.8.0–v2.10.2)
+
+David's directives, in order: "what's missing? add it" → **the Standup**
+(v2.8.0, one button turns the board's records into the daily report),
+then "work the night shift, improving the product." Seven releases:
+
+- **v2.9.0** the board-arc review — fromJson heals merged session
+  lists; the parse-time-heal pattern recorded (a checked-in file's
+  parser owes a heal for every runtime invariant).
+- **v2.9.1** docs truth — CLAUDE.md caught up eleven 2.x releases.
+- **v2.10.0 WeeChat tranche 2** — custom /filter regexes + /lastlog,
+  the same placement law as tranche 1 (transcript append decision
+  only; the engine-side log tap keeps everything; a filtered spammer
+  never mints a query tab). Live Libera proof: a sent line carrying
+  the filtered word never reached the transcript while the disk log
+  kept it verbatim. Triggers and buffer merge stay honestly out.
+- **v2.10.1** the locks — floors ratcheted (ui .57→.67: the board arc
+  and IRC tranches became a build law) and the 2.x update chain
+  gauntleted headlessly (stock v2.2.1 portable self-updated in-app to
+  2.10.0, all 11 jars byte-verified in place, clean reboot).
+- **v2.10.2** the night review — the find: the two LOCAL-ECHO sites
+  (send path and /msg on a server without echo-message) bypassed the
+  new filter, so whether your OWN matching line hid depended on a
+  server capability you cannot see. Both guarded (the log keeps the
+  line either way) and FilterWiringGateTest makes the pairing a build
+  law: every local-echo append must consult the verdict.
+
+Lessons: *a display-side filter must be applied at EVERY append site,
+and the echo-message cap splits one logical path into two* — the same
+double-authority shape as ledger 81, one layer down; and a `&`-launched
+gate orphans silently — the run_in_background wrapper is the law
+(re-learned, v1.199 memory).

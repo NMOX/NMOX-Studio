@@ -1677,7 +1677,10 @@ public final class IrcTopComponent extends TopComponent {
                         c.privmsg(to, text);
                         ensureTargetNode(activeNetwork(), to);
                         if (!c.capEnabled("echo-message")) {
-                            appendChat(key(activeNetwork(), to), c.currentNick(), text, false);
+                            // same /filter verdict as the send path (v2.10.2)
+                            if (!textFilters.hides(to, "<" + c.currentNick() + "> " + text)) {
+                                appendChat(key(activeNetwork(), to), c.currentNick(), text, false);
+                            }
                             logger.chat(activeNetwork(), to, c.currentNick(), text);
                         }
                     }
@@ -2195,9 +2198,14 @@ public final class IrcTopComponent extends TopComponent {
         }
         c.privmsg(target, action ? Ctcp.action(text) : text);
         // echo-message: when the cap is active the server echoes our own
-        // line back and THAT renders — a local echo would double it
+        // line back and THAT renders — a local echo would double it.
+        // The custom /filter verdict applies HERE too (v2.10.2): whether
+        // your own matching line hides must not depend on a server
+        // capability you cannot see; the log keeps it either way.
         if (!c.capEnabled("echo-message")) {
-            appendChat(key(activeNetwork(), target), c.currentNick(), text, action);
+            if (!textFilters.hides(target, "<" + c.currentNick() + "> " + text)) {
+                appendChat(key(activeNetwork(), target), c.currentNick(), text, action);
+            }
             if (action) {
                 logger.action(activeNetwork(), target, c.currentNick(), text);
             } else {
