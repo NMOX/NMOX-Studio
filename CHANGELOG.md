@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.9.0] - 2026-08-14
+
+The Task Board arc review: two lenses over the fresh v2.5–v2.8 surface
+(blockers/labels/retro, the time clock, FilePulse live reload, the
+Standup). One real bug found and fixed; the rest verified CLEAN.
+
+### Fixed
+- **Merged session lists are healed on load.** The runtime keeps two
+  invariants by construction — an open session (end 0) is always a
+  card's LAST, and only ONE clock runs board-wide — but the checked-in
+  `.nmoxtasks.json` cannot promise either: a keep-both merge (the same
+  scenario that motivated v1.325.0's duplicate-id healing in this very
+  parser) can leave a stray open pair mid-list or two "running" cards.
+  `clockedIn()` and Clock Out only ever see the last pair, so a stray
+  open session was unreachable by any gesture while the TIME report and
+  the Standup counted it up to NOW, forever — a phantom session
+  silently inflating every number. `fromJson` now heals: a stray open
+  pair closes at its OWN start (zero credit — any other end would be
+  invented time), and when several cards are open, the latest start
+  keeps the clock. The parse-site comment had CLAIMED this rule since
+  v2.6.0 without implementing it — the v1.189.0 lesson again: a comment
+  claiming a property is a test not yet written. Mutation-proven ×2 by
+  name (each heal loop removed alone fails its own test).
+
+### Verified clean
+- All twenty board mutations ride the one `mutate()` path (the
+  v1.325.0 gate holds over the arc's nine new verbs); the standup
+  gather spawns on the IO lane and touches the board only on the EDT;
+  the clock ticker is label-only and stops with the tab; FilePulse
+  stops on hide, restarts per aim, and gates on `isForeign` first;
+  the core FilePulse promotion left no apiclient duplicate; StandupReport
+  and BoardStats share the same overlap-clip day math by construction.
+- In passing: a stale core comment still named the pre-promotion
+  `WorkspaceFilePulse`.
+
 ## [2.8.0] - 2026-08-14
 
 David's directive: what's missing from this product? Add it. The
@@ -13013,6 +13048,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.1...v2.8.0
 [2.7.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.7.0...v2.7.1
 [2.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.6.0...v2.7.0

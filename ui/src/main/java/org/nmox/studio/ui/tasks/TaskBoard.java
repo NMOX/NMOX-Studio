@@ -552,9 +552,9 @@ public final class TaskBoard {
                             JSONArray pair = sess.optJSONArray(m);
                             if (pair != null && pair.length() == 2
                                     && pair.optLong(0, 0L) > 0L) {
-                                // an open pair (end 0) survives only on the
-                                // LAST session; anything else is a stale
-                                // hand-edit and closes at its own start
+                                // end < start closes at start here; stray
+                                // OPEN pairs (end 0) are healed after the
+                                // whole board parses — healOpenSessions
                                 long start = pair.optLong(0, 0L);
                                 long end = pair.optLong(1, 0L);
                                 card.sessions.add(new long[]{start,
@@ -570,6 +570,48 @@ public final class TaskBoard {
         if (b.columns.isEmpty()) {
             throw new IllegalArgumentException("a board needs at least one column");
         }
+        healOpenSessions(b);
         return b;
+    }
+
+    /**
+     * Enforces the two open-session invariants the runtime keeps by
+     * construction but a checked-in file cannot promise (v2.9.0, the
+     * arc review): a keep-both merge or hand edit can leave an open
+     * pair (end 0) that is NOT a card's last session, or leave TWO
+     * cards both "running". {@link Card#clockedIn()} and
+     * {@link #clockOut} only ever see the LAST pair, so a stray open
+     * pair is unreachable by any gesture while the TIME report and the
+     * standup count it up to NOW forever — a phantom session that
+     * silently inflates every number. The heal closes each stray at
+     * its OWN start (zero credit — any other end would be invented
+     * time); when several cards are open, the LATEST start keeps the
+     * clock, because it is the one still plausibly running.
+     */
+    private static void healOpenSessions(TaskBoard b) {
+        Card latestOpen = null;
+        for (Column col : b.columns) {
+            for (Card c : col.cards) {
+                for (int s = 0; s < c.sessions.size() - 1; s++) {
+                    long[] sn = c.sessions.get(s);
+                    if (sn[1] == 0L) {
+                        sn[1] = sn[0];
+                    }
+                }
+                if (c.clockedIn() && (latestOpen == null
+                        || c.sessions.get(c.sessions.size() - 1)[0]
+                        > latestOpen.sessions.get(latestOpen.sessions.size() - 1)[0])) {
+                    latestOpen = c;
+                }
+            }
+        }
+        for (Column col : b.columns) {
+            for (Card c : col.cards) {
+                if (c.clockedIn() && c != latestOpen) {
+                    long[] open = c.sessions.get(c.sessions.size() - 1);
+                    open[1] = open[0];
+                }
+            }
+        }
     }
 }
