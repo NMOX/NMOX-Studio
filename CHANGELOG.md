@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.10.1] - 2026-08-15
+
+The night shift's locks: coverage floors ratcheted and the 2.x
+update-center chain gauntleted.
+
+### Changed
+- **JaCoCo floors ratcheted** to measured-minus-margin: core .89→.90,
+  editor .67→.69, ui .57→.67 (the Task Board arc and the IRC tranche
+  are now a build law — a ten-point gain locked in), project .87→.88,
+  web3 .94→.95. No floor lowered, no exclusion changed. Held with
+  written reasons: tools/apiclient/dbstudio/infra (honest margin under
+  a point) and rack (the WINDOWS lane is its binding measurement —
+  unix .786 implies ~.766 there).
+
+### Verified
+- **The update center crosses the whole 2.x arc, gauntleted
+  headlessly**: a stock v2.2.1 portable updated itself in-app to
+  2.10.0 through the real update center — all eleven modules named
+  `2.2.1 → 2.10.0` in the log, the second refresh converged to zero,
+  all eleven cluster jars byte-verified at 2.10.0 in place — then
+  rebooted clean (zero module failures, zero SEVERE). Nine releases of
+  drift including the whole Task Board arc, the keymap profiles, and
+  both WeeChat tranches ride one in-app update.
+
 ## [2.10.0] - 2026-08-15
 
 WeeChat-power arc, tranche 2 — the two signature moves the v2.2.0
@@ -13107,6 +13131,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.10.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.1...v2.10.0
 [2.9.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.8.0...v2.9.0
