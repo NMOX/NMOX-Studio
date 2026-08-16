@@ -109,6 +109,9 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-scss", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-less", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-svelte", service = TypedTextInterceptor.Factory.class),
+        // v2.14.0: Vue SFCs — Svelte had auto-pairs since v1.207.0,
+        // .vue never did; the same interceptor serves both components
+        @MimeRegistration(mimeType = "text/x-vue", service = TypedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ng-template", service = TypedTextInterceptor.Factory.class)
     })
     public static class Factory implements TypedTextInterceptor.Factory {

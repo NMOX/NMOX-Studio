@@ -102,6 +102,8 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-scss", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-less", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-svelte", service = DeletedTextInterceptor.Factory.class),
+        // v2.14.0: pair deletion follows pair insertion into .vue
+        @MimeRegistration(mimeType = "text/x-vue", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-ng-template", service = DeletedTextInterceptor.Factory.class)
     })
     public static class Factory implements DeletedTextInterceptor.Factory {

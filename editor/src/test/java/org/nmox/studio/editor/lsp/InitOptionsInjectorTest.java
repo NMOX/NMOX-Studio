@@ -10,13 +10,22 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The deno lsp enablement shim: the client's FIRST frame (the
- * initialize request) gains {@code initializationOptions.enable=true};
- * everything after is byte-identical passthrough. Getting a byte of
- * this wrong corrupts the whole LSP session, so the frame mechanics
- * are pinned exactly.
+ * The initializationOptions shim, generalized in v2.14.0 from the deno
+ * original: the client's FIRST frame (the initialize request) gains the
+ * server-specific options; everything after is byte-identical
+ * passthrough. Getting a byte of this wrong corrupts the whole LSP
+ * session, so the frame mechanics are pinned exactly — for deno's flat
+ * {@code enable:true} AND Vue's nested tsdk + hybridMode shape.
  */
-class DenoInitOptionsInjectorTest {
+class InitOptionsInjectorTest {
+
+    private static final JSONObject DENO = new JSONObject().put("enable", true);
+
+    private static JSONObject vueOptions() {
+        return new JSONObject()
+                .put("typescript", new JSONObject().put("tsdk", "/w/node_modules/typescript/lib"))
+                .put("vue", new JSONObject().put("hybridMode", false));
+    }
 
     private static byte[] frame(String json) {
         byte[] body = json.getBytes(StandardCharsets.UTF_8);
@@ -43,10 +52,10 @@ class DenoInitOptionsInjectorTest {
     }
 
     @Test
-    @DisplayName("the initialize request gains enable=true, Content-Length re-fixed")
+    @DisplayName("deno shape: initialize gains enable=true, Content-Length re-fixed")
     void injectsEnable() throws Exception {
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
-        try (DenoInitOptionsInjector out = new DenoInitOptionsInjector(sink)) {
+        try (InitOptionsInjector out = new InitOptionsInjector(sink, DENO)) {
             out.write(frame(INIT));
         }
         String[] f = firstFrame(sink.toByteArray());
@@ -61,10 +70,24 @@ class DenoInitOptionsInjectorTest {
     }
 
     @Test
+    @DisplayName("vue shape: nested typescript.tsdk + vue.hybridMode land intact")
+    void injectsVueOptions() throws Exception {
+        ByteArrayOutputStream sink = new ByteArrayOutputStream();
+        try (InitOptionsInjector out = new InitOptionsInjector(sink, vueOptions())) {
+            out.write(frame(INIT));
+        }
+        JSONObject opts = new JSONObject(firstFrame(sink.toByteArray())[1])
+                .getJSONObject("params").getJSONObject("initializationOptions");
+        assertThat(opts.getJSONObject("typescript").getString("tsdk"))
+                .isEqualTo("/w/node_modules/typescript/lib");
+        assertThat(opts.getJSONObject("vue").getBoolean("hybridMode")).isFalse();
+    }
+
+    @Test
     @DisplayName("one-byte-at-a-time writes still assemble and rewrite the frame")
     void chunkedWrites() throws Exception {
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
-        DenoInitOptionsInjector out = new DenoInitOptionsInjector(sink);
+        InitOptionsInjector out = new InitOptionsInjector(sink, DENO);
         for (byte b : frame(INIT)) {
             out.write(b);
         }
@@ -77,7 +100,7 @@ class DenoInitOptionsInjectorTest {
     @DisplayName("frames after initialize pass through byte-identical")
     void passthroughAfter() throws Exception {
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
-        DenoInitOptionsInjector out = new DenoInitOptionsInjector(sink);
+        InitOptionsInjector out = new InitOptionsInjector(sink, DENO);
         String didOpen = "{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/didOpen\","
                 + "\"params\":{\"textDocument\":{\"uri\":\"file:///w/a.ts\"}}}";
         // both frames in ONE write: the excess beyond the first frame
@@ -98,10 +121,10 @@ class DenoInitOptionsInjectorTest {
     @DisplayName("a first frame that isn't initialize passes untouched")
     void nonInitializeFirstFrame() {
         String odd = "{\"jsonrpc\":\"2.0\",\"method\":\"initialized\",\"params\":{}}";
-        assertThat(new String(DenoInitOptionsInjector.addEnableOption(odd),
+        assertThat(new String(InitOptionsInjector.mergeOptions(odd, DENO),
                 StandardCharsets.UTF_8)).isEqualTo(odd);
         String notJson = "definitely { not json";
-        assertThat(new String(DenoInitOptionsInjector.addEnableOption(notJson),
+        assertThat(new String(InitOptionsInjector.mergeOptions(notJson, DENO),
                 StandardCharsets.UTF_8)).isEqualTo(notJson);
     }
 
@@ -115,8 +138,9 @@ class DenoInitOptionsInjectorTest {
         assertThat(deno).as("DenoServer exists").isPositive();
         String body = src.substring(deno, src.indexOf("class", deno + 20));
         assertThat(body)
-                .as("deno lsp launches with the init-options injector")
-                .contains("launch(lookup, List.of(\"deno\", \"lsp\"), true)");
+                .as("deno lsp launches with enable=true init options")
+                .contains("launch(lookup, List.of(\"deno\", \"lsp\"),")
+                .contains(".put(\"enable\", true)");
         assertThat(body).contains("denoRootAbove(projectDir(lookup))");
         int ts = src.indexOf("class TypeScriptServer");
         String tsBody = src.substring(ts, src.indexOf("class DenoServer"));
@@ -126,6 +150,31 @@ class DenoInitOptionsInjectorTest {
                 .contains("denoRootAbove(projectDir(lookup)) != null");
         assertThat(src)
                 .as("launch() actually wraps the stream when asked")
-                .contains("new DenoInitOptionsInjector(serverIn)");
+                .contains("new InitOptionsInjector(serverIn, initOptions)");
+    }
+
+    @Test
+    @DisplayName("wiring gate: VueServer gates, pins the 2.x ceiling, and injects")
+    void vueWiringGate() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"))
+                .replace("\r\n", "\n");
+        int vue = src.indexOf("class VueServer");
+        assertThat(vue).as("VueServer exists").isPositive();
+        // the body slice ends at the tsdk helper, NOT at the next bare
+        // "class" token — comments inside the body legally say "class"
+        String body = src.substring(vue, src.indexOf("static File vueTsdk"));
+        assertThat(body)
+                .as("the tsdk + local server are repo code run on file-open"
+                        + " — the trust gate must precede the spawn")
+                .contains("WorkspaceTrust.isTrusted(dir)");
+        assertThat(body)
+                .as("a local 3.x pin declines honestly (the un-bridgeable"
+                        + " line publishes nothing to a generic client)")
+                .contains("vueServerMajor(dir) >= 3");
+        assertThat(body)
+                .as("the proven-working init options ride the injector")
+                .contains("hybridMode")
+                .contains("tsdk");
     }
 }

@@ -292,6 +292,34 @@ side is HALO, the Angular console (serve/build/test/generate/update
 with version currency), and **New Project** ships an Angular
 standalone template.
 
+### 🖖 Vue and Svelte, first-class
+
+The component mimes get the whole editor treatment (v2.14.0): `.vue`
+and `.svelte` panes carry real editor kits, so every keyboard chord —
+⌘/ toggle comment, **⌥⌘E Emmet in your component markup** — fires in
+all five keymap profiles; auto-pairs type and delete symmetrically;
+and completion speaks each framework's own language. In a `.vue` file
+that means the directives with their shorthands (`v-if`, `v-for`,
+`v-model`, `@click`, `:class`), the Composition API (`ref`,
+`computed`, `watch`, lifecycle hooks), the `<script setup>` compiler
+macros (`defineProps`, `defineModel`, `useTemplateRef`), and the
+built-in components (`Teleport`, `Suspense`, `Transition`). In a
+`.svelte` file it means Svelte 5's runes — including the dotted
+variants (`$state.raw`, `$effect.pre`, `$inspect.trace`) — template
+blocks, directives, and lifecycle. **Vue's language server actually
+answers**: the IDE installs `@vue/language-server@2` into your project
+from an in-IDE prompt, resolves your project's own TypeScript as the
+tsdk, and injects the initialization options the server needs
+(`vue.hybridMode:false`), so a typo'd property in a template gets the
+real compiler squiggle. (The 3.x server line is deliberately pinned
+out: it requires a VS-Code-hosted tsserver bridge and publishes
+nothing to any other editor — proven against the real binary.)
+`svelteserver` answers with its defaults, project-pinned install
+preferred. Both frameworks keep their DevTools panes (live component
+tree for Vue dev builds, `__svelte_meta` source mapping for Svelte),
+their Vite templates, their learning spaces, and their consoles
+(NIMBUS for Nuxt, KINETIC for SvelteKit, VELOCITY for plain Vite).
+
 ### 🔍 The source-aware Browser
 
 The oldest split in web development — the browser knows *which element

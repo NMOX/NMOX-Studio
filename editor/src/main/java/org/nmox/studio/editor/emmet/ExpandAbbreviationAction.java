@@ -52,7 +52,13 @@ import org.openide.awt.StatusDisplayer;
     // inline templates (the Angular-top arc): a component's
     // template: `...` literal is markup living on a TypeScript pane
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/typescript", popupPath = "", popupPosition = 95)
+            mimeType = "text/typescript", popupPath = "", popupPosition = 95),
+    // the component mimes (v2.14.0): a Vue or Svelte SFC is mostly
+    // markup — Angular templates had Emmet since v1.329.0, these didn't
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/x-vue", popupPath = "", popupPosition = 95),
+    @EditorActionRegistration(name = "nmox-expand-abbreviation",
+            mimeType = "text/x-svelte", popupPath = "", popupPosition = 95)
 })
 public class ExpandAbbreviationAction extends BaseAction {
 
