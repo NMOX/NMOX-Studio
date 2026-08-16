@@ -399,6 +399,28 @@ directives, and interpolations all highlight, and `@`-block /
   reported on the status line — an inline-template component has no
   file to open, and the action says so.
 
+### Vue and Svelte components, first-class
+
+`.vue` and `.svelte` files get the whole keyboard (since v2.14.0 —
+they carry real editor kits, so ⌘/ toggles comments and **⌥⌘E expands
+Emmet abbreviations** right in your component markup, in every keymap
+profile). Auto-pairs type and delete symmetrically, and **⌃Space
+completion speaks the framework**: Vue directives with their
+shorthands (`v-if`, `v-model`, `@click`, `:class`), the Composition
+API and `<script setup>` macros, and the built-in components; Svelte
+5 runes including the dotted forms (`$state.raw`, `$effect.pre`),
+template blocks and directives.
+
+**Vue diagnostics that actually arrive:** when a `.vue` file opens in
+a trusted workspace with no language server yet, the IDE offers a
+one-click project-local install of `@vue/language-server@2` with
+TypeScript (it must be the 2.x line — the 3.x server only serves
+VS Code's tsserver-bridge arrangement and publishes nothing to any
+other editor). With it installed, the server runs against your
+project's own TypeScript and a typo'd property in a template gets the
+real compiler squiggle. Svelte's `svelteserver` works with its
+defaults — install it globally or let the project pin it.
+
 ### Debugging with real breakpoints
 
 Click the gutter (or **⌘F8**) to set a breakpoint, right-click →

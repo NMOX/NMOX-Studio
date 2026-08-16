@@ -91,6 +91,104 @@
                     </folder>
                 </folder>
             </folder>
+            <folder name="x-vue">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Vue single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Vue single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Vue single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Vue single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Vue single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="x-svelte">
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Svelte single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Eclipse">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Svelte single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Emacs">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Svelte single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="Idea">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Svelte single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <!-- Expand Abbreviation ⌥⌘E (v2.14.0) — Emmet
+                                 in Svelte single-file components, the
+                                 v1.329.0 chord on the component mimes -->
+                            <file name="emmet-keybindings.xml"
+                                  url="emmet-keybindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
             <folder name="html">
                 <folder name="Keybindings">
                     <folder name="NetBeans">

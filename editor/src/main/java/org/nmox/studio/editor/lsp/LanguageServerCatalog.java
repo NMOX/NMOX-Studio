@@ -77,6 +77,19 @@ public final class LanguageServerCatalog {
                 "npm i -D @angular/language-server @angular/language-service typescript@5",
                 List.of("npm", "install", "--save-dev", "@angular/language-server",
                         "@angular/language-service", "typescript@5"));
+        // Vue pins the 2.x line (v2.14.0): 3.x answers every didOpen
+        // with a tsserver/request bridge request only VS Code can
+        // satisfy — a generic LSP client gets zero diagnostics from it,
+        // proven against the real 3.3.10. 2.x with hybridMode:false
+        // does its own TypeScript against the project's tsdk, so the
+        // install is project-local like Angular's.
+        addProjectLocal("Vue (single-file components)", "vue-language-server",
+                "npm i -D @vue/language-server@2 typescript",
+                List.of("npm", "install", "--save-dev",
+                        "@vue/language-server@2", "typescript"));
+        add("Svelte", "svelteserver",
+                "npm install -g svelte-language-server",
+                List.of("npm", "install", "-g", "svelte-language-server"));
         add("ESLint (JS / TS)", "vscode-eslint-language-server",
                 "npm install -g vscode-langservers-extracted",
                 List.of("npm", "install", "-g", "vscode-langservers-extracted"));

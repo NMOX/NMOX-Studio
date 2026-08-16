@@ -9,15 +9,17 @@ import java.nio.charset.StandardCharsets;
 import org.json.JSONObject;
 
 /**
- * The Deno LSP enablement shim: {@code deno lsp} boots, finds the
- * workspace's deno.json, and then publishes NO diagnostics unless the
- * initialize request carried {@code initializationOptions.enable=true}
- * — proven headlessly against deno 2.9.4 (empty options: silence on a
- * planted type error; enable=true: the real deno-ts TS2322). The
+ * The initializationOptions shim, generalized (v2.14.0 from the
+ * v1.350.0 Deno original): some servers publish NOTHING unless the
+ * initialize request carries server-specific options — {@code deno lsp}
+ * needs {@code enable:true}, and Vue's language server (the 2.x line)
+ * needs {@code typescript.tsdk} plus {@code vue.hybridMode:false},
+ * both proven headlessly against the real binaries (empty options:
+ * silence on planted errors; with them: the real diagnostics). The
  * platform's lsp-client never sets initializationOptions and offers no
  * seam for it, so this filter rewrites the client's FIRST outgoing
  * frame — the initialize request, always first by the LSP spec — to
- * add the option, then becomes a byte passthrough for the session.
+ * merge the options in, then becomes a byte passthrough.
  *
  * <p>Threading: unlike the server→client direction (which needed a
  * pump thread — see the v1.349.0 history), the client side can buffer
@@ -26,13 +28,21 @@ import org.json.JSONObject;
  * complete, then emit the rewritten frame plus any excess. Nothing
  * blocks waiting for another thread, so no pipe and no pump.
  */
-final class DenoInitOptionsInjector extends FilterOutputStream {
+final class InitOptionsInjector extends FilterOutputStream {
 
     private final ByteArrayOutputStream pending = new ByteArrayOutputStream();
+    private final JSONObject options;
     private boolean injecting = true;
 
-    DenoInitOptionsInjector(OutputStream rawServerIn) {
+    /**
+     * @param options top-level keys merged into
+     *        {@code params.initializationOptions}; each key REPLACES a
+     *        same-named existing one (the client sends none today, so
+     *        in practice this authors the whole object)
+     */
+    InitOptionsInjector(OutputStream rawServerIn, JSONObject options) {
         super(rawServerIn);
+        this.options = options;
     }
 
     @Override
@@ -58,7 +68,7 @@ final class DenoInitOptionsInjector extends FilterOutputStream {
             return; // body incomplete
         }
         String body = new String(buf, headerEnd + 4, bodyLen, StandardCharsets.UTF_8);
-        byte[] rewritten = addEnableOption(body);
+        byte[] rewritten = mergeOptions(body, options);
         out.write(("Content-Length: " + rewritten.length + "\r\n\r\n")
                 .getBytes(StandardCharsets.US_ASCII));
         out.write(rewritten);
@@ -71,12 +81,13 @@ final class DenoInitOptionsInjector extends FilterOutputStream {
     }
 
     /**
-     * params.initializationOptions.enable = true, preserving whatever
-     * else the body carries. A body that isn't the JSON we expect goes
+     * Merges {@code options}' top-level keys into
+     * {@code params.initializationOptions}, preserving whatever else
+     * the body carries. A body that isn't the JSON we expect goes
      * through untouched — corrupting the protocol is strictly worse
      * than a disabled server.
      */
-    static byte[] addEnableOption(String body) {
+    static byte[] mergeOptions(String body, JSONObject options) {
         try {
             JSONObject msg = new JSONObject(body);
             if (!"initialize".equals(msg.optString("method"))) {
@@ -87,12 +98,14 @@ final class DenoInitOptionsInjector extends FilterOutputStream {
                 params = new JSONObject();
                 msg.put("params", params);
             }
-            JSONObject options = params.optJSONObject("initializationOptions");
-            if (options == null) {
-                options = new JSONObject();
-                params.put("initializationOptions", options);
+            JSONObject existing = params.optJSONObject("initializationOptions");
+            if (existing == null) {
+                existing = new JSONObject();
+                params.put("initializationOptions", existing);
             }
-            options.put("enable", true);
+            for (String key : options.keySet()) {
+                existing.put(key, options.get(key));
+            }
             return msg.toString().getBytes(StandardCharsets.UTF_8);
         } catch (RuntimeException notJson) {
             return body.getBytes(StandardCharsets.UTF_8);

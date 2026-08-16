@@ -85,6 +85,9 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-solidity", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/coffeescript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class),
+    // v2.14.0: Vue SFCs — Svelte's runes had completion since v1.207.0
+    // while .vue offered nothing framework-shaped at all
+    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class),
     // classic-library entries only (JS/HTML have their own primary providers)
     @MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class)
@@ -369,12 +372,31 @@ public class PolyglotCompletionProvider implements CompletionProvider {
                     + "yield await typeof instanceof delete in of not and or is isnt true false yes no "
                     + "on off null undefined require module exports -> =>")),
             // Svelte 5: runes, template blocks/tags, directives, lifecycle
-            Map.entry("text/x-svelte", set("$state $derived $derived.by $effect $props $bindable "
-                    + "$inspect $host "
+            // (v2.14.0 currency: the dotted rune variants joined —
+            // $derived.by already proved the walk handles dots)
+            Map.entry("text/x-svelte", set("$state $state.raw $state.snapshot "
+                    + "$derived $derived.by $effect $effect.pre $effect.tracking "
+                    + "$effect.root $props $props.id $bindable "
+                    + "$inspect $inspect.trace $host "
                     + "#if :else /if #each /each #await :then :catch /await #key /key "
                     + "#snippet /snippet @render @html @const @debug @attach "
                     + "bind: on: use: transition: in: out: animate: class: style: "
-                    + "onMount onDestroy tick untrack")));
+                    + "onMount onDestroy tick untrack")),
+            // Vue 3 (v2.14.0): template directives (with the @ and :
+            // shorthand spellings), the Composition API a <script setup>
+            // block leans on, compiler macros, and the built-in
+            // components — the SFC vocabulary, mirroring Svelte's runes
+            Map.entry("text/x-vue", set("v-if v-else v-else-if v-for v-on v-bind "
+                    + "v-model v-show v-slot v-html v-text v-once v-memo v-cloak v-pre "
+                    + "@click @input @change @submit @keyup @keydown @focus @blur "
+                    + ":class :style :key :value :disabled :src :href "
+                    + "ref computed reactive readonly shallowRef toRef toRefs unref "
+                    + "watch watchEffect watchPostEffect nextTick "
+                    + "onMounted onUnmounted onUpdated onBeforeMount onBeforeUnmount "
+                    + "onBeforeUpdate onActivated onDeactivated onErrorCaptured "
+                    + "defineProps defineEmits defineModel defineExpose defineOptions "
+                    + "defineSlots provide inject useTemplateRef useAttrs useSlots "
+                    + "Teleport Suspense Transition TransitionGroup KeepAlive")));
 
     private static Set<String> set(String words) {
         return Set.copyOf(Arrays.asList(words.split(" ")));
@@ -491,11 +513,13 @@ public class PolyglotCompletionProvider implements CompletionProvider {
      */
     static String prefixAt(String text, int offset, String mime) {
         boolean svelte = "text/x-svelte".equals(mime);
+        boolean vue = "text/x-vue".equals(mime);
         int start = Math.min(offset, text.length());
         int i = start;
         while (i > 0 && (Character.isLetterOrDigit(text.charAt(i - 1))
                 || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$'
-                || (svelte && isSvelteSigil(text.charAt(i - 1))))) {
+                || (svelte && isSvelteSigil(text.charAt(i - 1)))
+                || (vue && isVueSigil(text.charAt(i - 1))))) {
             i--;
         }
         return text.substring(i, start);
@@ -503,6 +527,18 @@ public class PolyglotCompletionProvider implements CompletionProvider {
 
     private static boolean isSvelteSigil(char c) {
         return c == '#' || c == '@' || c == '/' || c == ':';
+    }
+
+    /**
+     * Vue's template spellings (v2.14.0): {@code @click} and
+     * {@code :class} shorthands plus the hyphen inside {@code v-if} —
+     * without the hyphen the walk stops at "v" and every directive is
+     * unreachable (the Svelte {@code #each} lesson, one framework
+     * over). '/' and '#' stay out: Vue templates don't use them and
+     * they would drag path fragments into the prefix.
+     */
+    private static boolean isVueSigil(char c) {
+        return c == '@' || c == ':' || c == '-';
     }
 
     /** Language keywords matching the prefix (case-insensitive), sorted. */

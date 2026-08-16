@@ -31,17 +31,20 @@ public final class LanguageServers {
 
     /** Launches a server command in the project root; null when unavailable. */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup, List<String> command) {
-        return launch(lookup, command, false);
+        return launch(lookup, command, (org.json.JSONObject) null);
     }
 
     /**
-     * As {@link #launch}; {@code injectDenoInit} additionally rewrites
-     * the client's initialize request to carry deno lsp's
-     * {@code initializationOptions.enable=true} — without it the server
-     * boots and stays silent (see {@link DenoInitOptionsInjector}).
+     * As {@link #launch}; a non-null {@code initOptions} additionally
+     * rewrites the client's initialize request to carry those
+     * server-specific {@code initializationOptions} — deno lsp needs
+     * {@code enable:true}, Vue's language server needs
+     * {@code typescript.tsdk} + {@code vue.hybridMode:false}; without
+     * them each server boots and stays silent (see
+     * {@link InitOptionsInjector}).
      */
     static LanguageServerProvider.LanguageServerDescription launch(Lookup lookup,
-            List<String> command, boolean injectDenoInit) {
+            List<String> command, org.json.JSONObject initOptions) {
         try {
             File dir = projectDir(lookup);
             List<String> resolved = ToolLocator.resolveCommand(command);
@@ -56,8 +59,8 @@ public final class LanguageServers {
             pb.redirectError(ProcessBuilder.Redirect.DISCARD);
             Process process = pb.start();
             java.io.OutputStream serverIn = process.getOutputStream();
-            if (injectDenoInit) {
-                serverIn = new DenoInitOptionsInjector(serverIn);
+            if (initOptions != null) {
+                serverIn = new InitOptionsInjector(serverIn, initOptions);
             }
             // the Lookup carries the languageId mapping: without it the
             // client sends the RAW MIME as didOpen's languageId and
@@ -272,7 +275,8 @@ public final class LanguageServers {
             if (denoRootAbove(projectDir(lookup)) == null) {
                 return null;
             }
-            return reported(launch(lookup, List.of("deno", "lsp"), true), "deno");
+            return reported(launch(lookup, List.of("deno", "lsp"),
+                    new org.json.JSONObject().put("enable", true)), "deno");
         }
     }
 
@@ -1079,12 +1083,105 @@ public final class LanguageServers {
         }
     }
 
-    /** Vue single-file components via the official language server. */
+    /**
+     * Vue single-file components via {@code @vue/language-server}, the
+     * 2.x line — a VERSION CEILING with the same shape as the Angular
+     * Language Service's TypeScript-5 rule, written here so it cannot
+     * be re-derived wrong:
+     *
+     * <p><b>3.x cannot serve a generic LSP client.</b> Proven headlessly
+     * against 3.3.10: whatever the initializationOptions, the server
+     * answers every didOpen with a {@code tsserver/request} custom
+     * request — it expects the CLIENT to host tsserver with
+     * {@code @vue/typescript-plugin} and bridge those frames (the
+     * VS Code arrangement). No generic client can, so it publishes
+     * ZERO diagnostics, forever. 2.2.12 with
+     * {@code vue.hybridMode:false} + {@code typescript.tsdk} answered
+     * the same probe with the real type error AND the template typo.
+     *
+     * <p>The options ride {@link InitOptionsInjector} (the deno seam)
+     * because the platform client cannot set initializationOptions;
+     * the tsdk must be the PROJECT's own TypeScript so the language
+     * service matches the compiler the project builds with (the
+     * ngserver law). No install, or a local 3.x — decline with the
+     * honest catalog message instead of spawning a silent server.
+     */
     @MimeRegistration(mimeType = "text/x-vue", service = LanguageServerProvider.class)
     public static final class VueServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
-            return launchNpm(lookup, "vue-language-server", "--stdio");
+            File dir = projectDir(lookup);
+            if (dir == null) {
+                return null;
+            }
+            // the tsdk and the local server are repo-committed code
+            // executed on file-open — the v1.102.0 RCE class; same
+            // silent gate as launchNpm
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+                return null;
+            }
+            File tsdk = vueTsdk(dir);
+            if (tsdk == null) {
+                // no project TypeScript: the server would boot and idle;
+                // say how to get the working pair instead
+                return reported(null, "vue-language-server");
+            }
+            File local = new File(dir, "node_modules/.bin/vue-language-server");
+            if (local.canExecute() && vueServerMajor(dir) >= 3) {
+                // the project pinned the un-bridgeable line; an honest
+                // report beats a server that spawns and stays silent
+                return reported(null, "vue-language-server");
+            }
+            String bin = local.canExecute() ? local.getAbsolutePath()
+                    : "vue-language-server";
+            org.json.JSONObject options = new org.json.JSONObject()
+                    .put("typescript", new org.json.JSONObject()
+                            .put("tsdk", tsdk.getAbsolutePath()))
+                    .put("vue", new org.json.JSONObject()
+                            .put("hybridMode", false));
+            return reported(launch(lookup, List.of(bin, "--stdio"), options),
+                    "vue-language-server");
+        }
+    }
+
+    /**
+     * The project's own {@code typescript/lib} — what Vue's language
+     * server calls the tsdk. Probes for {@code typescript.js}, the file
+     * the 2.x server actually loads (NOT tsserverlibrary.js — that is
+     * ngserver's requirement, and TypeScript 7 dropped it while keeping
+     * typescript.js). Monorepos: the Node subproject's install wins
+     * over the repo root's, mirroring {@link #angularProbeDir}.
+     */
+    static File vueTsdk(File projectDir) {
+        File nested = new File(
+                org.nmox.studio.rack.devices.ProjectInspector.kindDir(projectDir,
+                        org.nmox.studio.rack.devices.ProjectInspector.ProjectKind.NODE),
+                "node_modules/typescript/lib");
+        File root = new File(projectDir, "node_modules/typescript/lib");
+        for (File candidate : new File[]{nested, root}) {
+            if (new File(candidate, "typescript.js").isFile()) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Major version of the project-local {@code @vue/language-server},
+     * or -1 when unreadable. Reads the package's own package.json — the
+     * only cheap truth about which line the project pinned.
+     */
+    static int vueServerMajor(File projectDir) {
+        File pkg = new File(projectDir,
+                "node_modules/@vue/language-server/package.json");
+        try {
+            String version = new org.json.JSONObject(
+                    java.nio.file.Files.readString(pkg.toPath()))
+                    .optString("version", "");
+            int dot = version.indexOf('.');
+            return dot > 0 ? Integer.parseInt(version.substring(0, dot)) : -1;
+        } catch (IOException | RuntimeException unreadable) {
+            return -1;
         }
     }
 

@@ -4,6 +4,82 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.14.0] - 2026-08-16
+
+David's directive: *give some special attention to Vue and Svelte and
+make sure we're top notch with those.* Recon found the two component
+mimes were second-class in exactly the ways the Angular-top arc had
+already named — and the Vue language server was a phantom.
+
+### Fixed
+- **The dead-chord class, third strike — and its second layer**:
+  `text/x-vue` and `text/x-svelte` had NO editor kits (the JS/TS
+  finding from the Angular-top arc, one mime over), so every keyboard
+  chord was dead on the exact files Vue and Svelte developers live
+  in. `VueEditorKit` + `SvelteEditorKit` were written first — and the
+  live walk proved them INSUFFICIENT: the pane still ignored the kit,
+  popup bare, ⌥⌘E inert while the same keystroke expanded in an HTML
+  pane seconds earlier (the differential that separates a product bug
+  from an automation artifact). The missing layer was the LOADER —
+  with no `@DataObject.Registration` the platform opens these files
+  through `DefaultDataObject`, whose editor never consults the mime's
+  kit at all; `VueDataObject` + `SvelteDataObject` with
+  `registerEditor(mime, true)` complete the v1.217.0 law: *a grammar
+  alone does not make a mime — and neither does a kit without a
+  loader.*
+- **The Vue language server published NOTHING.** Proven headlessly
+  against the real binaries: `@vue/language-server` 3.x answers every
+  didOpen with a `tsserver/request` custom request — it expects the
+  client to host tsserver with `@vue/typescript-plugin` and bridge the
+  frames (the VS Code arrangement) — so a generic LSP client gets zero
+  diagnostics forever, under any options. The 2.x line with
+  `vue.hybridMode:false` + the project's own `typescript.tsdk`
+  answered the same probe with the real type error AND the template
+  typo. The provider now pins the 2.x line (a version ceiling with the
+  ALS TypeScript-5 shape: a project-local 3.x declines honestly
+  instead of spawning a silent server), resolves the tsdk from the
+  project's own `node_modules`, gates on Workspace Trust, and injects
+  the proven initializationOptions through the generalized deno seam
+  (`InitOptionsInjector`). Both servers join the install catalog —
+  Vue project-local (`npm i -D @vue/language-server@2 typescript`),
+  Svelte global.
+
+### Added
+- **Vue typing + vocabulary parity** with what Svelte got in v1.207.0:
+  auto-pairs type and delete in `.vue`, and completion carries the
+  directives with shorthands (`v-if` … `v-memo`, `@click`, `:class`),
+  the Composition API (`ref`, `computed`, `watch`, lifecycle), the
+  `<script setup>` macros (`defineProps`, `defineModel`,
+  `useTemplateRef`), and the built-in components (`Teleport`,
+  `Suspense`, `Transition`, `KeepAlive`) — with a Vue-aware prefix
+  walk so `@cl`, `:cla` and `v-i` are reachable (the Svelte `#each`
+  lesson, one framework over).
+- **Emmet in components**: ⌥⌘E expands markup abbreviations in `.vue`
+  and `.svelte` files, chord bound in all five keymap profiles (the
+  v2.3.0 parity law).
+- **Svelte 5 rune currency**: the dotted variants join completion —
+  `$state.raw`, `$state.snapshot`, `$effect.pre`, `$effect.tracking`,
+  `$effect.root`, `$inspect.trace`, `$props.id`.
+- Tests: the surface pinned by `VueSvelteSurfaceTest` (kits, typing
+  parity, vocabulary, sigil walk, Emmet mimes × 5 profiles),
+  `InitOptionsInjectorTest` (the generalized injector, deno + Vue
+  shapes, wiring gates for both consumers), and
+  `VueServerResolutionTest` (tsdk probe, version ceiling); mutation
+  ×3 by name (the vue sigil branch dies by `vuePrefixWalk`, the
+  skipped merge by `injectsEnable`/`injectsVueOptions`, the lying
+  ceiling by `versionCeiling`).
+
+Verified live in the dev-assembled app, both frameworks: opening the
+planted-error `App.vue` spawned the project-local
+`vue-language-server` (2.2.12) with the injected options and the real
+TypeScript diagnostic appeared on the bad line; ⌥⌘E expanded
+`ul>li*2` inside the `.vue` template; the right-click popup carried
+Expand Abbreviation and Format with Prettier; Source ▸ Toggle Comment
+— greyed with no accelerator before the loader fix — showed ⌘/ and
+commented the line. In `Counter.svelte`, ⌥⌘E expanded `nav>a*2` and
+the project-local `svelteserver` answered the deliberately mangled
+markup with its own diagnostic on the status line as it was typed.
+
 ## [2.13.0] - 2026-08-15
 
 David's directive: *add support for MooTools.* Recon first: the classic
@@ -13269,6 +13345,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.14.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.13.0...v2.14.0
 [2.13.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.11.0...v2.12.0
 [2.11.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.10.2...v2.11.0
