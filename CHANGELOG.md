@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.16.0] - 2026-08-17
+
+The arc review over v2.11.0–v2.14.0 (the Kitchen Sink, Motion,
+MooTools, and Vue/Svelte releases) — two lenses over the freshest
+code, one real bug found in the Motion pane, two smaller honesty and
+hardening fixes beside it.
+
+### Fixed
+- **The Motion preview belongs to the element that started it** (the
+  v1.172.0 law, third appearance, in day-old code): Play on element A,
+  select element B in the DOM tab, press Stop — the `animation: none`
+  went to B while A silently kept its inline `animation:` property,
+  and the NEXT Play with the same animation name resurrected A's
+  animation alongside the new target's; every retarget left another
+  element armed. New pure `MotionTargetGuard` remembers the applied
+  target: Play and Scrub clear the previous element before applying to
+  a new one, and Stop stops what is PLAYING, not what is selected.
+  Mutation ×3 by name (never-names-stale dies by
+  `retargetNamesStaleElement`, ignores-remembered dies by
+  `stopUsesRememberedTarget`, and un-wiring the Stop call site dies by
+  `MotionGuardWiringGateTest` — the v1.321.0 two-proof law).
+- Scrubbing the timeline while the preview ran left the status line
+  claiming "Playing: …" — it now says "Holding at N% — press Play to
+  run".
+
+### Changed
+- `Keyframes.Frame` hands out an unmodifiable declarations map
+  (declaration order preserved): a caller mutating the accessor's map
+  could silently change an already-validated spec.
+
+Verified clean in the same pass: the VueServer trust gate, tsdk probe
+and Volar-3 ceiling; the generalized init-options injector still
+carries deno's `enable:true`; the kit-and-loader pairs for both SFC
+mimes; and the MooTools surfaces. Session hygiene from the same
+critical eye: five orphaned walk-fixture web servers killed, and the
+serve-process-reaping-under-SIGTERM question spun off as its own
+investigation.
 ## [2.15.0] - 2026-08-17
 
 The orphan audit: five `python3 -u -m http.server` processes (ports
@@ -13396,6 +13433,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.16.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.13.0...v2.14.0
 [2.13.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.12.0...v2.13.0

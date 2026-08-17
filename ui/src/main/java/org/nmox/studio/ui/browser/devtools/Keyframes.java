@@ -36,7 +36,11 @@ public final class Keyframes {
     public record Frame(int percent, Map<String, String> props) {
 
         public Frame {
-            props = new LinkedHashMap<>(props);
+            // defensive AND unmodifiable (review hardening): the record
+            // accessor hands out this exact map, and a caller mutating
+            // it would silently change an already-validated spec.
+            // Map.copyOf would lose declaration order — wrap instead.
+            props = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(props));
         }
     }
 

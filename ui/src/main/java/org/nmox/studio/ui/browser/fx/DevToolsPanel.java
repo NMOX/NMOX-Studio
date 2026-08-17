@@ -96,6 +96,8 @@ public final class DevToolsPanel extends JPanel {
             new String[]{"infinite", "1", "2", "3"});
     private TimelineStrip motionStrip;
     private volatile boolean motionPlaying;
+    private final org.nmox.studio.ui.browser.devtools.MotionTargetGuard motionGuard =
+            new org.nmox.studio.ui.browser.devtools.MotionTargetGuard();
 
     // Storage tab
     private final DefaultTableModel storageTable = readOnlyTable("Area", "Key", "Value");
@@ -647,6 +649,15 @@ public final class DevToolsPanel extends JPanel {
             return;
         }
         motionPlaying = true;
+        java.util.List<Integer> stale = motionGuard.retarget(node.path);
+        if (stale != null) {
+            // the previously-previewed element keeps its inline
+            // animation: property otherwise, and the next same-named
+            // keyframes injection resurrects it (the v1.172.0 law: a
+            // preview belongs to the element that started it)
+            runner.run(DevScripts.applyInlineStyle(stale, "animation", "none"),
+                    r -> { }, err -> { });
+        }
         runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
         runner.run(DevScripts.applyInlineStyle(node.path, "animation-delay", "0s"),
                 r -> { }, err -> { });
@@ -659,9 +670,14 @@ public final class DevToolsPanel extends JPanel {
 
     private void motionStop() {
         motionPlaying = false;
+        // stop what is PLAYING, not what is selected — the guard
+        // remembers the element the preview was applied to
         DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
-        if (node != null && !node.isPlaceholder()) {
-            runner.run(DevScripts.applyInlineStyle(node.path, "animation", "none"),
+        java.util.List<Integer> fallback =
+                node != null && !node.isPlaceholder() ? node.path : null;
+        java.util.List<Integer> target = motionGuard.stopTarget(fallback);
+        if (target != null) {
+            runner.run(DevScripts.applyInlineStyle(target, "animation", "none"),
                     r -> { }, err -> { });
         }
         runner.run(DevScripts.clearMotionPreview(), r -> { }, err -> { });
@@ -690,6 +706,11 @@ public final class DevToolsPanel extends JPanel {
             return;
         }
         motionPlaying = false;
+        java.util.List<Integer> stale = motionGuard.retarget(node.path);
+        if (stale != null) {
+            runner.run(DevScripts.applyInlineStyle(stale, "animation", "none"),
+                    r -> { }, err -> { });
+        }
         double seconds = spec.durationMs() / 1000.0 * percent / 100.0;
         runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
         runner.run(DevScripts.applyInlineStyle(node.path, "animation",
@@ -700,6 +721,9 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.applyInlineStyle(node.path, "animation-delay",
                 String.format(java.util.Locale.ROOT, "-%.3fs", seconds)),
                 r -> { }, err -> { });
+        // scrubbing pauses the preview — the status must stop claiming
+        // "Playing" (review find: a lying status is a small dishonesty)
+        motionStatus.setText("Holding at " + percent + "% — press Play to run");
     }
 
     /** Double-click on a diamond: edit that stop's value. */
