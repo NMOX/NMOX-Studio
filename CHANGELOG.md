@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.17.1] - 2026-08-17
+
+Docs truth (docs only): CLAUDE.md's status headline moves v2.9.0 →
+v2.17.0 with the 2026-08-15/17 stretch summarized (the Kitchen Sink,
+the Motion pane, MooTools, Vue+Svelte, the orphan audit, the arc
+review, the day-shift close) and nine version-history entries added;
+plan.md gains the stretch addendum carrying the kit-AND-loader law,
+the Volar wall, the v1.172.0-as-review-lens promotion, the
+floors-bind-on-their-weakest-lane rule, and the pipeline laws from the
+v2.16.0 obstacle course.
+
 ## [2.17.0] - 2026-08-17
 
 The day-shift debt-and-proof release: the one flake this session's own
@@ -13461,6 +13472,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.17.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.0...v2.17.1
 [2.17.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.14.0...v2.15.0

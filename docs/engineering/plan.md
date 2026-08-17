@@ -2424,3 +2424,49 @@ and the echo-message cap splits one logical path into two* — the same
 double-authority shape as ledger 81, one layer down; and a `&`-launched
 gate orphans silently — the run_in_background wrapper is the law
 (re-learned, v1.199 memory).
+
+## Addendum — 2026-08-15/17, the directed-pass stretch (v2.11.0–v2.17.0)
+
+David's directives, in order: the Kitchen Sink tutorial (v2.11.0),
+"bring back DHTML with a full keyframe system and timeline strip"
+(v2.12.0 the Motion pane), "add support for MooTools" (v2.13.0), "give
+some special attention to Vue and Svelte" (v2.14.0), a badge
+investigation that spun off the orphan audit (v2.15.0, its own
+session), "take a look with a critical eye" (v2.16.0 the arc review),
+and "work the day shift" (v2.17.0 debt + walk + this docs close).
+
+What the stretch established:
+
+- **The kit-AND-loader law** (v2.14.0): a grammar alone does not make a
+  mime (v1.217.0), a KIT alone does not either — with no DataObject
+  loader the platform opens files through DefaultDataObject and never
+  consults the mime kit. The Emmet differential (same chord, expands in
+  HTML, inert in .vue) is the cheap in-session probe for the class.
+- **The Volar wall** (v2.14.0): @vue/language-server 3.x speaks
+  tsserver/request to a client-hosted tsserver — unusable by ANY
+  generic LSP client, no init options revive it. The 2.x line with
+  {typescript:{tsdk}, vue:{hybridMode:false}} answers fully. Headless
+  stdio probes before wiring (the deno-pass method) found this in
+  minutes; the ceiling is written at the provider and the catalog.
+- **The v1.172.0 law's third appearance** (v2.16.0): the Motion
+  preview belonged to the selection, not the element that started it.
+  Three appearances make it a REVIEW LENS: any feature that applies
+  state to a picked target must answer "what happens when the pick
+  changes underneath it?"
+- **Floors bind on their weakest lane** (v2.17.0): the editor floor
+  ratcheted on macOS numbers flaked the windows lane (POSIX-gated
+  tests skip there). The v1.299.0 rack call generalized: read the
+  windows measurement out of the failed run's own log, floor to
+  windows-minus-margin, write the law at the pom line.
+- **Pipeline laws from the v2.16.0 obstacle course**: sibling-session
+  releases can take your tag mid-gate (check `git ls-remote` for the
+  planned tag + fetch main before deriving a gate); force-with-lease
+  against a URL remote needs the explicit `branch:sha` form; a gate
+  sitting silent past its checks window usually means a CONFLICTING
+  PR — the watcher now carries a tripwire for it.
+- **The exec-reaper held live** (v2.15.0 confirmed in the v2.17.0
+  walk): SIGTERM on the app took its serve process down with it — the
+  scenario that used to build the 8000–8004 orphan ladder.
+
+Standing counts unchanged this stretch except: 91 learning spaces,
+completion catalog mootools 105, editor floor 0.67 (windows-binding).
