@@ -56,8 +56,11 @@ class ConflictMarkerGateTest {
         try (Stream<Path> walk = Files.walk(root)) {
             for (Path p : (Iterable<Path>) walk::iterator) {
                 // Windows walks yield backslash paths — normalize before
-                // matching (the v1.63.2 class)
-                String s = p.toString().replace('\\', '/');
+                // matching (the v1.63.2 class). Filter RELATIVE to the
+                // repo root: a git worktree's absolute path carries
+                // "/.claude/", which made the dot filter exclude every
+                // file and trip the reached-the-repo floor (v2.15.0).
+                String s = "/" + root.relativize(p).toString().replace('\\', '/');
                 if (s.contains("/target/") || s.contains("/.")
                         || s.contains("/node_modules/")
                         || EXTENSIONS.stream().noneMatch(s::endsWith)) {
