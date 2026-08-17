@@ -43,6 +43,82 @@ public final class CommandExecutor {
     }
 
     /**
+     * Every process this executor has spawned and not yet seen exit. One
+     * JVM shutdown hook reaps the whole set — TERM to every tree, one
+     * bounded grace for all of them together, then KILL the stragglers.
+     *
+     * Why this exists (2026-08-15, the orphan audit): the Rack's own
+     * shutdown reaper panics only devices, so it covers the {@code running}
+     * handle a device tracks — but several lanes hold a Handle OUTSIDE any
+     * rack (the IDE's F6 Run button, NPM Explorer's run-script, the config
+     * dialog's installs), and a dev server launched there outlived the JVM
+     * on every exit, clean quit included ({@code python3 -m http.server}
+     * instances were found orphaned after a {@code pkill}-stopped walk).
+     * Registering at the one choke point every spawn already routes
+     * through covers every caller, present and future; the Rack reaper
+     * stays as the device-state half (double-kill is harmless).
+     */
+    private static final java.util.Set<Process> LIVE =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Test seam: proves the hook exists without waiting for a JVM exit. */
+    static volatile boolean reaperHookRegistered;
+
+    static {
+        try {
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(CommandExecutor::reapLiveNow, "nmox-exec-reaper"));
+            reaperHookRegistered = true;
+        } catch (IllegalStateException ignored) {
+            // already shutting down; nothing to protect
+        }
+    }
+
+    /**
+     * The shutdown hook's body, callable directly by tests. Snapshot every
+     * live tree first, TERM them all, then spend ONE bounded grace across
+     * the whole set (hooks are the last code that runs — a per-process
+     * grace would let a rack full of servers exhaust the walk's patience),
+     * and KILL whatever ignored the TERM.
+     */
+    static void reapLiveNow() {
+        java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
+        for (Process p : LIVE) {
+            if (p.isAlive()) {
+                p.descendants().forEach(tree::add);
+                tree.add(p.toHandle());
+            }
+        }
+        tree.forEach(ProcessHandle::destroy);
+        long deadline = System.currentTimeMillis() + 1_500;
+        for (ProcessHandle h : tree) {
+            long left = deadline - System.currentTimeMillis();
+            if (left <= 0) {
+                break;
+            }
+            try {
+                h.onExit().get(left, java.util.concurrent.TimeUnit.MILLISECONDS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                break;
+            } catch (java.util.concurrent.ExecutionException
+                    | java.util.concurrent.TimeoutException ignored) {
+                // fall through to the forced pass
+            }
+        }
+        for (ProcessHandle h : tree) {
+            if (h.isAlive()) {
+                h.destroyForcibly();
+            }
+        }
+    }
+
+    /** Test seam: the processes the reaper currently tracks. */
+    static java.util.Set<Process> liveSnapshot() {
+        return java.util.Set.copyOf(LIVE);
+    }
+
+    /**
      * Launches a command asynchronously.
      *
      * @param tabName output window tab title (usually the device title)
@@ -71,6 +147,12 @@ public final class CommandExecutor {
             ProcessBuilder pb = ProcessSupport.builder(command).directory(dir);
             pb.environment().putAll(env);
             process = pb.start();
+            // the JVM-exit reaper tracks every spawn until the OS reports
+            // it gone; onExit rides the JDK's process-reaper thread, so
+            // the set shrinks even for lanes that never call waitFor
+            LIVE.add(process);
+            Process spawned = process;
+            process.onExit().thenRun(() -> LIVE.remove(spawned));
         } catch (IOException ex) {
             String msg = friendlyLaunchFailure(command, ex);
             if (out != null) {

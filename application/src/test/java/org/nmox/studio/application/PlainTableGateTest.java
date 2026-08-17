@@ -49,8 +49,14 @@ class PlainTableGateTest {
             for (Path p : (Iterable<Path>) walk::iterator) {
                 // Windows walks yield backslash paths — normalize before
                 // matching or the filter passes NOTHING and the subject
-                // floor fails on exactly one OS (the v1.63.2 class)
-                String s = p.toString().replace('\\', '/');
+                // floor fails on exactly one OS (the v1.63.2 class).
+                // Filter the path RELATIVE to the repo root: from a git
+                // worktree (…/.claude/worktrees/<name>/) the ABSOLUTE
+                // path carries "/.claude/", so an absolute-path dot
+                // filter excluded every file and the subject floor
+                // tripped (caught shipping v2.15.0 from a worktree).
+                // The leading "/" keeps a top-level dot-dir matching.
+                String s = "/" + root.relativize(p).toString().replace('\\', '/');
                 // dot-dirs hold non-build copies (.claude worktrees, .git);
                 // only reactor members' main sources are the gate's subjects
                 if (!s.endsWith(".java") || !s.contains("src/main/java")

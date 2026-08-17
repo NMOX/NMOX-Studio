@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.15.0] - 2026-08-17
+
+The orphan audit: five `python3 -u -m http.server` processes (ports
+8000–8004) were found still serving on 2026-08-15 after their host
+apps had been stopped with `pkill -f <userdir>` (SIGTERM) — task #89's
+orphan guarantee, broken somewhere. The investigation cleared the
+suspects one by one before touching code.
+
+### Fixed
+- **Long-running spawns outside the rack orphaned on EVERY JVM exit —
+  clean quit included.** The investigation first proved the accused
+  innocent: `pkill -f <userdir>` matches BOTH the nbexec launcher
+  shell and the JVM (verified live against the assembled app — the
+  userdir rides the java command line), no platform boot jar carries
+  an `addShutdownHook`+`halt` combination that could abort our hooks,
+  and a SIGTERM repro against the real Rack classes showed the v1.44.0
+  device reaper killing its tracked child exactly as designed. The
+  real hole: the Rack's shutdown hook panics only DEVICES, but several
+  lanes hold a `CommandExecutor.Handle` outside any rack — the IDE's
+  F6 Run button (which serves STATIC projects with the *identical*
+  `python3 -u -m http.server firstFree(8000)` command as IGNITION,
+  explaining the 8000–8004 ladder: each walk's survivor pushed the
+  next serve one port up), NPM Explorer's run-script, the config
+  dialog's installs. Those processes had NO shutdown coverage at all —
+  they outlived clean quits too, silently, since the lanes shipped.
+  `CommandExecutor` now keeps a live-set of every process it spawns
+  (registered at the one choke point every caller already routes
+  through, dropped via `onExit`) and one `nmox-exec-reaper` shutdown
+  hook TERMs every live tree, spends a single bounded grace across the
+  whole set, then KILLs stragglers — covering every present and future
+  caller by construction; the Rack reaper stays as the device-state
+  half. Proven by `CommandExecutorReaperTest` including the real
+  thing: a child JVM spawns a serve tree through the production lane
+  with no Rack at all, the test SIGTERMs it (`Process.destroy`,
+  exactly the walk's pkill), and every grandchild must die with the
+  JVM. Mutation-proven ×3 by name: un-registering the spawn, dropping
+  the hook, and reaping only the direct child (the grandchild-survives
+  shape) each fail named tests. Windows stays out honestly —
+  `TerminateProcess` runs no shutdown hooks, so the guarantee is
+  POSIX-only by construction, matching the v1.42.0 ledger.
+- **The repo-scan gates work from a git worktree.** This release's own
+  verify caught PlainTableGateTest, ConflictMarkerGateTest and
+  PopupTargetGateTest finding ZERO subjects when run from a harness
+  worktree (`…/.claude/worktrees/<name>/`): their dot-dir filter
+  matched the ABSOLUTE path, and a worktree's path carries `/.claude/`,
+  so every file was excluded — the subject floors did exactly their
+  job and failed loud instead of passing vacuously. The filter now
+  applies to the path relative to the repo root (leading `/` kept so
+  top-level dot-dirs still match); behavior from a normal checkout is
+  byte-identical.
+
 ## [2.14.0] - 2026-08-16
 
 David's directive: *give some special attention to Vue and Svelte and
@@ -13345,6 +13396,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.15.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.13.0...v2.14.0
 [2.13.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.12.0...v2.13.0
 [2.12.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.11.0...v2.12.0
