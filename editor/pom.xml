@@ -286,7 +286,13 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.69</minimum>
+                                            <!-- 0.67, not the macOS-measured 0.69: the WINDOWS
+                                                 lane is this floor's binding measurement (0.68
+                                                 there on 2026-08-17 — POSIX-gated tests skip),
+                                                 and a floor above a lane's honest ceiling flakes
+                                                 the gate on measurement noise. The rack floor
+                                                 (v1.299.0) holds at .75 for the same reason. -->
+                                            <minimum>0.67</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

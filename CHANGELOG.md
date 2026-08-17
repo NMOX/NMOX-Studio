@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.17.0] - 2026-08-17
+
+The day-shift debt-and-proof release: the one flake this session's own
+pipeline produced is fixed at its root, and the v2.16.0 review fix is
+now walk-proven in the shipped app.
+
+### Fixed
+- **The editor coverage floor stops flaking the windows lane.** The
+  night ratchet set the floor to 0.69 measured on macOS, but the
+  WINDOWS lane is this floor's binding measurement — POSIX-gated tests
+  skip there and it measures 0.68 (read from the v2.16.0 gate's own
+  failed run), so the floor sat above that lane's honest ceiling and
+  tripped on measurement noise. Floor now 0.67 (windows-measured minus
+  margin) with the law written at the pom line — the same call the
+  rack floor made in v1.299.0. No test was removed; the macOS
+  measurement is unchanged.
+
+Verified live in the shipped 2.16.0 app — the Motion retarget law
+walked as the exact bug scenario: marquee playing on element A,
+element B selected in the DOM tab, **Stop froze A** (the playing
+element, not the selection), and a fresh **Play on B animated B alone
+while A stayed at rest** — the resurrection the v2.16.0 guard exists
+to prevent, absent on screen. Free confirmation in passing: quitting
+the walk app with SIGTERM took the `http.server` serve process down
+with it — the v2.15.0 exec-reaper guarantee observed live in the exact
+scenario that used to orphan servers (ports 8000–8004, the ladder that
+opened that investigation).
+
 ## [2.16.0] - 2026-08-17
 
 The arc review over v2.11.0–v2.14.0 (the Kitchen Sink, Motion,
@@ -13433,6 +13461,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.17.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.15.0...v2.16.0
 [2.15.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.14.0...v2.15.0
 [2.14.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.13.0...v2.14.0
