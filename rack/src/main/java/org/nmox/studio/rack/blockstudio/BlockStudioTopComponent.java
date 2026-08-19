@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
         displayName = "#CTL_BlockStudioAction",
         preferredID = "BlockStudioTopComponent")
 @NbBundle.Messages({
-    "CTL_BlockStudioAction=Block Studio  ⌥⌘5",
+    "CTL_BlockStudioAction=Block Studio",
     "CTL_BlockStudioTopComponent=Block Studio",
     "HINT_BlockStudioTopComponent=Compose web components from interlocking pieces"
 })

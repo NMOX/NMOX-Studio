@@ -34,7 +34,7 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 115),
     @ActionReference(path = "Shortcuts", name = "DS-E")
 })
-@Messages("CTL_NewExperimentAction=New Experiment...")
+@Messages("CTL_NewExperimentAction=New Experiment…")
 public final class NewExperimentAction implements ActionListener {
 
     @Override

@@ -61,7 +61,13 @@ class TimelineStripModelTest {
         assertThat(m.stops("opacity")).containsOnlyKeys(0, 100);
         m.removeStop("opacity", 100);
         assertThat(m.stops("opacity")).containsOnlyKeys(0);
-        m.removeTrack("opacity");
+        // the verdict is user-visible truth (v2.18.0): the Remove Track
+        // button reports "removed" vs "no track named X" from it, so a
+        // free-typed miss can never read as a removal
+        assertThat(m.removeTrack("opacity")).isTrue();
         assertThat(m.properties()).isEmpty();
+        assertThat(m.removeTrack("opacity"))
+                .as("removing a track that is not there says so")
+                .isFalse();
     }
 }

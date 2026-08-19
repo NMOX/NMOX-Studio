@@ -36,7 +36,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ClassicKitAction")
 @ActionRegistration(displayName = "#CTL_ClassicKitAction")
 @ActionReference(path = "Menu/File", position = 119)
-@Messages("CTL_ClassicKitAction=Classic Kit...")
+@Messages("CTL_ClassicKitAction=Classic Kit…")
 public final class ClassicKitAction implements ActionListener {
 
     /** Checkbox text; Backbone announces the Underscore it brings along. */

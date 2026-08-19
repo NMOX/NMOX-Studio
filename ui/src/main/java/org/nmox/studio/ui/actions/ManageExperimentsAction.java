@@ -41,7 +41,7 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 116),
     @ActionReference(path = "Shortcuts", name = "DS-X")
 })
-@Messages("CTL_ManageExperimentsAction=Experiments...")
+@Messages("CTL_ManageExperimentsAction=Experiments…")
 public final class ManageExperimentsAction implements ActionListener {
 
     /**
@@ -59,7 +59,7 @@ public final class ManageExperimentsAction implements ActionListener {
         Experiments.list().forEach(model::addElement);
         if (model.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No experiments yet — File → New Experiment… starts one."));
+                    "No experiments yet — File ▸ New Experiment… starts one."));
             return;
         }
 

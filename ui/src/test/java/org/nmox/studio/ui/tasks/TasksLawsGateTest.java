@@ -90,10 +90,49 @@ class TasksLawsGateTest {
     @Test
     @DisplayName("a foreign edit wins over a stale gesture (never-clobber)")
     void foreignEditGuard() throws Exception {
-        assertThat(tc())
-                .as("every mutation checks for an outside write FIRST and"
-                        + " reloads instead of overwriting it")
+        String src = tc();
+        assertThat(src)
+                .as("every mutation checks for an outside write and reloads"
+                        + " instead of overwriting it")
                 .contains("TasksIO.foreignEdit(");
+        // v2.18.0: the check STATS THE DISK, so it lives on the IO lane
+        // with the save, not on the EDT with the gesture (v1.108.0) —
+        // the class javadoc promised this for two releases while the
+        // code did three filesystem calls per card drag on the EDT
+        int post = src.indexOf("IO_RP.post(() -> {",
+                src.indexOf("private boolean mutate("));
+        assertThat(post).as("mutate() posts its save to the IO lane").isPositive();
+        assertThat(src.indexOf("TasksIO.foreignEdit(",
+                src.indexOf("private boolean mutate(")))
+                .as("the foreign-edit stat rides the IO lane INSIDE the"
+                        + " posted save, off the EDT")
+                .isGreaterThan(post);
+    }
+
+    @Test
+    @DisplayName("a REFUSED mutation writes nothing and the gesture can say so (v2.18.0)")
+    void refusedMutationLaw() throws Exception {
+        String src = tc();
+        int m = src.indexOf("private boolean mutate(");
+        assertThat(m)
+                .as("mutate() returns the board's verdict so each gesture"
+                        + " can report a refusal instead of going mute")
+                .isPositive();
+        String body = src.substring(m, src.indexOf("\n    }", m));
+        assertThat(body)
+                .as("the refusal gate sits BEFORE the rebuild and the save:"
+                        + " an edge move or double clock-in must not bump"
+                        + " the checked-in file's mtime for a no-op")
+                .contains("if (!mutation.getAsBoolean()) {");
+        assertThat(body.indexOf("if (!mutation.getAsBoolean()) {"))
+                .isLessThan(body.indexOf("rebuild()"));
+        // and the refusals SPEAK: the destructive-by-side-effect clock
+        // gestures each carry their outcome line (a deleted sub-minute
+        // session and a silently-moved clock were both mute before)
+        assertThat(src).contains("dropped as a blip")
+                .contains("one clock per board")
+                .contains("No clock running on that card")
+                .contains("clock is already running");
     }
 
     @Test

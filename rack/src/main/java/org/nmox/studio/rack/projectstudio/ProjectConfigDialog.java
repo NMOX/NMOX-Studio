@@ -198,11 +198,14 @@ public class ProjectConfigDialog extends JDialog {
             List<String> argv = org.nmox.studio.rack.devices.NodePackageCommands
                     .remove(mgr, name);
             // the prompt names the command that will actually run, so the
-            // confirmation is honest on a yarn/pnpm project too
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+            // confirmation is honest on a yarn/pnpm project too; full ctor
+            // with NO as the initial value — a reflexive Enter must not
+            // remove a dependency (v1.98.0)
+            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                     org.nmox.studio.rack.devices.NodePackageCommands.describe(argv) + "?",
                     "Remove Dependency",
-                    NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+                    null, NotifyDescriptor.NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
                 runPackageManager(argv);
             }
         });

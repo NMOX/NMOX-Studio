@@ -35,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.PwaKitAction")
 @ActionRegistration(displayName = "#CTL_PwaKitAction")
 @ActionReference(path = "Menu/File", position = 118)
-@Messages("CTL_PwaKitAction=PWA Kit...")
+@Messages("CTL_PwaKitAction=PWA Kit…")
 public final class PwaKitAction implements ActionListener {
 
     @Override

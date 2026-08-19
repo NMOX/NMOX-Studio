@@ -29,7 +29,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.StandardsKitAction")
 @ActionRegistration(displayName = "#CTL_StandardsKitAction")
 @ActionReference(path = "Menu/File", position = 117)
-@Messages("CTL_StandardsKitAction=Standards Kit...")
+@Messages("CTL_StandardsKitAction=Standards Kit…")
 public final class StandardsKitAction implements ActionListener {
 
     /** The generated files are only as valid as their inputs. */

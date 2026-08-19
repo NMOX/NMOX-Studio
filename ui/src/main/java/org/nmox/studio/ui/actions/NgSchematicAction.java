@@ -44,7 +44,7 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.NgSchematicAction")
 @ActionRegistration(displayName = "#CTL_NgSchematicAction")
 @ActionReference(path = "Menu/File", position = 122)
-@Messages("CTL_NgSchematicAction=New Angular Schematic...")
+@Messages("CTL_NgSchematicAction=New Angular Schematic…")
 public final class NgSchematicAction implements ActionListener {
 
     private static final RequestProcessor RP =

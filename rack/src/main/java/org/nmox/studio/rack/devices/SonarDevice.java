@@ -236,10 +236,13 @@ public class SonarDevice extends RackDevice {
             }
             long pid = Long.parseLong(String.valueOf(model.getValueAt(row, 2)));
             String owner = String.valueOf(model.getValueAt(row, 1));
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+            // full ctor with NO as the initial value — a reflexive Enter
+            // must not kill a process (v1.98.0)
+            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                     "Kill " + owner + " (pid " + pid + ") holding port "
                     + model.getValueAt(row, 0) + "?", "SONAR",
-                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE))
+                    NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
+                    null, NotifyDescriptor.NO_OPTION))
                     == NotifyDescriptor.YES_OPTION) {
                 PortScanner.kill(pid);
                 rescan.doClick();

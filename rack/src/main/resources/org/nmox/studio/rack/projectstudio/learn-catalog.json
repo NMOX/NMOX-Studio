@@ -1316,7 +1316,7 @@
    "name": "Perl",
    "category": "LANGUAGE",
    "family": "Scripting",
-   "blurb": "The original swiss-army chainsaw of text processing, where regular expressions are a native tongue.",
+   "blurb": "The original Swiss-army chainsaw of text processing, where regular expressions are a native tongue.",
    "driver": {
     "kind": "run",
     "command": [

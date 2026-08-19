@@ -1941,7 +1941,7 @@ public final class IrcTopComponent extends TopComponent {
             case "add" -> {
                 String[] a = rest.split("\\s+", 3);
                 if (a.length < 3) {
-                    appendStatus(statusKey, "usage: /filter add <name> <#channel|*> <regex>");
+                    appendStatus(statusKey, "Usage: /filter add <name> <#channel|*> <regex>");
                     return;
                 }
                 String problem = textFilters.add(a[0], a[1], a[2], true);
@@ -2013,7 +2013,7 @@ public final class IrcTopComponent extends TopComponent {
     private void commandLastlog(String args) {
         String[] a = args.trim().split("\\s+");
         if (a.length == 0 || a[0].isEmpty()) {
-            appendStatus(key(activeNetwork(), ""), "usage: /lastlog <text> [count]");
+            appendStatus(key(activeNetwork(), ""), "Usage: /lastlog <text> [count]");
             return;
         }
         int limit = 20;

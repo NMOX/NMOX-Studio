@@ -96,7 +96,12 @@ class DocsCountGateTest {
         assertThat(spaces).as("the catalog should hold spaces").isGreaterThan(50);
 
         List<Integer> found = new ArrayList<>();
-        List<String> where = claims(Pattern.compile("(\\d+) (?:learning spaces|built in)"), found);
+        // CASE_INSENSITIVE is load-bearing: README's badge strip shouts
+        // "91 LEARNING SPACES" in caps, and the case-sensitive form let
+        // it sit three releases stale while this gate stayed green
+        // (found in the v2.18.0 polish pass)
+        List<String> where = claims(Pattern.compile("(\\d+) (?:learning spaces|built in)",
+                Pattern.CASE_INSENSITIVE), found);
         assertThat(found).as("no live doc counts learning spaces at all — did the phrasing change?").isNotEmpty();
         assertThat(found)
                 .as("stale learning-space counts (truth is %d): %s", spaces, where)
@@ -118,9 +123,40 @@ class DocsCountGateTest {
         assertThat(manifests).as("the factory should recognize manifests").isGreaterThan(40);
 
         List<Integer> found = new ArrayList<>();
-        List<String> where = claims(Pattern.compile("(\\d+) manifest names"), found);
+        // three phrasings live in the docs — a gate that knows only one
+        // of them lets the other two rot (the v2.18.0 polish pass found
+        // "58 recognized manifests" and "58 manifest types" two counts
+        // stale under a green gate)
+        List<String> where = claims(Pattern.compile(
+                "(\\d+) (?:manifest names|recognized manifests|manifest types)",
+                Pattern.CASE_INSENSITIVE), found);
         assertThat(found)
                 .as("stale manifest counts (truth is %d): %s", manifests, where)
                 .allMatch(n -> n == manifests);
+    }
+
+    @Test
+    @DisplayName("every live doc that counts grammars agrees with the vendored set")
+    void grammarCount() throws Exception {
+        // one .tmLanguage.json per vendored grammar — the same set the
+        // README calls the polyglot editor's engine. Ungated until the
+        // v2.18.0 polish pass, which found the README's badge AND pitch
+        // line seven grammars behind the README's own body text.
+        long grammars;
+        try (Stream<Path> files = Files.walk(Path.of("..", "editor", "src",
+                "main", "resources"))) {
+            grammars = files.filter(p -> p.getFileName().toString()
+                    .endsWith(".tmLanguage.json")).count();
+        }
+        assertThat(grammars).as("the editor should vendor grammars").isGreaterThan(70);
+
+        List<Integer> found = new ArrayList<>();
+        List<String> where = claims(Pattern.compile(
+                "(\\d+)(?:-grammar| (?:language grammars|textmate grammars))",
+                Pattern.CASE_INSENSITIVE), found);
+        assertThat(found).as("no live doc counts grammars at all — did the phrasing change?").isNotEmpty();
+        assertThat(found)
+                .as("stale grammar counts (truth is %d): %s", grammars, where)
+                .allMatch(n -> n == grammars);
     }
 }

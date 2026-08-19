@@ -58,7 +58,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### SOLDER — Custom Command — run anything as a pipeline step
 
-> Runs exactly what you type - make seed-db, ./scripts/fixtures.sh - argv only, no shell.
+> Runs exactly what you type — make seed-db, ./scripts/fixtures.sh — argv only, no shell.
 > Patch VERITAS OK → RUN to chain custom steps; SOLDER exports to CI like any device.
 
 - **In:** `RUN` (trigger)
@@ -76,7 +76,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### CRATE — Package Manager — install & update deps
 
-> INSTALL readies dependencies - in mixed repos it sequences every toolchain.
+> INSTALL readies dependencies — in mixed repos it sequences every toolchain.
 > UPDATE upgrades, CHECK reports outdated. OK fires when done.
 
 - **In:** `RUN` (trigger)
@@ -85,12 +85,12 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### FORGE — Build Engine — vite/webpack/rollup & co
 
 > BUILD compiles with the detected tool (vite/cargo/mix/swift…).
-> WATCH mode fires OK on every rebuild - patch OK → VERITAS for build-then-test.
+> WATCH mode fires OK on every rebuild — patch OK → VERITAS for build-then-test.
 
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
 
-### VERITAS — Test Harness — jest/vitest/mocha...
+### VERITAS — Test Harness — jest/vitest/mocha…
 
 > Runs the suite; the tally LCD shows live pass/fail.
 > RUNNER=auto picks jest/pytest/cargo/mix… Patch OUT → MONITOR to read output.
@@ -124,7 +124,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### VITALS — Web Quality Gate — Lighthouse scores with a shipping floor
 
-> Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.
+> Lighthouse headless against the dialed URL — PERF/A11Y/BEST/SEO on the meters.
 > Dial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.
 
 - **In:** `RUN` (trigger), `URL` (data)
@@ -183,7 +183,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### WORMHOLE — Public Tunnel — cloudflared/ngrok/localtunnel
 
 > OPEN exposes a local port to the internet via cloudflared/ngrok.
-> The public URL lands on the LCD and the URL jack - patch into SCOPE to pop it.
+> The public URL lands on the LCD and the URL jack — patch into SCOPE to pop it.
 
 - **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `RUNNING` (gate)
@@ -209,7 +209,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### HALO — Angular Console — serve/generate/update, stays current
 
 > SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.
-> The version cluster nags when Angular moves - UPDATE runs ng update.
+> The version cluster nags when Angular moves — UPDATE runs ng update.
 
 - **In:** `RUN` (trigger), `SERVE` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
@@ -375,7 +375,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### TIMELINE — Git Sequencer — status/pull/commit/push
 
 > STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.
-> Amber buttons mutate - the law of the rack.
+> Amber buttons mutate — the law of the rack.
 
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)
@@ -391,7 +391,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 ### LAUNCHPAD — Deploy Output — armed deploys only
 
 > Flip ARM, then LAUNCH deploys to the dialed target.
-> Unarmed pads ignore even patched triggers - by design.
+> Unarmed pads ignore even patched triggers — by design.
 
 - **In:** `RUN` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data)

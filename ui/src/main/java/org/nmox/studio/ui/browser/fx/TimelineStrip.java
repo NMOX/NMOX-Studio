@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntConsumer;
-import javax.accessibility.AccessibleContext;
 import javax.swing.JPanel;
 
 import org.nmox.studio.ui.browser.devtools.Keyframes;
@@ -62,8 +61,11 @@ public final class TimelineStrip extends JPanel {
             tracks.computeIfAbsent(property, p -> new java.util.TreeMap<>());
         }
 
-        public void removeTrack(String property) {
-            tracks.remove(property);
+        /** @return true when a track of that name existed — the caller
+         *  must be able to tell a removal from a no-op on a free-typed
+         *  name, so the gesture is never silently inert */
+        public boolean removeTrack(String property) {
+            return tracks.remove(property) != null;
         }
 
         /** Adds/overwrites the stop; percent clamped to 0..100. */
@@ -338,8 +340,4 @@ public final class TimelineStrip extends JPanel {
         g.drawLine(sx, 2, sx, getHeight() - 2);
     }
 
-    @Override
-    public AccessibleContext getAccessibleContext() {
-        return super.getAccessibleContext();
-    }
 }

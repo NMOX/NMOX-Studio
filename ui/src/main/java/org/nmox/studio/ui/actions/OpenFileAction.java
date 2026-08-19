@@ -37,7 +37,7 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 50),
     @ActionReference(path = "Shortcuts", name = "D-O")
 })
-@Messages("CTL_OpenFileAction=Open File...")
+@Messages("CTL_OpenFileAction=Open File…")
 public final class OpenFileAction implements ActionListener {
 
     @Override

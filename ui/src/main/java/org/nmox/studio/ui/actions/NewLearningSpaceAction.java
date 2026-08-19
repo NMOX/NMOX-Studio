@@ -51,7 +51,7 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 112),
     @ActionReference(path = "Shortcuts", name = "DS-L")
 })
-@Messages("CTL_NewLearningSpaceAction=New Learning Space...")
+@Messages("CTL_NewLearningSpaceAction=New Learning Space…")
 public final class NewLearningSpaceAction implements ActionListener {
 
     private static final Color TOOL_OK = new Color(96, 176, 96);

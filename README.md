@@ -7,7 +7,7 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
-`53 RACK DEVICES` · `78 LANGUAGE GRAMMARS` · `88 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `85 LANGUAGE GRAMMARS` · `91 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
@@ -15,7 +15,7 @@ NMOX Studio is an IDE for the modern web with a twist: your tooling lives in a
 Reason-style **Task Rack**. Every task — install, build, test, serve, lint,
 deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire a
 FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
-**78-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
+**85-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
 **Ask ORACLE** — select code in any language and hold an AI conversation about
 it (consent-gated, keys keychain-only), **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is

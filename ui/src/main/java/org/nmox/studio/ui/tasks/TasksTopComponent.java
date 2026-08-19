@@ -234,33 +234,51 @@ public final class TasksTopComponent extends TopComponent {
     }
 
     /**
-     * Runs {@code mutation} against the CURRENT board and saves. If a
-     * foreign edit landed since our last sync, the file wins: the board
-     * reloads and the gesture is dropped with a status note rather than
-     * silently overwriting someone's merge (the never-clobber law).
+     * Runs {@code mutation} against the CURRENT board; when the board
+     * ACCEPTS it, repaints and saves, and when the board refuses (an
+     * edge move, a double clock-in, a blank name) NOTHING is written —
+     * a refused gesture must not dirty the checked-in file (v2.18.0).
+     * The foreign-edit check rides the IO lane with the save (the
+     * v1.108.0 disk-off-EDT law): if an outside write landed since our
+     * last sync, the file wins — the applied gesture is rolled back by
+     * a reload with a status note rather than silently overwriting
+     * someone's merge (the never-clobber law).
+     *
+     * @return true when the board accepted the mutation
      */
-    private void mutate(Runnable mutation) {
+    private boolean mutate(java.util.function.BooleanSupplier mutation) {
         File dir = boundDir;
         if (dir == null) {
-            return;
+            return false;
         }
-        if (TasksIO.foreignEdit(dir, tracker)) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                    TasksIO.FILENAME + " changed outside the IDE — reloaded;"
-                    + " repeat your change");
-            reload();
-            return;
+        if (!mutation.getAsBoolean()) {
+            return false;
         }
-        mutation.run();
         rebuild();
         TaskBoard snapshot = board;
         IO_RP.post(() -> {
+            if (TasksIO.foreignEdit(dir, tracker)) {
+                java.awt.EventQueue.invokeLater(() -> {
+                    status(TasksIO.FILENAME + " changed outside the IDE"
+                            + " — reloaded; repeat your change");
+                    reload();
+                });
+                return;
+            }
             try {
                 TasksIO.save(dir, snapshot, tracker);
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, "Could not save " + TasksIO.FILENAME, ex);
             }
         });
+        return true;
+    }
+
+    /** One-line outcome report on the status line — every refused or
+     *  destructive-by-side-effect gesture on this board says what
+     *  happened (the blockDialog precedent, made the house rule). */
+    private static void status(String text) {
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(text);
     }
 
     // ---- UI --------------------------------------------------------------
@@ -270,9 +288,11 @@ public final class TasksTopComponent extends TopComponent {
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         JButton addCard = new JButton("New Card…");
         addCard.getAccessibleContext().setAccessibleName("New card");
+        addCard.setToolTipText("Adds a card to the first column");
         addCard.addActionListener(e -> newCardDialog(0));
         JButton addColumn = new JButton("New Column…");
         addColumn.getAccessibleContext().setAccessibleName("New column");
+        addColumn.setToolTipText("Adds a column at the end of the board");
         addColumn.addActionListener(e -> newColumnDialog());
         overviewToggle = new javax.swing.JToggleButton("Overview");
         overviewToggle.getAccessibleContext().setAccessibleName(
@@ -489,16 +509,38 @@ public final class TasksTopComponent extends TopComponent {
         });
         JMenuItem clockIn = new JMenuItem("Clock In");
         clockIn.addActionListener(e -> {
-            if (list.getSelectedValue() != null) {
-                mutate(() -> board.clockIn(list.getSelectedValue().id(),
-                        System.currentTimeMillis()));
+            TaskBoard.Card sel = list.getSelectedValue();
+            if (sel == null) {
+                return;
+            }
+            // ONE clock runs board-wide, so clocking in here clocks out
+            // whatever was running — say so instead of moving it silently
+            TaskBoard.Card was = board.runningCard();
+            if (mutate(() -> board.clockIn(sel.id(), System.currentTimeMillis()))) {
+                status(was == null ? "Clocked in"
+                        : "Clocked in — stopped the clock on \"" + was.title()
+                                + "\" (one clock per board)");
+            } else {
+                status("That card's clock is already running");
             }
         });
         JMenuItem clockOut = new JMenuItem("Clock Out");
         clockOut.addActionListener(e -> {
-            if (list.getSelectedValue() != null) {
-                mutate(() -> board.clockOut(list.getSelectedValue().id(),
-                        System.currentTimeMillis()));
+            TaskBoard.Card sel = list.getSelectedValue();
+            if (sel == null) {
+                return;
+            }
+            long now = System.currentTimeMillis();
+            // computed BEFORE the mutation removes the session: a sub-minute
+            // session is dropped whole, and a deletion must never be mute
+            boolean blip = sel.clockedIn() && now
+                    - sel.sessions().get(sel.sessions().size() - 1)[0]
+                    < TaskBoard.BLIP_MS;
+            if (mutate(() -> board.clockOut(sel.id(), now))) {
+                status(blip ? "Clocked out — under a minute, dropped as a blip"
+                        : "Clocked out");
+            } else {
+                status("No clock running on that card");
             }
         });
         JMenuItem block = new JMenuItem("Mark Blocked…");
@@ -619,6 +661,9 @@ public final class TasksTopComponent extends TopComponent {
                 mutate(() -> board.moveCard(id, columnIndex, finalAt));
                 return true;
             } catch (Exception ex) {
+                // a failed drop is visible (the card snaps back), but a
+                // broken drag pipeline must leave a trace to debug
+                LOG.log(Level.FINE, "Card drop refused", ex);
                 return false;
             }
         }
@@ -657,10 +702,13 @@ public final class TasksTopComponent extends TopComponent {
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         DialogDescriptor d = new DialogDescriptor(form, "New Card");
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION
-                && !title.getText().strip().isEmpty()) {
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+            if (title.getText().strip().isEmpty()) {
+                status("A card needs a title — nothing added");
+                return;
+            }
             mutate(() -> board.addCard(preferredColumn, title.getText(),
-                    notes.getText()));
+                    notes.getText()) != null);
         }
     }
 
@@ -674,9 +722,10 @@ public final class TasksTopComponent extends TopComponent {
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         DialogDescriptor d = new DialogDescriptor(form, "Edit Card");
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-            mutate(() -> board.editCard(card.id(), title.getText(),
-                    notes.getText()));
+        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION
+                && !mutate(() -> board.editCard(card.id(), title.getText(),
+                        notes.getText()))) {
+            status("A card needs a title — unchanged");
         }
     }
 
@@ -696,8 +745,8 @@ public final class TasksTopComponent extends TopComponent {
         NotifyDescriptor.InputLine in =
                 new NotifyDescriptor.InputLine("Name:", "New Column");
         if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION
-                && !in.getInputText().strip().isEmpty()) {
-            mutate(() -> board.addColumn(in.getInputText(), 0));
+                && !mutate(() -> board.addColumn(in.getInputText(), 0))) {
+            status("A column needs a name — nothing added");
         }
     }
 
@@ -777,7 +826,7 @@ public final class TasksTopComponent extends TopComponent {
         DialogDescriptor d = new DialogDescriptor(scroll,
                 "Retro — went well / bit us / changed");
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-            mutate(() -> board.setRetro(text.getText()));
+            mutate(() -> { board.setRetro(text.getText()); return true; });
         }
     }
 
@@ -821,8 +870,10 @@ public final class TasksTopComponent extends TopComponent {
             NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(
                     "Name:", "Rename Column");
             in.setInputText(board.column(index).name());
-            if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION) {
-                mutate(() -> board.renameColumn(index, in.getInputText()));
+            if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION
+                    && !mutate(() -> board.renameColumn(index, in.getInputText()))) {
+                status("A column needs a name — kept \""
+                        + board.column(index).name() + "\"");
             }
         });
         JMenuItem wip = new JMenuItem("Set WIP Limit…");
@@ -835,14 +886,25 @@ public final class TasksTopComponent extends TopComponent {
                     int limit = Integer.parseInt(in.getInputText().strip());
                     mutate(() -> board.setWipLimit(index, limit));
                 } catch (NumberFormatException ignore) {
-                    // not a number: leave the limit as it was
+                    // not a number: keep the limit, and say so — a swallowed
+                    // gesture reads as a broken dialog
+                    status("WIP limit must be a number — kept "
+                            + board.column(index).wipLimit());
                 }
             }
         });
         JMenuItem left = new JMenuItem("Move Left");
-        left.addActionListener(e -> mutate(() -> board.moveColumn(index, index - 1)));
+        left.addActionListener(e -> {
+            if (!mutate(() -> board.moveColumn(index, index - 1))) {
+                status("Already the first column");
+            }
+        });
         JMenuItem right = new JMenuItem("Move Right");
-        right.addActionListener(e -> mutate(() -> board.moveColumn(index, index + 1)));
+        right.addActionListener(e -> {
+            if (!mutate(() -> board.moveColumn(index, index + 1))) {
+                status("Already the last column");
+            }
+        });
         JMenuItem remove = new JMenuItem("Delete Column…");
         remove.addActionListener(e -> {
             int n = board.column(index).cards().size();

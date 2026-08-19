@@ -36,7 +36,7 @@ import org.openide.windows.WindowManager;
     // no keyboard shortcut: D-N belongs to New File
     @ActionReference(path = "Shortcuts", name = "DS-N")
 })
-@Messages("CTL_NewProjectAction=New Project...")
+@Messages("CTL_NewProjectAction=New Project…")
 public final class NewProjectAction implements ActionListener {
 
     @Override

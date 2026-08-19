@@ -568,9 +568,16 @@ public final class DevToolsPanel extends JPanel {
             String prop = motionStrip.selectedProperty() != null
                     ? motionStrip.selectedProperty()
                     : String.valueOf(trackProp.getEditor().getItem()).trim();
-            motionStrip.model().removeTrack(prop);
-            motionStrip.refresh();
-            motionPreviewIfPlaying();
+            // every sibling gesture reports on motionStatus — a free-typed
+            // name matching no track must refuse out loud, not sit inert
+            if (motionStrip.model().removeTrack(prop)) {
+                motionStrip.refresh();
+                motionPreviewIfPlaying();
+                motionStatus.setText("Removed the " + prop + " track");
+            } else {
+                motionStatus.setText("No track named \"" + prop
+                        + "\" — select a track or pick its exact name");
+            }
         });
 
         motionStrip = new TimelineStrip(this::motionScrub, this::motionPreviewIfPlaying,
@@ -592,9 +599,11 @@ public final class DevToolsPanel extends JPanel {
         barTop.add(load);
         barTop.add(new JLabel("Name:"));
         barTop.add(motionName);
-        barTop.add(new JLabel("ms:"));
+        barTop.add(new JLabel("Duration (ms):"));
         barTop.add(motionDuration);
+        barTop.add(new JLabel("Easing:"));
         barTop.add(motionEasing);
+        barTop.add(new JLabel("Runs:"));
         barTop.add(motionIterations);
         JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         barTracks.add(new JLabel("Track:"));
