@@ -432,10 +432,15 @@ public final class TaskBoard {
         return true;
     }
 
+    /** A session shorter than this is dropped whole by {@link #clockOut}
+     *  — an accidental in/out is noise, not work. Public so the UI can
+     *  SAY a session was dropped instead of deleting it silently. */
+    public static final long BLIP_MS = 60_000L;
+
     /**
      * Stops the running clock on {@code id} at {@code now}; refused when
-     * that card's clock is not running. A session shorter than a minute
-     * is DROPPED whole — an accidental in/out is noise, not work.
+     * that card's clock is not running. A session shorter than
+     * {@link #BLIP_MS} is DROPPED whole.
      */
     public boolean clockOut(String id, long now) {
         Card c = find(id);
@@ -443,7 +448,7 @@ public final class TaskBoard {
             return false;
         }
         long[] open = c.sessions.get(c.sessions.size() - 1);
-        if (now - open[0] < 60_000L) {
+        if (now - open[0] < BLIP_MS) {
             c.sessions.remove(c.sessions.size() - 1);
         } else {
             open[1] = now;

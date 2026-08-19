@@ -90,7 +90,7 @@ the Welcome tab):
 
 ## 3. Projects
 
-**Opening:** any folder carrying one of 58 recognized manifests opens as a
+**Opening:** any folder carrying one of 60 recognized manifests opens as a
 real project — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`,
 `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`,
 `gulpfile.js`, `webpack.config.js`, and friends — including the contract

@@ -29,7 +29,7 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.actions.EnvironmentDoctorAction")
 @ActionRegistration(displayName = "#CTL_EnvironmentDoctorAction")
 @ActionReference(path = "Menu/Tools", position = 90)
-@Messages("CTL_EnvironmentDoctorAction=Environment Doctor...")
+@Messages("CTL_EnvironmentDoctorAction=Environment Doctor…")
 public final class EnvironmentDoctorAction implements ActionListener {
 
     @Override

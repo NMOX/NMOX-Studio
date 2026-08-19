@@ -36,7 +36,7 @@ import org.openide.windows.WindowManager;
     // a folder NMOX never creates. See WindowShortcutsTest.
     @ActionReference(path = "Shortcuts", name = "DA-O")
 })
-@Messages("CTL_OpenFolderAction=Open Folder...")
+@Messages("CTL_OpenFolderAction=Open Folder…")
 public final class OpenFolderAction implements ActionListener {
 
     @Override

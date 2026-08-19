@@ -28,7 +28,7 @@ public enum DeviceType {
     NPM_SCRIPT("npm-script", "NPM-9000", "Script Sequencer — run package.json scripts", new Color(203, 56, 55), NpmScriptDevice::new),
     PACKAGE_MANAGER("package-manager", "CRATE", "Package Manager — install & update deps", new Color(214, 121, 41), PackageManagerDevice::new),
     BUILD("build", "FORGE", "Build Engine — vite/webpack/rollup & co", new Color(232, 166, 35), BuildDevice::new),
-    TEST("test", "VERITAS", "Test Harness — jest/vitest/mocha...", new Color(99, 197, 70), TestDevice::new),
+    TEST("test", "VERITAS", "Test Harness — jest/vitest/mocha…", new Color(99, 197, 70), TestDevice::new),
     DEV_SERVER("dev-server", "SURGE", "Dev Server — start/stop local serving", new Color(64, 156, 255), DevServerDevice::new),
     LINT("lint", "PURITY", "Lint Filter — biome/eslint/stylelint", new Color(168, 110, 221), LintDevice::new),
     FORMAT("format", "GLOSS", "Code Formatter — biome/prettier; pint on PHP lanes", new Color(73, 196, 184), FormatDevice::new),
@@ -133,18 +133,18 @@ public enum DeviceType {
             case TEMPO -> "A clock: TICK fires at the dialed rate, BAR every 4th tick.\nGate it with ENABLE (patch SURGE RUNNING in) for health checks only while serving.";
             case RUN -> "Runs your project's main: cargo run, go run, mix run, python…\nTARGET=auto follows the detected toolchain; ARGS feed the command line.";
             case NPM_SCRIPT -> "One package.json script per press. SCRIPT knob lists your scripts.\nPatch OK into the next device to chain scripts into pipelines.";
-            case PACKAGE_MANAGER -> "INSTALL readies dependencies - in mixed repos it sequences every toolchain.\nUPDATE upgrades, CHECK reports outdated. OK fires when done.";
-            case BUILD -> "BUILD compiles with the detected tool (vite/cargo/mix/swift…).\nWATCH mode fires OK on every rebuild - patch OK → VERITAS for build-then-test.";
+            case PACKAGE_MANAGER -> "INSTALL readies dependencies — in mixed repos it sequences every toolchain.\nUPDATE upgrades, CHECK reports outdated. OK fires when done.";
+            case BUILD -> "BUILD compiles with the detected tool (vite/cargo/mix/swift…).\nWATCH mode fires OK on every rebuild — patch OK → VERITAS for build-then-test.";
             case TEST -> "Runs the suite; the tally LCD shows live pass/fail.\nRUNNER=auto picks jest/pytest/cargo/mix… Patch OUT → MONITOR to read output.";
             case E2E -> "RUN drives the E2E suite (ENGINE=auto reads playwright/cypress config; HEADED shows the browser).\nREPORT serves the Playwright HTML report (URL out feeds SCOPE); RECORD aims codegen at your live dev server; BROWSERS installs runtimes.";
             case LINT -> "Static analysis; E/W counts land on the LCD, CLEAN lights when spotless.\nFIX rewrites violations in place (amber = it mutates your files).";
             case FORMAT -> "Prettier over the project (Laravel Pint on PHP lanes). WRITE rewrites; CHECK only verifies.\nPatch REFLEX CHANGED → RUN for format-on-save.";
             case TYPECHECK -> "tsc --noEmit (phpstan on PHP lanes). WATCH keeps the compiler resident and fires OK/FAIL per check.\nSTRICT adds --strict. E: count on the LCD.";
             case DEV_SERVER -> "START serves your project; URL and READY outs feed SCOPE so the\nbrowser opens itself at the real address. RUNNING gates TEMPO nicely.";
-            case TUNNEL -> "OPEN exposes a local port to the internet via cloudflared/ngrok.\nThe public URL lands on the LCD and the URL jack - patch into SCOPE to pop it.";
+            case TUNNEL -> "OPEN exposes a local port to the internet via cloudflared/ngrok.\nThe public URL lands on the LCD and the URL jack — patch into SCOPE to pop it.";
             case BROWSER -> "Opens the system browser at the dialed URL on OPEN or any trigger in.\nPatch a URL data jack in and SCOPE follows wherever the server actually is.";
             case HTTP -> "Fires HTTP requests; status + latency on the LCDs, OK/FAIL triggers out.\nVIEW opens the console (pretty-printed responses, last 50 exchanges, replay); HEADERS is session-only.";
-            case ANGULAR -> "SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.\nThe version cluster nags when Angular moves - UPDATE runs ng update.";
+            case ANGULAR -> "SERVE/BUILD/TEST drive ng; GEN scaffolds with the SCHEMATIC knob.\nThe version cluster nags when Angular moves — UPDATE runs ng update.";
             case PHOENIX -> "SERVER runs mix phx.server; GEN row drives phx.gen.*; MIGRATE runs ecto.\nVersion cluster tracks :phoenix against Hex.";
             case NEXTJS -> "DEV serves with the URL out feeding SCOPE; BUILD then START runs production.\nVersion cluster tracks next against the registry.";
             case VITE -> "DEV serves with the URL out feeding SCOPE; BUILD compiles the bundle, PREVIEW serves it.\nVersion cluster tracks vite against the registry.";
@@ -157,9 +157,9 @@ public enum DeviceType {
             case REPL -> "Dial ENGINE to a known interpreter — it seeds COMMAND (force-interactive flags included), HINTS snippets,\nand the install command — or stay on CUSTOM and set COMMAND yourself; press START. Type an expression and Enter\nto evaluate; INSTALL runs the catalog's install command when the interpreter is missing. A Learning Space seeds everything for you.";
             case BENCH -> "FIRE hammers the URL with autocannon; req/s on the meter.\nPatch SURGE URL → URL and READY → RUN to bench the second it serves.";
             case DEBUG -> "LAUNCH starts your runtime in debug-server mode; the attach\nendpoint (chrome://inspect, debugpy, dlv…) lands on the LCD.";
-            case GIT -> "STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.\nAmber buttons mutate - the law of the rack.";
+            case GIT -> "STATUS/PULL/COMMIT/PUSH with the branch on the LCD and a DIRTY light.\nAmber buttons mutate — the law of the rack.";
             case AUDIT -> "SCAN runs the security audit; severity ladders fill per class.\nSECURE lights green when the tree is clean.";
-            case DEPLOY -> "Flip ARM, then LAUNCH deploys to the dialed target.\nUnarmed pads ignore even patched triggers - by design.";
+            case DEPLOY -> "Flip ARM, then LAUNCH deploys to the dialed target.\nUnarmed pads ignore even patched triggers — by design.";
             case ENV -> "Sets NODE_ENV/CI/custom vars for every command the rack runs.\nWhat the knob says is what every device gets.";
             case ROSETTA -> "Mixed repo? Pin every AUTO knob to one toolchain with the dial.\nAUTO follows detection; KIND out reports the choice.";
             case WAYPOINT -> "JS monorepo? Dial a workspace package and NPM-9000, PURITY, GLOSS and VERITAS run there.\nroot = the repository root; DIR out reports the choice.";
@@ -168,12 +168,12 @@ public enum DeviceType {
             case SONAR -> "SWEEP maps every listening port to its owning process — docker containers labeled.\nVIEW opens the field: BROWSE any port, KILL any squatter. EADDRINUSE, solved.";
             case PREFLIGHT -> "CHECK runs the readiness list — git clean, tests, build, lint, audit — one LED per item.\nPatch OK → LAUNCHPAD RUN and unverified code physically cannot deploy.";
             case DATABASE -> "Pings SQL databases (PostgreSQL/MySQL/SQLite/MariaDB).\nDial DB TYPE to select database URL or profile; ping fires OK on success.";
-            case CMD -> "Runs exactly what you type - make seed-db, ./scripts/fixtures.sh - argv only, no shell.\nPatch VERITAS OK → RUN to chain custom steps; SOLDER exports to CI like any device.";
+            case CMD -> "Runs exactly what you type — make seed-db, ./scripts/fixtures.sh — argv only, no shell.\nPatch VERITAS OK → RUN to chain custom steps; SOLDER exports to CI like any device.";
             case TAIL -> "tail -f as a device: dial a file (relative to the project), flip FOLLOW.\nPatch OUT → PHOSPHOR and your server's logs/app.log scrolls beside its stdout.";
             case SSH -> "Runs the dialed command on user@host over ssh (BatchMode: key auth only).\nPatch LAUNCHPAD OK → RUN to finish deploys with a remote migrate or restart; HOST accepts a cable.";
             case BEACON -> "CHECK answers: is it up, and how many days on the TLS cert?\nPatch TEMPO BAR → CHECK to watch production on a clock; MIN DAYS fires FAIL inside the window.";
             case BUNDLE_SIZE -> "Weighs the build output dir; MAX sets the budget.\nPatch FORGE OK → MEASURE and OK → LAUNCHPAD: bundles over budget don't ship.";
-            case VITALS -> "Lighthouse headless against the dialed URL - PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.";
+            case VITALS -> "Lighthouse headless against the dialed URL — PERF/A11Y/BEST/SEO on the meters.\nDial MIN + GATE (perf/a11y/both/best/seo/all): any held score below the floor fires FAIL, not OK.";
             case SOLANA -> "START boots solana-test-validator — a real local chain; the URL jack fires on its\nJSON RPC banner and SERVING gates downstream for as long as it lives. The ACTION knob dials\nanchor build/test for RUN (test spins its own throwaway validator). Keypairs live in the\nsolana CLI's own config — the IDE never touches them; non-local deploys are SOLDER one-liners.";
             case SOROBAN -> "BUILD compiles the Soroban contract to WASM (stellar contract build); the ACTION knob\ndials cargo test (the SDK runs contracts natively — no network) and the local quickstart net\n(stellar container start/stop local — Docker; RPC on localhost:8000). Deploy/invoke need\nidentities and free-form args: use SOLDER (stellar contract deploy/invoke). Keys stay in the\nstellar CLI's own config — the IDE never touches them.";
             case LOCAL_CHAIN -> "START boots anvil on the dialed PORT: a local EVM chain, ten unlocked funded accounts, instant mining.\nPatch URL → Contract Studio's network and SERVING → a gate; FORK-URL forks any live network's state.";

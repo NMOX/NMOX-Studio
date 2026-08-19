@@ -350,6 +350,8 @@ final class OverviewPanel extends JPanel {
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.CENTER);
         row.add(meta, BorderLayout.EAST);
+        row.getAccessibleContext().setAccessibleName(
+                "Aging card " + a.title() + ", " + tail);
         return row;
     }
 
@@ -380,6 +382,8 @@ final class OverviewPanel extends JPanel {
             this.max = Math.max(1, max);
             this.over = over;
             setPreferredSize(new Dimension(80, 14));
+            getAccessibleContext().setAccessibleName(
+                    count + " of " + this.max + (over ? ", over limit" : ""));
         }
 
         @Override

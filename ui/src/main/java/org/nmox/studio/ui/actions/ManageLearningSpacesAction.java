@@ -43,7 +43,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 113)
 })
-@Messages("CTL_ManageLearningSpacesAction=Learning Spaces...")
+@Messages("CTL_ManageLearningSpacesAction=Learning Spaces…")
 public final class ManageLearningSpacesAction implements ActionListener {
 
     /**
@@ -68,7 +68,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
     private void showDialog(java.util.List<File> spaces) {
         if (spaces.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No learning spaces yet — File → New Learning Space… starts one."));
+                    "No learning spaces yet — File ▸ New Learning Space… starts one."));
             return;
         }
         DefaultListModel<File> model = new DefaultListModel<>();

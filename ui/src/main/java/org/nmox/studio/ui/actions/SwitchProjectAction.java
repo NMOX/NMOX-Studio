@@ -41,7 +41,7 @@ import org.openide.windows.WindowManager;
     @ActionReference(path = "Menu/File", position = 65),
     @ActionReference(path = "Shortcuts", name = "DS-P")
 })
-@Messages("CTL_SwitchProjectAction=Switch Project...")
+@Messages("CTL_SwitchProjectAction=Switch Project…")
 public final class SwitchProjectAction implements ActionListener {
 
     @Override

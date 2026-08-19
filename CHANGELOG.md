@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.18.0] - 2026-08-19
+
+The polish pass (David's ask) — three lenses (a fresh-userdir boot
+log, the newest surfaces, the whole product's user-visible text) and
+fixes for everything they proved. The boot log: the editor layer
+declared `Editors/text` three times and `Editors/text/typescript`
+twice, warning on EVERY boot of every install since v2.14.0 — merged
+to one declaration each (boot-proven: the two warnings gone, zero
+SEVERE), with `LayerFolderDuplicateTest` making duplicate sibling
+folders a build failure. The Task Board learned to say what happened:
+`mutate()` now carries the board's verdict, so a REFUSED gesture (an
+edge move, a double clock-in, a blank name) writes NOTHING instead of
+bumping the checked-in file's mtime for a no-op, the foreign-edit stat
+moved onto the IO lane where the class javadoc always claimed it was
+(v1.108.0), and the time clock's three silences speak — a sub-minute
+session says "dropped as a blip" instead of vanishing, clocking in on
+card B says it stopped card A's clock ("one clock per board"), a
+refused gesture names its reason; the WIP dialog rejects "ten" out
+loud, blank card/column names refuse with a message, and New Card/New
+Column carry tooltips like their siblings. The Motion pane's Remove
+Track was silently inert on a free-typed name that matched no track —
+`removeTrack` now returns a verdict and the button reports "removed"
+or refuses by name; the duration spinner's label reads "Duration
+(ms):" and the easing/iterations combos gain the visible labels their
+row-mates had. Two live v1.98.0 violations closed: SONAR's kill-process
+confirm and Project Configuration's Remove Dependency both defaulted
+Enter to the destructive option — full-ctor NO_OPTION now, gated by
+`RackDialogSafetyTest`. Accessibility: the Overview's NEEDS-ATTENTION
+rows and count bars name themselves. Docs truth with the gate holes
+CLOSED: README's front-page badge said 78 grammars and 88 learning
+spaces while its own body said 85 and 91 (truth: 85, 91), two docs
+said 58 manifests (truth: 60) — `DocsCountGateTest` was blind to all
+three (case-sensitive regex vs the SHOUTING badge; one phrasing of
+three; no grammar gate at all) and now gates grammars, matches
+case-insensitively, and knows every phrasing, mutation-proven on the
+badge. Conventions: 15 menu labels move from ASCII "..." to the house
+"…", three menu paths from "→" (the patch-cable arrow) to "▸", nine
+device blurbs from " - " to " — " (docs/devices.md regenerated), the
+Block Studio Window-menu label drops its hardcoded "⌥⌘5" (the Keymaps
+shadow already renders the accelerator, so the menu read the chord
+twice), IRC's two "usage:" lines match their sentence-case siblings,
+and a card-drop failure now logs instead of swallowing. Blessed in
+writing: the Contract Kit's chain labels keep their mixed shapes —
+each leads with the term its users search for, and two docs reference
+the current spellings.
+
 ## [2.17.1] - 2026-08-17
 
 Docs truth (docs only): CLAUDE.md's status headline moves v2.9.0 →
@@ -13472,6 +13518,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.18.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.1...v2.18.0
 [2.17.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.0...v2.17.1
 [2.17.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.16.0...v2.17.0
 [2.16.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.15.0...v2.16.0

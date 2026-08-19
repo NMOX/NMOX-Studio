@@ -33,7 +33,7 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ImageKitAction")
 @ActionRegistration(displayName = "#CTL_ImageKitAction")
 @ActionReference(path = "Menu/File", position = 121)
-@Messages("CTL_ImageKitAction=Image Kit (Web)...")
+@Messages("CTL_ImageKitAction=Image Kit (Web)…")
 public final class ImageKitAction implements ActionListener {
 
     private static final RequestProcessor RP =

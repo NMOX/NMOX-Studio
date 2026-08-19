@@ -364,6 +364,6 @@ public final class ProjectStudioTopComponent extends TopComponent {
             }
         }
         org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText("Terminal: Window → IDE Tools → Terminal");
+                .setStatusText("Terminal: Window ▸ IDE Tools ▸ Terminal");
     }
 }
