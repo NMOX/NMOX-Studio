@@ -37,6 +37,7 @@ import org.openide.filesystems.FileUtil;
     @MimeRegistration(mimeType = "text/less", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-scss", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-sass", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class)
 })
 public class CssVarCompletionProvider implements CompletionProvider {
@@ -71,10 +72,15 @@ public class CssVarCompletionProvider implements CompletionProvider {
                     return;
                 }
                 String text = doc.getText(0, doc.getLength());
+                boolean html = "text/html".equals(doc.getProperty("mimeType"));
+                if (html && !HtmlStyleRegions.inStyle(text, caret)) {
+                    return; // v2.23.0: outside a style region, var( is prose
+                }
                 // document tokens first — the cascade the designer sees
                 Map<String, String> tokens = new LinkedHashMap<>();
-                CssTokens.declarations(text, "text/x-sass".equals(
-                        doc.getProperty("mimeType"))).forEach(
+                (html ? HtmlStyleRegions.declarations(text)
+                        : CssTokens.declarations(text, "text/x-sass".equals(
+                                doc.getProperty("mimeType")))).forEach(
                         (name, t) -> tokens.put(name, t.value()));
                 for (CssTokens.ProjectToken t : CssTokens.scanProject(projectDir(doc))) {
                     tokens.putIfAbsent(t.name(), t.value());

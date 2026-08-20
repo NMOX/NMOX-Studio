@@ -61,4 +61,39 @@ class HtmlStyleRegionsTest {
         String html = "<STYLE>.y { color: rgb(1, 2, 3); }</STYLE>";
         assertThat(HtmlStyleRegions.scan(html)).hasSize(1);
     }
+    @Test
+    @DisplayName("tokens declared in one region resolve var() usages in another")
+    void tokensAcrossRegions() {
+        String html = "<style>:root { --brand: #1E90FF; }</style>\n"
+                + "<h1 style=\"color: var(--brand)\">x</h1>\n"
+                + "<p>prose var(--brand) stays prose</p>";
+        java.util.Map<String, CssTokens.Token> d = HtmlStyleRegions.declarations(html);
+        assertThat(d).containsKey("--brand");
+        assertThat(html.substring(d.get("--brand").offset()))
+                .startsWith("--brand");
+        java.util.List<CssColors.ColorSpan> spans =
+                HtmlStyleRegions.varUsageColorSpans(html);
+        // the attribute usage resolves; the PROSE var(--brand) does not
+        assertThat(spans).hasSize(1);
+        assertThat(html.substring(spans.get(0).start(), spans.get(0).end()))
+                .isEqualTo("--brand");
+        assertThat(spans.get(0).start())
+                .isGreaterThan(html.indexOf("style=\"color"));
+    }
+
+    @Test
+    @DisplayName("the project scan reads tokens from .html style blocks")
+    void scanReadsHtml(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
+        java.io.File f = new java.io.File(dir, "page.html");
+        java.nio.file.Files.writeString(f.toPath(),
+                "<style>:root { --ink: #222222; }</style>\n"
+                + "<p>--fake: red is prose, not a declaration</p>");
+        java.util.List<CssTokens.ProjectToken> tokens = CssTokens.scanProject(dir);
+        assertThat(tokens).anySatisfy(t -> {
+            assertThat(t.name()).isEqualTo("--ink");
+            assertThat(t.value()).isEqualTo("#222222");
+        });
+        assertThat(tokens).noneSatisfy(t -> assertThat(t.name()).isEqualTo("--fake"));
+    }
+
 }
