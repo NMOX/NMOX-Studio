@@ -4,6 +4,12 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.1] - 2026-08-20
+
+Docs truth (docs only): CLAUDE.md's status headline moves v2.20.0 →
+v2.21.0 with the day review, the RED runtime probe, and space #92
+summarized; four version-history entries added.
+
 ## [2.21.0] - 2026-08-20
 
 Learning space #92: Sass (indented) — the 91-space catalog had no
@@ -13705,6 +13711,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.0...v2.21.1
 [2.21.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.3...v2.21.0
 [2.20.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.2...v2.20.3
 [2.20.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.1...v2.20.2
