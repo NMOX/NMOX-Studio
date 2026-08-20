@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.4] - 2026-08-20
+
+Docs truth (docs only): the Block Studio walk recorded — all-clean on
+the composition loop in the shipped 2.21.3 (palette drag → live
+codegen updating per piece, Preview starting the loopback server with
+the ⇄ serving registered and the harness AND /lib module byte-proven
+over HTTP, Save Component landing src/components/my-widget.js on
+disk, Stop Preview deregistering with the port closed — curl refused).
+The day's third all-clean persona walk; with the DBA and API walks,
+every studio persisting user artifacts has now been re-walked on the
+2.21.x line.
+
 ## [2.21.3] - 2026-08-20
 
 Docs truth (docs only): the API Studio walk recorded — all-clean on
@@ -13739,6 +13751,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.3...v2.21.4
 [2.21.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.2...v2.21.3
 [2.21.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.1...v2.21.2
 [2.21.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.0...v2.21.1
