@@ -72,6 +72,9 @@ public final class CssColorHighlighter implements DocumentListener {
             // v2.22.0: in HTML, bare `tomato` is usually PROSE — only
             // <style> blocks and style="…" attribute values may swatch
             spans = new java.util.ArrayList<>(HtmlStyleRegions.scan(text[0]));
+            // v2.23.0: var(--token) usages resolve through region-local
+            // declarations, same as stylesheets resolve document-locally
+            spans.addAll(HtmlStyleRegions.varUsageColorSpans(text[0]));
         } else {
             spans = new java.util.ArrayList<>(CssColors.scan(text[0]));
             // v1.330.0: var(--token) usages paint as the color their token

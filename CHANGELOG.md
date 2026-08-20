@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.23.0] - 2026-08-20
+
+The first BATCHED release (David's call: several units per gate) —
+design tokens complete their reach into HTML, both directions. IN:
+var( completion, the ⌘-click jump to the declaration, and swatches
+resolving THROUGH tokens all work inside <style> blocks and style
+attributes — with resolution spanning ALL the document's style
+regions (a body style attribute resolves a token the head's block
+declares), and every surface refusing outside a region, where var(
+is prose. OUT: tokens DECLARED in HTML <style> blocks now feed the
+project-wide token scan, so a --brand defined in index.html offers
+in every stylesheet's completion. Region-parsed on both paths (the
+v2.20.2 line-bound lesson's sibling: an HTML file fed to the css
+declaration parser would collect prose); two mutants killed by name
+(the prose-usage gate, the region parse in the scan); walk-proven.
+
 ## [2.22.0] - 2026-08-20
 
 Color swatches and the picker reach HTML — where most real styling
@@ -13812,6 +13828,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.23.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.7...v2.22.0
 [2.21.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.6...v2.21.7
 [2.21.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.5...v2.21.6

@@ -78,6 +78,54 @@ public final class HtmlStyleRegions {
         return out;
     }
 
+    /**
+     * Custom-property declarations found in the style regions, offsets
+     * in the ORIGINAL text — the HTML counterpart of
+     * {@link CssTokens#declarations(String)} (v2.23.0, tokens-in-HTML).
+     */
+    public static java.util.Map<String, CssTokens.Token> declarations(String html) {
+        java.util.Map<String, CssTokens.Token> out = new java.util.LinkedHashMap<>();
+        for (Region r : find(html)) {
+            CssTokens.declarations(html.substring(r.start(), r.end()))
+                    .forEach((name, t) -> out.putIfAbsent(name,
+                            new CssTokens.Token(name, t.value(), r.start() + t.offset())));
+        }
+        return out;
+    }
+
+    /**
+     * var(--token) usages inside style regions painted as the color
+     * their token declares — resolution spans ALL the document's style
+     * regions (a body style attribute may use a token the head's
+     * {@code <style>} block declares), still never touching disk.
+     */
+    public static java.util.List<CssColors.ColorSpan> varUsageColorSpans(String html) {
+        java.util.List<CssColors.ColorSpan> out = new java.util.ArrayList<>();
+        java.util.Map<String, CssTokens.Token> declared = declarations(html);
+        if (declared.isEmpty()) {
+            return out;
+        }
+        java.util.regex.Matcher m = VAR_USAGE.matcher(html);
+        while (m.find()) {
+            if (!inStyle(html, m.start(1))) {
+                continue;
+            }
+            CssTokens.Token t = declared.get(m.group(1));
+            if (t == null) {
+                continue;
+            }
+            java.util.List<CssColors.ColorSpan> value = CssColors.scan(t.value());
+            if (value.size() == 1) {
+                out.add(new CssColors.ColorSpan(
+                        m.start(1), m.end(1), value.get(0).color()));
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern VAR_USAGE =
+            Pattern.compile("var\\(\\s*(--[A-Za-z0-9_-]+)");
+
     /** HTML comments become spaces so their contents cannot region. */
     static String blankComments(String html) {
         StringBuilder sb = new StringBuilder(html);
