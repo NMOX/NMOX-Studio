@@ -41,6 +41,24 @@ routine PR. This dossier is the validation's measured half.
    floor holds unchanged on the new platform. No source edits, no
    floor moved, tree untouched (property override only).
 
+## Measured — RED (2026-08-20, the runtime probe)
+
+**The assembled RELEASE310 app does not boot.** Same recipe that
+boots the RELEASE300 assembly clean in ~30s (fresh userdir, bundled
+JDK 25 jre, headless close flag): the 310 assembly logs
+
+    org.eclipse.jgit - InvalidException: Netigso: … Cannot start
+    org.eclipse.jgit state remains INSTALLED after start()
+
+and then WEDGES before "Turning on modules" (killed at five
+minutes). Discriminating facts, measured: the jgit bundle is
+BYTE-IDENTICAL between the two assemblies (7.6.0.202603022253-r) and
+the ide-cluster bundle census matches — the regression is in
+RELEASE310's OSGi host (netbinox/core.netigso) resolution, not in
+our modules and not in the bundle. Root-causing the host change is
+the upgrade project's first task; until it boots, RELEASE310 is a
+NO-GO regardless of the green compile-and-verify half.
+
 ## Not yet measured — the GO remainder
 
 - **Assembled-app boot laws** on a RELEASE310 cluster: window time,
@@ -72,5 +90,6 @@ One release, on the JDK-25 model (v1.253.0): move `netbeans.version`
 in the root pom (the ONE home), run the full gauntlet set above on
 the assembled app, ship through the normal gate with the update-center
 timing law respected, and re-pin the CI/windows lanes' expectations if
-any measured floor moves. Rollback is the property flipped back — no
-source accompanies the bump if this dossier's facts hold.
+any measured floor moves. Rollback is the property flipped back — but the runtime probe above
+means the bump is NOT ready: the compile half is green, the boot half
+is red, and the upgrade project starts at netbinox.
