@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.0] - 2026-08-20
+
+Learning space #92: Sass (indented) — the 91-space catalog had no
+stylesheet-dialect space, and the v2.20.0 vertical completes the
+house way. The space teaches the dialect's three rules (indentation
+for braces, lines for semicolons, // comments) through the product's
+own loop: NMOX's native .sass highlighting with the color swatches,
+one right-click Compile to CSS arming recompile-on-save, the served
+page turning tomato, and the design-token completion seeing a token
+declared in the .sass file itself (v2.20.2's scan at work). The
+tutorial names the deliberate refusals as features — Emmet and
+Prettier stay off the dialect because braced output would corrupt it.
+Space counts to 92 across five doc homes, the count gate enumerating
+the stale ones.
+
 ## [2.20.3] - 2026-08-20
 
 The RELEASE310 runtime probe (docs only): the dossier's boot half —
@@ -13690,6 +13705,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.3...v2.21.0
 [2.20.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.2...v2.20.3
 [2.20.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.1...v2.20.2
 [2.20.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.0...v2.20.1
