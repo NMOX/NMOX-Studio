@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.4] - 2026-08-20
+
+Deps housekeeping through the gate, the split way: junit 6.1.3 (all
+four homes), org.json 20260814 (the one root property), MongoDB
+driver-sync 5.10.0 — taken from Dependabot's grouped PR; the same
+PR's netbeans.version RELEASE300→RELEASE310 REFUSED structurally (the
+v1.243.0 OpenJFX class, platform-sized: the codebase carries
+decompiled-behavior assumptions pinned against RELEASE300 — ledger 83's
+LSPBindings reuse semantics newest among them — and the release
+assembles the whole platform cluster at that version). dependabot.yml
+now ignores org.netbeans.{api,modules,cluster} with the reason written
+in place; ledger 84 records the platform upgrade as its own
+dossier-first project on the JDK-25 model.
+
 ## [2.19.3] - 2026-08-20
 
 The night close (docs only): the 2.x update-center gauntlet PASS
@@ -13578,6 +13592,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.3...v2.19.4
 [2.19.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.2...v2.19.3
 [2.19.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.1...v2.19.2
 [2.19.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.0...v2.19.1
