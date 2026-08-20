@@ -4,6 +4,12 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.20.1] - 2026-08-20
+
+Docs truth (docs only): CLAUDE.md's status headline moves v2.19.1 →
+v2.20.0 with the day shift summarized and six version-history entries
+added.
+
 ## [2.20.0] - 2026-08-20
 
 Indented Sass, first-class — the oldest Known-Issues line (".sass
@@ -13653,6 +13659,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.20.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.6...v2.20.0
 [2.19.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.5...v2.19.6
 [2.19.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.4...v2.19.5
