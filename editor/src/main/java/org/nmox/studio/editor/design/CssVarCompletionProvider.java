@@ -73,7 +73,8 @@ public class CssVarCompletionProvider implements CompletionProvider {
                 String text = doc.getText(0, doc.getLength());
                 // document tokens first — the cascade the designer sees
                 Map<String, String> tokens = new LinkedHashMap<>();
-                CssTokens.declarations(text).forEach(
+                CssTokens.declarations(text, "text/x-sass".equals(
+                        doc.getProperty("mimeType"))).forEach(
                         (name, t) -> tokens.put(name, t.value()));
                 for (CssTokens.ProjectToken t : CssTokens.scanProject(projectDir(doc))) {
                     tokens.putIfAbsent(t.name(), t.value());

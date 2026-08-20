@@ -76,7 +76,8 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
         }
         String name = text.substring(span[0], span[1]);
         // same document: jump directly, no disk involved
-        Map<String, CssTokens.Token> local = CssTokens.declarations(text);
+        Map<String, CssTokens.Token> local = CssTokens.declarations(text,
+                "text/x-sass".equals(doc.getProperty("mimeType")));
         CssTokens.Token here = local.get(name);
         if (here != null) {
             jumpTo(doc, here.offset());

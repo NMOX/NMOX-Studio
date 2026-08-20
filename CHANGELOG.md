@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.20.2] - 2026-08-20
+
+The day review, hours after the split — three finds in the dialect's
+seams, all fixed and mutation-proven: design tokens DECLARED in .sass
+files were invisible (the project scan never walked the extension),
+and the naive fix would have corrupted them — the shared declaration
+pattern reads until ; or }, which the indented dialect does not have,
+so values would swallow every following line; declarations() now takes
+the dialect (line-bounded for .sass) at every call site including the
+document-local paths. Deeper: blankComments only blanked /* */ — a
+commented-out // --x: red REGISTERED as a live token, a false positive
+SCSS carried from the day tokens shipped (v1.330.0) that indented
+Sass surfaced by making // the primary comment form; // is blanked
+with a whitespace guard so https:// values survive, test-pinned both
+ways. And ng new --style=sass projects gain the styles↔component
+switcher — NgSwitch's extension list always knew .sass; only the
+popup registration was missing (the v1.313.0 class, one mime over).
+
 ## [2.20.1] - 2026-08-20
 
 Docs truth (docs only): CLAUDE.md's status headline moves v2.19.1 →
@@ -13659,6 +13677,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.20.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.1...v2.20.2
 [2.20.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.6...v2.20.0
 [2.19.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.5...v2.19.6

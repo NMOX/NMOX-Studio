@@ -139,4 +139,48 @@ class CssTokensTest {
                 .extracting(CssTokens.ProjectToken::name)
                 .containsExactly("--a", "--b");
     }
+    @Test
+    @DisplayName("the indented dialect's values end at their line, never swallow the next")
+    void indentedValuesLineBounded() {
+        String sass = "$x: 1\n--accent: tomato\n\n.banner\n  color: var(--accent)\n";
+        Map<String, CssTokens.Token> t = CssTokens.declarations(sass, true);
+        assertThat(t.get("--accent").value()).isEqualTo("tomato");
+        // the shared css parse on the same text would swallow lines —
+        // that is WHY the bound is per-dialect
+        assertThat(CssTokens.declarations(sass, false).get("--accent").value())
+                .isNotEqualTo("tomato");
+        // and css keeps its multi-line values
+        String css = ":root { --g: linear-gradient(\n  red,\n  blue); }";
+        assertThat(CssTokens.declarations(css, false).get("--g").value())
+                .contains("red").contains("blue");
+    }
+
+    @Test
+    @DisplayName("// line comments cannot register tokens; https:// values survive")
+    void lineCommentsBlanked() {
+        // scss carried this false positive from the start; indented
+        // sass made // the primary comment form and surfaced it
+        String scss = "// --dead: red\n:root { --live: blue; } // --tail: green\n";
+        Map<String, CssTokens.Token> t = CssTokens.declarations(scss);
+        assertThat(t).containsKey("--live").doesNotContainKey("--dead")
+                .doesNotContainKey("--tail");
+        String sass = "// --dead: red\n--api: https://example.com/a\n";
+        Map<String, CssTokens.Token> s2 = CssTokens.declarations(sass, true);
+        assertThat(s2).doesNotContainKey("--dead");
+        assertThat(s2.get("--api").value()).isEqualTo("https://example.com/a");
+    }
+
+    @Test
+    @DisplayName("the project scan reads .sass files, line-bounded")
+    void scanReadsSass(@org.junit.jupiter.api.io.TempDir java.io.File dir) throws Exception {
+        java.io.File f = new java.io.File(dir, "tokens.sass");
+        java.nio.file.Files.writeString(f.toPath(),
+                "--brand: rebeccapurple\n\n.x\n  color: var(--brand)\n");
+        java.util.List<CssTokens.ProjectToken> tokens = CssTokens.scanProject(dir);
+        assertThat(tokens).anySatisfy(t -> {
+            assertThat(t.name()).isEqualTo("--brand");
+            assertThat(t.value()).isEqualTo("rebeccapurple");
+        });
+    }
+
 }

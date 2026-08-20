@@ -39,6 +39,10 @@ public final class CssTokens {
     private static final Pattern DECLARATION = Pattern.compile(
             "(--[A-Za-z0-9_-]+)\\s*:\\s*([^;}]+)");
 
+    /** The indented dialect's variant: a value ends at its line. */
+    private static final Pattern DECLARATION_LINE = Pattern.compile(
+            "(--[A-Za-z0-9_-]+)\\s*:\\s*([^;}\\n]+)");
+
     /** Directories a token scan must never descend into. */
     private static final Set<String> SKIP_DIRS = Set.of(
             "node_modules", ".git", "dist", "build", "out", "coverage",
@@ -58,8 +62,22 @@ public final class CssTokens {
      * before matching so a commented-out token is not a token.
      */
     public static Map<String, Token> declarations(String css) {
+        return declarations(css, false);
+    }
+
+    /**
+     * As {@link #declarations(String)}; {@code lineBounded} is the
+     * indented-Sass dialect (v2.20.x review): its declarations end at
+     * the NEWLINE — there are no semicolons or braces — so the shared
+     * until-;-or-} value pattern would swallow every following line
+     * into the value. CSS/SCSS values legitimately span lines
+     * (multi-line gradients), so the bound is per-dialect, chosen by
+     * the caller that knows the file it is reading.
+     */
+    public static Map<String, Token> declarations(String css, boolean lineBounded) {
         Map<String, Token> out = new LinkedHashMap<>();
-        Matcher m = DECLARATION.matcher(blankComments(css));
+        Matcher m = (lineBounded ? DECLARATION_LINE : DECLARATION)
+                .matcher(blankComments(css));
         while (m.find()) {
             // no inside-var() guard needed, PROVEN by mutation (v1.330.0):
             // the pattern requires a ':' after the name, and inside var()
@@ -85,7 +103,16 @@ public final class CssTokens {
         return head.endsWith("var");
     }
 
-    /** Comments become spaces so offsets survive and their text cannot match. */
+    /**
+     * Comments become spaces so offsets survive and their text cannot
+     * match. Both comment forms: {@code /* *}{@code /} blocks, and —
+     * since the v2.20.x review — {@code //} line comments, which SCSS
+     * always had and indented Sass uses as its primary form; a
+     * commented-out {@code // --x: red} used to REGISTER as a live
+     * token. The {@code //} is blanked only when preceded by
+     * whitespace or line start, so {@code https://} inside a value
+     * (no space before the slashes) survives untouched.
+     */
     static String blankComments(String css) {
         StringBuilder sb = new StringBuilder(css);
         int i = 0;
@@ -98,6 +125,20 @@ public final class CssTokens {
                 }
             }
             i = stop;
+        }
+        i = 0;
+        while ((i = sb.indexOf("//", i)) >= 0) {
+            char before = i == 0 ? '\n' : sb.charAt(i - 1);
+            if (before == '\n' || before == ' ' || before == '\t') {
+                int eol = sb.indexOf("\n", i);
+                int stop = eol < 0 ? sb.length() : eol;
+                for (int k = i; k < stop; k++) {
+                    sb.setCharAt(k, ' ');
+                }
+                i = stop;
+            } else {
+                i += 2;
+            }
         }
         return sb.toString();
     }
@@ -163,7 +204,8 @@ public final class CssTokens {
                     collect(f, sheets, depth + 1);
                 }
             } else if ((name.endsWith(".css") || name.endsWith(".scss")
-                    || name.endsWith(".less")) && f.length() <= MAX_FILE_BYTES) {
+                    || name.endsWith(".less") || name.endsWith(".sass"))
+                    && f.length() <= MAX_FILE_BYTES) {
                 sheets.add(f);
             }
         }
@@ -173,7 +215,8 @@ public final class CssTokens {
         try {
             String css = Files.readString(f.toPath());
             List<ProjectToken> tokens = new ArrayList<>();
-            for (Token t : declarations(css).values()) {
+            for (Token t : declarations(css,
+                    f.getName().endsWith(".sass")).values()) {
                 tokens.add(new ProjectToken(f, t.name(), t.value(), t.offset()));
             }
             return List.copyOf(tokens);

@@ -72,7 +72,8 @@ class SassVerticalTest {
             "src/main/java/org/nmox/studio/editor/design/CssVarHyperlink.java",
             "src/main/java/org/nmox/studio/editor/completion/CssCompletionProvider.java",
             "src/main/java/org/nmox/studio/editor/spell/CodeSpellTokenListProvider.java",
-            "src/main/java/org/nmox/studio/editor/sass/SassCompileAction.java"}) {
+            "src/main/java/org/nmox/studio/editor/sass/SassCompileAction.java",
+            "src/main/java/org/nmox/studio/editor/angular/NgSwitchActions.java"}) {
             assertThat(src(rel))
                     .as(rel + " registers text/x-sass")
                     .contains("text/x-sass");
