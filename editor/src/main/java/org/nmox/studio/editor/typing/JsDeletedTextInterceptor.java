@@ -100,6 +100,7 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         @MimeRegistration(mimeType = "text/x-crystal", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/css", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-scss", service = DeletedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/x-sass", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-less", service = DeletedTextInterceptor.Factory.class),
         @MimeRegistration(mimeType = "text/x-svelte", service = DeletedTextInterceptor.Factory.class),
         // v2.14.0: pair deletion follows pair insertion into .vue

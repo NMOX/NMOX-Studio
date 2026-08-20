@@ -123,6 +123,7 @@ public final class CssColorHighlighter implements DocumentListener {
         @MimeRegistration(mimeType = "text/scss", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/less", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/x-scss", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/x-sass", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/x-less", service = HighlightsLayerFactory.class)
     })
     public static class Factory implements HighlightsLayerFactory {

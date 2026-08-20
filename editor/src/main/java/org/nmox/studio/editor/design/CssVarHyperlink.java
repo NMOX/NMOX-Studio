@@ -38,6 +38,7 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/scss", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 140),
+    @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 140)
 })
 public final class CssVarHyperlink implements HyperlinkProviderExt {

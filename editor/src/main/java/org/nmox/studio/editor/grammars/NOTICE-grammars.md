@@ -147,6 +147,7 @@ JS/TS lexer, platform YAML module). See `EmbeddedScopeGrammars`.
 | ng-let-declaration.tmLanguage.json | sha256 97d6d32d9d2b2f41d514c4f0069c7fe43f024586b66001212aff789fe1588187 | angular/vscode-ng-language-service main syntaxes/let-declaration.json, injection (@let) | MIT |
 | ng-template-tag.tmLanguage.json | sha256 b862cfed046f9ad88aa0b39ad1d6204dac22c5f1919f6fe070433b054c9d8d57 | angular/vscode-ng-language-service main syntaxes/template-tag.json, injection (ng-template attrs) | MIT |
 | javascriptreact.tmLanguage.json | sha256 ea4a18b3bdc9d6c85e39183104de3fa5a532480eca8013532d567017c396f751 | microsoft/vscode 1.95.0 extensions/javascript (microsoft/TypeScript-TmLanguage), embed-only scope source.js.jsx | MIT |
+| sass.tmLanguage.json | sha256 b2c2e4674f7fe777e072b016bcdb10c67ec8f1bf725f97ec1fe86990c64d654d | TheRealSyler/vscode-sass-indented master syntaxes/sass.tmLanguage.json — the canonical INDENTED-dialect grammar (v2.20.0; .sass shared the SCSS grammar approximately before this) | MIT |
 
 YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
 bundled as *editors*: the NetBeans ide cluster ships native editor

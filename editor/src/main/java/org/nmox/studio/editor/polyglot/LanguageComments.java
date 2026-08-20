@@ -78,6 +78,7 @@ public final class LanguageComments {
             Map.entry("text/coffeescript", "#"),
             // CSS proper has only block comments; its preprocessors add //
             Map.entry("text/x-scss", "//"),
+            Map.entry("text/x-sass", "//"),
             Map.entry("text/x-less", "//"),
             // the config layer: .editorconfig, ignore files, infra configs
             Map.entry("text/x-ini", "#"),

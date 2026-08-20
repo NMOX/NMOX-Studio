@@ -101,12 +101,25 @@ public final class SassCompiler {
         return scss.getName().startsWith("_");
     }
 
-    /** Sass's own error text is multi-line; a status line wants the head. */
+    /**
+     * Sass's own error text is multi-line; a status line wants the
+     * head — but the head of the MESSAGE, not of the dump. A crashing
+     * sass (the v2.20.0 walk hit a broken npm install whose stderr
+     * opened with a stack-frame path) puts its human line further
+     * down, so prefer the first line carrying "Error" and fall back
+     * to the literal first line (the v1.303.0 Doctor law: never quote
+     * wreckage as if it were the answer).
+     */
     static String firstLine(String stderr) {
         if (stderr == null || stderr.isBlank()) {
             return "sass failed";
         }
-        String line = stderr.strip().lines().findFirst().orElse("sass failed");
+        String line = stderr.strip().lines()
+                .filter(l -> l.contains("Error"))
+                .findFirst()
+                .orElseGet(() -> stderr.strip().lines().findFirst()
+                        .orElse("sass failed"))
+                .strip();
         return line.length() > ERROR_SNIPPET_CHARS
                 ? line.substring(0, ERROR_SNIPPET_CHARS) : line;
     }

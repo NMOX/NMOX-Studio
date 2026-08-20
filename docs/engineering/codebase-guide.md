@@ -21,7 +21,7 @@ ships those, and our eleven Maven modules plug features into them.
 | Module | What it owns |
 |---|---|
 | `core` | Shared plumbing every module uses: process spawning (`ProcessSupport`), tool discovery (`ToolLocator`), atomic file writes (`AtomicFiles`), capped HTTP reads (`HttpBodies`), and the **SPI seams** other modules discover at runtime (`core.spi.*`) |
-| `editor` | Everything about editing text: 85 TextMate grammars, lexers, completion, Emmet, the Navigator outline, LSP clients, the JS/TS debugger |
+| `editor` | Everything about editing text: 86 TextMate grammars, lexers, completion, Emmet, the Navigator outline, LSP clients, the JS/TS debugger |
 | `tools` | Project recognition (60 manifest types) and the NPM explorer |
 | `rack` | The signature UI: a synth-style rack of "devices" that run real dev tools, wired with patch cables — including devices defined by plain JSON files in `~/.nmox/devices.d/` (v2.0.0) |
 | `apiclient` / `dbstudio` / `web3` / `infra` | The studios: Postman-style API client, database suite, smart-contract suite, cloud-infra designer |

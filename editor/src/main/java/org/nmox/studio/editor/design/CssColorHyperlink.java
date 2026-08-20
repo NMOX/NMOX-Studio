@@ -32,6 +32,7 @@ import org.openide.windows.WindowManager;
     @MimeRegistration(mimeType = "text/scss", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 150),
+    @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 150)
 })
 public final class CssColorHyperlink implements HyperlinkProviderExt {

@@ -37,9 +37,10 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "#CTL_SassCompile", lazy = true)
 @org.openide.awt.ActionReferences({
     // text/scss is what css-prep resolves real .scss files to; the
-    // x-scss path covers indented .sass (v1.230.0 mime find)
+    // indented .sass has its OWN mime since v2.20.0 — both registered
     @ActionReference(path = "Editors/text/scss/Popup", position = 1855),
-    @ActionReference(path = "Editors/text/x-scss/Popup", position = 1855)
+    @ActionReference(path = "Editors/text/x-scss/Popup", position = 1855),
+    @ActionReference(path = "Editors/text/x-sass/Popup", position = 1855)
 })
 @Messages("CTL_SassCompile=Compile to CSS")
 public final class SassCompileAction implements ActionListener {
