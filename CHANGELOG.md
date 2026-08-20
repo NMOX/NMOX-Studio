@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.7] - 2026-08-20
+
+Docs truth (docs only): CLAUDE.md's headline moves v2.21.2 → v2.21.6
+with the late shift summarized — the Block and sweep walks, the
+RELEASE310 arc complete to GO-READY, and the day's own update-center
+gauntlet PASS recorded (stock 2.19.1 self-updated in-app to 2.21.5
+across fifteen releases, eleven jars byte-verified, clean reboot,
+zero SEVERE).
+
 ## [2.21.6] - 2026-08-20
 
 The RELEASE310 NO-GO, root-caused and fixed — the host was innocent.
@@ -13789,6 +13798,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.6...v2.21.7
 [2.21.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.5...v2.21.6
 [2.21.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.4...v2.21.5
 [2.21.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.3...v2.21.4
