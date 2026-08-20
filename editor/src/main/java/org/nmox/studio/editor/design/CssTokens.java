@@ -204,7 +204,8 @@ public final class CssTokens {
                     collect(f, sheets, depth + 1);
                 }
             } else if ((name.endsWith(".css") || name.endsWith(".scss")
-                    || name.endsWith(".less") || name.endsWith(".sass"))
+                    || name.endsWith(".less") || name.endsWith(".sass")
+                    || name.endsWith(".html") || name.endsWith(".htm"))
                     && f.length() <= MAX_FILE_BYTES) {
                 sheets.add(f);
             }
@@ -215,8 +216,12 @@ public final class CssTokens {
         try {
             String css = Files.readString(f.toPath());
             List<ProjectToken> tokens = new ArrayList<>();
-            for (Token t : declarations(css,
-                    f.getName().endsWith(".sass")).values()) {
+            java.util.Map<String, Token> decls =
+                    f.getName().endsWith(".html") || f.getName().endsWith(".htm")
+                    // v2.23.0: tokens declared in <style> blocks count too
+                    ? HtmlStyleRegions.declarations(css)
+                    : declarations(css, f.getName().endsWith(".sass"));
+            for (Token t : decls.values()) {
                 tokens.add(new ProjectToken(f, t.name(), t.value(), t.offset()));
             }
             return List.copyOf(tokens);
