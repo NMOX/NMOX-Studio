@@ -2470,3 +2470,38 @@ What the stretch established:
 
 Standing counts unchanged this stretch except: 91 learning spaces,
 completion catalog mootools 105, editor floor 0.67 (windows-binding).
+
+## Addendum — 2026-08-19, the polish + senior-RCP day (v2.17.1–v2.19.1)
+
+David's directives, in order: "give the project a polish pass to see
+what needs polishing" (v2.18.0); "look at the project like a Senior
+NetBeans RCP Developer and implement or modify anything that catches
+your eye professionally" (v2.19.0); "keep going on for the night
+shift" (v2.19.1+).
+
+**Laws established or re-proven this day:**
+- **Gate the outcome, not the mechanism** (v2.19.1, the v1.311.0
+  lesson's third home): a gate that enumerates HOW a rule is followed
+  (classes implementing MultiMime) misses lawbreakers expressed
+  differently (a multi-mime CLASS registration). Derive the gate's
+  population from the artifact itself (the generated layer).
+- **The platform's reuse maps key on INSTANCE** (v2.19.0): layer
+  class registrations instantiate once per FOLDER; sharing anything
+  across mime folders requires methodvalue singleton factories.
+- **A refused gesture writes nothing and says why** (v2.18.0): the
+  mutate() verdict pattern — persistence only on accepted mutations,
+  StatusDisplayer on refusals.
+- **Process counts lie under init failures** (v2.19.0 walk): a
+  missing toolchain dependency makes an LSP server die at initialize;
+  the platform's retry churn fakes any process-count measurement.
+  Verify zero init failures in messages.log before counting.
+- **A plugin update mid-walk swaps a writable dev cluster in place**
+  (v2.18.0 walk; the screen is shared with David during walks): every
+  dev-tree walk launches with -J-Dplugin.manager.check.updates=false,
+  and when a new behavior fails to show, byte-check the running
+  cluster's jar before suspecting the harness.
+
+**Standing counts** (gate-checked): 85 grammars, 91 learning spaces,
+60 manifests, 53 devices. Editor JaCoCo floor 0.67 (windows-binding).
+Ledger 83 CLOSED; the ledger holds no actionable open items beyond
+the standing deferred-with-reasons set.

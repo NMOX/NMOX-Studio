@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.2] - 2026-08-19
+
+Docs truth (docs only): CLAUDE.md's status headline moves v2.17.0 →
+v2.19.1 with the polish + senior-RCP day summarized and four
+version-history entries added; plan.md gains the day addendum carrying
+the gate-the-outcome law, the instance-keyed-reuse law, the
+refused-gesture pattern, the init-failure process-count trap, and the
+shared-screen walk law.
+
 ## [2.19.1] - 2026-08-19
 
 The night review of v2.19.0, hours old: the conversion MISSED one —
@@ -13554,6 +13563,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.1...v2.19.2
 [2.19.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.0...v2.19.1
 [2.19.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.1...v2.18.0
