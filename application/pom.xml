@@ -19,6 +19,25 @@
     </properties>
 
     <dependencies>
+        <!-- org.slf4j as an OSGi BUNDLE for the jgit family (the
+             RELEASE310 dossier's root cause, 2026-08-20): the
+             org.eclipse.jgit bundle imports org.slf4j [1.7.0,3.0.0)
+             from the OSGi side, and RELEASE300 satisfied it only by
+             ACCIDENT of cluster placement — the transitive
+             org.slf4j:slf4j-api:1.7.36 got auto-wrapped into
+             extra/modules as a bundle. Under RELEASE310 the same
+             artifact resolves into a module's ext/ classpath instead
+             (no bundle, no export) and jgit fails Felix resolution:
+             "state remains INSTALLED after start()". Declaring the
+             dependency EXPLICITLY pins the bundle placement on both
+             platforms; 1.7.36 matches the slf4j-jdk14 binding the
+             platform ships. Proven by a standalone Felix 7.0.5 probe
+             naming the missing requirement verbatim. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.cluster</groupId>
             <artifactId>platform</artifactId>

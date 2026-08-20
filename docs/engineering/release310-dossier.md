@@ -50,14 +50,29 @@ JDK 25 jre, headless close flag): the 310 assembly logs
     org.eclipse.jgit - InvalidException: Netigso: … Cannot start
     org.eclipse.jgit state remains INSTALLED after start()
 
-and then WEDGES before "Turning on modules" (killed at five
-minutes). Discriminating facts, measured: the jgit bundle is
+and then BLOCKS on a modal Warning dialog (Exit / Disable Modules
+and Continue) that a headless close flag can never answer — the app
+offers degraded boot interactively, but the failure is real. Discriminating facts, measured: the jgit bundle is
 BYTE-IDENTICAL between the two assemblies (7.6.0.202603022253-r) and
 the ide-cluster bundle census matches — the regression is in
 RELEASE310's OSGi host (netbinox/core.netigso) resolution, not in
-our modules and not in the bundle. Root-causing the host change is
-the upgrade project's first task; until it boots, RELEASE310 is a
-NO-GO regardless of the green compile-and-verify half.
+our modules and not in the bundle. ROOT-CAUSED same day (v2.21.6), and the host was
+INNOCENT: a standalone Felix 7.0.5 probe with the exact bundle set
+named the missing requirement verbatim — org.eclipse.jgit imports
+osgi.wiring.package org.slf4j [1.7.0,3.0.0) and NOTHING exports it
+under RELEASE310. RELEASE300 satisfied it only by accident of cluster
+placement: the transitive org.slf4j:slf4j-api:1.7.36 was auto-wrapped
+into extra/modules as an OSGi bundle; under RELEASE310 the same maven
+artifact resolves into a module's ext/ classpath (testng's) instead —
+no bundle, no export, no resolution. The FIX is one explicit
+dependency in application/pom.xml (org.slf4j:slf4j-api:1.7.36, the
+version matching the platform's slf4j-jdk14 binding), which pins the
+bundle placement on both platforms; the RELEASE310 assembly now boots
+CLEAN (exit 0, zero could-not-install, zero SEVERE, modules on).
+The netigso Export-Package parsing change that was the initial
+suspect is cleared. RELEASE310 is GO-READY: the remaining gauntlets
+(browser, update-center-across-the-boundary, keymap chords,
+update-site dry-run) run on the bump PR itself.
 
 ## Not yet measured — the GO remainder
 
