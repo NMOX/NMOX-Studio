@@ -40,7 +40,13 @@ assumption against the new jars, recompile + full verify, boot laws,
 browser + update-center + toolchain gauntlets, then David's call.
 dependabot.yml now ignores org.netbeans.{api,modules,cluster} with
 the reason written in place, so the group PR stays mergeable without
-smuggling the platform.
+smuggling the platform. The measured half is DONE same-day
+(docs/engineering/release310-dossier.md, v2.19.6): all four decompiled
+assumptions byte-identical 300→310, artifacts on Central, full reactor
+test-compile AND full verify GREEN under -Dnetbeans.version=RELEASE310
+with every floor holding. The GO remainder is runtime: assembled-app
+boot laws, browser + update-center gauntlets, keymap chords pressed,
+an update-site dry-run — then David's call.
 
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 
