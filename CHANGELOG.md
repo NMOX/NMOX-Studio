@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.6] - 2026-08-20
+
+The RELEASE310 dossier (docs only): ledger 84's measured half, done
+the day it opened — all four decompiled-behavior assumptions
+byte-identical between release300 and release310 (LSPBindings with
+ledger 83's whole mechanism, the rename plugin, the declarative mime
+resolver, the autoupdate catalog parser), the artifacts fully on
+Central (the search index lags — trust repo1), the whole reactor
+test-compiling AND full-verifying GREEN under
+-Dnetbeans.version=RELEASE310 with every floor holding and zero
+source edits. docs/engineering/release310-dossier.md carries the
+facts and the honest GO remainder (boot laws, browser and
+update-center gauntlets, chords pressed, update-site dry-run); the
+decision is David's, on the JDK-25 model.
+
 ## [2.19.5] - 2026-08-20
 
 The device-author walk (docs only): the v2.0.0 JSON-device authoring
@@ -13610,6 +13625,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.5...v2.19.6
 [2.19.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.4...v2.19.5
 [2.19.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.3...v2.19.4
 [2.19.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.2...v2.19.3

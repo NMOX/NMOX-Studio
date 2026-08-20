@@ -1,0 +1,76 @@
+# The RELEASE310 dossier — measured facts for the platform-upgrade call
+
+*2026-08-20, the ledger-84 recon (the v1.250.0 JDK-dossier model:
+the numbers are in, the decision is David's).*
+
+RELEASE310 is Apache NetBeans 31, the platform release after the
+RELEASE300 line this product ships on. Dependabot proposed the bump
+inside a grouped deps PR on 2026-08-20; it was refused structurally
+(v2.19.4) because a platform major validates nothing when it rides a
+routine PR. This dossier is the validation's measured half.
+
+## Measured — GREEN
+
+1. **Every decompiled-behavior assumption is byte-identical between
+   release300 and release310** (fetched from apache/netbeans and
+   diffed, zero changed lines in each):
+   - `LSPBindings.java` — ledger 83's whole mechanism: the
+     instance-keyed `project2MimeType2Server` reuse map, the
+     MultiMime sibling-mime registration, the GC + 10-minute
+     keep-alive teardown, `resolveLanguageId`'s raw-mime fallback
+     (v1.218.0).
+   - `bindings/refactoring/Refactoring.java` — ledger 81: the rename
+     plugin still collects edit sets from EVERY binding on the mime
+     (the always-true capability predicate).
+   - `declmime/MIMEResolverImpl.java` — v1.217.0: declarative
+     resolver composition (`FileElement$Type.accept`, ext+name
+     AND-composition, position ordering).
+   - `updateprovider/AutoupdateCatalogParser.java` — v1.51.0: catalog
+     URLs still resolve against the PRE-redirect catalog URI, so the
+     absolute-URL pinning in build-update-site.sh stays load-bearing
+     and correct.
+2. **The artifacts are fully on Maven Central** (org.netbeans.api,
+   org.netbeans.modules, org.netbeans.cluster all HTTP 200 at
+   RELEASE310; the search index lags and still reports RELEASE300 as
+   latest — trust repo1, not the index).
+3. **The whole reactor compiles against RELEASE310**: main + test
+   sources of all ten modules, `-Dnetbeans.version=RELEASE310
+   clean test-compile`, zero errors, no source edits.
+4. **Full `mvn verify` against RELEASE310**: GREEN — exit 0, every
+   module's tests pass, and every SpotBugs / find-sec-bugs / JaCoCo
+   floor holds unchanged on the new platform. No source edits, no
+   floor moved, tree untouched (property override only).
+
+## Not yet measured — the GO remainder
+
+- **Assembled-app boot laws** on a RELEASE310 cluster: window time,
+  zero boot spawns (JFR), zero SEVERE, the `--add-opens` set still
+  sufficient on the new platform, the platform's own deprecation
+  warnings (the RELEASE300 baseline is two, both platform-internal).
+- **The browser gauntlet**: FX 26 WebView against the RELEASE310
+  window system (the h2c flag, DevTools bridge, viewport presets).
+- **The update-center gauntlet across the boundary**: an install on a
+  RELEASE300-built version must self-update to a RELEASE310-built one
+  in-app — the v1.261.0 runtime-boundary precedent; module spec
+  ranges (`core > X`) make old modules refuse to load rather than
+  LinkageError, but the PLATFORM cluster underneath changes only via
+  installers, so the timing law from v1.256.0 applies: platform-bound
+  behavior ships in installers, never through the update center.
+- **The keymap/layer surfaces**: KeymapProfileParityTest passes at
+  verify, but the five platform profiles' CONTENTS can drift between
+  releases — press the advertised chords in the assembled app
+  (the v1.38.1 law: an affordance documented but never exercised is
+  untested).
+- **nbm tooling**: the nbm-maven-plugin version's compatibility with
+  the new harness at `nbm:autoupdate` (the update-site build) — runs
+  only in the release workflow, so a full dry-run of
+  scripts/build-update-site.sh is part of GO.
+
+## The shape of the upgrade, when called
+
+One release, on the JDK-25 model (v1.253.0): move `netbeans.version`
+in the root pom (the ONE home), run the full gauntlet set above on
+the assembled app, ship through the normal gate with the update-center
+timing law respected, and re-pin the CI/windows lanes' expectations if
+any measured floor moves. Rollback is the property flipped back — no
+source accompanies the bump if this dossier's facts hold.
