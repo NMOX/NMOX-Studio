@@ -139,7 +139,9 @@ And the laws the **host** keeps, which no file can opt out of:
 
 - **Workspace trust gates every spawn.** The first time a device file's
   command runs in a project, you get the same trust prompt every other
-  runner raises. Declining means no process starts.
+  runner raises. Declining means no process starts. (A grant covers
+  subfolders too — projects under an already-trusted folder, like your
+  `~/NMOX` workspace once it has been trusted, run without re-asking.)
 - Button colour comes from the role, not the file.
 - Ports are capped and validated against the same lexicon as built-ins.
 

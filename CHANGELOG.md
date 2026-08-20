@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.5] - 2026-08-20
+
+The device-author walk (docs only): the v2.0.0 JSON-device authoring
+loop walked in the shipped 2.19.4 exactly as a user would — the doc's
+shortest example authored verbatim landed on the shelf first try,
+mounted, and ran; on a virgin path the trust prompt named the exact
+project with Keep Safe as the default, the decline showed UNTRUSTED
+WORKSPACE — EXECUTION REFUSED head-first in full (the v1.282.0 fix
+observed on the very message it was written for), and the grant ran;
+a live edit to a shell-metachar command dropped the file WHOLE from
+the shelf with the teaching log line by filename ("commands are argv,
+never a shell line"), and the restore returned it; the v1.278.0
+patchless-aim rack reset observed lawfully along the way. One finding,
+fixed here: the trust-law sentence never said a grant covers
+SUBFOLDERS (deliberate — WorkspaceTrust matches ancestors), so under
+the IDE's own ~/NMOX workspace the promised prompt never appears; the
+doc now says so.
+
 ## [2.19.4] - 2026-08-20
 
 Deps housekeeping through the gate, the split way: junit 6.1.3 (all
@@ -13592,6 +13610,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.4...v2.19.5
 [2.19.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.3...v2.19.4
 [2.19.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.2...v2.19.3
 [2.19.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.1...v2.19.2
