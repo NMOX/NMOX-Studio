@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.6] - 2026-08-20
+
+The RELEASE310 NO-GO, root-caused and fixed — the host was innocent.
+A standalone Felix 7.0.5 probe with the exact bundle set named the
+missing requirement verbatim: org.eclipse.jgit imports org.slf4j
+[1.7.0,3.0.0) and nothing exported it under RELEASE310. RELEASE300
+satisfied the import by ACCIDENT of cluster placement — the
+transitive org.slf4j:slf4j-api:1.7.36 was auto-wrapped into
+extra/modules as an OSGi bundle; under RELEASE310 the same artifact
+resolves into testng's ext/ classpath instead (no bundle, no export,
+no resolution — and the "wedge" was really a modal Warning no
+headless flag can answer). The fix: one EXPLICIT slf4j-api dependency
+in application/pom.xml pinning the bundle placement on both
+platforms, with the whole story in a comment at the line. The
+RELEASE310 assembly now boots clean (exit 0, zero could-not-install,
+zero SEVERE); the initial netigso-parsing suspect is cleared in the
+dossier; ledger 84 flips to GO-READY with the remaining gauntlets
+riding the bump PR. Harmless under RELEASE300 by construction —
+the dependency was already on the classpath; only its placement is
+now deliberate.
+
 ## [2.21.5] - 2026-08-20
 
 Docs truth (docs only): the sweep made TRUE — v2.21.4's changelog
@@ -13768,6 +13789,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.5...v2.21.6
 [2.21.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.4...v2.21.5
 [2.21.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.3...v2.21.4
 [2.21.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.2...v2.21.3

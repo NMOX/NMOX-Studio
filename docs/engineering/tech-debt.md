@@ -48,8 +48,12 @@ with every floor holding. The runtime probe (same day)
 came back RED: the assembled RELEASE310 app fails to start
 org.eclipse.jgit under Netigso (identical bundle bytes, identical
 cluster census — the host regressed) and wedges before module
-turn-on. NO-GO until the netbinox change is root-caused; the dossier
-carries the reproduction.
+turn-on. Root-caused same day (v2.21.6): the host was innocent —
+jgit's org.slf4j [1.7.0,3.0.0) OSGi import lost its provider to a
+cluster-placement change (slf4j-api stopped being auto-wrapped as a
+bundle); one explicit application-pom dependency pins the placement
+and the 310 assembly boots clean. GO-READY; remaining gauntlets ride
+the bump PR.
 
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 
