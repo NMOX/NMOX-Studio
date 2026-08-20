@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.22.0] - 2026-08-20
+
+Color swatches and the picker reach HTML — where most real styling
+lives. The v1.227.0 design surfaces stopped at stylesheet files
+because HTML made the document-wide scan wrong: in a stylesheet every
+tomato is a color, in HTML it is usually prose. The honest boundary
+is structural — new pure HtmlStyleRegions finds <style> block
+contents and style="…"/'…' attribute values (HTML comments blanked
+first, offsets exact in the original text) and both the swatch layer
+and the ⌘-click picker consult it on text/html: a color inside a
+style region paints and picks; the same word in a sentence stays
+prose. Two mutants killed by name (comment blanking, the
+single-quote alternative); walk-proven in the assembled app.
+
 ## [2.21.7] - 2026-08-20
 
 Docs truth (docs only): CLAUDE.md's headline moves v2.21.2 → v2.21.6
@@ -13798,6 +13812,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.22.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.7...v2.22.0
 [2.21.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.6...v2.21.7
 [2.21.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.5...v2.21.6
 [2.21.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.4...v2.21.5

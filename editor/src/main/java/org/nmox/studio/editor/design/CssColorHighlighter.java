@@ -67,12 +67,18 @@ public final class CssColorHighlighter implements DocumentListener {
             }
         });
         OffsetsBag fresh = new OffsetsBag(doc);
-        java.util.List<CssColors.ColorSpan> spans =
-                new java.util.ArrayList<>(CssColors.scan(text[0]));
-        // v1.330.0: var(--token) usages paint as the color their token
-        // declares — the indirection resolved document-locally, so the
-        // recompute lane still never touches disk
-        spans.addAll(CssTokens.varUsageColorSpans(text[0]));
+        java.util.List<CssColors.ColorSpan> spans;
+        if ("text/html".equals(doc.getProperty("mimeType"))) {
+            // v2.22.0: in HTML, bare `tomato` is usually PROSE — only
+            // <style> blocks and style="…" attribute values may swatch
+            spans = new java.util.ArrayList<>(HtmlStyleRegions.scan(text[0]));
+        } else {
+            spans = new java.util.ArrayList<>(CssColors.scan(text[0]));
+            // v1.330.0: var(--token) usages paint as the color their token
+            // declares — the indirection resolved document-locally, so the
+            // recompute lane still never touches disk
+            spans.addAll(CssTokens.varUsageColorSpans(text[0]));
+        }
         for (CssColors.ColorSpan span : spans) {
             AttributeSet attrs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, opaque(span.color()),
@@ -119,6 +125,7 @@ public final class CssColorHighlighter implements DocumentListener {
     // ever reach .sass files), so the swatches must ride the platform
     // mimes too or real stylesheets never see them.
     @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/html", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/css", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/scss", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/less", service = HighlightsLayerFactory.class),
