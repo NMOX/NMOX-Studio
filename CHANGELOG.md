@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.5] - 2026-08-20
+
+Docs truth (docs only): the sweep made TRUE — v2.21.4's changelog
+claimed every artifact-persisting studio re-walked on the 2.21.x
+line, and the claim overlooked two; both walked now, both clean.
+Contract Studio on the real foundry workspace: 27 artifacts scanned
+with EIP-170 size verdicts, the honest not-connected status, and the
+Oversight address book still carrying the July walk's Counter
+deployment 31 days and ~200 versions later — .nmoxweb3.json
+persistence proven across a month. Infra Designer offline: palette
+drag, the property panel with live cost chips, the legal
+PostgreSQL→Droplet wire connecting, and the illegal reverse refusing
+OUT LOUD with the exact v1.271.0 message (Wire refused: Droplet
+doesn't wire into PostgreSQL — a wire reads "serves"). Five studios,
+five walks, zero product finds in the last three — and one claim
+corrected by making it true rather than weakening it.
+
 ## [2.21.4] - 2026-08-20
 
 Docs truth (docs only): the Block Studio walk recorded — all-clean on
@@ -13751,6 +13768,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.4...v2.21.5
 [2.21.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.3...v2.21.4
 [2.21.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.2...v2.21.3
 [2.21.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.1...v2.21.2
