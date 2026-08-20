@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.2] - 2026-08-20
+
+The DBA walk on the shipped 2.21.1 — ~90 releases after the last one
+(v1.266.0), CLEAN across every leg: engine-aware Test and connected
+noun, the console placeholder clearing on focus (exactly one statement
+ran), a four-row hostile grid (doubled quotes, unicode, formula-shaped
+name, embedded apostrophes, honest NULL), in-grid edit → the exact
+PK-gated UPDATE preview with Cancel the default → apply → re-run truth
+→ disk-proven bytes, CSV export with RFC quoting and '=SUM
+neutralization, saved-query Save and Manage rename. One find, fixed
+and gate-pinned: Add and Edit were the SILENT two of the connection
+CRUD — Remove always announced itself, but adding a connection left
+the header still showing the load-time message (the v2.18.0
+gestures-speak law); both now post status, and CrudGesturesSpeakTest
+keeps all three speaking (mutation-proven on the right line after the
+first mutant deleted a pre-existing offer-path line — enumerate
+before you mutate).
+
 ## [2.21.1] - 2026-08-20
 
 Docs truth (docs only): CLAUDE.md's status headline moves v2.20.0 →
@@ -13711,6 +13729,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.1...v2.21.2
 [2.21.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.0...v2.21.1
 [2.21.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.3...v2.21.0
 [2.20.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.2...v2.20.3
