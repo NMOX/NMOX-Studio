@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.20.3] - 2026-08-20
+
+The RELEASE310 runtime probe (docs only): the dossier's boot half —
+RED. The assembled 310 app fails to start org.eclipse.jgit under
+Netigso ("state remains INSTALLED after start()") and wedges before
+module turn-on, on the same recipe that boots the 300 assembly in
+~30s; the jgit bundle is byte-identical between the assemblies and
+the cluster census matches, so the regression is in the platform's
+OSGi host. The v2.19.4 refusal, vindicated by measurement: the
+grouped deps PR would have shipped an app that does not boot.
+RELEASE310 is NO-GO until netbinox is root-caused; ledger 84 and the
+dossier carry the reproduction.
+
 ## [2.20.2] - 2026-08-20
 
 The day review, hours after the split — three finds in the dialect's
@@ -13677,6 +13690,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.20.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.2...v2.20.3
 [2.20.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.1...v2.20.2
 [2.20.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.6...v2.20.0
