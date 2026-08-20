@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.21.3] - 2026-08-20
+
+Docs truth (docs only): the API Studio walk recorded — all-clean on
+every leg in the shipped 2.21.2 (request create, {{repo}} resolving
+through the Local environment to a live GitHub 200 carrying the
+repo's own same-day pushed_at, security grade B with two honest
+absents and advice, Copy curl byte-exact with variables resolved,
+history persisted across sessions) — the day's second fully-clean
+persona walk; CLAUDE.md's headline moves v2.21.0 → v2.21.2.
+
 ## [2.21.2] - 2026-08-20
 
 The DBA walk on the shipped 2.21.1 — ~90 releases after the last one
@@ -13729,6 +13739,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.21.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.2...v2.21.3
 [2.21.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.1...v2.21.2
 [2.21.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.0...v2.21.1
 [2.21.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.20.3...v2.21.0
