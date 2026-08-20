@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.0] - 2026-08-19
+
+The senior-RCP pass: one language server per project, not per mime —
+ledger 83 closed with the platform's own seam. The multi-mime LSP
+providers (deno, eslint, stylelint, ngserver, clangd) now implement
+MultiMimeLanguageServerProvider and register through static SINGLETON
+factory methods, because the platform's reuse map is keyed by provider
+instance and a class registration is instantiated once per mime folder
+— the second mime presented a different instance and a second copy of
+the server started (two deno lsp / two tsserver / two ngserver per
+project, measured v1.356.0). The tsserver pair partitions by WORKSPACE
+KIND instead of mime — TypeScriptServer (ts+js shared, plain
+workspaces only) and AngularJavaScriptTsServer (js, Angular workspaces
+only) — because the ts/js authority split is workspace-conditional
+(ledger 81) while getMimeTypes() is static; a naive merge would have
+rebound tsserver beside ngserver, the proven double-rename.
+MultiMimeSingletonGateTest pins parity (layer registrations ==
+getMimeTypes()) and the no-class-instance law against the GENERATED
+layer; three mutants killed by name; live-proven in the assembled app.
+
 ## [2.18.0] - 2026-08-19
 
 The polish pass (David's ask) — three lenses (a fresh-userdir boot
@@ -13518,6 +13538,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.1...v2.18.0
 [2.17.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.0...v2.17.1
 [2.17.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.16.0...v2.17.0

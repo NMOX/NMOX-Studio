@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.lsp.client.spi.LanguageServerProvider;
+import org.netbeans.modules.lsp.client.spi.MultiMimeLanguageServerProvider;
 import org.nmox.studio.core.process.ToolLocator;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -215,39 +217,76 @@ public final class LanguageServers {
         return project == null ? null : FileUtil.toFile(project.getProjectDirectory());
     }
 
-    /**
-     * TypeScript via typescript-language-server — except in Angular
-     * workspaces, where the mime is ngserver's ALONE (ledger 81).
-     *
-     * <p>Why suppression and not capability games: the platform's rename
-     * refactoring collects edit sets from EVERY server bound to the mime
-     * — decompiled, {@code RenameRefactoringPlugin.lambda$prepare$6},
-     * the capability predicate it filters bindings with, is
-     * {@code iconst_1; ireturn}: always true, renameProvider never
-     * consulted. With tsserver AND ngserver both bound, a class-property
-     * rename applied tsserver's declaration edit AND ngserver's
-     * declaration+template edits — {@code headingheading}, proven live
-     * twice (the second time through a filter that verifiably stripped
-     * tsserver's renameProvider, which changed nothing). The only lever
-     * the platform leaves is WHICH servers are bound; ngserver wraps the
-     * TypeScript language service (that is what --tsProbeLocations is
-     * for), so it serves the .ts intelligence itself.
+    /*
+     * Multi-mime providers below are SINGLETONS registered through
+     * static factory methods, not classes — ledger 83's one hard
+     * requirement, learned from the platform source (RELEASE300
+     * LSPBindings.buildBindings): a started server is filed under
+     * every mime a MultiMimeLanguageServerProvider declares, but the
+     * map is keyed by provider INSTANCE. A class-level registration
+     * puts one .instance file in EACH mime folder and the layer
+     * instantiates each file separately, so the second mime's lookup
+     * presents a DIFFERENT instance, the keyed reuse misses, and a
+     * second copy of the server starts — the exact duplicate the
+     * v1.356.0 walk measured (two deno lsp for one workspace). A
+     * method registration makes every mime folder's .instance resolve
+     * through the same factory to the same object, and the platform's
+     * own dedup does the rest.
      */
-    @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
-    public static final class TypeScriptServer implements LanguageServerProvider {
+
+    /**
+     * TypeScript AND JavaScript via one shared typescript-language-server
+     * — except in Angular and Deno workspaces, where this provider
+     * starts nothing at all and the workspace's own authority serves
+     * the mimes ({@code ngserver} / {@code deno lsp}).
+     *
+     * <p>The yield is WHOLE-WORKSPACE by design (ledger 81 + ledger 83):
+     * a multi-mime provider's started server is registered under every
+     * declared mime, so if this started for .js inside an Angular
+     * workspace it would silently rebind tsserver to text/typescript
+     * beside ngserver — and the platform's rename refactoring collects
+     * edit sets from EVERY server bound to the mime (decompiled,
+     * {@code RenameRefactoringPlugin.lambda$prepare$6}: the capability
+     * predicate is {@code iconst_1; ireturn} — always true,
+     * renameProvider never consulted), which applied a class-property
+     * rename twice: {@code headingheading}, proven live twice. Angular
+     * workspaces get their .js tsserver from the single-mime
+     * {@link AngularJavaScriptTsServer} instead; between the two of
+     * them exactly one returns non-null for any (workspace, mime).
+     */
+    public static final class TypeScriptServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES =
+                Set.of("text/typescript", "text/javascript");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             boolean angular = angularRootAbove(projectDir(lookup)) != null;
             ngProbe("tsserver start: projectDir=" + projectDir(lookup)
                     + " angular=" + angular);
             if (angular) {
-                return null; // ngserver owns TypeScript here
+                return null; // ngserver owns .ts; AngularJavaScriptTsServer owns .js
             }
             if (denoRootAbove(projectDir(lookup)) != null) {
-                return null; // deno lsp owns TypeScript here (DenoServer)
+                return null; // deno lsp owns both mimes here (DenoServer)
             }
             return launchNpm(lookup, "typescript-language-server", "--stdio");
         }
+    }
+
+    private static final TypeScriptServer TYPESCRIPT_SERVER = new TypeScriptServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider typeScriptServer() {
+        return TYPESCRIPT_SERVER;
     }
 
     /**
@@ -265,11 +304,16 @@ public final class LanguageServers {
      * the workspace executes on file-open (imports are fetched for
      * type information, never run).
      */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
-    })
-    public static final class DenoServer implements LanguageServerProvider {
+    public static final class DenoServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES =
+                Set.of("text/typescript", "text/javascript");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             if (denoRootAbove(projectDir(lookup)) == null) {
@@ -280,20 +324,34 @@ public final class LanguageServers {
         }
     }
 
+    private static final DenoServer DENO_SERVER = new DenoServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider denoServer() {
+        return DENO_SERVER;
+    }
+
     /**
-     * JavaScript rides the same typescript-language-server, registered
-     * separately so the ledger-81 Angular suppression above cannot take
-     * plain .js files down with it (ngserver serves .ts and templates,
-     * not .js). Deno workspaces are different: {@link DenoServer} is
-     * registered on text/javascript too and deno lsp serves .js there,
-     * so tsserver must yield or BOTH servers bind the mime — the exact
-     * double-authority ledger 81 proved (duplicate diagnostics, and the
-     * platform rename applies every bound server's edits).
+     * JavaScript inside ANGULAR workspaces rides its own
+     * typescript-language-server — ngserver serves .ts and templates,
+     * not .js, and {@link TypeScriptServer} deliberately starts nothing
+     * in Angular workspaces (its multi-mime registration would rebind
+     * tsserver to text/typescript beside ngserver — see its javadoc).
+     * Single-mime ON PURPOSE: this class exists precisely because the
+     * two mimes have different authorities here, so it must never grow
+     * a second registration. Deno workspaces still take the mime away
+     * ({@link DenoServer} serves .js there), hence the deno yield.
      */
     @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class)
-    public static final class JavaScriptTsServer implements LanguageServerProvider {
+    public static final class AngularJavaScriptTsServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            if (angularRootAbove(projectDir(lookup)) == null) {
+                return null; // plain workspace: TypeScriptServer serves .js
+            }
             if (denoRootAbove(projectDir(lookup)) != null) {
                 return null; // deno lsp owns JavaScript here (DenoServer)
             }
@@ -328,11 +386,16 @@ public final class LanguageServers {
      * honest degradation every other entry here has (see
      * {@code LanguageServerCatalog}, which surfaces the install hint).
      */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
-    })
-    public static final class EslintServer implements LanguageServerProvider {
+    public static final class EslintServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES =
+                Set.of("text/javascript", "text/typescript");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             File dir = projectDir(lookup);
@@ -371,6 +434,16 @@ public final class LanguageServers {
         }
     }
 
+    private static final EslintServer ESLINT_SERVER = new EslintServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/javascript", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider eslintServer() {
+        return ESLINT_SERVER;
+    }
+
     /**
      * stylelint via {@code stylelint-lsp} — the eslint story (v1.213.0),
      * told for stylesheets (v1.232.0, the Senior CSS3 pass).
@@ -394,14 +467,17 @@ public final class LanguageServers {
      * no config means no server, because a stylesheet without stylelint
      * hasn't opted into stylelint's opinions.
      */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/scss", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/less", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/x-less", service = LanguageServerProvider.class)
-    })
-    public static final class StylelintServer implements LanguageServerProvider {
+    public static final class StylelintServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES = Set.of(
+                "text/css", "text/scss", "text/less",
+                "text/x-scss", "text/x-less");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             File dir = projectDir(lookup);
@@ -420,6 +496,19 @@ public final class LanguageServers {
             }
             return launchNpm(lookup, "stylelint-lsp", "--stdio");
         }
+    }
+
+    private static final StylelintServer STYLELINT_SERVER = new StylelintServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/scss", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/less", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-less", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider stylelintServer() {
+        return STYLELINT_SERVER;
     }
 
     /** Any of stylelint's config spellings. */
@@ -503,14 +592,16 @@ public final class LanguageServers {
      * eslint on that mime (the platform's {@code lookupAll} collection),
      * so this adds template intelligence rather than replacing anything.
      */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
-        // v1.217.0: templates too — ngserver's whole point is the HTML
-        // half. The dedicated template mime keeps this off every plain
-        // HTML file; the same trust gate covers the same payload.
-        @MimeRegistration(mimeType = "text/x-ng-template", service = LanguageServerProvider.class)
-    })
-    public static final class AngularServer implements LanguageServerProvider {
+    public static final class AngularServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES =
+                Set.of("text/typescript", "text/x-ng-template");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             // Angular's src/index.html is a STATIC-kind manifest, so the
@@ -560,6 +651,19 @@ public final class LanguageServers {
                     "--tsProbeLocations", modules.getAbsolutePath(),
                     "--ngProbeLocations", modules.getAbsolutePath())), "ngserver");
         }
+    }
+
+    private static final AngularServer ANGULAR_SERVER = new AngularServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/typescript", service = LanguageServerProvider.class),
+        // v1.217.0: templates too — ngserver's whole point is the HTML
+        // half. The dedicated template mime keeps this off every plain
+        // HTML file; the same trust gate covers the same payload.
+        @MimeRegistration(mimeType = "text/x-ng-template", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider angularServer() {
+        return ANGULAR_SERVER;
     }
 
     /**
@@ -688,15 +792,29 @@ public final class LanguageServers {
     }
 
     /** C and C++ via clangd (ships with Xcode CLT and every LLVM install). */
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/x-c", service = LanguageServerProvider.class),
-        @MimeRegistration(mimeType = "text/x-cpp", service = LanguageServerProvider.class)
-    })
-    public static final class ClangdServer implements LanguageServerProvider {
+    public static final class ClangdServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES = Set.of("text/x-c", "text/x-cpp");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             return provide(lookup, List.of("clangd", "--background-index"));
         }
+    }
+
+    private static final ClangdServer CLANGD_SERVER = new ClangdServer();
+
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/x-c", service = LanguageServerProvider.class),
+        @MimeRegistration(mimeType = "text/x-cpp", service = LanguageServerProvider.class)
+    })
+    public static LanguageServerProvider clangdServer() {
+        return CLANGD_SERVER;
     }
 
     /** Java via Eclipse JDT Language Server. */

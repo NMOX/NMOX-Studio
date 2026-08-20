@@ -34,10 +34,11 @@ class EslintServerTest {
     @DisplayName("eslint is registered on BOTH JS and TS mimes")
     void registeredOnBothMimes() throws IOException {
         String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
-        int eslintAt = src.indexOf("class EslintServer");
-        assertThat(eslintAt).as("EslintServer exists").isGreaterThan(0);
-        // the annotation block immediately above the class
-        String block = src.substring(Math.max(0, eslintAt - 400), eslintAt);
+        // ledger 83: the registrations ride the singleton FACTORY, so
+        // the annotation block sits immediately above it
+        int factoryAt = src.indexOf("public static LanguageServerProvider eslintServer()");
+        assertThat(factoryAt).as("eslintServer factory exists").isGreaterThan(0);
+        String block = src.substring(Math.max(0, factoryAt - 400), factoryAt);
         assertThat(block).contains("text/javascript");
         assertThat(block).contains("text/typescript");
     }
@@ -46,15 +47,18 @@ class EslintServerTest {
     @DisplayName("eslint does NOT displace typescript-language-server")
     void tsserverStillRegisteredOnBothMimes() throws IOException {
         String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
-        // since the ledger-81 suppression the two mimes ride SEPARATE
-        // registrations (TS yields to ngserver in Angular workspaces,
-        // JS never does) — both must still exist
-        int tsAt = src.indexOf("class TypeScriptServer");
+        // since ledger 83 ONE multi-mime tsserver provider serves both
+        // mimes in plain workspaces (its factory carries both
+        // registrations), with the Angular-only .js provider beside it
+        // (TsServerAngularSuppressionTest pins that partition)
+        int tsAt = src.indexOf("public static LanguageServerProvider typeScriptServer()");
         assertThat(tsAt).isGreaterThan(0);
-        assertThat(src.substring(Math.max(0, tsAt - 400), tsAt))
+        String block = src.substring(Math.max(0, tsAt - 400), tsAt);
+        assertThat(block)
                 .as("types keep arriving; eslint is additive, not a swap")
                 .contains("text/typescript");
-        int jsAt = src.indexOf("class JavaScriptTsServer");
+        assertThat(block).contains("text/javascript");
+        int jsAt = src.indexOf("class AngularJavaScriptTsServer");
         assertThat(jsAt).isGreaterThan(0);
         assertThat(src.substring(Math.max(0, jsAt - 400), jsAt))
                 .contains("text/javascript");

@@ -30,8 +30,10 @@ class StylelintServerTest {
     @DisplayName("stylelint is registered on the whole css family, both mime spellings")
     void registeredOnCssFamily() throws IOException {
         String src = source("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java");
-        int at = src.indexOf("class StylelintServer");
-        assertThat(at).as("StylelintServer exists").isGreaterThan(0);
+        // ledger 83: the registrations ride the singleton FACTORY, so
+        // the annotation block sits immediately above it
+        int at = src.indexOf("public static LanguageServerProvider stylelintServer()");
+        assertThat(at).as("stylelintServer factory exists").isGreaterThan(0);
         String block = src.substring(Math.max(0, at - 700), at);
         // the css-prep mimes real files resolve to AND the x- pair that
         // reaches .sass — the v1.230.0 mime lesson applied on day one

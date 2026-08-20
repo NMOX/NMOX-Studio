@@ -22,22 +22,42 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 
-### 83. One LSP server process per mime per project — measured, not fixed
+### 83. ~~One LSP server process per mime per project~~ — CLOSED v2.19.0 (the senior-RCP pass)
 
-The platform's LSPBindings keys server instances by (mime type,
-project), so a language whose provider is registered on two mimes runs
-TWO copies of its server for one workspace: the deno walk (v1.356.0)
-measured two `deno lsp` processes for a single .ts+.js workspace, and
-the same holds for typescript-language-server in any mixed JS/TS Node
-project — since the LSP wiring shipped. Cost is memory and duplicate
-analysis, not correctness: rename collects edits per mime, so the
-ledger-81 double-apply cannot happen across mimes. A fix would be a
-dedup seam in `LanguageServers.launch` keyed on (project, command),
-handing both mimes one LanguageServerDescription — but the platform
-may tear down a shared description when either mime's last editor
-closes, so the seam needs a recon of LSPBindings' lifecycle first.
-Deferred: cost is bounded (one extra process per polyglot project),
-correctness is unaffected, and the recon is its own unit of work.
+The v1.356.0 measurement (two `deno lsp` for one .ts+.js workspace;
+two typescript-language-server in any mixed JS/TS project; two
+ngserver in an Angular project with a component and its template open)
+is fixed with the platform's OWN seam, found by the recon this entry
+demanded: `MultiMimeLanguageServerProvider` (in our RELEASE300
+lsp-client) makes `LSPBindings.buildBindings` file a started server
+under EVERY declared mime, so the second mime reuses the live
+bindings. The recon's two decisive facts, from the platform source:
+
+- **Teardown fear unfounded**: shutdown is GC-driven (`LSPReference`
+  on the active reference queue) behind a 10-minute keep-alive — NOT
+  editor-close based. Sharing across mimes is what the mechanism is
+  for.
+- **The trap is instance identity**: the reuse map is keyed by
+  provider INSTANCE, and a class-level `@MimeRegistration` puts one
+  `.instance` file in each mime folder — each instantiated separately,
+  so the second mime presents a different instance and a second server
+  starts anyway. The cure: registrations moved to static SINGLETON
+  FACTORY methods (`methodvalue` in the generated layer), so every
+  mime folder resolves the same object. `MultiMimeSingletonGateTest`
+  pins both laws against the generated layer (parity: registrations ==
+  `getMimeTypes()`; no class-instance backdoor), mutation-proven.
+
+Converted: DenoServer, EslintServer, StylelintServer (5 mimes),
+AngularServer, ClangdServer. The tsserver pair is the interesting one:
+its ts/js split is workspace-CONDITIONAL (ledger 81 — ngserver alone
+owns .ts in Angular workspaces while .js keeps tsserver) and
+`getMimeTypes()` is static, so a naive merge would rebind tsserver
+beside ngserver — the proven double-rename. The pair now partitions by
+WORKSPACE KIND instead of mime: `TypeScriptServer` (multi-mime ts+js,
+starts only in plain workspaces — one shared process) and
+`AngularJavaScriptTsServer` (single-mime js, Angular workspaces only);
+exactly one returns non-null for any (workspace, mime), pinned by
+`TsServerAngularSuppressionTest`.
 
 ## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
 
