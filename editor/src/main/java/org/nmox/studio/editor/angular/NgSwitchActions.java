@@ -161,7 +161,12 @@ public final class NgSwitchActions {
         // menu item missing on a .scss editor before ship.
         @ActionReference(path = "Editors/text/css/Popup", position = 95),
         @ActionReference(path = "Editors/text/scss/Popup", position = 95),
-        @ActionReference(path = "Editors/text/less/Popup", position = 95)
+        @ActionReference(path = "Editors/text/less/Popup", position = 95),
+        // v2.20.x review: ng new --style=sass exists, NgSwitch's
+        // extension list always knew .sass, and the indented dialect
+        // has its own mime since v2.20.0 — the gesture just needed
+        // the registration
+        @ActionReference(path = "Editors/text/x-sass/Popup", position = 95)
     })
     @Messages("CTL_OpenNgComponentFromStyles=Open Component Class")
     public static final class OpenComponentFromStyles implements ActionListener {
