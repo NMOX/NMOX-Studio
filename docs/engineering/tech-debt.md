@@ -20,6 +20,28 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
+
+### 84. The NetBeans Platform upgrade (RELEASE300 → RELEASE310+) — its own project, never a deps bump
+
+Dependabot's 2026-08-20 grouped PR carried netbeans.version
+RELEASE300→RELEASE310 beside routine junit/org.json/mongodb bumps —
+refused structurally (the v1.243.0 OpenJFX class, platform-sized):
+the release assembles the ENTIRE platform cluster at this version,
+and the codebase carries decompiled-behavior assumptions pinned
+against RELEASE300 jars: LSPBindings' instance-keyed server reuse +
+MultiMime registration semantics (ledger 83, v2.19.0/v2.19.1), the
+rename refactoring collecting every binding's edits (ledger 81), the
+autoupdate catalog's pre-redirect URL resolution (v1.51.0),
+FileElement$Type.accept mime-resolver composition (v1.217.0), the
+LanguageIdResolver fallback (v1.218.0). The upgrade is a dossier-first
+project on the JDK-25 model (v1.250.0): re-read each decompiled
+assumption against the new jars, recompile + full verify, boot laws,
+browser + update-center + toolchain gauntlets, then David's call.
+dependabot.yml now ignores org.netbeans.{api,modules,cluster} with
+the reason written in place, so the group PR stays mergeable without
+smuggling the platform.
+
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 
 ### 83. ~~One LSP server process per mime per project~~ — CLOSED v2.19.0 (the senior-RCP pass)

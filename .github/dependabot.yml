@@ -22,7 +22,21 @@ updates:
       # see, because tests run with the maven dep, not the jlinked
       # runtime. An FX upgrade moves BOTH pins together as its own
       # browser-gauntleted release (tech-debt ledger 74).
-      - dependency-name: "org.openjfx:*" 
+      - dependency-name: "org.openjfx:*"
+      # The NetBeans Platform version is the product's FOUNDATION, not a
+      # dependency: the release assembles the whole platform cluster at
+      # this version, and the codebase carries decompiled-behavior
+      # assumptions pinned against it (LSPBindings' instance-keyed
+      # server reuse and MultiMime handling — ledger 83; the rename
+      # refactoring collecting every binding's edits — ledger 81; the
+      # autoupdate catalog resolution — v1.51.0; FileElement$Type.accept
+      # — v1.217.0). A platform major rides its own dossier-first
+      # upgrade project with those assumptions re-verified against the
+      # new jars and the full gauntlet rerun (tech-debt ledger 84),
+      # never a grouped deps PR.
+      - dependency-name: "org.netbeans.api:*"
+      - dependency-name: "org.netbeans.modules:*"
+      - dependency-name: "org.netbeans.cluster:*"
 
   # The GitHub Actions used by the build/release workflows.
   - package-ecosystem: github-actions
