@@ -1150,17 +1150,43 @@ public final class LanguageServers {
         }
     }
 
-    /** CSS/SCSS/Less via vscode-css-language-server (vscode-langservers-extracted). */
+    /**
+     * CSS/SCSS/Less via vscode-css-language-server
+     * (vscode-langservers-extracted) — one shared server for the family
+     * (ledger 83; the night review found this one still class-registered
+     * after the v2.19.0 conversion, running up to three copies).
+     *
+     * <p>Registered on the x- spellings only, NOT text/scss+text/less:
+     * the css-prep platform mimes carry the platform's own stylesheet
+     * intelligence, and doubling it was never this entry's job —
+     * observed and kept as-is; {@link StylelintServer} is the provider
+     * that deliberately spans all five.
+     */
+    public static final class CssServer
+            implements MultiMimeLanguageServerProvider {
+        static final Set<String> MIMES =
+                Set.of("text/css", "text/x-scss", "text/x-less");
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return MIMES;
+        }
+
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return launchNpm(lookup, "vscode-css-language-server", "--stdio");
+        }
+    }
+
+    private static final CssServer CSS_SERVER = new CssServer();
+
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/css", service = LanguageServerProvider.class),
         @MimeRegistration(mimeType = "text/x-scss", service = LanguageServerProvider.class),
         @MimeRegistration(mimeType = "text/x-less", service = LanguageServerProvider.class)
     })
-    public static final class CssServer implements LanguageServerProvider {
-        @Override
-        public LanguageServerDescription startServer(Lookup lookup) {
-            return launchNpm(lookup, "vscode-css-language-server", "--stdio");
-        }
+    public static LanguageServerProvider cssServer() {
+        return CSS_SERVER;
     }
 
     // ---- the config layer -------------------------------------------------

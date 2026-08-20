@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.1] - 2026-08-19
+
+The night review of v2.19.0, hours old: the conversion MISSED one —
+CssServer (vscode-css-language-server) was still a three-mime CLASS
+registration, running up to three copies per project, and the new gate
+could not see it because it checked only classes that already
+implemented MultiMimeLanguageServerProvider. The gate now keys on the
+OUTCOME: any LanguageServerProvider registered under two or more
+Editors mimes — read from the GENERATED layer, resolved reflectively
+through its methodvalue — must be a MultiMime singleton with mime
+parity, with a size floor so an empty parse cannot fake green. Proven
+failing-first (the strengthened gate named CssServer.instance before
+the fix), then CssServer converted like its six siblings; parity
+mutant killed by name. The hand-kept factory list is gone — future
+multi-mime providers are covered by construction.
+
 ## [2.19.0] - 2026-08-19
 
 The senior-RCP pass: one language server per project, not per mime —
@@ -13538,6 +13554,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.0...v2.19.1
 [2.19.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.1...v2.18.0
 [2.17.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.17.0...v2.17.1

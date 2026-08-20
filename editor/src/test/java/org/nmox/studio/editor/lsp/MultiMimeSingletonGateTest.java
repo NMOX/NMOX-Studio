@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.lsp;
 
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,47 +20,49 @@ import org.w3c.dom.NodeList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Ledger 83's two build laws, pinned against the GENERATED layer so the
- * annotation processor's real output is what's checked, not the source.
+ * Ledger 83's build laws, derived from the GENERATED layer so every
+ * provider — present or future — is covered by what the annotation
+ * processor actually emitted, with no hand-kept list to rot.
  *
- * <p><b>Parity:</b> a {@link MultiMimeLanguageServerProvider}'s
- * {@code getMimeTypes()} must equal the set of Editors/&lt;mime&gt;
- * folders its factory is registered under. The platform files a started
- * server under every mime the provider DECLARES; a declaration wider
- * than the registrations would claim mimes whose lookups never see this
- * provider, and a narrower one silently re-splits the server per mime —
- * the duplicate ledger 83 measured.
+ * <p>For ANY LanguageServerProvider registration that appears under two
+ * or more {@code Editors/<mime>} folders, however it is expressed:
  *
- * <p><b>Identity:</b> every multi-mime registration must be a METHOD
- * registration ({@code methodvalue}) resolving to a singleton, never a
- * class {@code .instance}. The platform's reuse map is keyed by provider
- * INSTANCE, and a class registration is instantiated once per mime
- * folder — two instances, two servers, the bug back by construction.
+ * <ul>
+ * <li><b>Method, not class:</b> it must be a {@code methodvalue}
+ * registration. The platform's server-reuse map is keyed by provider
+ * INSTANCE and a class {@code .instance} is instantiated once per mime
+ * folder — two instances, two servers, the exact duplicate the
+ * v1.356.0 walk measured. (The first version of this gate checked only
+ * classes that already implemented MultiMime — and missed CssServer's
+ * three-mime class registration entirely. The gate now keys on the
+ * OUTCOME, a multi-mime registration, not the mechanism.)</li>
+ * <li><b>Singleton:</b> invoking the factory twice returns the same
+ * object.</li>
+ * <li><b>MultiMime with parity:</b> the provider implements
+ * {@link MultiMimeLanguageServerProvider} and {@code getMimeTypes()}
+ * equals the registered folder set — wider would claim mimes whose
+ * lookups never see it, narrower silently re-splits the server.</li>
+ * </ul>
  */
 class MultiMimeSingletonGateTest {
 
-    /** factory simple name → the provider it must return. */
-    private static final Map<String, MultiMimeLanguageServerProvider> FACTORIES = Map.of(
-            "typeScriptServer", new LanguageServers.TypeScriptServer(),
-            "denoServer", new LanguageServers.DenoServer(),
-            "eslintServer", new LanguageServers.EslintServer(),
-            "stylelintServer", new LanguageServers.StylelintServer(),
-            "angularServer", new LanguageServers.AngularServer(),
-            "clangdServer", new LanguageServers.ClangdServer());
+    /** One registration file: its Editors mimes and its attrs. */
+    private record Registration(Set<String> mimes, String methodValue,
+            String instanceOf) {
+    }
 
-    /** Editors/<mime> folders per registered file name, from the real layer. */
-    private static Map<String, Set<String>> registrationsByFile() throws Exception {
+    private static Map<String, Registration> registrations() throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         // the layer's DOCTYPE names the netbeans.org DTD; never fetch it
         dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         Document doc = dbf.newDocumentBuilder()
                 .parse(Path.of("target/classes/META-INF/generated-layer.xml").toFile());
-        Map<String, Set<String>> byFile = new HashMap<>();
+        Map<String, Registration> byFile = new HashMap<>();
         collect(doc.getDocumentElement(), "", byFile);
         return byFile;
     }
 
-    private static void collect(Element el, String path, Map<String, Set<String>> byFile) {
+    private static void collect(Element el, String path, Map<String, Registration> byFile) {
         NodeList children = el.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node n = children.item(i);
@@ -72,73 +75,81 @@ class MultiMimeSingletonGateTest {
                         : path + "/" + child.getAttribute("name"), byFile);
             } else if ("file".equals(child.getTagName()) && path.startsWith("Editors/")) {
                 String mime = path.substring("Editors/".length());
-                byFile.computeIfAbsent(child.getAttribute("name"), f -> new HashSet<>())
-                        .add(mime);
-            }
-        }
-    }
-
-    @Test
-    @DisplayName("getMimeTypes() equals the layer registrations, per provider")
-    void mimeParity() throws Exception {
-        Map<String, Set<String>> byFile = registrationsByFile();
-        for (Map.Entry<String, MultiMimeLanguageServerProvider> e : FACTORIES.entrySet()) {
-            String file = "org-nmox-studio-editor-lsp-LanguageServers-"
-                    + e.getKey() + ".instance";
-            assertThat(byFile.get(file))
-                    .as(e.getKey() + ": registered mimes == getMimeTypes()")
-                    .isEqualTo(e.getValue().getMimeTypes());
-        }
-    }
-
-    @Test
-    @DisplayName("multi-mime providers register through methods, never as class instances")
-    void noClassInstanceBackdoor() throws Exception {
-        Map<String, Set<String>> byFile = registrationsByFile();
-        for (String file : byFile.keySet()) {
-            for (Class<?> inner : LanguageServers.class.getDeclaredClasses()) {
-                if (MultiMimeLanguageServerProvider.class.isAssignableFrom(inner)) {
-                    assertThat(file)
-                            .as("a class .instance for " + inner.getSimpleName()
-                                    + " would create one instance PER mime folder")
-                            .isNotEqualTo("org-nmox-studio-editor-lsp-LanguageServers$"
-                                    + inner.getSimpleName() + ".instance");
+                String method = null;
+                String instanceOf = null;
+                NodeList attrs = child.getElementsByTagName("attr");
+                for (int a = 0; a < attrs.getLength(); a++) {
+                    Element attr = (Element) attrs.item(a);
+                    if ("instanceCreate".equals(attr.getAttribute("name"))
+                            && attr.hasAttribute("methodvalue")) {
+                        method = attr.getAttribute("methodvalue");
+                    }
+                    if ("instanceOf".equals(attr.getAttribute("name"))) {
+                        instanceOf = attr.getAttribute("stringvalue");
+                    }
                 }
+                String name = child.getAttribute("name");
+                Registration prev = byFile.get(name);
+                Set<String> mimes = prev != null ? prev.mimes() : new HashSet<>();
+                mimes.add(mime);
+                byFile.put(name, new Registration(mimes,
+                        method != null ? method : (prev != null ? prev.methodValue() : null),
+                        instanceOf != null ? instanceOf : (prev != null ? prev.instanceOf() : null)));
             }
         }
     }
 
-    @Test
-    @DisplayName("each factory returns the same instance every call")
-    void factoriesAreSingletons() {
-        assertThat(LanguageServers.typeScriptServer())
-                .isSameAs(LanguageServers.typeScriptServer());
-        assertThat(LanguageServers.denoServer())
-                .isSameAs(LanguageServers.denoServer());
-        assertThat(LanguageServers.eslintServer())
-                .isSameAs(LanguageServers.eslintServer());
-        assertThat(LanguageServers.stylelintServer())
-                .isSameAs(LanguageServers.stylelintServer());
-        assertThat(LanguageServers.angularServer())
-                .isSameAs(LanguageServers.angularServer());
-        assertThat(LanguageServers.clangdServer())
-                .isSameAs(LanguageServers.clangdServer());
+    /** The multi-mime LanguageServerProvider registrations, from the layer. */
+    private static Map<String, Registration> multiMime() throws Exception {
+        Map<String, Registration> all = registrations();
+        Map<String, Registration> multi = new HashMap<>();
+        for (Map.Entry<String, Registration> e : all.entrySet()) {
+            if (e.getValue().mimes().size() >= 2
+                    && "org.netbeans.modules.lsp.client.spi.LanguageServerProvider"
+                            .equals(e.getValue().instanceOf())) {
+                multi.put(e.getKey(), e.getValue());
+            }
+        }
+        return multi;
+    }
+
+    private static Object invokeFactory(String methodValue) throws Exception {
+        int dot = methodValue.lastIndexOf('.');
+        Class<?> owner = Class.forName(methodValue.substring(0, dot));
+        Method m = owner.getMethod(methodValue.substring(dot + 1));
+        return m.invoke(null);
     }
 
     @Test
-    @DisplayName("the factories return providers of the classes they promise")
-    void factoriesReturnTheirProviders() {
-        assertThat(LanguageServers.typeScriptServer())
-                .isInstanceOf(LanguageServers.TypeScriptServer.class);
-        assertThat(LanguageServers.denoServer())
-                .isInstanceOf(LanguageServers.DenoServer.class);
-        assertThat(LanguageServers.eslintServer())
-                .isInstanceOf(LanguageServers.EslintServer.class);
-        assertThat(LanguageServers.stylelintServer())
-                .isInstanceOf(LanguageServers.StylelintServer.class);
-        assertThat(LanguageServers.angularServer())
-                .isInstanceOf(LanguageServers.AngularServer.class);
-        assertThat(LanguageServers.clangdServer())
-                .isInstanceOf(LanguageServers.ClangdServer.class);
+    @DisplayName("every multi-mime registration is a MultiMime singleton with parity")
+    void multiMimeRegistrationsAreLawful() throws Exception {
+        Map<String, Registration> multi = multiMime();
+        // floor: an empty parse must not fake green (the count-gate law) —
+        // the six converted providers plus the css server are the minimum
+        assertThat(multi.size())
+                .as("the layer parse found the known multi-mime registrations")
+                .isGreaterThanOrEqualTo(7);
+        for (Map.Entry<String, Registration> e : multi.entrySet()) {
+            Registration reg = e.getValue();
+            assertThat(reg.methodValue())
+                    .as(e.getKey() + ": a multi-mime provider must register through a "
+                            + "factory METHOD — a class .instance is instantiated once "
+                            + "per mime folder, so the platform's instance-keyed reuse "
+                            + "misses and a second server starts")
+                    .isNotNull();
+            Object first = invokeFactory(reg.methodValue());
+            Object second = invokeFactory(reg.methodValue());
+            assertThat(second)
+                    .as(e.getKey() + ": the factory must return a singleton")
+                    .isSameAs(first);
+            assertThat(first)
+                    .as(e.getKey() + ": a provider on several mimes must declare them "
+                            + "via MultiMimeLanguageServerProvider or each mime starts "
+                            + "its own server")
+                    .isInstanceOf(MultiMimeLanguageServerProvider.class);
+            assertThat(((MultiMimeLanguageServerProvider) first).getMimeTypes())
+                    .as(e.getKey() + ": getMimeTypes() == the registered mime folders")
+                    .isEqualTo(reg.mimes());
+        }
     }
 }
