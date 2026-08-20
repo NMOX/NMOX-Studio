@@ -266,10 +266,11 @@ All 14 project templates (React/Vue/Svelte/Solid via Vite, Angular, vanilla, PHP
 
 ## Known Issues and Technical Debt
 
-See `docs/hack/technical-debt.md` for comprehensive list. Key items:
+See `docs/engineering/tech-debt.md` for the CURRENT ledger (the
+`docs/hack/` copy is v0.x archaeology). Key items:
 
 1. **Built-in templates live in code** (ProjectTemplates.java) - deliberate since v1.293.0: their pins carry gate-enforced version ceilings. User templates ARE data-driven now: ~/.nmox/templates.d drop-ins join the wizard (see docs/project-templates.md)
-2. **Performance** - startup time ~5 seconds, memory ~400MB
+2. **Startup** - window in 1.4-2.7s with ZERO processes spawned at boot (measured v1.38.0, JFR-verified; the module system scanning ~519 cluster jars is ~90% of it - the deliberate feature-set price)
 3. **JS/TS use a custom lexer pipeline** while the other languages ride TextMate+CSL; two code paths to maintain
 4. **.sass (indented) shares the SCSS grammar** - approximate highlighting for the indented dialect
 

@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.19.3] - 2026-08-20
+
+The night close (docs only): the 2.x update-center gauntlet PASS
+recorded — a stock v2.10.0 portable self-updated IN-APP to 2.19.1
+across twelve releases (--modules --update-all headless recipe; all
+eleven module jars byte-verified at 2.19.1; originals preserved in the
+cluster's own update/backup — the writable-cluster install-in-place
+shape; clean reboot, zero SEVERE, zero module-failure phrases) — the
+behavioral proof of the spec-version chain across the day's three
+module-shipping releases. Plus two Known-Issues staleness fixes in
+CLAUDE.md: the debt pointer aimed at the v0.x archaeology copy
+(docs/hack/) instead of the current ledger (docs/engineering/), and
+the performance line still claimed ~5s startup against the
+v1.38.0-measured 1.4-2.7s with zero boot spawns.
+
 ## [2.19.2] - 2026-08-19
 
 Docs truth (docs only): CLAUDE.md's status headline moves v2.17.0 →
@@ -13563,6 +13578,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.19.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.2...v2.19.3
 [2.19.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.1...v2.19.2
 [2.19.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.0...v2.19.1
 [2.19.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.18.0...v2.19.0
