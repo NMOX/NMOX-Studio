@@ -93,6 +93,24 @@ public class ExpandAbbreviationAction extends BaseAction {
                 expandCss(target, doc, caret, before);
                 return;
             }
+            // v2.24.0: an HTML pane speaks CSS inside its style regions —
+            // <style> blocks and style="…" attributes — and markup
+            // everywhere else. The region CLIPS the line slice (the
+            // TypeScript inline-template discipline) so an abbreviation
+            // can never reach past the region into markup.
+            if (mime instanceof String m && m.equals("text/html")) {
+                String all = doc.getText(0, doc.getLength());
+                for (org.nmox.studio.editor.design.HtmlStyleRegions.Region r
+                        : org.nmox.studio.editor.design.HtmlStyleRegions.find(all)) {
+                    if (caret >= r.start() && caret < r.end()) {
+                        if (lineStart < r.start()) {
+                            before = doc.getText(r.start(), caret - r.start());
+                        }
+                        expandCss(target, doc, caret, before);
+                        return;
+                    }
+                }
+            }
             // a TypeScript pane speaks markup ONLY inside a component's
             // inline template literal (Angular-top arc); everywhere else
             // the chord refuses honestly — it must never mangle code
