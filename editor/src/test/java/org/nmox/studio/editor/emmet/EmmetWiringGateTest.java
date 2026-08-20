@@ -93,4 +93,24 @@ class EmmetWiringGateTest {
         assertThat(src.substring(src.indexOf("expandCss")))
                 .contains(".css().replace(\"\\n\", \"\\n\" + leading)");
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("HTML routes to CSS expansion ONLY inside style regions, clipped to the region")
+    void htmlStyleRegionBranch() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/editor/emmet/ExpandAbbreviationAction.java"),
+                java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n");
+        // the branch exists, keys on the EXACT mime, and consults the regions
+        assertThat(src).contains("m.equals(\"text/html\")");
+        int at = src.indexOf("m.equals(\"text/html\")");
+        String branch = src.substring(at, src.indexOf("Emmet.AtCaret", at));
+        assertThat(branch)
+                .as("region-gated: css expansion only inside a style region")
+                .contains("HtmlStyleRegions.find");
+        assertThat(branch)
+                .as("the clip law: an abbreviation must never reach past the "
+                        + "region start into markup (the inline-template discipline)")
+                .contains("before = doc.getText(r.start(), caret - r.start());");
+        assertThat(branch).contains("expandCss(");
+    }
+
 }
