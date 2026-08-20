@@ -2505,3 +2505,8 @@ shift" (v2.19.1+).
 60 manifests, 53 devices. Editor JaCoCo floor 0.67 (windows-binding).
 Ledger 83 CLOSED; the ledger holds no actionable open items beyond
 the standing deferred-with-reasons set.
+
+**The night's behavioral close**: the update-center gauntlet PASS —
+stock v2.10.0 → 2.19.1 in-app across twelve releases, eleven jars
+byte-verified, originals in the cluster's update/backup, clean reboot
+(recorded in the v2.19.3 changelog entry).
