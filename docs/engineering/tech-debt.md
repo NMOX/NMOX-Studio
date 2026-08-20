@@ -57,7 +57,12 @@ WORKSPACE KIND instead of mime: `TypeScriptServer` (multi-mime ts+js,
 starts only in plain workspaces — one shared process) and
 `AngularJavaScriptTsServer` (single-mime js, Angular workspaces only);
 exactly one returns non-null for any (workspace, mime), pinned by
-`TsServerAngularSuppressionTest`.
+`TsServerAngularSuppressionTest`. The same-night review (v2.19.1)
+found the conversion had missed CssServer (three-mime class
+registration) because the gate checked the MECHANISM (classes
+implementing MultiMime) instead of the OUTCOME (any multi-mime
+registration in the generated layer) — the gate now derives its
+population from the layer itself, failing-first proven.
 
 ## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
 
