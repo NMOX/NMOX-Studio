@@ -272,7 +272,7 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger (the
 1. **Built-in templates live in code** (ProjectTemplates.java) - deliberate since v1.293.0: their pins carry gate-enforced version ceilings. User templates ARE data-driven now: ~/.nmox/templates.d drop-ins join the wizard (see docs/project-templates.md)
 2. **Startup** - window in 1.4-2.7s with ZERO processes spawned at boot (measured v1.38.0, JFR-verified; the module system scanning ~519 cluster jars is ~90% of it - the deliberate feature-set price)
 3. **JS/TS use a custom lexer pipeline** while the other languages ride TextMate+CSL; two code paths to maintain
-4. **.sass (indented) shares the SCSS grammar** - approximate highlighting for the indented dialect
+4. ~~.sass shares the SCSS grammar~~ - CLOSED v2.20.0: indented Sass has its own mime + the canonical indented grammar (86 grammars)
 
 ## Version History
 

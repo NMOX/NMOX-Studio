@@ -78,6 +78,7 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/coffeescript", service = TokenListProvider.class),
         @MimeRegistration(mimeType = "text/css", service = TokenListProvider.class),
         @MimeRegistration(mimeType = "text/x-scss", service = TokenListProvider.class),
+        @MimeRegistration(mimeType = "text/x-sass", service = TokenListProvider.class),
         @MimeRegistration(mimeType = "text/x-less", service = TokenListProvider.class),
     // the config layer: values are not prose, only comments get spellcheck
     @MimeRegistration(mimeType = "text/x-ini", service = TokenListProvider.class),

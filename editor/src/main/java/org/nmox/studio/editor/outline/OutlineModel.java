@@ -82,6 +82,8 @@ public final class OutlineModel {
             case "text/javascript", "text/typescript", "text/jsx", "text/tsx",
                  "text/x-vue", "text/x-svelte", "text/x-astro" -> "js";
             case "text/css", "text/x-scss", "text/x-less" -> "css";
+            // text/x-sass deliberately unmapped: the css extractor
+            // anchors on braces the indented dialect does not have
             case "text/x-markdown", "text/markdown" -> "markdown";
             case "text/x-json", "application/json" -> "json";
             case "text/x-yaml", "application/x-yaml" -> "yaml";

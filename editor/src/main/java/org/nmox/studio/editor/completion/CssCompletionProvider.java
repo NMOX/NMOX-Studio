@@ -29,6 +29,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
             mimeType = "text/x-scss", service = CompletionProvider.class),
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
+            mimeType = "text/x-sass", service = CompletionProvider.class),
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(
             mimeType = "text/x-less", service = CompletionProvider.class)
 })
 public class CssCompletionProvider implements CompletionProvider {

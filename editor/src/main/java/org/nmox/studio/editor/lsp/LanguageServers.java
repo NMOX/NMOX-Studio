@@ -466,6 +466,12 @@ public final class LanguageServers {
      * v1.216.0 payload law — gating only the binary is not a gate); and
      * no config means no server, because a stylesheet without stylelint
      * hasn't opted into stylelint's opinions.
+     *
+     * <p>text/x-sass (the indented dialect, v2.20.0) is DELIBERATELY
+     * not in this set: stylelint parses indented files only when the
+     * project configures a customSyntax for them, so binding the
+     * server to the mime unconditionally would lint most .sass files
+     * with a parser that cannot read them.
      */
     public static final class StylelintServer
             implements MultiMimeLanguageServerProvider {

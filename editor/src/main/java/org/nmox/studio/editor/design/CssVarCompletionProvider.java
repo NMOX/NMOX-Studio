@@ -36,6 +36,7 @@ import org.openide.filesystems.FileUtil;
     @MimeRegistration(mimeType = "text/scss", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/less", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-scss", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-sass", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class)
 })
 public class CssVarCompletionProvider implements CompletionProvider {

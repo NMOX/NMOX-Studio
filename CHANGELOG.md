@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.20.0] - 2026-08-20
+
+Indented Sass, first-class — the oldest Known-Issues line (".sass
+shares the SCSS grammar — approximate highlighting", standing since
+v1.4.x) closes: .sass gets its OWN mime (text/x-sass) with the
+canonical indented-dialect grammar (TheRealSyler/vscode-sass-indented,
+MIT, sha256-pinned) and a real CSL kit — a grammar alone does not
+make a mime (v1.217.0). The line-based css-family surfaces ride
+along: color swatches and the ⌘-click picker, design-token var(
+completion and ⌘-click, property completion, spellcheck, the //
+comment toggle, and Compile to CSS (which would otherwise have been
+LOST in the split — the mime move audit is the real work of a
+dialect divorce). Deliberately OUT, each pinned by test with its
+reason at the site: Emmet (emits braced, semicoloned declarations —
+a wrong guess mutates the stylesheet), Prettier (no indented
+support), the Navigator outline (anchors on braces), and
+stylelint-lsp (parses indented files only under a project-configured
+customSyntax). SassVerticalTest pins the split both ways, the
+vendored bytes against the NOTICE sha, the ride-alongs, and the
+outs; three mutants killed by name; 86 grammars (the count gate
+caught the codebase-guide's stale 85 on its first run). Walk-proven
+in the assembled app: indented tokens colored, tomato and #1E90FF
+painted as themselves, Toggle Comment writing //, and Compile to CSS
+producing the exact expected stylesheet — after the walk caught a
+crashing global sass being quoted by its stack-frame path on the
+status line (the v1.303.0 class): firstLine now prefers the Error
+line over the dump's head, test-pinned.
+
 ## [2.19.6] - 2026-08-20
 
 The RELEASE310 dossier (docs only): ledger 84's measured half, done
@@ -13625,6 +13653,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.20.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.6...v2.20.0
 [2.19.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.5...v2.19.6
 [2.19.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.4...v2.19.5
 [2.19.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.19.3...v2.19.4

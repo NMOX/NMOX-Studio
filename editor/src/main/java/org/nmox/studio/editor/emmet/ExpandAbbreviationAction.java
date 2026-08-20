@@ -47,6 +47,9 @@ import org.openide.awt.StatusDisplayer;
             mimeType = "text/less", popupPath = "", popupPosition = 95),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
             mimeType = "text/x-scss", popupPath = "", popupPosition = 95),
+    // text/x-sass DELIBERATELY absent: CssEmmet emits braced,
+    // semicoloned declarations — wrong shape for the indented
+    // dialect, and a wrong guess MUTATES the stylesheet (v1.336.0)
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
             mimeType = "text/x-less", popupPath = "", popupPosition = 95),
     // inline templates (the Angular-top arc): a component's

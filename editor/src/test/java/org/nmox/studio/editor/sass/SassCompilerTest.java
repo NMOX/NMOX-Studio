@@ -110,4 +110,23 @@ class SassCompilerTest {
         assertThat(SassCompiler.firstLine("x".repeat(500)))
                 .hasSize(SassCompiler.ERROR_SNIPPET_CHARS);
     }
+    @Test
+    @DisplayName("a crashing sass's stack-path head yields to the Error line")
+    void firstLinePrefersTheErrorLine() {
+        String crash = "/Users/x/lib/node_modules/sass/sass.js:315\n"
+                + "undefined\n"
+                + "             ^\n"
+                + "\n"
+                + "Error [ERR_REQUIRE_ESM]: require() of ES Module chokidar not supported.\n"
+                + "    at TracingChannel.traceSync (node:diagnostics_channel:315:14)";
+        assertThat(SassCompiler.firstLine(crash))
+                .startsWith("Error [ERR_REQUIRE_ESM]");
+        // an ordinary sass error still reads its own first line
+        assertThat(SassCompiler.firstLine("Error: expected \":\".\n  ╷\n3 │ x\n"))
+                .startsWith("Error: expected");
+        // no Error line anywhere: the literal head, never silence
+        assertThat(SassCompiler.firstLine("something odd\nmore"))
+                .isEqualTo("something odd");
+    }
+
 }
