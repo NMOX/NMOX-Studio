@@ -1885,6 +1885,9 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         selectConnection(spec.id());
+        // the v2.18.0 law: gestures speak — Remove always did, Add and
+        // Edit were the silent two (the 2026-08-20 DBA walk's find)
+        status("Added \"" + spec.name() + "\" — Connect opens it", Color.GRAY);
     }
 
     private void editSelected() {
@@ -1907,6 +1910,7 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         selectConnection(spec.id());
+        status("Updated \"" + updated.name() + "\"", Color.GRAY);
     }
 
     private void removeSelected() {
