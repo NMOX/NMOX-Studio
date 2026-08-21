@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.26.1] - 2026-08-21
+
+The README renders again (David's catch, live on GitHub): the by-audience
+paragraph had been inserted INSIDE the front page's 2x2 screenshot table
+with no blank line, so GitHub absorbed every wrapped line as a one-cell
+table row, stranding the second caption row as a literal pipe-riddled
+paragraph (its `***Task Board**` emphasis was imbalanced too). The
+captions rejoined their images, the paragraph stands alone, the caption
+follows the row-40 emphasis shape - and the failure class is gated:
+MarkdownTableShapeTest's pure checker rejects both defect shapes
+(glued-paragraph, orphan-row) as pinned fixtures and sweeps README +
+docs/*.md on every build; proven failing-first against the pre-fix
+README (4 defects named by line).
+
 ## [2.26.0] - 2026-08-20
 
 Batch 4 — the night review of the batch arc, its finds fixed in place:
@@ -13880,6 +13894,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.26.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.0...v2.26.1
 [2.26.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.24.0...v2.25.0
 [2.24.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.23.0...v2.24.0
