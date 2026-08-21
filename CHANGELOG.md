@@ -4,6 +4,14 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.26.2] - 2026-08-21
+
+Docs truth (docs only): CLAUDE.md's status headline moves v2.23.0 ->
+v2.26.1 with the batch-mode night summarized and four version-history
+entries added; plan.md gains the batch-mode addendum (the hardened
+sha-pinned gate template, the interrupted-walk-leg law, the
+doc-shape-breaks-are-invisible-to-content-greps law).
+
 ## [2.26.1] - 2026-08-21
 
 The README renders again (David's catch, live on GitHub): the by-audience
@@ -13894,6 +13902,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.26.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.1...v2.26.2
 [2.26.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.0...v2.26.1
 [2.26.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.24.0...v2.25.0

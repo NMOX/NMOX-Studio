@@ -2510,3 +2510,31 @@ the standing deferred-with-reasons set.
 stock v2.10.0 → 2.19.1 in-app across twelve releases, eleven jars
 byte-verified, originals in the cluster's update/backup, clean reboot
 (recorded in the v2.19.3 changelog entry).
+
+## Addendum — 2026-08-20/21, the batch-mode night (v2.24.0–v2.26.1)
+
+David's call: batch several units per gate so CI/CD gates once per
+BATCH (~50 min) instead of once per unit. Adopted as the standing mode.
+
+Laws established:
+- **The hardened gate template**: batch mode broke the old script's
+  assumptions (it read docs from a live worktree and could have tagged
+  uncommitted wip after silent polling misses). The template now
+  captures the MERGE SHA from the PR's own record and proves
+  docs-landed, main-green, and the tag against THAT sha — no worktree
+  access anywhere. Never derive away the lesson: gates verify commits,
+  not directories.
+- **An interrupted walk leg is a leg not done** (v2.26.0): v2.24.0's
+  changelog example (bgc:tomato) was never in the Emmet dialect — the
+  walk was interrupted before that leg and the claim outran the proof.
+  A claimed example must exist as a pinned test; fixed by making it
+  true (the v2.21.5 way) with the written-declaration law.
+- **Doc SHAPE breaks are invisible to content greps** (v2.26.1): the
+  README's table absorbed a paragraph and stranded a caption row while
+  every word survived — only rendering broke. MarkdownTableShapeTest
+  now gates both shapes over the live docs (the v1.314.0
+  conflict-marker lesson, one format over).
+
+Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call
+pending), CommandExecutorReaperTest + UpdateCheckTest on the CI flake
+watchlist (one offense each; second offense earns isolation fixes).
