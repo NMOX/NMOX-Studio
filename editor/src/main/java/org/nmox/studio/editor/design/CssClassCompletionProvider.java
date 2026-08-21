@@ -33,10 +33,10 @@ import org.openide.filesystems.FileUtil;
  * — which runs HERE, on the async completion thread, never the EDT.
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class, position = 540),
+    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class, position = 540),
+    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class, position = 540),
+    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class, position = 540)
 })
 public class CssClassCompletionProvider implements CompletionProvider {
 

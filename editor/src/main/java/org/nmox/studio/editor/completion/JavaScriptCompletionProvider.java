@@ -26,8 +26,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * the rules stay unit-testable without an editor.
  */
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
-    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class),
-    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class)
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class, position = 520),
+    @org.netbeans.api.editor.mimelookup.MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class, position = 520)
 })
 public class JavaScriptCompletionProvider implements CompletionProvider {
 
