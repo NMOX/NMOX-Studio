@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.26.0] - 2026-08-20
+
+Batch 4 — the night review of the batch arc, its finds fixed in place:
+the project token scan reads the whole markup family (tokens declared
+in .vue/.svelte style blocks join var( completion project-wide,
+region-parsed so template prose never registers — the family
+expansion's missing half, failing-first proven), and Emmet's CSS
+dialect gains the prop:value form real Emmet speaks (exact
+COLON_PROPS key, literal value, so bgc:tomato expands to
+background-color: tomato; — v2.24.0's changelog example, claimed a
+release early, now made TRUE the v2.21.5 way; the written-declaration
+law holds by the space distinguisher, both mutants killed by name).
+Gate hardening: MarkupFamilyParityTest covers the Emmet surface, and
+the family Emmet path is pinned headless by a .vue clip test (the
+mimeType-property harness lesson in place). The gate template itself
+hardened after a live near-miss: sha-pinned tagging, no worktree
+checkouts (the batch-mode law).
+
 ## [2.25.0] - 2026-08-20
 
 Batch 3: the style-region family reaches the component formats — Vue
@@ -13862,6 +13880,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.26.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.25.0...v2.26.0
 [2.25.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.24.0...v2.25.0
 [2.24.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.23.0...v2.24.0
 [2.23.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.22.0...v2.23.0

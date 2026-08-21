@@ -139,4 +139,36 @@ class CssEmmetTest {
         assertThat(css("+df")).isNull();
         assertThat(css("df++aic")).isNull();
     }
+
+    @Test
+    @DisplayName("prop:value expands with the literal value; unknown keys and written declarations refuse")
+    void colonValueForms() {
+        assertThat(CssEmmet.expand("bgc:tomato").css())
+                .isEqualTo("background-color: tomato;");
+        assertThat(CssEmmet.expand("w:100%").css()).isEqualTo("width: 100%;");
+        assertThat(CssEmmet.expand("c:#333").css()).isEqualTo("color: #333;");
+        assertThat(CssEmmet.expand("bgc:tomato!").css())
+                .isEqualTo("background-color: tomato !important;");
+        assertThat(CssEmmet.expand("df+bgc:tomato").css())
+                .isEqualTo("display: flex;\nbackground-color: tomato;");
+        // the exact-key law: an unknown key refuses WHOLE — and long-form
+        // names are not keys, so a minified declaration never reformats
+        assertThat(CssEmmet.expand("xyz:1")).isNull();
+        assertThat(CssEmmet.expand("margin:10px")).isNull();
+        assertThat(CssEmmet.expand("bgc:")).isNull();
+    }
+
+    @Test
+    @DisplayName("a WRITTEN declaration's value never expands: the space after its colon holds the law")
+    void writtenDeclarationNeverExpands() {
+        assertThat(CssEmmet.abbreviationIn("  color: tomato")).isNull();
+        // the DISCRIMINATING case: "df" alone IS expandable, so only the
+        // prefix-colon law stops it here — a mutant deleting the law
+        // would mangle "color: df" into nested declarations
+        assertThat(CssEmmet.abbreviationIn("  color: df")).isNull();
+        // the colon form scans as ONE token when unspaced
+        assertThat(CssEmmet.abbreviationIn(".a { bgc:tomato"))
+                .isEqualTo("bgc:tomato");
+        assertThat(CssEmmet.abbreviationIn("  w:100%")).isEqualTo("w:100%");
+    }
 }
