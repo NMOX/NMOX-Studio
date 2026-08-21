@@ -4,6 +4,14 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.28.1] - 2026-08-21
+
+Docs truth (docs only): the class-attribute intelligence enters the
+README's by-audience paragraph and the user guide (its own section,
+with the classes-only reason stated); CLAUDE.md's headline moves
+v2.26.1 -> v2.28.0 with the day's two batches and their platform
+finds; plan.md gains the day addendum.
+
 ## [2.28.0] - 2026-08-21
 
 Batch 6 - the reverse gesture, and a quieter boot. ⌘-click a .name
@@ -13961,6 +13969,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.28.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.0...v2.28.1
 [2.28.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.27.0...v2.28.0
 [2.27.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.2...v2.27.0
 [2.26.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.1...v2.26.2

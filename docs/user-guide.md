@@ -376,6 +376,19 @@ through the indirection (document-local by design; cross-file
 resolution rides the completion and the jump, which run off the paint
 path).
 
+### The class attribute knows your stylesheets
+
+In HTML, Vue, Svelte, and Angular templates, `class="…"` completes
+from the classes your project's stylesheets **actually declare** —
+CSS, SCSS, Less, indented Sass, and the markup family's own `<style>`
+blocks — each row naming its declaring file (⌃Space; this file's
+classes list first). **⌘-click** a class in the attribute to land on
+its rule, or ⌘-click a `.selector` in a stylesheet to land on its
+first `class="…"` usage in your markup — the status line reports the
+count when there are more. Classes only, deliberately: `#id` selectors
+are textually indistinguishable from hex colors without a full value
+parser, so the id attribute waits rather than guessing.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by

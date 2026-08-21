@@ -2538,3 +2538,33 @@ Laws established:
 Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call
 pending), CommandExecutorReaperTest + UpdateCheckTest on the CI flake
 watchlist (one offense each; second offense earns isolation fixes).
+
+## Addendum — 2026-08-21, the class-intelligence day (v2.27.0–v2.28.1)
+
+Batch mode standing. Two feature batches: the class attribute became
+navigable BOTH directions across the markup family, and the boot log
+went quiet about every row we own.
+
+Laws established:
+- **The platform's class navigation only knows linked sheets**:
+  HtmlDeclarationFinder answers "Class … not found" for unlinked
+  project stylesheets — the everyday case. Our provider outranks it at
+  position 10 (narrowest claim), reason in the javadoc; the dispatcher
+  truth is decompiled fact (HyperlinkOperation: top mime only,
+  HyperlinkProviders position order, first isHyperlinkPoint wins,
+  legacy providers only after every Ext declines).
+- **Synthesized modifier-clicks cannot reach Swing hyperlink
+  listeners** (ledger-76 extension): hold_key delivers the modifier
+  for HOVER consultation (provable via an in-app probe logger), but a
+  click with modifiers never arms the chain. Walk law: pin the hover
+  consultation, record the click leg as manual-only.
+- **The CSL processor emits platform rows into OUR generated layer**
+  (GsfCompletionProvider, CodeTemplate, WaitScanFinished — all
+  unpositioned): a layer-law gate must scope to org-nmox rows and
+  bless the rest in writing.
+- **The auto-pair walk-technique law**: batch-typing attr="prefix as
+  one string lands the prefix OUTSIDE the auto-closed quote; type the
+  quote, wait, then type the prefix (v1.332.0's trap, harness-side).
+
+Standing counts: 86 grammars, 92 spaces, editor floor 0.67
+(windows-binding), RELEASE310 GO-READY (David's call pending).
