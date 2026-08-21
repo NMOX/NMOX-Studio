@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.24.0] - 2026-08-20
+
+Batch 2: Emmet speaks CSS inside HTML style regions — ⌥⌘E on a css
+abbreviation in a style="…" attribute or <style> block expands as
+CSS (bgc:tomato → background-color: tomato;), with the abbreviation
+slice CLIPPED to the region start so it can never swallow markup
+(the TypeScript inline-template discipline, third home); outside a
+region HTML keeps its markup expansion. Gate-pinned with the clip
+law mutation-proven by name; walk-proven both ways in the assembled
+app — bgc#1e90ff inside a <style> block expanded to
+background-color: #1e90ff; (the new literal swatching instantly),
+and an off-grammar token refused IN the region with CssEmmet's own
+"Unknown property" message, proving the routing twice. Plus the docs
+fold: CLAUDE.md's headline catches up the batch era
+(v2.22.0–v2.24.0) in the same gate — batching docs into feature
+releases is the point.
+
 ## [2.23.0] - 2026-08-20
 
 The first BATCHED release (David's call: several units per gate) —
@@ -13828,6 +13845,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.24.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.23.0...v2.24.0
 [2.23.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.7...v2.22.0
 [2.21.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.6...v2.21.7
