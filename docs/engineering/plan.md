@@ -2568,3 +2568,28 @@ Laws established:
 
 Standing counts: 86 grammars, 92 spaces, editor floor 0.67
 (windows-binding), RELEASE310 GO-READY (David's call pending).
+
+## Addendum — 2026-08-21, the class-intelligence arc (v2.27.0–v2.29.1)
+
+One theme, three batches, capstone shipped the same day: completion
+(class="…" from real stylesheets), navigation both directions
+(usage→rule, rule→usage), then Rename Class project-wide.
+
+Laws established:
+- **A partial rename is corruption — refuse whole** (v2.29.0): any
+  cross-file rewrite bounded by a capped census must refuse when the
+  census hits its cap; totality is the feature.
+- **The platform's mime dispatch consults the TOP mime only** for
+  hyperlink providers (HyperlinkOperation decompiled, v2.27.0):
+  embedded-mime registrations are dead rows; position beats the CSL
+  goto when your claim is narrower and theirs answers wrong.
+- **Proof protocol reads full verdict lines** (v2.29.0): a -q grep
+  extracting failure NAMES reported two dead mutants as survivors;
+  only `Tests run: N, Failures: M` lines count as a mutation verdict.
+- **The hover consultation is the provable hyperlink leg** (v2.27.0):
+  synthesized clicks cannot carry ⌘ into Swing; pin the span via a
+  temporary probe logger under hold_key hover, record the click leg
+  manual-only (ledger-76 extension).
+
+Standing counts unchanged: 86 grammars, 92 spaces, 60 manifests, 53
+devices. RELEASE310 GO-READY (David's call pending).
