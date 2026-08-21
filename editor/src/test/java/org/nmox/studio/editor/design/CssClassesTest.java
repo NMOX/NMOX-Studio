@@ -167,4 +167,64 @@ class CssClassesTest {
                 .containsExactlyInAnyOrder("a.html", "b.vue");
         assertThat(CssClasses.findUsages(dir.toFile(), "hero", 1)).hasSize(1);
     }
+
+    // ---- rename (v2.29.0) --------------------------------------------------
+
+    @Test
+    @DisplayName("renameInText: every selector, whole names only")
+    void renameStylesheet() {
+        assertThat(CssClasses.renameInText(
+                ".card { } .cardigan { } li.card:hover { } /* .card */",
+                false, "card", "tile"))
+                .isEqualTo(".tile { } .cardigan { } li.tile:hover { } /* .card */");
+    }
+
+    @Test
+    @DisplayName("renameInText on markup: attr tokens AND style-region selectors, prose untouched")
+    void renameMarkup() {
+        String vue = "<template><p class=\"card big\">card prose</p></template>\n"
+                + "<style>.card { } .cardigan { }</style>\n";
+        assertThat(CssClasses.renameInText(vue, true, "card", "tile"))
+                .isEqualTo("<template><p class=\"tile big\">card prose</p></template>\n"
+                        + "<style>.tile { } .cardigan { }</style>\n");
+    }
+
+    @Test
+    @DisplayName("surveyRename counts spans, flags collisions, reports the census honestly")
+    void surveyRename(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("styles.css"), ".hero { } .hero { } .taken { }");
+        Files.writeString(dir.resolve("a.html"), "<p class=\"hero\"></p>");
+        CssClasses.RenameSurvey ok =
+                CssClasses.surveyRename(dir.toFile(), "hero", "fresh");
+        assertThat(ok.spanCount()).isEqualTo(3);
+        assertThat(ok.files()).hasSize(2);
+        assertThat(ok.collision()).isFalse();
+        assertThat(ok.censusComplete()).isTrue();
+
+        assertThat(CssClasses.surveyRename(dir.toFile(), "hero", "taken")
+                .collision())
+                .as("renaming onto an existing class is a collision")
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("a census at the walk cap reports incomplete — the rename must refuse")
+    void censusAtCapIsIncomplete(@TempDir Path dir) throws Exception {
+        for (int i = 0; i < 61; i++) {
+            Files.writeString(dir.resolve("s" + i + ".css"), ".x" + i + " { }");
+        }
+        assertThat(CssClasses.surveyRename(dir.toFile(), "x1", "y1")
+                .censusComplete()).isFalse();
+    }
+
+    @Test
+    @DisplayName("valid class names: ident family only")
+    void validNames() {
+        assertThat(CssClasses.validClassName("btn-primary")).isTrue();
+        assertThat(CssClasses.validClassName("_private")).isTrue();
+        assertThat(CssClasses.validClassName("2col")).isFalse();
+        assertThat(CssClasses.validClassName("has space")).isFalse();
+        assertThat(CssClasses.validClassName("")).isFalse();
+        assertThat(CssClasses.validClassName(".dotted")).isFalse();
+    }
 }

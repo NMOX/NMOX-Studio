@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.29.0] - 2026-08-21
+
+Batch 7 - Rename Class, project-wide: the capstone of the
+class-intelligence arc. Right-click a class name - in a class="..."
+attribute, a <style> selector, or any stylesheet's .selector - and
+Rename Class... rewrites every whole-token span across the project's
+stylesheets and markup (attr usages + style-region selectors), with
+the count per file on the status line. The refusal ladder speaks at
+every rung: caret not on a class, an invalid name, a rename onto an
+EXISTING class (rules would silently merge - the v1.284.0 law), a
+project bigger than the bounded census (a partial rename is
+corruption, so it refuses whole), and unsaved changes in any affected
+file. Writes ride FileObject streams so open, unmodified editors
+reload themselves. All span math in the pure CssClasses core
+(renameInText/surveyRename); .cardigan survives a card rename in both
+worlds; three mutants killed by name (region-selector half, collision
+check, census honesty) - and the mutation harness itself got caught
+lying once: a -q grep pattern reported two mutants as survivors that
+unfiltered reruns proved dead, so the proof protocol now reads the
+full verdict line, never a name extract.
+
 ## [2.28.1] - 2026-08-21
 
 Docs truth (docs only): the class-attribute intelligence enters the
@@ -13969,6 +13990,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.29.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.1...v2.29.0
 [2.28.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.0...v2.28.1
 [2.28.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.27.0...v2.28.0
 [2.27.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.2...v2.27.0
