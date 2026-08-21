@@ -98,7 +98,7 @@ public class ExpandAbbreviationAction extends BaseAction {
             // everywhere else. The region CLIPS the line slice (the
             // TypeScript inline-template discipline) so an abbreviation
             // can never reach past the region into markup.
-            if (mime instanceof String m && m.equals("text/html")) {
+            if (org.nmox.studio.editor.design.HtmlStyleRegions.isMarkup(mime)) {
                 String all = doc.getText(0, doc.getLength());
                 for (org.nmox.studio.editor.design.HtmlStyleRegions.Region r
                         : org.nmox.studio.editor.design.HtmlStyleRegions.find(all)) {

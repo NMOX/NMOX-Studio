@@ -68,7 +68,7 @@ public final class CssColorHighlighter implements DocumentListener {
         });
         OffsetsBag fresh = new OffsetsBag(doc);
         java.util.List<CssColors.ColorSpan> spans;
-        if ("text/html".equals(doc.getProperty("mimeType"))) {
+        if (HtmlStyleRegions.isMarkup(doc.getProperty("mimeType"))) {
             // v2.22.0: in HTML, bare `tomato` is usually PROSE — only
             // <style> blocks and style="…" attribute values may swatch
             spans = new java.util.ArrayList<>(HtmlStyleRegions.scan(text[0]));
@@ -129,6 +129,9 @@ public final class CssColorHighlighter implements DocumentListener {
     // mimes too or real stylesheets never see them.
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/html", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/x-vue", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/x-svelte", service = HighlightsLayerFactory.class),
+        @MimeRegistration(mimeType = "text/x-ng-template", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/css", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/scss", service = HighlightsLayerFactory.class),
         @MimeRegistration(mimeType = "text/less", service = HighlightsLayerFactory.class),
