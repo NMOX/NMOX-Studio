@@ -205,7 +205,10 @@ public final class CssTokens {
                 }
             } else if ((name.endsWith(".css") || name.endsWith(".scss")
                     || name.endsWith(".less") || name.endsWith(".sass")
-                    || name.endsWith(".html") || name.endsWith(".htm"))
+                    || name.endsWith(".html") || name.endsWith(".htm")
+                    // v2.26.0: the markup FAMILY declares tokens too — a
+                    // Vue/Svelte component's <style> block is a stylesheet
+                    || name.endsWith(".vue") || name.endsWith(".svelte"))
                     && f.length() <= MAX_FILE_BYTES) {
                 sheets.add(f);
             }
@@ -216,11 +219,15 @@ public final class CssTokens {
         try {
             String css = Files.readString(f.toPath());
             List<ProjectToken> tokens = new ArrayList<>();
+            String n = f.getName();
             java.util.Map<String, Token> decls =
-                    f.getName().endsWith(".html") || f.getName().endsWith(".htm")
-                    // v2.23.0: tokens declared in <style> blocks count too
+                    n.endsWith(".html") || n.endsWith(".htm")
+                    || n.endsWith(".vue") || n.endsWith(".svelte")
+                    // v2.23.0 (.html) + v2.26.0 (family): tokens declared
+                    // in <style> blocks count too, region-parsed so prose
+                    // never registers a declaration
                     ? HtmlStyleRegions.declarations(css)
-                    : declarations(css, f.getName().endsWith(".sass"));
+                    : declarations(css, n.endsWith(".sass"));
             for (Token t : decls.values()) {
                 tokens.add(new ProjectToken(f, t.name(), t.value(), t.offset()));
             }

@@ -66,6 +66,30 @@ class CssTokensTest {
     }
 
     @Test
+    @DisplayName("the scan reads the markup family: tokens declared in .vue and .svelte style blocks join, prose never does")
+    void familyComponentsDeclareTokens(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("App.vue"),
+                """
+                <template><p>--prose-not-a-token: tomato</p></template>
+                <style scoped>
+                :root { --vue-brand: #1E90FF; }
+                </style>
+                """);
+        Files.writeString(dir.resolve("Card.svelte"),
+                """
+                <script>let x = 1;</script>
+                <p>ignore --fake: red</p>
+                <style>
+                :root { --svelte-gap: 12px; }
+                </style>
+                """);
+        assertThat(CssTokens.scanProject(dir.toFile()))
+                .extracting(CssTokens.ProjectToken::name)
+                .as("family <style> blocks declare; template prose does not")
+                .containsExactlyInAnyOrder("--vue-brand", "--svelte-gap");
+    }
+
+    @Test
     @DisplayName("varPrefix fires only inside var( — the completion trigger, pinned")
     void varPrefixContext() {
         assertThat(CssTokens.varPrefix("color: var(")).isEmpty();
