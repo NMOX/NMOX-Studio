@@ -389,6 +389,15 @@ count when there are more. Classes only, deliberately: `#id` selectors
 are textually indistinguishable from hex colors without a full value
 parser, so the id attribute waits rather than guessing.
 
+**Rename Class…** (right-click any class token, in markup or a
+stylesheet) rewrites every whole-token span across the project — attr
+usages, `<style>` selectors, stylesheet rules — and reports the count
+per file. It refuses out loud rather than guessing: renaming onto an
+existing class (the rules would merge), a project larger than the
+bounded file census (a partial rename is corruption), or unsaved
+changes in any affected file. Open, unmodified editors reload the
+renamed text themselves.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by

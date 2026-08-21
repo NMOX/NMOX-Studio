@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.29.1] - 2026-08-21
+
+Docs truth (docs only): Rename Class enters the user guide's
+class-intelligence section (with its refusal ladder) and the README's
+by-audience line; CLAUDE.md's headline moves v2.28.0 -> v2.29.0 with
+the day's arc summarized; plan.md gains the arc addendum (the
+partial-rename-is-corruption law, the top-mime dispatch fact, the
+full-verdict-lines proof protocol, the hover-probe technique).
+
 ## [2.29.0] - 2026-08-21
 
 Batch 7 - Rename Class, project-wide: the capstone of the
@@ -13990,6 +13999,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.29.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.1...v2.29.0
 [2.28.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.0...v2.28.1
 [2.28.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.27.0...v2.28.0
