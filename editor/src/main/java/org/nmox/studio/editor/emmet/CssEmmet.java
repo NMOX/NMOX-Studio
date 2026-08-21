@@ -145,6 +145,47 @@ public final class CssEmmet {
     private static final java.util.Set<String> MULTI_VALUE =
             java.util.Set.of("margin", "padding");
 
+    /**
+     * The {@code prop:value} form's property vocabulary (v2.26.0 — the
+     * form real Emmet speaks and v2.24.0's changelog claimed early):
+     * the NUMERIC prefixes plus the named properties. The KEY is exact
+     * or the whole form refuses — the value passes through literally,
+     * so an unknown key can never guess-mutate the stylesheet, and
+     * long-form names are deliberately absent: a minified
+     * {@code margin:10px} already IS a declaration, not an
+     * abbreviation, and must never reformat.
+     */
+    static final Map<String, String> COLON_PROPS = new LinkedHashMap<>();
+    static {
+        COLON_PROPS.putAll(NUMERIC);
+        COLON_PROPS.put("c", "color");
+        COLON_PROPS.put("bgc", "background-color");
+        COLON_PROPS.put("bg", "background");
+        COLON_PROPS.put("ff", "font-family");
+        COLON_PROPS.put("fw", "font-weight");
+        COLON_PROPS.put("fs", "font-style");
+        COLON_PROPS.put("ta", "text-align");
+        COLON_PROPS.put("td", "text-decoration");
+        COLON_PROPS.put("tt", "text-transform");
+        COLON_PROPS.put("ls", "letter-spacing");
+        COLON_PROPS.put("va", "vertical-align");
+        COLON_PROPS.put("ws", "white-space");
+        COLON_PROPS.put("d", "display");
+        COLON_PROPS.put("pos", "position");
+        COLON_PROPS.put("fl", "float");
+        COLON_PROPS.put("ov", "overflow");
+        COLON_PROPS.put("cur", "cursor");
+        COLON_PROPS.put("g", "gap");
+        COLON_PROPS.put("jc", "justify-content");
+        COLON_PROPS.put("ai", "align-items");
+        COLON_PROPS.put("fx", "flex");
+        COLON_PROPS.put("bd", "border");
+        COLON_PROPS.put("bxsh", "box-shadow");
+        COLON_PROPS.put("trf", "transform");
+        COLON_PROPS.put("trs", "transition");
+        COLON_PROPS.put("anim", "animation");
+    }
+
     private CssEmmet() {
     }
 
@@ -186,7 +227,19 @@ public final class CssEmmet {
         if (body.isEmpty()) {
             return null;
         }
-        String decl = declarationFor(body);
+        // prop:value (v2.26.0): exact key from COLON_PROPS, literal value
+        int colon = body.indexOf(':');
+        String decl;
+        if (colon > 0) {
+            String prop = COLON_PROPS.get(body.substring(0, colon));
+            String value = body.substring(colon + 1);
+            if (prop == null || value.isEmpty()) {
+                return null;
+            }
+            decl = prop + ": " + value + ";";
+        } else {
+            decl = declarationFor(body);
+        }
         if (decl == null) {
             return null;
         }
@@ -324,8 +377,12 @@ public final class CssEmmet {
     }
 
     private static boolean isAbbrevChar(char c) {
+        // ':' and '%' joined for the prop:value form (v2.26.0); a written
+        // declaration's "prop: value" survives untouched because the
+        // SPACE after its colon stops the scan before the colon —
+        // pinned by writtenDeclarationNeverExpands
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
                 || (c >= '0' && c <= '9') || c == '#' || c == '.'
-                || c == '-' || c == '!' || c == '+';
+                || c == '-' || c == '!' || c == '+' || c == ':' || c == '%';
     }
 }

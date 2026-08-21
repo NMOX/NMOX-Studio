@@ -25,6 +25,9 @@ class MarkupFamilyParityTest {
         "src/main/java/org/nmox/studio/editor/design/CssColorHyperlink.java",
         "src/main/java/org/nmox/studio/editor/design/CssVarCompletionProvider.java",
         "src/main/java/org/nmox/studio/editor/design/CssVarHyperlink.java",
+        // the Emmet expansion action serves CSS inside family style
+        // regions (v2.24.0/v2.25.0) — same family law, same gate
+        "src/main/java/org/nmox/studio/editor/emmet/ExpandAbbreviationAction.java",
     };
 
     @Test

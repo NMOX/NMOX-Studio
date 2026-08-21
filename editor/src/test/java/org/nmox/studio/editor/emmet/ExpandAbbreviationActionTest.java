@@ -21,6 +21,9 @@ class ExpandAbbreviationActionTest {
     private static JEditorPane pane(String mime, String text, int caret)
             throws Exception {
         BaseDocument doc = new BaseDocument(false, mime);
+        // the real app's kit-installed documents carry the mime as the
+        // "mimeType" property; the family branch keys on it
+        doc.putProperty("mimeType", mime);
         doc.insertString(0, text, null);
         JEditorPane pane = new JEditorPane();
         pane.setDocument(doc);
@@ -40,6 +43,21 @@ class ExpandAbbreviationActionTest {
                 .startsWith("    ");
         assertThat(p.getCaretPosition())
                 .isEqualTo(out.indexOf("<li>") + 4);
+    }
+
+    @Test
+    @DisplayName("family: a .vue style block expands CSS with the clip law, template markup untouched")
+    void vueStyleBlockExpandsCss() throws Exception {
+        String doc = "<template><p>x</p></template>\n<style>\n.a { bgc:tomato }\n</style>\n";
+        int caret = doc.indexOf("bgc:tomato") + "bgc:tomato".length();
+        JEditorPane p = pane("text/x-vue", doc, caret);
+        new ExpandAbbreviationAction().actionPerformed(null, p);
+        String out = p.getDocument().getText(0, p.getDocument().getLength());
+        assertThat(out)
+                .as("CSS expansion inside the region; the slice never swallows markup")
+                .contains("background-color: tomato;")
+                .contains("<template><p>x</p></template>");
+        assertThat(out).doesNotContain("bgc:tomato");
     }
 
     @Test
