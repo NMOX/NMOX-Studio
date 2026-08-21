@@ -42,12 +42,14 @@ phosphor styling, for a browser.*
 | ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs · **Task Board** (⌥⌘1) — per-project kanban: columns, drag/keyboard moves, WIP limits, `.nmoxtasks.json` beside the project* |
 
 **The go-to studio, by audience.** *Web developers*: Emmet expansion
-(⌥⌘E) in HTML, Angular templates, and stylesheets, tsserver/eslint/Prettier out of the
-box, breakpoints in Node and Chrome, a Task Board (⌥⌘1) beside the code.
-*Designers*: color swatches on every literal **and through `var()`
-tokens**, project-wide token completion with swatch icons, ⌘-click from
-usage to declaration, a click-to-pick color chooser, live viewport
-presets, save-to-reload. *Engineers*: a 53-device task rack, PREFLIGHT
+(⌥⌘E) in HTML, Angular templates, and stylesheets, `class="…"`
+completion from the project's real stylesheets with ⌘-click between a
+class and its rule — both directions — tsserver/eslint/Prettier out of
+the box, breakpoints in Node and Chrome, a Task Board (⌥⌘1) beside the
+code. *Designers*: color swatches on every literal **and through
+`var()` tokens**, project-wide token completion with swatch icons,
+⌘-click from usage to declaration, a click-to-pick color chooser, live
+viewport presets, save-to-reload. *Engineers*: a 53-device task rack, PREFLIGHT
 ship gates, CI export, six-engine DB Studio, multi-cloud infra designer,
 and an update center that has upgraded itself across every release since
 v1.51.
