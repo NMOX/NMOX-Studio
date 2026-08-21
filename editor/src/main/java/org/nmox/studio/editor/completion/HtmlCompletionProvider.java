@@ -26,12 +26,12 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  */
 @org.netbeans.api.editor.mimelookup.MimeRegistrations({
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
-        mimeType = "text/html", service = CompletionProvider.class),
+        mimeType = "text/html", service = CompletionProvider.class, position = 510),
     // v1.217.0: component templates left text/html for the TextMate
     // lexer; the platform HTML completion left with the mime, so ours
     // serves tags and attributes there
     @org.netbeans.api.editor.mimelookup.MimeRegistration(
-        mimeType = "text/x-ng-template", service = CompletionProvider.class)
+        mimeType = "text/x-ng-template", service = CompletionProvider.class, position = 510)
 })
 public class HtmlCompletionProvider implements CompletionProvider {
 

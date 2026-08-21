@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.28.0] - 2026-08-21
+
+Batch 6 - the reverse gesture, and a quieter boot. ⌘-click a .name
+selector in any stylesheet (css/scss/less/x-scss/x-less/x-sass) and
+land on the class's first class="..." usage in the project's markup -
+"who uses this rule?" as the same gesture as everything else; more
+than one usage says so on the status line with the count and a
+capped-list marker (a picker is a recorded non-goal until the gesture
+earns one), none refuses honestly. The sweep is click-time and
+uncached (a usage list is wanted once, not per keystroke), bounded by
+the same walk as the scans; whole-token matching only (cardigan never
+matches card) and only inside the class attribute - both mutants
+killed by name, plus the gate mutant. And the boot-log lens's own
+finding: the Ordering WARNING at every first use of a completion
+folder was naming OUR providers - all 82 of the editor module's
+CompletionProvider registrations now carry positions (500-560, one per
+class), PositionedRegistrationsTest derives the law from the GENERATED
+layer (org-nmox rows only: the CSL processor emits PLATFORM rows we
+cannot position from our source, blessed in place), and a fresh boot
+no longer warns about any row of ours.
+
 ## [2.27.0] - 2026-08-21
 
 Batch 5 - the class attribute knows your stylesheets: completion inside
@@ -13940,6 +13961,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.28.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.27.0...v2.28.0
 [2.27.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.2...v2.27.0
 [2.26.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.1...v2.26.2
 [2.26.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.0...v2.26.1

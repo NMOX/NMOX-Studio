@@ -124,4 +124,47 @@ class CssClassesTest {
                 .extracting(CssClasses.ProjectSelector::name)
                 .contains("renamed").doesNotContain("from-vue");
     }
+
+    // ---- the reverse direction (v2.28.0) ----------------------------------
+
+    @Test
+    @DisplayName("selectorSpanAt spans a selector name, refuses comments and values")
+    void selectorSpanAtBoundaries() {
+        String css = "/* .ghost */ .card { margin: .5em }";
+        int onCard = css.indexOf("card") + 1;
+        assertThat(CssClasses.selectorSpanAt(css, onCard))
+                .containsExactly(css.indexOf("card"), css.indexOf("card") + 4);
+        int onGhost = css.indexOf("ghost") + 1;
+        assertThat(CssClasses.selectorSpanAt(css, onGhost)).isNull();
+        int onDecimal = css.indexOf("5em");
+        assertThat(CssClasses.selectorSpanAt(css, onDecimal)).isNull();
+    }
+
+    @Test
+    @DisplayName("usagesIn finds whole tokens inside class attributes only")
+    void usagesInBoundaries() {
+        String markup = "<p class=\"card big\">card prose</p>\n"
+                + "<div class='card'></div>\n"
+                + "<span class=\"cardigan\"></span>\n"
+                + "<a title=\"card\"></a>\n";
+        assertThat(CssClasses.usagesIn(markup, "card"))
+                .as("two attr usages; prose, super-string, and other attrs out")
+                .hasSize(2)
+                .containsExactly(markup.indexOf("card big"),
+                        markup.indexOf("'card'") + 1);
+    }
+
+    @Test
+    @DisplayName("findUsages sweeps the project's markup, capped")
+    void findUsagesSweeps(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("a.html"), "<p class=\"hero\"></p>");
+        Files.writeString(dir.resolve("b.vue"),
+                "<template><i class=\"hero small\"/></template>");
+        Files.writeString(dir.resolve("styles.css"), ".hero { }");
+        List<CssClasses.Usage> u = CssClasses.findUsages(dir.toFile(), "hero", 50);
+        assertThat(u).hasSize(2);
+        assertThat(u).extracting(x -> x.file().getName())
+                .containsExactlyInAnyOrder("a.html", "b.vue");
+        assertThat(CssClasses.findUsages(dir.toFile(), "hero", 1)).hasSize(1);
+    }
 }

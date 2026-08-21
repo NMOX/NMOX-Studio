@@ -256,4 +256,100 @@ public final class CssClasses {
     private static boolean isNameChar(char c) {
         return Character.isLetterOrDigit(c) || c == '-' || c == '_';
     }
+
+    // ---- the reverse direction: selector → markup usages (v2.28.0) --------
+
+    /**
+     * The class-NAME span when {@code offset} sits on a {@code .name}
+     * selector in {@code css} (dot excluded) — the stylesheet-side
+     * ⌘-click subject. Comments/strings/url() are blanked first, so a
+     * dot in prose is never a jump point. Returns {start, end} or null.
+     */
+    public static int[] selectorSpanAt(String css, int offset) {
+        if (offset < 0 || offset > css.length()) {
+            return null;
+        }
+        Matcher m = CLASS_SELECTOR.matcher(blankNonSelectors(css));
+        while (m.find()) {
+            if (offset >= m.start(1) && offset <= m.end(1)) {
+                return new int[] {m.start(1), m.end(1)};
+            }
+            if (m.start(1) > offset) {
+                break;
+            }
+        }
+        return null;
+    }
+
+    /** One class usage in a markup file's {@code class} attribute. */
+    public record Usage(File file, int offset) {
+    }
+
+    // class attribute values, both quote styles
+    private static final Pattern CLASS_ATTR = Pattern.compile(
+            "\\bclass\\s*=\\s*(\"([^\"]*)\"|'([^']*)')");
+
+    /**
+     * Offsets (of the token) where {@code name} appears as a WHOLE
+     * space-separated token inside a {@code class="…"} attribute value
+     * of {@code markup}. Prose mentions, other attributes, and
+     * super-strings ({@code cardigan} for {@code card}) never match.
+     */
+    public static List<Integer> usagesIn(String markup, String name) {
+        List<Integer> out = new ArrayList<>();
+        Matcher m = CLASS_ATTR.matcher(markup);
+        while (m.find()) {
+            int g = m.group(2) != null ? 2 : 3;
+            String value = m.group(g);
+            int base = m.start(g);
+            int i = 0;
+            while (i < value.length()) {
+                int end = value.indexOf(' ', i);
+                if (end < 0) {
+                    end = value.length();
+                }
+                if (value.substring(i, end).equals(name)) {
+                    out.add(base + i);
+                }
+                i = end + 1;
+            }
+        }
+        return out;
+    }
+
+    /** Extensions of the markup family the usage search reads. */
+    private static boolean isMarkupFile(String n) {
+        return n.endsWith(".html") || n.endsWith(".htm")
+                || n.endsWith(".vue") || n.endsWith(".svelte");
+    }
+
+    /**
+     * Every {@code class="…"} usage of {@code name} across the
+     * project's markup files, capped at {@code cap} — a click-time
+     * query, bounded by the same walk as the scans but uncached (a
+     * usage list is wanted once, not on every keystroke). Callers run
+     * this OFF the EDT.
+     */
+    public static List<Usage> findUsages(File root, String name, int cap) {
+        List<Usage> out = new ArrayList<>();
+        if (root == null || !root.isDirectory() || name == null || name.isEmpty()) {
+            return out;
+        }
+        for (File f : CssTokens.collectStylesheets(root)) {
+            if (!isMarkupFile(f.getName())) {
+                continue;
+            }
+            try {
+                for (int offset : usagesIn(Files.readString(f.toPath()), name)) {
+                    out.add(new Usage(f, offset));
+                    if (out.size() >= cap) {
+                        return out;
+                    }
+                }
+            } catch (IOException | OutOfMemoryError unreadable) {
+                // skip the file, keep the sweep
+            }
+        }
+        return out;
+    }
 }

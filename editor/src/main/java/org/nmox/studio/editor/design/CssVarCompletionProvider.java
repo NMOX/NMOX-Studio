@@ -32,16 +32,16 @@ import org.openide.filesystems.FileUtil;
  * completion thread, never the EDT.
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType = "text/css", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/scss", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/less", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-scss", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-sass", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class),
-    @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class)
+    @MimeRegistration(mimeType = "text/css", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/scss", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/less", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-scss", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-sass", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class, position = 550),
+    @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class, position = 550)
 })
 public class CssVarCompletionProvider implements CompletionProvider {
 
