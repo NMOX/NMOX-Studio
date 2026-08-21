@@ -99,9 +99,11 @@ class EmmetWiringGateTest {
         String src = java.nio.file.Files.readString(java.nio.file.Path.of(
                 "src/main/java/org/nmox/studio/editor/emmet/ExpandAbbreviationAction.java"),
                 java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n");
-        // the branch exists, keys on the EXACT mime, and consults the regions
-        assertThat(src).contains("m.equals(\"text/html\")");
-        int at = src.indexOf("m.equals(\"text/html\")");
+        // the branch exists, keys on the SHARED markup family (v2.25.0 —
+        // one set in HtmlStyleRegions, every surface consults it), and
+        // consults the regions
+        assertThat(src).contains("HtmlStyleRegions.isMarkup(mime)");
+        int at = src.indexOf("HtmlStyleRegions.isMarkup(mime)");
         String branch = src.substring(at, src.indexOf("Emmet.AtCaret", at));
         assertThat(branch)
                 .as("region-gated: css expansion only inside a style region")

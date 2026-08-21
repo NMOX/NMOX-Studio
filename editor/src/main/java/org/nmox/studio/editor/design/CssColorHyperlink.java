@@ -34,6 +34,9 @@ import org.openide.windows.WindowManager;
     @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/html", service = HyperlinkProviderExt.class, position = 150),
+    @MimeRegistration(mimeType = "text/x-vue", service = HyperlinkProviderExt.class, position = 150),
+    @MimeRegistration(mimeType = "text/x-svelte", service = HyperlinkProviderExt.class, position = 150),
+    @MimeRegistration(mimeType = "text/x-ng-template", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 150)
 })
 public final class CssColorHyperlink implements HyperlinkProviderExt {
@@ -165,7 +168,7 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
                 text[0] = "";
             }
         });
-        cache.spans = "text/html".equals(doc.getProperty("mimeType"))
+        cache.spans = HtmlStyleRegions.isMarkup(doc.getProperty("mimeType"))
                 ? HtmlStyleRegions.scan(text[0])   // style regions only (v2.22.0)
                 : CssColors.scan(text[0]);
         cache.scannedVersion = version;
