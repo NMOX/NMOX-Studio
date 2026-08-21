@@ -318,7 +318,7 @@ public final class CssClasses {
     }
 
     /** Extensions of the markup family the usage search reads. */
-    private static boolean isMarkupFile(String n) {
+    static boolean isMarkupFile(String n) {
         return n.endsWith(".html") || n.endsWith(".htm")
                 || n.endsWith(".vue") || n.endsWith(".svelte");
     }
@@ -351,5 +351,118 @@ public final class CssClasses {
             }
         }
         return out;
+    }
+
+    // ---- rename (v2.29.0) -------------------------------------------------
+
+    /** A syntactically valid class name: the CSS ident family. */
+    public static boolean validClassName(String name) {
+        if (name == null || name.isEmpty()
+                || !(Character.isLetter(name.charAt(0)) || name.charAt(0) == '_')) {
+            return false;
+        }
+        for (int i = 1; i < name.length(); i++) {
+            if (!isNameChar(name.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Every {@code .name} selector span (name only, dot excluded) in a
+     * stylesheet text — ALL occurrences, because a rename must hit every
+     * rule, not the navigation scan's first-wins entry.
+     */
+    static List<int[]> selectorSpans(String css, String name) {
+        List<int[]> out = new ArrayList<>();
+        Matcher m = CLASS_SELECTOR.matcher(blankNonSelectors(css));
+        while (m.find()) {
+            if (m.group(1).equals(name)) {
+                out.add(new int[] {m.start(1), m.end(1)});
+            }
+        }
+        return out;
+    }
+
+    /**
+     * {@code text} with the class renamed everywhere it means the
+     * class: selector spans (whole name — {@code .cardigan} survives a
+     * {@code card} rename) plus, for markup files, whole-token usages
+     * inside {@code class="…"} attributes and selector spans inside
+     * {@code <style>} regions. Pure — the applier reads a file, calls
+     * this, writes the result; recomputing here from the fresh read is
+     * what makes the cross-file apply race-safe per file.
+     */
+    public static String renameInText(String text, boolean markupFile,
+            String oldName, String newName) {
+        List<int[]> spans = new ArrayList<>();
+        if (markupFile) {
+            for (int offset : usagesIn(text, oldName)) {
+                spans.add(new int[] {offset, offset + oldName.length()});
+            }
+            for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
+                for (int[] s : selectorSpans(
+                        text.substring(r.start(), r.end()), oldName)) {
+                    spans.add(new int[] {s[0] + r.start(), s[1] + r.start()});
+                }
+            }
+            spans.sort((a, b) -> Integer.compare(a[0], b[0]));
+        } else {
+            spans.addAll(selectorSpans(text, oldName));
+        }
+        StringBuilder sb = new StringBuilder(text);
+        for (int i = spans.size() - 1; i >= 0; i--) {
+            sb.replace(spans.get(i)[0], spans.get(i)[1], newName);
+        }
+        return sb.toString();
+    }
+
+    /** The rename survey: what would change, and whether it may proceed. */
+    public record RenameSurvey(List<File> files, int spanCount,
+            boolean collision, boolean censusComplete) {
+    }
+
+    /**
+     * Surveys a project rename OFF the EDT: which files mention the
+     * class (as selector or usage), how many spans, whether
+     * {@code newName} is already declared anywhere (a rename onto an
+     * existing class silently merges rules — the v1.284.0 law refuses
+     * it), and whether the file census is COMPLETE — a walk that hit
+     * its {@link CssTokens#MAX_FILES} cap could miss files, and a
+     * partial rename is data corruption, so the caller must refuse.
+     */
+    public static RenameSurvey surveyRename(File root, String oldName, String newName) {
+        List<File> files = new ArrayList<>();
+        int spans = 0;
+        boolean collision = false;
+        List<File> census = root == null || !root.isDirectory()
+                ? List.of() : CssTokens.collectStylesheets(root);
+        for (File f : census) {
+            try {
+                String text = Files.readString(f.toPath());
+                boolean markup = isMarkupFile(f.getName());
+                int here;
+                if (markup) {
+                    here = usagesIn(text, oldName).size();
+                    for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
+                        String region = text.substring(r.start(), r.end());
+                        here += selectorSpans(region, oldName).size();
+                        collision |= !selectorSpans(region, newName).isEmpty();
+                    }
+                } else {
+                    here = selectorSpans(text, oldName).size();
+                    collision |= !selectorSpans(text, newName).isEmpty();
+                }
+                if (here > 0) {
+                    files.add(f);
+                    spans += here;
+                }
+            } catch (IOException | OutOfMemoryError unreadable) {
+                // skip the file, keep the survey
+            }
+        }
+        return new RenameSurvey(files, spans, collision,
+                census.size() < CssTokens.MAX_FILES);
     }
 }
