@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.25.0] - 2026-08-20
+
+Batch 3: the style-region family reaches the component formats — Vue
+SFCs, Svelte, and Angular templates get everything HTML got this
+evening (color swatches, the ⌘-click picker, var( completion, the
+var jump, and Emmet-CSS in regions), through ONE shared definition:
+HtmlStyleRegions.MARKUP_MIMES is the single list of formats whose
+bare color words are prose, every surface consults it, and
+MarkupFamilyParityTest fails the build if any surface misses any
+family mime — a surface missing one works everywhere you test and
+fails only for the framework you didn't (the KeymapProfileParityTest
+idiom on mime registrations). A Vue SFC's <style scoped lang="scss">
+block regions exactly like HTML's, fixture-pinned; the dropped-mime
+mutant killed by name; walk-proven on a real .vue in the assembled
+app — the template attribute's tomato and the scoped block's #1E90FF
+swatched, the prose tomato plain, first try.
+
 ## [2.24.0] - 2026-08-20
 
 Batch 2: Emmet speaks CSS inside HTML style regions — ⌥⌘E on a css
@@ -13845,6 +13862,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.25.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.24.0...v2.25.0
 [2.24.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.23.0...v2.24.0
 [2.23.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.22.0...v2.23.0
 [2.22.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.21.7...v2.22.0

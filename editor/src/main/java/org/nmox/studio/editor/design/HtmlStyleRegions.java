@@ -24,6 +24,22 @@ public final class HtmlStyleRegions {
     public record Region(int start, int end) {
     }
 
+    /**
+     * The markup family the style-region boundary applies to
+     * (v2.25.0): plain HTML plus the component formats that carry
+     * {@code <style>} blocks or style attributes — Vue SFCs, Svelte,
+     * Angular templates. ONE definition, consulted by every surface
+     * (swatches, picker, tokens, Emmet), so the family cannot drift
+     * per-surface; the parity gate reads this set.
+     */
+    public static final java.util.Set<String> MARKUP_MIMES = java.util.Set.of(
+            "text/html", "text/x-vue", "text/x-svelte", "text/x-ng-template");
+
+    /** True for documents whose bare color words are prose, not css. */
+    public static boolean isMarkup(Object mime) {
+        return mime instanceof String m && MARKUP_MIMES.contains(m);
+    }
+
     private static final Pattern STYLE_BLOCK = Pattern.compile(
             "<style\\b[^>]*>(.*?)</style\\s*>",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

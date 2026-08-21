@@ -39,6 +39,9 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/html", service = HyperlinkProviderExt.class, position = 140),
+    @MimeRegistration(mimeType = "text/x-vue", service = HyperlinkProviderExt.class, position = 140),
+    @MimeRegistration(mimeType = "text/x-svelte", service = HyperlinkProviderExt.class, position = 140),
+    @MimeRegistration(mimeType = "text/x-ng-template", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 140)
 })
@@ -77,7 +80,7 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
         }
         String name = text.substring(span[0], span[1]);
         // same document: jump directly, no disk involved
-        boolean html = "text/html".equals(doc.getProperty("mimeType"));
+        boolean html = HtmlStyleRegions.isMarkup(doc.getProperty("mimeType"));
         if (html && !HtmlStyleRegions.inStyle(text, span[0])) {
             return; // v2.23.0: outside a style region, var( is prose
         }

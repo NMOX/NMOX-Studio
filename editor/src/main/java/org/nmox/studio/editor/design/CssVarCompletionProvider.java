@@ -38,6 +38,9 @@ import org.openide.filesystems.FileUtil;
     @MimeRegistration(mimeType = "text/x-scss", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-sass", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-vue", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class),
+    @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class),
     @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class)
 })
 public class CssVarCompletionProvider implements CompletionProvider {
@@ -72,7 +75,7 @@ public class CssVarCompletionProvider implements CompletionProvider {
                     return;
                 }
                 String text = doc.getText(0, doc.getLength());
-                boolean html = "text/html".equals(doc.getProperty("mimeType"));
+                boolean html = HtmlStyleRegions.isMarkup(doc.getProperty("mimeType"));
                 if (html && !HtmlStyleRegions.inStyle(text, caret)) {
                     return; // v2.23.0: outside a style region, var( is prose
                 }
