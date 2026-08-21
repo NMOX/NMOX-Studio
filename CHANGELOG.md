@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.27.0] - 2026-08-21
+
+Batch 5 - the class attribute knows your stylesheets: completion inside
+class="..." offers the classes the project's CSS/SCSS/Less/Sass - and
+the markup family's own <style> blocks - actually declare, each item
+naming its declaring file (document-local classes first); ⌘-click a
+class usage and land on its rule, this file's style blocks first, then
+the project (StatusDisplayer says so when nothing declares it). Both
+ride the new CssClasses core: selector scan with comments, strings, and
+url() bodies blanked (content: ".fake" and url(a.png) never register),
+the class attribute detected by walking back to the quote and requiring
+the literal class attribute (href, data-class, and Vue's :class JS
+bindings refuse), and the same bounded per-path-cached project walk as
+design tokens - extracted into CssTokens.collectStylesheets when this
+second consumer appeared (the FilePulse promote-on-second-copy law).
+Classes only, deliberately: #id selectors are textually
+indistinguishable from hex colors without a value parser, and the
+reason is written in the class javadoc. Registered across the whole
+markup family (HTML, Vue, Svelte, Angular templates). Three mutants
+killed by name (string-blanking, attribute-name check, letter-start);
+a digit-lookbehind guard PROVED equivalent-mutant dead code and was
+removed the v1.330.0 way, with the letter-start rule pinned as the
+real guard. Walk-proven in the assembled app: ⌃Space inside
+class="bt offered btn-primary with styles.css as its provenance and
+accepting replaced the prefix in place; the auto-pair trap bit the
+walk itself (typing class="bt as one string lands bt OUTSIDE the
+auto-closed quote - the v1.332.0 class, now a recorded walk technique
+law); and the ⌘-click leg produced the day's platform find - the
+first cold click was answered by the PLATFORM's CSL goto ("Class
+btn-primary not found": HtmlDeclarationFinder resolves only LINKED
+stylesheets), the dispatcher was decompiled (HyperlinkOperation
+consults the TOP mime's HyperlinkProviders in position order, first
+claim wins), the provider moved to position 10 with the reason in
+place, and an instrumented in-app probe pinned the hover consultation
+reaching it with the exact class-name span; the modifier-CLICK leg is
+unverifiable by synthesized automation (it cannot carry ⌘ into
+Swing's mouse event - the ledger-76 class, recorded in the javadoc).
+
 ## [2.26.2] - 2026-08-21
 
 Docs truth (docs only): CLAUDE.md's status headline moves v2.23.0 ->
@@ -13902,6 +13940,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.27.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.2...v2.27.0
 [2.26.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.1...v2.26.2
 [2.26.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.26.0...v2.26.1
 [2.26.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.25.0...v2.26.0

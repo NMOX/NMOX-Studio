@@ -170,9 +170,7 @@ public final class CssTokens {
         if (root == null || !root.isDirectory()) {
             return out;
         }
-        List<File> sheets = new ArrayList<>();
-        collect(root, sheets, 0);
-        for (File f : sheets) {
+        for (File f : collectStylesheets(root)) {
             String path = f.getAbsolutePath();
             long mtime = f.lastModified();
             long size = f.length();
@@ -184,6 +182,17 @@ public final class CssTokens {
             out.addAll(entry.tokens());
         }
         return out;
+    }
+
+    /**
+     * The bounded stylesheet census both design scans share (extracted
+     * v2.27.0 when {@link CssClasses} became its second consumer — the
+     * FilePulse law: promote on the second copy, never grow it).
+     */
+    static List<File> collectStylesheets(File root) {
+        List<File> sheets = new ArrayList<>();
+        collect(root, sheets, 0);
+        return sheets;
     }
 
     private static void collect(File dir, List<File> sheets, int depth) {
