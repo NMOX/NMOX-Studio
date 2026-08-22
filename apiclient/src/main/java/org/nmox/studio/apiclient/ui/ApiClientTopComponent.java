@@ -278,7 +278,38 @@ public final class ApiClientTopComponent extends TopComponent {
         copyFetch.setToolTipText("Copy this request as the fetch() call your code would make");
         copyFetch.addActionListener(e -> copyAsFetch());
         bar.add(copyFetch);
+        JButton copyTypes = new JButton("Copy TS types");
+        copyTypes.setToolTipText(
+                "Copy TypeScript interfaces for the JSON response on screen");
+        copyTypes.addActionListener(e -> copyAsTypes());
+        bar.add(copyTypes);
         return bar;
+    }
+
+    /**
+     * The JSON response on screen as TypeScript interfaces, to the
+     * clipboard (v2.33.0) — the response pane's third export beside
+     * curl and fetch. Pure emission via {@link
+     * org.nmox.studio.apiclient.api.JsonTypes}; a non-JSON response
+     * refuses on the status line rather than guessing.
+     */
+    private void copyAsTypes() {
+        String body = responseBody.getText();
+        if (body == null || body.isBlank()) {
+            status("Send a request first — types come from the response on screen.");
+            return;
+        }
+        String root = current != null && current.name != null && !current.name.isBlank()
+                ? current.name.replaceAll("[^A-Za-z0-9_ -]", "") : "Response";
+        String types = org.nmox.studio.apiclient.api.JsonTypes.interfacesFor(
+                body, root.isBlank() ? "Response" : root);
+        if (types == null) {
+            status("The response is not a JSON object — nothing to type.");
+            return;
+        }
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                new java.awt.datatransfer.StringSelection(types), null);
+        status("TypeScript interfaces copied.");
     }
 
     /** The current request as a terminal-ready curl command, to the clipboard. */

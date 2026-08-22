@@ -256,6 +256,12 @@
                         <exclude>**/ui/actions/OpenFileAction*.class</exclude>
                         <exclude>**/ui/actions/OpenFolderAction*.class</exclude>
                         <exclude>**/ui/actions/NewProjectAction*.class</exclude>
+                        <!-- RunScriptAction is caret/registry/status glue
+                             (the v2.30.1 split-editor identity dance + a
+                             status line per refusal); the caret-to-script
+                             rule lives in NpmScripts and the spawn in
+                             NpmService, both tested. -->
+                        <exclude>**/tools/npm/RunScriptAction*.class</exclude>
                         <!-- SassCompileAction is editor/FS glue: SaveCookie +
                              status lines + a FileChangeListener that re-posts to
                              the compiler; the compile logic itself (argv, output

@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.33.0] - 2026-08-22
+
+The wishlist's second helping: all three wishes v2.31.0 recorded are
+granted. Copy TS types joins curl and fetch on the request bar - the
+JSON response on screen becomes TypeScript interfaces via the pure
+JsonTypes codec (sorted deterministic emission, nested interfaces
+dependency-first, array elements merged with optional keys, honest
+unknown for nulls and empty arrays, quoted props only when TS requires
+it, non-JSON refuses on the status line). Run Script arrives in
+package.json's editor popup - right-click a line inside "scripts" and
+it runs through the v1.103.0 trust-gated NpmService path with the
+project's own package manager; the pure NpmScripts caret rule refuses
+dependencies named like scripts and nested scripts objects, and the
+caret follows the v2.30.1 split-editor identity law. And the
+fetch-route jump learns params: /api/users/123 lands on
+app.get('/api/users/:id') when no exact route exists - exact always
+wins, segment counts guard the match, query strings are not part of
+the route. Five mutants killed by name under the full-verdict
+protocol; CLAUDE.md brought current through this release.
+
 ## [2.32.1] - 2026-08-22
 
 The illustrated docs, part 2: the Motion pane photographed mid-flight
@@ -14105,6 +14125,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.33.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.1...v2.33.0
 [2.32.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.0...v2.32.1
 [2.32.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.1...v2.31.0
