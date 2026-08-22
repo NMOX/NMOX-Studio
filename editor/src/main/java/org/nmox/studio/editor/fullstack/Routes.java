@@ -111,10 +111,14 @@ public final class Routes {
     }
 
     /**
-     * The first route in the project whose path EQUALS {@code path} —
-     * a bounded sweep over the project's JS/TS sources (same caps and
+     * The first route in the project that serves {@code path} — a
+     * bounded sweep over the project's JS/TS sources (same caps and
      * skip list as the design scans; uncached, a click-time query).
-     * Callers run this OFF the EDT.
+     * An EXACT path match always wins; when none exists, a second pass
+     * matches the concrete path against {@code :param} patterns
+     * (v2.33.0, granting v2.31.0's recorded limit): {@code
+     * /api/users/123} finds {@code app.get('/api/users/:id')}. Callers
+     * run this OFF the EDT.
      */
     public static Route findRoute(File root, String path) {
         if (root == null || !root.isDirectory() || path == null || path.isEmpty()) {
@@ -122,18 +126,54 @@ public final class Routes {
         }
         List<File> sources = new ArrayList<>();
         collect(root, sources, 0);
+        Route paramMatch = null;
         for (File f : sources) {
             try {
                 for (Route r : routesIn(Files.readString(f.toPath()), f)) {
                     if (r.path().equals(path)) {
-                        return r;
+                        return r;                       // exact always wins
+                    }
+                    if (paramMatch == null && servesViaParams(r.path(), path)) {
+                        paramMatch = r;
                     }
                 }
             } catch (IOException | OutOfMemoryError unreadable) {
                 // skip the file, keep the sweep
             }
         }
-        return null;
+        return paramMatch;
+    }
+
+    /**
+     * True when {@code routePath}'s {@code :param} pattern serves the
+     * CONCRETE {@code path}: same segment count, each segment equal or
+     * a {@code :param} — and at least one param, so this never
+     * shadows the exact-match rule it backs up. A trailing query
+     * string on the concrete path is ignored ({@code ?page=2} is not
+     * part of the route).
+     */
+    static boolean servesViaParams(String routePath, String path) {
+        int q = path.indexOf('?');
+        if (q >= 0) {
+            path = path.substring(0, q);
+        }
+        String[] route = routePath.split("/", -1);
+        String[] concrete = path.split("/", -1);
+        if (route.length != concrete.length) {
+            return false;
+        }
+        boolean sawParam = false;
+        for (int i = 0; i < route.length; i++) {
+            if (route[i].startsWith(":") && route[i].length() > 1) {
+                if (concrete[i].isEmpty()) {
+                    return false;       // a param never matches nothing
+                }
+                sawParam = true;
+            } else if (!route[i].equals(concrete[i])) {
+                return false;
+            }
+        }
+        return sawParam;
     }
 
     private static void collect(File dir, List<File> sources, int depth) {
