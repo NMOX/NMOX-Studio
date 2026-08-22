@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.32.1] - 2026-08-22
+
+The illustrated docs, part 2: the Motion pane photographed mid-flight
+(the marquee preset playing, the banner translated across the page
+with its pick ring at the origin, "Playing: marquee 8s linear
+infinite" on the status) and DB Studio's grid photographed live (a
+real SQLite connection, "Connected: appdb - 1 table", one statement in
+7 ms, six rows, the Apply/Revert/CSV/JSON footer) - both staged in the
+assembled app and wired into the user guide's Browser-DevTools and DB
+Studio sections. The ImageRefsTest law kept both honest: a shot exists
+only wired.
+
 ## [2.32.0] - 2026-08-22
 
 The illustrated docs (David's call: double down on screenshots): the
@@ -14093,6 +14105,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.32.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.0...v2.32.1
 [2.32.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.1...v2.31.0
 [2.30.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.0...v2.30.1
