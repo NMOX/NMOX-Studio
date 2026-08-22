@@ -124,6 +124,17 @@ public final class Routes {
         if (root == null || !root.isDirectory() || path == null || path.isEmpty()) {
             return null;
         }
+        // a query string is not part of the route — stripped HERE so the
+        // EXACT pass benefits too (the v2.33.1 review: only the param
+        // pass stripped, and fetch('/api/users?page=2') missed the exact
+        // /api/users route it obviously means)
+        int q = path.indexOf('?');
+        if (q >= 0) {
+            path = path.substring(0, q);
+            if (path.isEmpty()) {
+                return null;
+            }
+        }
         List<File> sources = new ArrayList<>();
         collect(root, sources, 0);
         Route paramMatch = null;

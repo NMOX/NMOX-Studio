@@ -406,6 +406,15 @@ renamed text themselves.
 
 ![The Rename Class dialog](images/rename-class.png)
 
+### Run Script, from the caret
+
+Right-click any line inside package.json's `"scripts"` object and
+**Run Script** runs it — through the same Workspace Trust gate and
+package-manager detection (corepack pin, then lockfile) as every other
+runner. A dependency named like a script never runs, and a `scripts`
+key nested in some other object never qualifies; the refusals say so
+on the status line.
+
 ### Env keys, first-class
 
 Type `process.env.` (or Vite's `import.meta.env.`) in any JS/TS file
@@ -671,6 +680,13 @@ your canvas.
 
 ![API Studio](images/tabs/api-studio.png)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
+
+**Copy TS types** sits beside Copy curl and Copy fetch on the request
+bar: the JSON response on screen becomes TypeScript interfaces on the
+clipboard — nested objects as interfaces (dependency-first), array
+elements merged with optional keys, a null beside a non-null sibling
+kept honest as `| null`, and empty arrays as `unknown[]` rather than a
+guess. A non-JSON response refuses on the status line.
 
 A Postman-style client that lives with your project. Build requests
 (params, headers, body, auth), organize them in collections, and define

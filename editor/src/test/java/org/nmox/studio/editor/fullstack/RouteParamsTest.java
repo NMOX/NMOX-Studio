@@ -43,6 +43,14 @@ class RouteParamsTest {
     }
 
     @Test
+    @DisplayName("a query string never hides the exact route")
+    void queryStringOnExact(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("s.js"), "app.get('/api/users', h)\n");
+        assertThat(Routes.findRoute(dir.toFile(), "/api/users?page=2").path())
+                .isEqualTo("/api/users");
+    }
+
+    @Test
     @DisplayName("findRoute: exact wins over an earlier pattern match")
     void exactWins(@TempDir Path dir) throws Exception {
         Files.writeString(dir.resolve("a.js"),

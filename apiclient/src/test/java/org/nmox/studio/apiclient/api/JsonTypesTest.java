@@ -77,6 +77,16 @@ class JsonTypesTest {
     }
 
     @Test
+    @DisplayName("a null sibling SURVIVES into the union — the type never lies about its own data")
+    void nullSiblingSurvives() {
+        String ts = JsonTypes.interfacesFor(
+                "{\"users\": [ {\"id\": 1, \"bio\": null}, {\"id\": 2, \"bio\": \"text\"} ]}",
+                "T");
+        assertThat(ts).contains("bio: string | null;");
+        assertThat(ts).contains("id: number;");
+    }
+
+    @Test
     @DisplayName("non-JSON refuses with null — the button's disable cue")
     void refusals() {
         assertThat(JsonTypes.interfacesFor("<html>not json</html>", "X")).isNull();
