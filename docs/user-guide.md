@@ -731,6 +731,8 @@ armed response first: Explain can never disclose another project's
 traffic.
 
 ### DB Studio (⌥⌘7)
+
+![A SQLite connection, one statement, six rows — with in-grid editing armed](images/db-grid.png)
 ![A SQLite connection, a query, 8 rows in 1 ms — and the status bar giving the honest reason this grid is read-only](images/db-studio.png)
 
 Connect to SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, or CouchDB —
@@ -959,6 +961,8 @@ Open-in-Browser action route here too.
   "production build, no component tree" (the official Angular DevTools
   is limited the same way) — and a page with no Angular at all says
   that instead.
+
+![The Motion pane playing the marquee preset — the banner caught mid-flight](images/motion-pane.png)
 
 Everything the page hands the tools is treated as untrusted: strings
 are capped, lists are bounded, and a hostile page can fill a ring
