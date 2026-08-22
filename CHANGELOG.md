@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.33.1] - 2026-08-22
+
+The day review, hours after the batch: JsonTypes' javadoc CLAIMED
+null-beside-sibling values union as `| null` while the code silently
+dropped the null - `{"bio": null}` next to `{"bio": "text"}` emitted
+`bio: string`, a generated type that lies about the very data it came
+from (the v1.189.0 law: a comment claiming a property is a test not
+yet written); nullable siblings now survive into the union, pinned.
+And findRoute's EXACT pass never stripped query strings - only the
+param pass did - so fetch('/api/users?page=2') missed the exact
+/api/users route it obviously means; the strip moved to the entry,
+both passes covered, pinned. Copy TS types and Run Script enter the
+user guide.
+
 ## [2.33.0] - 2026-08-22
 
 The wishlist's second helping: all three wishes v2.31.0 recorded are
@@ -14125,6 +14139,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.33.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.0...v2.33.1
 [2.33.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.1...v2.33.0
 [2.32.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.0...v2.32.1
 [2.32.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.31.0...v2.32.0

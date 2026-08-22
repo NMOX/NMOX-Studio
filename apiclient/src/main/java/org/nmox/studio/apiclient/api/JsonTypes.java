@@ -157,12 +157,19 @@ public final class JsonTypes {
             }
             JSONObject merged = new JSONObject();
             Set<String> optional = new LinkedHashSet<>();
+            Set<String> nullable = new LinkedHashSet<>();
             for (String key : allKeys) {
                 Object sample = JSONObject.NULL;
                 for (JSONObject o : objects) {
                     if (o.has(key)) {
-                        if (sample == JSONObject.NULL) {
-                            sample = o.get(key);
+                        Object v = o.get(key);
+                        if (v == JSONObject.NULL) {
+                            // the null sibling must SURVIVE into the type —
+                            // the v2.33.1 review found it silently dropped,
+                            // emitting `string` for data that holds nulls
+                            nullable.add(key);
+                        } else if (sample == JSONObject.NULL) {
+                            sample = v;
                         }
                     } else {
                         optional.add(key);
@@ -170,7 +177,7 @@ public final class JsonTypes {
                 }
                 merged.put(key, sample);
             }
-            String shape = shapeOf(merged) + "?" + optional;
+            String shape = shapeOf(merged) + "?" + optional + "~" + nullable;
             String existing = byShape.get(shape);
             if (existing != null) {
                 return existing;
@@ -183,9 +190,13 @@ public final class JsonTypes {
             out.put(n, "");
             StringBuilder b = new StringBuilder("interface " + n + " {\n");
             for (String key : allKeys) {
+                String type = typeOf(merged.get(key), key);
+                if (nullable.contains(key) && !"unknown".equals(type)) {
+                    type += " | null";
+                }
                 b.append("  ").append(propName(key))
                         .append(optional.contains(key) ? "?" : "").append(": ")
-                        .append(typeOf(merged.get(key), key)).append(";\n");
+                        .append(type).append(";\n");
             }
             b.append("}\n");
             out.put(n, b.toString());
