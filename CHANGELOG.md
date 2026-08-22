@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.31.0] - 2026-08-22
+
+The Senior Full Stack Web Developer's wishlist (David's ask: look
+through their eyes and grant it), three wishes granted: (1) env keys
+are first-class - process.env. / import.meta.env. complete from the
+project's real .env family (.env, .env.local, .env.development,
+.env.production, .env.test in load order), each key naming its file
+with a TRUNCATED value hint (env files hold secrets; the popup is a
+reminder, never a disclosure), and ⌘-click lands on the declaring
+line; the accessor check demands a word boundary (myprocess.env.X
+refuses - the test's refusal caught the boundary bug before any
+mutant had to). (2) the client and the server are on speaking terms -
+⌘-click the '/api/users' in a fetch()/axios.* call and land on the
+Express/Fastify/Koa route that registers it, the v1.292.0 outline
+rule reused verbatim with its narrowness intact (exact-path match;
+receiver must be app/router-shaped - the M3 mutant survived until a
+cache.get discriminator pinned the receiver rule ALONE, the v1.292.0
+lesson relearned in its own re-use). (3) Copy fetch beside Copy curl
+in API Studio - the same URL/headers/auth/body Send would use as a
+fetch() snippet, vars resolved, basic auth through btoa, JS escaping
+complete, the same includes-the-auth-secret honesty note. The two new
+hyperlinks ride a shared ProjectJumpHyperlink skeleton (the design
+pair's plumbing was at its fourth copy - promoted per the FilePulse
+law; migrating the older pair is a recorded review candidate).
+Wishlist recorded, not granted (honest tail): JSON-response → TS
+interface, run-script gestures in package.json, param-aware route
+matching.
+
 ## [2.30.1] - 2026-08-21
 
 The class-arc review (batches 5-8 under fresh lenses): ONE real
@@ -14047,6 +14075,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.31.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.1...v2.31.0
 [2.30.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.0...v2.30.1
 [2.30.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.1...v2.30.0
 [2.29.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.0...v2.29.1
