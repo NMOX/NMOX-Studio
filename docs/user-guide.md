@@ -123,6 +123,8 @@ environment.
 
 ## 4. The Task Rack
 
+![The Task Rack](images/tabs/the-task-rack.png)
+
 The rack is extensible: third-party plugins can add devices (install their NBM via Tools ▸ Plugins). To write one, see [device-spi.md](device-spi.md).
 
 The rack is the heart of the product. Every tool in your workflow — npm,
@@ -364,6 +366,8 @@ value being typed, not an abbreviation.
 
 ### Design tokens (custom properties)
 
+![Color swatches on literals, through var() tokens, hsl, and oklch — with the Navigator outline](images/css-swatches.png)
+
 Your design system's `--tokens` are first-class in every stylesheet
 dialect. Type `var(` and complete from the **whole project's** custom
 properties — each row shows the token's value, behind a color swatch
@@ -377,6 +381,8 @@ resolution rides the completion and the jump, which run off the paint
 path).
 
 ### The class attribute knows your stylesheets
+
+![class="btn-" completion offering the project stylesheet classes with their declaring file](images/class-completion.png)
 
 In HTML, Vue, Svelte, and Angular templates, `class="…"` completes
 from the classes your project's stylesheets **actually declare** —
@@ -397,6 +403,21 @@ existing class (the rules would merge), a project larger than the
 bounded file census (a partial rename is corruption), or unsaved
 changes in any affected file. Open, unmodified editors reload the
 renamed text themselves.
+
+![The Rename Class dialog](images/rename-class.png)
+
+### Env keys, first-class
+
+Type `process.env.` (or Vite's `import.meta.env.`) in any JS/TS file
+and completion offers the keys your project's real `.env` family
+declares — `.env`, `.env.local`, and the mode variants — each row
+naming its declaring file, with values truncated in the popup so a
+secret is reminded, never disclosed. **⌘-click** a key to land on its
+declaring line. `fetch('/api/…')` gets the same treatment one gesture
+over: ⌘-click the path string and land on the Express route that
+registers it.
+
+![process.env completion from the project's own .env](images/env-completion.png)
 
 ### Angular templates, first-class
 
@@ -553,6 +574,8 @@ stripes appear in the gutter as you edit a tracked file.
 
 ### Task Board (⌥⌘1)
 
+![The Task Board: three columns, a clocked card, and the live ticker in the header](images/task-board.png)
+
 A per-project kanban. Columns of cards, dragged **or keyed** between
 them — with a card selected, **⌘←/⌘→** moves it a column over and
 **⌘↑/⌘↓** reorders it, and the moved card keeps focus so the gesture
@@ -614,6 +637,8 @@ register, and the last day's git commits — assembled as markdown with
 one Copy to Clipboard button. Empty sections are omitted, so the
 report only says what actually happened.
 
+![One click turns the board into the daily report](images/standup.png)
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the
@@ -643,6 +668,8 @@ instead of an inert unknown element. ⌘Z undoes any structural edit. The block 
 your canvas.
 
 ### API Studio (⌥⌘8)
+
+![API Studio](images/tabs/api-studio.png)
 ![A live 200 in 331ms — and the Standards tab grading the response's security headers: B](images/api-studio.png)
 
 A Postman-style client that lives with your project. Build requests
@@ -728,6 +755,8 @@ connection details, the password (keychain-only, out of reach by
 construction), or any rows — a failed statement produced none.
 
 ### Contract Studio (⌥⌘6)
+
+![Contract Studio](images/tabs/contract-studio.png)
 ![ANVIL running in the rack, and Contract Studio connected to it by itself — chain 31337, the escrow contract in the artifact tree with its EIP-170 size usage, the live RPC on the serving chip](images/contract-studio.png)
 
 *Want the full worked example? **[Making a Smart Contract](making-a-smart-contract.md)** builds a real escrow contract — code, tests, gas gate, and the live ANVIL loop.*
@@ -754,6 +783,8 @@ EIP-170 size verdicts per contract, and your deployment address book
 never reach the file).
 
 ### Infra Designer (⌥⌘9)
+
+![Infra Designer](images/tabs/infra-designer.png)
 ![A stack taking shape — DNS, load balancer, droplet, and a volume with its property sheet; the toolbar prices the design live (≈ $28/mo) and stays honest about dry-run mode until you add API tokens](images/infra-designer.png)
 
 Design cloud infrastructure like a Node-RED flow: drag nodes (droplets,
@@ -936,6 +967,8 @@ JavaFX) shows an honest explanation in the tab and routes pages to
 your system browser instead.
 
 ## 7. Docker
+
+![The Docker Panel](images/tabs/docker-panel.png)
 
 ![Engine up, a postgres container running — status dot, ports, and the verb row: start, stop, logs, inspect](images/docker-panel.png)
 
