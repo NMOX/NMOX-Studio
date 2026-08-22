@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.32.0] - 2026-08-22
+
+The illustrated docs (David's call: double down on screenshots): the
+eleven forge tab shots regenerated at current bytes; six NEW staged
+feature shots captured live from the assembled app - the swatch story
+(literals, tokens through var(), hsl, oklch), class="btn-" completion
+with provenance, process.env completion from the real .env, the Rename
+Class dialog, the Task Board with a clocked card and live ticker, and
+the Standup report; the user guide's chapters gain their images (Task
+Rack, API Studio, Contract Studio, Infra Designer, Docker - five forge
+shots that had rotted out of the story unreferenced) and env keys gain
+the user-guide section v2.31.0 never wrote. The failure class is
+gated: ImageRefsTest fails the build on any image ref that resolves to
+no file AND on any docs/images file no live doc references, proven
+failing-first (11 orphans named). Capture laws recorded: window-id
+capture excludes popups (full-screen + hide-the-host + crop is the
+popup recipe); the stale screencapture-permission note corrected.
+
 ## [2.31.0] - 2026-08-22
 
 The Senior Full Stack Web Developer's wishlist (David's ask: look
@@ -14075,6 +14093,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.32.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.1...v2.31.0
 [2.30.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.0...v2.30.1
 [2.30.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.1...v2.30.0
