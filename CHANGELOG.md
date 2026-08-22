@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.30.1] - 2026-08-21
+
+The class-arc review (batches 5-8 under fresh lenses): ONE real
+defect in day-old code, fixed - Rename Class... took its caret from
+EditorRegistry.lastFocusedComponent() while its context came from the
+popup's DataObject, so on a SPLIT editor the caret could belong to
+the other half and the rename would compute on a token the user never
+pointed at (the v1.270.0 clicked-item-wins class, one gesture over);
+the component is now identity-checked against the context's file with
+the component list as the fallback, the rule pure and pinned, the
+wiring source-gated at both resolution sites. Verified CLEAN or
+blessed in writing: the dirty-window race between the modified-editor
+census and the apply (the platform's own conflict prompt covers the
+divergence), the per-path scan caches (the accepted CssTokens shape),
+renameInText span disjointness - with one LOW recorded: a class="x"
+inside a style-region CSS COMMENT renames with the class
+(comment-only text, the blanking applies to selectors, deliberately
+not to the attr sweep).
+
 ## [2.30.0] - 2026-08-21
 
 Batch 8 - the class arc reaches JavaScript: inside
@@ -14028,6 +14047,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.30.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.30.0...v2.30.1
 [2.30.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.1...v2.30.0
 [2.29.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.1...v2.29.0

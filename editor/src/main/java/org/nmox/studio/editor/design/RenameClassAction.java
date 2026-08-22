@@ -75,8 +75,22 @@ public final class RenameClassAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // the caret must come from THIS action's file (v2.30.1 review):
+        // lastFocusedComponent can belong to the OTHER half of a split
+        // editor while the popup's context names this one — a rename
+        // computed on the wrong file's token. Identity-checked, with
+        // the component list as the fallback for unfocused popups.
         JTextComponent comp = EditorRegistry.lastFocusedComponent();
-        if (comp == null || comp.getDocument() == null) {
+        if (comp == null || !documentBelongsTo(comp.getDocument(), context)) {
+            comp = null;
+            for (JTextComponent candidate : EditorRegistry.componentList()) {
+                if (documentBelongsTo(candidate.getDocument(), context)) {
+                    comp = candidate;
+                    break;
+                }
+            }
+        }
+        if (comp == null) {
             status("Place the caret on a class name first.");
             return;
         }
@@ -124,6 +138,23 @@ public final class RenameClassAction implements ActionListener {
         }
         File root = projectDirOf();
         RP.post(() -> rename(root, oldName, newName, dirty));
+    }
+
+
+    /**
+     * True when {@code doc} is the open document OF {@code context}'s
+     * file — the identity rule that keeps a split editor's OTHER half
+     * from supplying the caret (pure given its inputs; the document
+     * carries its DataObject as the stream description).
+     */
+    static boolean documentBelongsTo(Document doc, DataObject context) {
+        if (doc == null || context == null) {
+            return false;
+        }
+        Object sd = doc.getProperty(Document.StreamDescriptionProperty);
+        return sd == context
+                || (sd instanceof DataObject d
+                        && d.getPrimaryFile().equals(context.getPrimaryFile()));
     }
 
     /** Markup caret: a class-attribute token or a style-region selector. */
