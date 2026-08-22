@@ -274,6 +274,10 @@ public final class ApiClientTopComponent extends TopComponent {
         copyCurl.setToolTipText("Copy this request as the exact curl command Send would run");
         copyCurl.addActionListener(e -> copyAsCurl());
         bar.add(copyCurl);
+        JButton copyFetch = new JButton("Copy fetch");
+        copyFetch.setToolTipText("Copy this request as the fetch() call your code would make");
+        copyFetch.addActionListener(e -> copyAsFetch());
+        bar.add(copyFetch);
         return bar;
     }
 
@@ -296,6 +300,34 @@ public final class ApiClientTopComponent extends TopComponent {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                         new java.awt.datatransfer.StringSelection(curl), null);
                 status("curl command copied"
+                        + (target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
+                                && target.authToken != null && !target.authToken.isBlank()
+                                ? " — includes the auth secret" : "") + ".");
+                if (current == target) {
+                    withLoading(() -> authField.setText(target.authToken));
+                }
+            });
+        });
+    }
+
+    /** The current request as a fetch() snippet, to the clipboard (v2.31.0). */
+    private void copyAsFetch() {
+        if (current == null) {
+            status("Select a request first.");
+            return;
+        }
+        Environment env = workspace.active();
+        Map<String, String> vars = env != null ? env.variables : Map.of();
+        Request target = current;
+        // same shape as copyAsCurl: hydrate the token off the EDT
+        // (v1.201.0), render, clipboard + honest secret note on the EDT
+        RP.post(() -> {
+            hydrateAuthNow(target);
+            String code = org.nmox.studio.apiclient.api.FetchCodec.render(target, vars);
+            SwingUtilities.invokeLater(() -> {
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                        new java.awt.datatransfer.StringSelection(code), null);
+                status("fetch() snippet copied"
                         + (target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
                                 && target.authToken != null && !target.authToken.isBlank()
                                 ? " — includes the auth secret" : "") + ".");
