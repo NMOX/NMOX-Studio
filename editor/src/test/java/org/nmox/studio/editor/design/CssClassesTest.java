@@ -217,6 +217,45 @@ class CssClassesTest {
                 .censusComplete()).isFalse();
     }
 
+    // ---- the JavaScript side (v2.30.0) -------------------------------------
+
+    @Test
+    @DisplayName("jsClassPrefix fires in selector calls after a dot, classList calls bare")
+    void jsPrefixFires() {
+        assertThat(CssClasses.jsClassPrefix("document.querySelector('.")).isEmpty();
+        assertThat(CssClasses.jsClassPrefix("document.querySelector('.he"))
+                .isEqualTo("he");
+        assertThat(CssClasses.jsClassPrefix("el.closest(\".card")).isEqualTo("card");
+        assertThat(CssClasses.jsClassPrefix("el.matches( '.x")).isEqualTo("x");
+        assertThat(CssClasses.jsClassPrefix("el.classList.add('he")).isEqualTo("he");
+        assertThat(CssClasses.jsClassPrefix("el.classList.toggle(`da")).isEqualTo("da");
+    }
+
+    @Test
+    @DisplayName("jsClassPrefix refuses arbitrary strings and wrong shapes (context check)")
+    void jsPrefixRefuses() {
+        assertThat(CssClasses.jsClassPrefix("fetch('.card")).isNull();
+        assertThat(CssClasses.jsClassPrefix("console.log('.card")).isNull();
+        assertThat(CssClasses.jsClassPrefix("document.querySelector('he"))
+                .as("a selector API without the dot is a tag/id, not a class")
+                .isNull();
+        assertThat(CssClasses.jsClassPrefix("el.classList.add('.he"))
+                .as("classList takes bare names — a dot is not a class char")
+                .isNull();
+        assertThat(CssClasses.jsClassPrefix("el.classListXadd('he")).isNull();
+    }
+
+    @Test
+    @DisplayName("jsClassSpanAt spans the name in a recognized call, refuses elsewhere")
+    void jsSpanAt() {
+        String js = "document.querySelector('.hero'); log('.hero');";
+        int inCall = js.indexOf("hero") + 2;
+        assertThat(CssClasses.jsClassSpanAt(js, inCall))
+                .containsExactly(js.indexOf("hero"), js.indexOf("hero") + 4);
+        int inLog = js.lastIndexOf("hero") + 2;
+        assertThat(CssClasses.jsClassSpanAt(js, inLog)).isNull();
+    }
+
     @Test
     @DisplayName("valid class names: ident family only")
     void validNames() {

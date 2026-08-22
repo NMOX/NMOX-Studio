@@ -465,4 +465,80 @@ public final class CssClasses {
         return new RenameSurvey(files, spans, collision,
                 census.size() < CssTokens.MAX_FILES);
     }
+
+    // ---- the JavaScript side (v2.30.0) ------------------------------------
+
+    // string arguments of these calls NAME classes: selector APIs take
+    // ".name" tokens, the classList family takes bare names
+    private static final List<String> SELECTOR_CALLS = List.of(
+            "querySelector(", "querySelectorAll(", "closest(", "matches(");
+    private static final List<String> CLASSLIST_CALLS = List.of(
+            "classList.add(", "classList.remove(",
+            "classList.toggle(", "classList.contains(");
+
+    /**
+     * When the caret sits inside a string literal that names a class —
+     * a selector API's argument right after a {@code .}, or a classList
+     * call's bare-name argument — the partial name typed so far; null
+     * anywhere else. An arbitrary string never qualifies: only the
+     * recognized call shapes, checked against the text before the
+     * OPENING quote, so {@code fetch('.card')} stays a URL.
+     */
+    public static String jsClassPrefix(String beforeCaret) {
+        int i = beforeCaret.length();
+        int nameStart = i;
+        while (nameStart > 0 && isNameChar(beforeCaret.charAt(nameStart - 1))) {
+            nameStart--;
+        }
+        boolean afterDot = nameStart > 0
+                && beforeCaret.charAt(nameStart - 1) == '.';
+        // the opening quote: scan back over the token (and its dot)
+        int q = afterDot ? nameStart - 1 : nameStart;
+        if (q == 0) {
+            return null;
+        }
+        char quote = beforeCaret.charAt(q - 1);
+        if (quote != '\'' && quote != '"' && quote != '`') {
+            return null;              // mid-selector or not at a string start
+        }
+        String beforeQuote = beforeCaret.substring(0, q - 1).stripTrailing();
+        if (afterDot) {
+            for (String call : SELECTOR_CALLS) {
+                if (beforeQuote.endsWith(call)) {
+                    return beforeCaret.substring(nameStart);
+                }
+            }
+            return null;
+        }
+        for (String call : CLASSLIST_CALLS) {
+            if (beforeQuote.endsWith(call)) {
+                return beforeCaret.substring(nameStart);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The class-name span under {@code offset} when it names a class in
+     * a recognized JavaScript call (see {@link #jsClassPrefix}) — the
+     * JS-side ⌘-click subject. Returns {start, end} or null.
+     */
+    public static int[] jsClassSpanAt(String text, int offset) {
+        if (offset < 0 || offset > text.length()) {
+            return null;
+        }
+        int start = offset;
+        while (start > 0 && isNameChar(text.charAt(start - 1))) {
+            start--;
+        }
+        int end = offset;
+        while (end < text.length() && isNameChar(text.charAt(end))) {
+            end++;
+        }
+        if (end == start) {
+            return null;
+        }
+        return jsClassPrefix(text.substring(0, end)) == null
+                ? null : new int[] {start, end};
+    }
 }

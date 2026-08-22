@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.30.0] - 2026-08-21
+
+Batch 8 - the class arc reaches JavaScript: inside
+querySelector('.') / querySelectorAll / closest / matches - and the
+classList add/remove/toggle/contains family - completion offers the
+classes the project's stylesheets actually declare (each row naming
+its declaring file), and ⌘-click on the class name lands on its rule.
+The third language of the trio: markup and stylesheets already
+navigate classes both directions; scripts typed them blind. The
+context check is the feature's honesty: only the recognized call
+shapes trigger - fetch('.card') stays a URL, console.log stays prose,
+a selector API without the dot is a tag, classList takes bare names
+only - and both context mutants die by name under the full-verdict
+protocol. Compound selectors resolve their first class token (recorded
+limit). Same pure CssClasses core, same bounded cached scan, same
+threading law as the markup twins. The walk paid twice: the popup
+proven live (headline/hero with styles.css provenance beneath the
+platform's snippets, in-app probe pinning the exact before-caret
+window), and a REAL find in the accept - a mid-token accept ("h|e"
+completing hero) replaced only the typed prefix and stranded the tail
+as ".heroe"; both completion items (class AND the v1.330.0 var(
+sibling, which carried the same latent bug) now fold the token's
+remainder into the replaced span (the v1.332.0 auto-pair law, one
+class over), tailLength pinned, the fix re-walked to a clean ".hero".
+The editor coverage floor also tripped mid-batch (0.66 vs 0.67) and
+was answered the house way - not by moving the floor but by making
+the new code earn it: the item assembly extracted to a testable seam,
+span/cache/oversize tests for both new hyperlinks.
+
 ## [2.29.1] - 2026-08-21
 
 Docs truth (docs only): Rename Class enters the user guide's
@@ -13999,6 +14028,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.30.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.1...v2.30.0
 [2.29.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.29.0...v2.29.1
 [2.29.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.1...v2.29.0
 [2.28.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.28.0...v2.28.1

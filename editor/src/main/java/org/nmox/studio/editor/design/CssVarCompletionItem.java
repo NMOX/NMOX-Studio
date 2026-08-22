@@ -46,8 +46,12 @@ public class CssVarCompletionItem implements CompletionItem {
     public void defaultAction(JTextComponent component) {
         try {
             Document doc = component.getDocument();
-            String after = doc.getText(startOffset + prefixLength,
-                    Math.min(1, doc.getLength() - startOffset - prefixLength));
+            String afterAll = doc.getText(startOffset + prefixLength,
+                    Math.min(64, doc.getLength() - startOffset - prefixLength));
+            // mid-token accept folds the token's remainder into the span
+            // (v2.30.0 walk find in the sibling class item; same cure)
+            int tail = CssClassCompletionItem.tailLength(afterAll);
+            String after = afterAll.substring(tail);
             String insertion = name + (after.startsWith(")") ? "" : ")");
             // the ONE splice every completion item performs (v1.333.0
             // review: this item hand-rolled the remove+insert and would
@@ -55,7 +59,7 @@ public class CssVarCompletionItem implements CompletionItem {
             // document moved under the pick — CompletionEdits is the
             // house law, its false return the skip signal)
             if (org.nmox.studio.editor.completion.CompletionEdits.replace(
-                    doc, startOffset, prefixLength, insertion)) {
+                    doc, startOffset, prefixLength + tail, insertion)) {
                 component.setCaretPosition(startOffset + insertion.length()
                         + (after.startsWith(")") ? 1 : 0));
             }

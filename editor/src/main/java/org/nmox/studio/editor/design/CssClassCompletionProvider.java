@@ -56,6 +56,37 @@ public class CssClassCompletionProvider implements CompletionProvider {
         return 0;
     }
 
+
+    /**
+     * The item assembly, pure given its inputs (v2.30.0 floor fix —
+     * extracted so the logic is testable headless; the query wrapper
+     * keeps only platform plumbing): document-local {@code <style>}
+     * classes first when {@code localRegions}, then the project scan,
+     * filtered by {@code prefix}, provenance per item.
+     */
+    static java.util.List<CssClassCompletionItem> itemsFor(String prefix,
+            String fullText, boolean localRegions, File root, int caret) {
+        Map<String, String> classes = new LinkedHashMap<>();
+        if (localRegions) {
+            for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(fullText)) {
+                CssClasses.selectors(fullText.substring(r.start(), r.end()))
+                        .forEach((name, s) -> classes.putIfAbsent(name, "this file"));
+            }
+        }
+        for (CssClasses.ProjectSelector s : CssClasses.scanProject(root)) {
+            classes.putIfAbsent(s.name(), s.file().getName());
+        }
+        int anchor = caret - prefix.length();
+        java.util.List<CssClassCompletionItem> out = new java.util.ArrayList<>();
+        for (Map.Entry<String, String> e : classes.entrySet()) {
+            if (e.getKey().startsWith(prefix)) {
+                out.add(new CssClassCompletionItem(
+                        e.getKey(), e.getValue(), anchor, prefix.length()));
+            }
+        }
+        return out;
+    }
+
     private static final class Query extends AsyncCompletionQuery {
 
         @Override
@@ -68,22 +99,9 @@ public class CssClassCompletionProvider implements CompletionProvider {
                     return;
                 }
                 String text = doc.getText(0, doc.getLength());
-                // this document's own <style> classes first
-                Map<String, String> classes = new LinkedHashMap<>();
-                for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
-                    CssClasses.selectors(text.substring(r.start(), r.end()))
-                            .forEach((name, s) -> classes.putIfAbsent(name, "this file"));
-                }
-                for (CssClasses.ProjectSelector s
-                        : CssClasses.scanProject(projectDir(doc))) {
-                    classes.putIfAbsent(s.name(), s.file().getName());
-                }
-                int anchor = caret - prefix.length();
-                for (Map.Entry<String, String> e : classes.entrySet()) {
-                    if (e.getKey().startsWith(prefix)) {
-                        result.addItem(new CssClassCompletionItem(
-                                e.getKey(), e.getValue(), anchor, prefix.length()));
-                    }
+                for (CssClassCompletionItem item : itemsFor(
+                        prefix, text, true, projectDir(doc), caret)) {
+                    result.addItem(item);
                 }
             } catch (BadLocationException ignore) {
                 // the document changed under the query; offer nothing

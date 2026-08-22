@@ -36,11 +36,35 @@ public class CssClassCompletionItem implements CompletionItem {
 
     @Override
     public void defaultAction(JTextComponent component) {
+        javax.swing.text.Document doc = component.getDocument();
+        // mid-token accept (v2.30.0 walk find): the caret can sit INSIDE
+        // the token ("h|e" typing "hero"), and replacing only the typed
+        // prefix strands the tail as ".heroe" — the span extends past
+        // the caret over the token's remaining name chars (the v1.332.0
+        // auto-pair fold, one class over)
+        int tail = 0;
+        try {
+            String after = doc.getText(startOffset + prefixLength,
+                    Math.min(64, doc.getLength() - startOffset - prefixLength));
+            tail = tailLength(after);
+        } catch (javax.swing.text.BadLocationException ignore) {
+            // fall through with tail 0: worst case is the old behavior
+        }
         if (org.nmox.studio.editor.completion.CompletionEdits.replace(
-                component.getDocument(), startOffset, prefixLength, name)) {
+                doc, startOffset, prefixLength + tail, name)) {
             component.setCaretPosition(startOffset + name.length());
         }
         Completion.get().hideAll();
+    }
+
+    /** Name chars at the head of {@code after} — the token's remainder. */
+    static int tailLength(String after) {
+        int i = 0;
+        while (i < after.length() && (Character.isLetterOrDigit(after.charAt(i))
+                || after.charAt(i) == '-' || after.charAt(i) == '_')) {
+            i++;
+        }
+        return i;
     }
 
     @Override
