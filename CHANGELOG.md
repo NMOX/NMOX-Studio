@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.5] - 2026-08-23
+
+The hostile-input lens over the newest emitters, and the day's walks
+enter the record. The probe: JsonTypes fed pathological JSON - 5000
+levels of nesting REFUSES cleanly (no stack overflow on the EDT),
+50,000-row arrays merge in 49ms, but a key CONTAINING a double-quote
+emitted syntactically broken TypeScript (the string-literal property
+name terminated mid-key); quoted names now escape backslash and
+quote, mutant killed by name - a generated type must never be
+invalid source, whatever the JSON held. Recorded verdicts from the
+zero-defect campaign's other lenses, all CLEAN: the batch-era
+EDT/disk audit (the hyperlink family rides the shared RP skeleton),
+the keybinding census (60 chords, zero collisions), and the
+Standards Kit walked live on shipped 2.36.3 ~200 releases after it
+shipped - wizard validation speaking, five artifacts byte-honest
+against their RFCs, never-clobber proven with identical hashes.
+
 ## [2.36.4] - 2026-08-23
 
 The zero-defect campaign opens (David's directive) with the honest
@@ -14368,6 +14385,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.4...v2.36.5
 [2.36.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.3...v2.36.4
 [2.36.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.2...v2.36.3
 [2.36.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.1...v2.36.2

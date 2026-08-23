@@ -247,13 +247,24 @@ public final class JsonTypes {
     /** A property name, quoted only when TS requires it. */
     static String propName(String key) {
         if (key.isEmpty() || !Character.isJavaIdentifierStart(key.charAt(0))) {
-            return "\"" + key + "\"";
+            return quoted(key);
         }
         for (char c : key.toCharArray()) {
             if (!Character.isJavaIdentifierPart(c)) {
-                return "\"" + key + "\"";
+                return quoted(key);
             }
         }
         return key;
+    }
+
+    /**
+     * A TS string-literal property name. Backslash and the quote itself
+     * escape — the hostile-input probe (v2.36.5) fed a key containing a
+     * double-quote and the emitted interface was SYNTACTICALLY BROKEN
+     * TypeScript: the literal terminated mid-name. A generated type
+     * must never be invalid source, whatever the JSON held.
+     */
+    private static String quoted(String key) {
+        return "\"" + key.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }

@@ -93,4 +93,14 @@ class JsonTypesTest {
         assertThat(JsonTypes.interfacesFor("42", "X")).isNull();
         assertThat(JsonTypes.interfacesFor(null, "X")).isNull();
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a key holding a quote or backslash still emits VALID TypeScript")
+    void hostileKeysEscapeInQuotedNames() {
+        String ts = JsonTypes.interfacesFor(
+                "{\"a\\\"b\": 1, \"c\\\\d\": 2, \"plain name\": 3}", "T");
+        org.assertj.core.api.Assertions.assertThat(ts)
+                .contains("\"a\\\"b\": number;")
+                .contains("\"c\\\\d\": number;")
+                .contains("\"plain name\": number;");
+    }
 }
