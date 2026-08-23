@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.5] - 2026-08-23
+
+Docs truth, the overnight close: CLAUDE.md's headline and history
+carry v2.34.2-v2.34.4 (the Kitchen Sink catch-up with the count
+gate's double blind spot, the night audit's zero-boot-spawns
+re-verification and tools floor 0.75, the IRC Libera walk with the
+feedback-in-place fix), and plan.md gains the overnight addendum with
+its three laws - feedback lands where the command was typed, a
+sed-derived gate literal rots silently, a walk shot is a doc asset.
+Docs only.
+
 ## [2.34.4] - 2026-08-23
 
 The IRC walk, live on Libera (~25 releases since the last): TLS
@@ -14201,6 +14212,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.4...v2.34.5
 [2.34.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.3...v2.34.4
 [2.34.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.2...v2.34.3
 [2.34.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.1...v2.34.2
