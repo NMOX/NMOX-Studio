@@ -76,7 +76,12 @@ public class UpdateCheck implements Runnable {
      * one JVM read back as another fork's state (UpdateCheckTest's
      * second flake, 2026-08-23; the watchlist's isolation clause).
      */
-    static volatile Preferences prefsOverride;
+    private static volatile Preferences prefsOverride;
+
+    /** Tests point the check at a scratch node; null restores the real one. */
+    static void overridePrefsForTest(Preferences node) {
+        prefsOverride = node;
+    }
 
     private static Preferences prefsNode() {
         Preferences override = prefsOverride;
