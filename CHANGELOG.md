@@ -30,7 +30,15 @@ stored secret, later duplicates re-mint or suffix, visibly and
 recoverably. The buffer-wins law (v2.34.1) swept CLEAN: Compile to
 CSS saves before compiling, Rename Class refuses unsaved, the design
 family's disk reads are all other-file reads. Five mutants killed by
-name, one per fix family.
+name, one per fix family. Riding along: the windows lane's
+UpdateCheckTest flake earned its watchlisted isolation fix on its
+second offense - NbPreferences is backed by the real user store
+shared across surefire forks, and two forks racing the "nmox/ui"
+node read one JVM's putLong back as another's state; UpdateCheck
+gains the v1.225.0 scratch-node seam and the test runs on a per-JVM
+node. And the new IRC gate itself tripped on the windows lane's CRLF
+checkout first (the v1.42.0 folding class) - source reads in
+source-scan gates normalize line endings now.
 
 ## [2.36.1] - 2026-08-23
 

@@ -81,8 +81,13 @@ class UpdateCheckTest {
      */
     private static long runWithState(String shotsDir, Boolean updateCheckPref,
             Long lastRun) throws Exception {
-        java.util.prefs.Preferences prefs =
-                org.openide.util.NbPreferences.root().node("nmox/ui");
+        // a per-JVM SCRATCH node (the v1.225.0 idiom): the real
+        // "nmox/ui" node is shared across surefire forks through the
+        // user's actual pref store, and the windows lane proved two
+        // forks racing it — this test's putLong read back as 0
+        java.util.prefs.Preferences prefs = org.openide.util.NbPreferences.root()
+                .node("nmox/ui-test-" + java.lang.ProcessHandle.current().pid());
+        UpdateCheck.prefsOverride = prefs;
         String oldShots = System.getProperty("nmox.shots.dir");
         String oldEnabled = prefs.get("updateCheck", null);
         String oldLast = prefs.get("updateCheck.lastRun", null);
@@ -116,6 +121,7 @@ class UpdateCheckTest {
             } else {
                 prefs.put("updateCheck", oldEnabled);
             }
+            UpdateCheck.prefsOverride = null;
             if (oldLast == null) {
                 prefs.remove("updateCheck.lastRun");
             } else {
