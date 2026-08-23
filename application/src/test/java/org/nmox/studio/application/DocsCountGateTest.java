@@ -40,6 +40,9 @@ class DocsCountGateTest {
         List<Path> docs = new ArrayList<>();
         docs.add(Path.of("..", "README.md"));
         docs.add(Path.of("..", "docs", "user-guide.md"));
+        // the Kitchen Sink quotes counts too — its "85 grammars" rotted
+        // for two releases because this census missed it (v2.34.2)
+        docs.add(Path.of("..", "docs", "kitchen-sink.md"));
         docs.add(Path.of("..", "docs", "engineering", "codebase-guide.md"));
         try (Stream<Path> tutorials = Files.list(Path.of("..", "docs", "tutorials"))) {
             tutorials.filter(p -> p.getFileName().toString().endsWith(".md")).forEach(docs::add);
@@ -152,7 +155,7 @@ class DocsCountGateTest {
 
         List<Integer> found = new ArrayList<>();
         List<String> where = claims(Pattern.compile(
-                "(\\d+)(?:-grammar| (?:language grammars|textmate grammars))",
+                "(\\d+)(?:-grammar| (?:language |textmate )?grammars\\b)",
                 Pattern.CASE_INSENSITIVE), found);
         assertThat(found).as("no live doc counts grammars at all — did the phrasing change?").isNotEmpty();
         assertThat(found)

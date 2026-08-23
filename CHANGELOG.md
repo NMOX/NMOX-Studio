@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.2] - 2026-08-23
+
+The Kitchen Sink catches up: stations for the class-intelligence era
+(class="..." completion with provenance, both ⌘-click directions,
+Rename Class with its refusal ladder), env keys (completion with
+truncated values, the jump, the fetch-to-route hop), and API Studio's
+three exports plus Test in API Studio - every claim matching a pinned
+test, per that document's own law. And the count-gate blind spot that
+let "85 grammars" survive two releases there closes BOTH halves:
+kitchen-sink.md joins the gate's census, AND the grammar matcher
+learns the bare "NN grammars" phrasing it could not see - proven
+failing-first with the stale count named by file and line.
+
 ## [2.34.1] - 2026-08-23
 
 The night close: the review of batch 10 found Copy TS Types reading
@@ -14166,6 +14179,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.1...v2.34.2
 [2.34.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.1...v2.34.0
 [2.33.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.0...v2.33.1
