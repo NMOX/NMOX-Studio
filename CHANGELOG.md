@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.3] - 2026-08-23
+
+The night audit: the zero-boot-spawns law re-verified on the shipped
+2.34.2 - a fresh-userdir boot runs ZERO child processes, ~340 releases
+after v1.38.0 established it; and the tools JaCoCo floor ratchets
+0.74 -> 0.75, locking in the NpmScripts tests (the only module with an
+honest margin this pass - editor and rack stay at their windows-binding
+measurements by law, the rest are within noise of their floors).
+
 ## [2.34.2] - 2026-08-23
 
 The Kitchen Sink catches up: stations for the class-intelligence era
@@ -14179,6 +14188,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.2...v2.34.3
 [2.34.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.1...v2.34.2
 [2.34.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.1...v2.34.0
