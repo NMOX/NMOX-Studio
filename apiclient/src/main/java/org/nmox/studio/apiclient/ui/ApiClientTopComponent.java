@@ -1615,6 +1615,58 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     /**
+     * Opens API Studio with a DRAFT request for {@code verb} + {@code
+     * path} (v2.34.0, "Test in API Studio" on a route line): the
+     * request lands in a "From the editor" collection with the url
+     * spelled {@code {{base_url}}<path>} so the active environment
+     * aims it, the tree rebuilds, and the draft is selected ready to
+     * Send. EDT-safe from any thread; same-name drafts are reused
+     * rather than duplicated (running the gesture twice on a route is
+     * not a request to make two requests).
+     */
+    public static void openWithDraft(String verb, String path) {
+        java.awt.EventQueue.invokeLater(() -> {
+            org.openide.windows.TopComponent tc = org.openide.windows.WindowManager
+                    .getDefault().findTopComponent("ApiClientTopComponent");
+            if (!(tc instanceof ApiClientTopComponent api)) {
+                return;
+            }
+            tc.open();
+            tc.requestActive();
+            String name = verb + " " + path;
+            Collection home = null;
+            for (Collection c : api.workspace.collections) {
+                if ("From the editor".equals(c.name)) {
+                    home = c;
+                    break;
+                }
+            }
+            if (home == null) {
+                home = new Collection();
+                home.name = "From the editor";
+                api.workspace.collections.add(home);
+            }
+            Request draft = null;
+            for (Request r : home.requests) {
+                if (name.equals(r.name)) {
+                    draft = r;
+                    break;
+                }
+            }
+            if (draft == null) {
+                draft = new Request();
+                draft.name = name;
+                draft.method = verb;
+                draft.url = "{{base_url}}" + path;
+                home.requests.add(draft);
+                api.touch();
+            }
+            api.rebuildTree();
+            api.selectRequest("From the editor", name);
+        });
+    }
+
+    /**
      * Finds and selects the request named {@code requestName} inside the
      * collection named {@code collectionName}, scrolling it into view. Used
      * by Quick Search to jump straight to a hit. Best-effort: a no-op if the

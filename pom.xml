@@ -256,6 +256,13 @@
                         <exclude>**/ui/actions/OpenFileAction*.class</exclude>
                         <exclude>**/ui/actions/OpenFolderAction*.class</exclude>
                         <exclude>**/ui/actions/NewProjectAction*.class</exclude>
+                        <!-- TestInApiStudio/CopyTsTypes are the same shape:
+                             caret/clipboard/status glue over RouteLine and
+                             JsonTypes, both tested pure. openWithDraft's
+                             collection/draft reuse is TC-resident by
+                             necessity (tree + workspace live there). -->
+                        <exclude>**/apiclient/ui/TestInApiStudioAction*.class</exclude>
+                        <exclude>**/apiclient/ui/CopyTsTypesAction*.class</exclude>
                         <!-- RunScriptAction is caret/registry/status glue
                              (the v2.30.1 split-editor identity dance + a
                              status line per refusal); the caret-to-script
