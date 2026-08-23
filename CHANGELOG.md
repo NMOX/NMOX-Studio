@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.0] - 2026-08-23
+
+The scrum master's wishes (David's ask): the Task Board's ceremonies
+get their missing skeleton - the SPRINT. Sprint... on the board's
+toolbar names a window (bad dates and backwards windows refused out
+loud), the Board Overview grows a header ("SPRINT FALCON - day 1 of
+14 - 1 committed - 0 remaining") and a BURNDOWN reconstructed from
+the cards' own done stamps - no per-day bookkeeping to rot, the dim
+ideal line under the phosphor real one, the future unplotted. Sprint
+Report... is the Standup's review-and-retro sibling: done,
+open-at-close, still-blocked, clocked time within the window, retro
+notes, and a velocity line fed by Close Sprint..., which archives the
+window, done count, and retro (capped history, cards untouched -
+closing is bookkeeping, not cleanup) behind a safe-default confirm.
+A mangled sprint window in a merged file heals to no-sprint (the
+v2.9.0 law) - and the heal is deliberately REDUNDANT (write-side and
+read-side guards), which the mutation cycle proved the honest way:
+each single guard mutant is EQUIVALENT because the twin still
+enforces the contract, so the kill that pins it is the DOUBLE mutant,
+recorded as such. Walk-proven end to end in the assembled app: start
+sprint, card to Done, the burndown drops, the report to the
+clipboard byte-checked, close speaks "1 done, archived for velocity"
+with the sprint key gone and the archive present in the file's bytes.
+The session is the guide's sprint illustration.
+
 ## [2.36.6] - 2026-08-23
 
 The Docker walk, live on a real daemon (docs only; David unblocked
@@ -14400,6 +14425,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.6...v2.37.0
 [2.36.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.5...v2.36.6
 [2.36.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.4...v2.36.5
 [2.36.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.3...v2.36.4

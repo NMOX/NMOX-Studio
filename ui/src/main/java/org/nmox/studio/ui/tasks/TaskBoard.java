@@ -163,6 +163,93 @@ public final class TaskBoard {
     /** Board-level retro notes (v2.5.0), free multiline text, "" = none. */
     private String retro = "";
 
+    // ---- the sprint (v2.37.0, the scrum-master pass) ---------------------
+
+    /**
+     * The current sprint: a NAMED time window the ceremonies hang off —
+     * the burndown, the sprint report, velocity. Valid only as a whole:
+     * a nonblank name AND {@code 0 < start <= end}; anything else reads
+     * as "no sprint" (the parse-time heal for a hand-edited window).
+     */
+    private String sprintName = "";
+    private long sprintStart;
+    private long sprintEnd;
+
+    /** A finished sprint, archived by {@link #closeSprint} — velocity's raw data. */
+    public record ClosedSprint(String name, long start, long end, int done, String retro) {
+    }
+
+    /** Newest last; capped at {@link #SPRINT_HISTORY_CAP} by closeSprint. */
+    private final List<ClosedSprint> sprintHistory = new ArrayList<>();
+
+    static final int SPRINT_HISTORY_CAP = 24;
+
+    public boolean hasSprint() {
+        return !sprintName.isBlank() && sprintStart > 0 && sprintEnd >= sprintStart;
+    }
+
+    public String sprintName() {
+        return sprintName;
+    }
+
+    public long sprintStart() {
+        return sprintStart;
+    }
+
+    public long sprintEnd() {
+        return sprintEnd;
+    }
+
+    public List<ClosedSprint> sprintHistory() {
+        return java.util.Collections.unmodifiableList(sprintHistory);
+    }
+
+    /** Sets the sprint; an invalid window clears it (callers refuse first). */
+    public void setSprint(String name, long start, long end) {
+        if (name == null || name.isBlank() || start <= 0 || end < start) {
+            sprintName = "";
+            sprintStart = 0;
+            sprintEnd = 0;
+            return;
+        }
+        sprintName = name.strip();
+        sprintStart = start;
+        sprintEnd = end;
+    }
+
+    /**
+     * Closes the current sprint: archives {name, window, done-in-window,
+     * retro} into the history (oldest dropped past the cap), then clears
+     * the sprint AND the retro notes — the retro belongs to the sprint
+     * it reviewed, and it is ARCHIVED, never deleted. Cards stay exactly
+     * where they are: closing a sprint is bookkeeping, not cleanup.
+     * Returns the archived record, or null when no sprint is set.
+     */
+    public ClosedSprint closeSprint() {
+        if (!hasSprint()) {
+            return null;
+        }
+        int done = 0;
+        long windowEnd = sprintEnd + 24L * 60 * 60 * 1000; // through end-of-day
+        for (Column c : columns) {
+            for (Card card : c.cards) {
+                if (card.done > 0 && card.done >= sprintStart && card.done < windowEnd) {
+                    done++;
+                }
+            }
+        }
+        ClosedSprint closed = new ClosedSprint(sprintName, sprintStart, sprintEnd, done, retro);
+        sprintHistory.add(closed);
+        while (sprintHistory.size() > SPRINT_HISTORY_CAP) {
+            sprintHistory.remove(0);
+        }
+        sprintName = "";
+        sprintStart = 0;
+        sprintEnd = 0;
+        retro = "";
+        return closed;
+    }
+
     /** The three-column starter every fresh project begins with. */
     public static TaskBoard starter() {
         TaskBoard b = new TaskBoard();
@@ -509,6 +596,28 @@ public final class TaskBoard {
         if (!retro.isEmpty()) {
             root.put("retro", retro);
         }
+        if (hasSprint()) {
+            JSONObject sj = new JSONObject();
+            sj.put("name", sprintName);
+            sj.put("start", sprintStart);
+            sj.put("end", sprintEnd);
+            root.put("sprint", sj);
+        }
+        if (!sprintHistory.isEmpty()) {
+            JSONArray hist = new JSONArray();
+            for (ClosedSprint cs : sprintHistory) {
+                JSONObject hj = new JSONObject();
+                hj.put("name", cs.name());
+                hj.put("start", cs.start());
+                hj.put("end", cs.end());
+                hj.put("done", cs.done());
+                if (!cs.retro().isEmpty()) {
+                    hj.put("retro", cs.retro());
+                }
+                hist.put(hj);
+            }
+            root.put("sprints", hist);
+        }
         return root.toString(2);
     }
 
@@ -526,6 +635,31 @@ public final class TaskBoard {
         JSONObject root = new JSONObject(json);
         TaskBoard b = new TaskBoard();
         b.retro = root.optString("retro", "");
+        JSONObject sj = root.optJSONObject("sprint");
+        if (sj != null) {
+            // setSprint IS the heal: a hand-edited or merge-mangled window
+            // (blank name, end before start) loads as "no sprint" rather
+            // than poisoning every ceremony downstream (the v2.9.0 law)
+            b.setSprint(sj.optString("name", ""),
+                    sj.optLong("start", 0), sj.optLong("end", 0));
+        }
+        JSONArray hist = root.optJSONArray("sprints");
+        if (hist != null) {
+            for (int i = 0; i < hist.length() && b.sprintHistory.size() < SPRINT_HISTORY_CAP; i++) {
+                JSONObject hj = hist.optJSONObject(i);
+                if (hj == null) {
+                    continue;
+                }
+                String name = hj.optString("name", "");
+                long start = hj.optLong("start", 0);
+                long end = hj.optLong("end", 0);
+                if (name.isBlank() || start <= 0 || end < start) {
+                    continue; // a malformed archive row remembers nothing
+                }
+                b.sprintHistory.add(new ClosedSprint(name, start, end,
+                        Math.max(0, hj.optInt("done", 0)), hj.optString("retro", "")));
+            }
+        }
         java.util.Set<String> seenIds = new java.util.HashSet<>();
         JSONArray cols = root.getJSONArray("columns");
         for (int i = 0; i < cols.length(); i++) {

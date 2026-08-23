@@ -69,6 +69,22 @@ final class OverviewPanel extends JPanel {
                 : "BOARD OVERVIEW · " + projectName));
         add(Box.createVerticalStrut(8));
 
+        if (board.hasSprint()) {
+            BoardStats.Burndown burn = BoardStats.burndown(board,
+                    System.currentTimeMillis(), ZoneId.systemDefault());
+            int day = burn.remainingPerDay().size();
+            add(sectionLabel("SPRINT " + board.sprintName().toUpperCase(java.util.Locale.ROOT)
+                    + " — day " + day + " of " + burn.totalDays()
+                    + " · " + burn.committed() + " committed · "
+                    + (burn.remainingPerDay().isEmpty() ? 0
+                            : burn.remainingPerDay().get(day - 1)) + " remaining"));
+            add(Box.createVerticalStrut(4));
+            BurndownStrip strip = new BurndownStrip(burn);
+            strip.setAlignmentX(LEFT_ALIGNMENT);
+            add(strip);
+            add(Box.createVerticalStrut(10));
+        }
+
         JPanel tiles = new JPanel(new GridLayout(1, 5, 8, 0));
         tiles.setOpaque(false);
         tiles.setAlignmentX(LEFT_ALIGNMENT);
@@ -404,6 +420,73 @@ final class OverviewPanel extends JPanel {
 
     /** The N-day painted flow strip: one bar per day, oldest first.
      *  JPanel for the same accessible-context reason as Bar. */
+    /**
+     * The burndown (v2.37.0): remaining-per-day as a phosphor line over
+     * the ideal straight line to zero. A JPanel like every painted
+     * widget here — the v2.4.0 walk law: bare JComponent has a NULL
+     * AccessibleContext, JPanel does not.
+     */
+    private static final class BurndownStrip extends JPanel {
+
+        private final BoardStats.Burndown burn;
+
+        BurndownStrip(BoardStats.Burndown burn) {
+            this.burn = burn;
+            setOpaque(false);
+            setPreferredSize(new Dimension(100, 72));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+            getAccessibleContext().setAccessibleName("Sprint burndown");
+            getAccessibleContext().setAccessibleDescription(
+                    burn.committed() + " committed, "
+                    + (burn.remainingPerDay().isEmpty() ? 0
+                            : burn.remainingPerDay().get(burn.remainingPerDay().size() - 1))
+                    + " remaining on day " + burn.remainingPerDay().size()
+                    + " of " + burn.totalDays());
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            int w = getWidth();
+            int h = getHeight();
+            g2.setColor(PANEL);
+            g2.fillRoundRect(0, 0, w, h, 8, 8);
+            g2.setColor(EDGE);
+            g2.drawRoundRect(0, 0, w - 1, h - 1, 8, 8);
+            int top = 8;
+            int bottom = h - 8;
+            int left = 8;
+            int right = w - 8;
+            int peak = Math.max(1, burn.committed());
+            int days = Math.max(1, burn.totalDays());
+            // the ideal line: committed at day 0 straight to zero at the end
+            g2.setColor(DIM);
+            g2.drawLine(left, y(top, bottom, peak, peak),
+                    right, y(top, bottom, 0, peak));
+            // the real line, day by day
+            g2.setColor(PHOSPHOR);
+            java.util.List<Integer> rem = burn.remainingPerDay();
+            int prevX = left;
+            int prevY = y(top, bottom, peak, peak);
+            for (int i = 0; i < rem.size(); i++) {
+                int x = left + (right - left) * (i + 1) / days;
+                int yy = y(top, bottom, rem.get(i), peak);
+                g2.drawLine(prevX, prevY, x, yy);
+                g2.fillOval(x - 2, yy - 2, 5, 5);
+                prevX = x;
+                prevY = yy;
+            }
+            g2.dispose();
+        }
+
+        private static int y(int top, int bottom, int value, int peak) {
+            return bottom - (bottom - top) * value / peak;
+        }
+    }
+
     private static final class FlowStrip extends JPanel {
         private final int[] bins;
         private final int max;
