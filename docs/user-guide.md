@@ -135,8 +135,10 @@ intelligence lives (an Express experiment points at Test in API
 Studio and `process.env.` completion; a Vue one at the SFC style-block
 powers). Keep what turns into something — **File ▸ Experiments…** ▸
 **Promote** moves it out and git-inits it — and **Discard** the rest;
-the shelf shows each one's age so nothing lingers unnoticed. Want the
-guided path instead? The dialog fronts the 92 Learning Spaces.
+the shelf shows each one's age and its measured disk cost, an empty
+shelf offers to start one, and re-opening an experiment brings its
+walkthrough back. Want the guided path instead? The dialog fronts the
+92 Learning Spaces.
 
 ![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 

@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.1] - 2026-08-23
+
+The manager teaches too (David's follow-up): the Experiments shelf
+header now states the count and the measured disk cost with the
+lifecycle in one sentence ("3 experiments · 412 MB on disk - discard
+what you're done with, promote what grew up") - the size walk rides
+the experiments lane, landing when ready, never freezing the paint
+thread; the EMPTY shelf stopped being a dead-end message and became
+an offer whose default button starts an experiment right there;
+Open re-opens the experiment's own EXPERIMENT.md, so returning picks
+up where the walkthrough left off; and Discard speaks its lesson on
+the status line. Pure shelfSummary/sizeOf helpers pinned by unit
+tests; four mutants killed by name - and two of them had to be
+killed TWICE, because a module-only test run against a stale ~/.m2
+dependency produces NO verdict line at all, and a missing verdict is
+a failed run, never a kill. The walk's find, fixed: discarding the
+AIMED experiment left the studio pointed at the deleted path (the
+v1.290.0 aimed-discard law, which Experiments.discard missed for ~90
+releases while its learning-space sibling carried it - the Workbench
+showed the dead path with "no toolchain yet" live); an aimed discard
+now re-aims at the ~/NMOX home, after the delete, quietly.
+
 ## [2.36.0] - 2026-08-23
 
 Experiments teach (David's ask: the first tool for learning a
@@ -14278,6 +14300,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.1...v2.36.0
 [2.35.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.0...v2.35.1
 [2.35.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.5...v2.35.0

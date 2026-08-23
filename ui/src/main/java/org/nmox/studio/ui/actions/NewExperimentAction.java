@@ -164,6 +164,11 @@ public final class NewExperimentAction implements ActionListener {
                 : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help"));
     }
 
+    /** The manager's Open re-uses the same guide-opening path (v2.36.1). */
+    static void openGuide(File file) {
+        openInEditor(file);
+    }
+
     private static void openInEditor(File file) {
         try {
             org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil

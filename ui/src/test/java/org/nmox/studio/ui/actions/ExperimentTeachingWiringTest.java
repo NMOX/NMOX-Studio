@@ -50,4 +50,34 @@ class ExperimentTeachingWiringTest {
         assertThat(src()).contains(
                 "\"org.nmox.studio.ui.actions.NewLearningSpaceAction\"");
     }
+
+    private static String managerSrc() throws Exception {
+        return Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/ui/actions/ManageExperimentsAction.java"));
+    }
+
+    @Test
+    @DisplayName("the empty shelf offers to start an experiment, not a dead-end message")
+    void emptyShelfActs() throws Exception {
+        assertThat(managerSrc())
+                .contains("new NewExperimentAction().actionPerformed(e);")
+                .contains("START_ONE");
+    }
+
+    @Test
+    @DisplayName("the shelf header gets its size OFF the EDT and speaks the summary")
+    void shelfHeaderSized() throws Exception {
+        assertThat(managerSrc())
+                .as("the size walk must ride the experiments lane, never the paint thread")
+                .contains("EXPERIMENTS_RP.post")
+                .contains("Experiments.shelfSummary(count, total)");
+    }
+
+    @Test
+    @DisplayName("the manager's Open re-opens the walkthrough when one exists")
+    void openReopensGuide() throws Exception {
+        assertThat(managerSrc())
+                .contains("NewExperimentAction.openGuide(guide)")
+                .contains("guide.isFile()");
+    }
 }
