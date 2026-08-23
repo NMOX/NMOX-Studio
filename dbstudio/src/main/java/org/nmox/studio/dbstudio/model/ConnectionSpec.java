@@ -47,4 +47,9 @@ public record ConnectionSpec(
             int port, String database, String user, String filePath) {
         this(id, name, engine, host, port, database, user, filePath, false);
     }
+
+    /** Same connection, different identity — the duplicate-id heal's tool (v2.36.2). */
+    public ConnectionSpec withId(String newId) {
+        return new ConnectionSpec(newId, name, engine, host, port, database, user, filePath, secure);
+    }
 }

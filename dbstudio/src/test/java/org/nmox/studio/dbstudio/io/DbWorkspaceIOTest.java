@@ -402,4 +402,21 @@ class DbWorkspaceIOTest {
         assertThat(couch.engine()).isEqualTo(DbEngine.COUCHDB);
         assertThat(couch.database()).isEqualTo("shop");
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("duplicate connection ids heal at parse — first keeps the keychain password (v2.9.0 law)")
+    void duplicateConnectionIdsHeal() {
+        String json = """
+            {"connections":[
+              {"id":"dup-1","name":"a","engine":"SQLITE","filePath":"/tmp/a.db"},
+              {"id":"dup-1","name":"b","engine":"SQLITE","filePath":"/tmp/b.db"}
+            ]}""";
+        var specs = DbWorkspaceIO.fromJson(json);
+        org.assertj.core.api.Assertions.assertThat(specs.get(0).id()).isEqualTo("dup-1");
+        org.assertj.core.api.Assertions.assertThat(specs.get(1).id())
+                .as("the duplicate re-mints so removing either can't wipe the other's password")
+                .isNotEqualTo("dup-1").isNotBlank();
+        org.assertj.core.api.Assertions.assertThat(specs.get(1).name())
+                .as("only the identity heals; the connection itself survives")
+                .isEqualTo("b");
+    }
 }

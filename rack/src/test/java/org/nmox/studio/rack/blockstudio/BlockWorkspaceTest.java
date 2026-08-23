@@ -174,4 +174,20 @@ class BlockWorkspaceTest {
         org.assertj.core.api.Assertions.assertThat(use.param("tag"))
                 .isEqualTo("my-badge");
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("duplicate tags heal at parse — the preview's double define can never throw (v2.9.0 law)")
+    void duplicateTagsHealAtParse() {
+        BlockWorkspace a = new BlockWorkspace();
+        org.json.JSONObject one = a.components().get(0).toJson();
+        org.json.JSONObject file = new org.json.JSONObject();
+        file.put("version", 2);
+        file.put("active", 0);
+        file.put("components", new org.json.JSONArray().put(one).put(new org.json.JSONObject(one.toString())));
+        BlockWorkspace healed = BlockWorkspace.fromJson(file);
+        String t0 = healed.components().get(0).root().param("tag");
+        String t1 = healed.components().get(1).root().param("tag");
+        org.assertj.core.api.Assertions.assertThat(t1)
+                .as("the second component's tag heals with the add-gesture's suffix")
+                .isEqualTo(t0 + "-2");
+    }
 }

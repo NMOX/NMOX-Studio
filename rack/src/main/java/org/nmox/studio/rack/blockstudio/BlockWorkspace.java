@@ -190,8 +190,26 @@ public final class BlockWorkspace {
             throw new IllegalArgumentException("components must not be empty");
         }
         List<BlockDoc> docs = new ArrayList<>(arr.length());
+        java.util.Set<String> seenTags = new java.util.HashSet<>();
         for (int i = 0; i < arr.length(); i++) {
-            docs.add(BlockDoc.fromJson(arr.getJSONObject(i)));
+            BlockDoc doc = BlockDoc.fromJson(arr.getJSONObject(i));
+            // every gesture keeps tags unique (add v1.84.0, rename
+            // v1.268.0) but a keep-both git merge can break it in the
+            // FILE, and two components on one tag make the preview's
+            // second customElements.define THROW (the v1.85.0 hazard).
+            // First occurrence keeps the tag — Element references and
+            // the rendered component stay what they were; later
+            // duplicates get the add-gesture's own suffix treatment
+            // (the v2.9.0 parse-time-heal law).
+            String tag = doc.root().param("tag");
+            String healed = tag;
+            for (int n = 2; !seenTags.add(healed); n++) {
+                healed = tag + "-" + n;
+            }
+            if (!healed.equals(tag)) {
+                doc.root().setParam("tag", healed);
+            }
+            docs.add(doc);
         }
         return new BlockWorkspace(docs, o.optInt("active", 0));
     }

@@ -188,12 +188,22 @@ public final class DbWorkspaceIO {
 
     private static List<ConnectionSpec> connections(JSONArray array) {
         List<ConnectionSpec> specs = new ArrayList<>();
+        java.util.Set<String> seenIds = new java.util.HashSet<>();
         if (array == null) {
             return specs;
         }
         for (int i = 0; i < array.length(); i++) {
             ConnectionSpec spec = connection(array.getJSONObject(i));
             if (spec != null) {
+                // the missing-id heal above has a twin: a keep-both git
+                // merge can DUPLICATE an id, and Passwords is keyed by it
+                // (nmox.db.<id>) — removing either connection would wipe
+                // the keychain password both resolve. First occurrence
+                // keeps the id and the stored password; later duplicates
+                // re-mint (the v2.9.0 parse-time-heal law).
+                if (!seenIds.add(spec.id())) {
+                    spec = spec.withId(UUID.randomUUID().toString());
+                }
                 specs.add(spec);
             }
         }
