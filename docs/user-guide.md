@@ -818,6 +818,8 @@ persists to `.nmoxinfra.json`.
 
 ### IRC (⌥⌘3)
 
+![A live Libera.Chat session — join, local echo, and /lastlog answering in place](images/irc-libera.png)
+
 A real IRC client in a tab: networks and channels in a tree on the
 left, a styled transcript (mIRC colors, `/me` actions, clickable links
 that open in the in-app Browser), the channel's nick list on the right
