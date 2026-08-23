@@ -114,6 +114,42 @@ public final class Experiments {
     }
 
     /**
+     * Bytes under an experiment tree — the honest cost of keeping it
+     * (node_modules makes these big). A disk walk: callers run it OFF
+     * the EDT (the v1.33.1 law) and paint the answer when it lands.
+     */
+    public static long sizeOf(File experiment) {
+        long[] total = {0};
+        try (var walk = Files.walk(experiment.toPath())) {
+            walk.forEach(p -> {
+                File f = p.toFile();
+                if (f.isFile()) {
+                    total[0] += f.length();
+                }
+            });
+        } catch (IOException partial) {
+            // a half-walked size is still a useful size
+        }
+        return total[0];
+    }
+
+    /**
+     * The shelf header's teaching line (v2.36.1): the count, the disk
+     * cost, and the lifecycle in one sentence — experiments are meant
+     * to be discarded, and a number makes the nudge concrete. Pure so
+     * the wording and the unit scaling are pinned by tests.
+     */
+    public static String shelfSummary(int count, long bytes) {
+        String size = bytes >= 1024L * 1024 * 1024
+                ? String.format(java.util.Locale.ROOT, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
+                : bytes >= 1024L * 1024
+                ? (bytes / (1024 * 1024)) + " MB"
+                : bytes >= 1024 ? (bytes / 1024) + " KB" : bytes + " B";
+        return count + (count == 1 ? " experiment · " : " experiments · ") + size
+                + " on disk — discard what you're done with, promote what grew up.";
+    }
+
+    /**
      * A keeper graduates: moved under destParent, marker removed, git
      * repo initialized - from here on it is an ordinary project.
      */
@@ -141,13 +177,25 @@ public final class Experiments {
         if (!isExperiment(experiment)) {
             throw new IOException("Not an experiment: " + experiment);
         }
-        Rack rack = RackService.getDefault().getRack();
-        if (experiment.equals(rack.getProjectDir())) {
+        RackService service = RackService.getDefault();
+        Rack rack = service.getRack();
+        boolean wasAimedHere = experiment.equals(rack.getProjectDir());
+        if (wasAimedHere) {
             for (RackDevice d : rack.getDevices()) {
                 d.panic();
             }
         }
         deleteTree(experiment.toPath());
+        if (wasAimedHere) {
+            // the v1.290.0 law, which this method missed for ~90 releases
+            // while its learning-space sibling carried it (caught live in
+            // the v2.36.1 walk: the Workbench showed the discarded
+            // experiment's deleted path with "no toolchain yet"): an
+            // aimed discard re-aims at the known-good home, AFTER the
+            // delete (aiming first lets watchers and the patch autosave
+            // race the removal), quietly (never back into the recents).
+            service.openProjectQuietly(LearningSpace.fallbackWorkspace());
+        }
     }
 
     private static void deleteTree(Path root) throws IOException {

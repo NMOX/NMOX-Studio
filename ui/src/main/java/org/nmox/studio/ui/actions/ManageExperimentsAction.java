@@ -44,6 +44,9 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_ManageExperimentsAction=Experiments…")
 public final class ManageExperimentsAction implements ActionListener {
 
+    /** The empty shelf's one useful button (v2.36.1). */
+    static final String START_ONE = "Start an Experiment…";
+
     /**
      * The one worker lane for experiment filesystem churn (create,
      * promote, discard) — shared with {@link NewExperimentAction}.
@@ -76,8 +79,19 @@ public final class ManageExperimentsAction implements ActionListener {
         DefaultListModel<File> model = new DefaultListModel<>();
         Experiments.list().forEach(model::addElement);
         if (model.isEmpty()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No experiments yet — File ▸ New Experiment… starts one."));
+            // the empty shelf TEACHES AND ACTS (v2.36.1): a dead-end
+            // message made the learner walk back through the File menu;
+            // now the shelf's front door is one click away
+            NotifyDescriptor offer = new NotifyDescriptor(
+                    "No experiments yet. An experiment is the fastest way to try a stack —\n"
+                    + "a throwaway workspace that opens with its own walkthrough, dependencies\n"
+                    + "installed, ready to Run.",
+                    "Experiments", NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[]{START_ONE, NotifyDescriptor.CANCEL_OPTION}, START_ONE);
+            if (DialogDisplayer.getDefault().notify(offer) == START_ONE) {
+                new NewExperimentAction().actionPerformed(e);
+            }
             return;
         }
 
@@ -109,8 +123,22 @@ public final class ManageExperimentsAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Throwaway workspaces in ~/.nmox/experiments — newest first:"),
-                BorderLayout.NORTH);
+        JLabel header = new JLabel(model.size()
+                + (model.size() == 1 ? " experiment" : " experiments")
+                + " in ~/.nmox/experiments — newest first. Sizing…");
+        panel.add(header, BorderLayout.NORTH);
+        // the disk cost lands when the walk finishes — node_modules
+        // trees make this seconds, never an EDT freeze (v1.33.1 law)
+        EXPERIMENTS_RP.post(() -> {
+            long bytes = 0;
+            for (int i = 0; i < model.size(); i++) {
+                bytes += Experiments.sizeOf(model.get(i));
+            }
+            long total = bytes;
+            int count = model.size();
+            SwingUtilities.invokeLater(() ->
+                    header.setText(Experiments.shelfSummary(count, total)));
+        });
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);
         panel.setPreferredSize(new java.awt.Dimension(520, 300));
@@ -124,6 +152,13 @@ public final class ManageExperimentsAction implements ActionListener {
             if (dir != null) {
                 dialog.dispose();
                 RackService.getDefault().openProjectQuietly(dir);
+                // returning to an experiment re-opens its walkthrough —
+                // the guide is the experiment's memory of where you were
+                // (pre-v2.36.0 experiments have none; nothing opens)
+                File guide = new File(dir, Experiments.GUIDE);
+                if (guide.isFile()) {
+                    NewExperimentAction.openGuide(guide);
+                }
             }
         });
         // move + git init / recursive delete run on EXPERIMENTS_RP with a
@@ -211,6 +246,9 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         model.removeElement(dir);
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                "Discarded " + dir.getName()
+                                + " — discarding is what keeps experiments cheap to start.");
                         if (model.isEmpty()) {
                             dialog.dispose();
                         } else {

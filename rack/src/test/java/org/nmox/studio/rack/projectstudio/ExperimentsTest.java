@@ -103,6 +103,41 @@ class ExperimentsTest {
     }
 
     @Test
+    @DisplayName("an aimed discard re-aims at the known-good home, AFTER the delete (v1.290.0 law)")
+    void aimedDiscardReaims() throws IOException {
+        String src = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/rack/projectstudio/Experiments.java"));
+        int delete = src.indexOf("deleteTree(experiment.toPath());");
+        int reaim = src.indexOf("service.openProjectQuietly(LearningSpace.fallbackWorkspace());");
+        assertThat(delete).as("the delete exists").isGreaterThan(0);
+        assertThat(reaim)
+                .as("the re-aim exists and runs AFTER the delete — aiming first lets "
+                        + "watchers race the removal (caught live in the v2.36.1 walk)")
+                .isGreaterThan(delete);
+    }
+
+    @Test
+    @DisplayName("the shelf summary teaches the lifecycle with real numbers")
+    void shelfSummarySpeaks() {
+        assertThat(Experiments.shelfSummary(1, 900))
+                .isEqualTo("1 experiment · 900 B on disk — discard what you're done with, promote what grew up.");
+        assertThat(Experiments.shelfSummary(3, 5L * 1024 * 1024))
+                .startsWith("3 experiments · 5 MB on disk");
+        assertThat(Experiments.shelfSummary(2, 2L * 1024 * 1024 * 1024))
+                .startsWith("2 experiments · 2.0 GB on disk");
+    }
+
+    @Test
+    @DisplayName("sizeOf walks the tree and sums file bytes")
+    void sizeOfSumsTheTree(@TempDir Path work) throws IOException {
+        File exp = new File(work.toFile(), "exp");
+        Files.createDirectories(new File(exp, "sub").toPath());
+        Files.writeString(new File(exp, "a.txt").toPath(), "12345");
+        Files.writeString(new File(exp, "sub/b.txt").toPath(), "123");
+        assertThat(Experiments.sizeOf(exp)).isEqualTo(8);
+    }
+
+    @Test
     @DisplayName("isExperiment is exactly the marker check")
     void markerIsTheContract(@TempDir Path work) throws IOException {
         File dir = new File(work.toFile(), "d");
