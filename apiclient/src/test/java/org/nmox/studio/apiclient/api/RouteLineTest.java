@@ -32,5 +32,8 @@ class RouteLineTest {
         assertThat(RouteLine.parse("cache.get('/api/users')")).isNull();
         assertThat(RouteLine.parse("const x = 1;")).isNull();
         assertThat(RouteLine.parse(null)).isNull();
+        assertThat(RouteLine.parse("app.all('/x', h)"))
+                .as("all names no single method — deliberately out")
+                .isNull();
     }
 }

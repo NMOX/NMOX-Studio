@@ -9,8 +9,10 @@ import java.util.regex.Pattern;
  * route registration — or null. The pattern is the v1.292.0 outline
  * rule (app/router-shaped receiver, a real HTTP verb, a string path),
  * kept deliberately narrow for the same reason it is everywhere else:
- * a wrong request drafted is worse than none. Pure, so the boundary
- * rules are unit tests.
+ * a wrong request drafted is worse than none. {@code app.all} is
+ * deliberately OUT even though the outline shows it: a draft needs ONE
+ * method, and {@code all} names none. Pure, so the boundary rules are
+ * unit tests.
  */
 public final class RouteLine {
 

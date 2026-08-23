@@ -4,6 +4,17 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.1] - 2026-08-23
+
+The night close: the review of batch 10 found Copy TS Types reading
+disk BYTES instead of the open BUFFER - typing in an unsaved .json and
+copying types produced STALE interfaces (the open buffer wins now,
+with the file as fallback); app.all's refusal is documented and
+pinned (a draft needs ONE method, and all names none); openWithDraft
+verified CLEAN against the documented synchronous-componentOpened-load
+contract the http import has always leaned on. CLAUDE.md and plan.md
+brought current through the night with its five laws.
+
 ## [2.34.0] - 2026-08-22
 
 Batch 10, the night shift: the route line becomes a request - Test in
@@ -14155,6 +14166,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.0...v2.34.1
 [2.34.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.1...v2.34.0
 [2.33.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.0...v2.33.1
 [2.33.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.1...v2.33.0

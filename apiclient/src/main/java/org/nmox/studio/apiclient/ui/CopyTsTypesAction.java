@@ -32,12 +32,31 @@ public final class CopyTsTypesAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String text;
-        try {
-            text = context.getPrimaryFile().asText();
-        } catch (java.io.IOException ex) {
-            status("Could not read " + context.getPrimaryFile().getNameExt() + ".");
-            return;
+        // the OPEN BUFFER wins over disk bytes (v2.34.1 review): typing
+        // in an unsaved document and copying types must type what is on
+        // SCREEN, not the stale file
+        String text = null;
+        for (javax.swing.text.JTextComponent c
+                : org.netbeans.api.editor.EditorRegistry.componentList()) {
+            Object sd = c.getDocument() == null ? null
+                    : c.getDocument().getProperty(
+                            javax.swing.text.Document.StreamDescriptionProperty);
+            if (sd instanceof DataObject d
+                    && d.getPrimaryFile().equals(context.getPrimaryFile())) {
+                try {
+                    text = c.getDocument().getText(0, c.getDocument().getLength());
+                } catch (javax.swing.text.BadLocationException ignore) {
+                }
+                break;
+            }
+        }
+        if (text == null) {
+            try {
+                text = context.getPrimaryFile().asText();
+            } catch (java.io.IOException ex) {
+                status("Could not read " + context.getPrimaryFile().getNameExt() + ".");
+                return;
+            }
         }
         String stem = context.getPrimaryFile().getName().replaceAll("[^A-Za-z0-9_ -]", "");
         String types = org.nmox.studio.apiclient.api.JsonTypes.interfacesFor(
