@@ -53,6 +53,24 @@ public final class ManageExperimentsAction implements ActionListener {
     static final org.openide.util.RequestProcessor EXPERIMENTS_RP =
             new org.openide.util.RequestProcessor("Experiments", 1);
 
+    /**
+     * " · N days ago" from the marker's created date — the nudge that
+     * makes a stale shelf visible (v2.36.0). Unparseable dates (the
+     * "?" placeholder, a hand-edited marker) render nothing.
+     */
+    static String age(String created) {
+        try {
+            long days = java.time.temporal.ChronoUnit.DAYS.between(
+                    java.time.LocalDate.parse(created), java.time.LocalDate.now());
+            if (days <= 0) {
+                return " · today";
+            }
+            return " · " + days + (days == 1 ? " day ago" : " days ago");
+        } catch (RuntimeException unparseable) {
+            return "";
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         DefaultListModel<File> model = new DefaultListModel<>();
@@ -74,7 +92,7 @@ public final class ManageExperimentsAction implements ActionListener {
                 Experiments.Info info = Experiments.info(dir);
                 return super.getListCellRendererComponent(l,
                         dir.getName() + "   —   " + info.template().toLowerCase()
-                        + ", created " + info.created(), i, sel, focus);
+                        + ", created " + info.created() + age(info.created()), i, sel, focus);
             }
         });
 

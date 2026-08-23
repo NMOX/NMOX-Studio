@@ -44,7 +44,22 @@ public final class Experiments {
         template.generate(dir, dir.getName()); // deliberately no git init
         Files.writeString(new File(dir, MARKER).toPath(),
                 "created=" + java.time.LocalDate.now() + "\ntemplate=" + template.name() + "\n", java.nio.charset.StandardCharsets.UTF_8);
+        writeGuide(dir, template);
         return dir;
+    }
+
+    /** The walkthrough the experiment is born with (v2.36.0). */
+    public static final String GUIDE = "EXPERIMENT.md";
+
+    /**
+     * Writes EXPERIMENT.md beside the scaffold. Package-private and
+     * dir-parameterized so the write is testable without touching the
+     * real {@code ~/.nmox/experiments} home.
+     */
+    static void writeGuide(File dir, ProjectTemplates template) throws IOException {
+        Files.writeString(new File(dir, GUIDE).toPath(),
+                ExperimentGuide.walkthrough(template, dir.getName()),
+                java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private static File unique(File root, String base) {

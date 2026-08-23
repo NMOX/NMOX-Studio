@@ -47,6 +47,10 @@ class SpawnSiteTrustLedgerTest {
             "NewProjectDialog.java",
             "GATED: template scaffold + install in a directory the wizard itself just created — "
             + "trust pre-granted in place (v1.62.0 blessing)",
+            "NewExperimentAction.java",
+            "GATED: the experiment install — the product's own template in the pre-trusted "
+            + "experiments home, at the user's explicit request; package.json guard; "
+            + "the NewProjectDialog blessing verbatim (v2.36.0)",
             "RackDevice.java",
             "GATED-BY-CALLER: reachable only through CommandDevice.launch/launchWithEnv, "
             + "whose trustCheck gates before exec (v1.93.0)",

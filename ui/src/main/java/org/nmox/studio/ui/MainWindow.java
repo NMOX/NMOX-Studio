@@ -110,10 +110,12 @@ public final class MainWindow extends TopComponent {
             tagline.setForeground(HEADING);
 
             JPanel start = column("START");
-            start.add(actionLink("New Project…  ⇧⌘N", "File",
-                    "org.nmox.studio.ui.actions.NewProjectAction"));
+            // the experiment leads (v2.36.0, David's framing: the FIRST
+            // tool for trying a stack — zero ceremony, born teaching)
             start.add(actionLink("New Experiment…  ⇧⌘E", "File",
                     "org.nmox.studio.ui.actions.NewExperimentAction"));
+            start.add(actionLink("New Project…  ⇧⌘N", "File",
+                    "org.nmox.studio.ui.actions.NewProjectAction"));
             start.add(actionLink("New Learning Space…  ⇧⌘L", "File",
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
             start.add(actionLink("Open Folder…  ⌥⌘O", "File",

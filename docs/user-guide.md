@@ -124,10 +124,21 @@ the IDE asks before switching projects and shuts them down cleanly.
 Nothing keeps running behind your back — ever. Even force-quitting the
 IDE can't orphan a process (§10).
 
-**Experiments** are throwaway projects that live in `~/.nmox/experiments`:
-create one to try an idea with zero ceremony, then either **Promote** it
-into a real project folder (it gets a git repo) or **Discard** it. Find
-them under the Tools menu.
+**Experiments** are the fastest way to try a stack — the first tool to
+reach for when something is new. **File ▸ New Experiment…** (⇧⌘E, and
+the first entry on the Welcome tab) picks a template and generates a
+throwaway project under `~/.nmox/experiments`: no git, no recents,
+already trusted, dependencies installed so the **first Run just
+works** — and it opens on its own `EXPERIMENT.md` walkthrough telling
+you what to press, which file to change, and where this stack's IDE
+intelligence lives (an Express experiment points at Test in API
+Studio and `process.env.` completion; a Vue one at the SFC style-block
+powers). Keep what turns into something — **File ▸ Experiments…** ▸
+**Promote** moves it out and git-inits it — and **Discard** the rest;
+the shelf shows each one's age so nothing lingers unnoticed. Want the
+guided path instead? The dialog fronts the 92 Learning Spaces.
+
+![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 
 **.env everywhere:** if your project has a `.env`, devices launched from
 the rack get those variables. Edit it and the status line notes that
