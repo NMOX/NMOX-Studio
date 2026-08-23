@@ -221,7 +221,8 @@ public final class LanguageServers {
      * Multi-mime providers below are SINGLETONS registered through
      * static factory methods, not classes — ledger 83's one hard
      * requirement, learned from the platform source (RELEASE300
-     * LSPBindings.buildBindings): a started server is filed under
+     * LSPBindings.buildBindings; re-verified byte-identical in
+     * RELEASE310, see docs/engineering/release310-dossier.md): a started server is filed under
      * every mime a MultiMimeLanguageServerProvider declares, but the
      * map is keyed by provider INSTANCE. A class-level registration
      * puts one .instance file in EACH mime folder and the layer

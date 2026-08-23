@@ -313,7 +313,7 @@
     </modules>
 
     <properties>
-        <netbeans.version>RELEASE300</netbeans.version>
+        <netbeans.version>RELEASE310</netbeans.version>
         <brandingToken>nmoxstudio</brandingToken>
         <!-- Empty default so surefire's @{argLine} resolves even when JaCoCo's
              prepare-agent is skipped (e.g. -Djacoco.skip=true); when JaCoCo
