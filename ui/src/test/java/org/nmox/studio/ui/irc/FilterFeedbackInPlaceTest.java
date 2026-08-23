@@ -21,8 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FilterFeedbackInPlaceTest {
 
     private static String src() throws Exception {
+        // normalized: a CRLF checkout (windows autocrlf) must not break
+        // the multi-line contains below (the v1.42.0 folding class)
         return Files.readString(Path.of(
-                "src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java"));
+                "src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java"))
+                .replace("\r\n", "\n");
     }
 
     @Test
