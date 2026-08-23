@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.4] - 2026-08-23
+
+The zero-defect campaign opens (David's directive) with the honest
+inventory: zero TODO/FIXME in the product's main sources, a boot
+census showing only the platform's own two deprecation warnings, and
+the ledger audited - which found ledger 80 (the popup position-95
+collision) recorded as one pair while the CLASS was five: the new
+PopupPositionUniquenessTest, derived from the generated layer (the
+v2.19.1 outcome-gate idiom), named Emmet's popupPosition 95 colliding
+with the Angular switcher across x-ng-template, typescript, css,
+scss, and less on its first run. Emmet moved to 94 everywhere, and
+the fix is differentially proven live: the same open-then-right-click
+gesture logs the "Found same position 95" warning once on shipped
+2.36.3 and zero times on this build. Ledger 80 closed structurally;
+ledger 84's header finally says CLOSED (v2.35.0 shipped it).
+
 ## [2.36.3] - 2026-08-23
 
 The sweep's audited tail: the last two checked-in-file parsers under
@@ -14352,6 +14368,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.3...v2.36.4
 [2.36.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.2...v2.36.3
 [2.36.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.1...v2.36.2
 [2.36.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.0...v2.36.1

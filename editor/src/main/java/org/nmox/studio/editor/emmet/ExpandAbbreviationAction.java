@@ -33,35 +33,35 @@ import org.openide.awt.StatusDisplayer;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/html", popupPath = "", popupPosition = 95),
+            mimeType = "text/html", popupPath = "", popupPosition = 94),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-ng-template", popupPath = "", popupPosition = 95),
+            mimeType = "text/x-ng-template", popupPath = "", popupPosition = 94),
     // the css family (v1.336.0): all five mimes because css-prep resolves
     // real .scss/.less to its own text/scss / text/less while ours serve
     // .sass and friends — the v1.230.0 finding, twice bitten
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/css", popupPath = "", popupPosition = 95),
+            mimeType = "text/css", popupPath = "", popupPosition = 94),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/scss", popupPath = "", popupPosition = 95),
+            mimeType = "text/scss", popupPath = "", popupPosition = 94),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/less", popupPath = "", popupPosition = 95),
+            mimeType = "text/less", popupPath = "", popupPosition = 94),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-scss", popupPath = "", popupPosition = 95),
+            mimeType = "text/x-scss", popupPath = "", popupPosition = 94),
     // text/x-sass DELIBERATELY absent: CssEmmet emits braced,
     // semicoloned declarations — wrong shape for the indented
     // dialect, and a wrong guess MUTATES the stylesheet (v1.336.0)
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-less", popupPath = "", popupPosition = 95),
+            mimeType = "text/x-less", popupPath = "", popupPosition = 94),
     // inline templates (the Angular-top arc): a component's
     // template: `...` literal is markup living on a TypeScript pane
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/typescript", popupPath = "", popupPosition = 95),
+            mimeType = "text/typescript", popupPath = "", popupPosition = 94),
     // the component mimes (v2.14.0): a Vue or Svelte SFC is mostly
     // markup — Angular templates had Emmet since v1.329.0, these didn't
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-vue", popupPath = "", popupPosition = 95),
+            mimeType = "text/x-vue", popupPath = "", popupPosition = 94),
     @EditorActionRegistration(name = "nmox-expand-abbreviation",
-            mimeType = "text/x-svelte", popupPath = "", popupPosition = 95)
+            mimeType = "text/x-svelte", popupPath = "", popupPosition = 94)
 })
 public class ExpandAbbreviationAction extends BaseAction {
 

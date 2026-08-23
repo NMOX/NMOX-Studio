@@ -22,7 +22,7 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
-### 84. The NetBeans Platform upgrade (RELEASE300 → RELEASE310+) — its own project, never a deps bump
+### 84. ~~The NetBeans Platform upgrade (RELEASE300 → RELEASE310+)~~ — CLOSED v2.35.0 (shipped, boundary observed v2.35.1)
 
 Dependabot's 2026-08-20 grouped PR carried netbeans.version
 RELEASE300→RELEASE310 beside routine junit/org.json/mongodb bumps —
@@ -194,13 +194,14 @@ keeps its own unsuppressed registration. Live-proven: title→heading
 applied ONCE at the declaration, {{ title }} rewritten in the
 template; TsServerAngularSuppressionTest gates it, mutation-proven.
 
-### 80. Popup position 95 collision on ng-template panes (v1.347.0)
-messages.log: "Found same position 95 for both
-nmox-ng-goto-component.shadow and
-org-nmox-studio-editor-angular-OpenComponent.shadow" — the Angular-top
-arc's Go to Component and the v1.313 switcher's Open Angular Template
-claim the same popup slot. Cosmetic ordering nondeterminism; move
-nmox-ng-goto-component to a free position.
+### 80. ~~Popup position 95 collision on ng-template panes~~ — CLOSED v2.36.4 (structurally)
+The recorded pair had already been moved (goto-component sits at 96
+with the ledger comment), but the class was alive: the new
+PopupPositionUniquenessTest — derived from the GENERATED layer, the
+v2.19.1 outcome-gate idiom — named FIVE collisions on its first run,
+all Emmet's popupPosition 95 against the v1.313 switcher's 95 across
+x-ng-template/typescript/css/scss/less. Emmet moved to 94 everywhere;
+any future collision fails the build, not the boot log.
 
 ### 77. CLOSED v1.349.0 — the bisect: content-resolved panes never existed
 A file claimed by the PROGRAMMATIC NgTemplateContentResolver (suffixless
