@@ -188,4 +188,27 @@ class GraphIORoundTripTest {
         assertThat(next.id).isEqualTo("domain-3");
         assertThat(restored.getNodes()).extracting(n -> n.id).doesNotHaveDuplicates();
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("duplicate node ids heal at parse — the doId linkage survives on both (v2.9.0 law)")
+    void duplicateNodeIdsHeal() {
+        org.json.JSONObject file = new org.json.JSONObject("""
+            {"nodes":[
+              {"id":"droplet-1","kind":"DROPLET","x":10,"y":10,"doId":"cloud-A"},
+              {"id":"droplet-1","kind":"DROPLET","x":50,"y":50,"doId":"cloud-B"}
+            ],"wires":[]}""");
+        InfraGraph graph = new InfraGraph();
+        GraphIO.fromJson(graph, file);
+        java.util.List<InfraGraph.InfraNode> nodes = graph.getNodes();
+        org.assertj.core.api.Assertions.assertThat(nodes)
+                .as("both nodes survive — a map put no longer swallows the first")
+                .hasSize(2);
+        org.assertj.core.api.Assertions.assertThat(nodes.get(0).id).isEqualTo("droplet-1");
+        org.assertj.core.api.Assertions.assertThat(nodes.get(0).doId)
+                .as("the FIRST occurrence keeps its live-resource linkage")
+                .isEqualTo("cloud-A");
+        org.assertj.core.api.Assertions.assertThat(nodes.get(1).id).isEqualTo("droplet-1-2");
+        org.assertj.core.api.Assertions.assertThat(nodes.get(1).doId)
+                .as("the duplicate keeps ITS linkage under the healed id — nothing lost")
+                .isEqualTo("cloud-B");
+    }
 }

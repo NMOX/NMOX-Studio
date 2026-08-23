@@ -55,6 +55,7 @@ public final class GraphIO {
         if (nodeArr == null) {
             return;
         }
+        java.util.Set<String> seenIds = new java.util.HashSet<>();
         for (int i = 0; i < nodeArr.length(); i++) {
             JSONObject nj = nodeArr.getJSONObject(i);
             NodeKind kind;
@@ -63,8 +64,20 @@ public final class GraphIO {
             } catch (IllegalArgumentException ex) {
                 continue; // kind from a future version; skip rather than fail
             }
+            // restoreNode is a map put — a duplicated id (a keep-both git
+            // merge of .nmoxinfra.json) silently REPLACED the first node,
+            // and with it the doId linkage to a live billed resource
+            // (Sync would re-create it, Destroy could not find it). The
+            // v2.9.0 parse-time-heal law: first occurrence keeps the id
+            // (wires resolve to it); later duplicates re-mint and keep
+            // their own doId under the new id — nothing is lost.
+            String id = nj.getString("id");
+            String healed = id;
+            for (int n = 2; !seenIds.add(healed); n++) {
+                healed = id + "-" + n;
+            }
             InfraGraph.InfraNode node = graph.restoreNode(
-                    nj.getString("id"), kind, nj.getInt("x"), nj.getInt("y"));
+                    healed, kind, nj.getInt("x"), nj.getInt("y"));
             node.label = nj.optString("label", node.label);
             node.doId = nj.has("doId") ? nj.getString("doId") : null;
             node.ip = nj.has("ip") ? nj.getString("ip") : null;
