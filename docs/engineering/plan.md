@@ -2618,3 +2618,30 @@ Laws established:
   CopyTsTypes; every exclusion carries its reason at the pom line.
 
 Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call).
+
+## Addendum — 2026-08-23, the overnight tail (v2.34.2–v2.34.5)
+
+The night ran walks and audits rather than features: the Kitchen Sink
+caught up to the class-intelligence era with its count gate's double
+blind spot closed failing-first (v2.34.2), the zero-boot-spawns law
+re-verified live ~340 releases after v1.38.0 with the tools floor
+ratcheted to 0.75 (v2.34.3), and the IRC client walked live on Libera
+~25 releases after its last proof (v2.34.4) — connect/join/echo/
+/lastlog all CLEAN, one find fixed and gated.
+
+Laws established:
+- **Command feedback lands where the command was typed** (v2.34.4):
+  a malformed /filter add answered into the network-status transcript
+  while the user watched a channel — spoken in the wrong room reads
+  as silence. Active transcript first, network status only as the
+  nothing-selected fallback.
+- **A sed-derived gate literal rots silently** (v2.34.4): the gate
+  template's docs-landed check had pinned "## [2.26.0]" through many
+  derivations — an entry present on every sha proves nothing. The
+  derivation checklist now includes repinning the literal to the
+  CURRENT release's entry, beside PR= and TAG=.
+- **A walk shot is a doc asset, not a byproduct** (v2.34.4): the live
+  Libera session became the user guide's first IRC illustration under
+  the ImageRefsTest law — captured wired, in the same commit.
+
+Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call).
