@@ -2593,3 +2593,28 @@ Laws established:
 
 Standing counts unchanged: 86 grammars, 92 spaces, 60 manifests, 53
 devices. RELEASE310 GO-READY (David's call pending).
+
+## Addendum — 2026-08-22/23, the wishlist night (v2.31.0–v2.34.1)
+
+Eleven releases across the day+night: the full-stack wishlist and its
+second helping (every recorded wish granted same-day), the illustrated
+docs (ImageRefsTest + the capture recipes), batch 10's server-side
+twin of the fetch→route jump, two same-day reviews each catching real
+defects in hours-old code, and the 2.30.1→2.33.1 update gauntlet PASS.
+
+Laws established:
+- **A codec's output must be deterministic to be pinnable** (v2.33.0):
+  org.json's key order is undefined — emit sorted.
+- **The v1.189.0 law's third strike** (v2.33.1): JsonTypes' javadoc
+  claimed | null unions the code never emitted. Probe the claim live
+  BEFORE writing the fix.
+- **A generated type must never lie about the data it came from**
+  (v2.33.1): a null sibling vanishing into `string` is corruption of
+  trust, not a cosmetic miss.
+- **The open buffer wins over disk bytes** (v2.34.1): any editor
+  gesture that reads "the file" must prefer the document on screen.
+- **Glue actions earn named exclusions, cores earn tests** (v2.33.0):
+  the SassCompileAction precedent now covers RunScript/TestInApiStudio/
+  CopyTsTypes; every exclusion carries its reason at the pom line.
+
+Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call).
