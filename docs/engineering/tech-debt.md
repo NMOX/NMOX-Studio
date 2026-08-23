@@ -62,7 +62,17 @@ plugin against the new core. The update boundary measured: 2.35.0
 modules carry RELEASE310 dependency floors one spec above what a
 2.34.5 cluster provides, so older installs are held back honestly
 (refuse-by-range, v1.47.0) and cross via installers per the v1.256.0
-timing law.
+timing law. The boundary OBSERVED post-tag (v2.35.1): a stock 2.34.5
+against the real 2.35.0 catalog — the Plugin Manager OFFERS all 11
+pre-checked, and the Plugin Installer wizard then names the exact
+missing platform specs ("Utilities API >= 9.42 but only 9.41 was
+found") and refuses to advance (three Next activations + Return, no
+state change, nothing downloaded, jars byte-identical, 0 SEVERE) —
+the graceful hold, measured not assumed. CAVEAT: the headless
+`--modules --update-all` CLI does NOT run that check — it installed
+all 11 in place and every product module then failed enable (the
+refuse-by-range cascade), originals in update/backup. The gauntlet
+law: never script --update-all across a platform boundary.
 
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 
