@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.0] - 2026-08-22
+
+Batch 10, the night shift: the route line becomes a request - Test in
+API Studio on any Express/Fastify/Koa registration opens API Studio
+with a ready draft (verb + path lifted by the v1.292.0 rule, url
+spelled {{base_url}}<path> so the active environment aims it, drafts
+landing in a "From the editor" collection with same-name reuse - the
+v2.31.0 fetch-to-route jump walks client to server, this walks server
+to the request that exercises it); and Copy TS Types generalizes to
+.json FILES in the editor (same JsonTypes codec, named after the
+file). RouteLine's narrowness mutation-pinned (app.use and
+app.get('port') refuse by name). PLUS the day's own update gauntlet
+PASS recorded: a stock 2.30.1 portable self-updated in-app across the
+day's seven releases (updates=11, all eleven jars byte-verified at
+2.33.1, second refresh converged, clean reboot zero SEVERE).
+
 ## [2.33.1] - 2026-08-22
 
 The day review, hours after the batch: JsonTypes' javadoc CLAIMED
@@ -14139,6 +14155,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.1...v2.34.0
 [2.33.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.33.0...v2.33.1
 [2.33.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.1...v2.33.0
 [2.32.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.32.0...v2.32.1

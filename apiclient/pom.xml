@@ -45,6 +45,12 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- EditorRegistry for the Test-in-API-Studio caret (v2.34.0) -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-lib2</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
             <version>${netbeans.version}</version>
