@@ -29,7 +29,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <netbeans.version>RELEASE300</netbeans.version>
+        <netbeans.version>RELEASE310</netbeans.version>
     </properties>
 
     <dependencies>

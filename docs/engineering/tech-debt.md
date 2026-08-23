@@ -53,7 +53,16 @@ jgit's org.slf4j [1.7.0,3.0.0) OSGi import lost its provider to a
 cluster-placement change (slf4j-api stopped being auto-wrapped as a
 bundle); one explicit application-pom dependency pins the placement
 and the 310 assembly boots clean. GO-READY; remaining gauntlets ride
-the bump PR.
+the bump PR. CLOSED by v2.35.0 (David's GO, 2026-08-23): property
+flipped, full verify green, and every dossier GO item measured on the
+assembled RELEASE310 app - boot laws (6s, 0 spawns, 0 SEVERE), the
+browser gauntlet (https + plain-http + DevTools DOM on FX 26), all
+nine chords, the update-site dry run (11 NBMs), the example SPI
+plugin against the new core. The update boundary measured: 2.35.0
+modules carry RELEASE310 dependency floors one spec above what a
+2.34.5 cluster provides, so older installs are held back honestly
+(refuse-by-range, v1.47.0) and cross via installers per the v1.256.0
+timing law.
 
 ## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
 

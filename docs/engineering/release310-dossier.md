@@ -105,6 +105,10 @@ One release, on the JDK-25 model (v1.253.0): move `netbeans.version`
 in the root pom (the ONE home), run the full gauntlet set above on
 the assembled app, ship through the normal gate with the update-center
 timing law respected, and re-pin the CI/windows lanes' expectations if
-any measured floor moves. Rollback is the property flipped back — but the runtime probe above
-means the bump is NOT ready: the compile half is green, the boot half
-is red, and the upgrade project starts at netbinox.
+any measured floor moves. Rollback is the property flipped back. (The runtime probe's RED was
+root-caused and fixed in v2.21.6 — the missing org.slf4j provider was
+a cluster-placement accident, not the OSGi host — and v2.35.0
+executed this shape: property flip, full gauntlet set PASS on the
+assembled app, shipped through the normal gate. The update boundary
+behaved as designed: RELEASE310 dependency floors hold older installs
+back honestly; installers carry them across.)

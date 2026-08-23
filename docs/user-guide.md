@@ -56,6 +56,13 @@ is our own release channel over HTTPS), and the bundled Java runtime
 and launcher only change with a full installer, so a fresh install from
 a release asset is still right for major platform jumps.
 
+> **Crossing 2.35.0**: version 2.35.0 moved the underlying platform
+> (NetBeans RELEASE310), and the platform cluster ships only in
+> installers — so an install at 2.34.5 or older will not see 2.35.0+
+> in the in-app updater (the update is held back honestly, never
+> half-installed). Install fresh or `brew upgrade` once; in-app
+> updates resume from there within the 2.35.x line.
+
 ## 2. First launch
 
 The IDE opens with the full suite of tabs along the editor area:

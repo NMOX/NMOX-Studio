@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.35.0] - 2026-08-23
+
+The platform advances: RELEASE300 -> RELEASE310 (ledger 84 closed,
+David's GO). The dossier-first model paid twice - the compile half
+was proven weeks ago (all four decompiled assumptions byte-identical,
+every floor green under the override), and the runtime half's one RED
+(jgit failing under the OSGi host) was root-caused to a
+cluster-placement accident and fixed by the v2.21.6 slf4j-api pin
+before this bump was ever attempted. The bump itself is the property
+flip plus the gauntlets, all PASS on the assembled RELEASE310 app:
+boot laws (6s smoke, ZERO boot spawns, ZERO SEVERE, the --add-opens
+set sufficient, the two-warning deprecation baseline unchanged), the
+browser gauntlet (FX 26 WebKit rendering https and plain-http in the
+new window system, DevTools DOM reading the live tree), all nine
+advertised chords pressed and landing, the update-site dry run (11
+NBMs), and the example Device SPI plugin building clean against the
+new core. The update boundary is measured, not assumed: 2.35.0's
+modules record RELEASE310 dependency floors (editor > 1.120,
+csl.api > 2.91) that a 2.34.5 install's cluster sits exactly one
+spec below, so the update center HOLDS the update back on older
+installs - the honest refuse-by-range design (v1.47.0) doing its
+job. Installs at 2.34.5 or older cross the boundary via a fresh
+installer (brew upgrade does it); in-app updates resume within the
+2.35.x line, because the platform cluster only ever ships in
+installers (the v1.256.0 timing law).
+
 ## [2.34.5] - 2026-08-23
 
 Docs truth, the overnight close: CLAUDE.md's headline and history
@@ -14212,6 +14238,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.35.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.5...v2.35.0
 [2.34.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.4...v2.34.5
 [2.34.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.3...v2.34.4
 [2.34.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.2...v2.34.3
