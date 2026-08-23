@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.34.4] - 2026-08-23
+
+The IRC walk, live on Libera (~25 releases since the last): TLS
+connect to the real network, join, local echo, /lastlog answering in
+place, and the /filter regex family - one find, fixed and gated: a
+malformed /filter add spoke its usage line into the NETWORK-STATUS
+transcript while the user watched a channel (spoken in the wrong room
+reads as silence; /lastlog has always answered in place) - command
+feedback now lands where the command was typed, network status only
+as the nothing-selected fallback, FilterFeedbackInPlaceTest pinning
+the routing with the revert mutant failing by name. The session
+itself becomes the user guide's IRC illustration.
+
 ## [2.34.3] - 2026-08-23
 
 The night audit: the zero-boot-spawns law re-verified on the shipped
@@ -14188,6 +14201,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.34.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.3...v2.34.4
 [2.34.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.2...v2.34.3
 [2.34.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.1...v2.34.2
 [2.34.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.0...v2.34.1

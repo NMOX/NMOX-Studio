@@ -1932,7 +1932,13 @@ public final class IrcTopComponent extends TopComponent {
      * engine-side log always keeps the full record.
      */
     private void commandFilter(String args) {
-        String statusKey = key(activeNetwork(), "");
+        // feedback lands WHERE THE COMMAND WAS TYPED (v2.34.4, the
+        // Libera walk: a malformed /filter add answered into the
+        // network-status transcript while the user watched a channel —
+        // spoken, but in the wrong room reads as silence; /lastlog has
+        // always answered in place). Network status stays the fallback
+        // when nothing is selected.
+        String statusKey = activeKey != null ? activeKey : key(activeNetwork(), "");
         IrcConfig config = IrcConfig.getDefault();
         String[] parts = args.trim().split("\\s+", 2);
         String sub = parts[0].toLowerCase(Locale.ROOT);
