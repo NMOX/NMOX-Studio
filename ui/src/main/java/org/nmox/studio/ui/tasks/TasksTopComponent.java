@@ -309,10 +309,16 @@ public final class TasksTopComponent extends TopComponent {
         standup.setToolTipText("Yesterday / today / blockers, from this"
                 + " board's clock and stamps plus the git log — as markdown");
         standup.addActionListener(e -> showStandup());
+        JButton sprint = new JButton("Sprint…");
+        sprint.getAccessibleContext().setAccessibleName("Sprint menu");
+        sprint.setToolTipText("Set the sprint window, generate the sprint report,"
+                + " or close the sprint — the scrum ceremonies live here");
+        sprint.addActionListener(e -> showSprintMenu(sprint));
         top.add(addCard);
         top.add(addColumn);
         top.add(overviewToggle);
         top.add(standup);
+        top.add(sprint);
         top.add(boardLabel);
         add(top, BorderLayout.NORTH);
 
@@ -813,6 +819,128 @@ public final class TasksTopComponent extends TopComponent {
                 DialogDisplayer.getDefault().notify(d);
             });
         });
+    }
+
+    // ---- the sprint ceremonies (v2.37.0, the scrum-master pass) ----------
+
+    private void showSprintMenu(java.awt.Component owner) {
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem set = new javax.swing.JMenuItem(
+                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…");
+        set.addActionListener(e -> editSprint());
+        menu.add(set);
+        javax.swing.JMenuItem report = new javax.swing.JMenuItem("Sprint Report…");
+        report.setEnabled(board.hasSprint());
+        report.addActionListener(e -> showSprintReport());
+        menu.add(report);
+        javax.swing.JMenuItem close = new javax.swing.JMenuItem("Close Sprint…");
+        close.setEnabled(board.hasSprint());
+        close.addActionListener(e -> closeSprint());
+        menu.add(close);
+        menu.show(owner, 0, owner.getHeight());
+    }
+
+    private void editSprint() {
+        javax.swing.JTextField name = new javax.swing.JTextField(
+                board.hasSprint() ? board.sprintName() : "", 18);
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+        javax.swing.JTextField start = new javax.swing.JTextField(board.hasSprint()
+                ? java.time.LocalDate.ofInstant(java.time.Instant
+                        .ofEpochMilli(board.sprintStart()), zone).toString()
+                : today.toString(), 10);
+        javax.swing.JTextField end = new javax.swing.JTextField(board.hasSprint()
+                ? java.time.LocalDate.ofInstant(java.time.Instant
+                        .ofEpochMilli(board.sprintEnd()), zone).toString()
+                : today.plusDays(13).toString(), 10);
+        javax.swing.JPanel panel = new javax.swing.JPanel(
+                new java.awt.GridLayout(0, 2, 6, 4));
+        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        panel.add(new javax.swing.JLabel("Sprint name:"));
+        panel.add(name);
+        panel.add(new javax.swing.JLabel("Start (YYYY-MM-DD):"));
+        panel.add(start);
+        panel.add(new javax.swing.JLabel("End (YYYY-MM-DD):"));
+        panel.add(end);
+        DialogDescriptor d = new DialogDescriptor(panel, "Sprint");
+        if (DialogDisplayer.getDefault().notify(d) != DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        java.time.LocalDate s0;
+        java.time.LocalDate s1;
+        try {
+            s0 = java.time.LocalDate.parse(start.getText().strip());
+            s1 = java.time.LocalDate.parse(end.getText().strip());
+        } catch (java.time.format.DateTimeParseException bad) {
+            status("Sprint dates must be YYYY-MM-DD — nothing changed");
+            return;
+        }
+        if (name.getText().isBlank()) {
+            status("A sprint needs a name — nothing changed");
+            return;
+        }
+        if (s1.isBefore(s0)) {
+            status("The sprint can't end before it starts — nothing changed");
+            return;
+        }
+        long startMs = s0.atStartOfDay(zone).toInstant().toEpochMilli();
+        long endMs = s1.atStartOfDay(zone).toInstant().toEpochMilli();
+        String n = name.getText().strip();
+        mutate(() -> {
+            board.setSprint(n, startMs, endMs);
+            return true;
+        });
+        status("Sprint " + n + " — " + s0 + " … " + s1);
+    }
+
+    private void showSprintReport() {
+        String md = SprintReport.build(board, System.currentTimeMillis(),
+                java.time.ZoneId.systemDefault());
+        if (md.isEmpty()) {
+            return;
+        }
+        JTextArea text = new JTextArea(md, 18, 52);
+        text.setEditable(false);
+        text.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(text);
+        scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        JButton copy = new JButton("Copy to Clipboard");
+        copy.getAccessibleContext().setAccessibleName("Copy sprint report to clipboard");
+        copy.addActionListener(ev -> {
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new java.awt.datatransfer
+                            .StringSelection(text.getText()), null);
+            org.openide.awt.StatusDisplayer.getDefault()
+                    .setStatusText("Sprint report copied");
+        });
+        DialogDescriptor d = new DialogDescriptor(scroll, "Sprint Report");
+        d.setOptions(new Object[]{copy, NotifyDescriptor.CANCEL_OPTION});
+        d.setClosingOptions(new Object[]{NotifyDescriptor.CANCEL_OPTION});
+        DialogDisplayer.getDefault().notify(d);
+    }
+
+    private void closeSprint() {
+        // closing archives and clears — irreversible bookkeeping, so the
+        // reflexive Enter lands on No (the v1.98.0 safe default)
+        NotifyDescriptor confirm = new NotifyDescriptor(
+                "Close sprint " + board.sprintName() + "? The window, done count,"
+                + " and retro notes are archived; cards stay where they are.",
+                "Close Sprint", NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                NotifyDescriptor.NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.YES_OPTION) {
+            return;
+        }
+        TaskBoard.ClosedSprint[] out = new TaskBoard.ClosedSprint[1];
+        mutate(() -> {
+            out[0] = board.closeSprint();
+            return out[0] != null;
+        });
+        if (out[0] != null) {
+            status("Sprint " + out[0].name() + " closed — " + out[0].done()
+                    + " done, archived for velocity");
+        }
     }
 
     /** Board-level retro notes (v2.5.0) — the overview's Edit Retro…. */

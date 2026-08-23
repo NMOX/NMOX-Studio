@@ -674,6 +674,21 @@ report only says what actually happened.
 
 ![One click turns the board into the daily report](images/standup.png)
 
+**Sprints** (v2.37.0) give the ceremonies a home: **Sprint… ▸ Start
+Sprint…** names a window (start/end dates — backwards windows and
+non-dates are refused out loud), the Board Overview grows a burndown
+reconstructed from your cards' own done stamps (the dim line is the
+ideal; the phosphor line is what actually happened — the future stays
+unplotted), and **Sprint Report…** turns the sprint into markdown:
+done, open-at-close, still-blocked, clocked time, retro notes, and a
+velocity line once sprints have been archived. **Close Sprint…**
+archives the window, done count, and retro for velocity — cards stay
+exactly where they are, and a mangled sprint window in a merged
+`.nmoxtasks.json` heals to "no sprint" rather than poisoning the
+ceremonies.
+
+![A sprint on the Board Overview — the burndown over the ideal line](images/sprint-overview.png)
+
 ### Block Studio (⌥⌘5)
 
 A Scratch-like composer for real Web Components. Drag pieces from the

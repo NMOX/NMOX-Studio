@@ -167,6 +167,61 @@ final class BoardStats {
      * {@code zone}, with a {@code flowDays}-day history and at most
      * {@code agingLimit} rows on the attention list.
      */
+    /**
+     * The burndown (v2.37.0), reconstructed from done stamps — no
+     * per-day bookkeeping to rot. Stated definition: remaining on day D
+     * = cards active now + cards whose done stamp lies AFTER D's end of
+     * day; committed = that count on the sprint's first day. Days run
+     * from the sprint start through {@code min(today, sprint end)} —
+     * the future stays unplotted, never invented.
+     */
+    record Burndown(int committed, java.util.List<Integer> remainingPerDay,
+            int totalDays) {
+    }
+
+    static Burndown burndown(TaskBoard board, long nowMillis, ZoneId zone) {
+        if (!board.hasSprint()) {
+            return null;
+        }
+        LocalDate start = LocalDate.ofInstant(
+                Instant.ofEpochMilli(board.sprintStart()), zone);
+        LocalDate end = LocalDate.ofInstant(
+                Instant.ofEpochMilli(board.sprintEnd()), zone);
+        LocalDate today = LocalDate.ofInstant(Instant.ofEpochMilli(nowMillis), zone);
+        LocalDate last = today.isBefore(end) ? today : end;
+        int totalDays = (int) (end.toEpochDay() - start.toEpochDay()) + 1;
+        java.util.List<Integer> remaining = new java.util.ArrayList<>();
+        int activeNow = 0;
+        java.util.List<Long> doneStamps = new java.util.ArrayList<>();
+        for (TaskBoard.Column c : board.columns()) {
+            for (TaskBoard.Card card : c.cards()) {
+                if (card.done() > 0) {
+                    doneStamps.add(card.done());
+                } else {
+                    activeNow++;
+                }
+            }
+        }
+        for (LocalDate d = start; !d.isAfter(last); d = d.plusDays(1)) {
+            long dayEnd = d.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli();
+            int doneAfter = 0;
+            for (long stamp : doneStamps) {
+                if (stamp >= dayEnd) {
+                    doneAfter++;
+                }
+            }
+            remaining.add(activeNow + doneAfter);
+        }
+        long sprintDayStart = start.atStartOfDay(zone).toInstant().toEpochMilli();
+        int committed = activeNow;
+        for (long stamp : doneStamps) {
+            if (stamp >= sprintDayStart) {
+                committed++;
+            }
+        }
+        return new Burndown(committed, remaining, totalDays);
+    }
+
     static BoardStats of(TaskBoard board, long nowMillis, ZoneId zone,
             int flowDays, int agingLimit) {
         List<TaskBoard.Column> cols = board.columns();
