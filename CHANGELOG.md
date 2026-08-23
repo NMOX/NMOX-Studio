@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.3] - 2026-08-23
+
+The sweep's audited tail: the last two checked-in-file parsers under
+the v2.9.0 lens. The rack's cable indices were already bounds-checked
+and its missing devices already placeholder-preserved - CLEAN; the
+infra designer's dangling wires already null-guarded - CLEAN; but a
+duplicated node id in .nmoxinfra.json silently REPLACED the first
+node in the graph's map, and with it the doId linkage to a live
+billed cloud resource (Sync would re-create it, Destroy could not
+find it). Healed at parse: the first occurrence keeps the id and its
+wires, the duplicate re-mints and keeps its OWN doId under the new
+id - both nodes and both cloud linkages survive. Mutant killed by
+name. The parse-time-heal audit is now COMPLETE across all seven
+studio files: tasks (healed v1.325/v2.9), api + db + web3 + blocks
+(healed v2.36.2), infra (healed here), rack (verified clean).
+
 ## [2.36.2] - 2026-08-23
 
 The law sweep - three young laws, each proven in one home, swept
@@ -14336,6 +14352,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.2...v2.36.3
 [2.36.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.1...v2.36.2
 [2.36.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.1...v2.36.0
