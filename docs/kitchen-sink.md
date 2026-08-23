@@ -88,6 +88,21 @@ Open `index.html` and the stylesheet, then run this gauntlet:
 - **Design tokens** — declare `--brand: #7f5af0;` in `:root`, then
   type `var(` in a rule: completion lists your tokens with color
   swatches, and ⌘-click on a usage jumps to the declaration.
+- **The class attribute** — declare `.btn-primary` in the stylesheet,
+  then type `class="btn-` in the HTML and press ⌃Space: your project's
+  real classes appear, each naming its declaring file. **⌘-click** a
+  class in markup to land on its rule, or a `.selector` in a
+  stylesheet to land on its first usage. Right-click ▸ **Rename
+  Class…** rewrites every whole-token span across the project — and
+  refuses out loud when the new name already exists, when the file
+  census is too large to guarantee totality, or when unsaved changes
+  would clobber it.
+- **Env keys** — with a `.env` beside the project, type
+  `process.env.` (or Vite's `import.meta.env.`) in any script:
+  completion offers the real keys, values truncated so a secret is
+  reminded, never disclosed; ⌘-click jumps to the declaring line. And
+  ⌘-click a `fetch('/api/…')` path string to land on the Express
+  route that serves it — `:param` routes match concrete paths.
 - **Navigator** — open the Navigator window on a JavaScript file. An
   Express-style `app.get('/health', …)` outlines as `GET /health`,
   click-to-line; an Angular `app.routes.ts` outlines its route table.
@@ -98,7 +113,7 @@ Open `index.html` and the stylesheet, then run this gauntlet:
   NetBeans 5.5, Eclipse, Emacs, IntelliJ) and every NMOX chord rides
   all of them.
 
-Polyglot claims are cheap to test: open any of the 85 grammars' file
+Polyglot claims are cheap to test: open any of the 86 grammars' file
 types — Rust, Go, Gleam, Solidity, Fortran, COBOL if you like — and
 you get highlighting, comment toggling, completion, and (where a
 server exists) LSP intelligence, gated by the same trust law.
@@ -208,6 +223,16 @@ lifts captured credentials keychain-side or drops-and-counts them.
 **Explain…** on a response opens an ORACLE conversation about exactly
 what is on screen, redacted where the data lives. Copy curl emits the
 exact command Send would run.
+
+- **Three exports, one request bar** — *Copy curl* is the exact
+  command Send would run; *Copy fetch* is the call your client code
+  would make; *Copy TS types* turns the JSON response on screen into
+  TypeScript interfaces (nested objects dependency-first, a null
+  beside a non-null sibling honestly `| null`). The same codec rides
+  every `.json` file's right-click as **Copy TS Types**.
+- **From the server, a request** — right-click an
+  `app.get('/api/users', …)` line in the editor and **Test in API
+  Studio** drafts `GET {{base_url}}/api/users`, ready to Send.
 
 ## 10. DB Studio (⌥⌘7)
 
