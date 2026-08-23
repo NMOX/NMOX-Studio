@@ -236,4 +236,21 @@ class WorkspaceIORoundTripTest {
         assertThat(back.activeEnvironment).isEqualTo("Ghost");
         assertThat(back.active()).isNull();
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("duplicate request ids heal at parse — first keeps the keychain slot (v2.9.0 law)")
+    void duplicateIdsHealAtParse() {
+        String json = """
+            {"collections":[{"name":"c","requests":[
+              {"id":"dup-1","name":"first","method":"GET","url":"http://a"},
+              {"id":"dup-1","name":"second","method":"GET","url":"http://b"}
+            ]}]}""";
+        var w = WorkspaceIO.fromJson(json);
+        var reqs = w.collections.get(0).requests;
+        org.assertj.core.api.Assertions.assertThat(reqs.get(0).id)
+                .as("the FIRST occurrence keeps the id and therefore the stored token")
+                .isEqualTo("dup-1");
+        org.assertj.core.api.Assertions.assertThat(reqs.get(1).id)
+                .as("the duplicate is re-minted — deleting either can no longer wipe the sibling's secret")
+                .isNotEqualTo("dup-1").isNotBlank();
+    }
 }

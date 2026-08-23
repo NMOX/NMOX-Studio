@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.2] - 2026-08-23
+
+The law sweep - three young laws, each proven in one home, swept
+across every sibling (the lens the v2.36.1 find suggested: the
+aimed-discard law sat fixed in learning spaces while experiments
+missed it for ~90 releases). Feedback-lands-where-typed (v2.34.4,
+fixed only in /filter): ELEVEN more IRC command handlers answered
+into the network-status transcript while the user watched a channel
+- the worst being "Not connected", which made every command typed
+while disconnected answer invisibly, and /lastlog's own usage line
+(the very command held up as the good example) - all now ride one
+feedbackKey() helper, and the gate became structural: NO handler may
+append to the bare network key, enforced by absence not by site
+list. The parse-time-heal law (v2.9.0, applied only to the task
+board): FOUR studio parsers left a keep-both git merge able to break
+a runtime invariant - duplicate request ids in .nmoxapi.json and
+duplicate connection ids in .nmoxdb.json each let deleting one entry
+wipe the OS-keychain secret its sibling resolves; duplicate network
+names in .nmoxweb3.json the same (the name IS the keychain key); and
+duplicate component tags in .nmoxblocks.json make the preview's
+second customElements.define throw (the v1.85.0 hazard). All four
+now heal at parse - first occurrence keeps the identity and the
+stored secret, later duplicates re-mint or suffix, visibly and
+recoverably. The buffer-wins law (v2.34.1) swept CLEAN: Compile to
+CSS saves before compiling, Rename Class refuses unsaved, the design
+family's disk reads are all other-file reads. Five mutants killed by
+name, one per fix family. Riding along: the windows lane's
+UpdateCheckTest flake earned its watchlisted isolation fix on its
+second offense - NbPreferences is backed by the real user store
+shared across surefire forks, and two forks racing the "nmox/ui"
+node read one JVM's putLong back as another's state; UpdateCheck
+gains the v1.225.0 scratch-node seam and the test runs on a per-JVM
+node. And the new IRC gate itself tripped on the windows lane's CRLF
+checkout first (the v1.42.0 folding class) - source reads in
+source-scan gates normalize line endings now.
+
 ## [2.36.1] - 2026-08-23
 
 The manager teaches too (David's follow-up): the Experiments shelf
@@ -14300,6 +14336,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.1...v2.36.2
 [2.36.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.0...v2.36.1
 [2.36.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.1...v2.36.0
 [2.35.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.0...v2.35.1

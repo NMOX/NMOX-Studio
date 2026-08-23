@@ -158,7 +158,31 @@ public final class WorkspaceIO {
                 w.history.add(e);
             }
         }
+        healDuplicateIds(w);
         return w;
+    }
+
+    /**
+     * The parse-time heal this file owed since ids became keychain keys
+     * (the v2.9.0 law: every runtime invariant over a checked-in file
+     * needs a parse-time heal). The runtime never makes two requests
+     * share an id — but a keep-both git merge of {@code .nmoxapi.json}
+     * can, and then deleting either request wipes the OS-keychain token
+     * BOTH resolve (ApiSecrets is keyed by id): silent secret loss on
+     * the survivor. The first occurrence keeps the id and therefore the
+     * stored token; every later duplicate is re-minted — it shows as
+     * needing its auth re-entered, which is honest, recoverable, and
+     * structurally sound.
+     */
+    private static void healDuplicateIds(org.nmox.studio.apiclient.model.ApiModel.Workspace w) {
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (var c : w.collections) {
+            for (var r : c.requests) {
+                if (!seen.add(r.id)) {
+                    r.id = java.util.UUID.randomUUID().toString();
+                }
+            }
+        }
     }
 
     private static Collection collection(JSONObject cj) {

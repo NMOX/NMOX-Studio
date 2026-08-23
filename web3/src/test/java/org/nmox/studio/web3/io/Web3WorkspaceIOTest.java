@@ -295,4 +295,18 @@ class Web3WorkspaceIOTest {
         assertThat(loaded.deployments()).extracting(DeploymentRecord::contractName)
                 .containsExactly("Kept");
     }
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("duplicate network names heal at parse — first keeps the keychain secret (v2.9.0 law)")
+    void duplicateNetworkNamesHeal() {
+        String json = """
+            {"networks":[
+              {"name":"mainnet","chainId":1,"url":"http://a"},
+              {"name":"mainnet","chainId":5,"url":"http://b"}
+            ]}""";
+        var w = Web3WorkspaceIO.fromJson(json);
+        org.assertj.core.api.Assertions.assertThat(w.networks().get(0).name()).isEqualTo("mainnet");
+        org.assertj.core.api.Assertions.assertThat(w.networks().get(1).name())
+                .as("the duplicate gets a visible suffix — honest, re-enterable")
+                .isEqualTo("mainnet-2");
+    }
 }

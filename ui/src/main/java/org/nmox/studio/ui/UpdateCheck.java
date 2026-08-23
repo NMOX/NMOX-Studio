@@ -51,7 +51,7 @@ public class UpdateCheck implements Runnable {
         if (System.getProperty("nmox.shots.dir") != null) {
             return; // the docs screenshot forge: no network, no balloons in shots
         }
-        Preferences prefs = NbPreferences.root().node("nmox/ui");
+        Preferences prefs = prefsNode();
         if (!prefs.getBoolean("updateCheck", true)) {
             return;
         }
@@ -66,6 +66,26 @@ public class UpdateCheck implements Runnable {
         org.openide.windows.WindowManager.getDefault().invokeWhenUIReady(() ->
                 org.openide.util.RequestProcessor.getDefault().post(
                         () -> check(prefs, running), 15_000));
+    }
+
+    /**
+     * The node the check reads and stamps. Tests point this at a scratch
+     * node (the v1.225.0 WorkspaceTrust idiom): NbPreferences is backed
+     * by the REAL user store, shared across surefire forks, and the
+     * windows lane proved two forks racing one node — a putLong from
+     * one JVM read back as another fork's state (UpdateCheckTest's
+     * second flake, 2026-08-23; the watchlist's isolation clause).
+     */
+    private static volatile Preferences prefsOverride;
+
+    /** Tests point the check at a scratch node; null restores the real one. */
+    static void overridePrefsForTest(Preferences node) {
+        prefsOverride = node;
+    }
+
+    private static Preferences prefsNode() {
+        Preferences override = prefsOverride;
+        return override != null ? override : NbPreferences.root().node("nmox/ui");
     }
 
     private void check(Preferences prefs, String running) {

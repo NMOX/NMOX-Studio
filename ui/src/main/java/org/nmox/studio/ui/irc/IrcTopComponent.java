@@ -1141,6 +1141,19 @@ public final class IrcTopComponent extends TopComponent {
         return activeKey == null ? key(activeNetwork(), "") : activeKey;
     }
 
+    /**
+     * Where COMMAND feedback lands: the transcript the user typed into,
+     * network status only when nothing is selected (the v2.34.4 law —
+     * spoken in the wrong room reads as silence; the v2.36.2 sweep
+     * found six more handlers answering into network status while the
+     * user watched a channel, the worst being "Not connected", which
+     * made every command typed in a channel while disconnected answer
+     * invisibly). Server-initiated events keep their own routing.
+     */
+    private String feedbackKey() {
+        return activeKey != null ? activeKey : key(activeNetwork(), "");
+    }
+
     private InputHistory historyFor(String k) {
         return histories.computeIfAbsent(k, x -> new InputHistory());
     }
@@ -1565,7 +1578,7 @@ public final class IrcTopComponent extends TopComponent {
     private IrcClient liveClient() {
         IrcClient client = SESSIONS.get(activeNetwork());
         if (client == null || client.state() == IrcClient.State.CLOSED) {
-            appendStatus(key(activeNetwork(), ""), "Not connected — press Connect or use /connect");
+            appendStatus(feedbackKey(), "Not connected — press Connect or use /connect");
             return null;
         }
         return client;
@@ -1718,7 +1731,7 @@ public final class IrcTopComponent extends TopComponent {
                 IrcClient c = liveClient();
                 if (c != null) {
                     c.sendRaw(args.isEmpty() ? "AWAY" : "AWAY :" + args);
-                    appendStatus(key(activeNetwork(), ""), args.isEmpty()
+                    appendStatus(feedbackKey(), args.isEmpty()
                             ? "You are no longer marked away"
                             : "You are now marked away: " + args);
                 }
@@ -1731,7 +1744,7 @@ public final class IrcTopComponent extends TopComponent {
                     String to = args.substring(0, sp2);
                     String text = args.substring(sp2 + 1);
                     c.notice(to, text);
-                    appendStatus(key(activeNetwork(), ""), "-" + c.currentNick()
+                    appendStatus(feedbackKey(), "-" + c.currentNick()
                             + " → " + to + "- " + text);
                 }
             }
@@ -1742,7 +1755,7 @@ public final class IrcTopComponent extends TopComponent {
                     String verb = parts[1].toUpperCase(Locale.ROOT);
                     String arg = parts.length > 2 ? parts[2] : "";
                     c.privmsg(parts[0], Ctcp.wrap(verb, arg));
-                    appendStatus(key(activeNetwork(), ""),
+                    appendStatus(feedbackKey(),
                             "CTCP " + verb + " sent to " + parts[0]);
                 }
             }
@@ -1818,13 +1831,13 @@ public final class IrcTopComponent extends TopComponent {
                 IrcClient c = liveClient();
                 if (c != null) {
                     c.sendRaw("AWAY");
-                    appendStatus(key(activeNetwork(), ""), "You are no longer marked away");
+                    appendStatus(feedbackKey(), "You are no longer marked away");
                 }
             }
             case "close" -> commandClose();
             case "help" -> commandHelp();
             default ->
-                appendStatus(key(activeNetwork(), ""), "Unknown command: /" + cmd
+                appendStatus(feedbackKey(), "Unknown command: /" + cmd
                         + " — /help lists everything");
         }
     }
@@ -1837,7 +1850,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         listCollectors.put(activeNetwork(), new ChannelListCollector());
         c.sendRaw(args.isEmpty() ? "LIST" : "LIST " + args);
-        appendStatus(key(activeNetwork(), ""), "Fetching channel list…");
+        appendStatus(feedbackKey(), "Fetching channel list…");
     }
 
     /** {@code /ignore} lists; {@code /ignore nick} adds + applies live. */
@@ -1938,7 +1951,7 @@ public final class IrcTopComponent extends TopComponent {
         // spoken, but in the wrong room reads as silence; /lastlog has
         // always answered in place). Network status stays the fallback
         // when nothing is selected.
-        String statusKey = activeKey != null ? activeKey : key(activeNetwork(), "");
+        String statusKey = feedbackKey();
         IrcConfig config = IrcConfig.getDefault();
         String[] parts = args.trim().split("\\s+", 2);
         String sub = parts[0].toLowerCase(Locale.ROOT);
@@ -2019,7 +2032,7 @@ public final class IrcTopComponent extends TopComponent {
     private void commandLastlog(String args) {
         String[] a = args.trim().split("\\s+");
         if (a.length == 0 || a[0].isEmpty()) {
-            appendStatus(key(activeNetwork(), ""), "Usage: /lastlog <text> [count]");
+            appendStatus(feedbackKey(), "Usage: /lastlog <text> [count]");
             return;
         }
         int limit = 20;
@@ -2111,7 +2124,7 @@ public final class IrcTopComponent extends TopComponent {
     private void commandClose() {
         TargetRef ref = selectedRef();
         if (ref == null || ref.target().isEmpty()) {
-            appendStatus(key(activeNetwork(), ""), "/close closes a channel or query tab");
+            appendStatus(feedbackKey(), "/close closes a channel or query tab");
             return;
         }
         String network = ref.network();
@@ -2178,7 +2191,7 @@ public final class IrcTopComponent extends TopComponent {
             try {
                 port = Integer.parseInt(parts[1]);
             } catch (NumberFormatException ex) {
-                appendStatus(key(activeNetwork(), ""), "Not a port: " + parts[1]);
+                appendStatus(feedbackKey(), "Not a port: " + parts[1]);
                 return;
             }
         }
@@ -2195,7 +2208,7 @@ public final class IrcTopComponent extends TopComponent {
     private void sayToActive(String text, boolean action) {
         String target = activeTarget();
         if (target.isEmpty()) {
-            appendStatus(key(activeNetwork(), ""), "Pick a channel or query first (or /join one)");
+            appendStatus(feedbackKey(), "Pick a channel or query first (or /join one)");
             return;
         }
         IrcClient c = liveClient();

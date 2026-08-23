@@ -210,6 +210,7 @@ public final class Web3WorkspaceIO {
 
     private static List<Network> networks(JSONArray array) {
         List<Network> out = new ArrayList<>();
+        java.util.Set<String> seenNames = new java.util.HashSet<>();
         if (array == null) {
             return out;
         }
@@ -221,6 +222,15 @@ public final class Web3WorkspaceIO {
             String name = nj.optString("name", "");
             if (name.isBlank()) {
                 continue; // the name is the identity — nothing to file it under
+            }
+            // the name IS the identity (RpcSecrets keys the keychain by
+            // it), and a keep-both git merge can duplicate it — then
+            // removing either network deletes the secret URL both
+            // resolve. First occurrence keeps the name and the stored
+            // secret; later duplicates get a suffixed name — visible,
+            // honest, re-enterable (the v2.9.0 parse-time-heal law).
+            for (int n = 2; !seenNames.add(name); n++) {
+                name = nj.optString("name", "") + "-" + n;
             }
             boolean secret = nj.optBoolean("secretUrl", false);
             out.add(new Network(
