@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.0] - 2026-08-23
+
+Experiments teach (David's ask: the first tool for learning a
+language, library, or framework - set up success and teach). Every
+experiment is now born with an EXPERIMENT.md walkthrough that opens
+the moment the rack aims: what to press, which file to change, and
+where THIS stack's IDE intelligence lives - and the one claim that
+could rot ("open this file") is pinned by ExperimentGuideParityTest,
+which generates all fifteen templates for real and asserts the named
+file exists (its first run caught Solid's src/index.jsx). The
+dependency install runs at creation - checkbox-gated,
+package.json-guarded, the New Project blessing verbatim in the spawn
+ledger - so the learner's FIRST Run succeeds instead of dying on
+missing node_modules. New Experiment leads the Welcome tab's START
+column, the dialog fronts the 92-space learning catalog for the
+guided path, and the Experiments shelf shows each one's age. Three
+mutants killed by name (wrong edit file, unwired guide write, guide
+never opening), and the whole loop walk-proven in the assembled app:
+create -> walkthrough opens -> "Dependencies installed" on the status
+line -> F6 -> nodemon up, ⇄ serving chip, the Browser on the API's
+own JSON -> Discard stops the running server and empties the shelf.
+The walk's find, fixed live: pressing the catalog button ALSO created
+a phantom experiment (dispose() leaves the dialog's value at OK, so
+the create path ran after the hand-off) - flag-guarded and pinned.
+The walkthrough session is the guide's new Experiments illustration.
+
 ## [2.35.1] - 2026-08-23
 
 The boundary, observed (docs only): a stock 2.34.5 pointed at the
@@ -14252,6 +14278,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.1...v2.36.0
 [2.35.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.0...v2.35.1
 [2.35.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.5...v2.35.0
 [2.34.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.4...v2.34.5

@@ -36,6 +36,31 @@ class ExperimentsTest {
     }
 
     @Test
+    @DisplayName("create() actually writes the guide — the wiring half of the seam (v1.321.0 law)")
+    void createWiresTheGuideWrite() throws IOException {
+        String src = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/rack/projectstudio/Experiments.java"));
+        assertThat(src)
+                .as("a green writeGuide test with no call site is a payload without a gate")
+                .contains("writeGuide(dir, template);");
+    }
+
+    @Test
+    @DisplayName("an experiment is born with its walkthrough — EXPERIMENT.md, template-specific")
+    void writeGuideWritesTheWalkthrough(@TempDir Path work) throws IOException {
+        File dir = new File(work.toFile(), "try-express");
+        Files.createDirectories(dir.toPath());
+        Experiments.writeGuide(dir, ProjectTemplates.EXPRESS_API);
+        File guide = new File(dir, Experiments.GUIDE);
+        assertThat(guide).isFile();
+        assertThat(Files.readString(guide.toPath()))
+                .as("the guide teaches THIS stack, not a generic blurb")
+                .contains("try-express — an experiment")
+                .contains("Test in API Studio")
+                .contains("File ▸ Experiments…");
+    }
+
+    @Test
     @DisplayName("Promote moves the tree, drops the marker, keeps the files")
     void promoteGraduatesTheExperiment(@TempDir Path work) throws IOException {
         File exp = new File(work.toFile(), "exp");
