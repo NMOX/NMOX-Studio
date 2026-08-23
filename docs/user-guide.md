@@ -59,9 +59,15 @@ a release asset is still right for major platform jumps.
 > **Crossing 2.35.0**: version 2.35.0 moved the underlying platform
 > (NetBeans RELEASE310), and the platform cluster ships only in
 > installers — so an install at 2.34.5 or older will not see 2.35.0+
-> in the in-app updater (the update is held back honestly, never
-> half-installed). Install fresh or `brew upgrade` once; in-app
-> updates resume from there within the 2.35.x line.
+> in the in-app updater: the Plugin Installer names the missing
+> platform versions and refuses to proceed — measured live on a stock
+> 2.34.5 against the real 2.35.0 catalog, install left byte-identical.
+> Install fresh or `brew upgrade` once; in-app updates resume from
+> there within the 2.35.x line. (One caveat for scripted setups: the
+> headless `--modules --update-all` CLI does NOT check platform
+> floors and will install-then-fail across this boundary — originals
+> land in `update/backup`; don't script updates across a platform
+> jump.)
 
 ## 2. First launch
 

@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.35.1] - 2026-08-23
+
+The boundary, observed (docs only): a stock 2.34.5 pointed at the
+real 2.35.0 catalog - the Plugin Manager offers all eleven updates,
+and the Plugin Installer wizard then names the exact missing platform
+specs ("Utilities API is requested in version >= 9.42 but only 9.41
+was found") and refuses to advance; nothing downloads, the install
+stays byte-identical, zero SEVERE. The graceful hold the v2.35.0
+notes promised, measured live. One caveat recorded in the guide and
+the ledger: the headless `--modules --update-all` CLI skips that
+check and half-installs across the boundary (originals in
+update/backup) - never script updates across a platform jump. The
+2.35.0 cask verified installed with the RELEASE310 cluster.
+
 ## [2.35.0] - 2026-08-23
 
 The platform advances: RELEASE300 -> RELEASE310 (ledger 84 closed,
@@ -14238,6 +14252,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.35.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.35.0...v2.35.1
 [2.35.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.5...v2.35.0
 [2.34.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.4...v2.34.5
 [2.34.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.34.3...v2.34.4
