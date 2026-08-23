@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.36.6] - 2026-08-23
+
+The Docker walk, live on a real daemon (docs only; David unblocked
+the queue's daemon-gated lens): the whole corpus callosum proven on
+shipped 2.36.5, ~90 releases after its last walk - ENGINE UP against
+Docker 29.7.2, a real postgres:16 container listed with its ports,
+its startup log streamed to "ready to accept connections", the
+v1.35.0 offer firing with the PUBLISHED port pre-filled (15432, not
+the container's 5432), the keychain-only password note, Test "OK -
+server reachable", and SELECT version() answering in 3 ms with the
+grid's honest read-only reason. ALL-CLEAN, zero orphans after quit.
+One walk-recipe note recorded, not a defect: a LOW-priority balloon
+fades in seconds, but the notification bell keeps the same live
+link - the offer is never lost, just quieter.
+
 ## [2.36.5] - 2026-08-23
 
 The hostile-input lens over the newest emitters, and the day's walks
@@ -14385,6 +14400,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.36.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.5...v2.36.6
 [2.36.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.4...v2.36.5
 [2.36.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.3...v2.36.4
 [2.36.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.2...v2.36.3
