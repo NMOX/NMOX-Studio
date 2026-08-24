@@ -64,6 +64,20 @@ Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP
 servers, formatters, and debuggers alike.
 
+**Do:** Now the faster door: **File ▸ New Experiment…** (⇧⌘E — the
+first entry on the Welcome tab). Pick **Express API**, leave the
+install box checked.
+
+**See:** A throwaway lands in `~/.nmox/experiments` — no git, no
+recents, pre-trusted — and opens on its own `EXPERIMENT.md`
+walkthrough: what to press, which file to change, where this stack's
+IDE intelligence lives. The status line says the dependencies are
+already installed, so the FIRST Run works. **File ▸ Experiments…**
+shows the shelf with each experiment's age and measured disk cost;
+Promote graduates a keeper, Discard deletes without ceremony — and
+discarding the one you're aimed at re-aims the studio at `~/NMOX`
+instead of a deleted path.
+
 ## 3. The Workbench (⌥⌘0)
 
 **Do:** ⌥⌘0.
@@ -308,6 +322,19 @@ sessions per calendar day. The Standup button writes your daily report
 from the register, Commits from `git log` — one click to copy. Edit
 the file in your editor, or pull a teammate's changes: the visible
 board updates within about a second and a half.
+
+**Do:** Press **Sprint… ▸ Start Sprint…**, name it, accept the
+two-week window. Move a card to Done, toggle **Overview**, then
+**Sprint… ▸ Sprint Report…**.
+
+**See:** The Overview grows a sprint header and a burndown
+reconstructed from the cards' own done stamps — the dim line is the
+ideal, the phosphor line is what happened, and the future stays
+unplotted. The report is the Standup's review sibling: done,
+open-at-close, still-blocked, clocked time, retro notes, and a
+velocity line once **Close Sprint…** has archived a sprint or two.
+Closing archives the window, count, and retro — cards stay exactly
+where they are.
 
 ## 15. IRC (⌥⌘3)
 

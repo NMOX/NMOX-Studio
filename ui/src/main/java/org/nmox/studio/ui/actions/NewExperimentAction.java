@@ -59,7 +59,9 @@ public final class NewExperimentAction implements ActionListener {
                         t.getDisplayName() + "  —  " + t.getDescription(), i, s, f);
             }
         });
+        template.getAccessibleContext().setAccessibleName("Experiment template");
         JTextField name = new JTextField();
+        name.getAccessibleContext().setAccessibleName("Experiment name (optional)");
         JCheckBox installBox = new JCheckBox(
                 "Install dependencies so the first Run just works", true);
         JPanel panel = new JPanel(new BorderLayout(0, 6));

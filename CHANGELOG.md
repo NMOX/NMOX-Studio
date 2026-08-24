@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.2] - 2026-08-23
+
+The Kitchen Sink catches up to the experiments-and-sprints era, and
+the a11y lens sweeps the week's new surfaces. Station 2 gains the
+faster front door (New Experiment - the walkthrough, the
+already-installed first Run, the shelf with age and disk cost, the
+re-aim on an aimed discard) and station 14 gains the sprint
+ceremonies (the burndown from done stamps, the report, velocity via
+Close Sprint). The a11y probe found the v2.4.0 name law HOLDING on
+every painted Overview widget - twelve named, including this week's
+burndown - after the probe's own first two greps produced false
+finds from too-narrow windows (the verdict-grep law, self-inflicted
+and recorded); the real gap was the experiments dialogs' label-less
+inputs, and the template combo, name field, and shelf list now carry
+accessible names, pinned in the wiring gate.
+
 ## [2.37.1] - 2026-08-23
 
 The output gauntlet (David's directive: improve the product AND its
@@ -14447,6 +14463,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.1...v2.37.2
 [2.37.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.0...v2.37.1
 [2.37.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.6...v2.37.0
 [2.36.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.5...v2.36.6

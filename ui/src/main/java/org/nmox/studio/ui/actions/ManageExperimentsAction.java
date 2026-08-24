@@ -96,6 +96,7 @@ public final class ManageExperimentsAction implements ActionListener {
         }
 
         JList<File> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Experiments shelf");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {
