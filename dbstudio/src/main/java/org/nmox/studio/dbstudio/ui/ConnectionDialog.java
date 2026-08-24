@@ -66,6 +66,14 @@ final class ConnectionDialog extends JPanel {
     private ConnectionDialog(ConnectionSpec existing) {
         super(new BorderLayout(0, 6));
         this.existing = existing;
+        nameField.getAccessibleContext().setAccessibleName("Connection name");
+        engineCombo.getAccessibleContext().setAccessibleName("Database engine");
+        hostField.getAccessibleContext().setAccessibleName("Host");
+        portField.getAccessibleContext().setAccessibleName("Port");
+        databaseField.getAccessibleContext().setAccessibleName("Database");
+        userField.getAccessibleContext().setAccessibleName("User");
+        passwordField.getAccessibleContext().setAccessibleName("Password");
+        fileField.getAccessibleContext().setAccessibleName("Database file path");
         setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
 
         engineCombo.setRenderer(new EngineRenderer());

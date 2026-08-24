@@ -49,6 +49,7 @@ public class InfraPalette extends JPanel {
         }
 
         JList<Entry> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Infrastructure palette");
         list.setBackground(getBackground());
         list.setCellRenderer(new Renderer());
         list.setDragEnabled(true);

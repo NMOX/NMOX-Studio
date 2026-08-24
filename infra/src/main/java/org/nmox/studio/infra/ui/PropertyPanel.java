@@ -140,6 +140,7 @@ public class PropertyPanel extends JPanel {
 
     private JTextField labelField(InfraNode node) {
         JTextField field = new JTextField(node.label);
+        field.getAccessibleContext().setAccessibleName("Node label");
         field.getDocument().addDocumentListener(new SimpleDocListener(() -> {
             node.label = field.getText().trim();
             graph.touch();
@@ -152,6 +153,7 @@ public class PropertyPanel extends JPanel {
         switch (prop.type()) {
             case "choice" -> {
                 JComboBox<String> combo = new JComboBox<>(prop.choices().toArray(new String[0]));
+                combo.getAccessibleContext().setAccessibleName(prop.label());
                 combo.setSelectedItem(value);
                 combo.addActionListener(e -> {
                     node.props.put(prop.key(), String.valueOf(combo.getSelectedItem()));
@@ -172,6 +174,7 @@ public class PropertyPanel extends JPanel {
             }
             default -> {
                 JTextField field = new JTextField(value);
+                field.getAccessibleContext().setAccessibleName(prop.label());
                 field.getDocument().addDocumentListener(new SimpleDocListener(() -> {
                     node.props.put(prop.key(), field.getText());
                     graph.touch();
