@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.3] - 2026-08-23
+
+The day close (docs only): plan.md carries the fourteen-release day
+- the platform upgrade and its observed boundary, the experiments
+arc, the law sweep and the completed parse-time-heal audit, the
+zero-defect campaign's opening, the sprint, and the output gauntlet
+- with the day's laws recorded and ledger 82's research direction
+written down (features-without-the-mime) for the next session.
+
 ## [2.37.2] - 2026-08-23
 
 The Kitchen Sink catches up to the experiments-and-sprints era, and
@@ -14463,6 +14472,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.2...v2.37.3
 [2.37.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.1...v2.37.2
 [2.37.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.0...v2.37.1
 [2.37.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.6...v2.37.0
