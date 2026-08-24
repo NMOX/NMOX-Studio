@@ -1066,6 +1066,15 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   the kit can't fix are reported, not touched.
 
   ![The A11y Kit's report — each outcome named](images/a11y-kit.png)
+- **I18n Kit** — translatable from day one, the A11y Kit's sibling:
+  `locales/en.json` + `locales/es.json` (one catalog per language,
+  same keys), a dependency-free `i18n.js` that applies the catalog to
+  `data-i18n` markup, keeps `<html lang>` truthful, and surfaces a
+  missing key as itself (never a silent blank), `I18N-NOTES.md` (no
+  concatenated fragments, `Intl` for dates and numbers, the RTL walk,
+  pseudo-localization), and the idempotent script-tag wiring.
+
+  ![The I18n Kit's report — five artifacts, each outcome named](images/i18n-kit.png)
 - **Contract Kit (Web3)** — (new to contracts? read
   [the Beginner's Guide](smart-contracts-beginners-guide.md) first) — pick a chain (Solidity/Foundry, Soroban, Solana,
   CosmWasm, ink!, Cairo, Move, Bitcoin/Miniscript, Clarity on

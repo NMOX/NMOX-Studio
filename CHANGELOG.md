@@ -4,14 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [2.37.3] - 2026-08-23
+## [2.37.5] - 2026-08-24
 
-The day close (docs only): plan.md carries the fourteen-release day
-- the platform upgrade and its observed boundary, the experiments
-arc, the law sweep and the completed parse-time-heal audit, the
-zero-defect campaign's opening, the sprint, and the output gauntlet
-- with the day's laws recorded and ledger 82's research direction
-written down (features-without-the-mime) for the next session.
+I18n, both directions (David's ask: "all that for i18n, too"). The
+product's OUTPUT: the I18n Kit (Web) joins the kit family as the A11y
+Kit's sibling - locales/en.json + es.json (same keys, gate-pinned so
+the samples can't teach catalog drift), a dependency-free i18n.js
+(data-i18n applier, <html lang> kept truthful, a missing key surfaces
+as itself never a silent blank), I18N-NOTES.md (the rules tooling
+can't enforce: no concatenated fragments, Intl for dates and numbers,
+the RTL walk, pseudo-localization), and idempotent index.html wiring;
+three mutants killed by name. The product ITSELF: the Turkish-I sweep
+- 55 bare toLowerCase()/toUpperCase() folds (completion prefix
+matching, tag and attribute comparison) used the USER'S locale, so
+under tr-TR a prefix carrying I silently stopped matching; all 55 now
+name Locale.ROOT and CaseFoldLocaleGateTest bans the bare form
+repo-wide (failing-first with all 55 named), an inline "// locale:"
+comment the escape hatch for a deliberate display locale. Plus two
+shipped-docs repairs: the changelog's 2.37.4 entry filed above 2.37.3
+where it belongs, and the README's spliced Standards-Kit sentence
+mended. Ledger 85 records the honest IDE-l10n position: 51 of 697
+files ride Bundles - full string externalization is its own
+dossier-first project, not a sweep.
 
 ## [2.37.4] - 2026-08-24
 
@@ -32,6 +46,15 @@ covered - DB Studio's connection dialog and console, Contract
 Studio's network dialog and panes, the Infra property form and
 palette - every label-less input now names itself to assistive
 technology.
+
+## [2.37.3] - 2026-08-23
+
+The day close (docs only): plan.md carries the fourteen-release day
+- the platform upgrade and its observed boundary, the experiments
+arc, the law sweep and the completed parse-time-heal audit, the
+zero-defect campaign's opening, the sprint, and the output gauntlet
+- with the day's laws recorded and ledger 82's research direction
+written down (features-without-the-mime) for the next session.
 
 ## [2.37.2] - 2026-08-23
 
@@ -14492,6 +14515,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.4...v2.37.5
 [2.37.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.3...v2.37.4
 [2.37.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.2...v2.37.3
 [2.37.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.1...v2.37.2
