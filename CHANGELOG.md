@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.1] - 2026-08-23
+
+The output gauntlet (David's directive: improve the product AND its
+output) - everything the product GENERATES, proven against today's
+real world. All fifteen templates generated headlessly and run for
+real: eight npm installs and six builds green, the Express suite
+green, go vet+build, cargo check, python compile, mix compile, and
+php -l all green; Angular is the one environment-limited leg on this
+box (node 22.9 sits below the CLI's own 22.12 floor - install sails,
+build refuses, and the generated README's floor note names exactly
+that, so the OUTPUT is honest even where the box is not). Four
+Dockerize recipes (node API, SPA+nginx, go, rust) built against the
+live daemon and two ran as containers - the API answering its own
+JSON and the SPA serving a deep link at 200 through its try_files
+fallback (the first all-parallel build round died on pull timeouts,
+not recipes: warm the pulls before you judge a Dockerfile). All 25
+exporter-only CI action pins - Java string literals no bot can see -
+checked against live latest releases: every major current (the one
+flag was setup-dlang's release stream lagging its own v2 tag), and
+the two stale exact pins bumped (setup-racket v1.11 -> v1.15,
+setup-v v1.4 -> v1.7), currency gates green.
+
 ## [2.37.0] - 2026-08-23
 
 The scrum master's wishes (David's ask): the Task Board's ceremonies
@@ -14425,6 +14447,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.0...v2.37.1
 [2.37.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.6...v2.37.0
 [2.36.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.5...v2.36.6
 [2.36.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.36.4...v2.36.5
