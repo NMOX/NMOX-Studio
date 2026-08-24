@@ -185,10 +185,10 @@ public final class CiExporter {
                 case NIM -> steps.add("      - uses: jiro4989/setup-nim-action@v2\n");
                 case DLANG -> steps.add("      - uses: dlang-community/setup-dlang@v2\n");
                 case RACKET -> steps.add("""
-                          - uses: Bogdanp/setup-racket@v1.11
+                          - uses: Bogdanp/setup-racket@v1.15
                             with: { version: stable }
                     """.stripTrailing() + "\n");
-                case VLANG -> steps.add("      - uses: vlang/setup-v@v1.4\n");
+                case VLANG -> steps.add("      - uses: vlang/setup-v@v1.7\n");
                 case CAIRO -> steps.add("      - uses: software-mansion/setup-scarb@v1\n");
                 case MOVE -> steps.add("      # NOTE: install the Sui CLI in CI (or the Aptos CLI for AptosFramework projects; no first-party setup action); see docs.sui.io / aptos.dev\n");
                 case AIKEN -> steps.add("      - uses: aiken-lang/setup-aiken@v1\n");
