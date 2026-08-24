@@ -713,7 +713,7 @@ public enum ProjectTemplates {
                 module %s
 
                 go 1.22
-                """.formatted(name.toLowerCase().replaceAll("[^a-z0-9]", "")));
+                """.formatted(name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]", "")));
             write(dir, "main.go", """
                 package main
 
@@ -788,7 +788,7 @@ public enum ProjectTemplates {
                 name = "%s"
                 version = "0.1.0"
                 edition = "2021"
-                """.formatted(name.toLowerCase().replaceAll("[^a-z0-9_-]", "-")));
+                """.formatted(name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_-]", "-")));
             write(dir, "src/main.rs", """
                 fn greet(name: &str) -> String {
                     format!("Hello, {name}!")
@@ -1206,7 +1206,7 @@ public enum ProjectTemplates {
     PHP_WEB("PHP Web (LEMP)", "Plain PHP: composer + PHPUnit/PHPStan/Pint, nginx+fpm+MariaDB compose, droplet cloud-init") {
         @Override
         void writeFiles(Path dir, String name) throws IOException {
-            String pkg = name.toLowerCase().replaceAll("[^a-z0-9_.-]", "-");
+            String pkg = name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_.-]", "-");
             write(dir, "composer.json", """
                 {
                   "name": "app/%s",
@@ -1730,7 +1730,7 @@ public enum ProjectTemplates {
 
     /** my-app -> my_app, for Elixir app atoms and file names. */
     static String snake(String name) {
-        return name.toLowerCase().replaceAll("[-\\s]+", "_").replaceAll("[^a-z0-9_]", "");
+        return name.toLowerCase(java.util.Locale.ROOT).replaceAll("[-\\s]+", "_").replaceAll("[^a-z0-9_]", "");
     }
 
     abstract void writeFiles(Path dir, String name) throws IOException;

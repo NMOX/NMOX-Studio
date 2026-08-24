@@ -154,7 +154,7 @@ public final class FileWatcher {
             return true;
         }
         int dot = name.lastIndexOf('.');
-        return dot >= 0 && extensions.contains(name.substring(dot + 1).toLowerCase());
+        return dot >= 0 && extensions.contains(name.substring(dot + 1).toLowerCase(java.util.Locale.ROOT));
     }
 
     private static List<Path> diff(Map<Path, Long> before, Map<Path, Long> after) {

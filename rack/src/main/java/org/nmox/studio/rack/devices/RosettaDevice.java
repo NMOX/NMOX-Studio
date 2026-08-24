@@ -65,7 +65,7 @@ public class RosettaDevice extends RackDevice {
 
     /** Maps knob labels onto ProjectKind names ("maven" -> MAVEN...). */
     private static String kindNameFor(String knobOption) {
-        return "auto".equals(knobOption) ? null : knobOption.toUpperCase();
+        return "auto".equals(knobOption) ? null : knobOption.toUpperCase(java.util.Locale.ROOT);
     }
 
     private void refreshDetected() {
@@ -80,7 +80,7 @@ public class RosettaDevice extends RackDevice {
             String selected = toolchainKnob.getSelectedOption();
             String active = "auto".equals(selected)
                     ? (kinds.isEmpty() ? "" : "  [" + kinds.keySet().iterator().next() + "]")
-                    : "  [" + selected.toUpperCase() + "]";
+                    : "  [" + selected.toUpperCase(java.util.Locale.ROOT) + "]";
             onEdt(() -> {
                 detectedLcd.setTextColor(kinds.size() > 1 ? RackStyle.LCD_AMBER : RackStyle.LCD_TEXT);
                 detectedLcd.setText(mix + active);

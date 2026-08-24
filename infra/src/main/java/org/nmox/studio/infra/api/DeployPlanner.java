@@ -305,7 +305,7 @@ public final class DeployPlanner {
                     if (prov.kind.name().startsWith("DB_")) {
                         databases.put(new JSONObject()
                                 .put("name", prov.label)
-                                .put("engine", engineSlug(prov.kind).toUpperCase())
+                                .put("engine", engineSlug(prov.kind).toUpperCase(java.util.Locale.ROOT))
                                 .put("production", true)
                                 .put("cluster_name", prov.label));
                     }

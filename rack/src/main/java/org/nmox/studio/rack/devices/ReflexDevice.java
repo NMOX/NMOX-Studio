@@ -82,7 +82,7 @@ public class ReflexDevice extends RackDevice {
     static Set<String> parseGlob(String glob) {
         Set<String> exts = new HashSet<>();
         for (String token : glob.split("[,\\s]+")) {
-            String t = token.trim().toLowerCase().replace("{", "").replace("}", "");
+            String t = token.trim().toLowerCase(java.util.Locale.ROOT).replace("{", "").replace("}", "");
             if (t.startsWith("*.")) {
                 t = t.substring(2);
             } else if (t.startsWith(".")) {

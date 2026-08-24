@@ -112,7 +112,7 @@ public final class DevScripts {
             + "function ser(el,depth,path){\n"
             + " if(count>=MAX_NODES){return null;}\n"
             + " count++;\n"
-            + " var o={t:el.tagName?(''+el.tagName).toLowerCase():'#node',p:path};\n"
+            + " var o={t:el.tagName?(''+el.tagName).toLowerCase(java.util.Locale.ROOT):'#node',p:path};\n"
             + " if(el.id){o.i=(''+el.id).slice(0,ATTR_CAP);}\n"
             + " if(el.className&&typeof el.className==='string'&&el.className){o.c=el.className.slice(0,ATTR_CAP);}\n"
             + " var attrs=[];\n"

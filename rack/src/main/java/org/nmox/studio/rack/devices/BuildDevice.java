@@ -60,7 +60,7 @@ public class BuildDevice extends CommandDevice {
         if (!watchSwitch.isOn() || !isProcessRunning()) {
             return;
         }
-        String lower = line.toLowerCase();
+        String lower = line.toLowerCase(java.util.Locale.ROOT);
         boolean ok = matchesAny(lower, WATCH_OK_MARKERS);
         boolean fail = !ok && matchesAny(lower, WATCH_FAIL_MARKERS);
         if (!ok && !fail) {

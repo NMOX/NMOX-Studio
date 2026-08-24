@@ -282,7 +282,7 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
                     }
                     if (name.length() > 1 && !KEYWORDS.contains(name)
                             && !GLOBAL_OBJECTS.containsKey(name)
-                            && name.toLowerCase().startsWith(prefix.toLowerCase())) {
+                            && name.toLowerCase(java.util.Locale.ROOT).startsWith(prefix.toLowerCase(java.util.Locale.ROOT))) {
                         seen.add(name);
                     }
                 }
@@ -352,7 +352,7 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
 
     /** Keywords whose text starts with the prefix (case-insensitive), sorted. */
     static List<String> matchingKeywords(String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         List<String> out = new ArrayList<>();
         for (String keyword : KEYWORDS) {
             if (keyword.startsWith(p)) {
@@ -365,10 +365,10 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
 
     /** Global object names whose text starts with the prefix (case-insensitive), sorted. */
     static List<String> matchingGlobalObjects(String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         List<String> out = new ArrayList<>();
         for (String obj : GLOBAL_OBJECTS.keySet()) {
-            if (obj.toLowerCase().startsWith(p)) {
+            if (obj.toLowerCase(java.util.Locale.ROOT).startsWith(p)) {
                 out.add(obj);
             }
         }
@@ -378,7 +378,7 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
 
     /** Snippets whose trigger starts with the prefix (case-insensitive), in declared order. */
     static List<JavaScriptSnippet> matchingSnippets(String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         List<JavaScriptSnippet> out = new ArrayList<>();
         for (JavaScriptSnippet snippet : SNIPPETS) {
             if (snippet.trigger.startsWith(p)) {
@@ -390,11 +390,11 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
 
     /** Methods of a global object whose name starts with the prefix (case-insensitive), in declared order. */
     static List<JavaScriptMethod> matchingMethods(String objectName, String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         List<JavaScriptMethod> out = new ArrayList<>();
         if (objectName != null && GLOBAL_OBJECTS.containsKey(objectName)) {
             for (JavaScriptMethod method : GLOBAL_OBJECTS.get(objectName)) {
-                if (method.name.toLowerCase().startsWith(p)) {
+                if (method.name.toLowerCase(java.util.Locale.ROOT).startsWith(p)) {
                     out.add(method);
                 }
             }

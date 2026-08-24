@@ -73,7 +73,7 @@ public final class SwitchProjectAction implements ActionListener {
         JTextField filter = new JTextField();
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
-                String needle = filter.getText().toLowerCase();
+                String needle = filter.getText().toLowerCase(java.util.Locale.ROOT);
                 model.clear();
                 for (File dir : recents) {
                     if (matches(dir, needle)) {
@@ -159,8 +159,8 @@ public final class SwitchProjectAction implements ActionListener {
      * path (both lower-cased; an empty needle matches everything).
      */
     static boolean matches(File dir, String needle) {
-        return dir.getName().toLowerCase().contains(needle)
-                || dir.getAbsolutePath().toLowerCase().contains(needle);
+        return dir.getName().toLowerCase(java.util.Locale.ROOT).contains(needle)
+                || dir.getAbsolutePath().toLowerCase(java.util.Locale.ROOT).contains(needle);
     }
 
     private void switchTo(File dir) {

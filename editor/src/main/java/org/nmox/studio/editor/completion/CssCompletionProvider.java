@@ -348,7 +348,7 @@ public class CssCompletionProvider implements CompletionProvider {
 
     /** Property names (any category) whose name starts with the prefix, sorted. */
     static List<String> matchingProperties(String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         Set<String> allProperties = new TreeSet<>();
         for (List<String> props : CSS_PROPERTIES.values()) {
             allProperties.addAll(props);
@@ -367,7 +367,7 @@ public class CssCompletionProvider implements CompletionProvider {
      * any) followed by the CSS-wide common keywords, all prefix-filtered.
      */
     static List<String> matchingValues(String propertyName, String prefix) {
-        String p = prefix.toLowerCase();
+        String p = prefix.toLowerCase(java.util.Locale.ROOT);
         List<String> out = new ArrayList<>();
         if (propertyName != null && PROPERTY_VALUES.containsKey(propertyName)) {
             for (String value : PROPERTY_VALUES.get(propertyName)) {

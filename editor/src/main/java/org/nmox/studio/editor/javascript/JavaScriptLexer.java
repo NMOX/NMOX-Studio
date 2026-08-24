@@ -21,7 +21,7 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     static {
         for (JavaScriptTokenId tokenId : JavaScriptTokenId.values()) {
             if (tokenId.primaryCategory().startsWith("keyword")) {
-                KEYWORD_CACHE.put(tokenId.name().toLowerCase(), tokenId);
+                KEYWORD_CACHE.put(tokenId.name().toLowerCase(java.util.Locale.ROOT), tokenId);
             }
         }
     }

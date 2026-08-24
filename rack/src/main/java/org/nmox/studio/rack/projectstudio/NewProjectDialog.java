@@ -238,7 +238,7 @@ public class NewProjectDialog extends JDialog {
     }
 
     private String sanitizedName() {
-        return nameField.getText().trim().toLowerCase()
+        return nameField.getText().trim().toLowerCase(java.util.Locale.ROOT)
                 .replaceAll("[^a-z0-9-_.]+", "-")
                 .replaceAll("^-+|-+$", "");
     }

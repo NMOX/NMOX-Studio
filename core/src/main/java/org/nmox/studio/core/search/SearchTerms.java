@@ -9,7 +9,7 @@ import java.util.Locale;
  * what you typed.
  *
  * <p><b>Why this exists.</b> Until v1.215.0 each search surface did the
- * obvious thing — {@code haystack.toLowerCase().contains(query)} — and
+ * obvious thing — {@code haystack.toLowerCase(java.util.Locale.ROOT).contains(query)} — and
  * the obvious thing is wrong in three ways that a user feels
  * immediately:
  *

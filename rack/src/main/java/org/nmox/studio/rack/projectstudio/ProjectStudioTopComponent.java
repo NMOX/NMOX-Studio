@@ -348,7 +348,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 .getConfigFile("Actions/Window");
         if (actions != null) {
             for (org.openide.filesystems.FileObject child : actions.getChildren()) {
-                if (child.getName().toLowerCase().contains("terminal")) {
+                if (child.getName().toLowerCase(java.util.Locale.ROOT).contains("terminal")) {
                     try {
                         Object instance = org.openide.loaders.DataObject.find(child)
                                 .getLookup().lookup(org.openide.cookies.InstanceCookie.class)
