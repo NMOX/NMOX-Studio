@@ -662,11 +662,11 @@ public final class OutlineModel {
             while (h.find()) {
                 String txt = h.group(2).replaceAll("<[^>]+>", "").trim();
                 out.add(new Item(OutlineKind.HEADING, txt.isEmpty() ? h.group(1) : txt,
-                        h.group(1).toLowerCase(), i, 0));
+                        h.group(1).toLowerCase(java.util.Locale.ROOT), i, 0));
             }
             Matcher m = HTML_LANDMARK.matcher(line);
             while (m.find()) {
-                String tag = m.group(1).toLowerCase();
+                String tag = m.group(1).toLowerCase(java.util.Locale.ROOT);
                 Matcher id = HTML_ID.matcher(m.group(2));
                 String name = id.find() ? tag + " #" + id.group(1) : tag;
                 out.add(new Item(OutlineKind.SECTION, name, null, i, 0));
@@ -841,7 +841,7 @@ public final class OutlineModel {
             if (b.find()) {
                 OutlineKind kind = "module".equalsIgnoreCase(b.group(1))
                         ? OutlineKind.MODULE : OutlineKind.FUNCTION;
-                out.add(new Item(kind, b.group(2), b.group(1).toLowerCase(), i, 0));
+                out.add(new Item(kind, b.group(2), b.group(1).toLowerCase(java.util.Locale.ROOT), i, 0));
                 continue;
             }
             Matcher t = FORTRAN_TYPE.matcher(line);
@@ -850,7 +850,7 @@ public final class OutlineModel {
                 continue;
             }
             // functions: skip end-statements ("end function foo")
-            if (!line.trim().toLowerCase().startsWith("end")) {
+            if (!line.trim().toLowerCase(java.util.Locale.ROOT).startsWith("end")) {
                 Matcher f = FORTRAN_FN.matcher(line);
                 if (f.find()) {
                     out.add(new Item(OutlineKind.FUNCTION, f.group(1), "function", i, 0));
@@ -1427,7 +1427,7 @@ public final class OutlineModel {
         for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
             Matcher m = SQL.matcher(lines[i]);
             if (m.find()) {
-                out.add(new Item(OutlineKind.TYPE, m.group(2), m.group(1).toLowerCase(), i, 0));
+                out.add(new Item(OutlineKind.TYPE, m.group(2), m.group(1).toLowerCase(java.util.Locale.ROOT), i, 0));
             }
         }
         return out;

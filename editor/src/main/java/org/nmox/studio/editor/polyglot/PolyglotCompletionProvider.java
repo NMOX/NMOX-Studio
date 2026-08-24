@@ -543,10 +543,10 @@ public class PolyglotCompletionProvider implements CompletionProvider {
 
     /** Language keywords matching the prefix (case-insensitive), sorted. */
     static List<String> matchingKeywords(Set<String> keywords, String prefix) {
-        String prefixLower = prefix.toLowerCase();
+        String prefixLower = prefix.toLowerCase(java.util.Locale.ROOT);
         List<String> out = new ArrayList<>();
         for (String keyword : new TreeSet<>(keywords)) {
-            if (keyword.toLowerCase().startsWith(prefixLower)) {
+            if (keyword.toLowerCase(java.util.Locale.ROOT).startsWith(prefixLower)) {
                 out.add(keyword);
             }
         }
@@ -559,13 +559,13 @@ public class PolyglotCompletionProvider implements CompletionProvider {
      * currently completing (the one ending exactly at {@code caretOffset}).
      */
     static List<String> matchingIdentifiers(String text, Set<String> keywords, String prefix, int caretOffset) {
-        String prefixLower = prefix.toLowerCase();
+        String prefixLower = prefix.toLowerCase(java.util.Locale.ROOT);
         Set<String> words = new TreeSet<>();
         Matcher m = WORD.matcher(text);
         while (m.find()) {
             String word = m.group();
             if (!keywords.contains(word)
-                    && word.toLowerCase().startsWith(prefixLower)
+                    && word.toLowerCase(java.util.Locale.ROOT).startsWith(prefixLower)
                     && m.end() != caretOffset) {
                 words.add(word);
             }

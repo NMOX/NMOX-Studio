@@ -360,7 +360,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private static String pruneKind(String dfType) {
-        String t = dfType.toLowerCase();
+        String t = dfType.toLowerCase(java.util.Locale.ROOT);
         if (t.startsWith("image")) {
             return "image";
         }
@@ -730,7 +730,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private String imageName() {
-        return projectDir().getName().toLowerCase().replaceAll("[^a-z0-9_-]", "-");
+        return projectDir().getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_-]", "-");
     }
 
     private ProjectInspector.ProjectKind currentKind() {
@@ -757,7 +757,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         DOCKERIZE_RP.post(() -> {
             ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(dir);
             boolean statics = DockerizeGenerator.buildsStatic(dir);
-            String image = dir.getName().toLowerCase().replaceAll("[^a-z0-9_-]", "-");
+            String image = dir.getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_-]", "-");
             int port = DockerizeGenerator.defaultPort(kind, statics);
             DockerRecipes.Loaded loaded = DockerRecipes.load();
             Map<String, String> files;

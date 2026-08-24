@@ -192,7 +192,7 @@ public class PalettePanel extends JPanel {
                 // section header: etched divider + caps label
                 g.setColor(RackStyle.SILKSCREEN_DIM);
                 g.setFont(RackStyle.TINY_FONT);
-                String text = headerText.toUpperCase();
+                String text = headerText.toUpperCase(java.util.Locale.ROOT);
                 g.drawString(text, 10, h - 8);
                 int tw = g.getFontMetrics().stringWidth(text);
                 g.setColor(new Color(255, 255, 255, 26));

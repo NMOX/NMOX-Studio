@@ -510,7 +510,7 @@ that embed API keys live only in the OS keychain, never on disk.
 applies the spec for real (trim_trailing_whitespace,
 insert_final_newline, glob sections, root stopping, closer-file
 precedence) with a minimal edit so the caret stays put. The
-**Standards Kit wizard** (File → Standards Kit…) generates the web's The **A11y Kit wizard** (File → A11y Kit (Web)…) makes accessibility the starting point: focus-visible styles, a skip link, `lang`, reduced-motion support, and a keyboard-walk checklist — idempotent, never clobbering.
+**Standards Kit wizard** (File → Standards Kit…) generates the web's
 well-known files, each correct to its spec: robots.txt (RFC 9309),
 sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
 RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → PWA Kit…)
@@ -526,6 +526,13 @@ Permissions-Policy, COOP — value-aware, letter-graded, a named fix for
 every miss. And VITALS' GATE knob makes **WCAG a shipping gate**:
 an inaccessible page closes the deploy gate exactly like a slow one.
 Neither wizard ever overwrites an existing file.
+The **A11y Kit wizard** (File → A11y Kit (Web)…) makes accessibility
+the starting point — focus-visible styles, a skip link, `lang`,
+reduced-motion support, a keyboard-walk checklist — and the **I18n Kit
+wizard** (File → I18n Kit (Web)…) makes it translatable: locale
+catalogs, a dependency-free `data-i18n` applier that keeps
+`<html lang>` truthful, and the checklist of rules tooling can't
+enforce. Both idempotent, never clobbering.
 
 ### 🏗️ Projects and infrastructure
 The Workbench home base (toolchain chips, open/recent files, tooling

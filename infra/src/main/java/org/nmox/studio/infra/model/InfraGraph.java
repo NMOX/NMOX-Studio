@@ -35,7 +35,7 @@ public final class InfraGraph {
             this.kind = kind;
             this.x = x;
             this.y = y;
-            this.label = kind.getDisplayName().toLowerCase().replace(" ", "-");
+            this.label = kind.getDisplayName().toLowerCase(java.util.Locale.ROOT).replace(" ", "-");
             for (NodeKind.Prop p : kind.getProps()) {
                 props.put(p.key(), p.defaultValue());
             }
@@ -61,7 +61,7 @@ public final class InfraGraph {
     private final AtomicLong sequence = new AtomicLong();
 
     public synchronized InfraNode addNode(NodeKind kind, int x, int y) {
-        String id = kind.name().toLowerCase() + "-" + sequence.incrementAndGet();
+        String id = kind.name().toLowerCase(java.util.Locale.ROOT) + "-" + sequence.incrementAndGet();
         InfraNode node = new InfraNode(id, kind, x, y);
         nodes.put(id, node);
         fireChanged();

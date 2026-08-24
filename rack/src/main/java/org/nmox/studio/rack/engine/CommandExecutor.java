@@ -260,11 +260,11 @@ public final class CommandExecutor {
         String tool = command.isEmpty() ? "?" : command.get(0);
         String raw = String.valueOf(ex.getMessage());
         if (raw.contains("error=2") || raw.contains("No such file")) {
-            return tool.toUpperCase() + " NOT FOUND — install it, or launch the IDE "
+            return tool.toUpperCase(java.util.Locale.ROOT) + " NOT FOUND — install it, or launch the IDE "
                     + "from a terminal so your PATH carries it";
         }
         if (raw.contains("error=13") || raw.contains("Permission denied")) {
-            return tool.toUpperCase() + " IS NOT EXECUTABLE — check its permissions";
+            return tool.toUpperCase(java.util.Locale.ROOT) + " IS NOT EXECUTABLE — check its permissions";
         }
         return "launch failed: " + raw;
     }

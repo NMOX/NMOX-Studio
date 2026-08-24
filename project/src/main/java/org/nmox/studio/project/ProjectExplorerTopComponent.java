@@ -330,7 +330,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     names.add("+" + (kinds.size() - 4));
                     break;
                 }
-                names.add(kind.name().toLowerCase());
+                names.add(kind.name().toLowerCase(java.util.Locale.ROOT));
             }
             // classic web libraries ride the same background walk: one
             // chip per detected library, version and honest EOL note

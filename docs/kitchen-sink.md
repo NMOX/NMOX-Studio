@@ -380,6 +380,9 @@ Run each against your project from the File menu:
   link, reduced motion), A11Y-NOTES.md, idempotent index.html wiring
   (lang + skip link + stylesheet); run it twice and the second report
   speaks the refusals.
+- **I18n Kit (Web)** — locales/en+es catalogs (same keys), the
+  data-i18n applier keeping <html lang> truthful, I18N-NOTES.md, the
+  idempotent script-tag wiring.
 - **Image Kit (Web)** — presses a project's images (pure-Java JPEG
   re-encode + WebP siblings via your cwebp); originals untouched,
   savings under 10% discarded as already-tight.

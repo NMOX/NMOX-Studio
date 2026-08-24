@@ -92,7 +92,7 @@ public final class PageSourceResolver {
         if (host == null) {
             return null;
         }
-        String h = host.toLowerCase();
+        String h = host.toLowerCase(java.util.Locale.ROOT);
         return switch (h) {
             case "127.0.0.1", "::1", "[::1]", "0.0.0.0" -> "localhost";
             default -> h;

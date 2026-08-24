@@ -22,6 +22,21 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
+### 85. IDE string localization — English by construction, its own project if ever
+
+Measured v2.37.5 (the i18n pass): 51 of 697 main-source files touch
+Bundle/@Messages — mostly action display names the platform
+registration requires — and every dialog, status line, and report
+string is an English literal. The shipped platform cluster carries no
+non-English locale bundles either, so module-side externalization
+alone would produce a mixed-language UI. Full l10n = externalize
+~650 files' strings + platform locale bundles + a translation
+pipeline: a dossier-first project on the RELEASE310 model, not a
+sweep. What v2.37.5 DID ship is the half with defects in it: the
+Turkish-I sweep (55 bare case-folds → Locale.ROOT,
+CaseFoldLocaleGateTest the law) — matching now works for every user
+regardless of their locale, even though the words stay English.
+
 ### 84. ~~The NetBeans Platform upgrade (RELEASE300 → RELEASE310+)~~ — CLOSED v2.35.0 (shipped, boundary observed v2.35.1)
 
 Dependabot's 2026-08-20 grouped PR carried netbeans.version

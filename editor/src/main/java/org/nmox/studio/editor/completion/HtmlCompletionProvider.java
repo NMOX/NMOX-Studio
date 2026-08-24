@@ -197,7 +197,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                     while (nameStart > 0 && !Character.isWhitespace(afterTag.charAt(nameStart - 1))) {
                         nameStart--;
                     }
-                    context.attributeName = afterTag.substring(nameStart, lastQuote).toLowerCase();
+                    context.attributeName = afterTag.substring(nameStart, lastQuote).toLowerCase(java.util.Locale.ROOT);
                 } else {
                     context.type = ContextType.ATTRIBUTE_NAME;
                     int lastSpace = afterTag.lastIndexOf(' ');
@@ -248,7 +248,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
 
         private void addTagCompletions(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
+            String prefix = context.prefix.toLowerCase(java.util.Locale.ROOT);
 
             for (String tag : HTML_TAGS) {
                 if (tag.startsWith(prefix)) {
@@ -259,7 +259,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
         }
 
         private void addAttributeCompletions(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
-            String prefix = context.prefix.toLowerCase();
+            String prefix = context.prefix.toLowerCase(java.util.Locale.ROOT);
             Set<String> attributes = new HashSet<>();
 
             // Add global attributes
@@ -282,7 +282,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
             if (values == null) {
                 return; // free-form attribute (href, src, id, …): nothing to enumerate
             }
-            String prefix = context.prefix.toLowerCase();
+            String prefix = context.prefix.toLowerCase(java.util.Locale.ROOT);
             for (String value : values) {
                 if (value.startsWith(prefix)) {
                     resultSet.addItem(new HtmlAttributeValueCompletionItem(
@@ -293,7 +293,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
         private void addClosingTagCompletion(CompletionResultSet resultSet, CompletionContext context, int caretOffset) {
             // Find matching opening tag and suggest closing tag
-            String prefix = context.prefix.toLowerCase();
+            String prefix = context.prefix.toLowerCase(java.util.Locale.ROOT);
 
             for (String tag : HTML_TAGS) {
                 if (tag.startsWith(prefix) && !VOID_ELEMENTS.contains(tag)) {

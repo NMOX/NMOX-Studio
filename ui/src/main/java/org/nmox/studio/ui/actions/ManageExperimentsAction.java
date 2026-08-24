@@ -106,7 +106,7 @@ public final class ManageExperimentsAction implements ActionListener {
                 File dir = (File) v;
                 Experiments.Info info = Experiments.info(dir);
                 return super.getListCellRendererComponent(l,
-                        dir.getName() + "   —   " + info.template().toLowerCase()
+                        dir.getName() + "   —   " + info.template().toLowerCase(java.util.Locale.ROOT)
                         + ", created " + info.created() + age(info.created()), i, sel, focus);
             }
         });

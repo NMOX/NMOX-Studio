@@ -38,7 +38,7 @@ public final class Experiments {
         Files.createDirectories(root.toPath());
         WorkspaceTrust.trust(root); // parent-path match pre-trusts every experiment
         String base = name == null || name.isBlank()
-                ? template.name().toLowerCase().replace('_', '-')
+                ? template.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-')
                 : name.trim().replaceAll("[^A-Za-z0-9._-]", "-");
         File dir = unique(root, base);
         template.generate(dir, dir.getName()); // deliberately no git init
