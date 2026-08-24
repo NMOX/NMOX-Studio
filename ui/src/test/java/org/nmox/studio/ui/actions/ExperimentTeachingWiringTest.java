@@ -57,6 +57,14 @@ class ExperimentTeachingWiringTest {
     }
 
     @Test
+    @DisplayName("the dialogs' label-less inputs carry accessible names (the v1.41.0 name law)")
+    void inputsNamed() throws Exception {
+        assertThat(src()).contains("setAccessibleName(\"Experiment template\")")
+                .contains("setAccessibleName(\"Experiment name (optional)\")");
+        assertThat(managerSrc()).contains("setAccessibleName(\"Experiments shelf\")");
+    }
+
+    @Test
     @DisplayName("the empty shelf offers to start an experiment, not a dead-end message")
     void emptyShelfActs() throws Exception {
         assertThat(managerSrc())
