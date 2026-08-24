@@ -1055,6 +1055,17 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
   maskable variants), a readable service worker (app-shell or
   network-first, your choice), an offline page, and the `index.html`
   wiring to tie it together.
+- **A11y Kit** — accessibility as a starting point, not an audit
+  afterthought: `a11y.css` (a visible `:focus-visible` ring, a
+  `.visually-hidden` utility, skip-link styles, a
+  `prefers-reduced-motion` block), `A11Y-NOTES.md` (the keyboard walk
+  and the questions automation can't answer, pointing at the DevTools
+  WCAG contrast check and the VITALS a11y gate), and idempotent
+  `index.html` wiring — `lang`, a skip link, the stylesheet. A
+  zoom-disabling viewport is warned about, never rewritten; problems
+  the kit can't fix are reported, not touched.
+
+  ![The A11y Kit's report — each outcome named](images/a11y-kit.png)
 - **Contract Kit (Web3)** — (new to contracts? read
   [the Beginner's Guide](smart-contracts-beginners-guide.md) first) — pick a chain (Solidity/Foundry, Soroban, Solana,
   CosmWasm, ink!, Cairo, Move, Bitcoin/Miniscript, Clarity on

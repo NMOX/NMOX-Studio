@@ -251,6 +251,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             new org.nmox.studio.core.util.SelfWriteTracker();
 
     public Web3StudioTopComponent() {
+        networkCombo.getAccessibleContext().setAccessibleName("Network");
+        fromCombo.getAccessibleContext().setAccessibleName("From account");
+        watchFilterCombo.getAccessibleContext().setAccessibleName("Watch filter");
+        logArea.getAccessibleContext().setAccessibleName("Event log");
         setName(Bundle.CTL_Web3StudioTopComponent());
         setToolTipText(Bundle.HINT_Web3StudioTopComponent());
         setLayout(new BorderLayout());
@@ -471,6 +475,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         for (AbiParam param : s.constructorParams()) {
             JTextField field = new JTextField(24);
             field.setFont(MONO);
+            field.getAccessibleContext().setAccessibleName(paramLabel(param));
             argFields.add(field);
             addLabeledRow(form, row++, paramLabel(param), field);
         }
@@ -484,6 +489,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (s.constructorPayable()) {
             valueField = new JTextField(10);
             valueField.setFont(MONO);
+            valueField.getAccessibleContext().setAccessibleName("Value in ETH");
             valueField.setToolTipText("ETH to send with the deployment, like 0.5");
             addLabeledRow(form, row++, "Value (ETH):", valueField);
         }
@@ -584,6 +590,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             rowPanel.add(label);
             JTextField field = new JTextField(10);
             field.setFont(MONO);
+            field.getAccessibleContext().setAccessibleName(label.getText());
             argFields.add(field);
             rowPanel.add(field);
         }
@@ -595,6 +602,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             rowPanel.add(valueLabel);
             valueField = new JTextField(6);
             valueField.setFont(MONO);
+            valueField.getAccessibleContext().setAccessibleName("Value in ETH");
             rowPanel.add(valueField);
         }
 

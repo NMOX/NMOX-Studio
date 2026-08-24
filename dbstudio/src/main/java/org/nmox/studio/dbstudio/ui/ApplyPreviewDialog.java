@@ -42,6 +42,7 @@ final class ApplyPreviewDialog {
         panel.add(summary, BorderLayout.NORTH);
 
         JTextArea sql = new JTextArea(String.join("\n", statements));
+        sql.getAccessibleContext().setAccessibleName("SQL to apply");
         sql.setEditable(false);
         sql.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         sql.setLineWrap(false);

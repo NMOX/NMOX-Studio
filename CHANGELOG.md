@@ -13,6 +13,26 @@ zero-defect campaign's opening, the sprint, and the output gauntlet
 - with the day's laws recorded and ledger 82's research direction
 written down (features-without-the-mime) for the next session.
 
+## [2.37.4] - 2026-08-24
+
+A11y support, both directions (David's ask: "build a11y support
+100%, including an a11y wizard"). The product's OUTPUT: the A11y Kit
+(Web) joins the kit family - a11y.css (a real :focus-visible ring,
+.visually-hidden, skip-link styles, prefers-reduced-motion),
+A11Y-NOTES.md (the keyboard walk and the questions automation can't
+answer, pointing at the product's own WCAG contrast check and VITALS
+a11y gate), and idempotent index.html wiring (lang + skip link +
+stylesheet, each landing exactly once); a zoom-disabling viewport is
+warned about never rewritten, and problems the kit can't fix are
+reported not touched - walk-proven live with the second run
+byte-identical (hash-verified), three mutants killed by name
+(unguarded rewire, clobber, skip-link-without-body). The product
+ITSELF: the a11y name sweep reaches the dialogs the rack law never
+covered - DB Studio's connection dialog and console, Contract
+Studio's network dialog and panes, the Infra property form and
+palette - every label-less input now names itself to assistive
+technology.
+
 ## [2.37.2] - 2026-08-23
 
 The Kitchen Sink catches up to the experiments-and-sprints era, and
@@ -14472,6 +14492,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.3...v2.37.4
 [2.37.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.2...v2.37.3
 [2.37.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.1...v2.37.2
 [2.37.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.0...v2.37.1

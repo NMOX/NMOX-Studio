@@ -219,6 +219,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     new java.awt.GridLayout(providers.length * 2, 1, 0, 2));
             for (int i = 0; i < providers.length; i++) {
                 fields[i] = new JPasswordField(32);
+                fields[i].getAccessibleContext().setAccessibleName(
+                        providers[i].displayName() + " API token");
                 String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
                 panel.add(new JLabel(providers[i].displayName() + current));
                 panel.add(fields[i]);
@@ -402,6 +404,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
 
         JTextArea area = new JTextArea(text.toString(), 18, 64);
+        area.getAccessibleContext().setAccessibleName("Deploy log");
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 

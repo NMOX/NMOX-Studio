@@ -189,6 +189,17 @@ public final class ApiClientTopComponent extends TopComponent {
         setName(Bundle.CTL_ApiClientTopComponent());
         setToolTipText(Bundle.HINT_ApiClientTopComponent());
         setLayout(new BorderLayout());
+        // the studios' inputs speak to assistive tech (v2.38.0, the
+        // a11y-100 sweep: forty label-less inputs across four studios)
+        envCombo.getAccessibleContext().setAccessibleName("Environment");
+        methodCombo.getAccessibleContext().setAccessibleName("HTTP method");
+        urlField.getAccessibleContext().setAccessibleName("Request URL");
+        nameField.getAccessibleContext().setAccessibleName("Request name");
+        bodyArea.getAccessibleContext().setAccessibleName("Request body");
+        authCombo.getAccessibleContext().setAccessibleName("Auth type");
+        responseBody.getAccessibleContext().setAccessibleName("Response body");
+        responseFind.getAccessibleContext().setAccessibleName("Find in response");
+        responseHeaders.getAccessibleContext().setAccessibleName("Response headers");
 
         saveDebounce = new Timer(800, e -> save());
         saveDebounce.setRepeats(false);
@@ -1875,6 +1886,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private void editVariables(Environment env) {
         JTextArea area = new JTextArea(12, 40);
+        area.getAccessibleContext().setAccessibleName("Import preview");
         area.setFont(MONO);
         StringBuilder sb = new StringBuilder();
         env.variables.forEach((k, v) -> sb.append(k).append('=').append(v).append('\n'));

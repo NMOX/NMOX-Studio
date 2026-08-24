@@ -510,7 +510,7 @@ that embed API keys live only in the OS keychain, never on disk.
 applies the spec for real (trim_trailing_whitespace,
 insert_final_newline, glob sections, root stopping, closer-file
 precedence) with a minimal edit so the caret stays put. The
-**Standards Kit wizard** (File → Standards Kit…) generates the web's
+**Standards Kit wizard** (File → Standards Kit…) generates the web's The **A11y Kit wizard** (File → A11y Kit (Web)…) makes accessibility the starting point: focus-visible styles, a skip link, `lang`, reduced-motion support, and a keyboard-walk checklist — idempotent, never clobbering.
 well-known files, each correct to its spec: robots.txt (RFC 9309),
 sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
 RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → PWA Kit…)

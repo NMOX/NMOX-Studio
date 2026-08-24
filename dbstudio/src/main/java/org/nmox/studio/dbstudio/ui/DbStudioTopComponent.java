@@ -242,6 +242,8 @@ public final class DbStudioTopComponent extends TopComponent {
     private String consolePlaceholder = "SELECT \u2026;";
 
     public DbStudioTopComponent() {
+        savedCombo.getAccessibleContext().setAccessibleName("Saved queries");
+        historyList.getAccessibleContext().setAccessibleName("Query history");
         setName(Bundle.CTL_DbStudioTopComponent());
         setToolTipText(Bundle.HINT_DbStudioTopComponent());
         setLayout(new BorderLayout());
@@ -671,6 +673,7 @@ public final class DbStudioTopComponent extends TopComponent {
             JTextArea message = new JTextArea(result.isError()
                     ? result.error()
                     : result.updateCount() + " row(s) affected");
+            message.getAccessibleContext().setAccessibleName("Statement result");
             message.setEditable(false);
             message.setFont(MONO);
             message.setLineWrap(true);

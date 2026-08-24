@@ -59,6 +59,9 @@ final class NetworkDialog extends JPanel {
     private NetworkDialog() {
         super(new BorderLayout(0, 6));
         setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
+        nameField.getAccessibleContext().setAccessibleName("Network name");
+        urlField.getAccessibleContext().setAccessibleName("RPC URL");
+        chainIdField.getAccessibleContext().setAccessibleName("Chain id");
 
         JPanel grid = new JPanel(new GridBagLayout());
         addRow(grid, 0, "Name:", nameField);
