@@ -2645,3 +2645,46 @@ Laws established:
   the ImageRefsTest law — captured wired, in the same commit.
 
 Standing: 86 grammars, 92 spaces, RELEASE310 GO-READY (David's call).
+
+## Addendum — 2026-08-23, the fourteen-release day (v2.35.0–v2.37.2)
+
+The platform advanced and the campaign began. RELEASE310 shipped on
+David's GO (v2.35.0/1 — every dossier gauntlet measured, the update
+boundary observed: the UI holds old installs back gracefully; the
+headless --update-all does not, recorded as a gauntlet law).
+Experiments became the first tool for learning a stack (v2.36.0/1 —
+born teaching, install-for-success, the manager speaking count and
+disk cost; both walks caught defects in day-old code). The law sweep
+(v2.36.2/3) ran the sibling lens: eleven IRC handlers answering into
+the wrong transcript, four parsers a keep-both merge could corrupt
+(three of them wiping keychain secrets), the infra node-swallow that
+could orphan a live billed resource — the parse-time-heal audit now
+COMPLETE across all seven studio files. The zero-defect campaign
+(v2.36.4/5, David's directive) opened with an honest inventory and
+closed ledger 80 structurally; the hostile-input lens made a
+generated type never-invalid-source. The Docker walk (v2.36.6) proved
+the corpus callosum on a real daemon. The scrum master got the sprint
+(v2.37.0 — burndown from done stamps, the report, velocity), and the
+output gauntlet (v2.37.1/2) proved everything the product GENERATES
+against today's world: 15 templates run for real, 4 Dockerfiles
+built + containers answering, 25 exporter-only pins checked live.
+
+Laws established or re-proven:
+- **Never script --update-all across a platform boundary**; the UI's
+  refuse-by-range holds, the CLI half-installs.
+- **The sibling-sweep lens pays**: when a law lands in one twin, grep
+  every other — sixteen defects from three sweeps, zero features.
+- **A missing verdict line is a failed run, never a kill**; and
+  REDUNDANT guards make single mutants equivalent — the pin is the
+  double mutant (the sprint heal recorded it).
+- **A generated type is never invalid source**; **a walk shot is a
+  doc asset**; **warm the pulls before you judge a Dockerfile**;
+  **anchors come from grep, never memory** (the fold-script law's
+  third bite).
+
+Standing: 86 grammars, 92 spaces, zero known actionable defects;
+ledger 82 (suffixless template mechanism) is the one research item —
+the recorded direction: features-without-the-mime (register the
+template intelligence for text/html, self-gated on angular.json +
+a templateUrl reference), since MIMESupport's declarative-first
+ordering forecloses programmatic resolution.
