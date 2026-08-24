@@ -376,6 +376,10 @@ Run each against your project from the File menu:
   index.html wiring.
 - **Standards Kit** — robots.txt, sitemap, web manifest, RFC 9116
   security.txt, humans.txt.
+- **A11y Kit (Web)** — a11y.css (focus ring, visually-hidden, skip
+  link, reduced motion), A11Y-NOTES.md, idempotent index.html wiring
+  (lang + skip link + stylesheet); run it twice and the second report
+  speaks the refusals.
 - **Image Kit (Web)** — presses a project's images (pure-Java JPEG
   re-encode + WebP siblings via your cwebp); originals untouched,
   savings under 10% discarded as already-tight.
