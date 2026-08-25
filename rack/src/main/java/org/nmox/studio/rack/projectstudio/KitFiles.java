@@ -63,4 +63,26 @@ final class KitFiles {
         return new Write(path + ".suggested",
                 "existing " + path + " kept — suggestion written alongside", true);
     }
+    /**
+     * The entry page a web kit wires, wherever this project keeps it:
+     * root, public/ (Vite-era), or src/ (Angular). Returns null when
+     * none exists — the kit reports an honest refusal, never guesses
+     * (v2.38.0; shared by the A11y and I18n kits so a future kit or a
+     * new location is one edit).
+     */
+    public static java.io.File entryPage(java.io.File projectDir) {
+        for (String rel : new String[] {"index.html", "public/index.html", "src/index.html"}) {
+            java.io.File f = new java.io.File(projectDir, rel);
+            if (f.isFile()) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    /** The project-relative spelling of {@link #entryPage}'s answer. */
+    public static String entryPageRel(java.io.File projectDir, java.io.File page) {
+        return projectDir.toPath().relativize(page.toPath()).toString().replace('\\', '/');
+    }
+
 }
