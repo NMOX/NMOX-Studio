@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.1] - 2026-08-25
+
+Batch 12, the sprint cadence: Close Sprint now offers the NEXT sprint
+- the dialog opens pre-filled with the name's trailing number
+incremented ("Sprint 7" becomes "Sprint 8"; an unnumbered name gains
+a counter), the window starting the day after the closed one at the
+SAME length, and everything editable with Cancel starting nothing -
+and the Sprint dialog speaks velocity when history exists ("Velocity
+- last 3 sprints: 7, 14, 9 done (avg 10)", newest first, an honest
+nothing when no sprint has closed). Both walked live in the assembled
+app: Sprint 7 closed, the offer accepted, Sprint 8 pre-filled with
+2026-09-08 through 2026-09-21 and the velocity line under the dates.
+Pure SprintRoll core, three tests incl. the 20-digit-tail refusal.
+The walk also re-proved sprint persistence CLEAN after this shift's
+own probe misread it (wrong key names - probe with the code's keys,
+not guessed ones; the v2.37.2 narrow-probe lesson, re-pinned).
+
 ## [2.38.0] - 2026-08-25
 
 Batch (David's call - stop waiting on CI): the ship gate FETCHES and
@@ -14589,6 +14606,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.0...v2.38.1
 [2.38.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.8...v2.38.0
 [2.37.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.7...v2.37.8
 [2.37.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.6...v2.37.7
