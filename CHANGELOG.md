@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.6] - 2026-08-25
+
+The overnight verification close (docs only): the within-line update
+gauntlet PASS the v2.35.1 boundary notes promised. A stock 2.35.0
+portable self-updated in-app to 2.37.5 through the real update center
+("Will update ...@2.35.0 to version 2.37.5"), every module jar
+byte-verified at 2.37.5, clean reboot with zero SEVERE and zero
+enable failures - within the platform line, updates flow exactly as
+documented, so the RELEASE310 boundary story is now proven on both
+sides. The night's other thread ended in a correction rather than a
+release: an attempted re-bisect of the LCD tooltip turned out to be
+aimed at ledger 76, closed 2026-08-11 (tooltips work; the old
+"never fires" verdicts were observation failures) - recorded here
+because the lesson is a law: read the ledger entry before starting a
+ledger unit.
+
 ## [2.37.5] - 2026-08-24
 
 I18n, both directions (David's ask: "all that for i18n, too"). The
@@ -14515,6 +14531,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.5...v2.37.6
 [2.37.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.4...v2.37.5
 [2.37.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.3...v2.37.4
 [2.37.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.2...v2.37.3
