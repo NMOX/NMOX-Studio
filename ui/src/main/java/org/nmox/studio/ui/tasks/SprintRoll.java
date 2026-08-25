@@ -40,4 +40,30 @@ final class SprintRoll {
         LocalDate start = closedEnd.plusDays(1);
         return new LocalDate[] {start, start.plusDays(Math.max(0, length))};
     }
+    /**
+     * The planning line the Sprint dialog shows when history exists:
+     * "Velocity — last 3 sprints: 14, 9, 12 done (avg 12)". Newest
+     * first; fewer sprints show what there is; empty history returns
+     * null (the dialog shows nothing rather than a zero that reads as
+     * a verdict).
+     */
+    static String velocityLine(java.util.List<TaskBoard.ClosedSprint> history) {
+        if (history == null || history.isEmpty()) {
+            return null;
+        }
+        int n = Math.min(3, history.size());
+        StringBuilder counts = new StringBuilder();
+        int sum = 0;
+        for (int i = 0; i < n; i++) {
+            TaskBoard.ClosedSprint cs = history.get(history.size() - 1 - i);
+            if (i > 0) {
+                counts.append(", ");
+            }
+            counts.append(cs.done());
+            sum += cs.done();
+        }
+        return "Velocity — last " + n + (n == 1 ? " sprint: " : " sprints: ")
+                + counts + " done (avg " + Math.round(sum / (double) n) + ")";
+    }
+
 }

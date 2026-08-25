@@ -33,4 +33,20 @@ class SprintRollTest {
                 LocalDate.of(2026, 8, 24), LocalDate.of(2026, 8, 24));
         assertThat(oneDay[0]).isEqualTo(oneDay[1]);
     }
+    @Test
+    @DisplayName("velocity line: newest first, capped at three, honest null when empty")
+    void velocity() {
+        java.util.List<TaskBoard.ClosedSprint> h = new java.util.ArrayList<>();
+        assertThat(SprintRoll.velocityLine(h)).isNull();
+        h.add(new TaskBoard.ClosedSprint("S1", 1, 2, 12, ""));
+        assertThat(SprintRoll.velocityLine(h))
+                .isEqualTo("Velocity — last 1 sprint: 12 done (avg 12)");
+        h.add(new TaskBoard.ClosedSprint("S2", 3, 4, 9, ""));
+        h.add(new TaskBoard.ClosedSprint("S3", 5, 6, 14, ""));
+        h.add(new TaskBoard.ClosedSprint("S4", 7, 8, 7, ""));
+        assertThat(SprintRoll.velocityLine(h))
+                .as("newest first, only the last three")
+                .isEqualTo("Velocity — last 3 sprints: 7, 14, 9 done (avg 10)");
+    }
+
 }

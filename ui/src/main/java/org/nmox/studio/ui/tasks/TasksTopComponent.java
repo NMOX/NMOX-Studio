@@ -873,6 +873,14 @@ public final class TasksTopComponent extends TopComponent {
         panel.add(start);
         panel.add(new javax.swing.JLabel("End (YYYY-MM-DD):"));
         panel.add(end);
+        String velocity = SprintRoll.velocityLine(board.sprintHistory());
+        if (velocity != null) {
+            javax.swing.JLabel v = new javax.swing.JLabel(
+                    "<html><small>" + velocity + "</small></html>");
+            v.getAccessibleContext().setAccessibleName(velocity);
+            panel.add(v);
+            panel.add(new javax.swing.JLabel(""));
+        }
         DialogDescriptor d = new DialogDescriptor(panel, "Sprint");
         if (DialogDisplayer.getDefault().notify(d) != DialogDescriptor.OK_OPTION) {
             return;
