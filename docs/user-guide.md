@@ -1,6 +1,6 @@
 # NMOX Studio — User Guide
 
-> Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots ([tour.html](tour.html) is the phosphor-styled version for a browser). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting.
+> Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots ([tour.html](tour.html) is the phosphor-styled version for a browser). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting. Prefer a story? **[A Day at Meridian](a-day-at-meridian.md)** builds one real thing through every area, screenshots from a live session.
 
 How to actually use the thing. This guide walks the features in the order
 you'll meet them: install, first launch, projects, the rack, the studios,
