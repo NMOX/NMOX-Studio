@@ -112,7 +112,7 @@ public final class DevScripts {
             + "function ser(el,depth,path){\n"
             + " if(count>=MAX_NODES){return null;}\n"
             + " count++;\n"
-            + " var o={t:el.tagName?(''+el.tagName).toLowerCase(java.util.Locale.ROOT):'#node',p:path};\n"
+            + " var o={t:el.tagName?(''+el.tagName).toLowerCase():'#node',p:path};\n" // locale: JavaScript running IN THE PAGE — `java` does not exist there (the v2.37.5 sweep broke the whole DOM pane by rewriting this string; InjectedJsPurityTest now guards every script)
             + " if(el.id){o.i=(''+el.id).slice(0,ATTR_CAP);}\n"
             + " if(el.className&&typeof el.className==='string'&&el.className){o.c=el.className.slice(0,ATTR_CAP);}\n"
             + " var attrs=[];\n"

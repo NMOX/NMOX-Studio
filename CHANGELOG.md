@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.3] - 2026-08-25
+
+A Day at Meridian (David's ask: one story that demonstrates every
+area, as a tutorial with screenshots) - docs/a-day-at-meridian.md: a
+coffee shop's site built from first experiment to standup, eleven
+screenshots captured LIVE from the shipped app during the story's own
+walk (launchpad, the experiment dialog and its walkthrough,
+swatches-through-tokens, the one-keystroke serve with chip + Browser
++ log + outline, DevTools pick, the sprint board + burndown Overview
++ Standup, the shelf, the Infra vista) plus the standing illustrations
+for the API, DB, kits, contracts, and IRC acts; linked from the
+README's front matter and the user guide's banner. And the story
+earned its keep on scene six: Pick element was DEAD - the v2.37.5
+Turkish-I sweep had rewritten .toLowerCase() INSIDE
+DevScripts.DOM_SNAPSHOT's string, JavaScript that runs in the page
+where java.util.Locale does not exist, killing the whole DOM pane
+with "Can't find variable: java", invisible to every Java-side test.
+One line healed (the gate's // locale: escape says why), and
+InjectedJsPurityTest now reflects over EVERY DevScripts constant
+refusing Java-isms - failing-first proven; the cross-language sweep
+leak is a named class. The DevTools scenes were then captured from
+the healed build, pick-to-ring proven on the story's own page.
+
 ## [2.38.2] - 2026-08-25
 
 Batch 13: the Standup opens with its sprint - "Sprint 8 · day 3 of
@@ -14621,6 +14644,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.2...v2.38.3
 [2.38.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.1...v2.38.2
 [2.38.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.0...v2.38.1
 [2.38.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.8...v2.38.0

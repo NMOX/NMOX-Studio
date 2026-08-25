@@ -28,7 +28,10 @@ every read is bounded, and quitting leaves zero orphan processes.
 ### The tour, in four frames
 
 *The full visual tour — every feature, one page — is
-**[docs/tour.md](docs/tour.md)** (renders right here on GitHub), and
+**[docs/tour.md](docs/tour.md)** (renders right here on GitHub),
+**[A Day at Meridian](docs/a-day-at-meridian.md)** is one story through
+every corner — a real site built from first experiment to standup,
+every screenshot captured live — and
 **[the Kitchen Sink](docs/kitchen-sink.md)** is the hands-on version —
 every surface exercised in one sitting;
 [tour.html](docs/tour.html) is the same page with the product's own
