@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.2] - 2026-08-25
+
+Batch 13: the Standup opens with its sprint - "Sprint 8 · day 3 of
+14" inside the window, the name alone for a sprint set to start
+later, no clause at all without one (the day-of math test-pinned);
+the Kitchen Sink's sprint station learns the roll-over, the velocity
+line, and the Standup header, and the README's Angular section names
+the suffixless recognition; and the API Studio walk comes back ALL
+CLEAN ~45 releases and one platform move after v2.21.3's - the
+persisted workspace loaded intact, {{repo}} resolved through the
+environment to a live GitHub 200 in 397ms whose pushed_at was THIS
+day's own merge, the security grade read B with honest absents
+(Permissions-Policy, Cross-Origin-Opener-Policy), and Copy curl
+produced the byte-exact command with the variable resolved.
+
 ## [2.38.1] - 2026-08-25
 
 Batch 12, the sprint cadence: Close Sprint now offers the NEXT sprint
@@ -14606,6 +14621,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.1...v2.38.2
 [2.38.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.0...v2.38.1
 [2.38.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.8...v2.38.0
 [2.37.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.7...v2.37.8
