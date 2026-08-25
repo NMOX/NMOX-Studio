@@ -39,7 +39,18 @@ public class WebFileSupport extends MultiDataObject {
 
     public WebFileSupport(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        registerEditor("text/html", true);
+        // ledger 82, the suffixless-Angular-template seam: the FILE mime
+        // is unwinnable (declarative resolvers cannot see siblings and
+        // always precede Lookup-provided ones — decompiled, see the
+        // layer's Loaders comment), but the EDITOR mime is this
+        // DataObject's to choose. Two structural signals (same-basename
+        // .ts sibling carrying @Component, angular.json ancestry) route
+        // widget.html to the Angular template editor; every other html
+        // file is untouched. Cost on the miss path: one sibling stat.
+        java.io.File onDisk = org.openide.filesystems.FileUtil.toFile(pf);
+        boolean ngTemplate = onDisk != null
+                && org.nmox.studio.editor.angular.NgSuffixless.isSuffixlessTemplate(onDisk);
+        registerEditor(ngTemplate ? "text/x-ng-template" : "text/html", true);
     }
 
     @Override
