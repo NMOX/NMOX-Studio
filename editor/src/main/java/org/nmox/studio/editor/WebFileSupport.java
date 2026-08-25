@@ -39,7 +39,33 @@ public class WebFileSupport extends MultiDataObject {
 
     public WebFileSupport(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        registerEditor("text/html", true);
+        // ledger 82, the suffixless-Angular-template seam: the FILE mime
+        // is unwinnable (declarative resolvers cannot see siblings and
+        // always precede Lookup-provided ones — decompiled, see the
+        // layer's Loaders comment), but the EDITOR mime is this
+        // DataObject's to choose. Two structural signals (same-basename
+        // .ts sibling carrying @Component, angular.json ancestry) route
+        // widget.html to the Angular template editor; every other html
+        // file is untouched. Cost on the miss path: one sibling stat.
+        java.io.File onDisk = org.openide.filesystems.FileUtil.toFile(pf);
+        boolean ngTemplate = onDisk != null
+                && org.nmox.studio.editor.angular.NgSuffixless.isSuffixlessTemplate(onDisk);
+        // multiview only for html — text/x-ng-template registers no
+        // MultiViewElement, and multiview=true over an element-less mime
+        // renders an EMPTY editor (History tab only; caught live on this
+        // probe's first walk)
+        registerEditor(ngTemplate ? "text/x-ng-template" : "text/html", !ngTemplate);
+        if (ngTemplate) {
+            // registerEditor reroutes the multiview registry but the
+            // plain-editor path still surfaced html (popup/breadcrumb —
+            // probed live); the dossier's real seam is the PUBLIC
+            // CloneableEditorSupport.setMIMEType, which pins the
+            // document/kit mime the popup and MimeLookup consult
+            org.openide.cookies.EditorCookie ec = getCookie(org.openide.cookies.EditorCookie.class);
+            if (ec instanceof org.openide.text.CloneableEditorSupport ces) {
+                ces.setMIMEType("text/x-ng-template");
+            }
+        }
     }
 
     @Override

@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.8] - 2026-08-25
+
+Ledger 82 delivered - suffixless Angular templates (Angular 21's CLI
+default: widget.html beside widget.ts, no .component infix) open with
+the Angular template editor: coloring with @if as a block, the
+template popup (Go to Declaration, Open Component Class, Go to
+Component - the jump live-proven), template chords. The mechanism,
+measured before built and then corrected by its own walk: the FILE
+mime is unwinnable (declarative resolvers cannot see siblings and
+always precede Lookup-provided ones - decompiled), but the EDITOR
+mime is the DataObject's to choose, and BOTH halves are required -
+registerEditor(plain) reroutes the kit while the public
+CloneableEditorSupport.setMIMEType pins the document mime the popup
+and MimeLookup consult (the walk caught each half alone failing:
+an empty multiview first, an html popup second). The claim is
+conditional on two structural signals (same-basename .ts sibling
+carrying @Component, angular.json ancestry, repo-bounded walk,
+capped sibling read - NgSuffixlessTest pins all five boundary
+rules) so every other html file is untouched - plain.html walked as
+the control. Honest remainder recorded: the LSP client binds by FILE
+mime, so the Angular Language Service does not attach here yet. Also:
+scripts/ship-gate.sh - the ship gate template gets a reboot-proof
+parameterized home in the repo (a reboot wiped the scratchpad copy;
+the docs-landed literal now derives from TAG, killing the
+sed-derivation rot class). Two mutants by name (predicate-always-true
+claims every html file; setMIMEType dropped).
+
 ## [2.37.7] - 2026-08-25
 
 The Block Studio walk (docs only) - all clean, ~20 releases and one
@@ -14545,6 +14572,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.7...v2.37.8
 [2.37.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.6...v2.37.7
 [2.37.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.5...v2.37.6
 [2.37.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.4...v2.37.5

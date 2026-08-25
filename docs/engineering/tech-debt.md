@@ -242,7 +242,7 @@ touch+reopen). The keybinding half is therefore moot — no
 content-resolved pane can exist. The inert resolver is deleted with a
 tombstone gate (SuffixlessAngularGateTest); the GOAL reopens as 82.
 
-### 82. Suffixless template MIME recognition needs a viable mechanism (reopens ledger 73's goal)
+### 82. ~~Suffixless template MIME recognition~~ — DELIVERED v2.37.8 (editor surface; ALS remainder recorded)
 David's call stands — the Angular bet means ALL Angular repos, and
 Angular 21's CLI generates suffixless widget.html files — but the
 v1.346.0 content resolver could never run (see 77: declarative XML
@@ -257,6 +257,37 @@ positioned instances interleave, (c) rerouting at the editor layer
 (DataObject/kit) instead of MIME. The four-file switcher, Run Focused
 Test, and ng generate all already handle suffixless sets by their own
 file logic — this ledger is ONLY the mime/coloring/chords surface.
+
+**Mechanism (c) measured VIABLE (2026-08-25, decompiled):**
+`CloneableEditorSupport.setMIMEType(String)` is PUBLIC — the editor
+support carries its own `mimeType` field consulted by `cesKit()`, so
+a DataObject can force the editor content type independently of the
+FileObject's resolver-assigned mime. The candidate shape: a
+DataLoader positioned before the platform html loader claiming an
+.html file on TWO structural signals (a same-basename `.ts` sibling
+carrying `@Component`, inside an `angular.json` ancestry — the
+v1.314.0 two-signals rule; no content sniffing of the template
+itself, so the wrong-guess-mutates law holds), whose
+DataEditorSupport calls `setMIMEType("text/x-ng-template")`. Open
+questions for the probe build: the LSP client's binding follows the
+DOCUMENT mime or the FileObject mime (decides whether ALS rides
+along), and loader-order parity with the platform html loader.
+The probe is its own unit; this entry is the mechanism dossier.
+
+**DELIVERED v2.37.8, both halves measured live:** `registerEditor`
+alone reroutes only the multiview registry (the first walk opened an
+EMPTY editor — the ng mime registers no MultiViewElement — and after
+the plain-editor fix the popup/breadcrumb STAYED html); adding the
+public `CloneableEditorSupport.setMIMEType` pinned the document mime
+and the full template surface followed — Angular coloring (@if as a
+block), the ng popup (Go to Declaration ⌘B, Open Component Class, Go
+to Component), and the component jump, all live-proven on a
+suffixless widget.html/widget.ts pair, with plain.html walked as the
+control (html multiview + html popup, untouched). The honest
+remainder: the platform LSP client binds by the FILE mime, so the
+Angular Language Service does not attach to suffixless templates —
+the html LSP toast fired instead. That half needs the LSP client's
+binding seam and stays open here.
 
 
 ### 78. CLOSED v1.349.0 — ⌘B on templates: tags AND identifiers
