@@ -80,7 +80,7 @@ class A11yKitTest {
 
     @Test
     @DisplayName("Angular keeps its entry page in src/ — the kit finds it there (v2.38.0)")
-    void angularEntryPage(@TempDir Path work) throws IOException {
+    void angularEntryPage(@TempDir Path work) throws java.io.IOException {
         File dir = work.toFile();
         Files.createDirectories(new File(dir, "src").toPath());
         Files.writeString(new File(dir, "src/index.html").toPath(),
