@@ -272,8 +272,11 @@ and jumps to a symbol on click; and the NMOX Phosphor dark theme.
 ### 🅰️ Angular, first-class
 
 Angular is the framework NMOX Studio is deliberately excellent at.
-`.component.html` templates are their own citizens: a dedicated
-template mime lit by the Angular team's own grammars, so `@if`/`@for`
+`.component.html` templates are their own citizens — and so are
+Angular 21's SUFFIXLESS ones (`widget.html` beside `widget.ts`),
+recognized by structure (the `@Component` sibling plus the
+`angular.json` ancestry) and given the same template editor: a
+dedicated template mime lit by the Angular team's own grammars, so `@if`/`@for`
 control-flow blocks, structural directives, and `{{ interpolations }}`
 all highlight — with `@`-block and `*`-directive completion in any
 project that carries an `angular.json`. The **Angular Language

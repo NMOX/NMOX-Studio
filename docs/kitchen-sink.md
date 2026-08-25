@@ -334,7 +334,12 @@ unplotted. The report is the Standup's review sibling: done,
 open-at-close, still-blocked, clocked time, retro notes, and a
 velocity line once **Close Sprint…** has archived a sprint or two.
 Closing archives the window, count, and retro — cards stay exactly
-where they are.
+where they are — and then OFFERS the next sprint: the dialog opens
+pre-filled (name incremented, same-length day-after window), fully
+editable, Cancel starting nothing. Once history exists, the Sprint
+dialog itself shows the planning number ("Velocity — last 3 sprints:
+7, 14, 9 done"), and the Standup's header opens with the sprint and
+its day count ("Sprint 8 · day 3 of 14").
 
 ## 15. IRC (⌥⌘3)
 
