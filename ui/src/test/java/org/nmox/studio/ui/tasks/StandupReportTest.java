@@ -109,4 +109,23 @@ class StandupReportTest {
         assertThat(md).doesNotContain("### Commits");
     }
 
+    @Test
+    @DisplayName("the header carries the sprint: day-of inside the window, name alone outside, nothing without one")
+    void sprintHeader() {
+        TaskBoard none = new TaskBoard();
+        assertThat(report(none, List.of())).doesNotContain("·");
+
+        TaskBoard inside = new TaskBoard();
+        // NOON is day 3 of a window that started two days earlier
+        inside.setSprint("Sprint 8", NOON - 2 * 86400000L, NOON + 11 * 86400000L);
+        assertThat(report(inside, List.of()))
+                .contains("· Sprint 8 · day 3 of 14");
+
+        TaskBoard future = new TaskBoard();
+        future.setSprint("Sprint 9", NOON + 5 * 86400000L, NOON + 18 * 86400000L);
+        String md = report(future, List.of());
+        assertThat(md).contains("· Sprint 9");
+        assertThat(md).doesNotContain("day ");
+    }
+
 }

@@ -49,7 +49,24 @@ final class StandupReport {
                 .toInstant().toEpochMilli();
 
         StringBuilder md = new StringBuilder();
-        md.append("## Standup — ").append(today).append('\n');
+        md.append("## Standup — ").append(today);
+        // the sprint context (v2.38.2): inside the window the header
+        // carries "Sprint 8 · day 3 of 14" — the one number a standup
+        // opens with; outside the window (a sprint set for next week)
+        // the name alone, and no sprint means no clause at all
+        if (board.hasSprint()) {
+            LocalDate ss = LocalDate.ofInstant(
+                    Instant.ofEpochMilli(board.sprintStart()), zone);
+            LocalDate se = LocalDate.ofInstant(
+                    Instant.ofEpochMilli(board.sprintEnd()), zone);
+            md.append(" · ").append(board.sprintName());
+            if (!today.isBefore(ss) && !today.isAfter(se)) {
+                long day = java.time.temporal.ChronoUnit.DAYS.between(ss, today) + 1;
+                long len = java.time.temporal.ChronoUnit.DAYS.between(ss, se) + 1;
+                md.append(" · day ").append(day).append(" of ").append(len);
+            }
+        }
+        md.append('\n');
 
         List<String> yest = new ArrayList<>();
         List<String> tod = new ArrayList<>();
