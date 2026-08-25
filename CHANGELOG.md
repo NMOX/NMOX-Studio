@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.37.7] - 2026-08-25
+
+The Block Studio walk (docs only) - all clean, ~20 releases and one
+platform move since v2.21.4's: the shipped 2.37.6 loaded the existing
+three-piece workspace with codegen live, click-a-piece located its
+lines, a palette drag landed a legal class attribute with the
+generated code updating in place, the loopback preview served the
+LIVE edit byte-for-byte over HTTP (per-request read proven; unknown
+/lib tags 404), Save Component wrote the same bytes to
+src/components/, Stop Preview deregistered (connection refused, the
+serving chip cleared), and a keyboard Delete restored the workspace
+with the auto-save proven in the file. Zero finds - the studio
+crossed RELEASE310 without a scratch.
+
 ## [2.37.6] - 2026-08-25
 
 The overnight verification close (docs only): the within-line update
@@ -14531,6 +14545,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.37.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.6...v2.37.7
 [2.37.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.5...v2.37.6
 [2.37.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.4...v2.37.5
 [2.37.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.3...v2.37.4
