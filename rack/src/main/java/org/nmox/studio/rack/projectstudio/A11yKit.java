@@ -216,17 +216,13 @@ public final class A11yKit {
     }
 
     private static Outcome wireIndex(File projectDir) throws IOException {
-        File index = new File(projectDir, "index.html");
-        if (!index.isFile()) {
-            index = new File(projectDir, "public/index.html");
-        }
-        if (!index.isFile()) {
+        File index = KitFiles.entryPage(projectDir);
+        if (index == null) {
             return new Outcome("index.html", false,
                     "no index.html found — wire the skip link and a11y.css"
                     + " into your entry page by hand (A11Y-NOTES.md shows what goes where)");
         }
-        String rel = index.getParentFile().equals(projectDir)
-                ? "index.html" : "public/index.html";
+        String rel = KitFiles.entryPageRel(projectDir, index);
         String before = Files.readString(index.toPath(), StandardCharsets.UTF_8);
         String after = wire(before);
         String zoomNote = zoomDisabled(before)

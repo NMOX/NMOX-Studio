@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.0] - 2026-08-25
+
+Batch (David's call - stop waiting on CI): the ship gate FETCHES and
+never checks out (the mid-flight working-tree collision class dies
+structurally - a gate that switched the tree to main mid-unit
+rerouted a day's commits, the v2.37.8 story); the A11y and I18n kits
+learn Angular's src/index.html home through one shared
+KitFiles.entryPage (root, public/, src/ - a future kit or location is
+one edit; the honest no-entry-page refusal kept and test-pinned); the
+four-file switcher's suffixless parity is PINNED - every NgSwitch leg
+already works by basename, and NgSwitchSuffixlessTest keeps a future
+convention-keyed change from regressing the family ledger 82 just
+delivered; and the ALS half of ledger 82 is researched to a refusal -
+binding ngserver to text/html would resurrect the ledger-81
+double-rename class, so the safe design (per-file veto upstream, or
+html-scoped mime suppression) is recorded as its own future unit.
+
 ## [2.37.8] - 2026-08-25
 
 Ledger 82 delivered - suffixless Angular templates (Angular 21's CLI
@@ -14572,6 +14589,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.8...v2.38.0
 [2.37.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.7...v2.37.8
 [2.37.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.6...v2.37.7
 [2.37.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.37.5...v2.37.6

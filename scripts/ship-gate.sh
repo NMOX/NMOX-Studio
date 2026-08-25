@@ -18,7 +18,12 @@ for i in $(seq 1 60); do
   sleep 30
 done
 gh pr merge $PR --squash 2>&1 | /usr/bin/tail -1
-git fetch origin main && git checkout -q main && git merge --ff-only FETCH_HEAD
+# fetch only — NEVER checkout: a gate that switches the working tree
+# to main while a unit is mid-flight silently reroutes the developer's
+# commits onto local main (bit hard on 2026-08-25, PR 583 shipped
+# near-empty). Every proof below reads objects via `git show <sha>:`,
+# which needs the fetch, not a checkout.
+git fetch -q origin main
 echo "merged"
 SHA=$(gh pr view $PR --json mergeCommit --jq '.mergeCommit.oid')
 echo "merge sha: $SHA"

@@ -289,6 +289,18 @@ Angular Language Service does not attach to suffixless templates —
 the html LSP toast fired instead. That half needs the LSP client's
 binding seam and stays open here.
 
+**The ALS half researched further (v2.38.0):** the tempting route —
+registering ngserver for text/html in Angular workspaces via the
+ledger-83 MultiMime singleton — is REFUSED for now: the platform
+binds every provider on a mime (v1.213.0's lookupAll design), so
+ngserver would sit beside vscode-html-language-server on EVERY html
+file in the workspace, and the platform rename collects edits from
+every binding (ledger 81, decompiled) — the double-rename class
+v2.19.0 killed, reborn. A safe attach needs either a per-FILE veto in
+the provider SPI (upstream) or the mime-suppression surgery ledger 81
+used for typescript, scoped to html — its own unit with A/B proofs,
+not a batch rider.
+
 
 ### 78. CLOSED v1.349.0 — ⌘B on templates: tags AND identifiers
 The bisect landed: the chord was never shadowed — on CSL panes ⌘B is

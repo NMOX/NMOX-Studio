@@ -79,6 +79,22 @@ class A11yKitTest {
     }
 
     @Test
+    @DisplayName("Angular keeps its entry page in src/ — the kit finds it there (v2.38.0)")
+    void angularEntryPage(@TempDir Path work) throws java.io.IOException {
+        File dir = work.toFile();
+        Files.createDirectories(new File(dir, "src").toPath());
+        Files.writeString(new File(dir, "src/index.html").toPath(),
+                "<html><head></head><body></body></html>");
+        List<A11yKit.Outcome> out = A11yKit.write(dir,
+                new A11yKit.Options(false, false, true));
+        assertThat(out).hasSize(1);
+        assertThat(out.get(0).written()).isTrue();
+        assertThat(out.get(0).path()).isEqualTo("src/index.html");
+        assertThat(Files.readString(new File(dir, "src/index.html").toPath()))
+                .contains("a11y.css");
+    }
+
+    @Test
     @DisplayName("no index.html is an honest outcome, not a stack trace")
     void missingIndexSpeaks(@TempDir Path work) throws Exception {
         List<A11yKit.Outcome> out = A11yKit.write(work.toFile(),
