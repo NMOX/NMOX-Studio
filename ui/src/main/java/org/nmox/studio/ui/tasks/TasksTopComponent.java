@@ -841,15 +841,26 @@ public final class TasksTopComponent extends TopComponent {
     }
 
     private void editSprint() {
-        javax.swing.JTextField name = new javax.swing.JTextField(
-                board.hasSprint() ? board.sprintName() : "", 18);
+        editSprint(null, null, null);
+    }
+
+    /** Non-null prefills override the defaults — the roll-over's seam. */
+    private void editSprint(String prefillName, java.time.LocalDate prefillStart,
+            java.time.LocalDate prefillEnd) {
+        javax.swing.JTextField name = new javax.swing.JTextField(prefillName != null
+                ? prefillName
+                : board.hasSprint() ? board.sprintName() : "", 18);
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
-        javax.swing.JTextField start = new javax.swing.JTextField(board.hasSprint()
+        javax.swing.JTextField start = new javax.swing.JTextField(prefillStart != null
+                ? prefillStart.toString()
+                : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintStart()), zone).toString()
                 : today.toString(), 10);
-        javax.swing.JTextField end = new javax.swing.JTextField(board.hasSprint()
+        javax.swing.JTextField end = new javax.swing.JTextField(prefillEnd != null
+                ? prefillEnd.toString()
+                : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintEnd()), zone).toString()
                 : today.plusDays(13).toString(), 10);
@@ -862,6 +873,14 @@ public final class TasksTopComponent extends TopComponent {
         panel.add(start);
         panel.add(new javax.swing.JLabel("End (YYYY-MM-DD):"));
         panel.add(end);
+        String velocity = SprintRoll.velocityLine(board.sprintHistory());
+        if (velocity != null) {
+            javax.swing.JLabel v = new javax.swing.JLabel(
+                    "<html><small>" + velocity + "</small></html>");
+            v.getAccessibleContext().setAccessibleName(velocity);
+            panel.add(v);
+            panel.add(new javax.swing.JLabel(""));
+        }
         DialogDescriptor d = new DialogDescriptor(panel, "Sprint");
         if (DialogDisplayer.getDefault().notify(d) != DialogDescriptor.OK_OPTION) {
             return;
@@ -940,6 +959,25 @@ public final class TasksTopComponent extends TopComponent {
         if (out[0] != null) {
             status("Sprint " + out[0].name() + " closed — " + out[0].done()
                     + " done, archived for velocity");
+            // the roll-over (v2.38.1): consecutive sprints are the norm,
+            // so offer the next one pre-filled — name incremented, window
+            // the day after at the same length. Enter accepts (starting a
+            // sprint is not destructive); the dialog stays editable and
+            // its Cancel starts nothing.
+            java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+            java.time.LocalDate closedStart = java.time.LocalDate.ofInstant(
+                    java.time.Instant.ofEpochMilli(out[0].start()), zone);
+            java.time.LocalDate closedEnd = java.time.LocalDate.ofInstant(
+                    java.time.Instant.ofEpochMilli(out[0].end()), zone);
+            java.time.LocalDate[] next = SprintRoll.nextWindow(closedStart, closedEnd);
+            NotifyDescriptor roll = new NotifyDescriptor(
+                    "Start the next sprint now? The dialog comes pre-filled"
+                    + " and editable.",
+                    "Next Sprint", NotifyDescriptor.YES_NO_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
+            if (DialogDisplayer.getDefault().notify(roll) == NotifyDescriptor.YES_OPTION) {
+                editSprint(SprintRoll.nextName(out[0].name()), next[0], next[1]);
+            }
         }
     }
 
