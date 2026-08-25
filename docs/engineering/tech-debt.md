@@ -258,6 +258,22 @@ positioned instances interleave, (c) rerouting at the editor layer
 Test, and ng generate all already handle suffixless sets by their own
 file logic — this ledger is ONLY the mime/coloring/chords surface.
 
+**Mechanism (c) measured VIABLE (2026-08-25, decompiled):**
+`CloneableEditorSupport.setMIMEType(String)` is PUBLIC — the editor
+support carries its own `mimeType` field consulted by `cesKit()`, so
+a DataObject can force the editor content type independently of the
+FileObject's resolver-assigned mime. The candidate shape: a
+DataLoader positioned before the platform html loader claiming an
+.html file on TWO structural signals (a same-basename `.ts` sibling
+carrying `@Component`, inside an `angular.json` ancestry — the
+v1.314.0 two-signals rule; no content sniffing of the template
+itself, so the wrong-guess-mutates law holds), whose
+DataEditorSupport calls `setMIMEType("text/x-ng-template")`. Open
+questions for the probe build: the LSP client's binding follows the
+DOCUMENT mime or the FileObject mime (decides whether ALS rides
+along), and loader-order parity with the platform html loader.
+The probe is its own unit; this entry is the mechanism dossier.
+
 
 ### 78. CLOSED v1.349.0 — ⌘B on templates: tags AND identifiers
 The bisect landed: the chord was never shadowed — on CSL panes ⌘B is
