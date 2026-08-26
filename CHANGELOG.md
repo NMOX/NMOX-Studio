@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.0] - 2026-08-26
+
+Runtime errors become first-class citizens (David's ask: the best
+tool for doing, learning, and experimenting with web development -
+the loop that teaches is the loop that closes). A JS error in the
+in-app Browser used to die in the DevTools console; now the bridge's
+window.onerror capture - "message (url:line)" - resolves back to the
+SOURCE FILE through the same serving-registry machinery as Open
+Source (v1.357.0) and lands on the DiagnosticsBus as the [browser]
+tool: a squiggle at the line and an Action Items row with
+click-to-navigate, exactly like an eslint finding. Break your page
+and the mistake appears in your editor, where you made it. The laws:
+errors belong to the PAGE LOAD that produced them (a reload clears
+the previous batch through the bus - pinned by a bus-observing test
+after the first clear-mutant survived a listless one, the divergence
+lesson's fourth strike); a guessed location is worse than none
+(line-0 and locationless shapes refuse); off-project URLs - a CDN
+script, a remote page - never reach the editor. Three mutants killed
+by name plus the two-proof wiring gate; the live browser walk rides
+the next screen session (computer-use dropped mid-unit), alongside
+v2.38.8's pending shelf walk.
+
 ## [2.38.9] - 2026-08-26
 
 The pipeline sheds its waits (David: "these long waits for CI/CD are
@@ -14757,6 +14779,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.9...v2.39.0
 [2.38.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.8...v2.38.9
 [2.38.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.7...v2.38.8
 [2.38.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.6...v2.38.7
