@@ -17,6 +17,37 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # two commits so a push event can diff against its parent for
+          # the docs-only detection below
+          fetch-depth: 2
+      - name: Detect docs-only change
+        id: paths
+        shell: bash
+        run: |
+          # v2.38.9 (David: "these waits slow us down"): a release that
+          # touches only docs does not need three OS lanes re-verifying
+          # eleven modules — the docs gates live in the application
+          # module and run alone in ~2 minutes. Anything outside
+          # docs/ *.md keeps the full verify; an unknowable diff (force
+          # push, shallow miss) fails SAFE into the full verify.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="origin/${{ github.base_ref }}...HEAD"
+            git fetch -q --depth=1 origin "${{ github.base_ref }}" || true
+          else
+            RANGE="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          CHANGED=$(git diff --name-only $RANGE 2>/dev/null) || CHANGED=""
+          if [ -z "$CHANGED" ]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            echo "diff unavailable — full verify (fail safe)"
+          elif echo "$CHANGED" | grep -qvE '^(docs/|.*\.md$)'; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            echo "code changed — full verify"
+          else
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            echo "docs-only change — gates lane"
+          fi
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
@@ -24,7 +55,14 @@ jobs:
           java-version: 25
           cache: maven
       - name: Build with Maven
+        if: steps.paths.outputs.docs_only != 'true'
         run: mvn -B verify
+      - name: Docs gates only
+        if: steps.paths.outputs.docs_only == 'true'
+        # the application module holds every docs-truth gate (counts,
+        # markdown shape, image refs, changelog literals); -am builds
+        # its deps without their tests
+        run: mvn -B -pl application -am -DskipTests=false -Dspotbugs.skip=true -Djacoco.skip=true test
         # Git Bash serves the audit script on Windows; the boot smoke and
         # rendering probe stay POSIX-only below — the Windows launcher is a
         # .exe and the runner's display story differs (ledger 37). The test
@@ -37,6 +75,7 @@ jobs:
       # compiled but never executed until PR #70, and nothing flagged it.
       # Runs right after verify, while the surefire reports are fresh.
       - name: Test-execution audit
+        if: steps.paths.outputs.docs_only != 'true'
         run: ./scripts/test-execution-audit.sh
         shell: bash
 
@@ -46,7 +85,7 @@ jobs:
       # the commons_codec module collision and the white-editor bug ship.
 
       - name: Install Xvfb (Linux headless display)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.paths.outputs.docs_only != 'true'
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
       # Boot the assembled app from a fresh userdir and fail on any module
@@ -54,10 +93,10 @@ jobs:
       # needs a display to reach the clean-quit path, so Linux runs under a
       # virtual framebuffer; macOS runners have a usable window server.
       - name: Boot smoke test (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.paths.outputs.docs_only != 'true'
         run: xvfb-run -a ./scripts/boot-smoke-test.sh
       - name: Boot smoke test (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && steps.paths.outputs.docs_only != 'true'
         run: ./scripts/boot-smoke-test.sh
 
       # Boot once more with the color probe on and assert the editor's
@@ -65,8 +104,8 @@ jobs:
       # class, which packaged green for months. Same display requirement
       # as the boot smoke test.
       - name: Rendering probe (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.paths.outputs.docs_only != 'true'
         run: xvfb-run -a ./scripts/rendering-probe.sh
       - name: Rendering probe (macOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && steps.paths.outputs.docs_only != 'true'
         run: ./scripts/rendering-probe.sh

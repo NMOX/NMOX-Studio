@@ -81,6 +81,18 @@ echo "==> OpenJFX jmods: $FX_DIR"
 
 if [ -x "$CLUSTER/jre/bin/java" ]; then
     echo "==> bundled jre already present"
+elif [ -n "$NMOX_JRE_IMAGE_CACHE" ] && [ -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
+    # v2.38.9 (David: "these waits slow us down"): the jlinked image is
+    # a pure function of the JDK build and the FX jmods pinned in this
+    # script — identical across releases until a pin moves. CI caches
+    # it keyed on a hash of THIS FILE, so editing any pin here rebuilds
+    # from scratch; the javafx.web assertion below still runs on every
+    # reuse, so a corrupt cache can never ship silently.
+    echo "==> bundled jre from image cache ($NMOX_JRE_IMAGE_CACHE)"
+    rm -rf "$CLUSTER/jre"
+    cp -R "$NMOX_JRE_IMAGE_CACHE" "$CLUSTER/jre"
+    "$CLUSTER/jre/bin/java" --list-modules | grep -q "javafx.web" || {
+        echo "ERROR: cached runtime is missing javafx.web"; exit 1; }
 else
     echo "==> jlinking runtime from $JDK (+ OpenJFX)"
     rm -rf "$CLUSTER/jre"
@@ -105,6 +117,12 @@ else
         --output "$CLUSTER/jre"
     "$CLUSTER/jre/bin/java" --list-modules | grep -q "javafx.web" || {
         echo "ERROR: bundled runtime is missing javafx.web"; exit 1; }
+    if [ -n "$NMOX_JRE_IMAGE_CACHE" ] && [ ! -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
+        echo "==> populating jre image cache"
+        rm -rf "$NMOX_JRE_IMAGE_CACHE"
+        mkdir -p "$(dirname "$NMOX_JRE_IMAGE_CACHE")"
+        cp -R "$CLUSTER/jre" "$NMOX_JRE_IMAGE_CACHE"
+    fi
 fi
 
 CONF="$CLUSTER/etc/nmoxstudio.conf"

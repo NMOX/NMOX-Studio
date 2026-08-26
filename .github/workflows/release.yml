@@ -108,8 +108,16 @@ jobs:
           cp LICENSE NOTICE zipstage/nmoxstudio/
           (cd zipstage && zip -ur "$GITHUB_WORKSPACE/NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip" nmoxstudio)
           rm -rf zipstage
+      - name: Cache the jlinked runtime image
+        # v2.38.9: the image is a pure function of the JDK build + the
+        # FX pins inside bundle-jre.sh — hashing that script (and this
+        # workflow, which pins the JDK) invalidates on any pin move.
+        uses: actions/cache@v5
+        with:
+          path: ~/.nmox-jre-image
+          key: jre-image-${{ runner.os }}-${{ hashFiles('packaging/tools/bundle-jre.sh', '.github/workflows/release.yml') }}
       - name: Linux tar.gz and deb
-        run: ./packaging/linux/build-packages.sh "${{ needs.version.outputs.version }}"
+        run: NMOX_JRE_IMAGE_CACHE="$HOME/.nmox-jre-image" ./packaging/linux/build-packages.sh "${{ needs.version.outputs.version }}"
       - uses: actions/upload-artifact@v7
         with:
           name: linux-artifacts
@@ -148,8 +156,16 @@ jobs:
             pom.xml
       - name: Build application
         run: mvn -B clean package -DskipTests
+      - name: Cache the jlinked runtime image
+        # v2.38.9: the image is a pure function of the JDK build + the
+        # FX pins inside bundle-jre.sh — hashing that script (and this
+        # workflow, which pins the JDK) invalidates on any pin move.
+        uses: actions/cache@v5
+        with:
+          path: ~/.nmox-jre-image
+          key: jre-image-${{ runner.os }}-${{ hashFiles('packaging/tools/bundle-jre.sh', '.github/workflows/release.yml') }}
       - name: Build DMG
-        run: ./packaging/macos/build-dmg.sh "${{ needs.version.outputs.version }}"
+        run: NMOX_JRE_IMAGE_CACHE="$HOME/.nmox-jre-image" ./packaging/macos/build-dmg.sh "${{ needs.version.outputs.version }}"
       - uses: actions/upload-artifact@v7
         with:
           name: macos-artifacts
@@ -182,11 +198,23 @@ jobs:
           (Get-Content $p) -replace '<spec\.version>.*</spec\.version>', '<spec.version>${{ needs.version.outputs.version }}</spec.version>' | Set-Content $p
       - name: Build application
         run: mvn -B clean package -DskipTests
+      - name: Cache the jlinked runtime image
+        uses: actions/cache@v5
+        with:
+          path: jre-image
+          key: jre-image-${{ runner.os }}-${{ hashFiles('.github/workflows/release.yml') }}
       - name: Bundle Java runtime
         shell: pwsh
         run: |
           # OpenJFX jmods join the runtime (v1.199.0: the embedded
           # browser's engine) — same pin + sha256 law as bundle-jre.sh.
+          if (Test-Path "jre-image\bin\java.exe") {
+            Write-Host "bundled jre from image cache"
+            Copy-Item -Recurse jre-image application\target\nmoxstudio\jre
+            & application\target\nmoxstudio\jre\bin\java.exe --list-modules | Select-String "javafx.web" | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "cached runtime is missing javafx.web" }
+            exit 0
+          }
           $fxVersion = "26.0.2"
           $fxSha256 = "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672"
           $fxZip = "$env:RUNNER_TEMP\openjfx-jmods.zip"
@@ -233,6 +261,7 @@ jobs:
             --strip-debug --no-header-files --no-man-pages `
             --output application\target\nmoxstudio\jre
           & application\target\nmoxstudio\jre\bin\java.exe --list-modules | Select-String "javafx.web" | Out-Null
+          Copy-Item -Recurse application\target\nmoxstudio\jre jre-image
           if (-not $?) { throw "bundled runtime is missing javafx.web" }
           Add-Content application\target\nmoxstudio\etc\nmoxstudio.conf "`n# bundled runtime: the app runs on its own Java, whatever the host has`njdkhome=`"jre`""
           # JEP 472 native-access grant for the FX modules just linked in —
