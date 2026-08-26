@@ -157,6 +157,15 @@ public final class Experiments {
         if (!isExperiment(experiment)) {
             throw new IOException("Not an experiment: " + experiment);
         }
+        // quiesce before the move (v2.38.8, the v1.290.0 family): a
+        // device still serving from this path while the tree moves
+        // would keep autosaving into a recreated ghost of the old dir
+        Rack rack = RackService.getDefault().getRack();
+        if (experiment.equals(rack.getProjectDir())) {
+            for (RackDevice d : rack.getDevices()) {
+                d.panic();
+            }
+        }
         File dest = new File(destParent, experiment.getName());
         if (dest.exists()) {
             throw new IOException("Already exists: " + dest);

@@ -102,6 +102,89 @@ public final class LearningSpace {
                 ? new File(dir, path) : null;
     }
 
+    /** What the marker recorded at creation, for listings ("?" when unreadable). */
+    public record Info(String slug, String name, String created) {
+    }
+
+    public static Info info(File space) {
+        String slug = "?", name = "?", created = "?";
+        try {
+            for (String line : Files.readAllLines(
+                    new File(space, MARKER).toPath(), StandardCharsets.UTF_8)) {
+                if (line.startsWith("slug=")) {
+                    slug = line.substring(5).strip();
+                } else if (line.startsWith("name=")) {
+                    name = line.substring(5).strip();
+                } else if (line.startsWith("created=")) {
+                    created = line.substring(8).strip();
+                }
+            }
+        } catch (IOException unreadable) {
+            // a listing must not fail because one marker is broken
+        }
+        return new Info(slug, name, created);
+    }
+
+    /**
+     * The shelf header's teaching line (v2.38.8, the experiments
+     * manager's v2.36.1 sentence, spaces-worded): count, disk cost,
+     * and the lifecycle in one sentence.
+     */
+    public static String shelfSummary(int count, long bytes) {
+        String size = bytes >= 1024L * 1024 * 1024
+                ? String.format(java.util.Locale.ROOT, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
+                : bytes >= 1024L * 1024 ? (bytes / (1024 * 1024)) + " MB"
+                : bytes >= 1024 ? (bytes / 1024) + " KB" : bytes + " B";
+        return count + (count == 1 ? " space · " : " spaces · ") + size
+                + " on disk — discard what you've finished, promote what grew up.";
+    }
+
+    /**
+     * A space graduates (v2.38.8, the experiments parity): moved under
+     * destParent, marker dropped, git repo initialized — from here on
+     * it is an ordinary project. Refuses non-spaces and anything
+     * outside {@link #root()} with the discard guards' reasoning: the
+     * marker is the contract, and a marker elsewhere on disk must not
+     * authorize a move.
+     */
+    public static File promote(File space, File destParent) throws IOException {
+        if (!isLearningSpace(space)) {
+            throw new IOException("Not a learning space: " + space);
+        }
+        if (!space.getCanonicalFile().toPath()
+                .startsWith(root().getCanonicalFile().toPath())) {
+            throw new IOException("Not under " + root() + ": " + space);
+        }
+        return graduate(space, destParent);
+    }
+
+    /**
+     * The move mechanics, guard-free and dir-parameterized so the
+     * behavior is testable outside the real home. Anything running in
+     * the space stops FIRST: a device serving from the old path while
+     * the tree moves under it would keep autosaving the rack file into
+     * a recreated ghost of the old directory (the v1.290.0 aimed-
+     * discard reasoning, applied to the move).
+     */
+    static File graduate(File space, File destParent) throws IOException {
+        org.nmox.studio.rack.service.RackService service =
+                org.nmox.studio.rack.service.RackService.getDefault();
+        if (space.equals(service.getRack().getProjectDir())) {
+            for (RackDevice d : service.getRack().getDevices()) {
+                d.panic();
+            }
+        }
+        File dest = new File(destParent, space.getName());
+        if (dest.exists()) {
+            throw new IOException("Already exists: " + dest);
+        }
+        Files.createDirectories(destParent.toPath());
+        Files.move(space.toPath(), dest.toPath());
+        Files.deleteIfExists(new File(dest, MARKER).toPath());
+        ProjectTemplates.initGitRepo(dest);
+        return dest;
+    }
+
     /**
      * Discards a learning space: stops anything running there and
      * deletes the tree (v1.289.0, the organize sweep's last creator).
