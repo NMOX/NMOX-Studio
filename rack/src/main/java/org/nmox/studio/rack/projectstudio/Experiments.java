@@ -150,6 +150,41 @@ public final class Experiments {
     }
 
     /**
+     * Forks an experiment (v2.39.2, the elevation arc: experimenting
+     * MEANS trying a second approach beside the first): a full copy —
+     * node_modules included, so the fork runs immediately — under a
+     * fresh unique name, marker rewritten with today's date and a
+     * forkedFrom line. The source is untouched (a copy needs no
+     * quiesce; only moves do, v1.290.0). Refuses unmarked directories
+     * like every other lifecycle verb — the marker is the contract.
+     */
+    public static File duplicate(File experiment) throws IOException {
+        if (!isExperiment(experiment)) {
+            throw new IOException("Not an experiment: " + experiment);
+        }
+        File dir = unique(root(), experiment.getName());
+        Path from = experiment.toPath();
+        try (var walk = Files.walk(from)) {
+            for (Path src : walk.toList()) {
+                Path dest = dir.toPath().resolve(from.relativize(src));
+                if (Files.isDirectory(src)) {
+                    Files.createDirectories(dest);
+                } else {
+                    Files.copy(src, dest,
+                            java.nio.file.StandardCopyOption.COPY_ATTRIBUTES);
+                }
+            }
+        }
+        Info info = info(experiment);
+        Files.writeString(new File(dir, MARKER).toPath(),
+                "created=" + java.time.LocalDate.now()
+                + "\ntemplate=" + info.template()
+                + "\nforkedFrom=" + experiment.getName() + "\n",
+                java.nio.charset.StandardCharsets.UTF_8);
+        return dir;
+    }
+
+    /**
      * A keeper graduates: moved under destParent, marker removed, git
      * repo initialized - from here on it is an ordinary project.
      */

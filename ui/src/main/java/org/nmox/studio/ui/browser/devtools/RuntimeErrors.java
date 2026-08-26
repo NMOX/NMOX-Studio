@@ -105,9 +105,29 @@ public final class RuntimeErrors {
         }
     }
 
-    /** The live batch, for tests. */
-    List<DiagnosticsBus.Problem> current() {
+    /** The live batch — tests, and the Console pane's Explain error…
+     *  flow (v2.39.2), which wants the LAST located error. */
+    public List<DiagnosticsBus.Problem> current() {
         return List.copyOf(current);
+    }
+
+    /** What Explain error… should explain (v2.39.2): the LAST located
+     *  error when one exists, else the last console-level error text
+     *  (message-only), else null. Pure so the choice is a unit test. */
+    public record ExplainTarget(String message, File file, int line) {
+    }
+
+    public static ExplainTarget pickExplainTarget(
+            List<DiagnosticsBus.Problem> located, List<String> consoleErrors) {
+        if (located != null && !located.isEmpty()) {
+            var last = located.get(located.size() - 1);
+            return new ExplainTarget(last.message(), last.file(), last.line());
+        }
+        if (consoleErrors != null && !consoleErrors.isEmpty()) {
+            return new ExplainTarget(
+                    consoleErrors.get(consoleErrors.size() - 1), null, 0);
+        }
+        return null;
     }
 
     /** Resolves a page URL to a served file, or null. Test seam. */

@@ -112,6 +112,9 @@ public final class ManageExperimentsAction implements ActionListener {
         });
 
         JButton open = new JButton("Open");
+        JButton duplicate = new JButton("Duplicate");
+        duplicate.setToolTipText("Fork it: a full copy beside the original, to try a second approach");
+        duplicate.getAccessibleContext().setAccessibleName("Duplicate the selected experiment");
         JButton promote = new JButton("Promote…");
         JButton discard = new JButton("Discard…");
         open.setToolTipText("Aim the studio at this experiment");
@@ -120,6 +123,7 @@ public final class ManageExperimentsAction implements ActionListener {
 
         JPanel buttons = new JPanel();
         buttons.add(open);
+        buttons.add(duplicate);
         buttons.add(promote);
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
@@ -177,6 +181,32 @@ public final class ManageExperimentsAction implements ActionListener {
             discard.setEnabled(true);
         };
 
+        duplicate.addActionListener(a -> {
+            File dir = list.getSelectedValue();
+            if (dir == null) {
+                return;
+            }
+            duplicate.setEnabled(false);
+            EXPERIMENTS_RP.post(() -> {
+                try {
+                    File fork = Experiments.duplicate(dir);
+                    SwingUtilities.invokeLater(() -> {
+                        dialog.dispose();
+                        RackService.getDefault().openProjectQuietly(fork);
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                "Forked " + dir.getName() + " → " + fork.getName()
+                                + " — the original is untouched.");
+                    });
+                } catch (Exception ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        duplicate.setEnabled(true);
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                "Could not duplicate: " + ex.getMessage(),
+                                NotifyDescriptor.ERROR_MESSAGE));
+                    });
+                }
+            });
+        });
         promote.addActionListener(a -> {
             File dir = list.getSelectedValue();
             if (dir == null) {

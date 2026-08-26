@@ -10,10 +10,25 @@ cd /Users/david/vcs/git/github/nmox/NMOX-Studio
 PR=${1:?usage: ship-gate.sh <pr-number> <vX.Y.Z>}; TAG=${2:?usage: ship-gate.sh <pr-number> <vX.Y.Z>}
 PUSH='git -c url.git@github.com:.insteadOf=ssh-bypass: push ssh-bypass:NMOX/NMOX-Studio.git'
 
+# a fail is terminal only when it belongs to the PR's CURRENT head —
+# a force-push moments before this gate leaves the rollup showing the
+# OLD head's failure until the new run registers (bit twice, v2.36.2
+# and v2.39.1: both "failures" were stale reads). The grace: on fail,
+# re-read after 20s and only die when the fail persists with nothing
+# pending behind it.
+FAILS=0
 for i in $(seq 1 60); do
   STATE=$(gh pr checks $PR 2>/dev/null | /usr/bin/awk -F'	' '{print $2}' | sort -u | tr '\n' ' ')
   echo "checks: $STATE"
-  case "$STATE" in *fail*) echo "CHECKS-FAILED: $STATE"; exit 1;; esac
+  case "$STATE" in
+    *fail*)
+      FAILS=$((FAILS+1))
+      if [ "$FAILS" -ge 2 ] && [[ "$STATE" != *pending* ]]; then
+        echo "CHECKS-FAILED: $STATE"; exit 1
+      fi
+      sleep 20; continue;;
+  esac
+  FAILS=0
   [[ "$STATE" == *pass* && "$STATE" != *pending* ]] && break
   sleep 30
 done

@@ -52,7 +52,7 @@ class PickPollLifecycleTest {
         FakePage page = new FakePage();
         final JToggleButton[] pick = new JToggleButton[1];
         SwingUtilities.invokeAndWait(() -> {
-            DevToolsPanel panel = new DevToolsPanel(new ConsoleModel(), new NetworkModel(), page);
+            DevToolsPanel panel = new DevToolsPanel(new ConsoleModel(), new NetworkModel(), page, new org.nmox.studio.ui.browser.devtools.RuntimeErrors());
             pick[0] = findToggle(panel, "Pick element");
             assertThat(pick[0]).as("the Pick element toggle exists").isNotNull();
             pick[0].doClick(); // arm — fires the ActionListener like a user click

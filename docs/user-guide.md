@@ -134,7 +134,8 @@ you what to press, which file to change, and where this stack's IDE
 intelligence lives (an Express experiment points at Test in API
 Studio and `process.env.` completion; a Vue one at the SFC style-block
 powers). Keep what turns into something — **File ▸ Experiments…** ▸
-**Promote** moves it out and git-inits it — and **Discard** the rest;
+**Promote** moves it out and git-inits it, **Duplicate** forks a full
+copy beside the original to try a second approach, and **Discard** the rest;
 the shelf shows each one's age and its measured disk cost, an empty
 shelf offers to start one, and re-opening an experiment brings its
 walkthrough back. Want the guided path instead? The dialog fronts the
@@ -959,6 +960,15 @@ Open-in-Browser action route here too.
   render red, never a dialog). Entries are bounded — 1000 rows, 8k
   chars each; when older rows are evicted an honest "N older entries
   dropped" line says so.
+
+  Since v2.39.0, a runtime error on a page served from **your**
+  project also lands in the editor itself: a squiggle at the failing
+  line and an Action Items row with click-to-navigate, cleared on the
+  next reload — the console shows every error, the editor only ever
+  carries your files. And **Explain error…** beside Clear asks ORACLE
+  about the page's last located error, sending the message plus a few
+  capped source lines around the failing line under its own consent
+  that states literally what leaves (v2.39.2).
 - **DOM** — press Refresh for a tree of the live document (bounded:
   depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
   a node outlines it in the page and shows its attributes plus a

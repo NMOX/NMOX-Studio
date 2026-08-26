@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.2] - 2026-08-26
+
+The elevation arc, batch two. Experiment FORKING: Duplicate in the
+shelf copies the whole tree - node_modules included, so the fork runs
+immediately - under a fresh name with forkedFrom in its marker, aims
+the copy, and leaves the original untouched (a copy needs no quiesce;
+only moves do); trying a second approach beside the first is what
+experimenting means. ORACLE EXPLAINS YOUR BROWSER ERROR: the Console
+pane's Explain error... sends the last located runtime error - and,
+when v2.39.0 resolved it to your project, seven capped source lines
+with the failing line marked - through the OracleAsk seam under its
+own browser.error consent kind; the consent line states literally
+what leaves, a minified bundle's single line cannot become the whole
+file, and a stale line number speaks instead of throwing. A
+beginner's broken page becomes a lesson. And the gate learns the
+STALE-ROLLUP GRACE: a checks fail is terminal only when a second read
+20 seconds later still fails with nothing pending - the
+force-push-then-read race that faked two failures this week, closed.
+Three mutants by name (unguarded fork, dead cap, vanished marker).
+
 ## [2.39.1] - 2026-08-26
 
 Learning spaces check your work (the elevation arc's second unit: a
@@ -14805,6 +14825,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.1...v2.39.2
 [2.39.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.0...v2.39.1
 [2.39.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.9...v2.39.0
 [2.38.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.8...v2.38.9
