@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.6] - 2026-08-26
+
+Ledger 82's last open half, concluded (docs only): the Angular
+Language Service cannot safely attach to suffixless templates on this
+platform - decompiled LSPBindings keys bindings per project x mime,
+never per file, so any provider under text/html binds ngserver beside
+the html language server for EVERY html file, and the platform rename
+collects edits from every bound server: the ledger-81 double-rename
+class reborn. Per-file discrimination is impossible at the provider
+seam, and rerouting the file mime was refused under the
+wrong-guess-mutates law. The remainder joins ledger 83's recorded
+direction - a platform-side binding change or an LSP multiplexer,
+either its own project. Suffixless templates keep the full editor
+surface delivered in v2.37.8; type-checking arrives with the
+platform, honestly.
+
 ## [2.38.5] - 2026-08-26
 
 The night close (docs only): the in-line update gauntlet PASS - a
@@ -14683,6 +14699,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.5...v2.38.6
 [2.38.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.4...v2.38.5
 [2.38.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.3...v2.38.4
 [2.38.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.2...v2.38.3

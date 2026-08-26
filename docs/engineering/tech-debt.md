@@ -286,8 +286,26 @@ suffixless widget.html/widget.ts pair, with plain.html walked as the
 control (html multiview + html popup, untouched). The honest
 remainder: the platform LSP client binds by the FILE mime, so the
 Angular Language Service does not attach to suffixless templates —
-the html LSP toast fired instead. That half needs the LSP client's
-binding seam and stays open here.
+the html LSP toast fired instead.
+
+**The ALS half CONCLUDED structurally blocked (v2.38.6, the night
+research):** decompiled `LSPBindings` keys server bindings per
+PROJECT × MIME — never per file — so every route to attaching
+ngserver here fails the same way: a provider registered under
+`text/html` (even a workspace-guarded one) binds ngserver beside the
+html LS for EVERY html file in the project, and the platform rename
+collects edits from every bound server — the ledger-81 double-rename
+class reborn, the exact hazard v2.38.0's research refused. Per-file
+discrimination inside a provider is impossible at this seam
+(startServer has no file), and rerouting the FILE mime was mechanism
+(a)/(b), refused under the wrong-guess-mutates law. The remainder
+therefore joins ledger 83's recorded direction: safe per-file LSP
+binding needs a PLATFORM change (bindings consulting the document
+mime, or per-file provider consultation) or an LSP multiplexer that
+owns the fan-out — either is its own project, not a patch. Suffixless
+templates keep the full editor surface (coloring, popup, ⌘B, the
+component jump); template type-checking arrives when one of those
+lands.
 
 **The ALS half researched further (v2.38.0):** the tempting route —
 registering ngserver for text/html in Angular workspaces via the
