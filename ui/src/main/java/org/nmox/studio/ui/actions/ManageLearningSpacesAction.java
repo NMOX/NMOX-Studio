@@ -53,7 +53,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
      * target/, a .venv) is a slow tree delete; on the EDT that is a
      * beachball — the ManageExperimentsAction lane, in miniature.
      */
-    private static final org.openide.util.RequestProcessor SPACES_RP =
+    static final org.openide.util.RequestProcessor SPACES_RP =
             new org.openide.util.RequestProcessor("Learning Spaces", 1);
 
     @Override

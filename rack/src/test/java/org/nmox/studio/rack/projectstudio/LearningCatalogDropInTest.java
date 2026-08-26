@@ -228,6 +228,6 @@ class LearningCatalogDropInTest {
                 "fam", "blurb",
                 new LearningCatalog.Driver(LearningCatalog.DriverKind.REPL,
                         List.of("x"), ">", List.of()),
-                java.util.Map.of(), List.of(), "t");
+                java.util.Map.of(), List.of(), "t", List.of());
     }
 }

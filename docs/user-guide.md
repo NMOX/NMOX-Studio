@@ -1149,6 +1149,16 @@ keymaps never costs you the studio chords.
 
 ## 11. Learning Spaces
 
+Some spaces **check your work**: pick a space with checkpoints (Your
+First Web Page, Go, Rust, Playwright today) and **File ▸ Check My
+Work** verifies the exercises for real — file claims checked
+pure-Java (including *absent* checks, which is how "you changed the
+heading" is verifiable: the sample's original text must be gone), and
+command claims through the space's own toolchain (`cargo test` is the
+honest verifier of a Rust exercise). Every ✗ answers with the space's
+own hint. Any catalog entry — including your drop-ins below — can
+declare its own `checkpoints`.
+
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
 *New Learning Space…* offers 92 built-in tutorials — languages (Python,

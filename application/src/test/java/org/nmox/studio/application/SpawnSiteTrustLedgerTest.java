@@ -33,33 +33,34 @@ class SpawnSiteTrustLedgerTest {
      * only path to it gates; BLESSED = argv is not project-controlled,
      * reason stated.
      */
-    private static final Map<String, String> LEDGER = Map.of(
-            "WebProjectActionProvider.java",
-            "GATED: requestTrust before Run/Build/Test/Clean (v1.103.0)",
-            "NpmService.java",
-            "GATED: requestTrust before script runs; fixed-tool npm ls/--version excluded (v1.103.0)",
-            "RunFocusedTestAction.java",
-            "GATED: requestTrust before the runner spawn (v1.223.0)",
-            "ProjectConfigDialog.java",
-            "GATED: requestTrust before npm add/remove — installs run project lifecycle scripts (v1.224.0)",
-            "LanguageServerInstaller.java",
-            "GATED: requestTrust on the project-local branch; global installs are our own fixed argv in $HOME (v1.224.0)",
-            "NewProjectDialog.java",
-            "GATED: template scaffold + install in a directory the wizard itself just created — "
-            + "trust pre-granted in place (v1.62.0 blessing)",
-            "NewExperimentAction.java",
-            "GATED: the experiment install — the product's own template in the pre-trusted "
+    private static final Map<String, String> LEDGER = Map.ofEntries(
+            Map.entry("WebProjectActionProvider.java",
+                "GATED: requestTrust before Run/Build/Test/Clean (v1.103.0)"),
+            Map.entry("NpmService.java",
+                "GATED: requestTrust before script runs; fixed-tool npm ls/--version excluded (v1.103.0)"),
+            Map.entry("RunFocusedTestAction.java",
+                "GATED: requestTrust before the runner spawn (v1.223.0)"),
+            Map.entry("ProjectConfigDialog.java",
+                "GATED: requestTrust before npm add/remove — installs run project lifecycle scripts (v1.224.0)"),
+            Map.entry("LanguageServerInstaller.java",
+                "GATED: requestTrust on the project-local branch; global installs are our own fixed argv in $HOME (v1.224.0)"),
+            Map.entry("NewProjectDialog.java",
+                "GATED: template scaffold + install in a directory the wizard itself just created — "
+            + "trust pre-granted in place (v1.62.0 blessing)"),
+            Map.entry("NewExperimentAction.java",
+                "GATED: the experiment install — the product's own template in the pre-trusted "
             + "experiments home, at the user's explicit request; package.json guard; "
-            + "the NewProjectDialog blessing verbatim (v2.36.0)",
-            "RackDevice.java",
-            "GATED-BY-CALLER: reachable only through CommandDevice.launch/launchWithEnv, "
-            + "whose trustCheck gates before exec (v1.93.0)",
-            "DockerPanelTopComponent.java",
-            "BLESSED: argv is our own fixed docker verbs; a project Dockerfile builds "
-            + "inside a container, not on the host",
-            "NgSchematicAction.java",
-            "GATED: requestTrust before ng generate — the CLI and the project's "
-            + "schematics execute the repo's own code (v1.239.0)");
+            + "the NewProjectDialog blessing verbatim (v2.36.0)"),
+            Map.entry("RackDevice.java",
+                "GATED-BY-CALLER: reachable only through CommandDevice.launch/launchWithEnv, "
+            + "whose trustCheck gates before exec (v1.93.0)"),
+            Map.entry("DockerPanelTopComponent.java",
+                "BLESSED: argv is our own fixed docker verbs; a project Dockerfile builds "
+            + "inside a container, not on the host"),
+            Map.entry("NgSchematicAction.java",
+                "GATED: requestTrust before ng generate — the CLI and the project's "
+            + "schematics execute the repo's own code (v1.239.0)")
+    );;
 
     @Test
     @DisplayName("every CommandExecutor.run caller is classified in the trust ledger")
@@ -125,23 +126,43 @@ class SpawnSiteTrustLedgerTest {
      * builder() is the lower door into the same room, and a future
      * edit could have ungated it without failing any build.
      */
-    private static final Map<String, String> BUILDER_LEDGER = Map.of(
-            "JsDebugServer.java",
-            "GATED-BY-CALLER: every debug action requestTrusts before any spawn (v1.37.0)",
-            "PrettierFormatter.java",
-            "GATED: project-local .bin/prettier only when isTrusted; else the global tool (v1.102.0)",
-            "SassCompiler.java",
-            "GATED: resolveBinary checks isTrusted before the project-local .bin/sass (v1.230.0)",
-            "DockerClient.java",
-            "BLESSED: our own fixed docker verbs; project Dockerfiles build in a container, not the host",
-            "CommandExecutor.java",
-            "BLESSED-PRIMITIVE: deliberately un-gated (v1.103.0 law) — trust is the caller's job, "
-            + "and the CommandExecutor.run ledger above enumerates those callers",
-            "InteractiveProcess.java",
-            "BLESSED: REPL interpreters from the learning catalog / ENGINE knob — the user's "
-            + "chosen tool, not a project-controlled argv",
-            "Web3StudioTopComponent.java",
-            "GATED: forge build/test behind the TrustGate facade (v1.224.0)");
+    private static final Map<String, String> BUILDER_LEDGER = Map.ofEntries(
+            Map.entry("JsDebugServer.java",
+                "GATED-BY-CALLER: every debug action requestTrusts before any spawn (v1.37.0)"),
+            Map.entry("PrettierFormatter.java",
+                "GATED: project-local .bin/prettier only when isTrusted; else the global tool (v1.102.0)"),
+            Map.entry("SassCompiler.java",
+                "GATED: resolveBinary checks isTrusted before the project-local .bin/sass (v1.230.0)"),
+            Map.entry("DockerClient.java",
+                "BLESSED: our own fixed docker verbs; project Dockerfiles build in a container, not the host"),
+            Map.entry("CommandExecutor.java",
+                "BLESSED-PRIMITIVE: deliberately un-gated (v1.103.0 law) — trust is the caller's job, "
+                + "and the CommandExecutor.run ledger above enumerates those callers"),
+            Map.entry("InteractiveProcess.java",
+                "BLESSED: REPL interpreters from the learning catalog / ENGINE knob — the user's "
+                + "chosen tool, not a project-controlled argv"),
+            Map.entry("Web3StudioTopComponent.java",
+                "GATED: forge build/test behind the TrustGate facade (v1.224.0)"),
+            // the runBounded callers, visible since the scan widened (v2.39.1):
+            Map.entry("CheckMyWorkAction.java",
+                "GATED-BY-VALIDATION: catalog checkpoints execute argv the parser law-checked "
+                + "(bare tool name, no shell — the device-file law) in the pre-trusted "
+                + "~/.nmox/learn home, at the learner's button press, under the leash (v2.39.1)"),
+            Map.entry("CommandProbe.java",
+                "BLESSED: fixed tool-version argv from the device tables — never project-controlled"),
+            Map.entry("EnvironmentDoctor.java",
+                "BLESSED: the fixed probe table's own `tool --version` argv, bounded (v1.106.0)"),
+            Map.entry("GitStatusLine.java",
+                "BLESSED: fixed `git` porcelain argv on the aim — no project-controlled tokens (v1.40.0)"),
+            Map.entry("ImagePress.java",
+                "BLESSED: the user's own cwebp with our fixed flags at an explicit gesture (v1.183.0)"),
+            Map.entry("NpmService.java",
+                "BLESSED here: only the fixed-tool npm ls/--version probes ride runBounded; "
+                + "script runs go through CommandExecutor and the run-ledger above (v1.103.0)"),
+            Map.entry("PortScanner.java",
+                "BLESSED: SONAR's fixed lsof/netstat argv — nothing project-controlled"),
+            Map.entry("TasksTopComponent.java",
+                "BLESSED: the Standup's bounded fixed-argv `git log` (v2.8.0)"));
 
     @Test
     @DisplayName("every ProcessSupport.builder caller outside core is classified too")
@@ -157,7 +178,9 @@ class SpawnSiteTrustLedgerTest {
                 files.filter(p -> p.toString().endsWith(".java"))
                         .filter(p -> {
                             try {
-                                return Files.readString(p).contains("ProcessSupport.builder(");
+                                String body = Files.readString(p);
+                                return body.contains("ProcessSupport.builder(")
+                                        || body.contains("ProcessSupport.runBounded(");
                             } catch (IOException e) {
                                 return false;
                             }

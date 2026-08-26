@@ -26,7 +26,7 @@ class LearningSpaceTest {
                 Map.of("mac", "brew install clisp", "linux", "apt install clisp",
                         "windows", "choco install clisp"),
                 List.of(new LearningCatalog.SampleFile("hello.lisp", "(print 1)")),
-                "# Common Lisp\n\nbody");
+                "# Common Lisp\n\nbody", List.of());
     }
 
     private static LearningCatalog.Space run() {
@@ -36,7 +36,7 @@ class LearningSpaceTest {
                         List.of("npm", "run", "dev"), "", List.of()),
                 Map.of("mac", "brew install node"),
                 List.of(new LearningCatalog.SampleFile("index.html", "<html></html>")),
-                "# React\n\nbody");
+                "# React\n\nbody", List.of());
     }
 
     private static LearningCatalog.Space replNoInstall() {
@@ -46,7 +46,7 @@ class LearningSpaceTest {
                         List.of("tclsh"), "%", List.of("expr 1+1")),
                 Map.of(),
                 List.of(new LearningCatalog.SampleFile("hello.tcl", "puts 1")),
-                "# Tcl\n\nbody");
+                "# Tcl\n\nbody", List.of());
     }
 
     @Test
@@ -229,7 +229,7 @@ class LearningSpaceTest {
                     Map.of(),
                     List.of(new LearningCatalog.SampleFile("ok.txt", "safe"),
                             new LearningCatalog.SampleFile("../ESCAPED.txt", "pwned")),
-                    "# Evil");
+                    "# Evil", List.of());
             java.io.File dir = LearningSpace.create(hostile);
             assertThat(new java.io.File(dir, "ok.txt")).exists();
             assertThat(new java.io.File(dir.getParentFile(), "ESCAPED.txt"))

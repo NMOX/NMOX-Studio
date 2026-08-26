@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.1] - 2026-08-26
+
+Learning spaces check your work (the elevation arc's second unit: a
+tutorial that CHECKS beats a tutorial that describes). A space's
+catalog entry may declare checkpoints - verifiable claims about the
+learner's work - and File > Check My Work runs them: file claims
+verified pure-Java with contains AND absent (absent is how "you
+changed the heading" becomes checkable - the sample's original text
+must be gone), command claims through the space's own toolchain (a
+rust space's cargo test is its honest verifier), every failure
+answering with the space's own hint. Four flagship spaces seed it -
+Your First Web Page (three file checks against its real sample text),
+Go, Rust, and Playwright (their own test suites) - and any entry,
+drop-ins included, can declare its own. The laws: command checkpoints
+EXECUTE, so the device-file law applies (argv only, bare tool names,
+malformed entries skipped WHOLE with a note); paths ride the sample
+files' containment; CheckpointParityTest pins every seed to files the
+space ships and tools it declares (a checkpoint demanding a tool the
+tutorial never mentions would fail every diligent learner). Three
+mutants killed by name. And the spawn-site ledger grew its missing
+half: the widened scan (ProcessSupport.runBounded joins builder) made
+EIGHT previously-invisible spawn sites enumerable - CheckMyWork,
+CommandProbe, EnvironmentDoctor, GitStatusLine, ImagePress,
+NpmService's probes, PortScanner, the Standup's git log - each now
+classified in the ledger a future edit cannot silently ungate.
+
 ## [2.39.0] - 2026-08-26
 
 Runtime errors become first-class citizens (David's ask: the best
@@ -14779,6 +14805,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.0...v2.39.1
 [2.39.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.9...v2.39.0
 [2.38.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.8...v2.38.9
 [2.38.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.7...v2.38.8

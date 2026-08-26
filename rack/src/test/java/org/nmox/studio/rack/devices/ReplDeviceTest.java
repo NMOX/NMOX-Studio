@@ -280,15 +280,15 @@ class ReplDeviceTest {
                 List.of("import numpy"));
         LearningCatalog.Space first = new LearningCatalog.Space("numpy", "NumPy",
                 LearningCatalog.Category.LIBRARY, "Python data", "b", python,
-                Map.of(), List.of(), "t");
+                Map.of(), List.of(), "t", List.of());
         LearningCatalog.Space duplicate = new LearningCatalog.Space("pandas", "pandas",
                 LearningCatalog.Category.LIBRARY, "Python data", "b", python,
-                Map.of(), List.of(), "t");
+                Map.of(), List.of(), "t", List.of());
         LearningCatalog.Space runKind = new LearningCatalog.Space("react", "React",
                 LearningCatalog.Category.FRAMEWORK, "JS", "b",
                 new LearningCatalog.Driver(LearningCatalog.DriverKind.RUN,
                         List.of("npm", "run", "dev"), "", List.of()),
-                Map.of(), List.of(), "t");
+                Map.of(), List.of(), "t", List.of());
 
         List<ReplDevice.Engine> engines =
                 ReplDevice.deriveEngines(List.of(first, duplicate, runKind));
