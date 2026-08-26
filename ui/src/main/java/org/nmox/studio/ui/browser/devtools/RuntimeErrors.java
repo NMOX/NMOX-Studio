@@ -84,8 +84,12 @@ public final class RuntimeErrors {
         if (r == null || r.file() == null) {
             return; // not ours — the console still shows it
         }
-        current.add(new DiagnosticsBus.Problem(
-                r.file(), loc.line(), loc.message(), true));
+        add(r.file(), loc.line(), loc.message());
+    }
+
+    /** The batch step, split out so the bus contract is testable. */
+    void add(File file, int line, String message) {
+        current.add(new DiagnosticsBus.Problem(file, line, message, true));
         DiagnosticsBus.publish(TOOL, List.copyOf(current));
     }
 

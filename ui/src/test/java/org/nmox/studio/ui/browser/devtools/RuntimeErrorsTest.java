@@ -68,17 +68,20 @@ class RuntimeErrorsTest {
     }
 
     @Test
-    @DisplayName("a page load clears the previous page's batch — errors belong to their load")
+    @DisplayName("a page load clears the previous page's batch THROUGH THE BUS — errors belong to their load")
     void pageLoadClears(@TempDir Path work) throws IOException {
-        // publish through the real bus, observe through it
-        File root = work.toFile();
-        Files.writeString(new File(root, "main.js").toPath(), "x");
+        File f = new File(work.toFile(), "main.js");
+        Files.writeString(f.toPath(), "x");
         RuntimeErrors re = new RuntimeErrors();
-        // seed via the internal list by resolving a real serving is
-        // environment-dependent (LiveServings lookup); drive the batch
-        // bookkeeping directly through onPageLoad's contract instead
-        assertThat(re.current()).isEmpty();
+        re.add(f, 12, "boom");
+        assertThat(org.nmox.studio.rack.engine.DiagnosticsBus.problemsFor(f))
+                .as("the error reached the bus")
+                .isNotEmpty();
         re.onPageLoad();
         assertThat(re.current()).isEmpty();
+        assertThat(org.nmox.studio.rack.engine.DiagnosticsBus.problemsFor(f))
+                .as("the reload cleared the file ON THE BUS — squiggles"
+                    + " and Action Items rows follow it")
+                .isEmpty();
     }
 }
