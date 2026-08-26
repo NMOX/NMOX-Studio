@@ -22,7 +22,7 @@ class NewLearningSpaceActionTest {
         return new LearningCatalog.Space("x", "X", LearningCatalog.Category.LANGUAGE,
                 "Family", "blurb",
                 new LearningCatalog.Driver(kind, command, ">", List.of()),
-                Map.of(), List.of(), "tutorial");
+                Map.of(), List.of(), "tutorial", List.of());
     }
 
     @Test
@@ -53,7 +53,7 @@ class NewLearningSpaceActionTest {
     void requiredToolNullWithoutDriver() {
         assertThat(NewLearningSpaceAction.requiredTool(
                 new LearningCatalog.Space("x", "X", LearningCatalog.Category.LANGUAGE,
-                        "Family", "blurb", null, Map.of(), List.of(), "tutorial")))
+                        "Family", "blurb", null, Map.of(), List.of(), "tutorial", List.of())))
                 .isNull();
     }
 
