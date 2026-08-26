@@ -282,6 +282,7 @@
                         <exclude>**/ui/actions/A11yKitAction*.class</exclude>
                         <exclude>**/ui/actions/I18nKitAction*.class</exclude>
                         <exclude>**/ui/actions/CheckMyWorkAction*.class</exclude>
+                        <exclude>**/ui/actions/ExportLearningSpaceAction*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

@@ -133,6 +133,20 @@ availability line probing for `zig` on your PATH.
   (they're case-sensitive). `LearningCatalog` slugs are all lower-case;
   see the picker's search field — it matches slugs literally.
 
+## Authoring without writing JSON — the exporter
+
+Since v2.39.3 you don't hand-write any of this: build the exercise as
+a normal project, then **File ▸ Export as Learning Space…** turns the
+AIMED project into a drop-in — text files gathered (heavy dirs and
+binaries excluded, every skip spoken), `TUTORIAL.md` as the
+walkthrough, the run command you give as the driver, and an optional
+`.nmox-checkpoints.json` (the checkpoint array, exactly this page's
+schema) as Check My Work checkpoints. The export is refused whole
+unless it parses with the same code your students' picker uses, and a
+broken checkpoint refuses at export time with its reasons — you hear
+about it, never your class. Re-exporting overwrites only your own
+previous export of the same space; anything else refuses.
+
 ## Sharing
 
 A drop-in file is self-contained and readable — commit it to a team

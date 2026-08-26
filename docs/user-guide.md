@@ -1171,6 +1171,13 @@ declare its own `checkpoints`.
 
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
+Teaching a class? Author by building: make the exercise a normal
+project and **File ▸ Export as Learning Space…** emits that drop-in
+for you — sample files, your `TUTORIAL.md`, the run driver, and your
+`.nmox-checkpoints.json` as Check My Work checkpoints — validated
+against the picker's own parser before it's written, so what you hand
+your students is exactly what their picker will load.
+
 *New Learning Space…* offers 92 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
