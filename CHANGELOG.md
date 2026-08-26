@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.4] - 2026-08-25
+
+The evening review + the Contract Studio walk. The review over the
+day's fresh code (sprint roll-over, the day-of header, kit entryPage,
+the rewritten gate) came back CLEAN under probing - and extended
+yesterday's find structurally: GeneratedJsPurityTest gives the
+cross-language sweep leak the same gate at the product's OTHER three
+JavaScript emitters (the I18n Kit helper, the PWA Kit service worker
+in both strategies, Block Studio's generated components) that
+InjectedJsPurityTest gave the DevTools scripts. The walk: Contract
+Studio end to end on the shipped app, ~85 releases and one platform
+move since v2.21.5 - anvil auto-connected (chain 31337 pre-selected,
+live block count), 27 artifacts with EIP-170 percentages, Counter
+DEPLOYED from the unlocked devnet account (block 1, address in the
+balloon), increment MINED (block 2, gas 43,482 beside the row),
+number CALL decoding 1, and the Oversight address book holding
+today's deployment beside one from 36 DAYS AGO - .nmoxweb3.json
+persistence proven across the RELEASE310 move. Zero finds.
+
 ## [2.38.3] - 2026-08-25
 
 A Day at Meridian (David's ask: one story that demonstrates every
@@ -14644,6 +14663,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.3...v2.38.4
 [2.38.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.2...v2.38.3
 [2.38.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.1...v2.38.2
 [2.38.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.0...v2.38.1
