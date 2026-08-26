@@ -16,6 +16,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import org.nmox.studio.core.spi.ProjectAim;
 import org.nmox.studio.rack.projectstudio.LearningSpace;
+import org.nmox.studio.rack.projectstudio.Experiments;
 import org.nmox.studio.rack.service.RackService;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -67,8 +68,23 @@ public final class ManageLearningSpacesAction implements ActionListener {
 
     private void showDialog(java.util.List<File> spaces) {
         if (spaces.isEmpty()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No learning spaces yet — File ▸ New Learning Space… starts one."));
+            // the empty shelf OFFERS the door, default button acts
+            // (the experiments manager's v2.36.1 sentence, mirrored)
+            Object browse = "Browse the 92 tutorials…";
+            NotifyDescriptor d = new NotifyDescriptor(
+                    "No learning spaces yet — pick a language, framework, or"
+                    + " library and it arrives with sample code, a walkthrough,"
+                    + " and a live REPL.",
+                    "Learning Spaces", NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.PLAIN_MESSAGE,
+                    new Object[]{browse, NotifyDescriptor.CANCEL_OPTION}, browse);
+            if (DialogDisplayer.getDefault().notify(d) == browse) {
+                javax.swing.Action pick = org.openide.awt.Actions.forID("File",
+                        "org.nmox.studio.ui.actions.NewLearningSpaceAction");
+                if (pick != null) {
+                    pick.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "pick"));
+                }
+            }
             return;
         }
         DefaultListModel<File> model = new DefaultListModel<>();
@@ -82,23 +98,39 @@ public final class ManageLearningSpacesAction implements ActionListener {
             public Component getListCellRendererComponent(JList<?> l, Object v,
                     int i, boolean sel, boolean focus) {
                 File dir = (File) v;
+                LearningSpace.Info info = LearningSpace.info(dir);
+                String label = "?".equals(info.name()) ? dir.getName() : info.name();
                 return super.getListCellRendererComponent(l,
-                        dir.getName() + "   —   " + dir.getAbsolutePath(), i, sel, focus);
+                        dir.getName() + "   —   " + label + ", created " + info.created()
+                        + ManageExperimentsAction.age(info.created()), i, sel, focus);
             }
         });
 
         JButton open = new JButton("Open");
+        JButton promote = new JButton("Promote…");
         JButton discard = new JButton("Discard…");
         open.setToolTipText("Aim the studio at this learning space");
+        promote.setToolTipText("Graduate it: move out of ~/.nmox/learn, drop the marker, git init");
         discard.setToolTipText("Stop anything running there and delete the tree");
 
         JPanel buttons = new JPanel();
         buttons.add(open);
+        buttons.add(promote);
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Spaces you generated in ~/.nmox/learn — most recent first:"),
-                BorderLayout.NORTH);
+        JLabel header = new JLabel("Sizing…");
+        header.getAccessibleContext().setAccessibleName("Learning spaces shelf summary");
+        panel.add(header, BorderLayout.NORTH);
+        SPACES_RP.post(() -> {
+            long bytes = 0;
+            for (File sp : spaces) {
+                bytes += Experiments.sizeOf(sp);
+            }
+            long total = bytes;
+            SwingUtilities.invokeLater(() ->
+                    header.setText(LearningSpace.shelfSummary(spaces.size(), total)));
+        });
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);
         panel.setPreferredSize(new java.awt.Dimension(520, 300));
@@ -106,6 +138,39 @@ public final class ManageLearningSpacesAction implements ActionListener {
         DialogDescriptor descriptor = new DialogDescriptor(panel, "Learning Spaces",
                 true, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+
+        promote.addActionListener(a -> {
+            File dir = list.getSelectedValue();
+            if (dir == null) {
+                return;
+            }
+            javax.swing.JFileChooser chooser =
+                    new javax.swing.JFileChooser(System.getProperty("user.home"));
+            chooser.setDialogTitle("Promote " + dir.getName() + " into…");
+            chooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
+            if (chooser.showDialog(dialog, "Promote here") != javax.swing.JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            File destParent = chooser.getSelectedFile();
+            SPACES_RP.post(() -> {
+                try {
+                    File promoted = LearningSpace.promote(dir, destParent);
+                    SwingUtilities.invokeLater(() -> {
+                        dialog.dispose();
+                        // a real project now: open loudly so it reaches the recents
+                        RackService.getDefault().openProject(promoted);
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                dir.getName() + " graduated: " + promoted.getAbsolutePath()
+                                + "\n(marker removed, git initialized)",
+                                NotifyDescriptor.INFORMATION_MESSAGE));
+                    });
+                } catch (Exception ex) {
+                    String message = "Could not promote: " + ex.getMessage();
+                    SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                }
+            });
+        });
 
         open.addActionListener(a -> {
             File dir = list.getSelectedValue();

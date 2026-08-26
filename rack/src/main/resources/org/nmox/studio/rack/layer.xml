@@ -12,6 +12,7 @@
              nondeterministic resolution. -->
         <folder name="Projects">
             <file name="org-nmox-studio-rack-search-RecentProjectSearchProvider.instance"/>
+            <file name="org-nmox-studio-rack-search-LearningShelfSearchProvider.instance"/>
         </folder>
         <!-- Block Studio (v1.79.0, the studio-law parity sprint): type
              "blocks" or the component's tag, Enter opens the studio.
