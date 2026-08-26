@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.9] - 2026-08-26
+
+The pipeline sheds its waits (David: "these long waits for CI/CD are
+slowing us down") - three structural cuts. (1) The tree-identity fast
+path: a squash of a GREEN pr head into an unmoved main has the
+IDENTICAL TREE the three PR lanes just verified, so the gate proves
+identity with git rev-parse and tags immediately instead of
+re-verifying for five minutes; when main HAS moved the wait remains,
+now with the fetch retried 3x against the squash-materialization race
+and one automatic rerun on startup_failure. (2) The docs-only lane:
+a release touching nothing but docs/ and *.md runs the application
+module's docs gates alone (~2 min) instead of three OS lanes
+re-verifying eleven modules; any code path or unknowable diff fails
+SAFE into the full verify. (3) The jlinked runtime is cached across
+all three release lanes, keyed on a hash of the pinning files - a pin
+move rebuilds from scratch, and the javafx.web assertion runs on
+every reuse. And the day's honest scar, recorded: the new gate's
+FIRST refusal was this release's own fold dying on a stale anchor -
+the five-strike fold-script law dies here: ship chains now run under
+set -e with ENFORCING literal checks (a failed grep aborts, never
+echoes past), and single-line grep -F literals only.
+
+## [2.38.8] - 2026-08-26
+
+Experiments and learning spaces to 100%% (David's ask) - the two
+learning front doors now share every lifecycle virtue. Learning
+spaces GRADUATE: Promote... moves a keeper out of ~/.nmox/learn,
+drops the marker, and git-inits it (guards mirrored from discard -
+the marker is the contract AND the home is the boundary; three
+mutants by name). Both promote paths QUIESCE first: anything running
+in the moved tree is stopped before Files.move, because a device
+still serving from the old path would keep autosaving into a
+recreated ghost of it (the v1.290.0 reasoning applied to the move -
+the experiments promote had carried this hazard since v1.23). The
+spaces manager reaches shelf parity - teaching header with count +
+disk cost, per-row name + created + age, and an empty shelf that
+OFFERS the 92-space catalog - and both shelves join Quick Search:
+type a name into (cmd)I and Enter aims the studio there, experiments
+quietly, spaces loudly. NOTE, honestly: this entry ships in v2.38.9's
+docs repair - the v2.38.8 release carried the code alone because the
+docs fold died on a stale anchor and the chain had no set -e; the
+ship gate refused DOCS-MISSING correctly BOTH times it saw the gap.
+
 ## [2.38.7] - 2026-08-26
 
 The unfinished-business sweep's one find, healed: card titles entered
@@ -14714,6 +14757,8 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.8...v2.38.9
+[2.38.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.7...v2.38.8
 [2.38.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.6...v2.38.7
 [2.38.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.5...v2.38.6
 [2.38.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.4...v2.38.5

@@ -140,6 +140,17 @@ shelf offers to start one, and re-opening an experiment brings its
 walkthrough back. Want the guided path instead? The dialog fronts the
 92 Learning Spaces.
 
+Both shelves are one ⌘I away — type an experiment's or space's name
+and Enter aims the studio there (experiments quietly, keeping the
+shelf's no-recents promise; spaces loudly like any project) — and
+both graduate the same way: **Promote…** moves a keeper out of its
+shelf home, drops the marker, and git-inits it into an ordinary
+project, with anything still running there stopped first so nothing
+keeps writing into the old path. The Learning Spaces manager
+(File ▸ Learning Spaces…) carries the same teaching header as the
+experiments shelf — count, disk cost, each space's age — and an
+empty shelf offers the 92-space catalog instead of a dead end.
+
 ![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 
 **.env everywhere:** if your project has a `.env`, devices launched from
