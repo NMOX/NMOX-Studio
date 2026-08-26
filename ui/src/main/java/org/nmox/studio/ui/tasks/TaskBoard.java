@@ -675,9 +675,17 @@ public final class TaskBoard {
                         id = UUID.randomUUID().toString();
                         seenIds.add(id);
                     }
+                    // parse-time heal (v2.38.7): every gesture strips and
+                    // refuses blank titles, but a hand-edited or
+                    // merge-damaged file can carry newlines (which break
+                    // the Standup/Sprint reports' line-per-item markdown)
+                    // or a blank — heal, never drop: a keep-both merge's
+                    // card must survive visibly (the v2.9.0 law's family)
+                    String rawTitle = j.optString("title", "")
+                            .replaceAll("\\s+", " ").strip();
                     Card card = new Card(
                             id,
-                            j.getString("title"),
+                            rawTitle.isEmpty() ? "(untitled)" : rawTitle,
                             j.optString("notes", ""),
                             j.optLong("created", 0L));
                     card.done = j.optLong("done", 0L);

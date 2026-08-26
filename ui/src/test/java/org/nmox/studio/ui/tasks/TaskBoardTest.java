@@ -12,6 +12,27 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class TaskBoardTest {
 
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("parse heals hostile titles — newlines collapse, blanks become (untitled), the card survives")
+    void parseHealsTitles() {
+        String json = """
+            {"v":1,"columns":[{"name":"To Do","cards":[
+              {"id":"a","title":"fix login\\n# not a heading","created":1},
+              {"id":"b","title":"   ","created":2}
+            ]}]}
+            """;
+        TaskBoard b = TaskBoard.fromJson(json);
+        java.util.List<TaskBoard.Card> cards = b.columns().get(0).cards();
+        org.assertj.core.api.Assertions.assertThat(cards).hasSize(2);
+        org.assertj.core.api.Assertions.assertThat(cards.get(0).title())
+                .as("newlines collapse to spaces — report line structure holds")
+                .isEqualTo("fix login # not a heading");
+        org.assertj.core.api.Assertions.assertThat(cards.get(1).title())
+                .as("a blank title heals visibly, the card is never dropped")
+                .isEqualTo("(untitled)");
+    }
+
+
     @Test
     @DisplayName("the starter board is To Do / Doing / Done, empty")
     void starterShape() {
