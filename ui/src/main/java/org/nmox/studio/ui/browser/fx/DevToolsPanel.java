@@ -36,6 +36,8 @@ import org.nmox.studio.ui.browser.devtools.DomSnapshotParser;
 import org.nmox.studio.ui.browser.devtools.DomSnapshotParser.DomNode;
 import org.nmox.studio.ui.browser.devtools.NetworkModel;
 import org.nmox.studio.ui.browser.devtools.ScriptRunner;
+import org.nmox.studio.ui.browser.devtools.RuntimeErrors;
+import org.nmox.studio.ui.browser.devtools.BrowserErrorDisclosure;
 import org.nmox.studio.ui.browser.devtools.StorageSnapshotParser;
 import org.nmox.studio.ui.browser.devtools.StyleSummary;
 import org.nmox.studio.ui.browser.devtools.SvelteSnapshotParser;
@@ -117,8 +119,12 @@ public final class DevToolsPanel extends JPanel {
     private final DefaultTableModel ngDetails = readOnlyTable("Kind", "Name", "Value");
     private final JLabel ngStatus = new JLabel(" ");
 
-    public DevToolsPanel(ConsoleModel console, NetworkModel network, ScriptRunner runner) {
+    private final RuntimeErrors runtimeErrors;
+
+    public DevToolsPanel(ConsoleModel console, NetworkModel network, ScriptRunner runner,
+            RuntimeErrors runtimeErrors) {
         super(new BorderLayout());
+        this.runtimeErrors = runtimeErrors;
         this.console = console;
         this.network = network;
         this.runner = runner;
@@ -184,10 +190,61 @@ public final class DevToolsPanel extends JPanel {
         });
         JButton clear = new JButton("Clear");
         clear.addActionListener(e -> console.clear());
+        // the learning multiplier (v2.39.2): the located error the page
+        // just threw, explained — through the OracleAsk seam with its
+        // own consent kind; a beginner's broken page becomes a lesson
+        JButton explain = new JButton("Explain error…");
+        explain.setToolTipText("Ask ORACLE about the page's last runtime error"
+                + " — sends the message and, when it resolved to your project,"
+                + " a few source lines around the failing line");
+        explain.getAccessibleContext().setAccessibleName("Explain the last runtime error");
+        explain.addActionListener(e -> explainLastError());
+        javax.swing.JPanel east = new javax.swing.JPanel(
+                new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+        east.add(explain);
+        east.add(clear);
         south.add(repl, BorderLayout.CENTER);
-        south.add(clear, BorderLayout.EAST);
+        south.add(east, BorderLayout.EAST);
         panel.add(south, BorderLayout.SOUTH);
         return panel;
+    }
+
+    /** Explain error… — the OracleAsk flow for the last located error;
+     *  refusals are honest status lines (the LCD rule). */
+    private void explainLastError() {
+        org.nmox.studio.core.spi.OracleAsk oracle = org.nmox.studio.core.spi.OracleAsk.find();
+        if (oracle == null) {
+            org.openide.awt.StatusDisplayer.getDefault()
+                    .setStatusText("ORACLE is not available (rack module absent).");
+            return;
+        }
+        java.util.List<String> consoleErrors = new java.util.ArrayList<>();
+        for (ConsoleModel.Entry en : console.entries()) {
+            if ("error".equals(en.level())) {
+                consoleErrors.add(en.text());
+            }
+        }
+        RuntimeErrors.ExplainTarget target = RuntimeErrors.pickExplainTarget(
+                runtimeErrors == null ? java.util.List.of() : runtimeErrors.current(),
+                consoleErrors);
+        if (target == null) {
+            org.openide.awt.StatusDisplayer.getDefault()
+                    .setStatusText("No runtime error to explain yet — the console is clean.");
+            return;
+        }
+        String message = target.message();
+        java.io.File file = target.file();
+        int line = target.line();
+        boolean started = oracle.explain(new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+                "browser.error",
+                "Runtime error — " + (file == null ? "page" : file.getName() + ":" + line),
+                BrowserErrorDisclosure.what(file, line),
+                BrowserErrorDisclosure.body(message, file, line),
+                "Why does this error happen here, and what should I change?"));
+        if (!started) {
+            org.openide.awt.StatusDisplayer.getDefault()
+                    .setStatusText("Explain declined or no API key — nothing was sent.");
+        }
     }
 
     private void syncConsole() {

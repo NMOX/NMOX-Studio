@@ -92,7 +92,8 @@ public final class FxBrowserPanel extends JPanel {
         // tab must not shut it down — it is a process-wide singleton
         Platform.setImplicitExit(false);
 
-        devTools = new DevToolsPanel(console, network, this::runScript);
+        devTools = new DevToolsPanel(console, network, this::runScript,
+                bridge.runtimeErrors());
         add(toolbar(), BorderLayout.NORTH);
         split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, fxPanel, devTools);
         split.setResizeWeight(0.68);

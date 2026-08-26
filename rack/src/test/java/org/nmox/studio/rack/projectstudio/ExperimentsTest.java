@@ -61,6 +61,41 @@ class ExperimentsTest {
     }
 
     @Test
+    @DisplayName("Duplicate forks the whole tree under a fresh name; the source is untouched")
+    void duplicateForks(@TempDir Path work) throws IOException {
+        // save-and-RESTORE: clearProperty would leave user.home NULL for
+        // every later test in this JVM — the tri-lane cascade of
+        // 2026-08-26, where the errors landed in whichever class ran
+        // next on each OS (the fork-reorder trap, again)
+        String realHome = System.getProperty("user.home");
+        System.setProperty("user.home", work.toFile().getAbsolutePath());
+        try {
+            File exps = new File(work.toFile(), ".nmox/experiments");
+            File exp = new File(exps, "probe");
+            Files.createDirectories(new File(exp, "src").toPath());
+            Files.writeString(new File(exp, Experiments.MARKER).toPath(),
+                    "created=2026-08-01\ntemplate=VANILLA\n");
+            Files.writeString(new File(exp, "src/app.js").toPath(), "one");
+
+            File fork = Experiments.duplicate(exp);
+
+            assertThat(fork.getName()).isEqualTo("probe-2");
+            assertThat(new File(fork, "src/app.js")).hasContent("one");
+            assertThat(Files.readString(new File(fork, Experiments.MARKER).toPath()))
+                    .contains("forkedFrom=probe")
+                    .contains("template=VANILLA");
+            assertThat(new File(exp, "src/app.js")).hasContent("one");
+
+            File notAnExperiment = new File(work.toFile(), "plain");
+            Files.createDirectories(notAnExperiment.toPath());
+            assertThatThrownBy(() -> Experiments.duplicate(notAnExperiment))
+                    .isInstanceOf(IOException.class);
+        } finally {
+            System.setProperty("user.home", realHome);
+        }
+    }
+
+    @Test
     @DisplayName("Promote moves the tree, drops the marker, keeps the files")
     void promoteGraduatesTheExperiment(@TempDir Path work) throws IOException {
         File exp = new File(work.toFile(), "exp");

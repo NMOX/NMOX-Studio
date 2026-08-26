@@ -275,6 +275,13 @@
                              derivation, partial refusal, error snippets, binary
                              resolution) lives in SassCompiler, which is tested. -->
                         <exclude>**/editor/sass/SassCompileAction*.class</exclude>
+                        <!-- the v2.37.4/.5/.39.1 kit+check actions: the same
+                             dialog-glue family as their excluded siblings
+                             above — every rule lives in the tested cores
+                             (A11yKit, I18nKit, Checkpoints) -->
+                        <exclude>**/ui/actions/A11yKitAction*.class</exclude>
+                        <exclude>**/ui/actions/I18nKitAction*.class</exclude>
+                        <exclude>**/ui/actions/CheckMyWorkAction*.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
