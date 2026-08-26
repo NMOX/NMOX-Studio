@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.5] - 2026-08-26
+
+The night close (docs only): the in-line update gauntlet PASS - a
+stock 2.38.0 portable self-updated in-app to 2.38.4 through the real
+center, all eleven module jars byte-verified at 2.38.4, clean reboot
+with zero SEVERE and zero enable failures - the week's whole update
+chain proven in one pass. The floors audit measured every module
+against its JaCoCo floor and found NO honest margin anywhere
+(core .905/.90, apiclient .940/.93, web3 .957/.95, the rest within
+~.015; editor and rack stay windows-binding by law) - the floors
+stand, recorded as the audit's finding. And CLAUDE.md's headline
+finally caught up: it had opened with the 2026-08-23 overnight tail
+for four eras; it now leads with the platform-and-polish run
+(v2.35.0-v2.38.4, ~26 releases in three days) - the RELEASE310 move
+and its observed boundary, experiments as the learning front door,
+the zero-defect campaign's sweeps, the scrum suite, the a11y/i18n
+kits and their IDE-side sweeps, ledger 82, the Meridian story with
+the DevTools find it caught, and every studio walked clean on the
+new platform.
+
 ## [2.38.4] - 2026-08-25
 
 The evening review + the Contract Studio walk. The review over the
@@ -14663,6 +14683,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.4...v2.38.5
 [2.38.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.3...v2.38.4
 [2.38.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.2...v2.38.3
 [2.38.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.1...v2.38.2
