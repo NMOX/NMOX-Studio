@@ -30,6 +30,13 @@ public final class JsBridge {
     private final ConsoleModel console;
     private final NetworkModel network;
 
+    private final RuntimeErrors runtimeErrors = new RuntimeErrors();
+
+    /** The page-error → editor pipeline (v2.39.0). */
+    public RuntimeErrors runtimeErrors() {
+        return runtimeErrors;
+    }
+
     public JsBridge(Executor executor, ConsoleModel console, NetworkModel network) {
         this.executor = executor;
         this.console = console;
@@ -54,6 +61,11 @@ public final class JsBridge {
     public void err(String text) {
         String capped = ConsoleModel.truncate(text);
         long at = System.currentTimeMillis();
-        executor.execute(() -> console.add("error", capped, at));
+        executor.execute(() -> {
+            console.add("error", capped, at);
+            // the same capture also lands in the EDITOR when it
+            // resolves to a served project file (v2.39.0)
+            runtimeErrors.onError(capped);
+        });
     }
 }

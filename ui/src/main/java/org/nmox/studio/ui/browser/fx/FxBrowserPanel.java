@@ -215,6 +215,10 @@ public final class FxBrowserPanel extends JPanel {
      * within one document (the {@code __nmoxDevInstalled} guard).
      */
     private void installBridge() {
+        // a fresh document: the previous page's runtime errors belong
+        // to the previous page (v2.39.0; marshal off the FX thread)
+        javax.swing.SwingUtilities.invokeLater(
+                () -> bridge.runtimeErrors().onPageLoad());
         try {
             JSObject window = (JSObject) engine.executeScript("window");
             window.setMember("nmoxBridge", bridge);
