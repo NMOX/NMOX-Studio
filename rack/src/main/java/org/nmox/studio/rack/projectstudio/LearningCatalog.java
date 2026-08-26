@@ -68,7 +68,8 @@ public final class LearningCatalog {
 
     public record Space(String slug, String name, Category category, String family,
             String blurb, Driver driver, Map<String, String> install,
-            List<SampleFile> files, String tutorial) {
+            List<SampleFile> files, String tutorial,
+            List<Checkpoints.Checkpoint> checkpoints) {
 
         public Space {
             // the catalog is a shared 52-space cache handed to every caller;
@@ -76,6 +77,7 @@ public final class LearningCatalog {
             // (Map.copyOf would scramble the mac/linux/windows display order).
             install = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(install));
             files = List.copyOf(files);
+            checkpoints = checkpoints == null ? List.of() : List.copyOf(checkpoints);
         }
 
         /** The file a fresh space should open first: the tutorial. */
@@ -283,7 +285,9 @@ public final class LearningCatalog {
                     o.getString("slug"), o.getString("name"),
                     Category.valueOf(o.getString("category").toUpperCase(java.util.Locale.ROOT)),
                     o.optString("family", ""), o.optString("blurb", ""),
-                    driver, install, files, o.optString("tutorial", "")));
+                    driver, install, files, o.optString("tutorial", ""),
+                    Checkpoints.parse(o.optJSONArray("checkpoints"),
+                            new java.util.ArrayList<>())));
         }
         return spaces;
     }

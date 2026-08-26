@@ -47,6 +47,11 @@ class SpawnSiteTrustLedgerTest {
             "NewProjectDialog.java",
             "GATED: template scaffold + install in a directory the wizard itself just created — "
             + "trust pre-granted in place (v1.62.0 blessing)",
+            "CheckMyWorkAction.java",
+            "GATED-BY-VALIDATION: catalog checkpoints execute argv the parser has "
+            + "already law-checked (bare tool name, no shell — the device-file law) "
+            + "in the pre-trusted ~/.nmox/learn home, at the learner's button press, "
+            + "under runBounded's leash (v2.39.1)",
             "NewExperimentAction.java",
             "GATED: the experiment install — the product's own template in the pre-trusted "
             + "experiments home, at the user's explicit request; package.json guard; "
