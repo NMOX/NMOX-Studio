@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.38.7] - 2026-08-26
+
+The unfinished-business sweep's one find, healed: card titles entered
+the board RAW at parse - every gesture strips and refuses blanks, but
+a hand-edited or merge-damaged .nmoxtasks.json could carry embedded
+newlines (breaking the Standup and Sprint reports' line-per-item
+markdown exactly where their javadoc promises plain structure) or a
+blank no gesture could create. fromJson now heals at parse - newlines
+collapse to spaces, blanks become "(untitled)", the card always
+survives (a keep-both merge's data is never dropped) - the parse-time
+-heal family's tasks-title member, the one field the v2.36.2 sweep
+missed; revert mutant killed by name. The board of record is clean:
+zero open actionable ledger items, every studio walked on RELEASE310,
+floors tight, docs current.
+
 ## [2.38.6] - 2026-08-26
 
 Ledger 82's last open half, concluded (docs only): the Angular
@@ -14699,6 +14714,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.38.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.6...v2.38.7
 [2.38.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.5...v2.38.6
 [2.38.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.4...v2.38.5
 [2.38.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.3...v2.38.4
