@@ -1,0 +1,62 @@
+/* NMOX Studio site — the phosphor terminal, grown up.
+   One accent (phosphor green), warm dark ground, system stack. */
+:root {
+  --ground: #101312;
+  --panel: #161a18;
+  --ink: #d6ddd8;
+  --dim: #8a958e;
+  --phosphor: #53d769;
+  --rule: #232825;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 16px/1.65 ui-monospace, "SF Mono", Menlo, monospace;
+}
+.skip-link { position: absolute; left: -999px; top: 0;
+  background: var(--phosphor); color: #04210b; padding: .5em 1em; z-index: 10; }
+.skip-link:focus { left: 0; }
+.hero { text-align: center; padding: 4.5rem 1.5rem 3.5rem; border-bottom: 1px solid var(--rule); }
+.crt-line { color: var(--phosphor); opacity: .35; letter-spacing: .2em; margin: 0 0 1rem; overflow: hidden; white-space: nowrap; }
+h1 { font-size: clamp(2.2rem, 7vw, 4rem); letter-spacing: .18em; margin: 0;
+  color: var(--phosphor); text-shadow: 0 0 18px rgba(83, 215, 105, .35); }
+.tagline { color: var(--dim); font-size: 1.05rem; margin: .8rem 0 2rem; }
+.install { display: inline-flex; align-items: center; gap: .6rem;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+  padding: .7rem 1rem; }
+.install code { color: var(--phosphor); }
+.install button { background: none; border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--dim); font: inherit; padding: .15rem .6rem; cursor: pointer; }
+.install button:hover, .install button:focus-visible { color: var(--phosphor); border-color: var(--phosphor); }
+.hero-note { color: var(--dim); font-size: .85rem; max-width: 34rem; margin: 1.2rem auto 0; }
+main { max-width: 44rem; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
+section { padding: 2.2rem 0; border-bottom: 1px solid var(--rule); }
+h2 { color: var(--phosphor); font-size: 1.15rem; letter-spacing: .06em; margin: 0 0 .8rem; }
+h2::before { content: "▮ "; opacity: .6; }
+p { margin: .4rem 0; color: var(--ink); }
+.loop-list { list-style: none; padding: 0; margin: 1rem 0 0; }
+.loop-list li { padding: .35rem 0; border-left: 2px solid var(--rule); padding-left: .9rem; margin: .3rem 0; }
+.loop-list strong { color: var(--phosphor); font-weight: 600; }
+.studio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: .8rem; margin-top: 1rem; }
+.studio-grid > div { background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 6px; padding: .9rem 1rem; }
+.studio-grid h3 { margin: 0 0 .3rem; color: var(--phosphor); font-size: .95rem; }
+.studio-grid p { color: var(--dim); font-size: .85rem; margin: 0; }
+.laws ul { list-style: none; padding: 0; }
+.laws li { padding: .3rem 0 .3rem 1.4rem; position: relative; }
+.laws li::before { content: "✓"; position: absolute; left: 0; color: var(--phosphor); }
+footer { text-align: center; padding: 2.5rem 1.5rem 3rem; color: var(--dim); }
+footer nav { display: flex; gap: 1.4rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
+footer a { color: var(--phosphor); text-decoration: none; }
+footer a:hover, footer a:focus-visible { text-decoration: underline; }
+.colophon { font-size: .8rem; }
+.lang-switch button { background: none; border: 1px solid var(--rule); border-radius: 4px;
+  color: var(--dim); font: inherit; font-size: .75rem; padding: .1rem .5rem; cursor: pointer; margin: 0 .2rem; }
+.lang-switch button:hover, .lang-switch button:focus-visible { color: var(--phosphor); border-color: var(--phosphor); }
+@media (prefers-reduced-motion: no-preference) {
+  h1 { animation: warm-up 1.2s ease-out; }
+  @keyframes warm-up { from { opacity: 0; text-shadow: none; } }
+}

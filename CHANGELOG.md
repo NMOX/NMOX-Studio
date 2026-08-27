@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.40.0] - 2026-08-27
+
+The product ships its own website (David's call: "have a built
+website ship with the product and have people be able to navigate it
+on their localhost"). Help - NMOX Studio Website (local) - and the
+Welcome footer's Website link - serve the bundled site from the
+cluster on a free loopback port through the new SiteServer (GET-only,
+canonical containment answering traversal with 404 - live-proven over
+HTTP - the loopback bind pinned by a bound-address witness after the
+url-string mutant survived), register it so the serving chip lights
+on the product's own story, and open the in-app Browser at it. The
+site is the dogfood made visible: written in the product's voice,
+its a11y.css and i18n.js ARE the A11y and I18n Kits' own output
+byte-for-byte (SiteShipsTest pins kit output and markup data-i18n
+keys to both catalogs; PackagedSiteGateTest walks the assembled
+cluster at integration-test phase, after package — the first CI run
+proved the plain test phase has no cluster on a clean build, all
+three lanes), the EN/ES switch proven
+live ("Leyes de la casa"), the install one-liner front and center,
+and its hero note - "this page is being served to you by the app
+itself" - true on screen beside the chip that proves it. Two mutants
+by name plus the ship/parity/keys gates.
+
 ## [2.39.6] - 2026-08-27
 
 The tap goes truly public (docs + pipeline): the canonical
@@ -14896,6 +14919,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.40.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.6...v2.40.0
 [2.39.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.5...v2.39.6
 [2.39.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.4...v2.39.5
 [2.39.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.3...v2.39.4

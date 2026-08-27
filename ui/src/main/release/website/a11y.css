@@ -1,0 +1,47 @@
+/* a11y.css — accessibility starter (NMOX A11y Kit)
+   Four rules that carry most of the keyboard/AT experience.
+   Own this file: it is yours now, the kit never rewrites it. */
+
+/* 1 · Keyboard focus is always visible — never remove this
+       without replacing it with something MORE visible. */
+:focus-visible {
+  outline: 3px solid #4c9ffe;
+  outline-offset: 2px;
+}
+
+/* 2 · Screen-reader-only text: visually hidden, still read. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 3 · The skip link: off-screen until a keyboard user needs it. */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: #1a1a1e;
+  color: #ffffff;
+  padding: 0.5em 1em;
+  z-index: 1000;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* 4 · Respect the motion preference: animation is a choice. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
