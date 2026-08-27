@@ -200,6 +200,14 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                    <!-- the product's own website, shipped as real cluster
+                         files (the editor/jsdebug mechanism): served on
+                         localhost by SiteServer, opened from Help (v2.40.0) -->
+                    <nbmResources>
+                        <nbmResource>
+                            <directory>src/main/release</directory>
+                        </nbmResource>
+                    </nbmResources>
                     <!-- no publicPackages: nothing imports org.nmox.studio.ui —
                          the wildcard export was dead API surface -->
                     <moduleDependencies>

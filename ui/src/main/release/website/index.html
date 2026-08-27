@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NMOX Studio — the web studio with a rack</title>
+  <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="a11y.css">
+  <script src="i18n.js" defer></script>
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="hero">
+    <p class="crt-line" aria-hidden="true">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</p>
+    <h1>NMOX STUDIO</h1>
+    <p class="tagline" data-i18n="site.tagline">The web studio with a rack — wire your tools like a synth.</p>
+    <div class="install">
+      <code id="install-line">brew install nmox/nmox-studio/nmox-studio</code>
+      <button id="copy-install" aria-label="Copy the install command">copy</button>
+    </div>
+    <p class="hero-note" data-i18n="site.hero.note">One line. The runtime is bundled. This page is being served
+       to you by the app itself — look for the ⇄ chip on its status line.</p>
+  </header>
+
+  <main id="main">
+    <section aria-labelledby="loop-h">
+      <h2 id="loop-h" data-i18n="site.loop.h">The loop that teaches is the loop that closes</h2>
+      <p data-i18n="site.loop.p">Edit, save, look — and when the page breaks, the error lands in
+         your editor at the failing line, ORACLE explains it with your
+         own source in front of it, and the tutorial checks your work.
+         Doing, learning, and experimenting are the same motion here.</p>
+      <ul class="loop-list">
+        <li><strong>Break it</strong> — a runtime error becomes a squiggle at your line.</li>
+        <li><strong>Ask it</strong> — Explain error… answers with your code in view.</li>
+        <li><strong>Check it</strong> — Check My Work grades against real checkpoints.</li>
+        <li><strong>Fork it</strong> — Duplicate an experiment and try the other way.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="rack-h">
+      <h2 id="rack-h" data-i18n="site.rack.h">A rack, not a run button</h2>
+      <p data-i18n="site.rack.p">Fifty-three devices — servers, test runners, gates, watchers, an
+         AI error-explainer — mount on a rack and wire together with
+         patch cables. A failing test can trigger its own explanation.
+         A green build can gate a ship. Your own devices are one JSON
+         file away.</p>
+    </section>
+
+    <section aria-labelledby="learn-h">
+      <h2 id="learn-h" data-i18n="site.learn.h">Ninety-two ways in</h2>
+      <p data-i18n="site.learn.p">Learning spaces for languages, frameworks, and libraries — each
+         with sample code, a walked tutorial, a live REPL, and
+         checkpoints that verify what you built. Teachers export their
+         own spaces as one file; students drop it in and press Check.</p>
+    </section>
+
+    <section aria-labelledby="studios-h">
+      <h2 id="studios-h" data-i18n="site.studios.h">Seven studios, one address</h2>
+      <div class="studio-grid" role="list">
+        <div role="listitem"><h3>API</h3><p>Requests, environments, curl both ways, TS types from JSON.</p></div>
+        <div role="listitem"><h3>DB</h3><p>Five engines, bundled drivers, grid edits previewed as SQL.</p></div>
+        <div role="listitem"><h3>Contract</h3><p>EVM artifacts, decoded calls, no private keys — ever.</p></div>
+        <div role="listitem"><h3>Infra</h3><p>Multi-cloud flows with honest destroy confirmations.</p></div>
+        <div role="listitem"><h3>Blocks</h3><p>Web Components composed from pieces, round-trippable.</p></div>
+        <div role="listitem"><h3>Browser</h3><p>Source-aware DevTools: pick, open source, edit style.</p></div>
+        <div role="listitem"><h3>Tasks</h3><p>A kanban with sprints, a clock, and a one-click standup.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="laws-h" class="laws">
+      <h2 id="laws-h" data-i18n="site.laws.h">House laws</h2>
+      <ul>
+        <li data-i18n="site.laws.l1">Refusals speak. Nothing fails silently, ever.</li>
+        <li data-i18n="site.laws.l2">Secrets live in your keychain, never in a project file.</li>
+        <li data-i18n="site.laws.l3">Nothing runs a stranger's code without asking you first.</li>
+        <li data-i18n="site.laws.l4">Kits never clobber; wiring never doubles.</li>
+        <li data-i18n="site.laws.l5">Force-quit orphans nothing.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <nav aria-label="Project links">
+      <a href="https://github.com/NMOX/NMOX-Studio">GitHub</a>
+      <a href="https://github.com/NMOX/NMOX-Studio/blob/main/docs/user-guide.md">User guide</a>
+      <a href="https://github.com/NMOX/NMOX-Studio/blob/main/docs/a-day-at-meridian.md">A Day at Meridian</a>
+      <a href="https://github.com/NMOX/NMOX-Studio/blob/main/CHANGELOG.md">Changelog</a>
+    </nav>
+    <p class="colophon" data-i18n="site.colophon">Built in NMOX Studio, checked by its own kits, served by its own
+       rack. Apache-2.0.</p>
+    <p class="lang-switch">
+      <button data-setlocale="en" aria-label="English">EN</button>
+      <button data-setlocale="es" aria-label="Español">ES</button>
+    </p>
+  </footer>
+</body>
+</html>

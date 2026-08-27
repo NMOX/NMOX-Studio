@@ -943,6 +943,18 @@ Closing the tab does **not** disconnect — a chat client outlives its
 window; reopen the tab and you're still in every channel. Only
 Disconnect or `/quit` ends a session.
 
+### The bundled website
+
+**Help ▸ NMOX Studio Website (local)** (or the Welcome footer's
+**Website ⇄** link) serves the product's own site — shipped inside the
+install — on a free localhost port and opens it in the in-app Browser.
+The ⇄ chip names the URL; any browser on your machine can visit it.
+It is the dogfood made visible: the site's `a11y.css` and `i18n.js`
+are the A11y and I18n Kits' own output (build-gated byte-for-byte),
+and the EN/ES buttons ride the kit's `setLocale`.
+
+![The product serving its own story — the ⇄ chip on the bundled site](images/site-served.png)
+
 ### Browser (⌥⌘4)
 
 The in-app browser is a real WebKit engine (JavaFX WebView, shipped in

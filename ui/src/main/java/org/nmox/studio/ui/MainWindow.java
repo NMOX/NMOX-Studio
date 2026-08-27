@@ -163,7 +163,19 @@ public final class MainWindow extends TopComponent {
             userGuide.addActionListener(e -> browse(USER_GUIDE_URL));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
+            // the product's own site, served by the product (v2.40.0)
+            JButton website = textButton("Website ⇄", DIM);
+            website.setToolTipText("The bundled NMOX Studio site, served to you on localhost by the app itself");
+            website.getAccessibleContext().setAccessibleName("Open the bundled website on localhost");
+            website.addActionListener(e -> {
+                javax.swing.Action a = org.openide.awt.Actions.forID("Help",
+                        "org.nmox.studio.ui.actions.OpenSiteAction");
+                if (a != null) {
+                    a.actionPerformed(e);
+                }
+            });
             footer.add(version);
+            footer.add(website);
             footer.add(userGuide);
             footer.add(whatsNew);
 

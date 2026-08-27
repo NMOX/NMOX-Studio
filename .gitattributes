@@ -3,3 +3,8 @@
 # Vendored third-party artifacts ship byte-verbatim (NOTICE sha256 depends on it)
 editor/src/main/release/jsdebug/** -text
 editor/src/main/resources/org/nmox/studio/editor/grammars/*.tmLanguage.json -text
+
+# The bundled website ships byte-verbatim: a11y.css/i18n.js must equal the
+# kits' own \n output on every OS (SiteShipsTest.kitParity — a windows
+# autocrlf checkout broke the parity before this line existed)
+ui/src/main/release/website/** -text
