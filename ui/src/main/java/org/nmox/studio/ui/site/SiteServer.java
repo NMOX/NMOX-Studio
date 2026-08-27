@@ -60,13 +60,20 @@ public final class SiteServer {
                 if (path.endsWith("/")) {
                     path += "index.html";
                 }
+                // a HEAD answer carries a length of -1 (no body): passing
+                // the real length makes the JDK log a WARNING per request
+                // and write nothing anyway — a browser's probe HEADs would
+                // spam messages.log (live-probed, the v2.40.1 review find)
+                boolean head = "HEAD".equals(method);
                 File target = resolveInside(root, path.substring(1));
                 if (target == null || !target.isFile()) {
                     byte[] miss = "404 — not part of this site".getBytes(
                             java.nio.charset.StandardCharsets.UTF_8);
-                    exchange.sendResponseHeaders(404, miss.length);
-                    try (OutputStream out = exchange.getResponseBody()) {
-                        out.write(miss);
+                    exchange.sendResponseHeaders(404, head ? -1 : miss.length);
+                    if (!head) {
+                        try (OutputStream out = exchange.getResponseBody()) {
+                            out.write(miss);
+                        }
                     }
                     return;
                 }
@@ -75,8 +82,8 @@ public final class SiteServer {
                 exchange.getResponseHeaders().set("Content-Type",
                         MIME.getOrDefault(ext, "application/octet-stream"));
                 byte[] bytes = Files.readAllBytes(target.toPath());
-                exchange.sendResponseHeaders(200, bytes.length);
-                if (!"HEAD".equals(method)) {
+                exchange.sendResponseHeaders(200, head ? -1 : bytes.length);
+                if (!head) {
                     try (OutputStream out = exchange.getResponseBody()) {
                         out.write(bytes);
                     }

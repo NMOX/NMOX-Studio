@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.40.1] - 2026-08-27
+
+The site server's review — the day-old code lens on v2.40.0, one
+find fixed: a HEAD request made the JDK's httpserver log a WARNING
+per request (sendResponseHeaders was handed the real content length,
+which a HEAD answer must not carry), so a browser's probe HEADs
+would have spammed messages.log; both branches now answer HEAD with
+no body and length -1, pinned by a logger-tap test whose first
+version let both mutants survive — the warning's logger is the
+System.Logger name com.sun.net.httpserver, not the implementation
+package the record's source class shows (probed live before
+retargeting). Verified CLEAN: canonical containment against
+single- and double-encoded traversal over real HTTP, and the
+serving re-register (a second press is a keyed replace, never a
+duplicate row).
+
 ## [2.40.0] - 2026-08-27
 
 The product ships its own website (David's call: "have a built
@@ -14919,6 +14935,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.40.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.0...v2.40.1
 [2.40.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.6...v2.40.0
 [2.39.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.5...v2.39.6
 [2.39.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.4...v2.39.5
