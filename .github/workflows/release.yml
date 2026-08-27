@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           # zulu, not temurin: these jobs JLINK the bundled runtime, and
           # Temurin 25 ships neither a jmods/ directory nor a linkable
@@ -112,7 +112,7 @@ jobs:
         # v2.38.9: the image is a pure function of the JDK build + the
         # FX pins inside bundle-jre.sh — hashing that script (and this
         # workflow, which pins the JDK) invalidates on any pin move.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.nmox-jre-image
           key: jre-image-${{ runner.os }}-${{ hashFiles('packaging/tools/bundle-jre.sh', '.github/workflows/release.yml') }}
@@ -135,7 +135,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           # zulu, not temurin: these jobs JLINK the bundled runtime, and
           # Temurin 25 ships neither a jmods/ directory nor a linkable
@@ -160,7 +160,7 @@ jobs:
         # v2.38.9: the image is a pure function of the JDK build + the
         # FX pins inside bundle-jre.sh — hashing that script (and this
         # workflow, which pins the JDK) invalidates on any pin move.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.nmox-jre-image
           key: jre-image-${{ runner.os }}-${{ hashFiles('packaging/tools/bundle-jre.sh', '.github/workflows/release.yml') }}
@@ -176,7 +176,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           # zulu, not temurin: these jobs JLINK the bundled runtime, and
           # Temurin 25 ships neither a jmods/ directory nor a linkable
@@ -199,7 +199,7 @@ jobs:
       - name: Build application
         run: mvn -B clean package -DskipTests
       - name: Cache the jlinked runtime image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: jre-image
           key: jre-image-${{ runner.os }}-${{ hashFiles('.github/workflows/release.yml') }}
