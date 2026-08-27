@@ -1,6 +1,7 @@
 {
   "site.tagline": "El estudio web con un rack — conecta tus herramientas como un sintetizador.",
   "site.hero.note": "Una línea. El runtime viene incluido. Esta página te la sirve la propia aplicación — busca el chip ⇄ en su barra de estado.",
+  "site.hero.note.web": "Una línea. El runtime viene incluido. Abre esta misma página desde dentro de la aplicación — Help ▸ NMOX Studio Website (local) — y te la sirve el propio producto, con el chip ⇄ como prueba.",
   "site.loop.h": "El ciclo que enseña es el ciclo que se cierra",
   "site.loop.p": "Edita, guarda, mira — y cuando la página falla, el error aterriza en tu editor en la línea exacta, ORACLE lo explica con tu propio código delante, y el tutorial verifica tu trabajo. Hacer, aprender y experimentar son el mismo movimiento aquí.",
   "site.rack.h": "Un rack, no un botón de ejecutar",

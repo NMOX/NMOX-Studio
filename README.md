@@ -75,6 +75,8 @@ brew install nmox/nmox-studio/nmox-studio
 The product ships its own website: **Help ▸ NMOX Studio Website
 (local)** serves it to you on localhost from inside the app — the ⇄
 serving chip lights on the product's own story.
+The same bytes are deployed publicly at
+<https://nmox.github.io/NMOX-Studio/>.
 
 The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install), downloaded over HTTPS from this repo's releases and pinned by sha256.
 
