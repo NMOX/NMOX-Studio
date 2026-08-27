@@ -1179,6 +1179,15 @@ declare its own `checkpoints`.
 
 ![Check My Work — the ✗ answers with the space's own hint](images/check-my-work.png)
 
+When checks fail, the report offers **Explain with ORACLE…** — the
+failed checkpoints and (for a file check) your own checked file,
+capped, under its own consent that names exactly what leaves. The
+answer reads like a tutor: what to change, and "re-run the checks."
+
+![A failed check offers the tutor](images/check-explain.png)
+
+![The tutor's answer — steps ending "re-run the checks"](images/check-tutor-answer.png)
+
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
 Teaching a class? Author by building: make the exercise a normal

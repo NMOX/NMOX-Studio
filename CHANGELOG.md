@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.5] - 2026-08-27
+
+The checkpoint loop gets its tutor (David: "we've got credits for
+ORACLE again"). A failed Check My Work now offers Explain with
+ORACLE... - the failed checkpoints (labels, hints, details) and, for
+a file-kind check, the learner's own checked file capped
+code-point-safe, through the OracleAsk seam under its own space.check
+consent; command-kind failures send the exit detail alone, never
+output dumps. Walk-proven with a REAL send: the consent named the
+disclosure verbatim ("The 1 failed check of first-web-page ... and
+your checked file (capped)"), and the answer came back as an actual
+tutor - example replacements, "make it different from the original",
+and numbered steps ending "re-run the checks"; both moments are now
+guide illustrations. The walk's own find, fixed: the kind-consent
+boilerplate's fixed "does not send your source files" line
+CONTRADICTED the bullet above it for file-carrying kinds - it now
+says only what is always true ("nothing beyond the line above").
+Three disclosure caps pinned by tests; two mutants by name.
+
 ## [2.39.4] - 2026-08-26
 
 The five-walk night (docs only) - every elevation-arc feature proven
@@ -14865,6 +14884,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.4...v2.39.5
 [2.39.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.3...v2.39.4
 [2.39.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.2...v2.39.3
 [2.39.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.1...v2.39.2
