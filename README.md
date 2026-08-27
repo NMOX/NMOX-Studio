@@ -9,6 +9,8 @@
 
 `53 RACK DEVICES` · `86 LANGUAGE GRAMMARS` · `92 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
+![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
+
 ![NMOX Studio — the Task Rack](docs/images/task-rack.png)
 
 NMOX Studio is an IDE for the modern web with a twist: your tooling lives in a

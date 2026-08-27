@@ -58,7 +58,8 @@ class ImageRefsTest {
 
         List<String> orphans = new ArrayList<>();
         try (Stream<Path> s = Files.walk(root.resolve("docs/images"))) {
-            s.filter(p -> p.toString().endsWith(".png")).forEach(img -> {
+            s.filter(p -> p.toString().endsWith(".png")
+                    || p.toString().endsWith(".gif")).forEach(img -> {
                 try {
                     if (!referenced.contains(img.toRealPath())) {
                         orphans.add(root.relativize(img).toString());

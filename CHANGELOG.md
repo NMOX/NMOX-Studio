@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.41.1] - 2026-08-27
+
+The culture ships (docs + one gate tooth): the README leads with a
+20-second animated tour recorded from the installed 2.40.1 app
+(Welcome, the product serving its own site with the chip lit, the
+teaching loop, the house laws flipping to Spanish live, the rack);
+CONTRIBUTING.md rewritten from its stale v1.85-era boilerplate into
+the real house culture — the nine laws each traced to the shipped
+bug that paid for it, and the method (recon-first, mutation
+full-verdict, walk-where-it-ships, fresh-code reviews,
+outcome-gates, docs truth); CLAUDE.md gains the Working Method
+section so any future session — human or AI — starts with what this
+one has; and ImageRefsTest learns .gif so the tour can rot out of
+the docs no more quietly than a .png (failing-first proven with the
+orphaned gif named by path).
+
 ## [2.41.0] - 2026-08-27
 
 The site goes public (David's call: "make it a github pages site") —
@@ -14949,6 +14965,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.41.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.0...v2.41.1
 [2.41.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.1...v2.41.0
 [2.40.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.0...v2.40.1
 [2.40.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.6...v2.40.0

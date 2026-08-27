@@ -1,358 +1,128 @@
 # Contributing to NMOX Studio
 
-*Welcome! Help us build the modern web development IDE*
+NMOX Studio is a NetBeans-Platform IDE for doing, learning, and
+experimenting with web development: the Task Rack (53 hardware-styled
+devices wired with patch cables), a polyglot editor (86 TextMate
+grammars + LSP), seven per-project studios (Task Board, Block, API,
+DB, Contract/Web3, Infra, Project), 92 Learning Spaces, experiments
+that teach, and installers for all three OSes with an in-app update
+center. Apache-2.0. The product even ships its own website — press
+**Help ▸ NMOX Studio Website (local)** in a running build, or visit
+<https://nmox.github.io/NMOX-Studio/>.
 
-## 🎯 Project Vision
+Read [docs/engineering/plan.md](docs/engineering/plan.md) first — the
+living plan with the honest gaps — and
+[docs/engineering/codebase-guide.md](docs/engineering/codebase-guide.md)
+for the five platform ideas everything rides on.
 
-NMOX Studio is a NetBeans Platform IDE for web development built around the Task Rack — 50 hardware-styled task devices wired with patch cables — plus a 70+-language polyglot editor, five studios (Block, API, DB, Contract/Web3, Infra Designer), 71 Learning Spaces, and installers for all three OSes.
+## Build and run
 
-**Current Status:** shipping (v1.85.x line); every merge to `main` goes through a three-OS CI gate and each tag publishes a full release (installers, SBOM, in-app update-center catalog).
-**Where the project is heading:** read [docs/engineering/plan.md](docs/engineering/plan.md) — the living plan with the honest gaps and ranked opportunities.
+- **JDK 25** to build (bytecode targets 21 — see the law at
+  `maven.compiler.target` in the root pom before you touch it),
+  Maven 3.6+.
 
-## 🚀 Quick Start for Contributors
-
-### Prerequisites
-- Java 21+ (the project targets Java 21 LTS)
-- Maven 3.6+
-- Git 2.30+
-- Basic familiarity with NetBeans Platform (helpful but not required)
-
-### Get Started in 5 Minutes
 ```bash
-# 1. Clone and build
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
-mvn clean package -DskipTests
-
-# 2. Run the application
-cd application/target/nmoxstudio/bin
-./nmox-studio
-
-# 3. Create a feature branch
-git checkout -b feature/your-contribution
-
-# 4. Make changes and test
-mvn clean test
-mvn clean package
-
-# 5. Submit pull request
-git push origin feature/your-contribution
+mvn clean package -DskipTests       # fast build
+./run.sh                            # or: application/target/nmoxstudio/bin/nmoxstudio
+mvn clean verify                    # the whole gate: tests + SpotBugs + find-sec-bugs + JaCoCo floors
 ```
 
-## 📋 How to Contribute
+A fresh clone builds and boots in well under a minute of your
+attention; if it doesn't, that's a bug — file it.
 
-### 1. Choose Your Contribution Type
+## How this house works
 
-#### 🐛 Bug Fixes
-- Check [existing issues](https://github.com/NMOX/NMOX-Studio/issues) for reported bugs
-- Small fixes welcome without prior discussion
-- For complex bugs, comment on the issue before starting
+These aren't style preferences; each one was paid for by a shipped
+bug. The reviews will hold your change to them, so knowing them saves
+you a round trip.
 
-#### ✨ New Features
-- Review [docs/engineering/plan.md](docs/engineering/plan.md) for the current plan and ranked opportunities
-- Check the [deferred-debt ledger](docs/engineering/tech-debt.md) for well-scoped open items with written context
-- For new ideas, create an issue for discussion first
+### The laws
 
-#### 📚 Documentation
-- Fix typos, improve clarity, add examples
-- Update documentation for code changes
-- Create tutorials or guides
+1. **Refusals speak.** Nothing fails silently, ever. A gesture that
+   can't proceed says so where the user is looking (status line,
+   dialog, LCD) with the reason — and writes nothing. A silent
+   early-return is a bug even when it's "safe."
+2. **Secrets live in the OS keychain**, never in a committable file.
+   Every studio workspace file (`.nmoxapi.json`, `.nmoxdb.json`, …)
+   is designed so a `git add .` can never stage a credential.
+3. **Nothing runs a stranger's code without asking.** Every spawn
+   that executes project-controlled commands (npm scripts,
+   `node_modules/.bin`, build files) goes through Workspace Trust
+   BEFORE the spawn. `SpawnSiteTrustLedgerTest` fails the build until
+   a new spawn site is classified.
+4. **Every read is bounded.** HTTP bodies, process output, file
+   prefixes — capped with an honest truncation marker. An unbounded
+   read is an OOM handed to a hostile endpoint.
+5. **Writes are atomic and never clobber.** Workspace files write
+   temp-sibling + `ATOMIC_MOVE`; generators write `.suggested`
+   siblings rather than overwrite; corrupt files become `.bak`, never
+   silently replaced.
+6. **No disk or process work on the EDT.** Off-EDT via a named
+   RequestProcessor, newest-wins on re-aims, results applied on the
+   EDT. The paint thread walked `$HOME` once; never again.
+7. **A result belongs to the workspace that produced it.** Re-aiming
+   a project clears anything the old project could leak through
+   (armed Explain buttons, stale result tabs, serving entries).
+8. **Every runtime invariant over a checked-in file gets a parse-time
+   heal** — a git merge can produce states no gesture can, and the
+   parser is where they're caught.
+9. **Accessibility is a contract test.** Every control on every
+   device exposes an accessible name; the build fails otherwise.
 
-#### 🧪 Testing
-- Add unit tests for existing features
-- Improve test coverage
-- Create integration tests
+### The method
 
-### 2. Development Workflow
+- **Recon first.** Before building against the platform, read what it
+  actually does — decompile the class, probe the behavior live, pin
+  the evidence in the commit or ledger. Folklore about NetBeans
+  internals has burned us more than any other single cause.
+- **Tests ship in the same PR as the feature**, and the interesting
+  ones are **mutation-proven**: break the code the specific way the
+  test exists to catch, watch the named test fail, restore, watch it
+  pass. Only full verdict lines count (`Tests run: N, Failures: N`) —
+  a missing verdict is a failed run, and a `-q` grep has faked
+  survivors before. Commit your work BEFORE mutating; a bare
+  `git checkout --` restore has eaten uncommitted fixes three times.
+- **Walk it where it ships.** Dev-tree green is not the product. The
+  feature is done when it's been driven in the assembled app
+  (`application/target/nmoxstudio/bin/nmoxstudio` with a throwaway
+  `--userdir`) — most of this project's best finds came from walks,
+  not reviews.
+- **Fresh code gets a review.** Within a day or two of a feature arc,
+  read it again with hostile lenses (what leaks on re-aim? what's
+  unbounded? which claim has no test?). The review has found a real
+  bug in day-old code almost every time it has run. A comment
+  claiming a property IS a test not yet written.
+- **Gate the outcome, not the mechanism.** A build gate should derive
+  its population from generated artifacts (the layer, the jar, the
+  census) so the case you didn't think of fails the build too.
+- **Docs tell the truth.** README counts, user-guide claims, and
+  CHANGELOG entries are gated (`DocsCountGateTest`, `ImageRefsTest`,
+  docs-landed checks read COMMITTED content via `git show HEAD:`). A
+  screenshot in the docs was captured from a real run, wired the same
+  commit.
 
-#### Branch Naming
-```
-feature/short-description         # New features
-bugfix/issue-description         # Bug fixes  
-hotfix/critical-issue           # Critical fixes
-refactor/component-name         # Code refactoring
-docs/section-update             # Documentation
-test/component-coverage         # Testing improvements
-```
+### Landing a change
 
-#### Commit Messages
-```
-type(scope): short description
+- Branch from `main`; CI runs the full verify on ubuntu + macos +
+  windows, all blocking. The windows lane is a real product surface,
+  not a formality — it has found product bugs.
+- PRs are squash-merged. Write the summary for a teammate who wasn't
+  watching: what changed, what proved it.
+- The [deferred-debt ledger](docs/engineering/tech-debt.md) is the
+  honest backlog — well-scoped items with written context, and the
+  reasons things were deliberately NOT done. Great first
+  contributions live there.
+- If your change makes a claim ("faster", "covered", "refused"),
+  land the proof beside it.
 
-Optional longer description.
+## Where to start
 
-- Bullet points for details
-- Reference issues: fixes #123, closes #456
-
-Examples:
-feat(editor): add JavaScript syntax highlighting
-fix(npm): handle missing package.json gracefully
-docs(readme): update build instructions
-test(tools): add unit tests for NpmService
-```
-
-#### Code Style
-- **Java**: Follow standard Java conventions
-- **Indentation**: 4 spaces (no tabs)
-- **Line length**: 120 characters
-- **Naming**: Descriptive names, camelCase for variables/methods
-- **Comments**: Javadoc for public APIs, inline comments for complex logic
-
-### 3. Testing Requirements
-
-#### For Bug Fixes
-- Add test case that reproduces the bug
-- Verify fix resolves the issue
-- Ensure no regressions in existing functionality
-
-#### For New Features
-- Unit tests for core logic (aim for >80% coverage)
-- Integration tests for user-facing features
-- Manual testing with various scenarios
-
-#### Running Tests
-```bash
-# All tests
-mvn test
-
-# Specific module
-cd tools/
-mvn test
-
-# Specific test class
-mvn test -Dtest=NpmServiceTest
-
-# Integration tests
-mvn verify
-```
-
-## 🏗️ Architecture Guidelines
-
-### Module Structure
-```
-core/           # Platform services, shared SPI (Device SPI, ProjectAim/LiveServings)
-editor/         # 72 TextMate grammars, LSP, completion, Navigator outline, DAP debugging
-tools/          # NPM integration, WebProject/manifest detection (51 manifests)
-rack/           # The Task Rack: 50 devices, Project Studio, Block Studio, Learning Spaces
-apiclient/      # API Studio        dbstudio/  # DB Studio (6 engines)
-web3/           # Contract Studio   infra/     # Multi-cloud infra designer
-project/        # Project explorer, Workbench
-ui/             # Main window, Welcome, actions, Options, update center
-branding/       # Splash, icons    application/ # Final packaging and distribution
-```
-
-### Design Principles
-1. **Leverage NetBeans Platform**: Use existing APIs before creating custom solutions
-2. **Incremental Enhancement**: Small, working improvements over big rewrites
-3. **User-Focused**: Features should solve real developer problems
-4. **Performance Matters**: No UI blocking, reasonable memory usage
-5. **Simple Over Clever**: Maintainable code beats optimal algorithms
-
-### NetBeans Platform Patterns
-```java
-// Service registration
-@ServiceProvider(service = SomeService.class)
-public class SomeServiceImpl implements SomeService {
-    // Implementation
-}
-
-// Service consumption
-SomeService service = Lookup.getDefault().lookup(SomeService.class);
-
-// TopComponent for UI panels
-@TopComponent.Registration(mode = "editor", openAtStartup = false)
-public class MyPanel extends TopComponent {
-    // UI implementation
-}
-
-// Settings persistence
-Preferences prefs = NbPreferences.forModule(MyClass.class);
-prefs.put("key", "value");
-```
-
-## 📊 Priority Areas
-
-### Great First Contributions
-1. **A new language vertical** — grammar + comment/completion registration + device lanes; the recipe is repeated ~70 times in-tree, so examples abound
-2. **A new Learning Space** — pure JSON in `learn-catalog.json` (or a drop-in file under `~/.nmox/learn-catalog.d/`); see [docs/learning-spaces.md](docs/learning-spaces.md)
-3. **A third-party rack device** — build against the frozen Device SPI without touching this repo; see [docs/device-spi.md](docs/device-spi.md)
-
-### Larger Contributions
-1. **Open ledger items** — [docs/engineering/tech-debt.md](docs/engineering/tech-debt.md) records every deliberately deferred item with its reasons
-2. **i18n** — ~450 user-visible strings are hardcoded (ledger 24), a well-scoped sweep for someone who wants breadth
-3. **Test coverage** — floors are gated per module; raising one is always welcome
-
-## 🔍 Code Review Process
-
-### Before Submitting
-- [ ] Code compiles without warnings
-- [ ] Tests pass locally
-- [ ] Manual testing completed
-- [ ] Documentation updated if needed
-- [ ] Commit messages follow format
-- [ ] No sensitive information (API keys, passwords)
-
-### Pull Request Template
-```markdown
-## Summary
-Brief description of changes and motivation.
-
-## Changes Made
-- Bullet point list of modifications
-- Files added/modified/removed
-
-## Testing
-- [ ] Unit tests added/updated
-- [ ] Manual testing completed
-- [ ] Performance impact considered
-
-## Documentation
-- [ ] Code comments updated
-- [ ] User documentation updated if needed
-- [ ] API documentation updated if needed
-
-## Related Issues
-Fixes #123, addresses #456
-```
-
-### Review Criteria
-- **Functionality**: Does it work as intended?
-- **Code Quality**: Is it readable and maintainable?
-- **Testing**: Adequate test coverage?
-- **Performance**: No negative impact?
-- **Security**: No security vulnerabilities?
-- **Documentation**: Changes are documented?
-
-## 🧪 Testing Guidelines
-
-### Unit Tests
-```java
-// Example test structure
-@Test
-@DisplayName("Should parse npm error when command not found")
-void shouldParseNpmErrorWhenCommandNotFound() {
-    // Given
-    String errorOutput = "npm: command not found";
-    NPMErrorParser parser = new NPMErrorParser();
-    
-    // When
-    NPMError result = parser.parseError(errorOutput);
-    
-    // Then
-    assertThat(result.getUserMessage())
-        .contains("NPM not found");
-    assertThat(result.getSuggestions())
-        .contains("Install Node.js");
-}
-```
-
-### Integration Tests
-```java
-@Test
-@DisplayName("Should create React project with proper structure")
-void shouldCreateReactProjectWithProperStructure() {
-    // Given
-    File tempDir = createTempDirectory();
-    ProjectConfig config = new ProjectConfig("test-react", tempDir);
-    
-    // When
-    projectService.createProject("react", config);
-    
-    // Then
-    assertThat(new File(tempDir, "package.json")).exists();
-    assertThat(new File(tempDir, "src/App.js")).exists();
-    // ... verify complete project structure
-}
-```
-
-### Manual Testing Checklist
-- [ ] Application starts without errors
-- [ ] Can create new projects from templates
-- [ ] NPM commands execute and show output
-- [ ] Syntax highlighting works for JavaScript files
-- [ ] Settings persist across restarts
-- [ ] Error handling provides helpful messages
-
-## 🌍 Community Guidelines
-
-### Communication
-- **Be Respectful**: Treat all contributors with courtesy
-- **Be Constructive**: Provide helpful feedback and suggestions
-- **Be Patient**: Remember that people contribute in their spare time
-- **Be Inclusive**: Welcome developers of all skill levels
-
-### Getting Help
-- **Documentation**: Check docs/ folder first
-- **GitHub Issues**: Search existing issues before creating new ones
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Code Questions**: Comment on relevant files or issues
-
-### Reporting Issues
-```markdown
-**Environment**
-- NMOX Studio version: (Help ▸ About shows the stamped version)
-- Operating System: e.g. macOS 15
-- Java version: bundled runtime, or your JDK 21+ for source builds
-
-**Description**
-Clear description of the issue.
-
-**Steps to Reproduce**
-1. Open NMOX Studio
-2. Create new React project
-3. Run npm start
-4. Error occurs
-
-**Expected Behavior**
-What should have happened.
-
-**Actual Behavior**
-What actually happened.
-
-**Screenshots**
-If applicable, add screenshots.
-
-**Additional Context**
-Any other relevant information.
-```
-
-## 🎉 Recognition
-
-### Contributors
-All contributors are recognized in:
-- Release notes
-- Contributors section in README
-- Annual contributor appreciation
-- Special recognition for significant contributions
-
-### Types of Contributions Valued
-- Code contributions (features, fixes, tests)
-- Documentation improvements
-- Bug reports and feature requests
-- Community support and mentoring
-- Design and UX feedback
-- Performance testing and optimization
-
-## 📚 Resources
-
-### Essential Reading
-- [NetBeans Platform Developer Guide](https://netbeans.apache.org/kb/docs/platform/)
-- [The current plan](docs/engineering/plan.md)
-- [The deferred-debt ledger](docs/engineering/tech-debt.md)
-- [The user guide](docs/user-guide.md)
-
-### Code Examples
-- [NPM Service Implementation](tools/src/main/java/org/nmox/studio/tools/npm/NpmService.java)
-- [Project Factory Pattern](tools/src/main/java/org/nmox/studio/tools/npm/WebProjectFactory.java)
-- [DataObject Registration](editor/src/main/java/org/nmox/studio/editor/javascript/JavaScriptDataObject.java)
-
-### Tools and APIs
-- [NetBeans API Documentation](https://bits.netbeans.org/22/javadoc/)
-- [Maven NetBeans Plugin](https://netbeans.apache.org/wiki/DevFaqActionAddProjectCustomizer)
-- [FlatLaf Look and Feel](https://www.formdev.com/flatlaf/)
-
----
-
-**Thank you for contributing to NMOX Studio! Every contribution, no matter how small, helps us build a better web development experience.**
-
-*Questions? Create an issue or start a discussion. We're here to help!*
+- Run the app, open a Learning Space (**File ▸ New Learning
+  Space…**), break something, and follow the error — the loop that
+  teaches is the loop that closes.
+- `docs/devices.md` (generated, CI-gated) is the rack reference;
+  `docs/user-guide.md` walks every surface.
+- Questions and proposals: open a GitHub issue. Small fixes need no
+  prior discussion.
