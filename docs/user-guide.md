@@ -152,6 +152,8 @@ keeps writing into the old path. The Learning Spaces manager
 experiments shelf — count, disk cost, each space's age — and an
 empty shelf offers the 92-space catalog instead of a dead end.
 
+![The Learning Spaces shelf — count, disk cost, age, the full lifecycle](images/spaces-shelf.png)
+
 ![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 
 **.env everywhere:** if your project has a `.env`, devices launched from
@@ -969,6 +971,12 @@ Open-in-Browser action route here too.
   about the page's last located error, sending the message plus a few
   capped source lines around the failing line under its own consent
   that states literally what leaves (v2.39.2).
+
+  ![A page error landing in Action Items with the file and line](images/runtime-error-action-items.png)
+
+  ![The consent names the literal disclosure; Keep Local is the default](images/explain-error-consent.png)
+
+  ![ORACLE's answer to the actual mistake, follow-ups welcome](images/explain-error-answer.png)
 - **DOM** — press Refresh for a tree of the live document (bounded:
   depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
   a node outlines it in the page and shows its attributes plus a
@@ -1169,6 +1177,8 @@ honest verifier of a Rust exercise). Every ✗ answers with the space's
 own hint. Any catalog entry — including your drop-ins below — can
 declare its own `checkpoints`.
 
+![Check My Work — the ✗ answers with the space's own hint](images/check-my-work.png)
+
 You can add your own tutorials: drop a `*.json` file in `~/.nmox/learn-catalog.d/` and it joins the New Learning Space picker (same schema as the built-ins; a matching `slug` overrides a built-in). See [learning-spaces.md](learning-spaces.md) for the schema and a worked example.
 
 Teaching a class? Author by building: make the exercise a normal
@@ -1177,6 +1187,8 @@ for you — sample files, your `TUTORIAL.md`, the run driver, and your
 `.nmox-checkpoints.json` as Check My Work checkpoints — validated
 against the picker's own parser before it's written, so what you hand
 your students is exactly what their picker will load.
+
+![The exporter's report — the file your students drop in](images/export-space.png)
 
 *New Learning Space…* offers 92 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
