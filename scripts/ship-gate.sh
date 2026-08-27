@@ -88,7 +88,14 @@ echo "tagged $TAG"
 for i in $(seq 1 90); do
   N=$(gh release view "$TAG" --json assets --jq '.assets | length' 2>/dev/null || echo 0)
   echo "assets: $N"
-  [[ "$N" == 19 ]] && { echo "RELEASE-COMPLETE: 19 assets"; exit 0; }
+  if [[ "$N" == 19 ]]; then
+    echo "RELEASE-COMPLETE: 19 assets"
+    # nudge the canonical tap's self-sync so brew users get the bump
+    # now, not at the next half-hour cron (v2.39.6; failure harmless —
+    # cron is the backstop)
+    gh workflow run sync.yml -R NMOX/homebrew-nmox-studio 2>/dev/null || true
+    exit 0
+  fi
   sleep 60
 done
 echo "ASSETS-TIMEOUT"; exit 1
