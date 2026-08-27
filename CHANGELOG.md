@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.4] - 2026-08-26
+
+The five-walk night (docs only) - every elevation-arc feature proven
+live in the shipped 2.39.3, each with its screenshot captured from
+the session itself. The shelf: six spaces, "1 MB on disk", ages to 45
+days, Open/Promote/Discard all present. Check My Work: the untouched
+sample answered "2 of 3 checks pass" with the heading checkpoint's
+exact seeded hint, and after the learner's edit, "All 3 checks pass -
+nicely done." Break the page: a deliberate brewCoffee() ReferenceError
+landed in Action Items as [browser] with main.js and the experiment
+path beside it. Explain error...: the consent named the literal
+disclosure ("the error message and 7 lines of main.js around line
+2"), Keep Local the default - and the real send came back from the
+real API explaining the actual mistake, define-before-use and
+link-order included, with the Ask field open for follow-ups. The
+exporter: first-web-page + a teacher checkpoint exported as
+meridian-lesson.json, byte-verified, and "Meridian Lesson - yours"
+found by search in the student picker with its availability probe
+green. Zero finds - five features, five walks, five passes.
+
 ## [2.39.3] - 2026-08-26
 
 The developer teacher's wish, granted (the persona pass: who
@@ -14845,6 +14865,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.3...v2.39.4
 [2.39.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.2...v2.39.3
 [2.39.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.1...v2.39.2
 [2.39.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.0...v2.39.1
