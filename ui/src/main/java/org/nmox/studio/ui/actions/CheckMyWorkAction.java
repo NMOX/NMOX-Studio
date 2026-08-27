@@ -72,6 +72,8 @@ public final class CheckMyWorkAction implements ActionListener {
             };
             StringBuilder report = new StringBuilder();
             int passed = 0;
+            java.util.List<Checkpoints.Checkpoint> failed = new java.util.ArrayList<>();
+            java.util.List<Checkpoints.Result> failedResults = new java.util.ArrayList<>();
             for (Checkpoints.Checkpoint c : checks) {
                 Checkpoints.Result r = Checkpoints.run(dir, c, runner);
                 report.append(r.passed() ? "  ✓ " : "  ✗ ").append(r.label()).append('\n');
@@ -80,14 +82,51 @@ public final class CheckMyWorkAction implements ActionListener {
                 }
                 if (r.passed()) {
                     passed++;
+                } else {
+                    failed.add(c);
+                    failedResults.add(r);
                 }
             }
             String head = passed == checks.size()
                     ? "All " + checks.size() + " checks pass — nicely done.\n\n"
                     : passed + " of " + checks.size() + " checks pass.\n\n";
-            SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(head + report,
-                            NotifyDescriptor.INFORMATION_MESSAGE)));
+            // the tutor half of the checkpoint loop (v2.39.5): a stuck
+            // learner gets more than the hint — the failed checks and
+            // their own file, explained. The option appears only when
+            // there IS a failure and ORACLE is present; the disclosure
+            // is assembled by the pure CheckDisclosure so the consent
+            // line is the literal truth.
+            org.nmox.studio.core.spi.OracleAsk oracle =
+                    org.nmox.studio.core.spi.OracleAsk.find();
+            SwingUtilities.invokeLater(() -> {
+                if (failed.isEmpty() || oracle == null) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(head + report,
+                                    NotifyDescriptor.INFORMATION_MESSAGE));
+                    return;
+                }
+                Object explain = "Explain with ORACLE…";
+                org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+                        head + report, "Check My Work — " + dir.getName(), true,
+                        new Object[] {explain, NotifyDescriptor.OK_OPTION},
+                        NotifyDescriptor.OK_OPTION,
+                        org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
+                if (DialogDisplayer.getDefault().notify(dd) == explain) {
+                    boolean started = oracle.explain(
+                            new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+                                    "space.check",
+                                    "Failed checks — " + dir.getName(),
+                                    org.nmox.studio.rack.projectstudio.CheckDisclosure
+                                            .what(dir.getName(), failed),
+                                    org.nmox.studio.rack.projectstudio.CheckDisclosure
+                                            .body(dir, failed, failedResults),
+                                    "Why do these checks fail, and what exactly should I change?"));
+                    if (!started) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                "Explain declined or no API key — nothing was sent.");
+                    }
+                }
+            });
         });
     }
 }

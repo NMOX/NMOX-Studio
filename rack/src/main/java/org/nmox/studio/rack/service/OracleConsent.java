@@ -138,7 +138,14 @@ public final class OracleConsent {
         String message = "<html><b>Send this to Anthropic's API for an explanation?</b>"
                 + "<br><br>ORACLE will send <b>only</b> the following, and nothing else:"
                 + "<ul><li>" + escape(what) + "</li></ul>"
-                + "It does <b>not</b> send your source files, environment variables, or any secret."
+                // the disclosure line above is the whole truth — some kinds
+                // DO carry file content (space.check sends the checked file,
+                // browser.error a source excerpt), so the old fixed "does
+                // not send your source files" line could contradict the
+                // bullet it sat under (caught live, v2.39.5). Say only what
+                // is always true: nothing beyond what the bullet names.
+                + "It sends <b>nothing</b> beyond the line above — no environment"
+                + " variables, no secrets, nothing it did not name."
                 + "<br><br>Your API key is used to authenticate the request. This choice is remembered"
                 + " for this kind of request only."
                 + "</html>";
