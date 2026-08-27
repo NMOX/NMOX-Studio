@@ -68,9 +68,8 @@ Once it's running, **[the User Guide](docs/user-guide.md)** walks every feature 
 ### Homebrew (macOS)
 
 ```bash
-brew tap NMOX/NMOX-Studio https://github.com/NMOX/NMOX-Studio
 brew trust --cask nmox/nmox-studio/nmox-studio
-brew install --cask nmox-studio
+brew install nmox/nmox-studio/nmox-studio
 ```
 
 The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install), downloaded over HTTPS from this repo's releases and pinned by sha256.

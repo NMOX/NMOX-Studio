@@ -14,9 +14,8 @@ current). For contributor/build docs, see the README and CLAUDE.md.
 
 **macOS (recommended):**
 ```bash
-brew tap NMOX/NMOX-Studio https://github.com/NMOX/NMOX-Studio
 brew trust --cask nmox/nmox-studio/nmox-studio
-brew install --cask nmox-studio
+brew install nmox/nmox-studio/nmox-studio
 ```
 
 The `brew trust` line is Homebrew's one-time acknowledgment for any

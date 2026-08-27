@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.6] - 2026-08-27
+
+The tap goes truly public (docs + pipeline): the canonical
+NMOX/homebrew-nmox-studio repo now exists, so installation is ONE
+line with zero URLs - brew install nmox/nmox-studio/nmox-studio -
+where it used to need a custom-URL tap step only this machine knew.
+The tap syncs itself from the main repo's cask with zero secrets (its
+own token, public raw content, cron + dispatch), the ship gate nudges
+that sync the moment a release's assets land, and README + guide
+carry the one-liner. The first distribution stone on the road to
+witnesses.
+
 ## [2.39.5] - 2026-08-27
 
 The checkpoint loop gets its tutor (David: "we've got credits for
@@ -14884,6 +14896,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.5...v2.39.6
 [2.39.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.4...v2.39.5
 [2.39.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.3...v2.39.4
 [2.39.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.2...v2.39.3
