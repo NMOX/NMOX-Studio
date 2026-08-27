@@ -1,6 +1,7 @@
 {
   "site.tagline": "The web studio with a rack — wire your tools like a synth.",
   "site.hero.note": "One line. The runtime is bundled. This page is being served to you by the app itself — look for the ⇄ chip on its status line.",
+  "site.hero.note.web": "One line. The runtime is bundled. Open this same page from inside the app — Help ▸ NMOX Studio Website (local) — and it is served to you by the product itself, with the ⇄ chip to prove it.",
   "site.loop.h": "The loop that teaches is the loop that closes",
   "site.loop.p": "Edit, save, look — and when the page breaks, the error lands in your editor at the failing line, ORACLE explains it with your own source in front of it, and the tutorial checks your work. Doing, learning, and experimenting are the same motion here.",
   "site.rack.h": "A rack, not a run button",

@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.41.0] - 2026-08-27
+
+The site goes public (David's call: "make it a github pages site") —
+a new pages workflow deploys ui/src/main/release/website to GitHub
+Pages VERBATIM on every main push that touches it: no build step by
+design, so the web serves the exact bytes the product ships in its
+cluster and SiteShipsTest's kit-parity law covers both. The hero
+note stops lying on the public copy: "served to you by the app
+itself" is only true when the app serves it, so the page now carries
+both notes (site.hero.note / site.hero.note.web in both locale
+catalogs — the keys-agree gate holds at 17) and site.js shows the
+one whose claim is true for the serving host. README points at the
+public deploy.
+
 ## [2.40.1] - 2026-08-27
 
 The site server's review — the day-old code lens on v2.40.0, one
@@ -14935,6 +14949,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.41.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.1...v2.41.0
 [2.40.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.0...v2.40.1
 [2.40.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.6...v2.40.0
 [2.39.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.5...v2.39.6

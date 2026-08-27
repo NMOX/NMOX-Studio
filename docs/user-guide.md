@@ -952,6 +952,8 @@ The ⇄ chip names the URL; any browser on your machine can visit it.
 It is the dogfood made visible: the site's `a11y.css` and `i18n.js`
 are the A11y and I18n Kits' own output (build-gated byte-for-byte),
 and the EN/ES buttons ride the kit's `setLocale`.
+The same site is deployed publicly at
+<https://nmox.github.io/NMOX-Studio/> — identical bytes, different host.
 
 ![The product serving its own story — the ⇄ chip on the bundled site](images/site-served.png)
 
