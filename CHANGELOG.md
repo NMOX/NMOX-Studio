@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.39.3] - 2026-08-26
+
+The developer teacher's wish, granted (the persona pass: who
+multiplies learners?): File > Export as Learning Space... turns the
+AIMED project into a learning-space drop-in - author an exercise by
+BUILDING it, never by hand-writing JSON with embedded file bodies.
+Text files gathered under spoken caps (binaries sniffed out by NUL,
+heavy dirs excluded, every skip named), TUTORIAL.md as the
+walkthrough, the run command as the driver, and .nmox-checkpoints.json
+as Check My Work checkpoints (v2.39.1) riding along. The export is
+refused WHOLE unless its own bytes round-trip through the student
+picker's parser - a worked example is a fixture - and a broken
+checkpoint refuses at export time with its reasons: the teacher hears
+it, never the class. Re-export overwrites only a previous export of
+the same space. Two mutants killed by name, one equivalent mutant
+documented and structurally pinned (the round-trip gate is
+schema-drift defense, unreachable until builder and parser diverge -
+so its presence and before-the-write position are the pinned facts,
+and deleting it fails by name).
+
 ## [2.39.2] - 2026-08-26
 
 The elevation arc, batch two. Experiment FORKING: Duplicate in the
@@ -14825,6 +14845,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.39.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.2...v2.39.3
 [2.39.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.1...v2.39.2
 [2.39.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.39.0...v2.39.1
 [2.39.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.38.9...v2.39.0
