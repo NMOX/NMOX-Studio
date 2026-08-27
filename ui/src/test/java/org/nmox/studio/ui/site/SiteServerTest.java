@@ -62,4 +62,64 @@ class SiteServerTest {
             server.stop();
         }
     }
+
+    @Test
+    @DisplayName("HEAD answers quietly: no body, and no JDK warning per request")
+    void headLaw(@TempDir Path work) throws Exception {
+        File root = new File(work.toFile(), "site");
+        Files.createDirectories(root.toPath());
+        Files.writeString(new File(root, "index.html").toPath(), "<h1>site</h1>");
+
+        // the outcome witness (v2.40.1 review): sendResponseHeaders with a
+        // real length on a HEAD request makes the JDK's httpserver WARN
+        // once per request — a browser's probe HEADs would spam
+        // messages.log. The logger NAME is the System.Logger's
+        // "com.sun.net.httpserver", not the implementation package the
+        // record's source class shows (probed live — a tap on
+        // sun.net.httpserver let both mutants survive)
+        java.util.logging.Logger jdk =
+                java.util.logging.Logger.getLogger("com.sun.net.httpserver");
+        java.util.List<java.util.logging.LogRecord> warnings =
+                java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        java.util.logging.Handler tap = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord r) {
+                if (r.getLevel().intValue()
+                        >= java.util.logging.Level.WARNING.intValue()) {
+                    warnings.add(r);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        jdk.addHandler(tap);
+        SiteServer server = new SiteServer(root);
+        String url = server.start();
+        try {
+            HttpClient http = HttpClient.newHttpClient();
+            HttpResponse<String> hit = http.send(HttpRequest.newBuilder(URI.create(url))
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            assertThat(hit.statusCode()).isEqualTo(200);
+            assertThat(hit.body()).isEmpty();
+            HttpResponse<String> miss = http.send(
+                    HttpRequest.newBuilder(URI.create(url + "nope.css"))
+                            .method("HEAD", HttpRequest.BodyPublishers.noBody()).build(),
+                    HttpResponse.BodyHandlers.ofString());
+            assertThat(miss.statusCode()).isEqualTo(404);
+            assertThat(miss.body()).isEmpty();
+            assertThat(warnings)
+                    .as("no sun.net.httpserver warnings across HEAD hit + miss")
+                    .isEmpty();
+        } finally {
+            server.stop();
+            jdk.removeHandler(tap);
+        }
+    }
 }
