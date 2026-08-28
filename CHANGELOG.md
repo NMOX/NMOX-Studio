@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.1] - 2026-08-28
+
+Night docs truth: the Working Method section gains the two lessons
+the v2.43.0 pipeline mishap paid for — one working tree, one chain
+(a docs chain committed onto a sibling feature branch and pushed an
+empty one; chains now branch-assert before every commit and push,
+parallel releases get separate worktrees), and the gate-literal law's
+newest member: a multi-line grep -F pattern is an OR of its lines,
+so an enforced literal is always ONE line (the first rider "passed"
+its own check that way and never landed). Floors audited against the
+fresh v2.43.0 measurements: ui 0.6806/0.67, core 0.9051/0.89, editor
+windows-bound — every floor already at measured-minus-margin, no
+honest ratchet available, recorded rather than forced.
+
 ## [2.43.0] - 2026-08-28
 
 The blessed certificate (ledger 86's TRUSTED remainder, the night's
@@ -15016,6 +15030,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.0...v2.43.1
 [2.43.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.42.0...v2.43.0
 [2.42.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.1...v2.42.0
 [2.41.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.0...v2.41.1

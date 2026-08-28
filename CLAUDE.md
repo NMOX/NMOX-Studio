@@ -57,7 +57,14 @@ the update-center catalog. `scripts/ship-gate.sh` (in-repo,
 parameterized) automates PR-to-tag with the stale-rollup grace,
 fetch-never-checkout, and the tree-identity fast path. In chained
 scripts, guard mvn's exit code EXPLICITLY — `set -e` has let a red
-verify through. Never tag unverified; a published tag is never moved.
+verify through. Never tag unverified; a published tag is never moved. One working
+tree, one chain: never run two ship chains (or a chain plus
+interactive git) in one checkout — a chain commits onto whatever
+branch HEAD points at by then (measured: a docs chain committed onto
+a sibling feature branch and pushed an empty one). Chains assert
+`git rev-parse --abbrev-ref HEAD` before every commit and push;
+parallel releases get separate worktrees. And a multi-line `grep -F`
+pattern is an OR of its lines — every enforced literal is ONE line.
 
 ## Build and Run Commands
 
