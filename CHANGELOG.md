@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.11] - 2026-08-28
+
+The night close (docs only) — the marathon gauntlet: a STOCK
+pre-signing 2.41.1 portable updated itself in-app across the whole
+night's fourteen releases in ONE update — through the unsigned →
+signed → blessed transition the trust arc built — eleven modules
+offered, all eleven jars byte-verified at 2.43.10, clean reboot with
+zero SEVERE. The night's ledger, fifteen releases v2.42.0–v2.43.10:
+the self-signed trust chain end to end (sign, measure the boundary,
+bless the certificate, walk the zero-interruption GUI update, review
+the fresh code into tests), the loopback-law sweep (one witness
+added, one load-bearing false positive recorded at the bind site),
+the Kitchen Sink's third catch-up with the bare-spaces census tooth
+closed failing-first, Meridian's epilogue, plan.md and the memory
+currency — and the full walk sweep: DB, Block, Infra, and IRC all
+walked all-clean against real stores, real HTTP, and the real Libera
+network, with zero product findings between them. Every surface in
+the product has now walked clean within sixty releases.
+
 ## [2.43.10] - 2026-08-28
 
 The IRC Libera walk, all clean (docs only) — the last walk of any
@@ -15176,6 +15195,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.11]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.10...v2.43.11
 [2.43.10]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.9...v2.43.10
 [2.43.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.8...v2.43.9
 [2.43.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.7...v2.43.8
