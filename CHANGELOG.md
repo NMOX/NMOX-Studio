@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.9] - 2026-08-28
+
+The Infra Designer walk, all clean (docs only) — the third and last
+of the ~130-release walk gaps, closed on shipped 2.43.6 with no
+cloud tokens on purpose: the toolbar says "no tokens (dry-run)" and
+greys Destroy honestly; nodes place with the property panel's cost
+framing live ($15.00/mo on a fresh PostgreSQL) and the v1.273.0
+narrow-width squeeze holding without a scrollbar; the legal
+DB→Droplet wire drew from the v1.271.0 nub halo and PERSISTED into
+.nmoxinfra.json before the gesture's ink was dry (the debounced
+auto-save observed at file level); the illegal direction refused OUT
+LOUD with the exact recorded sentence — "Wire refused: Droplet
+doesn't wire into PostgreSQL — a wire reads \"serves\"" — and Fit
+recovered a thoroughly panned-away canvas every time. Zero product
+findings; the walk's own misfires were all the operator's coordinate
+drift, which is the strongest kind of clean. All three oldest walks
+(DB, Block, Infra) closed all-clean in one night.
+
 ## [2.43.8] - 2026-08-28
 
 The Block Studio walk, all clean (docs only) — the night's second
@@ -15143,6 +15161,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.8...v2.43.9
 [2.43.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.7...v2.43.8
 [2.43.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.6...v2.43.7
 [2.43.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.5...v2.43.6
