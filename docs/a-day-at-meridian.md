@@ -177,6 +177,20 @@ wouldn't — nothing silent, nothing guessed, nothing clobbered.
 That's NMOX Studio. Tomorrow's pour: promote the experiment, close
 the sprint, ship.
 
+## 17:20 — epilogue: the story serves itself
+
+Meridian's tabs are closed, but one gesture is left. **Help ▸ NMOX
+Studio Website (local)** — and the product serves its own story to
+you, from inside the install, on a localhost port with the ⇄ serving
+chip lit to prove it. The page's accessibility stylesheet is the A11y
+Kit's own output and its EN/ES switch rides the I18n Kit's helper,
+byte-for-byte, build-gated — the site is built from the same parts
+the day was. The same bytes are on the public web at
+<https://nmox.github.io/NMOX-Studio/>, so tomorrow you can send
+someone the story before they ever install it.
+
+![The product serving its own story — the ⇄ chip on the bundled site](images/site-served.png)
+
 ---
 
 *Companion references: the [user guide](user-guide.md) covers every

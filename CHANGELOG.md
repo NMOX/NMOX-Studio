@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.5] - 2026-08-28
+
+The morning close (docs only): A Day at Meridian gains its epilogue —
+the story serves itself (Help ▸ NMOX Studio Website (local), the ⇄
+chip on the product's own story, the kits' bytes underneath, the
+public mirror to send someone tomorrow) — and plan.md's standing
+header carries the whole distribution-and-trust day: the public tap,
+the bundled website and its Pages twin, the tour gif, the upstream
+issues, the culture docs, and the self-signed trust chain from
+dormant seams to the walked zero-interruption update, with the four
+new failure patterns recorded where the next session will read them.
+
 ## [2.43.4] - 2026-08-28
 
 The Kitchen Sink catches up (third time — the pattern holds): two new
@@ -15074,6 +15086,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.4...v2.43.5
 [2.43.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.3...v2.43.4
 [2.43.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.2...v2.43.3
 [2.43.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.1...v2.43.2
