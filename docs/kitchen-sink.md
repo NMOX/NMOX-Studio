@@ -400,7 +400,7 @@ file gets a `.suggested` sibling instead.
 ## 18. Learning Spaces
 
 **Do:** File ▸ New Learning Space… Pick **Your First Web Page** (the
-catalog opens with it) or go exotic — 91 spaces cover everything from
+catalog opens with it) or go exotic — 92 spaces cover everything from
 Angular and Playwright to Clarity contracts and COBOL. Later, File ▸
 Learning Spaces… to open or discard them.
 
@@ -409,7 +409,26 @@ rack pre-wired with a real in-rack REPL — the interpreter installs
 from an INSTALL button, no terminal needed. Your own tutorials join
 the picker from `~/.nmox/learn-catalog.d`.
 
-## 19. ORACLE — the AI surfaces
+## 19. Break it, check it, export it — the learning loop
+
+**Do:** Serve a page (any template's Run), open it in the Browser,
+then break its JS — a typo'd function name will do — and reload.
+Then, in a learning space, File ▸ **Check My Work**.
+
+**See:** The runtime error lands in your EDITOR: a squiggle at the
+failing line and an Action Items row, exactly like a lint finding —
+the mistake appears where you made it, and a reload clears the old
+page's errors. Check My Work grades your file against the space's
+real checkpoints and, on a failure, offers **Explain with ORACLE…**
+(its consent names exactly what leaves: the failed checks and your
+checked file, nothing more). When your experiment grows up, File ▸
+**Export as Learning Space…** turns the aimed project into a drop-in
+tutorial others can pick from the catalog — refused whole unless it
+round-trips the student picker's own parser. And Manage
+Experiments… can **Duplicate** one so you can try the other way
+without losing the first.
+
+## 20. ORACLE — the AI surfaces
 
 **Do:** Select some code ▸ right-click ▸ **Ask ORACLE About
 Selection…**. Or mount ORACLE in the rack and press EXPLAIN after a
@@ -424,7 +443,7 @@ honestly; nothing phones home without the button press. Fast/Deep
 picks the model, fixed per conversation so the transcript never lies
 about who answered.
 
-## 20. Angular, first-class
+## 21. Angular, first-class
 
 The framework bet. **Do:** New Project ▸ Angular, open a
 `.component.html`, type a property typo like `{{ user.logedIn }}`.
@@ -438,7 +457,21 @@ Navigator outlines your routes; File ▸ New Angular Schematic… runs
 the DevTools Angular pane reads the live component tree of a dev
 build.
 
-## 21. Ship it
+## 22. The product's own website
+
+**Do:** Help ▸ **NMOX Studio Website (local)** (or the Welcome
+footer's **Website ⇄**).
+
+**See:** The app serves its own site to you on localhost — the ⇄
+serving chip lights on the product's own story, and the hero note
+says so because it's true. The EN/ES buttons ride the I18n Kit's own
+helper; the a11y stylesheet IS the A11y Kit's output, byte-for-byte,
+build-gated. The same bytes are deployed publicly at
+<https://nmox.github.io/NMOX-Studio/>. And every release download is
+verifiable: the GPG-signed `SHA256SUMS` on the release page, key in
+the repo-root `KEYS` file.
+
+## 23. Ship it
 
 **Do:** Rack ▸ PREFLIGHT ▸ GO. Docker Panel ▸ Dockerize. Rack ▸
 Export CI. Then Tools ▸ Plugins ▸ Check for Updates.
@@ -448,7 +481,9 @@ that was *built against a real daemon* before it was ever shipped as a
 recipe; a CI workflow from your actual rack; and the product updating
 itself through its own update center — a stock v2.2.1 install has
 walked that road to the current release in one in-app update,
-digest-verified, in our release gauntlets. The git chip on the status
+digest-verified, in our release gauntlets. Since v2.42.0 every
+module NBM is signed and the certificate ships inside the product,
+so the whole update flow runs with no certificate prompts at all. The git chip on the status
 line knows your branch; the Team menu is the full git suite.
 
 ---
