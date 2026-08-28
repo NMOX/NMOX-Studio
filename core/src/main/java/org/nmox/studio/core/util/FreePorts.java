@@ -52,6 +52,12 @@ public final class FreePorts {
     private static boolean isFree(int port) {
         try (ServerSocket socket = new ServerSocket()) {
             socket.setReuseAddress(true);
+            // WILDCARD bind is load-bearing, not sloppiness (probed
+            // v2.43.6): with SO_REUSEADDR on macOS a LOOPBACK bind
+            // succeeds over an existing wildcard holder, so a
+            // loopback-probing isFree hands back busy ports — the exact
+            // v1.320 bug this class exists to fix. The socket never
+            // listens: bind + immediate close, no accept.
             socket.bind(new java.net.InetSocketAddress((InetAddress) null, port));
             return true;
         } catch (IOException busy) {

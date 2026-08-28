@@ -146,6 +146,10 @@ class BlocksV2Test {
         BlockPreviewServer server = new BlockPreviewServer(() -> "my-widget", code::get,
                 java.util.Map::of);
         String url = server.start();
+        // the loopback law's WITNESS (the SiteServer lesson): the url
+        // string cannot witness the bind — the socket can
+        assertThat(server.boundAddress().isLoopbackAddress()).isTrue();
+        assertThat(server.boundAddress().isAnyLocalAddress()).isFalse();
         assertThat(url).startsWith("http://127.0.0.1:");
         try {
             HttpClient http = HttpClient.newHttpClient();

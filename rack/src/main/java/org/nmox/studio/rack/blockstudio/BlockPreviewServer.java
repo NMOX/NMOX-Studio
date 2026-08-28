@@ -109,6 +109,13 @@ final class BlockPreviewServer {
                 : "http://127.0.0.1:" + server.getAddress().getPort() + "/";
     }
 
+    /** The actual bound address — the loopback law's witness (the
+     *  v2.40.0 SiteServer lesson: a url STRING cannot witness the
+     *  BIND). Package-private for the test. */
+    synchronized java.net.InetAddress boundAddress() {
+        return server == null ? null : server.getAddress().getAddress();
+    }
+
     /**
      * The harness page: mounts the component twice (once bare, once with
      * slotted light-DOM content so SLOT pieces show something) and logs
