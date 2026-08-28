@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.0] - 2026-08-28
+
+The blessed certificate (ledger 86's TRUSTED remainder, the night's
+recon paid): the product's NBM-signing certificate ships inside the
+product as a platform KeyStoreProvider at TRUST level — the same
+mechanism Apache NetBeans uses to make its own update center show
+TRUSTED instead of accept-this-unknown-certificate. NmoxTrustedCerts
+builds an in-memory trust store from the bundled PEM (public half
+only; a broken resource degrades to an empty store — signed NBMs
+fall back to accept-once, never fail), and NmoxTrustedCertsTest pins
+the provider laws plus the parity that matters: the blessed
+certificate and the repo-root KEYS publication can never drift
+(mutation-proven — a swapped certificate kills the parity test by
+name). Takes effect for updates installed FROM a 2.43.0+ install;
+the GUI TRUSTED label is the next release's walk to collect.
+
+Also in this release, the night proofs the pipeline mishap folded in
+(they were drafted as their own docs release; the branch mixup made
+them riders here — the honest shape is one tag):
+
+The night proofs (docs only) — the v2.42.0 trust chain measured
+where it ships: the signed-update gauntlet crossed the
+unsigned-to-signed boundary CLEAN (a stock 2.41.1 portable updated
+itself headlessly to 2.42.0 — updates=11, all eleven module jars
+byte-verified at 2.42.0 spec, clean reboot with zero SEVERE; the
+headless --update-all path installs signed-unknown-cert NBMs without
+prompting — the trust UX gates only the GUI flow, measured not
+assumed); the release-side chain proven on shipped bytes (gpg Good
+signature on SHA256SUMS, 19/19 assets in the manifest, updates.xml
+and an NBM checksum-verified, jarsigner "jar verified" on the
+downloaded NBM); and the hero note's host toggle walked live in the
+shipped WebKit — the local serve shows "served to you by the app
+itself" while the same browser pointed at the public Pages copy
+shows the web variant, each note true on its own host.
+
 ## [2.42.0] - 2026-08-27
 
 The self-signed trust chain (David's call: official certs are a v3.0
@@ -14981,6 +15016,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.42.0...v2.43.0
 [2.42.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.1...v2.42.0
 [2.41.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.0...v2.41.1
 [2.41.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.1...v2.41.0

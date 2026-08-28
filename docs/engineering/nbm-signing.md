@@ -13,12 +13,21 @@ NBM in each release is jarsigner-signed. Because the certificate is
 self-signed, the Plugin Manager shows it as our certificate to accept once
 (remembered thereafter) rather than platform-TRUSTED — reaching TRUSTED
 requires blessing the cert into the build's own trust store, recorded as a
-ledger remainder. Official certificates (Apple Developer ID + notarization,
+ledger remainder — DELIVERED v2.43.0: NmoxTrustedCerts (ui module)
+is a KeyStoreProvider at TRUST level carrying the certificate, so
+post-2.43.0 installs show our updates TRUSTED. Official certificates
+(Apple Developer ID + notarization,
 Windows Authenticode) are a **v3.0 milestone by decision (2026-08-27)**.
 
 The mechanism (kept for the v3.0 switch and for forks): no keystore → no
 signing; it turns on the moment three repository secrets exist, nothing
 else needs editing.
+
+Boundary, measured (v2.43.0): the headless `--modules --update-all`
+path installs signed-unknown-certificate NBMs without prompting — a
+stock 2.41.1 crossed the unsigned→signed boundary clean (updates=11,
+jars byte-verified, clean reboot). Certificate trust UX gates only
+the GUI Plugin Manager flow.
 
 ## What's already wired
 
