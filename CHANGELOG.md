@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.7] - 2026-08-28
+
+The DBA walk, all clean (docs only) — the oldest standing walk gap
+closed, ~130 releases after v2.21.2, on the shipped 2.43.6 against a
+purpose-built hostile SQLite store: Add SPEAKS ("Added dbawalk —
+Connect opens it", the v2.21.2 fix holding), Test says "OK — database
+opens", Connect counts "2 tables" in the engine's own noun; RUN on
+the untouched placeholder refuses out loud ("Console is empty — type
+a query first"); the hostile grid renders O'Brien-quotes, unicode, a
+=SUM formula name, and an <html><img> name all as TEXT with NULL
+honest; the edit loop closed to the BYTE (balance 99→149, the
+preview showing the exact PK-gated UPDATE with Cancel as the default
+button, sqlite3 reading 149 off disk); EXPLAIN's result grid says
+"Read-only — not a single-table SELECT" and its multi-statement
+guard verified as refusal-by-enablement with tooltip reasons (the
+platform idiom; hover remains automation-unverifiable per the
+ledger-76 limit); a no-PK table says "Read-only — no primary key on
+no_pk"; Remove's confirm names the keychain deletion and defaults to
+Cancel; the July walk's history rows were still in the pane —
+persistence across ~130 releases observed incidentally; and the
+v1.273.0 WrapLayout wrapped the narrowed console toolbar instead of
+clipping it, live. Zero findings — the second all-clean DBA walk.
+
 ## [2.43.6] - 2026-08-28
 
 The loopback-law sweep (the v2.36.2 pattern on the night's own young
@@ -15104,6 +15127,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.6...v2.43.7
 [2.43.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.5...v2.43.6
 [2.43.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.4...v2.43.5
 [2.43.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.3...v2.43.4
