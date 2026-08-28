@@ -37,6 +37,16 @@ class NmoxTrustedCertsTest {
     }
 
     @Test
+    @DisplayName("a broken or missing certificate degrades to an EMPTY store, never a throw")
+    void brokenResourceDegrades() throws Exception {
+        KeyStore missing = NmoxTrustedCerts.load(null);
+        assertThat(missing.size()).isZero();
+        KeyStore garbage = NmoxTrustedCerts.load(new ByteArrayInputStream(
+                "not a certificate".getBytes(StandardCharsets.US_ASCII)));
+        assertThat(garbage.size()).isZero();
+    }
+
+    @Test
     @DisplayName("the bundled certificate equals the one published in KEYS")
     void keysParity() throws Exception {
         String keys = Files.readString(Path.of("..", "KEYS"), StandardCharsets.UTF_8);
