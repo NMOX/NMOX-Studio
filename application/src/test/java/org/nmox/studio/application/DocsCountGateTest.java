@@ -103,7 +103,7 @@ class DocsCountGateTest {
         // "91 LEARNING SPACES" in caps, and the case-sensitive form let
         // it sit three releases stale while this gate stayed green
         // (found in the v2.18.0 polish pass)
-        List<String> where = claims(Pattern.compile("(\\d+) (?:learning spaces|built in)",
+        List<String> where = claims(Pattern.compile("(\\d+) (?:learning spaces|built in|spaces\\b)",
                 Pattern.CASE_INSENSITIVE), found);
         assertThat(found).as("no live doc counts learning spaces at all — did the phrasing change?").isNotEmpty();
         assertThat(found)

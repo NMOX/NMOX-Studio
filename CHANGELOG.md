@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.4] - 2026-08-28
+
+The Kitchen Sink catches up (third time — the pattern holds): two new
+stations for everything the sink slept through — "Break it, check it,
+export it" walks the whole learning loop (runtime error → your editor
+line, Check My Work, the ORACLE tutor's honest consent, Export as
+Learning Space, experiment Duplicate) and "The product's own website"
+walks the Help gesture, the ⇄ chip, the kit-parity claim, the public
+deploy, and the KEYS verify; the Ship-it station learns that updates
+run with no certificate prompts. And the census gate's blind spot
+closed failing-first, again in the v2.34.2 shape: the spaces matcher
+knew "learning spaces" but not bare "NN spaces", under which the
+sink's "91 spaces" sat stale for seven releases — the tooth now names
+kitchen-sink.md line 403 by itself, and the count reads 92.
+
 ## [2.43.3] - 2026-08-28
 
 The trust arc's own review — the fresh-code lens over the night's
@@ -15059,6 +15074,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.3...v2.43.4
 [2.43.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.2...v2.43.3
 [2.43.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.1...v2.43.2
 [2.43.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.0...v2.43.1
