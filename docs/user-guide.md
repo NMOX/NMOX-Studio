@@ -49,9 +49,12 @@ the latest GitHub release. Install, restart when prompted, done — no
 re-download of the full app. The platform also checks quietly on its
 own (weekly by default; change or disable it under **Tools ▸ Plugins ▸
 Settings**), separate from the daily one-line version check in
-Options ▸ General. Two honest caveats: the modules are unsigned, so the
-installer dialog notes that (the update center itself is trusted — it
-is our own release channel over HTTPS), and the bundled Java runtime
+Options ▸ General. Since v2.42.0 every module is signed and since
+v2.43.0 the signing certificate ships inside the product, so the
+installer runs with no certificate prompts at all (self-signed until
+v3.0 — verify any download against the GPG-signed `SHA256SUMS` on the
+release page; the key lives in the repo-root `KEYS` file). One honest
+caveat: the bundled Java runtime
 and launcher only change with a full installer, so a fresh install from
 a release asset is still right for major platform jumps.
 

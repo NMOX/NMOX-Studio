@@ -51,21 +51,30 @@ public final class NmoxTrustedCerts implements KeyStoreProvider {
         return TrustLevel.TRUST;
     }
 
-    /** Builds an in-memory trust store from the bundled PEM. A broken
-     *  resource yields an EMPTY store (the platform treats it as no
-     *  extra trust — signed NBMs degrade to accept-once, never fail). */
+    /** Builds the trust store from the bundled PEM. */
     static KeyStore load() {
+        try (InputStream in = NmoxTrustedCerts.class.getResourceAsStream(CERT_RESOURCE)) {
+            return load(in);
+        } catch (IOException closing) {
+            return load((InputStream) null);
+        }
+    }
+
+    /** Builds an in-memory trust store from the given PEM stream. A
+     *  broken or missing resource yields an EMPTY store (the platform
+     *  treats it as no extra trust — signed NBMs degrade to
+     *  accept-once, never fail); the seam exists so that law is a
+     *  test, not a comment (v2.43.3). */
+    static KeyStore load(InputStream in) {
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(null, null);
-            try (InputStream in = NmoxTrustedCerts.class.getResourceAsStream(CERT_RESOURCE)) {
-                if (in == null) {
-                    LOG.log(Level.WARNING, "nmox-signing-cert.pem missing from the module");
-                    return ks;
-                }
-                Certificate cert = CertificateFactory.getInstance("X.509").generateCertificate(in);
-                ks.setCertificateEntry("nmox", cert);
+            if (in == null) {
+                LOG.log(Level.WARNING, "nmox-signing-cert.pem missing from the module");
+                return ks;
             }
+            Certificate cert = CertificateFactory.getInstance("X.509").generateCertificate(in);
+            ks.setCertificateEntry("nmox", cert);
             return ks;
         } catch (IOException | java.security.GeneralSecurityException broken) {
             LOG.log(Level.WARNING, "could not load the NMOX signing certificate", broken);

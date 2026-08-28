@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.3] - 2026-08-28
+
+The trust arc's own review — the fresh-code lens over the night's
+code: NmoxTrustedCerts's claimed degrade path ("a broken resource
+yields an empty store — never fail") was a comment, not a test (the
+v1.189.0 law); load() gained an InputStream seam and the law is now
+pinned for both the missing and the garbage resource, with the
+rethrow mutant dead by name — after the FIRST mutant taught its own
+lesson: a mutant that does not compile proves nothing, and a stale
+surefire report will happily supply yesterday's verdict (reports are
+now deleted before mutant runs). The user guide's update section
+stops claiming the modules are unsigned (true for ~590 releases,
+false since v2.42.0) and carries the signed-and-blessed story with
+the KEYS pointer. OpenSiteAction's default-RP use verified as the
+module's prevailing idiom (13 sites), recorded CLEAN.
+
 ## [2.43.2] - 2026-08-28
 
 The blessed path, walked (docs only): a live 2.43.0 install ran its
@@ -15043,6 +15059,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.2...v2.43.3
 [2.43.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.1...v2.43.2
 [2.43.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.0...v2.43.1
 [2.43.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.42.0...v2.43.0
