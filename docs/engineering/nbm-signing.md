@@ -5,9 +5,20 @@ NBMs. Unsigned, the Plugin Manager shows an "unsigned plugin" caution on
 every install. Signing removes that caution and lets the platform verify
 the NBMs came from a keystore you control.
 
-**This is off by default.** No keystore → no signing → the historical
-behavior, unchanged. It turns on the moment three repository secrets exist;
-nothing else needs editing.
+**Status: ON since v2.42.0.** The three repository secrets are set with a
+self-signed 4096-bit RSA keystore (10-year validity; certificate published
+in the repo-root `KEYS` file, password keychain-only on the release owner's
+machine, keystore master copy in `~/.nmox/release-signing/`). Every module
+NBM in each release is jarsigner-signed. Because the certificate is
+self-signed, the Plugin Manager shows it as our certificate to accept once
+(remembered thereafter) rather than platform-TRUSTED — reaching TRUSTED
+requires blessing the cert into the build's own trust store, recorded as a
+ledger remainder. Official certificates (Apple Developer ID + notarization,
+Windows Authenticode) are a **v3.0 milestone by decision (2026-08-27)**.
+
+The mechanism (kept for the v3.0 switch and for forks): no keystore → no
+signing; it turns on the moment three repository secrets exist, nothing
+else needs editing.
 
 ## What's already wired
 

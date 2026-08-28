@@ -80,6 +80,10 @@ serving chip lights on the product's own story.
 The same bytes are deployed publicly at
 <https://nmox.github.io/NMOX-Studio/>.
 
+Releases are self-signed until v3.0: verify any download against the
+GPG-signed `SHA256SUMS` on the release page — the key lives in
+[KEYS](KEYS).
+
 The `brew trust` step is a one-time acknowledgment Homebrew requires for any third-party tap; you won't be asked again for future updates. The cask wraps the release DMG (bundled Java runtime, no separate install), downloaded over HTTPS from this repo's releases and pinned by sha256.
 
 **About Gatekeeper:** the app is ad-hoc signed but not notarized (no Apple Developer ID yet), so a quarantined copy is refused on first launch. The cask handles this itself — it clears the quarantine attribute on the installed app in a `postflight` step and **prints exactly that at install time**, so nothing happens behind your back (you already consented to this third-party tap with `brew trust`; the DMG arrives over HTTPS and is pinned by sha256). Installing from the DMG by hand instead? First launch needs right-click → *Open* once, or `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`. After first launch, the in-app updater keeps you current with no Gatekeeper involvement at all.

@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.42.0] - 2026-08-27
+
+The self-signed trust chain (David's call: official certs are a v3.0
+milestone; until then, self-sign what self-signing can reach) — NBM
+signing flips ON: the dormant v1.58.0 seam gains its three secrets
+and every module NBM now ships jarsigner-signed with a self-signed
+4096-bit RSA key (10-year validity); releases gain a SHA256SUMS
+manifest over all 19 prior assets, detached-signed by a new project
+GPG key, published as assets 20 and 21 — one signature verifies
+every download transitively; the repo-root KEYS file carries both
+public halves with the three-command verify recipe, README points at
+it, the ship gate expects 21 assets, and ledger 86 records what v3.0
+buys (Developer ID + notarization, Authenticode, the NBM
+TRUSTED-bless recon). Private material is keychain-only on the
+release owner's machine plus repository secrets — printed nowhere.
+
 ## [2.41.1] - 2026-08-27
 
 The culture ships (docs + one gate tooth): the README leads with a
@@ -14965,6 +14981,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.42.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.1...v2.42.0
 [2.41.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.0...v2.41.1
 [2.41.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.1...v2.41.0
 [2.40.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.40.0...v2.40.1
