@@ -857,6 +857,15 @@ EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and
 never reach the file).
 
+Token contracts get a face: an attached artifact that implements the
+complete ERC-20 interface shows the **token strip** — name, symbol,
+decimals, and total supply read live from the chain, amounts rendered
+through the token's own decimals, plus a read-only **Balance of…**
+lookup (ERC-721/1155 are recognized and labeled). And **Inspect tx…**
+on the Watch tab decodes any transaction hash against your artifacts'
+ABIs: the named function with its arguments, decoded event logs, gas,
+and status — unknown selectors shown raw, never guessed.
+
 ### Infra Designer (⌥⌘9)
 
 ![Infra Designer](images/tabs/infra-designer.png)
