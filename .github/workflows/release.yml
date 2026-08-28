@@ -320,6 +320,30 @@ jobs:
         with:
           merge-multiple: true
           path: artifacts
+      - name: Checksums + GPG signature
+        # The self-signed trust chain (v2.42.0, official certs deferred
+        # to v3.0 by decision): one SHA256SUMS manifest over every
+        # published asset, detached-signed by the project GPG key (KEYS
+        # at the repo root). Verifying the one signature transitively
+        # verifies every asset. Basenames only, so `sha256sum -c` works
+        # from a download directory.
+        env:
+          GPG_KEY: ${{ secrets.RELEASE_GPG_PRIVATE_KEY }}
+          GPG_PASS: ${{ secrets.RELEASE_GPG_PASSPHRASE }}
+        run: |
+          cd artifacts
+          find . -type f \( -name 'NMOX-Studio-*' -o -name 'nmox-studio_*.deb' \
+              -o -name 'updates.xml' -o -name 'updates.xml.gz' -o -name '*.nbm' \) \
+            | sort | while read -r f; do
+              sha256sum "$f"
+            done | sed 's|  \./.*/|  |; s|  \./|  |' > SHA256SUMS
+          printf '%s' "$GPG_KEY" | gpg --batch --import
+          printf '%s' "$GPG_PASS" | gpg --batch --pinentry-mode loopback \
+            --passphrase-fd 0 --armor --detach-sign \
+            --output SHA256SUMS.asc SHA256SUMS
+          gpg --verify SHA256SUMS.asc SHA256SUMS
+          echo "--- SHA256SUMS ($(wc -l < SHA256SUMS) entries) ---"
+          cat SHA256SUMS
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
@@ -336,6 +360,8 @@ jobs:
             artifacts/**/updates.xml
             artifacts/**/updates.xml.gz
             artifacts/**/*.nbm
+            artifacts/SHA256SUMS
+            artifacts/SHA256SUMS.asc
 
   homebrew:
     needs: [version, release]

@@ -22,6 +22,30 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
+### 86. Official release signing — a v3.0 milestone (David's decision, 2026-08-27)
+
+Until v3.0, the trust chain is deliberately SELF-SIGNED (v2.42.0):
+every module NBM jarsigner-signed with a self-signed 4096-bit RSA
+keystore, and every release carrying a GPG-signed SHA256SUMS manifest
+(key + certificate published in the repo-root KEYS file; private
+material keychain-only + repo secrets). What v3.0 buys, in order of
+user-visible weight:
+
+- **Apple Developer ID + notarization** (~$99/yr, requires David to
+  enroll): deletes the cask's consented quarantine-clear entirely.
+  Upstream NetBeans does this manually per release with the ASF's
+  Developer ID (altool-era steps in their wiki); ours should ride the
+  release lane via secrets instead. JVM apps need hardened-runtime
+  entitlements (JIT, unsigned executable memory) — the one fiddly part.
+- **Windows Authenticode** (Azure Trusted Signing ~$10/mo): signs the
+  .exe launchers + installer.
+- **NBM TRUSTED bless (remainder, needs recon)**: a self-signed (or
+  even DigiCert — upstream users-list evidence) cert shows as
+  "Self Signed"/accept-once in the Plugin Manager; platform-TRUSTED
+  requires the certificate blessed into the build's own trust store,
+  the way Apache ships their cert inside the IDE. Decompile
+  autoupdate-services' trust-store lookup before attempting.
+
 ### 85. IDE string localization — English by construction, its own project if ever
 
 Measured v2.37.5 (the i18n pass): 51 of 697 main-source files touch

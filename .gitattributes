@@ -8,3 +8,6 @@ editor/src/main/resources/org/nmox/studio/editor/grammars/*.tmLanguage.json -tex
 # kits' own \n output on every OS (SiteShipsTest.kitParity — a windows
 # autocrlf checkout broke the parity before this line existed)
 ui/src/main/release/website/** -text
+
+# Key material is byte-stable: KEYS carries PGP armor + an X.509 PEM
+KEYS -text

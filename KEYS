@@ -1,0 +1,69 @@
+# NMOX Studio release signing keys
+
+Self-signed by decision (2026-08-27): official certificates —
+Apple Developer ID + notarization, Windows Authenticode — are a
+v3.0 milestone. Until then, releases are verifiable against the
+keys below.
+
+## Verifying a release
+
+```bash
+# 1. import the signing key (once)
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+# 2. download SHA256SUMS + SHA256SUMS.asc from the release, then:
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+GPG key fingerprint: 0E26F2E988F14E62D69FC41A2564F6FAE08025C4
+
+NBM update-center modules are jarsigner-signed with the
+self-signed certificate below (the IDE shows the certificate at
+install; accepting it once is remembered).
+
+## GPG public key (release artifact signatures)
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mDMEapDvQxYJKwYBBAHaRw8BAQdAIC2gDMGLyH9RqLWDNUv3o7haGYX4FHW8bYG3
+BovMgU+0NE5NT1ggU3R1ZGlvIFJlbGVhc2UgU2lnbmluZyA8ZGF2aWQubGllZGxl
+QGdtYWlsLmNvbT6ItQQTFgoAXRYhBA4m8umI8U5i1p/EGiVk9vrggCXEBQJqkO9D
+GxSAAAAAAAQADm1hbnUyLDIuNSsxLjEyLDAsMwIbAwUJEswDAAULCQgHAgIiAgYV
+CgkICwIEFgIDAQIeBwIXgAAKCRAlZPb64IAlxOkVAP9T7DJbBvep6ZbjmiNfuadO
+9hW0tfgSKnkcC5Xxd4gYGQD9F5cbGtiVsEGZrmQWaGlgY1oYP8uS3SkuXvQwtnlu
+2gI=
+=c7sC
+-----END PGP PUBLIC KEY BLOCK-----
+
+## NBM signing certificate (X.509, self-signed)
+
+-----BEGIN CERTIFICATE-----
+MIIFOTCCAyGgAwIBAgIICF3VUE9NYPYwDQYJKoZIhvcNAQEMBQAwSzEUMBIGA1UE
+CxMLTk1PWCBTdHVkaW8xDTALBgNVBAoTBE5NT1gxJDAiBgNVBAMTG05NT1ggU3R1
+ZGlvIFJlbGVhc2UgU2lnbmluZzAeFw0yNjA4MjgwMjE1MjlaFw0zNjA4MjUwMjE1
+MjlaMEsxFDASBgNVBAsTC05NT1ggU3R1ZGlvMQ0wCwYDVQQKEwROTU9YMSQwIgYD
+VQQDExtOTU9YIFN0dWRpbyBSZWxlYXNlIFNpZ25pbmcwggIiMA0GCSqGSIb3DQEB
+AQUAA4ICDwAwggIKAoICAQC9RpDXulRUoyS73oRbLDiFqv1f650L0uo+idyortYd
+JLsiK6GsW4o29nv3uHOUyKcXoFDNqnhdiMy3lR0A/P3EmWi5Ccu5LegvpW5nHhoE
+MfPXR3/HbxtjirXIIynw1mHxeStyPGurcfTPFEB5uFzaORMA6roayitkq7Jvv9yD
+GhDAs6oGa+nKHLYgAbk2/3GsM4a9ppOCDpg5DCRWdRuiDPhMB6nuPJRDdU1j6aRV
+xxA5I6SR1fCFwdRjE8fQgqmac0hb8iz/zwIWZrhGU1ImKUTtWwtlHVAab6wrJzUU
+xRKCKsLRn9Gv/2u9l1he2d1Qcrlb/OprCGxRVmjggH0nq7DDmLm+SFqK9AgYdk6L
+vC38uAwDC/0DDdfUqhF4lyvlhTCvijwsOTer1uMV6Yxbb9/UW3K2mv8QmjpnBFFx
+qfV8rtmcwVFwPAkDa2hl1MB2GcZDfXsESK0OGuyns9jlzKVkMiPY8smaFjipCskO
+0jHGMHm47pQAqVWVB9bH2yn027H2rude73S0ImvWJTIpfQERbaAr0uGuZv0x/rYG
+npdzsmrKbVU7zdTjg9BuIIuVhWb9C38ycz4kpCmI76ReRRRJW7tsqtRPsaLtoXqi
+tPXG2Fc68nUC97BkUoSjc1f0lGrCzHUm4qbFhJKYMy5viWa8+7nCH+V+ezndRwV8
+iwIDAQABoyEwHzAdBgNVHQ4EFgQU2O7ueUDg4LuVi4Ntsd6YVeEEzagwDQYJKoZI
+hvcNAQEMBQADggIBAErOVWIhwig3gg6vplMJUM3uU5VdX2DhyU+OU9llo5Rbc8/y
+bestn1M6IYhBZbhCAwYs5Bz2zWnk/VUau6+19VfxqA26PWMIFsMfBsCIl/YmgMuz
+9Aqzt53ahROvhfMsENPlDoVMW30XVmaqxxJARo7l1VE8X+NsWZvN+85GioR6yR9Y
+Eh/jIP21SPOZACFQLRmwyUM1IkWntB/0EUO5w1n1v+nMXdtw8XVrnLq9WMvNyQXU
+17YblSGYBM5silcmrGODzzZ8lMj6U2joqFDzmsldqEaDMMM7te7b1uAE50ZptGWr
+FqXxB4pxb80w4DJjju7YSZ8LIPrPTmDGzqaP79yi9nf7xevxhSBvupDVwJZlbm1d
+aovMBHd1ERCUlDmrQDPo2asoeJz+6/TGilKNN5NjjlX7dRUkSo6HMHo3kqhKX2v9
+Q2Y9+gc0AvC9XehV+KOUZXIoyajLhl9qggD3rl3y5qmvt16mTY7j/v/m1OpWQUj+
+7bD5XJ76L/9sel4PTKzyu7ki5miJcxvNv6qCr60nlQuTqDss4TKFWmSp8Nas5LIS
+lRf3TaPUfGYJuQxwzQ3wvBBiiXPb/I/6hy2UxVSPwlOw8HuMwmcEthy2zZ3qza+1
+FDIq/RlbjKFiXvQl9bEqjT7OaCdAOfgxjo4DkN9jLKGGJfb33NAWcMNB5waB
+-----END CERTIFICATE-----

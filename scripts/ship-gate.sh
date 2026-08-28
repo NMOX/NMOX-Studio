@@ -88,8 +88,8 @@ echo "tagged $TAG"
 for i in $(seq 1 90); do
   N=$(gh release view "$TAG" --json assets --jq '.assets | length' 2>/dev/null || echo 0)
   echo "assets: $N"
-  if [[ "$N" == 19 ]]; then
-    echo "RELEASE-COMPLETE: 19 assets"
+  if [[ "$N" == 21 ]]; then
+    echo "RELEASE-COMPLETE: 21 assets"
     # nudge the canonical tap's self-sync so brew users get the bump
     # now, not at the next half-hour cron (v2.39.6; failure harmless —
     # cron is the backstop)
