@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.8] - 2026-08-28
+
+The Block Studio walk, all clean (docs only) — the night's second
+~130-release walk gap closed on shipped 2.43.6, palette to disk to
+HTTP: the keyboard insert menu IS the interlock matrix (only legal
+kinds offered under the selected piece), the codegen pane updated
+live as the Text piece landed, and the v1.88.0 escape law was
+visible at every layer — "<3:30 & counting" entity-escaped in the
+generated template, served byte-identical over the loopback preview
+(the server that gained its bind witness two releases ago), and
+written byte-identical to src/components/my-widget.js by Save
+Component; the harness mounted the tag, an unknown /lib tag answered
+404, and Stop Preview killed the port AND the ⇄ serving line
+together. Zero findings — both of the oldest standing walks (DB
+v2.43.7, Block here) closed all-clean in one night.
+
 ## [2.43.7] - 2026-08-28
 
 The DBA walk, all clean (docs only) — the oldest standing walk gap
@@ -15127,6 +15143,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.7...v2.43.8
 [2.43.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.6...v2.43.7
 [2.43.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.5...v2.43.6
 [2.43.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.4...v2.43.5
