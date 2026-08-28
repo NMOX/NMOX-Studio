@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.10] - 2026-08-28
+
+The IRC Libera walk, all clean (docs only) — the last walk of any
+age brought current, live against the real network on shipped
+2.43.6: TLS connect through the full MOTD, a channel joined, local
+echo landing in the channel with its em-dash intact, and both young
+laws holding where they were made — the malformed /filter add
+answered its Usage line IN THE CHANNEL where it was typed (the
+v2.34.4 wrong-room fix, ~55 releases on, backed by the v2.36.2
+eleven-handler sweep) and /lastlog reported its match in place. With
+this, EVERY studio and client surface in the product has walked
+all-clean within the last sixty releases, and the four walked
+tonight (DB, Block, Infra, IRC) produced zero product findings
+between them.
+
 ## [2.43.9] - 2026-08-28
 
 The Infra Designer walk, all clean (docs only) — the third and last
@@ -15161,6 +15176,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.10]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.9...v2.43.10
 [2.43.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.8...v2.43.9
 [2.43.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.7...v2.43.8
 [2.43.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.6...v2.43.7
