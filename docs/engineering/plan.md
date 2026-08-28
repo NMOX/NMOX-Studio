@@ -1,5 +1,29 @@
 # The Plan
 
+*Currency addendum 2026-08-28, at v2.43.4, after the distribution-and-trust
+day (v2.39.6–v2.43.4, ~14 releases in ~36 hours, all four of David's
+greenlights delivered): the canonical PUBLIC Homebrew tap with zero-secret
+self-sync; THE PRODUCT SHIPS ITS OWN WEBSITE (Help ▸ NMOX Studio Website
+(local) — SiteServer loopback-witnessed, traversal→404, the ⇄ chip on the
+product's own story; a11y.css/i18n.js ARE the kits' output, build-gated)
+and the same bytes deploy publicly to GitHub Pages with a host-honest hero
+note; the README leads with a 20-second live-recorded tour gif
+(ImageRefsTest learned .gif failing-first); upstream issues filed on
+David's behalf (apache/netbeans#9581 instance-keyed LSP reuse, #9582
+project×mime bindings + rename-merges-all); CONTRIBUTING rewritten around
+the nine laws and CLAUDE.md gained the Working Method section; and THE
+SELF-SIGNED TRUST CHAIN (official certs = v3.0 by decision, ledger 86):
+NBM signing ON via the v1.58.0 seam, GPG-signed SHA256SUMS as assets
+20–21, KEYS at the repo root, the blessed certificate in-product
+(KeyStoreProvider at TRUST — walked: the GUI update runs with ZERO
+certificate interruptions), the unsigned→signed boundary gauntleted, and
+the arc's own review turning the degrade-path comment into a
+mutation-proven test. New failure patterns recorded: one working tree one
+chain (chains branch-assert), a multi-line grep -F pattern is an OR of its
+lines, delete surefire reports before mutant runs (a non-compiling mutant
+reads stale verdicts as SURVIVED), and this tool-shell does not honor
+set -e — every chained step guards its own rc.*
+
 *Rewritten 2026-07-12, at v1.50.0, as a fresh senior-eyes capstone by the
 assistant that built v1.8→v1.50 with David; currency pass the same day at
 v1.56.0 after the roadmap sprint shipped six more releases (update center,
