@@ -63,6 +63,9 @@ import org.nmox.studio.web3.engine.EventMatcher;
 import org.nmox.studio.web3.engine.GasReportParser;
 import org.nmox.studio.web3.engine.InteractSession;
 import org.nmox.studio.web3.engine.JsonRpcClient;
+import org.nmox.studio.web3.engine.ErcStandards;
+import org.nmox.studio.web3.engine.TokenAmounts;
+import org.nmox.studio.web3.engine.TxInspection;
 import org.nmox.studio.web3.engine.ReceiptWaiter;
 import org.nmox.studio.web3.engine.WatchFeed;
 import org.nmox.studio.web3.engine.WatchRows;
@@ -445,6 +448,12 @@ public final class Web3StudioTopComponent extends TopComponent {
         interactPanel.removeAll();
         interactPanel.add(s.attached() ? buildFunctionList(s) : buildDeployForm(s),
                 BorderLayout.CENTER);
+        if (s.attached()) {
+            JComponent strip = buildTokenStrip(s);
+            if (strip != null) {
+                interactPanel.add(strip, BorderLayout.NORTH);
+            }
+        }
         interactPanel.revalidate();
         interactPanel.repaint();
     }
@@ -944,6 +953,14 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
         });
         bar.add(watchFilterCombo);
+        bar.addSeparator();
+        JButton inspectButton = new JButton("Inspect tx\u2026");
+        inspectButton.setToolTipText("Decode a transaction by hash against your "
+                + "artifacts' ABIs \u2014 read-only");
+        inspectButton.getAccessibleContext().setAccessibleName(
+                "Inspect a transaction by hash");
+        inspectButton.addActionListener(e -> inspectTransaction());
+        bar.add(inspectButton);
         panel.add(bar, BorderLayout.NORTH);
 
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(watchModel));
@@ -2033,6 +2050,229 @@ public final class Web3StudioTopComponent extends TopComponent {
     private static String messageOf(Exception e) {
         return e.getMessage() == null || e.getMessage().isBlank()
                 ? e.getClass().getSimpleName() : e.getMessage();
+    }
+
+    // ---- The token strip (v2.44.0) ---------------------------------------
+
+    /**
+     * A one-line token face for an attached artifact that implements a
+     * token standard — or null for ordinary contracts. ERC-20 metadata
+     * (name/symbol/decimals/totalSupply) is read via {@code eth_call}
+     * off the EDT; the optional readers the ABI doesn't carry are shown
+     * as honest absents, never invented. The async apply is guarded by
+     * session identity (the v1.172.0 law: a result belongs to the
+     * session that asked).
+     */
+    private JComponent buildTokenStrip(InteractSession s) {
+        ErcStandards.Standard standard = ErcStandards.detect(s.artifact().abi());
+        if (standard == null) {
+            return null;
+        }
+        JLabel strip = new JLabel("\u2b21 " + standard.label()
+                + (standard == ErcStandards.Standard.ERC20
+                        ? " — reading token metadata\u2026" : " token"));
+        strip.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        strip.setForeground(ACCENT);
+        strip.getAccessibleContext().setAccessibleName(
+                standard.label() + " token summary");
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(strip, BorderLayout.CENTER);
+        if (standard == ErcStandards.Standard.ERC20) {
+            JButton balanceButton = new JButton("Balance of\u2026");
+            balanceButton.setToolTipText(
+                    "eth_call balanceOf(address) \u2014 read-only");
+            balanceButton.getAccessibleContext().setAccessibleName(
+                    "Look up a token balance");
+            balanceButton.addActionListener(e -> lookupTokenBalance(s));
+            JPanel east = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+            east.add(balanceButton);
+            panel.add(east, BorderLayout.EAST);
+            readTokenMetadata(s, strip);
+        }
+        return panel;
+    }
+
+    private record TokenMetadata(String name, String symbol,
+            Integer decimals, java.math.BigInteger totalSupply) {
+    }
+
+    private void readTokenMetadata(InteractSession s, JLabel strip) {
+        JsonRpcClient c = client;
+        if (c == null || s.address() == null) {
+            strip.setText("\u2b21 ERC-20 \u2014 connect to a network to read "
+                    + "the token's name, symbol and supply");
+            return;
+        }
+        RP.post(() -> {
+            String name = callOptionalReader(c, s, "name");
+            String symbol = callOptionalReader(c, s, "symbol");
+            String decimalsText = callOptionalReader(c, s, "decimals");
+            String supplyText = callOptionalReader(c, s, "totalSupply");
+            Integer decimals = null;
+            try {
+                decimals = decimalsText == null ? null : Integer.valueOf(decimalsText);
+            } catch (NumberFormatException ignore) {
+            }
+            java.math.BigInteger supply = null;
+            try {
+                supply = supplyText == null ? null : new java.math.BigInteger(supplyText);
+            } catch (NumberFormatException ignore) {
+            }
+            TokenMetadata meta = new TokenMetadata(name, symbol, decimals, supply);
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (session != s) {
+                    return; // re-aim/re-attach while reading (v1.172.0)
+                }
+                String line = tokenStripText(meta);
+                strip.setText(line);
+                // a narrow pane ellipsizes the label — the full line
+                // survives as the tooltip (the v1.282.0 truncation law)
+                strip.setToolTipText(line);
+            });
+        });
+    }
+
+    /** Pure line assembly so the honest-absent rules are testable. */
+    static String tokenStripText(Object metadataObject) {
+        TokenMetadata m = (TokenMetadata) metadataObject;
+        StringBuilder b = new StringBuilder("\u2b21 ERC-20");
+        if (m.name() != null || m.symbol() != null) {
+            b.append("  \u201c").append(m.name() == null ? "?" : m.name())
+                    .append("\u201d");
+            if (m.symbol() != null) {
+                b.append(" (").append(m.symbol()).append(')');
+            }
+        } else {
+            b.append("  \u00b7 name/symbol not in ABI");
+        }
+        if (m.decimals() != null) {
+            b.append("  \u00b7 ").append(m.decimals()).append(" decimals");
+        }
+        if (m.totalSupply() != null) {
+            if (m.decimals() != null) {
+                b.append("  \u00b7 supply ").append(TokenAmounts.toHuman(
+                        m.totalSupply(), m.decimals()));
+                if (m.symbol() != null) {
+                    b.append(' ').append(m.symbol());
+                }
+            } else {
+                b.append("  \u00b7 supply ").append(m.totalSupply())
+                        .append(" (raw \u2014 decimals not in ABI)");
+            }
+        }
+        return b.toString();
+    }
+
+    /** eth_calls a zero-arg optional reader; null when absent or failing. */
+    private String callOptionalReader(JsonRpcClient c, InteractSession s, String name) {
+        org.nmox.studio.web3.model.AbiEntry reader =
+                ErcStandards.metadataReader(s.artifact().abi(), name);
+        if (reader == null) {
+            return null;
+        }
+        try {
+            String hex = c.ethCall(s.address(), AbiCodec.encodeCall(reader, List.of()));
+            List<String> out = AbiCodec.decodeReturn(reader, hex);
+            return out.isEmpty() ? null : out.get(0);
+        } catch (Exception unreadable) {
+            return null;
+        }
+    }
+
+    private void lookupTokenBalance(InteractSession s) {
+        NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
+                "Address:", "Token balance \u2014 read-only eth_call");
+        if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String address = ask.getInputText().trim();
+        if (!address.matches("0x[0-9a-fA-F]{40}")) {
+            status("Not an address \u2014 expected 0x + 40 hex characters", FAIL_RED);
+            return;
+        }
+        JsonRpcClient c = client;
+        if (c == null) {
+            status("Connect to a network first", FAIL_RED);
+            return;
+        }
+        RP.post(() -> {
+            try {
+                org.nmox.studio.web3.model.AbiEntry balanceOf =
+                        s.artifact().abi().stream()
+                                .filter(e2 -> "balanceOf".equals(e2.name())
+                                        && e2.inputs().size() == 1)
+                                .findFirst().orElseThrow();
+                String hex = c.ethCall(s.address(),
+                        AbiCodec.encodeCall(balanceOf, List.of(address)));
+                String raw = AbiCodec.decodeReturn(balanceOf, hex).get(0);
+                String decimalsText = callOptionalReader(c, s, "decimals");
+                String line;
+                if (decimalsText != null) {
+                    line = "Balance of " + address + ": " + TokenAmounts.toHuman(
+                            new java.math.BigInteger(raw),
+                            Integer.parseInt(decimalsText));
+                } else {
+                    line = "Balance of " + address + ": " + raw + " (raw)";
+                }
+                javax.swing.SwingUtilities.invokeLater(() -> status(line, ACCENT));
+            } catch (Exception failure) {
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        status("Balance lookup failed: " + failure.getMessage(),
+                                FAIL_RED));
+            }
+        });
+    }
+
+    // ---- The transaction inspector (v2.44.0) -----------------------------
+
+    private void inspectTransaction() {
+        NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
+                "Transaction hash:", "Inspect transaction");
+        if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String hash = ask.getInputText().trim();
+        if (!hash.matches("0x[0-9a-fA-F]{64}")) {
+            status("Not a transaction hash \u2014 expected 0x + 64 hex characters",
+                    FAIL_RED);
+            return;
+        }
+        JsonRpcClient c = client;
+        if (c == null) {
+            status("Connect to a network first", FAIL_RED);
+            return;
+        }
+        List<ContractArtifact> known = artifacts;
+        RP.post(() -> {
+            try {
+                org.json.JSONObject tx = c.getTransactionRaw(hash);
+                if (tx == null) {
+                    javax.swing.SwingUtilities.invokeLater(() -> status(
+                            "Transaction not found on this network", FAIL_RED));
+                    return;
+                }
+                org.json.JSONObject receipt = c.getTransactionReceiptRaw(hash);
+                TxInspection.Report report = TxInspection.assemble(tx, receipt, known);
+                javax.swing.SwingUtilities.invokeLater(() -> showInspection(hash, report));
+            } catch (Exception failure) {
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        status("Inspect failed: " + failure.getMessage(), FAIL_RED));
+            }
+        });
+    }
+
+    private void showInspection(String hash, TxInspection.Report report) {
+        javax.swing.JTextArea area = new javax.swing.JTextArea(
+                String.join("\n", report.lines()), 14, 78);
+        area.setEditable(false);
+        area.setFont(MONO);
+        area.getAccessibleContext().setAccessibleName("Transaction inspection");
+        javax.swing.JDialog dialog = new javax.swing.JDialog(
+                (java.awt.Frame) null, "Transaction " + hash, false);
+        dialog.add(new JScrollPane(area));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void status(String message, Color color) {

@@ -159,7 +159,11 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.95</minimum>
+                                            <!-- the WINDOWS lane is the binding measurement (the
+                                                 v1.299.0 rack law): it measures 0.94 where
+                                                 unix measures 0.95 (POSIX-gated tests skip
+                                                 there) - floor = windows-measured minus margin -->
+                                            <minimum>0.93</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

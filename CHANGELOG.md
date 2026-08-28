@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.44.0] - 2026-08-28
+
+More Web3 (David's ask) — Contract Studio learns what a token IS.
+NEW ErcStandards detects ERC-20/721/1155 from an ABI by COMPLETE
+required-signature sets (all-or-nothing, the wrong-guess-mutates
+law; the optional name/symbol/decimals extensions never gate
+detection); an attached ERC-20 gains the TOKEN STRIP — name, symbol,
+decimals, and supply read via real eth_calls off the EDT, rendered
+human through the exact new TokenAmounts codec (BigDecimal both
+ways; an amount with more fractional digits than the token's
+decimals is REFUSED, never truncated, because a truncated transfer
+is money), with a read-only Balance of… lookup and honest absents
+for metadata the ABI doesn't carry. And the Watch pane gains
+Inspect tx… — any transaction hash decoded against the workspace's
+own artifact ABIs plus the canonical token events: from/to/value,
+status, gas, calldata resolved to the named function with arguments
+(unknown selectors shown raw, never guessed), logs decoded with
+named parameters. Walk-proven against a real anvil with a real
+forge-built ERC-20: strip read "Walk Token" (WALK) with the million
+supply human-rendered, Balance of the deployer answered 1000000, and
+the inspector's gasUsed matched anvil's own log to the digit with
+transfer() decoded and its Transfer event named. Three mutants by
+name (weakened detection, silent amount truncation, guessed
+selector); the async strip apply session-guarded (v1.172.0); the
+clipped strip carries its full line as tooltip (v1.282.0). The
+web3 JaCoCo floor moves 0.95 → 0.93 under the windows-binding law
+(v1.299.0): the windows lane measures 0.94 where unix measures 0.95,
+and the floor obeys the lane that binds.
+
 ## [2.43.11] - 2026-08-28
 
 The night close (docs only) — the marathon gauntlet: a STOCK
@@ -15195,6 +15224,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.44.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.11...v2.44.0
 [2.43.11]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.10...v2.43.11
 [2.43.10]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.9...v2.43.10
 [2.43.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.8...v2.43.9

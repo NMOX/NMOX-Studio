@@ -152,6 +152,39 @@ public final class AbiCodec {
      * yields the reason text, {@code Panic(uint256)} its named code,
      * anything else {@code custom error 0x…}.
      */
+    /**
+     * Decodes a transaction's input data against an ABI (v2.44.0, the
+     * inspector): matches the 4-byte selector to a function and decodes
+     * the arguments. Returns {@code name(value, value, …)}, or null
+     * when no function matches — the caller shows the raw selector
+     * honestly rather than guessing.
+     */
+    public static String decodeCallInput(List<AbiEntry> abi, String inputHex) {
+        String digits = inputHex == null ? "" : inputHex.startsWith("0x")
+                ? inputHex.substring(2) : inputHex;
+        if (digits.length() < 8) {
+            return null;
+        }
+        String selector = digits.substring(0, 8).toLowerCase(java.util.Locale.ROOT);
+        for (AbiEntry entry : abi) {
+            if (entry.kind() != AbiEntry.Kind.FUNCTION) {
+                continue;
+            }
+            String own = Hex.toHex(Keccak256.selector(entry.signature()));
+            if (!own.equalsIgnoreCase(selector)) {
+                continue;
+            }
+            List<String> types = new ArrayList<>(entry.inputs().size());
+            for (AbiParam input : entry.inputs()) {
+                types.add(input.type());
+            }
+            List<String> values = types.isEmpty() ? List.of()
+                    : decodeSequence(types, Hex.fromHex(digits.substring(8)), 0);
+            return entry.name() + "(" + String.join(", ", values) + ")";
+        }
+        return null;
+    }
+
     public static String decodeRevert(String hexData) {
         return decodeRevert(hexData, List.of());
     }

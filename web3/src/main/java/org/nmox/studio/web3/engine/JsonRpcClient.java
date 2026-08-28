@@ -258,6 +258,17 @@ public final class JsonRpcClient {
                 logEntries(receipt.optJSONArray("logs")));
     }
 
+    /** The node's raw {@code eth_getTransactionByHash} answer, or null
+     *  when the hash is unknown to this network (v2.44.0 inspector). */
+    public JSONObject getTransactionRaw(String txHash) throws IOException {
+        return call("eth_getTransactionByHash", txHash).optJSONObject("result");
+    }
+
+    /** The raw receipt object, or null while the transaction is pending. */
+    public JSONObject getTransactionReceiptRaw(String txHash) throws IOException {
+        return call("eth_getTransactionReceipt", txHash).optJSONObject("result");
+    }
+
     /**
      * {@code eth_getLogs} for one contract address over a block range
      * (decimal, 0x-hex, or tags like {@code latest}).
