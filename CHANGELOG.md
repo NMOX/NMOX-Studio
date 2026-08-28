@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.6] - 2026-08-28
+
+The loopback-law sweep (the v2.36.2 pattern on the night's own young
+law: a bind is WITNESSED, not string-assumed): every in-JVM listener
+enumerated. The Block Studio preview server — which serves the
+user's component code all session — carried loopback only as a
+source string; it now exposes the boundAddress() witness and its
+test asserts the socket itself (wildcard mutant dead by name, the
+SiteServer lesson applied to its sibling). DapProxy and JsDebugServer
+verified explicit-loopback CLEAN. And one false positive recorded
+the honest way: FreePorts' wildcard probe bind LOOKED like the bug
+and is in fact load-bearing — with SO_REUSEADDR on macOS a loopback
+bind succeeds over an existing wildcard holder, so a loopback probe
+would hand back busy ports (the v1.320 class reborn); the existing
+heldPortIsSkipped test killed the "fix" on its first run, and the
+WHY now lives at the bind site so the next sweeper reads it instead
+of repeating it.
+
 ## [2.43.5] - 2026-08-28
 
 The morning close (docs only): A Day at Meridian gains its epilogue —
@@ -15086,6 +15104,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.5...v2.43.6
 [2.43.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.4...v2.43.5
 [2.43.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.3...v2.43.4
 [2.43.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.2...v2.43.3
