@@ -39,12 +39,12 @@ user-visible weight:
   entitlements (JIT, unsigned executable memory) — the one fiddly part.
 - **Windows Authenticode** (Azure Trusted Signing ~$10/mo): signs the
   .exe launchers + installer.
-- **NBM TRUSTED bless (remainder, needs recon)**: a self-signed (or
-  even DigiCert — upstream users-list evidence) cert shows as
-  "Self Signed"/accept-once in the Plugin Manager; platform-TRUSTED
-  requires the certificate blessed into the build's own trust store,
-  the way Apache ships their cert inside the IDE. Decompile
-  autoupdate-services' trust-store lookup before attempting.
+- ~~NBM TRUSTED bless~~ — DELIVERED v2.43.0: recon found the
+  platform SPI (KeyStoreProvider, Lookup-collected, TrustLevel.TRUST
+  for exact-cert trust; Utilities.verifyCertificates consumes it) and
+  NmoxTrustedCerts now ships the certificate in-product,
+  KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
+  first post-2.43.0 update walk.
 
 ### 85. IDE string localization — English by construction, its own project if ever
 
