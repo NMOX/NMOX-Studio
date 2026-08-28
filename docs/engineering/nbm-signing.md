@@ -28,6 +28,10 @@ path installs signed-unknown-certificate NBMs without prompting — a
 stock 2.41.1 crossed the unsigned→signed boundary clean (updates=11,
 jars byte-verified, clean reboot). Certificate trust UX gates only
 the GUI Plugin Manager flow.
+And the blessed GUI flow, walked (v2.43.2): a 2.43.0 install updating
+to 2.43.1 through the Plugin Manager showed NO certificate
+interruption anywhere in the wizard — signed + blessed means the
+trust page simply never appears.
 
 ## What's already wired
 
