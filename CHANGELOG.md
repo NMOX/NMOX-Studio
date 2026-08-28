@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.43.2] - 2026-08-28
+
+The blessed path, walked (docs only): a live 2.43.0 install ran its
+GUI Plugin Manager update to 2.43.1 — eleven signed NBMs downloaded,
+verified, and installed with ZERO trust interruptions (welcome →
+license → install → restart; the certificate page never appears,
+because trust that works is the dialog you never see), ending in an
+in-place cluster update byte-verified at 2.43.1 and a clean reboot
+with zero SEVERE. The night's whole trust arc, from dormant seams to
+walked proof, now reads: sign (v2.42.0) → measure the boundary
+(gauntlet) → bless (v2.43.0) → walk the blessed path (here). The
+signing doc records the walked verdict.
+
 ## [2.43.1] - 2026-08-28
 
 Night docs truth: the Working Method section gains the two lessons
@@ -15030,6 +15043,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.43.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.1...v2.43.2
 [2.43.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.0...v2.43.1
 [2.43.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.42.0...v2.43.0
 [2.42.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.41.1...v2.42.0
