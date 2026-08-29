@@ -71,6 +71,21 @@ class ProjectSymbolsTest {
     }
 
     @Test
+    @DisplayName("A pathologically deep tree trips the cap and says so")
+    void depthCapSpeaks(@TempDir Path root) throws Exception {
+        Path deep = root;
+        for (int i = 0; i <= ProjectSymbols.MAX_DEPTH + 1; i++) {
+            deep = Files.createDirectories(deep.resolve("d" + i));
+        }
+        Files.writeString(deep.resolve("far.js"), "function far() {}\n");
+        ProjectSymbols index = new ProjectSymbols();
+        List<Symbol> all = refresh(index, root);
+        // the far file is out of reach AND the index says it is partial
+        assertThat(all).extracting(Symbol::name).doesNotContain("far");
+        assertThat(index.wasTruncated()).isTrue();
+    }
+
+    @Test
     @DisplayName("Unchanged files ride the cache; a changed file re-reads")
     void cacheHonorsMtime(@TempDir Path root) throws Exception {
         Path f = root.resolve("a.js");

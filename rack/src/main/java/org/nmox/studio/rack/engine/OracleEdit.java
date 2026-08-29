@@ -133,6 +133,29 @@ public final class OracleEdit {
     }
 
     /**
+     * An edit never changes whether the selection ends in a newline.
+     * The fence syntax forces the model's block to end WITHOUT one (the
+     * newline before the closing fence belongs to the fence), so a
+     * newline-terminated selection would otherwise lose its terminator
+     * on Apply and GLUE the following line onto the replacement's tail
+     * — the v2.48.0 walk's own preview reported it ("12 → 11 lines")
+     * and nobody read the honest counter. Symmetric on purpose: a
+     * model-invented trailing newline the selection never had is
+     * dropped the same way, so the preview always shows the truth.
+     */
+    public static String matchTrailingNewline(String original, String replacement) {
+        boolean had = original.endsWith("\n");
+        boolean has = replacement.endsWith("\n");
+        if (had && !has) {
+            return replacement + "\n";
+        }
+        if (!had && has) {
+            return replacement.substring(0, replacement.length() - 1);
+        }
+        return replacement;
+    }
+
+    /**
      * The stale-buffer apply guard: replaces {@code [start, start+original.length)}
      * with {@code replacement} ONLY if the document still holds exactly
      * {@code original} there — the file may have changed while ORACLE was

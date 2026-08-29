@@ -58,7 +58,9 @@ public final class OracleEditEngine {
             String reply = client.converse(
                     List.of(new Turn("user", OracleEdit.assembleEditPrompt(r))),
                     model, key);
-            String replacement = OracleEdit.extractFencedCode(reply);
+            String extracted = OracleEdit.extractFencedCode(reply);
+            String replacement = extracted == null ? null
+                    : OracleEdit.matchTrailingNewline(r.code(), extracted);
             if (replacement == null) {
                 // zero fences is the model's honest "can't" channel — show
                 // its prose; 2+ blocks is ambiguity — never guess which
