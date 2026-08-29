@@ -95,6 +95,20 @@ class TokenTrancheTest {
                 .hasMessageContaining("Not a number");
     }
 
+    @Test
+    @DisplayName("amount fields: raw passes through, decimals convert, unknown decimals refuse")
+    void interpretAmount() {
+        assertThat(TokenAmounts.interpretAmount("1500000", 6)).isEqualTo("1500000");
+        assertThat(TokenAmounts.interpretAmount("1.5", 6)).isEqualTo("1500000");
+        assertThat(TokenAmounts.interpretAmount("0.000001", 6)).isEqualTo("1");
+        assertThatThrownBy(() -> TokenAmounts.interpretAmount("1.5", null))
+                .hasMessageContaining("type raw units");
+        assertThatThrownBy(() -> TokenAmounts.interpretAmount("1.5e3", 6))
+                .hasMessageContaining("Not an amount");
+        assertThatThrownBy(() -> TokenAmounts.interpretAmount("abc", 6))
+                .hasMessageContaining("Not an amount");
+    }
+
     // --- calldata ---------------------------------------------------
 
     @Test

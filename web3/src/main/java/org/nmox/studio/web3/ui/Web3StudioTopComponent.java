@@ -428,7 +428,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (userObject instanceof Network network) {
             networkCombo.setSelectedItem(network);
         } else if (userObject instanceof ContractArtifact artifact) {
-            openInteractFor(InteractSession.deploying(artifact, hasAccounts()));
+            // an import that carries its deployed address opens ATTACHED —
+            // the whole point of importing by address is skipping the
+            // attach dance (v2.46.0, the walk note)
+            String importedAddress = importedAddressFor(artifact.name());
+            openInteractFor(importedAddress != null
+                    ? InteractSession.attached(artifact, importedAddress, hasAccounts())
+                    : InteractSession.deploying(artifact, hasAccounts()));
         } else if (userObject instanceof DeploymentRecord record) {
             attachDeployment(record);
         }
@@ -453,6 +459,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void openInteractFor(InteractSession newSession) {
         session = newSession;
+        tokenDecimals = null; // the next strip read re-learns it (v1.172.0)
         rebuildInteract();
         tabs.setSelectedIndex(0);
     }
@@ -806,6 +813,32 @@ public final class Web3StudioTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * Amount fields speak human (v2.46.0): on an ERC-20's canonical
+     * write functions, the trailing uint256 accepts "1.5" and converts
+     * through the strip's decimals() — raw integers pass through
+     * untouched, and a decimal form with unknown decimals is refused
+     * with the reason (TokenAmounts.interpretAmount, the money law).
+     * Every other function's arguments are handed on verbatim.
+     */
+    private List<String> tokenAwareArgs(InteractSession s, AbiEntry function,
+            List<String> args) {
+        if (ErcStandards.detect(s.artifact().abi()) != ErcStandards.Standard.ERC20) {
+            return args;
+        }
+        String signature = function.signature();
+        if (!signature.equals("transfer(address,uint256)")
+                && !signature.equals("approve(address,uint256)")
+                && !signature.equals("transferFrom(address,address,uint256)")) {
+            return args;
+        }
+        List<String> out = new ArrayList<>(args);
+        int last = out.size() - 1;
+        out.set(last, org.nmox.studio.web3.engine.TokenAmounts.interpretAmount(
+                out.get(last), tokenDecimals));
+        return out;
+    }
+
     private void send(InteractSession s, AbiEntry function, List<JTextField> argFields,
             JTextField valueField, JLabel result) {
         if (running) {
@@ -825,7 +858,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         String data;
         String valueHex;
         try {
-            data = s.callData(function, fieldTexts(argFields));
+            data = s.callData(function, tokenAwareArgs(s, function, fieldTexts(argFields)));
             valueHex = InteractSession.valueWeiHex(
                     valueField == null ? null : valueField.getText());
         } catch (IllegalArgumentException refusal) {
@@ -949,6 +982,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         return null;
     }
+
+    /** The saved address of an imported contract, or null. */
+    private String importedAddressFor(String name) {
+        for (org.nmox.studio.web3.model.ImportedContract record : importedContracts) {
+            if (record.name().equals(name) && !record.address().isEmpty()) {
+                return record.address();
+            }
+        }
+        return null;
+    }
+
+    /** The attached token's decimals(), read by the strip — null until
+     *  known; consulted by the amount-field interpreter (v2.46.0). */
+    private Integer tokenDecimals;
 
     /** Built artifacts + imported ABIs — every consumer sees both. */
     private List<ContractArtifact> allArtifacts() {
@@ -2244,6 +2291,18 @@ public final class Web3StudioTopComponent extends TopComponent {
                 standard.label() + " token summary");
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(strip, BorderLayout.CENTER);
+        if (standard == ErcStandards.Standard.ERC721) {
+            JButton ownerButton = new JButton("Owner of\u2026");
+            ownerButton.setToolTipText("eth_call ownerOf(tokenId) \u2014 read-only; "
+                    + "shows tokenURI too when the ABI carries it");
+            ownerButton.getAccessibleContext().setAccessibleName(
+                    "Look up a token's owner");
+            ownerButton.addActionListener(e -> lookupTokenOwner(s));
+            JPanel east721 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+            east721.add(ownerButton);
+            panel.add(east721, BorderLayout.EAST);
+            readNftMetadata(s, strip);
+        }
         if (standard == ErcStandards.Standard.ERC20) {
             JButton balanceButton = new JButton("Balance of\u2026");
             balanceButton.setToolTipText(
@@ -2261,6 +2320,84 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private record TokenMetadata(String name, String symbol,
             Integer decimals, java.math.BigInteger totalSupply) {
+    }
+
+    private void readNftMetadata(InteractSession s, JLabel strip) {
+        JsonRpcClient c = client;
+        if (c == null || s.address() == null) {
+            strip.setText("\u2b21 ERC-721 token \u2014 connect to a network to "
+                    + "read its name and symbol");
+            return;
+        }
+        RP.post(() -> {
+            String name = callOptionalReader(c, s, "name");
+            String symbol = callOptionalReader(c, s, "symbol");
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (session != s) {
+                    return;
+                }
+                StringBuilder b = new StringBuilder("\u2b21 ERC-721");
+                if (name != null) {
+                    b.append("  \u201c").append(name).append('\u201d');
+                }
+                if (symbol != null) {
+                    b.append(" (").append(symbol).append(')');
+                }
+                if (name == null && symbol == null) {
+                    b.append("  \u00b7 name/symbol not in ABI");
+                }
+                strip.setText(b.toString());
+                strip.setToolTipText(b.toString());
+            });
+        });
+    }
+
+    private void lookupTokenOwner(InteractSession s) {
+        NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
+                "Token id:", "Owner of \u2014 read-only eth_call");
+        if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String tokenId = ask.getInputText().trim();
+        if (!tokenId.matches("[0-9]+")) {
+            status("Not a token id \u2014 expected a whole number", FAIL_RED);
+            return;
+        }
+        JsonRpcClient c = client;
+        if (c == null) {
+            status("Connect to a network first", FAIL_RED);
+            return;
+        }
+        RP.post(() -> {
+            try {
+                org.nmox.studio.web3.model.AbiEntry ownerOf = s.artifact().abi().stream()
+                        .filter(e2 -> "ownerOf".equals(e2.name())
+                                && e2.inputs().size() == 1)
+                        .findFirst().orElseThrow();
+                String owner = AbiCodec.decodeReturn(ownerOf,
+                        c.ethCall(s.address(),
+                                AbiCodec.encodeCall(ownerOf, List.of(tokenId)))).get(0);
+                String line = "Owner of #" + tokenId + ": " + owner;
+                org.nmox.studio.web3.model.AbiEntry tokenUri = s.artifact().abi().stream()
+                        .filter(e2 -> "tokenURI".equals(e2.name())
+                                && e2.inputs().size() == 1)
+                        .findFirst().orElse(null);
+                if (tokenUri != null) {
+                    try {
+                        line += "  \u00b7 tokenURI: " + AbiCodec.decodeReturn(tokenUri,
+                                c.ethCall(s.address(), AbiCodec.encodeCall(
+                                        tokenUri, List.of(tokenId)))).get(0);
+                    } catch (Exception absent) {
+                        // a burned/absent token's URI reverts — the owner line stands
+                    }
+                }
+                String shown = line;
+                javax.swing.SwingUtilities.invokeLater(() -> status(shown, ACCENT));
+            } catch (Exception failure) {
+                javax.swing.SwingUtilities.invokeLater(() -> status(
+                        "Owner lookup failed: " + failure.getMessage(), FAIL_RED));
+            }
+        });
     }
 
     private void readTokenMetadata(InteractSession s, JLabel strip) {
@@ -2290,6 +2427,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 if (session != s) {
                     return; // re-aim/re-attach while reading (v1.172.0)
                 }
+                tokenDecimals = meta.decimals();
                 String line = tokenStripText(meta);
                 strip.setText(line);
                 // a narrow pane ellipsizes the label — the full line
