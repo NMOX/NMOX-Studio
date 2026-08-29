@@ -168,6 +168,9 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The address book, newest first — mirrors .nmoxweb3.json. */
     private final List<DeploymentRecord> deployments = new ArrayList<>();
     private List<ContractArtifact> artifacts = List.of();
+    /** Imported-ABI contracts (v2.45.0) — survive rescans by design. */
+    private List<org.nmox.studio.web3.model.ImportedContract> importedContracts = List.of();
+    private List<ContractArtifact> importedArtifacts = List.of();
     /** Read by the Watch poller thread. */
     private volatile EventMatcher eventMatcher = EventMatcher.empty();
     /** Read by the Watch poller thread. */
@@ -317,6 +320,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         removeNetworkButton.addActionListener(e -> removeSelectedNetwork());
         bar.add(removeNetworkButton);
         bar.addSeparator();
+        JButton importAbiButton = new JButton("Import ABI\u2026");
+        importAbiButton.setToolTipText("Interact with any deployed contract — paste "
+                + "its ABI; attach by address; no build needed");
+        importAbiButton.getAccessibleContext().setAccessibleName("Import an ABI");
+        importAbiButton.addActionListener(e -> importAbi());
+        bar.add(importAbiButton);
+        JButton removeImportedButton = new JButton("Remove Imported\u2026");
+        removeImportedButton.setToolTipText(
+                "Forget an imported ABI \u2014 the chain is untouched");
+        removeImportedButton.getAccessibleContext().setAccessibleName(
+                "Remove an imported ABI");
+        removeImportedButton.addActionListener(e -> removeImported());
+        bar.add(removeImportedButton);
+        bar.addSeparator();
         chipLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         chipLabel.setForeground(Color.GRAY);
         bar.add(chipLabel);
@@ -362,11 +379,12 @@ public final class Web3StudioTopComponent extends TopComponent {
         contractsNode.removeAllChildren();
         if (projectDirOrNull() == null) {
             contractsNode.add(new DefaultMutableTreeNode(NO_PROJECT_HINT));
-        } else if (artifacts.isEmpty()) {
+        } else if (allArtifacts().isEmpty()) {
             contractsNode.add(new DefaultMutableTreeNode(
-                    "No artifacts found — Compile (forge build) or Rescan"));
+                    "No artifacts found — Compile (forge build), Rescan, "
+                    + "or Import ABI…"));
         } else {
-            for (ContractArtifact artifact : artifacts) {
+            for (ContractArtifact artifact : allArtifacts()) {
                 DefaultMutableTreeNode node = new DefaultMutableTreeNode(artifact);
                 artifact.constructor().ifPresent(c -> node.add(new DefaultMutableTreeNode(c)));
                 for (AbiEntry function : artifact.functions()) {
@@ -924,12 +942,22 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private ContractArtifact artifactByName(String name) {
-        for (ContractArtifact artifact : artifacts) {
+        for (ContractArtifact artifact : allArtifacts()) {
             if (artifact.name().equals(name)) {
                 return artifact;
             }
         }
         return null;
+    }
+
+    /** Built artifacts + imported ABIs — every consumer sees both. */
+    private List<ContractArtifact> allArtifacts() {
+        if (importedArtifacts.isEmpty()) {
+            return artifacts;
+        }
+        List<ContractArtifact> all = new ArrayList<>(artifacts);
+        all.addAll(importedArtifacts);
+        return all;
     }
 
     // ---- Watch ------------------------------------------------------------------
@@ -1766,6 +1794,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
+        applyImported(workspace.imported());
         selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
         rebuildNetworksBranch();
         rebuildDeploymentsBranch();
@@ -1789,6 +1818,144 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     /**
+     * Rebuilds the imported-artifact list from the workspace records. A
+     * record whose stored ABI no longer parses (a hand-edit) is skipped
+     * with a log line and kept in the FILE untouched — the studio never
+     * destroys what it cannot read (the .bak law's little sibling).
+     */
+    private void applyImported(List<org.nmox.studio.web3.model.ImportedContract> records) {
+        importedContracts = new ArrayList<>(records);
+        List<ContractArtifact> parsed = new ArrayList<>();
+        for (org.nmox.studio.web3.model.ImportedContract record : records) {
+            try {
+                parsed.add(org.nmox.studio.web3.engine.ArtifactScanner.fromImported(record));
+            } catch (RuntimeException malformed) {
+                java.util.logging.Logger.getLogger(Web3StudioTopComponent.class.getName())
+                        .log(java.util.logging.Level.WARNING,
+                                "Imported ABI \"{0}\" no longer parses ({1}) — skipping",
+                                new Object[]{record.name(), malformed.getMessage()});
+            }
+        }
+        importedArtifacts = parsed;
+        rebuildContractsBranch();
+    }
+
+    /** Import ABI… — any deployed contract becomes interactable (v2.45.0). */
+    private void importAbi() {
+        JTextField nameField = new JTextField(24);
+        nameField.getAccessibleContext().setAccessibleName("Contract name");
+        JTextField addressField = new JTextField(44);
+        addressField.getAccessibleContext().setAccessibleName(
+                "Deployed address, optional");
+        javax.swing.JTextArea abiArea = new javax.swing.JTextArea(12, 48);
+        abiArea.setFont(MONO);
+        abiArea.setLineWrap(true);
+        abiArea.getAccessibleContext().setAccessibleName("ABI JSON array");
+        JPanel form = new JPanel(new BorderLayout(0, 6));
+        JPanel top = new JPanel(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
+        gc.insets = new java.awt.Insets(2, 2, 2, 6);
+        top.add(new JLabel("Name:"), gc);
+        gc.gridx = 1;
+        top.add(nameField, gc);
+        gc.gridx = 0; gc.gridy = 1;
+        top.add(new JLabel("Address:"), gc);
+        gc.gridx = 1;
+        top.add(addressField, gc);
+        form.add(top, BorderLayout.NORTH);
+        form.add(new JScrollPane(abiArea), BorderLayout.CENTER);
+        JLabel hint = new JLabel("Paste the ABI JSON array — from a block explorer's "
+                + "Contract tab, an artifact's abi field, or a teammate.");
+        hint.setForeground(Color.GRAY);
+        form.add(hint, BorderLayout.SOUTH);
+        NotifyDescriptor descriptor = new NotifyDescriptor(form, "Import ABI",
+                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE,
+                null, NotifyDescriptor.OK_OPTION);
+        if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = nameField.getText().trim();
+        String address = addressField.getText().trim();
+        String abiJson = abiArea.getText().trim();
+        if (name.isEmpty()) {
+            status("Import needs a name", FAIL_RED);
+            return;
+        }
+        if (artifactByName(name) != null) {
+            status("\"" + name + "\" already exists — imported names can't "
+                    + "shadow an artifact", FAIL_RED);
+            return;
+        }
+        if (!address.isEmpty() && !address.matches("0x[0-9a-fA-F]{40}")) {
+            status("Not an address — expected 0x + 40 hex characters", FAIL_RED);
+            return;
+        }
+        if (importedContracts.size() >= Web3WorkspaceIO.IMPORTED_CAP) {
+            status("Import cap reached (" + Web3WorkspaceIO.IMPORTED_CAP
+                    + ") — remove one first", FAIL_RED);
+            return;
+        }
+        org.nmox.studio.web3.model.ImportedContract record;
+        ContractArtifact artifact;
+        try {
+            record = new org.nmox.studio.web3.model.ImportedContract(
+                    name, abiJson, address);
+            artifact = org.nmox.studio.web3.engine.ArtifactScanner.fromImported(record);
+        } catch (RuntimeException bad) {
+            status("ABI didn't parse: " + bad.getMessage(), FAIL_RED);
+            return;
+        }
+        if (artifact.abi().isEmpty()) {
+            status("That ABI has no functions or events — nothing to interact with",
+                    FAIL_RED);
+            return;
+        }
+        List<org.nmox.studio.web3.model.ImportedContract> grown =
+                new ArrayList<>(importedContracts);
+        grown.add(record);
+        applyImported(grown);
+        saveWorkspace();
+        publishSearch();
+        status("Imported \"" + name + "\" — " + artifact.functions().size()
+                + " functions, " + artifact.events().size() + " events", ACCENT);
+        if (!address.isEmpty()) {
+            openInteractFor(InteractSession.attached(artifact, address, hasAccounts()));
+        }
+    }
+
+    /** The inverse gesture (the organize law): imports can be removed. */
+    private void removeImported() {
+        if (importedContracts.isEmpty()) {
+            status("No imported ABIs to remove", FAIL_RED);
+            return;
+        }
+        javax.swing.JComboBox<String> which = new javax.swing.JComboBox<>(
+                importedContracts.stream()
+                        .map(org.nmox.studio.web3.model.ImportedContract::name)
+                        .toArray(String[]::new));
+        which.getAccessibleContext().setAccessibleName("Imported contract to remove");
+        NotifyDescriptor descriptor = new NotifyDescriptor(which,
+                "Remove imported ABI", NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE, null, NotifyDescriptor.CANCEL_OPTION);
+        if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String name = (String) which.getSelectedItem();
+        List<org.nmox.studio.web3.model.ImportedContract> shrunk =
+                new ArrayList<>(importedContracts);
+        shrunk.removeIf(c -> c.name().equals(name));
+        applyImported(shrunk);
+        saveWorkspace();
+        publishSearch();
+        if (session != null && session.artifact().name().equals(name)) {
+            session = null;
+            rebuildInteract();
+        }
+        status("Removed imported \"" + name + "\" — the chain is untouched", ACCENT);
+    }
+
+    /**
      * Writes networks AND deployments together — adding one never
      * clobbers the other. EDT: both lists are EDT-confined, so the JSON
      * snapshot is taken here (secret URLs already stripped by toJson)
@@ -1797,7 +1964,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void saveWorkspace() {
         File file = new File(workspaceDir(), Web3WorkspaceIO.FILENAME);
         String json = Web3WorkspaceIO.toJson(
-                new Web3WorkspaceIO.Workspace(networks, deployments));
+                new Web3WorkspaceIO.Workspace(networks, deployments, importedContracts));
         SAVES.save(() -> writeSnapshot(file, json));
     }
 
@@ -2242,7 +2409,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             status("Connect to a network first", FAIL_RED);
             return;
         }
-        List<ContractArtifact> known = artifacts;
+        List<ContractArtifact> known = allArtifacts();
         RP.post(() -> {
             try {
                 org.json.JSONObject tx = c.getTransactionRaw(hash);

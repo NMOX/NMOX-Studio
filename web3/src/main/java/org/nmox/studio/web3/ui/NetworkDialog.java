@@ -56,6 +56,35 @@ final class NetworkDialog extends JPanel {
             new JCheckBox("URL contains a secret (store in Keyring)");
     private final JLabel noteLabel = new JLabel(" ");
 
+    /**
+     * Public-gateway presets (v2.45.0, the definitive-engagement arc):
+     * one click from localhost to the real chains, read-only by the
+     * product's own law — no keys means presets can never spend. The
+     * URLs are keyless public gateways; the walk proves each answers
+     * its chainId before a release ships them. Fields stay editable —
+     * a preset is a starting point, not a lock.
+     */
+    private record Preset(String label, String name, String url, int chainId) {
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
+    private static final Preset[] PRESETS = {
+        new Preset("(custom)", "", "", 0),
+        new Preset("Ethereum Mainnet — public gateway",
+                "Ethereum Mainnet", "https://ethereum-rpc.publicnode.com", 1),
+        new Preset("Sepolia testnet — public gateway",
+                "Sepolia", "https://ethereum-sepolia-rpc.publicnode.com", 11155111),
+        new Preset("Local anvil on 8546",
+                "Anvil 8546", "http://127.0.0.1:8546", 31337),
+    };
+
+    private final javax.swing.JComboBox<Preset> presetCombo =
+            new javax.swing.JComboBox<>(PRESETS);
+
     private NetworkDialog() {
         super(new BorderLayout(0, 6));
         setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
@@ -63,18 +92,34 @@ final class NetworkDialog extends JPanel {
         urlField.getAccessibleContext().setAccessibleName("RPC URL");
         chainIdField.getAccessibleContext().setAccessibleName("Chain id");
 
+        presetCombo.getAccessibleContext().setAccessibleName("Network preset");
+        presetCombo.setToolTipText("Fill the fields from a known public gateway "
+                + "\u2014 read-only engagement, no keys, still editable");
+        presetCombo.addActionListener(e -> {
+            Preset preset = (Preset) presetCombo.getSelectedItem();
+            if (preset != null && preset.chainId() != 0) {
+                nameField.setText(preset.name());
+                urlField.setText(preset.url());
+                chainIdField.setText(String.valueOf(preset.chainId()));
+                noteLabel.setForeground(OK_GREEN);
+                noteLabel.setText("Public gateway \u2014 reads work with no keys; "
+                        + "sends need a devnet or your own wallet");
+            }
+        });
+
         JPanel grid = new JPanel(new GridBagLayout());
-        addRow(grid, 0, "Name:", nameField);
-        addRow(grid, 1, "RPC URL:", urlField);
+        addRow(grid, 0, "Preset:", presetCombo);
+        addRow(grid, 1, "Name:", nameField);
+        addRow(grid, 2, "RPC URL:", urlField);
         JPanel chainRow = new JPanel(new BorderLayout(6, 0));
         chainRow.add(chainIdField, BorderLayout.CENTER);
         detectButton.setToolTipText("Ask the node (eth_chainId) and fill this in");
         detectButton.addActionListener(e -> detect());
         chainRow.add(detectButton, BorderLayout.EAST);
-        addRow(grid, 2, "Chain id:", chainRow);
+        addRow(grid, 3, "Chain id:", chainRow);
         secretCheck.setToolTipText("The URL goes to the OS keychain only — "
                 + ".nmoxweb3.json will carry no url field for this network");
-        addRow(grid, 3, "", secretCheck);
+        addRow(grid, 4, "", secretCheck);
         add(grid, BorderLayout.CENTER);
 
         noteLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));

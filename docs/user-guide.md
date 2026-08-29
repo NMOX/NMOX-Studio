@@ -857,6 +857,14 @@ EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and
 never reach the file).
 
+**Import ABI…** (toolbar) makes any deployed contract interactable
+with no build at all — paste its ABI from a block explorer or a
+teammate, attach by address, and it joins the tree beside your built
+artifacts (Remove Imported… is the inverse). **Add Network…** offers
+presets for Ethereum mainnet and Sepolia through keyless public
+gateways — read-only engagement: calls and watches work immediately,
+sends still need a devnet or your own wallet.
+
 Token contracts get a face: an attached artifact that implements the
 complete ERC-20 interface shows the **token strip** — name, symbol,
 decimals, and total supply read live from the chain, amounts rendered

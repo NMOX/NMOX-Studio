@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.45.0] - 2026-08-29
+
+Any contract, any chain (the definitive-engagement arc, batch one):
+Import ABI… makes any deployed contract a first-class citizen — paste
+an ABI from a block explorer or a teammate, attach by address, and
+the full Interact surface, token strip, and transaction inspector
+follow (one parser, one truth: imports ride the exact ArtifactScanner
+parser built artifacts use; no bytecode by construction, so an import
+can call but never deploy). Imports persist in .nmoxweb3.json with
+the parse-time heal, a cap, and the organize law's inverse (Remove
+Imported…). The Add Network dialog gains PRESETS — Ethereum Mainnet
+and Sepolia via keyless public gateways, each proven live against its
+chainId before shipping — one click from localhost to the real chain,
+read-only by the product's own no-keys law. Walk-proven on REAL
+MAINNET: USDC imported by pasted ABI, the token strip reading "USD
+Coin (USDC) · 6 decimals · supply 50853329297.101112" live, a
+stranger's transaction decoded to its named transfer() and Transfer
+log through the imported ABI. THE WALK'S FIND, fixed and
+mutation-proven: imports vanished on relaunch because loadGuarded —
+the boot path — built its Workspace at a SECOND construction site
+that silently dropped the new list; the compatibility constructor
+added for compile convenience had masked what should have been a
+compile error naming that site. The cure is structural: ONE parse
+site for every load path, the masking constructor deleted so the
+compiler names every future site, and the boot path pinned by its own
+test (the reborn bug kills four). Honest note: ~/NMOX's walk-file
+address book was found already empty this session; cause not
+established, predates this change.
+
 ## [2.44.0] - 2026-08-28
 
 More Web3 (David's ask) — Contract Studio learns what a token IS.
@@ -15224,6 +15253,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.45.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.44.0...v2.45.0
 [2.44.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.11...v2.44.0
 [2.43.11]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.10...v2.43.11
 [2.43.10]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.9...v2.43.10
