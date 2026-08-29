@@ -127,17 +127,23 @@ class GitChipTest {
                 "src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
                 StandardCharsets.UTF_8);
 
-        // exactly one spawn site in the whole chip
+        // exactly the LAWFUL spawn sites: the status refresh (1) and the
+        // commit-message draft's stat+diff pair (2, v2.50.0) — a new
+        // site fails here until it takes the guard below
         assertThat(source.split("runBounded", -1).length - 1)
-                .as("one and only one process launch site")
-                .isEqualTo(1);
+                .as("only the enumerated process launch sites")
+                .isEqualTo(3);
 
-        // and that site opens with the boot guard, before any process code
-        String refreshCount = method(source, "private void refreshCount()");
-        assertThat(refreshCount).contains("if (!chip.mayRunProcess())");
-        assertThat(refreshCount.indexOf("mayRunProcess"))
-                .as("guard precedes the spawn")
-                .isLessThan(refreshCount.indexOf("runBounded"));
+        // and every spawning method opens with the boot guard, before
+        // any process code
+        for (String sig : new String[] {"private void refreshCount()",
+                "private void draftCommitMessage()"}) {
+            String body = method(source, sig);
+            assertThat(body).as(sig).contains("if (!chip.mayRunProcess())");
+            assertThat(body.indexOf("mayRunProcess"))
+                    .as("guard precedes the spawn in " + sig)
+                    .isLessThan(body.indexOf("runBounded"));
+        }
 
         // the timer only pokes refreshCount (through RP) — no second path
         assertThat(method(source, "private void tick()"))

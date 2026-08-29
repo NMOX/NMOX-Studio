@@ -54,14 +54,24 @@ Go to Symbol…, ⌥⇧⌘O in all five keymap profiles) and its ⌘I bridge.
 Bounded walk, heavy dirs skipped, mtime-cached, and the 2,000-file cap
 SPEAKS when it trips.
 
-### R3 — "Tests are invisible until they run." — OPEN, next
+### R3 — "Tests are invisible until they run." — CLOSED v2.50.0
 
-**Evidence:** VERITAS runs suites and Run Focused Test runs one file's
-worth, but no surface LISTS the project's tests. A rival's test
-explorer shows the tree before anything runs.
+**Evidence (2026-08-29):** VERITAS ran suites and Run Focused Test ran
+one file's worth, but no surface LISTED the project's tests.
 
-**Response:** planned — a discovery surface riding the Run Focused
-Test machinery, honest about the frameworks it can and cannot name.
+**Response:** the Tests window (⌥⌘2) — TestIndex discovers with the
+focused runner's own per-mime patterns (the window can never list a
+test the runner cannot run), bounded caps that SPEAK, and Run rides
+the one shared, trust-gated execution path.
+
+### Second pass (2026-08-29, R1–R3 closed) — "their AI can't even
+draft a commit message" — CLOSED v2.50.0
+
+The rival's next comfort after the first pass: AI everywhere else in
+the product but not at the commit. Draft Commit Message with ORACLE
+lives on the git chip — staged diff only, its own git.diff consent
+kind, truncation confessed, an editable draft with Copy, and git
+commit stays the user's hand.
 
 ### R4 — "No ghost-text inline completion." — OPEN BY POSITION
 

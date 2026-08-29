@@ -132,6 +132,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink("Browser  ⌥⌘4", "WebBrowserTopComponent"));
             windows.add(windowLink("IRC  ⌥⌘3", "IrcTopComponent"));
             windows.add(windowLink("Tasks  ⌥⌘1", "TasksTopComponent"));
+            windows.add(windowLink("Tests  ⌥⌘2", "TestsExplorerTopComponent"));
             windows.add(windowLink("Block Studio  ⌥⌘5", "BlockStudioTopComponent"));
             windows.add(windowLink("DB Studio  ⌥⌘7", "DbStudioTopComponent"));
             windows.add(windowLink("Contract Studio  ⌥⌘6", "Web3StudioTopComponent"));
