@@ -187,6 +187,13 @@ public class GitStatusLine implements StatusLineElementProvider {
          * git commit — the user does the committing.
          */
         private void draftCommitMessage() {
+            // the v1.40.0 boot law, stated structurally: every spawn in
+            // this chip sits behind mayRunProcess (the menu already
+            // requires a visible chip, but the gate reads guards, not
+            // reachability)
+            if (!chip.mayRunProcess()) {
+                return;
+            }
             File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir == null) {
                 org.openide.awt.StatusDisplayer.getDefault()
