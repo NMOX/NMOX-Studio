@@ -104,6 +104,22 @@ class ProjectSymbolsTest {
     }
 
     @Test
+    @DisplayName("The quick-search bridge's identifier folding is mirrored")
+    void bridgeFoldingMirrored() {
+        // the platform bridge strips non-Java-identifier chars from the
+        // QUERY (decompiled removeNonJavaChars), so ⌘I "hero-banner"
+        // arrives as "herobanner" — the candidate must fold to match
+        org.netbeans.spi.jumpto.support.NameMatcher folded =
+                name -> name.startsWith("herobanner");
+        assertThat(NmoxSymbolProvider.matches(folded, ".hero-banner")).isTrue();
+        assertThat(NmoxSymbolProvider.matches(folded, ".footer-note")).isFalse();
+        assertThat(NmoxSymbolProvider.identifierFold("hero-banner.x"))
+                .isEqualTo("herobannerx");
+        // a name with no identifier chars at all never empties itself
+        assertThat(NmoxSymbolProvider.identifierFold("---")).isEqualTo("---");
+    }
+
+    @Test
     @DisplayName("A vanished file drops out of the index on the next pass")
     void vanishedFileDrops(@TempDir Path root) throws Exception {
         Path f = root.resolve("gone.js");

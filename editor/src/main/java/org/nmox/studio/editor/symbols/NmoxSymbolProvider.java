@@ -105,7 +105,30 @@ public final class NmoxSymbolProvider implements SymbolProvider {
             return true;
         }
         String bare = sigilFree(name);
-        return !bare.equals(name) && matcher.accept(bare);
+        if (!bare.equals(name) && matcher.accept(bare)) {
+            return true;
+        }
+        // the platform's quick-search bridge strips every character that
+        // is not a Java identifier part from the QUERY before consulting
+        // providers (decompiled: GoToSymbolProvider.removeNonJavaChars),
+        // so ⌘I "hero-banner" reaches us as "herobanner" — a Java-era
+        // assumption CSS/HTML names break. Fold the candidate the same
+        // way so the hyphenated name is still found; the dialog path
+        // never folds its query, and lanes one and two own it.
+        String folded = identifierFold(bare);
+        return !folded.equals(bare) && matcher.accept(folded);
+    }
+
+    /** The bridge's own query folding, applied to the candidate. */
+    static String identifierFold(String name) {
+        StringBuilder sb = new StringBuilder(name.length());
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isJavaIdentifierPart(c)) {
+                sb.append(c);
+            }
+        }
+        return sb.length() == 0 ? name : sb.toString();
     }
 
     /** Strips a leading run of stylesheet sigils; never empties a name. */
