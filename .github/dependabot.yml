@@ -23,6 +23,15 @@ updates:
       # runtime. An FX upgrade moves BOTH pins together as its own
       # browser-gauntleted release (tech-debt ledger 74).
       - dependency-name: "org.openjfx:*"
+      # slf4j-api is the v2.21.6 OSGi-placement pin: jgit imports
+      # org.slf4j [1.7.0,3.0.0) and this ONE explicit dependency is what
+      # makes the platform wrap it as a bundle on RELEASE300 AND 310. A
+      # 1.7→2.x major swaps the binding mechanism (static binder →
+      # ServiceLoader); whether the wrapped 2.x bundle still satisfies
+      # jgit under Netigso is a BOOT question no CI lane answers — the
+      # bump is its own boot-gauntleted release, never a group ride-along
+      # (the org.openjfx precedent above).
+      - dependency-name: "org.slf4j:slf4j-api"
       # The NetBeans Platform version is the product's FOUNDATION, not a
       # dependency: the release assembles the whole platform cluster at
       # this version, and the codebase carries decompiled-behavior

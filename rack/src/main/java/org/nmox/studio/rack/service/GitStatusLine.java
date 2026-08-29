@@ -178,6 +178,101 @@ public class GitStatusLine implements StatusLineElementProvider {
                 "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance";
 
         /**
+         * Pull Requests (competitive-lens R6): lists the repo's open
+         * PRs via the USER'S OWN gh CLI — their auth, their config; the
+         * product never holds a forge token. Fixed-argv read-only spawn
+         * behind the structural mayRunProcess guard; every refusal
+         * speaks (no gh, no auth, not a GitHub repo — gh's own first
+         * error line is the honest message).
+         */
+        private void showPullRequests() {
+            if (!chip.mayRunProcess()) {
+                return;
+            }
+            File dir = RackService.getDefault().getRack().getProjectDir();
+            if (dir == null) {
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Aim a project first.");
+                return;
+            }
+            RP.post(() -> {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult r;
+                try {
+                    r = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                            java.util.List.of("gh", "pr", "list", "--limit",
+                                    String.valueOf(org.nmox.studio.rack.engine
+                                            .GitPulls.LIMIT),
+                                    "--json", "number,title,author,headRefName,url"),
+                            dir, java.time.Duration.ofSeconds(10));
+                } catch (java.io.IOException ex) {
+                    status("GitHub CLI (gh) not found \u2014 install it "
+                            + "(brew install gh) and run gh auth login.");
+                    return;
+                }
+                if (r.exitCode() != 0) {
+                    String first = (r.stderr() == null ? "" : r.stderr())
+                            .lines().findFirst().orElse("exit " + r.exitCode());
+                    status("gh could not list pull requests \u2014 " + first);
+                    return;
+                }
+                java.util.List<org.nmox.studio.rack.engine.GitPulls.Pull> pulls;
+                try {
+                    pulls = org.nmox.studio.rack.engine.GitPulls.parse(r.stdout());
+                } catch (RuntimeException notJson) {
+                    status("gh answered with something that is not a PR list.");
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> showPullsDialog(pulls));
+            });
+        }
+
+        private void showPullsDialog(
+                java.util.List<org.nmox.studio.rack.engine.GitPulls.Pull> pulls) {
+            if (pulls.isEmpty()) {
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("No open pull requests.");
+                return;
+            }
+            String[] cols = {"#", "Title", "Author", "Branch"};
+            Object[][] rows = new Object[pulls.size()][];
+            for (int i = 0; i < pulls.size(); i++) {
+                var p = pulls.get(i);
+                rows[i] = new Object[]{p.number(), p.title(), p.author(), p.branch()};
+            }
+            javax.swing.JTable table = org.nmox.studio.core.util.PlainTables
+                    .disableHtml(new javax.swing.JTable(rows, cols) {
+                        @Override
+                        public boolean isCellEditable(int r, int c) {
+                            return false;
+                        }
+                    });
+            table.getAccessibleContext().setAccessibleName("Open pull requests");
+            table.setRowSelectionInterval(0, 0);
+            javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(table);
+            scroll.setPreferredSize(new java.awt.Dimension(560, 260));
+            Object open = "Open in Browser";
+            Object close = "Close";
+            org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(
+                    scroll, "Open pull requests",
+                    org.openide.NotifyDescriptor.DEFAULT_OPTION,
+                    org.openide.NotifyDescriptor.PLAIN_MESSAGE,
+                    new Object[]{open, close}, open);
+            if (org.openide.DialogDisplayer.getDefault().notify(nd) == open) {
+                int row = table.getSelectedRow();
+                if (row >= 0) {
+                    String url = pulls.get(row).url();
+                    org.nmox.studio.core.spi.EmbeddedBrowser browser =
+                            org.nmox.studio.core.spi.EmbeddedBrowser.find();
+                    if (url.isBlank()
+                            || browser == null || !browser.open(url)) {
+                        org.openide.awt.StatusDisplayer.getDefault()
+                                .setStatusText("Could not open the PR in the Browser.");
+                    }
+                }
+            }
+        }
+
+        /**
          * Draft Commit Message with ORACLE: the STAGED diff (fixed-argv
          * read-only git spawn, the GitFacts family — no project code
          * executes, so no trust gate) goes to the API behind the key
@@ -309,6 +404,9 @@ public class GitStatusLine implements StatusLineElementProvider {
             JMenuItem history = new JMenuItem("History");
             history.addActionListener(e -> openHistory());
             menu.add(history);
+            JMenuItem pulls = new JMenuItem("Pull Requests\u2026");
+            pulls.addActionListener(e -> showPullRequests());
+            menu.add(pulls);
             menu.addSeparator();
             JMenuItem draft = new JMenuItem("Draft Commit Message with ORACLE\u2026");
             draft.addActionListener(e -> draftCommitMessage());
