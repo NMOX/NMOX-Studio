@@ -103,6 +103,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- Go to Symbol: the platform dialog + its quick-search
+                 bridge both collect SymbolProviders via Lookup -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-jumpto</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-editor-mimelookup</artifactId>
             <version>${netbeans.version}</version>

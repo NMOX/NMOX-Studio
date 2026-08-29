@@ -39,17 +39,20 @@ tail), ambiguous replies REFUSE (never guess which block), the buffer
 is re-verified at apply time, and nothing is sent without the explicit
 gesture plus the CODE consent.
 
-### R2 — "No project-wide symbol navigation." — OPEN, next
+### R2 — "No project-wide symbol navigation." — CLOSED v2.49.0
 
-**Evidence:** the platform's jumpto module ships in the cluster and
-nothing feeds it; no `workspace/symbol` consumer exists; ⌘I reaches
-projects, devices, servers, requests, and infra nodes — never a
+**Evidence (2026-08-29):** the platform's jumpto module shipped in the
+cluster and nothing fed it; no `workspace/symbol` consumer existed; ⌘I
+reached projects, devices, servers, requests, and infra nodes — never a
 function or class by name. Go to Declaration works from a *usage*; there
-is no way to jump to a symbol you merely *remember*.
+was no way to jump to a symbol you merely *remember*.
 
-**Response:** planned as its own unit — a symbol provider over the
-outline-extractor family (the same extractors that feed the Navigator
-for 58 mimes), bounded walk, heavy dirs skipped, mtime-cached.
+**Response:** Go to Symbol works (v2.49.0) — one SymbolProvider over
+the outline-extractor family (the same extractors that feed the
+Navigator for 58 mimes) lights up BOTH the platform dialog (Navigate ▸
+Go to Symbol…, ⌥⇧⌘O in all five keymap profiles) and its ⌘I bridge.
+Bounded walk, heavy dirs skipped, mtime-cached, and the 2,000-file cap
+SPEAKS when it trips.
 
 ### R3 — "Tests are invisible until they run." — OPEN, next
 

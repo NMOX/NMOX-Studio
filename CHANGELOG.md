@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.49.0] - 2026-08-29
+
+The competitive lens closes R2 — "no project-wide symbol navigation":
+**Go to Symbol** works. The platform's own jumpto dialog (Navigate ▸ Go
+to Symbol…, now on ⌥⇧⌘O across all five keymap profiles under the
+v2.3.0 parity law) and its ⌘I bridge both light up from one new
+@ServiceProvider — recon-proven Lookup-collected, decompiled from the
+shipped jumpto before a line was written. The index (ProjectSymbols)
+is the outline-extractor family's third surface: every name the
+Navigator can see in any of the aimed project's files, found by TYPING
+it — where Go to Declaration jumps from a usage you can see, this
+jumps from a symbol you merely remember. Bounded by law: heavy dirs
+skipped (the file tree's own list), 2,000-file breadth cap that SPEAKS
+when it trips ("Large project — symbols indexed from the first 2,000
+files only" — a silent partial index would read as complete), 256 KB
+per-file ceiling, and a path+mtime+size cache so re-queries re-read
+only what changed. Matching rides the platform's own
+NameMatcherFactory (prefix/camel-case/regex exactly as the dialog
+advertises); rows open at the symbol's line via LineCookie. The walk
+in the assembled app paid twice, both finds the v1.215.0 findability
+class: typing "hero-banner" found NOTHING though the outline knew
+".hero-banner" — first because the leading stylesheet sigil defeated
+prefix matching (fixed: the match consults the sigil-free form too,
+display untouched), and then ⌘I STILL missed while the dialog hit,
+because the platform's quick-search bridge strips every
+non-Java-identifier character from the QUERY before consulting
+providers (decompiled: GoToSymbolProvider.removeNonJavaChars — a
+Java-era assumption CSS names break; the candidate now folds the same
+way, so the hyphenated ⌘I query finds the symbol). Walk-proven end to
+end after the fixes: ⌥⇧⌘O → "gre" → greet opened at app.js 7:1; the
+dialog and ⌘I both answering "hero-banner" with .hero-banner in
+styles.css. The first gate run tripped the editor's WINDOWS-binding
+JaCoCo floor (0.66 vs 0.67 — the lane with only a point of honest
+slack, v2.17.0), answered the house way: the matching rules moved to
+pure SymbolMatch ON the tested surface and the thin jumpto-SPI adapter
+joined the root pom's excluded surface with its reason written in
+place — the floor never moved. The re-proof caught a surviving mutant:
+with the folding lane present, a hyphen-less matcher let a dropped
+sigil lane hide behind folding (fold strips hyphens too), so the test
+now uses the dialog's real hyphen-carrying query as the
+branch-alone distinguisher. 8 tests; five mutants dead by name
+(index-node_modules → heavyDirsSkipped, silent-truncation →
+breadthCapSpeaks, ignore-mtime → cacheHonorsMtime, drop-sigil-lane →
+sigilNeverDefeatsTheMatch, drop-folding-lane → bridgeFoldingMirrored).
+
 ## [2.48.0] - 2026-08-29
 
 The competitive lens opens (David's directive: read the product as a
@@ -15350,6 +15395,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.49.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.48.0...v2.49.0
 [2.48.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.46.0...v2.47.0
