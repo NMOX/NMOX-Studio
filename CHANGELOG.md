@@ -22,9 +22,23 @@ files only" — a silent partial index would read as complete), 256 KB
 per-file ceiling, and a path+mtime+size cache so re-queries re-read
 only what changed. Matching rides the platform's own
 NameMatcherFactory (prefix/camel-case/regex exactly as the dialog
-advertises); rows open at the symbol's line via LineCookie. 6 tests;
-three mutants dead by name (index-node_modules → heavyDirsSkipped,
-silent-truncation → breadthCapSpeaks, ignore-mtime → cacheHonorsMtime).
+advertises); rows open at the symbol's line via LineCookie. The walk
+in the assembled app paid twice, both finds the v1.215.0 findability
+class: typing "hero-banner" found NOTHING though the outline knew
+".hero-banner" — first because the leading stylesheet sigil defeated
+prefix matching (fixed: the match consults the sigil-free form too,
+display untouched), and then ⌘I STILL missed while the dialog hit,
+because the platform's quick-search bridge strips every
+non-Java-identifier character from the QUERY before consulting
+providers (decompiled: GoToSymbolProvider.removeNonJavaChars — a
+Java-era assumption CSS names break; the candidate now folds the same
+way, so the hyphenated ⌘I query finds the symbol). Walk-proven end to
+end after the fixes: ⌥⇧⌘O → "gre" → greet opened at app.js 7:1; the
+dialog and ⌘I both answering "hero-banner" with .hero-banner in
+styles.css. 8 tests; five mutants dead by name (index-node_modules →
+heavyDirsSkipped, silent-truncation → breadthCapSpeaks, ignore-mtime →
+cacheHonorsMtime, drop-sigil-lane → sigilNeverDefeatsTheMatch,
+drop-folding-lane → bridgeFoldingMirrored).
 
 ## [2.48.0] - 2026-08-29
 
