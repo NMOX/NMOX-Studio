@@ -228,6 +228,11 @@
                         <!-- editor: Navigator tree panel + LSP status table panel -->
                         <exclude>**/StructureNavigatorPanel*.class</exclude>
                         <exclude>**/LanguageServersPanel*.class</exclude>
+                        <!-- editor: jumpto SPI adapter — computeSymbolNames/open()
+                             need the platform Lookup, masterfs, and window system;
+                             the matching rules live tested in SymbolMatch, the
+                             index in ProjectSymbols (both ON the surface) -->
+                        <exclude>**/NmoxSymbolProvider*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
                         <exclude>**/RackPanel$*.class</exclude>

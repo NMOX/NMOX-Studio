@@ -91,16 +91,16 @@ class ProjectSymbolsTest {
         // outline's honest name is ".hero-banner" (v1.215.0 class)
         org.netbeans.spi.jumpto.support.NameMatcher prefix =
                 name -> name.startsWith("hero");
-        assertThat(NmoxSymbolProvider.matches(prefix, ".hero-banner")).isTrue();
-        assertThat(NmoxSymbolProvider.matches(prefix, "#hero-banner")).isTrue();
-        assertThat(NmoxSymbolProvider.matches(prefix, "heroic")).isTrue();
-        assertThat(NmoxSymbolProvider.matches(prefix, ".footer-note")).isFalse();
+        assertThat(SymbolMatch.matches(prefix, ".hero-banner")).isTrue();
+        assertThat(SymbolMatch.matches(prefix, "#hero-banner")).isTrue();
+        assertThat(SymbolMatch.matches(prefix, "heroic")).isTrue();
+        assertThat(SymbolMatch.matches(prefix, ".footer-note")).isFalse();
         // the full spelled form still matches too
         org.netbeans.spi.jumpto.support.NameMatcher dotted =
                 name -> name.startsWith(".hero");
-        assertThat(NmoxSymbolProvider.matches(dotted, ".hero-banner")).isTrue();
+        assertThat(SymbolMatch.matches(dotted, ".hero-banner")).isTrue();
         // a name that is ONLY sigils never empties itself
-        assertThat(NmoxSymbolProvider.sigilFree("...")).isEqualTo("...");
+        assertThat(SymbolMatch.sigilFree("...")).isEqualTo("...");
     }
 
     @Test
@@ -111,12 +111,12 @@ class ProjectSymbolsTest {
         // arrives as "herobanner" — the candidate must fold to match
         org.netbeans.spi.jumpto.support.NameMatcher folded =
                 name -> name.startsWith("herobanner");
-        assertThat(NmoxSymbolProvider.matches(folded, ".hero-banner")).isTrue();
-        assertThat(NmoxSymbolProvider.matches(folded, ".footer-note")).isFalse();
-        assertThat(NmoxSymbolProvider.identifierFold("hero-banner.x"))
+        assertThat(SymbolMatch.matches(folded, ".hero-banner")).isTrue();
+        assertThat(SymbolMatch.matches(folded, ".footer-note")).isFalse();
+        assertThat(SymbolMatch.identifierFold("hero-banner.x"))
                 .isEqualTo("herobannerx");
         // a name with no identifier chars at all never empties itself
-        assertThat(NmoxSymbolProvider.identifierFold("---")).isEqualTo("---");
+        assertThat(SymbolMatch.identifierFold("---")).isEqualTo("---");
     }
 
     @Test
