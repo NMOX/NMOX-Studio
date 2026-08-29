@@ -877,6 +877,10 @@ pass through, and anything ambiguous is refused, never guessed. An
 import that carries its address opens already attached. And **Inspect tx…**
 on the Watch tab decodes any transaction hash against your artifacts'
 ABIs: the named function with its arguments, decoded event logs, gas,
+and **History…** beside it queries past events over a bounded block
+range (refused past the cap, never clamped) with decoded rows and a
+formula-safe CSV export; the connection chip shows the live gas
+price.
 and status — unknown selectors shown raw, never guessed.
 
 ### Infra Designer (⌥⌘9)

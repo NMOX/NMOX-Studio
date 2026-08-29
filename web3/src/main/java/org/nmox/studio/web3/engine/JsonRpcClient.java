@@ -258,6 +258,14 @@ public final class JsonRpcClient {
                 logEntries(receipt.optJSONArray("logs")));
     }
 
+    /** The current gas price in wei ({@code eth_gasPrice}) — the fee
+     *  strip's one read (v2.47.0). */
+    public java.math.BigInteger gasPrice() throws IOException {
+        String hex = call("eth_gasPrice").getString("result");
+        return new java.math.BigInteger(hex.startsWith("0x")
+                ? hex.substring(2) : hex, 16);
+    }
+
     /** The node's raw {@code eth_getTransactionByHash} answer, or null
      *  when the hash is unknown to this network (v2.44.0 inspector). */
     public JSONObject getTransactionRaw(String txHash) throws IOException {

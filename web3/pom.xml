@@ -68,6 +68,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- FileChooserBuilder (the History CSV save, v2.47.0)
+                 lives in the -nb half of filesystems -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems-nb</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-text</artifactId>
             <version>${netbeans.version}</version>
