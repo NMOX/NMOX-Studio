@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.46.0] - 2026-08-29
+
+The token faces complete (definitive-engagement batch two): an
+import that carries its deployed address now opens ATTACHED from the
+tree — the whole point of importing by address is skipping the attach
+dance. ERC-721 gets its face: the strip reads name and symbol, and
+Owner of… answers ownerOf(tokenId) with tokenURI beside it when the
+ABI carries it. And amount fields speak human: on an ERC-20's
+canonical writes (transfer/approve/transferFrom) the trailing uint256
+accepts "1.5" and converts through the strip's own decimals() — raw
+integers pass through untouched, a decimal form with unknown decimals
+is refused with the reason, and scientific notation is refused
+outright because a typo'd "e" must never scale a transfer by a
+thousand (TokenAmounts.interpretAmount, unit-pinned both ways).
+Walk-proven on a live anvil with freshly built contracts: both
+imports opened attached, the ERC-20 strip read "Mini Token (MINI) ·
+18 decimals · supply 1000000 MINI", typing 1.5 into transfer mined in
+block 3 and the NODE's own balanceOf answered 1500000000000000000 —
+exact to the wei — and the ERC-721 face answered ownerOf and
+tokenURI live. The v2.45.0 loadGuarded fix observed living: last
+session's imported USDC was in the tree at boot.
+
 ## [2.45.0] - 2026-08-29
 
 Any contract, any chain (the definitive-engagement arc, batch one):
@@ -15253,6 +15275,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.46.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.45.0...v2.46.0
 [2.45.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.44.0...v2.45.0
 [2.44.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.11...v2.44.0
 [2.43.11]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.10...v2.43.11

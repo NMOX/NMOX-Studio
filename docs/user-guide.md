@@ -869,7 +869,12 @@ Token contracts get a face: an attached artifact that implements the
 complete ERC-20 interface shows the **token strip** — name, symbol,
 decimals, and total supply read live from the chain, amounts rendered
 through the token's own decimals, plus a read-only **Balance of…**
-lookup (ERC-721/1155 are recognized and labeled). And **Inspect tx…**
+lookup. ERC-721s get their own face — name/symbol on the strip and
+an **Owner of…** lookup (ownerOf + tokenURI). On an ERC-20's
+transfer/approve/transferFrom, the amount field accepts a human
+"1.5" and converts through the token's own decimals — raw integers
+pass through, and anything ambiguous is refused, never guessed. An
+import that carries its address opens already attached. And **Inspect tx…**
 on the Watch tab decodes any transaction hash against your artifacts'
 ABIs: the named function with its arguments, decoded event logs, gas,
 and status — unknown selectors shown raw, never guessed.
