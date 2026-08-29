@@ -31,7 +31,13 @@ dependabot ignore with the reason, the org.openjfx precedent). And the
 **v2.50.0 same-day review** came back CLEAN: listener double-add safe
 by the ProjectAim contract, consent-off-EDT blessed by the dialog
 API's own thread contract, the TestIndex incremental line scan
-verified single-pass — no finds, recorded honestly.
+verified single-pass — no finds, recorded honestly. Walk-proven with a
+self-referential proof: aimed at this repo, Pull Requests… listed
+exactly ONE open PR — #631, the very release being walked — with
+author and branch in plain-rendered cells, and Open in Browser
+dispatched through the EmbeddedBrowser facade (the FX-less dev tree
+answered with its honest v1.199.0 degrade: system browser, spoken,
+never silent).
 
 ## [2.50.0] - 2026-08-29
 
