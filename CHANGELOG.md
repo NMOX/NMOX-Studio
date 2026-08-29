@@ -35,10 +35,19 @@ Java-era assumption CSS names break; the candidate now folds the same
 way, so the hyphenated ⌘I query finds the symbol). Walk-proven end to
 end after the fixes: ⌥⇧⌘O → "gre" → greet opened at app.js 7:1; the
 dialog and ⌘I both answering "hero-banner" with .hero-banner in
-styles.css. 8 tests; five mutants dead by name (index-node_modules →
-heavyDirsSkipped, silent-truncation → breadthCapSpeaks, ignore-mtime →
-cacheHonorsMtime, drop-sigil-lane → sigilNeverDefeatsTheMatch,
-drop-folding-lane → bridgeFoldingMirrored).
+styles.css. The first gate run tripped the editor's WINDOWS-binding
+JaCoCo floor (0.66 vs 0.67 — the lane with only a point of honest
+slack, v2.17.0), answered the house way: the matching rules moved to
+pure SymbolMatch ON the tested surface and the thin jumpto-SPI adapter
+joined the root pom's excluded surface with its reason written in
+place — the floor never moved. The re-proof caught a surviving mutant:
+with the folding lane present, a hyphen-less matcher let a dropped
+sigil lane hide behind folding (fold strips hyphens too), so the test
+now uses the dialog's real hyphen-carrying query as the
+branch-alone distinguisher. 8 tests; five mutants dead by name
+(index-node_modules → heavyDirsSkipped, silent-truncation →
+breadthCapSpeaks, ignore-mtime → cacheHonorsMtime, drop-sigil-lane →
+sigilNeverDefeatsTheMatch, drop-folding-lane → bridgeFoldingMirrored).
 
 ## [2.48.0] - 2026-08-29
 
