@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.50.0] - 2026-08-29
+
+Batch (the competitive lens, worktree-pipelined per David's "we spend
+all our time waiting on gates"): TWO units, one gate. **The Tests
+window** closes relief item R3 ("tests are invisible until they run")
+— Window ▸ Tests (⌥⌘2, all five keymap profiles, the full
+advertised-shortcut contract) lists every test declaration in the
+aimed project BEFORE anything runs, discovered by TestIndex with the
+focused runner's own per-mime patterns (one vocabulary, two surfaces:
+the window can never list a test Run Focused Test cannot run), bounded
+by the ProjectSymbols laws (heavy dirs, breadth+depth caps that SPEAK,
+mtime cache); double-click opens the declaration, Run rides the NEW
+shared RunFocusedTestAction.runDiscovered — command assembly, the
+trust gate, and the spawn stay at their one existing site, so the
+spawn ledger never grew. The window lives in its own subpackage on
+purpose (@Messages and @EditorActionRegistration each generate the
+package Bundle — the v1.79.0 two-generators lesson). And **Draft
+Commit Message with ORACLE** opens the lens's second pass ("their AI
+can't even write a commit message") — the git chip menu reads the
+STAGED diff (fixed-argv read-only spawn, the GitFacts family), sends
+it behind the key gate and its OWN git.diff consent kind (a diff is a
+new disclosure class), confesses truncation to the model past the
+12,000-char cap (code-point-safe — unlike an edit, a clipped diff
+still yields a TRUE subject), lenient-unwraps a whole-reply fence, and
+lands the draft in an EDITABLE dialog with Copy — nothing in the flow
+ever runs git commit. OracleCommitEngine is the ORACLE family's third
+gated engine, same seams as Ask/Edit. 12 new tests; five mutants dead
+by name (surrogate-cap → capIsCodePointSafe, skip-consent →
+declinedConsentSendsNothing, one-vocabulary → discoversAcrossMimes,
+zero-based-lines → linesAreExact, silent-depth-cap → depthCapSpeaks).
+
 ## [2.49.1] - 2026-08-29
 
 The competitive arc's own review (v2.48.0 + v2.49.0 under hostile
@@ -15419,6 +15450,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.50.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.1...v2.50.0
 [2.49.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.0...v2.49.1
 [2.49.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.48.0...v2.49.0
 [2.48.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.1...v2.48.0

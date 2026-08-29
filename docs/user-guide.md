@@ -332,6 +332,14 @@ never patched blind. Same consent, same key, same disclosure as Ask
 ORACLE: only the selection, the file's name, its language, and your
 instruction ever leave the machine.
 
+**Let ORACLE draft your commit message.** Click the git branch chip on
+the status line and choose **Draft Commit Message with ORACLE…**: the
+STAGED diff (and only the staged diff — up to 12,000 characters, with
+truncation confessed) goes up behind its own one-time consent, and the
+drafted subject-and-body lands in an editable dialog with a **Copy**
+button. Nothing in this flow ever runs `git commit` — you stay the
+committer. Nothing staged? It says so and sends nothing.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
@@ -355,6 +363,13 @@ instruction ever leave the machine.
   heavy siblings are skipped, and on a very large project the dialog
   says it indexed the first 2,000 files rather than pretending it read
   everything.
+- **The Tests window (⌥⌘2**, or Window ▸ Tests**)** shows every test in
+  the aimed project *before anything runs* — discovered with the same
+  patterns Run Focused Test uses, so the window never lists a test it
+  cannot run. Double-click opens the declaration; **Run** executes
+  exactly that test through the same trust gate as the editor gesture.
+  On a very large project the footer says the listing is partial rather
+  than pretending it read everything.
 - **LSP**: open a file whose language server is installed (typescript,
   gopls, rust-analyzer, pyright, …) and you get diagnostics, hover, and
   go-to-definition. Missing a server? The IDE offers the install command
