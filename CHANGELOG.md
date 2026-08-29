@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.49.1] - 2026-08-29
+
+The competitive arc's own review (v2.48.0 + v2.49.0 under hostile
+lenses, hours old): two finds fixed. **The trailing-newline glue** —
+the fence rule (the newline before ``` belongs to the fence) meant a
+selection ENDING in a newline got a replacement that didn't, so Apply
+glued the next line onto the replacement's tail; the v2.48.0 walk's
+own preview had reported it ("12 → 11 lines") and nobody read the
+honest counter. An ORACLE edit now never changes whether the selection
+ends in a newline (OracleEdit.matchTrailingNewline, symmetric — a
+model-invented trailing newline is dropped the same way), wired before
+the NO_CHANGE check so the preview shows the truth (mutant dead by
+name). And **the symbol walk gains a depth cap** — collect() recursed
+unbounded, so a symlink cycle spun until the breadth cap happened to
+trip and a legitimately deep tree would go silently partial; depth 32
+now stops the descent AND sets the truncated flag, because a silent
+partial index reads as a complete one (same law as the breadth cap;
+mutant dead by name). Blessed in writing: the shared provider
+instance's cross-surface cancel (the SPI's cancel() carries no call
+token — a ⌘I keystroke can abandon a dialog walk; the next keystroke
+recovers), the zombie-buffer apply (a file closed under the preview
+loses the edit with the buffer; the stale guard still content-checks),
+and refresh()'s serialization at the 2,000-file bound.
+
 ## [2.49.0] - 2026-08-29
 
 The competitive lens closes R2 — "no project-wide symbol navigation":
@@ -15395,6 +15419,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.49.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.0...v2.49.1
 [2.49.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.48.0...v2.49.0
 [2.48.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.0...v2.47.1

@@ -42,6 +42,11 @@ public final class ProjectSymbols {
     /** Per-file ceiling: a generated bundle is not a place symbols live. */
     public static final int MAX_FILE_BYTES = 256 * 1024;
 
+    /** Depth ceiling: a symlink cycle (isDirectory follows links) or a
+     *  pathological tree stops the descent AND sets the truncated flag
+     *  — a silent partial index reads as complete (v2.49.1 review). */
+    static final int MAX_DEPTH = 32;
+
     /** The heavy dirs the file tree already refuses to expand. */
     static final Set<String> SKIP_DIRS = Set.of(
             "node_modules", ".git", "dist", "build", "coverage", "target",
@@ -66,7 +71,7 @@ public final class ProjectSymbols {
             Predicate<Void> cancelled) {
         truncated = false;
         List<Path> candidates = new ArrayList<>();
-        collect(root, candidates, cancelled);
+        collect(root, candidates, 0, cancelled);
         // drop cache entries for files that vanished
         seen.keySet().retainAll(Set.copyOf(candidates));
         byFile.keySet().retainAll(Set.copyOf(candidates));
@@ -87,7 +92,12 @@ public final class ProjectSymbols {
         return truncated;
     }
 
-    private void collect(Path dir, List<Path> into, Predicate<Void> cancelled) {
+    private void collect(Path dir, List<Path> into, int depth,
+            Predicate<Void> cancelled) {
+        if (depth > MAX_DEPTH) {
+            truncated = true;
+            return;
+        }
         if (into.size() >= MAX_FILES) {
             truncated = true;
             return;
@@ -105,7 +115,7 @@ public final class ProjectSymbols {
             String name = child.getFileName().toString();
             if (Files.isDirectory(child)) {
                 if (!name.startsWith(".") && !SKIP_DIRS.contains(name)) {
-                    collect(child, into, cancelled);
+                    collect(child, into, depth + 1, cancelled);
                 }
             } else if (!name.startsWith(".")) {
                 if (into.size() >= MAX_FILES) {

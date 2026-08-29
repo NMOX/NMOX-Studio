@@ -76,6 +76,35 @@ class OracleEditTest {
         assertThat(OracleEdit.extractFencedCode("```\n```")).isEqualTo("");
     }
 
+    // ---- the trailing-newline law (v2.49.1 review) -----------------------
+
+    @Test
+    @DisplayName("An edit never changes whether the selection ends in a newline")
+    void trailingNewlinePreserved() {
+        // the glue scenario: a mid-file selection ending in \n whose
+        // replacement lost it would fuse the next line onto the tail
+        assertThat(OracleEdit.matchTrailingNewline("let x = 1;\n", "const x = 1;"))
+                .isEqualTo("const x = 1;\n");
+        // symmetric: an invented trailing newline is dropped
+        assertThat(OracleEdit.matchTrailingNewline("let x = 1;", "const x = 1;\n"))
+                .isEqualTo("const x = 1;");
+        // already matching states pass through untouched
+        assertThat(OracleEdit.matchTrailingNewline("a\n", "b\n")).isEqualTo("b\n");
+        assertThat(OracleEdit.matchTrailingNewline("a", "b")).isEqualTo("b");
+    }
+
+    @Test
+    @DisplayName("The engine proposes the newline-matched replacement")
+    void engineMatchesTrailingNewline() {
+        Spy spy = Spy.replying("```js\nconst x = 1;\n```");
+        OracleEditEngine engine = new OracleEditEngine(spy.client(),
+                () -> "k".toCharArray(), r -> true);
+        Proposal p = engine.propose(req("let x = 1;\n", "use const"),
+                OracleClient.MODEL_HAIKU);
+        assertThat(p.status()).isEqualTo(Status.PROPOSED);
+        assertThat(p.replacement()).isEqualTo("const x = 1;\n");
+    }
+
     // ---- the refusal caps ------------------------------------------------
 
     @Test
