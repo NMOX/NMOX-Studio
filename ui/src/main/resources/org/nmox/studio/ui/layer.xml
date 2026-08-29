@@ -80,6 +80,9 @@
     </folder>
     <folder name="Keymaps">
         <folder name="NetBeans">
+            <file name="ADS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
             <!-- jumpto's keymap profile grabs Cmd+O for "Go to Type" (a
                  Java-type dialog), overriding our Shortcuts/D-O Open File
                  binding - profile entries outrank Shortcuts. Mask it so
@@ -136,6 +139,9 @@
             </file>
         </folder>
         <folder name="Eclipse">
+            <file name="ADS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
             <file name="D-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
             </file>
@@ -162,6 +168,9 @@
             </file>
         </folder>
         <folder name="Emacs">
+            <file name="ADS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
             <file name="D-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
             </file>
@@ -188,6 +197,9 @@
             </file>
         </folder>
         <folder name="Idea">
+            <file name="ADS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
             <file name="D-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
             </file>
@@ -214,6 +226,9 @@
             </file>
         </folder>
         <folder name="NetBeans55">
+            <file name="ADS-O.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance"/>
+            </file>
             <file name="D-9.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-RackTopComponent.instance"/>
             </file>
