@@ -19,7 +19,8 @@ deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire 
 FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
 **86-grammar polyglot editor** with LSP and zero-setup JS/TS/Chrome debugging,
 **Ask ORACLE** — select code in any language and hold an AI conversation about
-it (consent-gated, keys keychain-only), **five studios** (Block, API, DB,
+it, or say what to change and approve the rewrite in a before/after preview
+(consent-gated, keys keychain-only), **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
 proven against its real toolchain, and **92 learning spaces** with in-rack
 REPLs. Built on the NetBeans Rich Client Platform, shipped through a gated

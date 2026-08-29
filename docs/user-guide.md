@@ -316,6 +316,22 @@ the file's name and language, and your question — never the rest of the
 file, other files, or your environment. Same key, same honesty: no key
 or no consent and it says so; nothing is ever sent without your click.
 
+**Let ORACLE edit your code.** Right-click a selection and choose
+**Edit with ORACLE…**: say what to change ("use const", "add error
+handling", "convert to async/await") and the proposed replacement
+arrives as a BEFORE/AFTER preview — nothing touches your file until
+you press **Apply**, which replaces exactly the selection as one undo
+unit (⌘Z brings it straight back). The refusals are features: a
+selection over the 8,000-character cap is refused outright rather than
+truncated (a rewrite of a shortened selection would silently delete
+the tail), a reply that isn't exactly one code block is refused rather
+than guessed at (the model's prose "I can't do that from the selection
+alone" is shown as itself), and if the file changed while ORACLE was
+thinking, Apply refuses and asks you to re-select — your buffer is
+never patched blind. Same consent, same key, same disclosure as Ask
+ORACLE: only the selection, the file's name, its language, and your
+instruction ever leave the machine.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
