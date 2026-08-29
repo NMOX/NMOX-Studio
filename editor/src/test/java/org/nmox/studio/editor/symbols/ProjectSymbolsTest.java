@@ -85,6 +85,25 @@ class ProjectSymbolsTest {
     }
 
     @Test
+    @DisplayName("A stylesheet sigil never defeats the match — type it bare")
+    void sigilNeverDefeatsTheMatch() {
+        // the walk's find: ⌘I "hero-banner" returned NOTHING because the
+        // outline's honest name is ".hero-banner" (v1.215.0 class)
+        org.netbeans.spi.jumpto.support.NameMatcher prefix =
+                name -> name.startsWith("hero");
+        assertThat(NmoxSymbolProvider.matches(prefix, ".hero-banner")).isTrue();
+        assertThat(NmoxSymbolProvider.matches(prefix, "#hero-banner")).isTrue();
+        assertThat(NmoxSymbolProvider.matches(prefix, "heroic")).isTrue();
+        assertThat(NmoxSymbolProvider.matches(prefix, ".footer-note")).isFalse();
+        // the full spelled form still matches too
+        org.netbeans.spi.jumpto.support.NameMatcher dotted =
+                name -> name.startsWith(".hero");
+        assertThat(NmoxSymbolProvider.matches(dotted, ".hero-banner")).isTrue();
+        // a name that is ONLY sigils never empties itself
+        assertThat(NmoxSymbolProvider.sigilFree("...")).isEqualTo("...");
+    }
+
+    @Test
     @DisplayName("A vanished file drops out of the index on the next pass")
     void vanishedFileDrops(@TempDir Path root) throws Exception {
         Path f = root.resolve("gone.js");

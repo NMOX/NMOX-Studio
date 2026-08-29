@@ -347,6 +347,14 @@ instruction ever leave the machine.
   a nag.
 - **Navigator outline (⌘7)** shows file structure for 58 file types;
   click to jump.
+- **Go to Symbol (⌥⇧⌘O**, or Navigate ▸ Go to Symbol…**)** jumps to any
+  function, class, rule, or heading in the whole aimed project by
+  typing its name — every name the outline can see, in every file, with
+  prefix/camel-case/wildcard matching. The same symbols answer in Quick
+  Search (⌘I). The index is bounded and honest: `node_modules` and its
+  heavy siblings are skipped, and on a very large project the dialog
+  says it indexed the first 2,000 files rather than pretending it read
+  everything.
 - **LSP**: open a file whose language server is installed (typescript,
   gopls, rust-analyzer, pyright, …) and you get diagnostics, hover, and
   go-to-definition. Missing a server? The IDE offers the install command

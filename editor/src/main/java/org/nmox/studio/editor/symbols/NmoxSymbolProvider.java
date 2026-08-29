@@ -70,7 +70,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
             if (cancelled) {
                 return;
             }
-            if (matcher.accept(s.name())) {
+            if (matches(matcher, s.name())) {
                 hits.add(new Hit(s, root));
             }
         }
@@ -90,6 +90,31 @@ public final class NmoxSymbolProvider implements SymbolProvider {
     @Override
     public void cleanup() {
         cancelled = true;
+    }
+
+    /**
+     * A symbol whose outline name carries a stylesheet sigil
+     * ({@code .hero-banner}, {@code #masthead}, {@code @media}) must be
+     * findable by the name a person would TYPE — the v1.215.0
+     * findability law: a punctuation prefix must not empty the search.
+     * The display keeps the honest full selector; only the match
+     * consults the sigil-free form too.
+     */
+    static boolean matches(NameMatcher matcher, String name) {
+        if (matcher.accept(name)) {
+            return true;
+        }
+        String bare = sigilFree(name);
+        return !bare.equals(name) && matcher.accept(bare);
+    }
+
+    /** Strips a leading run of stylesheet sigils; never empties a name. */
+    static String sigilFree(String name) {
+        int i = 0;
+        while (i < name.length() && ".#@".indexOf(name.charAt(i)) >= 0) {
+            i++;
+        }
+        return i == 0 || i >= name.length() ? name : name.substring(i);
     }
 
     /** The platform's resolvers know every mime the product registered. */
