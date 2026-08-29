@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.48.0] - 2026-08-29
+
+The competitive lens opens (David's directive: read the product as a
+rival IDE's developer would, find where they feel RELIEF, and build
+those areas until the relief is gone). The capture ships as
+docs/engineering/competitive-lens.md — seven relief items with
+evidence, ranked by what an outsider would exploit — and the first and
+loudest one closes in the same release: "their AI explains code, it
+doesn't WRITE any." **Edit with ORACLE…** joins the editor popup
+beside Ask ORACLE: select code, say what to change, and the proposed
+replacement arrives as a BEFORE/AFTER preview — Apply replaces exactly
+the selection as ONE undo unit, and nothing touches the file without
+that click. The pure core (OracleEdit) carries the laws that make it
+ours: an over-cap selection REFUSES at the record's own constructor,
+never truncates (a rewrite of a shortened selection would silently
+delete the un-sent tail — the money-law shape); the reply is accepted
+only as exactly ONE fenced code block (zero fences = the model's
+honest prose "no", shown as itself; two-plus = ambiguity, never
+guessed at); and Apply re-verifies the buffer still holds byte-for-byte
+what was sent (the v1.229.0 stale-document law) — a file that moved
+while ORACLE was thinking refuses out loud. The engine
+(OracleEditEngine) rides the same key + CODE-consent gates as every
+ORACLE flow — an edit sends exactly the data classes that consent
+names (selection, file name, language, one line of user text), so the
+kind is the same by construction — and the send goes through the ONE
+existing gated converse path with zero client changes. The preview's
+safe default is Keep Current Code (v1.98.0). 14 tests; three mutants
+dead by name (accept-ambiguous-blocks → twoBlocksRefuse,
+truncate-not-refuse → overCapRefuses, drop-stale-guard →
+staleBufferRefusesUntouched). Walk-proven in the assembled app against
+the REAL API: "modernize: use const/let and template literals" on a
+206-char selection → the consent dialog with Keep Local default → the
+preview's honest summary (206 → 210 chars, 12 → 11 lines) → Apply
+rewrote the buffer (arrow functions, template literal, comment kept)
+with "ORACLE edit applied — ⌘Z undoes it." on the status line → ONE
+⌘Z restored the original byte-for-byte.
+
 ## [2.47.1] - 2026-08-29
 
 The definitive-web3 arc's own review (v2.44.0–v2.47.0 under hostile
@@ -15313,6 +15350,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.48.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.1...v2.48.0
 [2.47.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.45.0...v2.46.0
