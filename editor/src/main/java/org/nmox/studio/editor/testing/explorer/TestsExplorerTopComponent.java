@@ -178,7 +178,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
             }
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(rel);
             for (DiscoveredTest t : e.getValue()) {
-                fileNode.add(new DefaultMutableTreeNode(t));
+                fileNode.add(new TestNode(t));
                 tests++;
             }
             rootNode.add(fileNode);
@@ -187,10 +187,26 @@ public final class TestsExplorerTopComponent extends TopComponent {
         for (int i = 0; i < tree.getRowCount() && i < 40; i++) {
             tree.expandRow(i);
         }
-        status.setText(tests + " tests in " + found.size() + " files"
+        status.setText(tests + (tests == 1 ? " test in " : " tests in ")
+                + found.size() + (found.size() == 1 ? " file" : " files")
                 + (truncated
                 ? " — large project, first " + TestIndex.MAX_FILES + " files only"
                 : ""));
+    }
+
+    /** A leaf that shows the test's NAME, not the record's toString —
+     *  the walk's first find: DiscoveredTest[name=…] painted verbatim. */
+    private static final class TestNode extends DefaultMutableTreeNode {
+
+        TestNode(DiscoveredTest t) {
+            super(t);
+        }
+
+        @Override
+        public String toString() {
+            DiscoveredTest t = (DiscoveredTest) getUserObject();
+            return t.name() + "  \u00b7 line " + t.line();
+        }
     }
 
     private DiscoveredTest selectedTest() {

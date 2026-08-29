@@ -33,7 +33,19 @@ ever runs git commit. OracleCommitEngine is the ORACLE family's third
 gated engine, same seams as Ask/Edit. 12 new tests; five mutants dead
 by name (surrogate-cap → capIsCodePointSafe, skip-consent →
 declinedConsentSendsNothing, one-vocabulary → discoversAcrossMimes,
-zero-based-lines → linesAreExact, silent-depth-cap → depthCapSpeaks).
+zero-based-lines → linesAreExact, silent-depth-cap → depthCapSpeaks),
+plus the chip's boot-law source gate taught both lawful spawn sites
+(it correctly REFUSED the new spawns until they took the structural
+mayRunProcess guard — mutant by name inside the gate). Both units
+walk-proven in the assembled app: ⌥⌘2 on a real cargo crate listed
+both #[test] fns (the walk caught the leaves painting the record's
+raw toString and the "1 files" grammar — both fixed and re-walked),
+double-click landed on lib.rs 10:1, Run fired the Workspace Trust
+prompt BEFORE any spawn and cargo ran exactly the selected test
+("1 passed", exit 0); the chip's draft flow showed the git.diff
+consent verbatim, the REAL API answered with the staged change's
+true subject and body, and Copy round-tripped through pbpaste
+byte-for-byte.
 
 ## [2.49.1] - 2026-08-29
 
