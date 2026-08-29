@@ -1699,6 +1699,12 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** Re-arms or disables the write surface after an accounts refresh. */
     private void refreshSessionAccounts() {
         if (session != null) {
+            // a network switch may put a DIFFERENT token behind the same
+            // address — drop the cached decimals so a decimal-form amount
+            // REFUSES until the new chain answers, instead of converting
+            // with the old chain's scale (v2.47.1 review; the money law's
+            // correct failure mode is a refusal, never a mis-scale)
+            tokenDecimals = null;
             session = session.withAccounts(hasAccounts());
             rebuildInteract();
         }

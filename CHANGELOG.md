@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.47.1] - 2026-08-29
+
+The definitive-web3 arc's own review (v2.44.0–v2.47.0 under hostile
+lenses, hours old): two finds fixed. A network switch re-reads the
+token strip but left the CACHED decimals standing for the seconds the
+read takes — a "1.5" sent in that window would have converted with
+the OLD chain's scale if the same address held a different token;
+the cache now drops at the switch so a decimal-form amount REFUSES
+until the new chain answers (the money law's correct failure mode is
+a refusal, never a mis-scale; the refusal path was already
+mutation-pinned). And an imported ABI was unbounded — the cap now
+lives in ImportedContract's own constructor so EVERY construction
+site enforces it (mutant dead by name), with a hand-edited monster
+entry skipping alone at load instead of killing the workspace.
+Verified CLEAN: the fee strip's color/single-append, History's
+bounds-before-fetch, the strip's session-identity guards. Blessed in
+writing: TxInspection and EventHistory carry two similar log
+decoders (the third copy promotes, per the house rule), and raw
+integers in amount fields mean raw units by design — the strip shows
+the decimals, and a hint is recorded as a future nicety.
+
 ## [2.47.0] - 2026-08-29
 
 Any history (definitive-engagement batch three): History… on the
@@ -15292,6 +15313,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.47.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.47.0...v2.47.1
 [2.47.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.45.0...v2.46.0
 [2.45.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.44.0...v2.45.0
