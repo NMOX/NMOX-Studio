@@ -36,6 +36,9 @@ public final class Web3WorkspaceIO {
     /** How many deployment records the file keeps — the newest 200. */
     public static final int DEPLOYMENT_CAP = 200;
 
+    /** Imported-ABI cap — a workspace file is a checked-in file. */
+    public static final int IMPORTED_CAP = 100;
+
     private static final Logger LOG = Logger.getLogger(Web3WorkspaceIO.class.getName());
 
     /**
@@ -43,16 +46,18 @@ public final class Web3WorkspaceIO {
      * copied; deployments are kept newest-first by the callers (the
      * address book appends at the front).
      */
-    public record Workspace(List<Network> networks, List<DeploymentRecord> deployments) {
+    public record Workspace(List<Network> networks, List<DeploymentRecord> deployments,
+            List<org.nmox.studio.web3.model.ImportedContract> imported) {
 
         public Workspace {
             networks = List.copyOf(networks);
             deployments = List.copyOf(deployments);
+            imported = List.copyOf(imported);
         }
 
         /** A workspace with nothing in it. */
         public static Workspace empty() {
-            return new Workspace(List.of(), List.of());
+            return new Workspace(List.of(), List.of(), List.of());
         }
     }
 
@@ -94,6 +99,17 @@ public final class Web3WorkspaceIO {
         }
         root.put("deployments", deployments);
 
+        JSONArray imported = new JSONArray();
+        for (org.nmox.studio.web3.model.ImportedContract contract
+                : cappedImported(workspace.imported())) {
+            JSONObject ij = new JSONObject();
+            ij.put("name", nz(contract.name()));
+            ij.put("abi", nz(contract.abiJson()));
+            ij.put("address", nz(contract.address()));
+            imported.put(ij);
+        }
+        root.put("imported", imported);
+
         return root.toString(2);
     }
 
@@ -111,10 +127,7 @@ public final class Web3WorkspaceIO {
             return Workspace.empty();
         }
         try {
-            JSONObject root = new JSONObject(json);
-            return new Workspace(
-                    networks(root.optJSONArray("networks")),
-                    cappedDeployments(deployments(root.optJSONArray("deployments"))));
+            return parse(new JSONObject(json));
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; starting with an empty workspace ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
@@ -182,10 +195,7 @@ public final class Web3WorkspaceIO {
             return new LoadOutcome(Workspace.empty(), null); // nothing to lose
         }
         try {
-            JSONObject root = new JSONObject(json);
-            return new LoadOutcome(new Workspace(
-                    networks(root.optJSONArray("networks")),
-                    cappedDeployments(deployments(root.optJSONArray("deployments")))), null);
+            return new LoadOutcome(parse(new JSONObject(json)), null);
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
@@ -270,6 +280,62 @@ public final class Web3WorkspaceIO {
     private static List<DeploymentRecord> cappedDeployments(List<DeploymentRecord> deployments) {
         return deployments.size() <= DEPLOYMENT_CAP
                 ? deployments : deployments.subList(0, DEPLOYMENT_CAP);
+    }
+
+    /**
+     * THE one construction site for a parsed workspace (v2.45.0 review
+     * find): fromJson and loadGuarded once built Workspaces separately,
+     * and the second site silently dropped the imported list because a
+     * compatibility constructor defaulted it — a compile error was
+     * masked into a data hole. Every field a Workspace carries is read
+     * HERE or nowhere.
+     */
+    private static Workspace parse(JSONObject root) {
+        return new Workspace(
+                networks(root.optJSONArray("networks")),
+                cappedDeployments(deployments(root.optJSONArray("deployments"))),
+                cappedImported(imported(root.optJSONArray("imported"))));
+    }
+
+    /**
+     * Imported contracts (v2.45.0). PARSE-TIME HEAL (the v2.36.2 law):
+     * the studio keys sessions by contract name, so a keep-both merge
+     * that duplicates a name would make gestures ambiguous — the FIRST
+     * occurrence keeps the name, later duplicates are dropped with a
+     * log line. Entries without a name or ABI are skipped.
+     */
+    private static List<org.nmox.studio.web3.model.ImportedContract> imported(
+            JSONArray array) {
+        List<org.nmox.studio.web3.model.ImportedContract> out = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        if (array == null) {
+            return out;
+        }
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject entry = array.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            String name = entry.optString("name", "");
+            String abi = entry.optString("abi", "");
+            if (name.isBlank() || abi.isBlank()) {
+                continue;
+            }
+            if (!seen.add(name)) {
+                LOG.log(Level.WARNING,
+                        "Duplicate imported contract \"{0}\" in {1} — keeping the first",
+                        new Object[]{name, FILENAME});
+                continue;
+            }
+            out.add(new org.nmox.studio.web3.model.ImportedContract(
+                    name, abi, entry.optString("address", "")));
+        }
+        return out;
+    }
+
+    private static List<org.nmox.studio.web3.model.ImportedContract> cappedImported(
+            List<org.nmox.studio.web3.model.ImportedContract> list) {
+        return list.size() <= IMPORTED_CAP ? list : list.subList(0, IMPORTED_CAP);
     }
 
     private static String nz(String s) {

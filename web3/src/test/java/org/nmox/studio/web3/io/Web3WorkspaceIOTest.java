@@ -32,7 +32,7 @@ class Web3WorkspaceIOTest {
         Network smuggler = new Network("Mainnet (Infura)", 1, true,
                 "https://mainnet.infura.io/v3/SUPERSECRETKEY");
         String json = Web3WorkspaceIO.toJson(
-                new Web3WorkspaceIO.Workspace(List.of(smuggler), List.of()));
+                new Web3WorkspaceIO.Workspace(List.of(smuggler), List.of(), List.of()));
 
         assertThat(json).doesNotContain("SUPERSECRETKEY");
         assertThat(json).doesNotContain("\"url\"");
@@ -58,7 +58,7 @@ class Web3WorkspaceIOTest {
     void plainNetworkKeepsUrl() {
         Network local = new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545");
         String json = Web3WorkspaceIO.toJson(
-                new Web3WorkspaceIO.Workspace(List.of(local), List.of()));
+                new Web3WorkspaceIO.Workspace(List.of(local), List.of(), List.of()));
         assertThat(json).contains("http://127.0.0.1:8545");
     }
 
@@ -71,7 +71,7 @@ class Web3WorkspaceIOTest {
                 List.of(new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545"),
                         new Network("Mainnet", 1, true, null)),
                 List.of(new DeploymentRecord("Counter", "0xabc123", "Local (anvil)",
-                        "0xtxhash", 12, 1_700_000_000_000L)));
+                        "0xtxhash", 12, 1_700_000_000_000L)), List.of());
         Web3WorkspaceIO.save(dir.toFile(), workspace);
 
         Web3WorkspaceIO.Workspace loaded = Web3WorkspaceIO.load(dir.toFile());
@@ -91,7 +91,7 @@ class Web3WorkspaceIOTest {
         // (and classified as a foreign edit) — the directory must stay clean
         Web3WorkspaceIO.Workspace workspace = new Web3WorkspaceIO.Workspace(
                 List.of(new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545")),
-                List.of());
+                List.of(), List.of());
         Web3WorkspaceIO.save(dir.toFile(), workspace);
         Web3WorkspaceIO.save(dir.toFile(), workspace);
 
@@ -109,7 +109,7 @@ class Web3WorkspaceIOTest {
             many.add(new DeploymentRecord("C" + i, "0x" + i, "net", "0xtx" + i, i, i));
         }
         String json = Web3WorkspaceIO.toJson(
-                new Web3WorkspaceIO.Workspace(List.of(), many));
+                new Web3WorkspaceIO.Workspace(List.of(), many, List.of()));
         Web3WorkspaceIO.Workspace loaded = Web3WorkspaceIO.fromJson(json);
 
         assertThat(loaded.deployments()).hasSize(Web3WorkspaceIO.DEPLOYMENT_CAP);
@@ -165,7 +165,7 @@ class Web3WorkspaceIOTest {
 
         Web3WorkspaceIO.save(dir.toFile(), new Web3WorkspaceIO.Workspace(
                 List.of(new Network("Local", 31337, false, "http://127.0.0.1:8545")),
-                List.of()));
+                List.of(), List.of()));
         Web3WorkspaceIO.LoadOutcome clean = Web3WorkspaceIO.loadGuarded(dir.toFile());
         assertThat(clean.workspace().networks()).hasSize(1);
         assertThat(clean.backup()).isNull();

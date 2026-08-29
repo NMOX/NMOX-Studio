@@ -174,6 +174,29 @@ public final class ArtifactScanner {
         return bytecodeObject == null ? "0x" : bytecodeObject.optString("object", "0x");
     }
 
+    /**
+     * Parses a bare ABI JSON array (v2.45.0, Import ABI…): the SAME
+     * parser every built artifact goes through — one parser, one
+     * truth. Throws with the reason on malformed JSON; an array with
+     * no callable surface yields an empty list the caller refuses.
+     */
+    public static List<AbiEntry> parseAbiJson(String abiArrayJson) {
+        return parseAbi(new JSONArray(abiArrayJson));
+    }
+
+    /**
+     * An imported contract as a first-class artifact: same Interact,
+     * same token strip, same inspector coverage as a built one. No
+     * bytecode by construction — an import can attach and call, never
+     * deploy (the deploy form's bytecode guard refuses honestly).
+     */
+    public static org.nmox.studio.web3.model.ContractArtifact fromImported(
+            org.nmox.studio.web3.model.ImportedContract contract) {
+        return new org.nmox.studio.web3.model.ContractArtifact(
+                contract.name(), "(imported ABI)",
+                parseAbiJson(contract.abiJson()), "0x", "0x");
+    }
+
     private static List<AbiEntry> parseAbi(JSONArray abiJson) {
         List<AbiEntry> abi = new ArrayList<>();
         for (int i = 0; i < abiJson.length(); i++) {
