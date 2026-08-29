@@ -89,11 +89,16 @@ class ProjectSymbolsTest {
     void sigilNeverDefeatsTheMatch() {
         // the walk's find: ⌘I "hero-banner" returned NOTHING because the
         // outline's honest name is ".hero-banner" (v1.215.0 class)
+        // the matcher keeps its HYPHEN: only the sigil lane can satisfy
+        // it (the folding lane strips hyphens too, so a hyphen-less
+        // matcher would let a dropped sigil lane hide behind folding —
+        // the test-each-OR-branch-alone law, and this input is the
+        // dialog's real "hero-banner" query verbatim)
         org.netbeans.spi.jumpto.support.NameMatcher prefix =
-                name -> name.startsWith("hero");
+                name -> name.startsWith("hero-ban");
         assertThat(SymbolMatch.matches(prefix, ".hero-banner")).isTrue();
         assertThat(SymbolMatch.matches(prefix, "#hero-banner")).isTrue();
-        assertThat(SymbolMatch.matches(prefix, "heroic")).isTrue();
+        assertThat(SymbolMatch.matches(prefix, "hero-bandit")).isTrue();
         assertThat(SymbolMatch.matches(prefix, ".footer-note")).isFalse();
         // the full spelled form still matches too
         org.netbeans.spi.jumpto.support.NameMatcher dotted =
