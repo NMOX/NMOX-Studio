@@ -177,6 +177,100 @@ public class GitStatusLine implements StatusLineElementProvider {
         private static final String ANNOTATE_INSTANCE =
                 "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance";
 
+        /**
+         * Draft Commit Message with ORACLE: the STAGED diff (fixed-argv
+         * read-only git spawn, the GitFacts family — no project code
+         * executes, so no trust gate) goes to the API behind the key
+         * gate and its OWN consent kind (a diff is a new disclosure
+         * class — neither the failure context nor a selection), and the
+         * draft lands in an EDITABLE dialog. Nothing here ever runs
+         * git commit — the user does the committing.
+         */
+        private void draftCommitMessage() {
+            File dir = RackService.getDefault().getRack().getProjectDir();
+            if (dir == null) {
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Aim a project first.");
+                return;
+            }
+            RP.post(() -> {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult stat;
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult diff;
+                try {
+                    stat = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                            java.util.List.of("git", "diff", "--staged", "--stat"),
+                            dir, java.time.Duration.ofSeconds(5));
+                    diff = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                            java.util.List.of("git", "diff", "--staged"),
+                            dir, java.time.Duration.ofSeconds(5));
+                } catch (java.io.IOException ex) {
+                    status("Could not read the staged diff: " + ex.getMessage());
+                    return;
+                }
+                if (stat.exitCode() != 0 || diff.exitCode() != 0) {
+                    status("Not a git repository, or git failed — nothing was sent.");
+                    return;
+                }
+                String rawDiff = diff.stdout();
+                if (rawDiff == null || rawDiff.isBlank()) {
+                    status("Nothing staged — stage changes first (git add), then draft.");
+                    return;
+                }
+                org.nmox.studio.rack.engine.OracleCommitEngine engine =
+                        new org.nmox.studio.rack.engine.OracleCommitEngine(
+                                new org.nmox.studio.rack.engine.OracleClient(),
+                                OracleKeys::read,
+                                project -> OracleConsent.requestKindConsent("git.diff",
+                                        "the STAGED diff of " + project + " (up to "
+                                        + org.nmox.studio.rack.engine
+                                                .OracleCommitMessage.MAX_DIFF_CHARS
+                                        + " characters) and its changed-file list"));
+                org.nmox.studio.rack.engine.OracleCommitEngine.Draft drafted =
+                        engine.draft(dir.getName(), stat.stdout(), rawDiff,
+                                AskOracleModel.chosen());
+                if (drafted.status() != org.nmox.studio.rack.engine
+                        .OracleCommitEngine.Status.DRAFTED) {
+                    status(drafted.message());
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> showDraft(drafted.message()));
+            });
+        }
+
+        private static void status(String message) {
+            java.awt.EventQueue.invokeLater(() -> org.openide.awt
+                    .StatusDisplayer.getDefault().setStatusText(message));
+        }
+
+        /** The editable draft — Copy puts it on the clipboard; never commits. */
+        private void showDraft(String message) {
+            javax.swing.JTextArea area = new javax.swing.JTextArea(message, 12, 72);
+            area.setLineWrap(true);
+            area.setWrapStyleWord(true);
+            area.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,
+                    java.awt.Font.PLAIN, 12));
+            area.getAccessibleContext().setAccessibleName("Drafted commit message");
+            javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(0, 6));
+            panel.add(new javax.swing.JLabel(
+                    "Edit as needed, then Copy — committing stays yours."),
+                    java.awt.BorderLayout.NORTH);
+            panel.add(new javax.swing.JScrollPane(area), java.awt.BorderLayout.CENTER);
+            Object copy = "Copy";
+            Object close = "Close";
+            org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(panel,
+                    "ORACLE commit message \u2014 draft",
+                    org.openide.NotifyDescriptor.DEFAULT_OPTION,
+                    org.openide.NotifyDescriptor.PLAIN_MESSAGE,
+                    new Object[]{copy, close}, copy);
+            if (org.openide.DialogDisplayer.getDefault().notify(nd) == copy) {
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                        .setContents(new java.awt.datatransfer
+                                .StringSelection(area.getText()), null);
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText("Commit message copied \u2014 paste it into your commit.");
+            }
+        }
+
         /** Click → the platform git module's own windows, plus a manual Refresh. */
         private void showChipMenu() {
             if (!chip.visible()) {
@@ -208,6 +302,10 @@ public class GitStatusLine implements StatusLineElementProvider {
             JMenuItem history = new JMenuItem("History");
             history.addActionListener(e -> openHistory());
             menu.add(history);
+            menu.addSeparator();
+            JMenuItem draft = new JMenuItem("Draft Commit Message with ORACLE\u2026");
+            draft.addActionListener(e -> draftCommitMessage());
+            menu.add(draft);
             menu.addSeparator();
             JMenuItem refresh = new JMenuItem("Refresh");
             refresh.addActionListener(e -> RP.post(this::refreshCount));

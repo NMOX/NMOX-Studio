@@ -88,27 +88,40 @@ public class RunFocusedTestAction extends BaseAction {
         int caretLine = lineOf(doc, target.getCaretPosition());
         String name = nearestMatch(doc, target.getCaretPosition(), patternFor(mime));
 
-        Focused focused = commandFor(mime, file, name, caretLine);
-        if (focused == null) {
+        if (!runDiscovered(file, mime, name, caretLine)) {
             StatusDisplayer.getDefault().setStatusText(
                     "No test found above the caret" + (name == null ? "" : " for " + name));
-            return;
         }
-        // A focused test EXECUTES the project's committed code (the spec,
-        // its imports, the runner's own config) — the same inward flow the
-        // debug action gates. Missed by the v1.103.0 sweep; found by the
-        // v1.223.0 Angular pass (the DapDebugAction idiom, prompt-once).
+    }
+
+    /**
+     * Runs one test through the ONE execution path both surfaces share
+     * — the editor gesture and the Tests window: command assembly
+     * ({@link #commandFor}), the Workspace Trust gate BEFORE the spawn
+     * (a focused test EXECUTES the project's committed code — the same
+     * inward flow the debug action gates; missed by the v1.103.0 sweep,
+     * found by the v1.223.0 Angular pass, DapDebugAction idiom), and
+     * the CommandExecutor lane. Returns false only when no runner
+     * exists for this mime/name — the caller phrases that refusal; a
+     * trust decline speaks here and counts as dispatched.
+     */
+    public static boolean runDiscovered(File file, String mime, String name, int line) {
+        Focused focused = commandFor(mime, file, name, line);
+        if (focused == null) {
+            return false;
+        }
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(focused.dir())) {
             StatusDisplayer.getDefault().setStatusText(
                     "Focused test not run — workspace not trusted");
-            return;
+            return true;
         }
         StatusDisplayer.getDefault().setStatusText("Focused test: "
-                + (name != null ? name : "line " + caretLine));
+                + (name != null ? name : "line " + line));
         CommandExecutor.showOutput("Focused Test");
         CommandExecutor.run("Focused Test", focused.dir(), Map.of(),
-                focused.command(), line -> { }, code -> StatusDisplayer.getDefault()
+                focused.command(), l -> { }, code -> StatusDisplayer.getDefault()
                         .setStatusText(code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]"));
+        return true;
     }
 
     record Focused(List<String> command, File dir) {
@@ -207,7 +220,7 @@ public class RunFocusedTestAction extends BaseAction {
         };
     }
 
-    static Pattern patternFor(String mime) {
+    public static Pattern patternFor(String mime) {
         return switch (mime) {
             case "text/javascript", "text/typescript" -> JS_TEST;
             case "text/x-python" -> PY_TEST;
