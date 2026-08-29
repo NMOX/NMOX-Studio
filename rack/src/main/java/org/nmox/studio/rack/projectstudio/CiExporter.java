@@ -143,7 +143,7 @@ public final class CiExporter {
                             with: { python-version: '3.12' }
                     """.stripTrailing() + "\n");
                 case MAVEN, GRADLE -> steps.add("""
-                          - uses: actions/setup-java@v5
+                          - uses: actions/setup-java@v6
                             with: { distribution: temurin, java-version: 17 }
                     """.stripTrailing() + "\n");
                 case ELIXIR, ERLANG -> steps.add("""

@@ -340,6 +340,12 @@ drafted subject-and-body lands in an editable dialog with a **Copy**
 button. Nothing in this flow ever runs `git commit` — you stay the
 committer. Nothing staged? It says so and sends nothing.
 
+**Pull requests, from the same chip.** **Pull Requests…** lists the
+repo's open PRs using your own `gh` CLI — your login, your config; the
+IDE never stores a forge token. Select one and **Open in Browser**
+shows it in the in-app Browser. No `gh`, not signed in, or not a
+GitHub repo? The refusal tells you exactly which.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)

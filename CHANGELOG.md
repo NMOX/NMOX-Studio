@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.51.0] - 2026-08-29
+
+Batch two of the pipelined day: **Pull Requests reach the IDE**
+(competitive-lens R6 partially closes) — the git chip menu gains
+Pull Requests…, listing the repo's open PRs through the USER'S OWN
+gh CLI (their auth, their config: the product holds no forge token,
+honoring the keychain-only law by never holding a credential at all;
+no gh, no auth, or no GitHub remote each refuse with gh's own first
+error line), rows rendered through PlainTables (a hostile PR title
+paints as characters — parse-level test pins the title surviving
+VERBATIM as data), double-choice Open in Browser rides the
+EmbeddedBrowser facade, and the spawn took the chip's structural
+mayRunProcess guard (the boot-law gate taught its fourth site, mutant
+by name). **Dependabot handled the split way**: actions group absorbed
+BY HAND — setup-java v6 + cache v6 moved in the workflows AND the CI
+exporter's generated-workflow literal in the same change, because the
+grouped PR failed its own CI on exactly the v1.236.0 parity gate
+(Dependabot reads YAML, not Java string literals — the gate exists for
+this); spotbugs-maven-plugin 4.10.4.0 taken; **slf4j-api 1.7→2.0
+REFUSED structurally** — that dependency is the v2.21.6 OSGi-placement
+pin for jgit's org.slf4j import, a major flips the binding mechanism,
+and whether the wrapped 2.x bundle still boots under Netigso is a
+question only a dedicated boot-gauntleted release answers (now a
+dependabot ignore with the reason, the org.openjfx precedent). And the
+**v2.50.0 same-day review** came back CLEAN: listener double-add safe
+by the ProjectAim contract, consent-off-EDT blessed by the dialog
+API's own thread contract, the TestIndex incremental line scan
+verified single-pass — no finds, recorded honestly. Walk-proven with a
+self-referential proof: aimed at this repo, Pull Requests… listed
+exactly ONE open PR — #631, the very release being walked — with
+author and branch in plain-rendered cells, and Open in Browser
+dispatched through the EmbeddedBrowser facade (the FX-less dev tree
+answered with its honest v1.199.0 degrade: system browser, spoken,
+never silent).
+
 ## [2.50.0] - 2026-08-29
 
 Batch (the competitive lens, worktree-pipelined per David's "we spend
@@ -15462,6 +15497,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.51.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.50.0...v2.51.0
 [2.50.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.1...v2.50.0
 [2.49.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.0...v2.49.1
 [2.49.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.48.0...v2.49.0

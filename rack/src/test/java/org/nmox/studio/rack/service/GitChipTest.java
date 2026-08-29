@@ -132,12 +132,13 @@ class GitChipTest {
         // site fails here until it takes the guard below
         assertThat(source.split("runBounded", -1).length - 1)
                 .as("only the enumerated process launch sites")
-                .isEqualTo(3);
+                .isEqualTo(4);
 
         // and every spawning method opens with the boot guard, before
         // any process code
         for (String sig : new String[] {"private void refreshCount()",
-                "private void draftCommitMessage()"}) {
+                "private void draftCommitMessage()",
+                "private void showPullRequests()"}) {
             String body = method(source, sig);
             assertThat(body).as(sig).contains("if (!chip.mayRunProcess())");
             assertThat(body.indexOf("mayRunProcess"))
