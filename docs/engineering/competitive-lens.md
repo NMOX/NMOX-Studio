@@ -89,11 +89,16 @@ denial — recorded so the position is chosen, not drifted into.
 the Docker panel are adjacent, not remote workspaces. A platform-scale
 investment; recorded honestly, no small unit closes it.
 
-### R6 — "No PR or code-review surface." — OPEN
+### R6 — "No PR or code-review surface." — PARTIAL v2.51.0
 
-**Evidence:** the Team menu is the platform git suite; PRs live in the
-browser. A bounded unit exists here (PR list/checkout via the forge
-API) but it needs an auth story that honors the keychain-only law.
+**Evidence:** the Team menu is the platform git suite; PRs lived in
+the browser only.
+
+**Response:** Pull Requests… on the git chip (v2.51.0) — the list via
+the user's own gh CLI (the auth story that honors keychain-only by
+never holding a credential), open-in-Browser per row. Review
+threads/checkout stay honestly open; the list is the daily-driver
+half.
 
 ### R7 — "The editor lacks minimap / sticky scroll." — OPEN
 
