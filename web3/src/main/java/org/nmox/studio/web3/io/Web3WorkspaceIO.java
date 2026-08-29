@@ -327,8 +327,15 @@ public final class Web3WorkspaceIO {
                         new Object[]{name, FILENAME});
                 continue;
             }
-            out.add(new org.nmox.studio.web3.model.ImportedContract(
-                    name, abi, entry.optString("address", "")));
+            try {
+                out.add(new org.nmox.studio.web3.model.ImportedContract(
+                        name, abi, entry.optString("address", "")));
+            } catch (IllegalArgumentException oversize) {
+                // a hand-edited monster entry skips alone — the rest of
+                // the workspace loads (v2.47.1, the skip-with-log family)
+                LOG.log(Level.WARNING, "Skipping imported \"{0}\": {1}",
+                        new Object[]{name, oversize.getMessage()});
+            }
         }
         return out;
     }

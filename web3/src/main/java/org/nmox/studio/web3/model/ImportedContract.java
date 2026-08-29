@@ -19,9 +19,18 @@ import java.util.Objects;
  */
 public record ImportedContract(String name, String abiJson, String address) {
 
+    /** The widest ABI an import may carry — the workspace file is a
+     *  checked-in file, and every read of it is bounded (v2.47.1). */
+    public static final int ABI_CAP_CHARS = 1_000_000;
+
     public ImportedContract {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(abiJson, "abiJson");
+        if (abiJson.length() > ABI_CAP_CHARS) {
+            throw new IllegalArgumentException("ABI is " + abiJson.length()
+                    + " characters — past the " + ABI_CAP_CHARS
+                    + " cap; that is not an ABI");
+        }
         address = address == null ? "" : address.trim();
         if (name.isBlank()) {
             throw new IllegalArgumentException("Imported contract needs a name");

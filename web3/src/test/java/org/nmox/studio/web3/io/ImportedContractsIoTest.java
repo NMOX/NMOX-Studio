@@ -100,6 +100,25 @@ class ImportedContractsIoTest {
     }
 
     @Test
+    @DisplayName("the ABI cap holds at construction, and an oversize file entry skips alone")
+    void abiCap() {
+        String big = "x".repeat(ImportedContract.ABI_CAP_CHARS + 1);
+        assertThatThrownBy(() -> new ImportedContract("Huge", big, ""))
+                .hasMessageContaining("cap");
+        // hand-edit a monster entry into an otherwise-good file: the good
+        // entry loads, the monster skips (never kills the whole workspace)
+        String json = Web3WorkspaceIO.toJson(new Web3WorkspaceIO.Workspace(
+                List.of(), List.of(),
+                List.of(new ImportedContract("Good", "[]", ""))));
+        String merged = json.replace("\"imported\": [",
+                "\"imported\": [{\"name\":\"Huge\",\"abi\":\""
+                        + big + "\",\"address\":\"\"},");
+        Web3WorkspaceIO.Workspace back = Web3WorkspaceIO.fromJson(merged);
+        assertThat(back.imported()).hasSize(1);
+        assertThat(back.imported().get(0).name()).isEqualTo("Good");
+    }
+
+    @Test
     @DisplayName("one parser, one truth: an import becomes a full artifact; junk is refused with a reason")
     void oneParser() {
         ContractArtifact artifact = ArtifactScanner.fromImported(
