@@ -1036,6 +1036,13 @@ public final class Web3StudioTopComponent extends TopComponent {
                 "Inspect a transaction by hash");
         inspectButton.addActionListener(e -> inspectTransaction());
         bar.add(inspectButton);
+        JButton historyButton = new JButton("History\u2026");
+        historyButton.setToolTipText("Fetch and decode past events for an address "
+                + "over a bounded block range \u2014 exportable as CSV");
+        historyButton.getAccessibleContext().setAccessibleName(
+                "Query event history");
+        historyButton.addActionListener(e -> eventHistory());
+        bar.add(historyButton);
         panel.add(bar, BorderLayout.NORTH);
 
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(watchModel));
@@ -1660,6 +1667,22 @@ public final class Web3StudioTopComponent extends TopComponent {
         refreshFromCombo();
         refreshSessionAccounts();
         updateWatchAddresses();
+        // the fee strip (v2.47.0): one extra read, appended when it
+        // lands — a node without eth_gasPrice just keeps the plain chip
+        RP.post(() -> {
+            try {
+                java.math.BigInteger price = probe.gasPrice();
+                SwingUtilities.invokeLater(() -> {
+                    if (seq == connectSeq && connected) {
+                        chip(chipLabel.getText() + " · gas "
+                                + org.nmox.studio.web3.engine.Units.formatWei(price),
+                                chipLabel.getForeground());
+                    }
+                });
+            } catch (Exception unsupported) {
+                // honest absence — the chip already tells the truth
+            }
+        });
     }
 
     private void refreshFromCombo() {
@@ -2529,6 +2552,129 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     // ---- The transaction inspector (v2.44.0) -----------------------------
+
+    /** History… (v2.47.0): decoded past events over a BOUNDED range. */
+    private void eventHistory() {
+        JsonRpcClient c = client;
+        if (c == null || !connected) {
+            status(NOT_CONNECTED, FAIL_RED);
+            return;
+        }
+        JTextField addressField = new JTextField(44);
+        if (session != null && session.address() != null) {
+            addressField.setText(session.address());
+        }
+        addressField.getAccessibleContext().setAccessibleName("Contract address");
+        JTextField fromField = new JTextField(10);
+        fromField.getAccessibleContext().setAccessibleName("From block");
+        JTextField toField = new JTextField(10);
+        toField.getAccessibleContext().setAccessibleName("To block, or latest");
+        JPanel form = new JPanel(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
+        gc.insets = new java.awt.Insets(2, 2, 2, 6);
+        form.add(new JLabel("Address:"), gc);
+        gc.gridx = 1;
+        form.add(addressField, gc);
+        gc.gridx = 0; gc.gridy = 1;
+        form.add(new JLabel("Blocks:"), gc);
+        gc.gridx = 1;
+        JPanel rangeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        rangeRow.add(fromField);
+        rangeRow.add(new JLabel(" to "));
+        rangeRow.add(toField);
+        rangeRow.add(new JLabel(" (blank = last 1000, cap "
+                + org.nmox.studio.web3.engine.EventHistory.SPAN_CAP + ")"));
+        form.add(rangeRow, gc);
+        NotifyDescriptor descriptor = new NotifyDescriptor(form, "Event history",
+                NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE,
+                null, NotifyDescriptor.OK_OPTION);
+        if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+        String address = addressField.getText().trim();
+        if (!address.matches("0x[0-9a-fA-F]{40}")) {
+            status("Not an address \u2014 expected 0x + 40 hex characters", FAIL_RED);
+            return;
+        }
+        String fromText = fromField.getText();
+        String toText = toField.getText();
+        List<ContractArtifact> known = allArtifacts();
+        status("Fetching history\u2026", Color.GRAY);
+        RP.post(() -> {
+            try {
+                long latest = c.blockNumber();
+                org.nmox.studio.web3.engine.EventHistory.Range range =
+                        org.nmox.studio.web3.engine.EventHistory.range(
+                                fromText, toText, latest);
+                List<JsonRpcClient.LogEntry> logs = c.getLogs(address,
+                        String.valueOf(range.from()), String.valueOf(range.to()));
+                List<org.nmox.studio.web3.engine.EventHistory.Row> rows =
+                        org.nmox.studio.web3.engine.EventHistory.rows(logs, known);
+                SwingUtilities.invokeLater(() -> showHistory(address, range, rows));
+            } catch (IllegalArgumentException refusal) {
+                SwingUtilities.invokeLater(() ->
+                        status(refusal.getMessage(), FAIL_RED));
+            } catch (Exception failure) {
+                SwingUtilities.invokeLater(() ->
+                        status("History failed: " + failure.getMessage(), FAIL_RED));
+            }
+        });
+    }
+
+    private void showHistory(String address,
+            org.nmox.studio.web3.engine.EventHistory.Range range,
+            List<org.nmox.studio.web3.engine.EventHistory.Row> rows) {
+        StringBuilder text = new StringBuilder();
+        for (org.nmox.studio.web3.engine.EventHistory.Row row : rows) {
+            text.append(String.format("%-10d %-14s %s%n    %s%n",
+                    row.block(), row.event(), row.txHash(), row.details()));
+        }
+        if (rows.isEmpty()) {
+            text.append("No events for ").append(address)
+                    .append(" in blocks ").append(range.from())
+                    .append("\u2013").append(range.to());
+        }
+        javax.swing.JTextArea area = new javax.swing.JTextArea(
+                text.toString(), 16, 80);
+        area.setEditable(false);
+        area.setFont(MONO);
+        area.getAccessibleContext().setAccessibleName("Event history");
+        javax.swing.JButton save = new javax.swing.JButton("Save CSV\u2026");
+        save.getAccessibleContext().setAccessibleName("Save history as CSV");
+        save.addActionListener(e -> {
+            java.io.File file = new org.openide.filesystems.FileChooserBuilder(
+                    Web3StudioTopComponent.class)
+                    .setTitle("Save event history")
+                    .showSaveDialog();
+            if (file == null) {
+                return;
+            }
+            java.io.File target = file.getName().contains(".") ? file
+                    : new java.io.File(file.getParentFile(), file.getName() + ".csv");
+            try {
+                org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(),
+                        org.nmox.studio.web3.engine.EventHistory.toCsv(rows));
+                status("Saved " + rows.size() + " events to "
+                        + target.getName(), ACCENT);
+            } catch (Exception failure) {
+                status("Save failed: " + failure.getMessage(), FAIL_RED);
+            }
+        });
+        javax.swing.JDialog dialog = new javax.swing.JDialog(
+                (java.awt.Frame) null,
+                "Events \u2014 " + address + " \u00b7 blocks "
+                + range.from() + "\u2013" + range.to() + " \u00b7 "
+                + rows.size() + " found", false);
+        dialog.setLayout(new BorderLayout(0, 4));
+        dialog.add(new JScrollPane(area), BorderLayout.CENTER);
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        south.add(save);
+        dialog.add(south, BorderLayout.SOUTH);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
 
     private void inspectTransaction() {
         NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(

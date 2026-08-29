@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.47.0] - 2026-08-29
+
+Any history (definitive-engagement batch three): History… on the
+Watch tab fetches and decodes past events for any address over a
+BOUNDED block range — over the cap (5000 blocks) is refused with the
+reason, never silently clamped, because a clamped answer would
+report "history" that quietly omits most of it. Rows decode against
+your artifacts' events plus the canonical token events, unknowns
+kept honestly raw, and Save CSV… writes quoted, formula-neutralized
+cells (the v1.101.0 law — a spreadsheet must never execute chain
+data; both refusal and neutralization mutation-proven by name). The
+connection chip grows a fee strip: eth_gasPrice appended after
+connect, honest absence on nodes without it. Walk-proven on REAL
+MAINNET: the chip read chain 1 with the live gas price, and USDC's
+last four blocks came back as 277 decoded Transfer rows exported to
+CSV that a parser read clean.
+
 ## [2.46.0] - 2026-08-29
 
 The token faces complete (definitive-engagement batch two): an
@@ -15275,6 +15292,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.47.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.46.0...v2.47.0
 [2.46.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.45.0...v2.46.0
 [2.45.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.44.0...v2.45.0
 [2.44.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.43.11...v2.44.0
