@@ -127,7 +127,7 @@ Open `index.html` and the stylesheet, then run this gauntlet:
   NetBeans 5.5, Eclipse, Emacs, IntelliJ) and every NMOX chord rides
   all of them.
 
-Polyglot claims are cheap to test: open any of the 86 grammars' file
+Polyglot claims are cheap to test: open any of the 87 grammars' file
 types — Rust, Go, Gleam, Solidity, Fortran, COBOL if you like — and
 you get highlighting, comment toggling, completion, and (where a
 server exists) LSP intelligence, gated by the same trust law.
