@@ -356,6 +356,12 @@ highlighting, comment toggling, completion, and an outline of every
 interface, world, and record. The bets behind these live in
 docs/engineering/futures-2031.md.
 
+**Your import map is navigable.** In a project whose entry page
+carries a `<script type="importmap">`, ⌘-click a bare specifier like
+`'lit'` in any import statement to jump to its mapping, and press
+⌃Space inside the import quotes to list every mapped specifier with
+its target. Relative paths stay out of it — they never needed the map.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
