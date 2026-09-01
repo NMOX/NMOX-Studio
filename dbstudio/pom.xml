@@ -128,7 +128,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.53.2.1</version>
+            <version>3.53.4.0</version>
         </dependency>
         <!-- Bundled MongoDB driver (Apache-2, like sqlite-jdbc) — the one
              non-JDBC driver; CouchDB needs none (plain HTTP via the core
