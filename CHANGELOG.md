@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.53.0] - 2026-09-01
+
+Futures bet F3 lands — **import maps make the CDN-less ESM app
+normal, and the IDE now follows the map**: ⌘-click a BARE import
+specifier in JS/TS and land on its mapping in the page's
+<script type="importmap"> (the ProjectJumpHyperlink skeleton's fifth
+consumer), with resolution in the spec's own order — an exact match
+wins outright, otherwise the LONGEST trailing-slash prefix key — and
+two DIFFERENT honest misses ("no import map in this project's entry
+page" vs "not in the import map"); relative and URL imports are out
+by design, because they resolve without any map and offering to
+"resolve" them would be noise dressed as intelligence. ⌃Space inside
+an open import quote lists the mapped specifiers with their targets
+as provenance (targets are page content — angle-escaped at
+construction per the v1.306.0 render law); accepting inserts the bare
+name. Pure ImportMaps core (first-block-only per spec, malformed
+entries lose themselves, page-true key offsets, the entry-page
+candidate convention); three mutants dead by name (drop-exact-wins →
+exactBeatsPrefix, first-prefix-wins → longestPrefixWins,
+drop-bare-guard → bareOnly) — and the second mutant SURVIVED its
+first run because JSONObject's hash order made first-match equal
+longest-match for the parsed fixture: the test now pins the law with
+a deterministically short-key-first map (the full-verdict lesson,
+re-learned under -q and re-run without it). Walk-proven in the
+assembled app: ⌃Space inside a fresh import quote listed exactly the
+fixture page's map (app-utils → ./src/utils.js, lit, lit/ with their
+CDN targets) and accepting inserted the bare name between the quotes;
+the ⌘-click leg is recorded automation-unverifiable by this rig (the
+ledger-76 modifier-click class, the v2.27.0 precedent) with its span
+and resolution laws unit-pinned instead.
+
 ## [2.52.0] - 2026-09-01
 
 The futures arc opens (David's directive: bring the product up to
@@ -15535,6 +15566,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.53.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.52.0...v2.53.0
 [2.52.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.51.0...v2.52.0
 [2.51.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.50.0...v2.51.0
 [2.50.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.1...v2.50.0

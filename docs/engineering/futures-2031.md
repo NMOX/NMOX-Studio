@@ -49,7 +49,7 @@ view-transition property vocabulary — pending a probe of what the
 RELEASE310 platform CSS property DB already carries (the v1.231.0
 recon said the property DB was current; re-measure before adding).
 
-### F3 — Import maps make the CDN-less ESM app normal. — NEXT
+### F3 — Import maps make the CDN-less ESM app normal. — SHIPPED v2.53.0
 
 **Trajectory (2026):** every browser ships import maps; frameworks and
 registries (JSPM, esm.sh) lean on them; buildless dev is respectable
@@ -58,7 +58,7 @@ again for real apps.
 through a map in the page, not a bundler config — and an IDE that can't
 follow a bare specifier through the map can't answer "where does this
 import go" for those projects.
-**The next unit:** import-map intelligence — ⌘-click a bare specifier
+**Shipped v2.53.0:** import-map intelligence — ⌘-click a bare specifier
 in JS/TS to land on its mapping in the page's `<script
 type="importmap">` (specific-over-prefix per the spec's resolution
 order), completion of mapped specifiers in import statements, honest
