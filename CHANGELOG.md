@@ -27,7 +27,13 @@ drop-bare-guard → bareOnly) — and the second mutant SURVIVED its
 first run because JSONObject's hash order made first-match equal
 longest-match for the parsed fixture: the test now pins the law with
 a deterministically short-key-first map (the full-verdict lesson,
-re-learned under -q and re-run without it).
+re-learned under -q and re-run without it). Walk-proven in the
+assembled app: ⌃Space inside a fresh import quote listed exactly the
+fixture page's map (app-utils → ./src/utils.js, lit, lit/ with their
+CDN targets) and accepting inserted the bare name between the quotes;
+the ⌘-click leg is recorded automation-unverifiable by this rig (the
+ledger-76 modifier-click class, the v2.27.0 precedent) with its span
+and resolution laws unit-pinned instead.
 
 ## [2.52.0] - 2026-09-01
 
