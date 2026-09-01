@@ -44,8 +44,7 @@ public final class AgentPortAction implements ActionListener {
         McpTools tools = McpTools.production();
         AgentPort port;
         try {
-            port = AgentPort.start(tools,
-                    System.getProperty("netbeans.productversion", "dev"));
+            port = AgentPort.start(tools, productVersion());
         } catch (IOException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "The Agent Port could not start: " + ex.getMessage()));
@@ -55,6 +54,18 @@ public final class AgentPortAction implements ActionListener {
         StatusDisplayer.getDefault().setStatusText(
                 "Agent Port listening on 127.0.0.1:" + port.port());
         showRunning();
+    }
+
+    /** The running product version, or "dev" — the platform startup
+     *  bundle, the same source UpdateCheck reads (no new dependency). */
+    private static String productVersion() {
+        try {
+            return java.util.ResourceBundle
+                    .getBundle("org.netbeans.core.startup.Bundle")
+                    .getString("currentVersion");
+        } catch (RuntimeException missing) {
+            return "dev";
+        }
     }
 
     private void showRunning() {
