@@ -68,6 +68,15 @@ class ImportMapsTest {
         assertThat(ImportMaps.resolveKey("lit/html.js", imports))
                 .isEqualTo("lit/");
         assertThat(ImportMaps.resolveKey("vue", imports)).isNull();
+        // the law is LONGEST, not first-seen: pin it with a map whose
+        // iteration order provably puts the SHORT key first (the parse
+        // rides JSONObject's hash order, which let a first-match mutant
+        // survive this test's parsed fixture — full-verdict lesson)
+        Map<String, String> shortFirst = new java.util.LinkedHashMap<>();
+        shortFirst.put("lit/", "https://cdn.example/lit@3/");
+        shortFirst.put("lit/directives/", "https://cdn.example/lit@3/directives/");
+        assertThat(ImportMaps.resolveKey("lit/directives/repeat.js", shortFirst))
+                .isEqualTo("lit/directives/");
     }
 
     @Test
