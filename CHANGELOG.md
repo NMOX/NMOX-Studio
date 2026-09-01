@@ -31,7 +31,13 @@ snippets (viewtransition, temporal, importjson, gpu, llm). The
 count gate named all five stale "86 grammars" literals by file and
 line, exactly as built. Two mutants dead by name (drop-world →
 witOutlinesContractBlocks, drop-Temporal → futures2031Vocabulary).
-Recorded, not built: the MCP-server bet (F4 — a security surface the
+Walk-proven in the assembled app: contract.wit opened with full
+coloring, the Navigator listing exactly "interface store / record item
+/ world shop", Toggle Comment speaking // with the outline reactively
+dropping the commented interface; Temporal. popped all nine members
+with signatures, navigator. the modern surface with gpu, and
+LanguageModel. its create/availability/params. Recorded, not built:
+the MCP-server bet (F4 — a security surface the
 size of the product, its own arc), the native-TS watch item (F5, the
 trigger written at the TS-5 pin), and the CSS futures vocabulary
 pending a platform-DB probe.
