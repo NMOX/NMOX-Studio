@@ -45,6 +45,12 @@ public final class DiagnosticsBus {
         }
     }
 
+    /** A defensive snapshot of every tool's current findings — the
+     *  Agent Port's read (v2.54.0); batches are already immutable. */
+    public static Map<String, List<Problem>> all() {
+        return Map.copyOf(BY_TOOL);
+    }
+
     /** All problems for a file across tools (for the squiggle layer). */
     public static List<Problem> problemsFor(File file) {
         List<Problem> result = new ArrayList<>();
