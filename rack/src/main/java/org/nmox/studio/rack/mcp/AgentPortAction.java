@@ -33,11 +33,15 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_AgentPortAction=Agent Port (MCP)…")
 public final class AgentPortAction implements ActionListener {
 
-    private static AgentPort running; // EDT-confined, like the dialogs
+    // EDT-confined single-window state; an AtomicReference so the write
+    // is a method call, not a static-field assignment from an instance
+    // method (and harmless if ever touched off the EDT)
+    private static final java.util.concurrent.atomic.AtomicReference<AgentPort> RUNNING =
+            new java.util.concurrent.atomic.AtomicReference<>();
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running != null) {
+        if (RUNNING.get() != null) {
             showRunning();
             return;
         }
@@ -50,7 +54,7 @@ public final class AgentPortAction implements ActionListener {
                     "The Agent Port could not start: " + ex.getMessage()));
             return;
         }
-        running = port;
+        RUNNING.set(port);
         StatusDisplayer.getDefault().setStatusText(
                 "Agent Port listening on 127.0.0.1:" + port.port());
         showRunning();
@@ -69,7 +73,7 @@ public final class AgentPortAction implements ActionListener {
     }
 
     private void showRunning() {
-        AgentPort port = running;
+        AgentPort port = RUNNING.get();
         if (port == null) {
             return;
         }
@@ -115,7 +119,7 @@ public final class AgentPortAction implements ActionListener {
                 close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(descriptor) == stopOption) {
             port.stop();
-            running = null;
+            RUNNING.set(null);
             StatusDisplayer.getDefault().setStatusText(
                     "Agent Port stopped — nothing is listening.");
         }

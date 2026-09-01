@@ -31,6 +31,11 @@ public final class AgentPort {
     /** Request bodies past this are refused — no MCP message is 1 MB. */
     static final int MAX_REQUEST_BYTES = 1024 * 1024;
 
+    // a process-lifetime CSPRNG, seeded once and reused for every port
+    // start (a per-call new SecureRandom is used-only-once — sharing it
+    // is both the lint fix and the correct shape)
+    private static final SecureRandom TOKEN_RANDOM = new SecureRandom();
+
     private final HttpServer server;
     private final String token;
     private final String productVersion;
@@ -52,7 +57,7 @@ public final class AgentPort {
     public static AgentPort start(McpTools tools, String productVersion)
             throws IOException {
         byte[] raw = new byte[32];
-        new SecureRandom().nextBytes(raw);
+        TOKEN_RANDOM.nextBytes(raw);
         String token = HexFormat.of().formatHex(raw);
         HttpServer server = HttpServer.create(
                 new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);

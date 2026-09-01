@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.54.0] - 2026-09-01
+
+Futures bet F4 lands, READ-ONLY BY CONSTRUCTION — **the Agent Port
+(MCP)**: an agent holding the token can ASK the IDE what is failing,
+what is serving, what is aimed; nothing it says can spawn a process or
+touch a file, and that is a build law, not a promise. Tools ▸ Agent
+Port (MCP)… (off until an explicit gesture starts it — the whole
+consent model is that gesture) opens a loopback-witnessed MCP
+Streamable-HTTP endpoint over the SiteServer recipe, with FIVE
+read-only tools: project_state, live_servers, last_failure (ORACLE's
+own bounded FailureContext — the shape a consent dialog already
+describes), diagnostics (five per tool, the rest a file-read away),
+and rack_devices. The inbound transport rewrites the trust laws for a
+caller that is not at the keyboard: a per-start SecureRandom bearer
+token (constant-time compared, never logged, never persisted), any
+request carrying an Origin header REFUSED outright (the MCP spec's own
+DNS-rebinding defense, made total — a rebinding browser page sends
+Origin, a native client does not), POST-only, body capped-and-refused.
+The dialog hands the user a paste-ready .mcp.json with the token and
+names exactly what is readable. The arc's load-bearing law is
+STRUCTURAL: McpReadOnlyLedgerTest fails the build if any class in the
+mcp package names a spawn, a file write, or the trust gate — so the
+port can never quietly grow teeth, and a v2 execution surface must add
+them DELIBERATELY with its own consent design (the recorded next arc:
+a per-session grant the user arms at the keyboard, scoped to named
+verbs — because v1.103.0 says a not-the-user caller cannot simply be
+handed WorkspaceTrust). Pure McpProtocol (initialize/tools-list/
+tools-call/ping/notifications, JSON-RPC codes for every refusal, a
+handler throw is an isError RESULT not a protocol error); the
+transport security proven against a REAL running port (401 without
+token, 403 on Origin, 405 on GET, 413 over-cap, 200 with the token);
+three gate mutants dead by name (planted CommandExecutor →
+readOnlyByConstruction, dropped Origin check → originRefused, inverted
+token demand → tokenDemanded); two SpotBugs findings in the fresh code
+fixed not excluded (shared CSPRNG, AtomicReference for the
+single-window state). 19 tests.
+
 ## [2.53.0] - 2026-09-01
 
 Futures bet F3 lands — **import maps make the CDN-less ESM app
@@ -15566,6 +15603,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.54.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.53.0...v2.54.0
 [2.53.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.52.0...v2.53.0
 [2.52.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.51.0...v2.52.0
 [2.51.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.50.0...v2.51.0

@@ -64,7 +64,7 @@ type="importmap">` (specific-over-prefix per the spec's resolution
 order), completion of mapped specifiers in import statements, honest
 misses for unmapped names.
 
-### F4 — Agents are a development surface; the IDE must be toolable. — RECORDED
+### F4 — Agents are a development surface; the IDE must be toolable. — SHIPPED (read-only) v2.54.0
 
 **Trajectory (2026):** MCP is the de-facto agent-tool protocol; every
 major assistant speaks it; ORACLE already gives this IDE an outbound
@@ -73,12 +73,28 @@ AI surface.
 "what's failing", "what's serving", "run this lane" — and an IDE whose
 state is reachable only through pixels is a second-class citizen of
 that loop.
-**Why recorded, not built:** an MCP server exposing the rack, servings,
-and test lanes is a security surface the size of the product — every
-exposed verb needs the trust/consent law rebuilt for a caller that
-isn't the user at the keyboard. It deserves its own arc with its own
-dossier, not a batch slot. The inward-execution law (v1.103.0) and the
-consent-kind law (v1.171.0) are the design constraints already named.
+**Shipped v2.54.0, READ-ONLY BY CONSTRUCTION:** the Agent Port —
+Tools ▸ Agent Port (MCP)…, off until an explicit gesture starts it, a
+loopback-witnessed MCP Streamable-HTTP endpoint over the SiteServer
+recipe. Five read-only tools (project_state, live_servers,
+last_failure, diagnostics, rack_devices) over already-bounded state —
+last_failure is ORACLE's own FailureContext, the shape a consent
+dialog already describes. The transport rewrites the trust laws for a
+caller that is not at the keyboard: per-start SecureRandom bearer token
+(constant-time compare, never logged or persisted), any Origin header
+refused outright (the spec's own DNS-rebinding defense, made total),
+POST-only, body-capped. And the arc's load-bearing law is STRUCTURAL:
+McpReadOnlyLedgerTest fails the build if any class in the mcp package
+names a spawn, a file write, or the trust gate — so the inbound port
+can never quietly grow teeth.
+**The recorded v2 (execution):** run-a-lane / stop-a-server verbs are
+the deliberate next arc, and the entry fee is the consent design — the
+inward-execution law (v1.103.0) and the consent-kind law (v1.171.0)
+say a caller-that-is-not-the-user cannot simply be handed
+WorkspaceTrust; it needs a consent model of its own (a per-session
+grant the user arms at the keyboard, scoped to named verbs). The
+read-only ledger is what makes that a DELIBERATE future step instead
+of an accident waiting in a pull request.
 
 ### F5 — TypeScript's native port replaces tsserver. — RECORDED (watch item)
 
