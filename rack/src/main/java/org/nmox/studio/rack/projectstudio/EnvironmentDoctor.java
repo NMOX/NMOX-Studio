@@ -95,6 +95,7 @@ public final class EnvironmentDoctor {
                 new String[]{"cobc", "GnuCOBOL compiler — COBOL run space", "brew install gnucobol"},
                 new String[]{"haxe", "Haxe — one codebase, many targets; run space", "brew install haxe"},
                 new String[]{"janet", "Janet — the embeddable Lisp, REPL space", "brew install janet"},
+                new String[]{"wasm-tools", "wasm-tools (WebAssembly Component Model: validate/print .wit)", "brew install wasm-tools"},
                 new String[]{"dotnet", ".NET SDK — C#/F# build/run/test", "brew install dotnet-sdk"},
                 // v1.235.0: CMake became a first-class IDE lane in v1.233.0
                 // (configure → build → ctest); the Doctor should say whether

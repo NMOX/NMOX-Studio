@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.52.0] - 2026-09-01
+
+The futures arc opens (David's directive: bring the product up to
+speed with where web development is going, early and often) —
+**docs/engineering/futures-2031.md** is the new forward-looking
+sibling of the competitive lens: six bets argued from REAL
+trajectories (shipped APIs, Stage-3 proposals), each unit required to
+pay for itself today even if its bet drifts. Two bets ship in this
+batch. **F1, the WebAssembly Component Model**: .wit files (the
+Component Model IDL — what .proto became for RPC) are editor citizens
+— the bytecodealliance grammar vendored (Apache-2.0, sha256-pinned,
+87 grammars), CSL language with // comments, keyword completion,
+spellcheck, typing, and an outline that speaks WIT's OWN shapes
+(interface/world/record/variant/enum/flags/resource + type aliases) —
+built failing-first: the generic brace extractor knew interface but
+not world, so WIT earned its own extractor family; wasm-tools joins
+the Environment Doctor. **F2, the everyday 2031 platform**: JS
+completion learns Temporal (nine namespace members — new Date() reads
+as legacy by 2031), navigator (gpu/clipboard/serviceWorker/locks/
+wakeLock/share and friends), document.startViewTransition, and the
+built-in AI task APIs (LanguageModel/Summarizer/Translator as
+namespaces with real members — moved out of the keyword table when
+the lowercase matcher provably never offered them), plus five
+snippets (viewtransition, temporal, importjson, gpu, llm). The
+count gate named all five stale "86 grammars" literals by file and
+line, exactly as built. Two mutants dead by name (drop-world →
+witOutlinesContractBlocks, drop-Temporal → futures2031Vocabulary).
+Walk-proven in the assembled app: contract.wit opened with full
+coloring, the Navigator listing exactly "interface store / record item
+/ world shop", Toggle Comment speaking // with the outline reactively
+dropping the commented interface; Temporal. popped all nine members
+with signatures, navigator. the modern surface with gpu, and
+LanguageModel. its create/availability/params. Recorded, not built:
+the MCP-server bet (F4 — a security surface the
+size of the product, its own arc), the native-TS watch item (F5, the
+trigger written at the TS-5 pin), and the CSS futures vocabulary
+pending a platform-DB probe.
+
 ## [2.51.0] - 2026-08-29
 
 Batch two of the pipelined day: **Pull Requests reach the IDE**
@@ -15497,6 +15535,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.52.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.51.0...v2.52.0
 [2.51.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.50.0...v2.51.0
 [2.50.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.1...v2.50.0
 [2.49.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.49.0...v2.49.1

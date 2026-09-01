@@ -69,6 +69,7 @@ public final class LanguageComments {
             Map.entry("text/x-ada", "--"),
             Map.entry("text/x-pascal", "//"),
             Map.entry("text/x-odin", "//"),
+            Map.entry("text/x-wit", "//"),
             Map.entry("text/x-cobol", "*>"),
             Map.entry("text/x-haxe", "//"),
             Map.entry("text/x-janet", "#"),

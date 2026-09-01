@@ -79,6 +79,33 @@ class JavaScriptCompletionProviderTest {
         assertThat(JavaScriptCompletionProvider.matchingGlobalObjects("ma")).containsExactly("Math");
     }
 
+    @Test
+    @DisplayName("The futures-2031 vocabulary is offered — Temporal, WebGPU, view transitions, built-in AI")
+    void futures2031Vocabulary() {
+        // Temporal replaces Date; navigator carries gpu; document animates
+        assertThat(JavaScriptCompletionProvider.matchingGlobalObjects("Temp"))
+                .containsExactly("Temporal");
+        assertThat(JavaScriptCompletionProvider.matchingMethods("Temporal", "Plain"))
+                .extracting(m -> m.name)
+                .contains("PlainDate", "PlainDateTime", "PlainTime");
+        assertThat(JavaScriptCompletionProvider.matchingMethods("navigator", "g"))
+                .extracting(m -> m.name).contains("gpu");
+        assertThat(JavaScriptCompletionProvider.matchingMethods("document", "startView"))
+                .extracting(m -> m.name).containsExactly("startViewTransition");
+        // the built-in AI globals complete as namespaces with members
+        assertThat(JavaScriptCompletionProvider.matchingGlobalObjects("Lang"))
+                .containsExactly("LanguageModel");
+        assertThat(JavaScriptCompletionProvider.matchingMethods("LanguageModel", "c"))
+                .extracting(m -> m.name).containsExactly("create");
+        assertThat(JavaScriptCompletionProvider.matchingGlobalObjects("Trans"))
+                .containsExactly("Translator");
+        // and the snippets exist by their triggers
+        assertThat(JavaScriptCompletionProvider.matchingSnippets("viewtransition"))
+                .isNotEmpty();
+        assertThat(JavaScriptCompletionProvider.matchingSnippets("llm")).isNotEmpty();
+        assertThat(JavaScriptCompletionProvider.matchingSnippets("importjson")).isNotEmpty();
+    }
+
     // ---- method matching ---------------------------------------------------
 
     @Test

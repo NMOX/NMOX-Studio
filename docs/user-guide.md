@@ -346,6 +346,16 @@ IDE never stores a forge token. Select one and **Open in Browser**
 shows it in the in-app Browser. No `gh`, not signed in, or not a
 GitHub repo? The refusal tells you exactly which.
 
+**The web that's coming is already typed here.** JavaScript completion
+knows `Temporal`, `navigator.gpu` (WebGPU), `document.startViewTransition`,
+and the built-in AI task APIs (`LanguageModel`, `Summarizer`,
+`Translator`) — with snippets to match (`viewtransition`, `temporal`,
+`gpu`, `llm`, `importjson`). And `.wit` files — the WebAssembly
+Component Model's interface language — open as first-class citizens:
+highlighting, comment toggling, completion, and an outline of every
+interface, world, and record. The bets behind these live in
+docs/engineering/futures-2031.md.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
