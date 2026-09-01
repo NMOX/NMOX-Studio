@@ -1,0 +1,155 @@
+package org.nmox.studio.rack.mcp;
+
+import java.util.List;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.nmox.studio.rack.mcp.McpTools.Tool;
+
+/**
+ * The pure JSON-RPC half of the Agent Port (futures-2031 F4): one
+ * static method turns a request string into a response string against
+ * a tool registry, so every protocol rule is a plain unit test. Speaks
+ * the MCP Streamable-HTTP dialect's message layer — initialize,
+ * tools/list, tools/call, ping — and refuses everything else by code:
+ * -32700 unparseable, -32600 not-a-request, -32601 unknown method,
+ * -32602 bad params. A notification (no id) answers null and the
+ * transport sends 202-and-nothing, per spec.
+ */
+public final class McpProtocol {
+
+    private McpProtocol() {
+    }
+
+    /** The spec revision this server implements. */
+    public static final String PROTOCOL_VERSION = "2025-06-18";
+
+    /** Server identity, shown in the client's server list. */
+    public static final String SERVER_NAME = "nmox-studio";
+
+    /**
+     * Handles one JSON-RPC message. Returns the response JSON, or null
+     * for a notification (nothing to say back).
+     */
+    public static String handle(String requestJson, McpTools tools,
+            String productVersion) {
+        JSONObject request;
+        try {
+            request = new JSONObject(requestJson == null ? "" : requestJson);
+        } catch (RuntimeException notJson) {
+            return error(JSONObject.NULL, -32700, "Parse error").toString();
+        }
+        Object id = request.opt("id");
+        String method = request.optString("method", "");
+        if (method.isBlank()) {
+            return error(id == null ? JSONObject.NULL : id, -32600,
+                    "Invalid request — no method").toString();
+        }
+        boolean notification = id == null;
+        JSONObject params = request.optJSONObject("params");
+        JSONObject result;
+        switch (method) {
+            case "initialize" ->
+                result = initialize(productVersion);
+            case "notifications/initialized", "notifications/cancelled" -> {
+                return null; // acknowledged by silence, per spec
+            }
+            case "ping" ->
+                result = new JSONObject();
+            case "tools/list" ->
+                result = toolsList(tools);
+            case "tools/call" -> {
+                if (notification) {
+                    return null; // a call with no id has no reply channel
+                }
+                return toolsCall(id, params, tools).toString();
+            }
+            default -> {
+                if (notification) {
+                    return null; // unknown notifications are ignored, per spec
+                }
+                return error(id, -32601, "Method not found: " + method).toString();
+            }
+        }
+        return notification ? null : response(id, result).toString();
+    }
+
+    private static JSONObject initialize(String productVersion) {
+        return new JSONObject()
+                .put("protocolVersion", PROTOCOL_VERSION)
+                .put("capabilities", new JSONObject()
+                        .put("tools", new JSONObject()))
+                .put("serverInfo", new JSONObject()
+                        .put("name", SERVER_NAME)
+                        .put("version", productVersion))
+                .put("instructions", "NMOX Studio's read-only state: what "
+                        + "project is aimed, what is serving, what failed "
+                        + "last, what the linters found, what is on the rack. "
+                        + "Nothing here executes or edits anything.");
+    }
+
+    private static JSONObject toolsList(McpTools tools) {
+        JSONArray defs = new JSONArray();
+        for (Tool t : tools.all()) {
+            defs.put(new JSONObject()
+                    .put("name", t.name())
+                    .put("description", t.description())
+                    .put("inputSchema", new JSONObject()
+                            .put("type", "object")
+                            .put("properties", new JSONObject())
+                            .put("additionalProperties", false)));
+        }
+        return new JSONObject().put("tools", defs);
+    }
+
+    private static JSONObject toolsCall(Object id, JSONObject params,
+            McpTools tools) {
+        String name = params == null ? null : params.optString("name", null);
+        if (name == null) {
+            return error(id, -32602, "tools/call needs params.name");
+        }
+        Tool tool = tools.byName(name);
+        if (tool == null) {
+            return error(id, -32602, "Unknown tool: " + name);
+        }
+        String text;
+        boolean isError = false;
+        try {
+            text = tool.handler().get();
+        } catch (RuntimeException ex) {
+            // a tool failure is a RESULT with isError, not a protocol
+            // error — the spec's channel for it, and the message stays
+            // honest without a stack trace
+            text = "Tool failed: " + ex.getMessage();
+            isError = true;
+        }
+        JSONObject result = new JSONObject()
+                .put("content", new JSONArray().put(new JSONObject()
+                        .put("type", "text").put("text", text)))
+                .put("isError", isError);
+        return response(id, result);
+    }
+
+    private static JSONObject response(Object id, JSONObject result) {
+        return new JSONObject().put("jsonrpc", "2.0").put("id", id)
+                .put("result", result);
+    }
+
+    private static JSONObject error(Object id, int code, String message) {
+        return new JSONObject().put("jsonrpc", "2.0").put("id", id)
+                .put("error", new JSONObject()
+                        .put("code", code).put("message", message));
+    }
+
+    /** The tool roster as prose for the start dialog's disclosure. */
+    public static String disclosure(McpTools tools) {
+        StringBuilder sb = new StringBuilder();
+        List<Tool> all = tools.all();
+        for (int i = 0; i < all.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(all.get(i).name());
+        }
+        return sb.toString();
+    }
+}

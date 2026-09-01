@@ -362,6 +362,16 @@ carries a `<script type="importmap">`, ⌘-click a bare specifier like
 ⌃Space inside the import quotes to list every mapped specifier with
 its target. Relative paths stay out of it — they never needed the map.
 
+**Point an agent at your IDE.** Tools ▸ Agent Port (MCP)… starts a
+local server that an AI agent (anything that speaks MCP) can connect
+to and READ your project's live state — what's aimed, what's serving,
+what failed last, what the linters found, what's on the rack. It is
+off until you start it, listens on loopback only, and hands you a
+token the agent must present; copy the ready-made `.mcp.json` from the
+dialog. It is strictly read-only: nothing an agent asks can run a
+command or change a file. Stop it with one click; it also dies when
+the IDE quits.
+
 ## 5. The editor
 
 ![jQuery code in the NMOX Phosphor palette, structure in the Navigator](images/editor.png)
