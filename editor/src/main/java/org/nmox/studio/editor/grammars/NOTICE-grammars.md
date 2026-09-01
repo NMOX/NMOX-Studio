@@ -59,6 +59,7 @@ Raku and Forth are deliberately absent: no cleanly-licensed TextMate
 grammar exists for either (Raku's is NOASSERTION-licensed, Forth's
 candidates are unlicensed) — the honest skip, like Odin's manifest.
 | ocaml.tmLanguage.json | — | ocamllabs/vscode-ocaml-platform (ISC) |
+| wit.tmLanguage.json | 426c1ef39db02d4f1aa7d9fd953612382241f1c29c95d71eccf506727571c3f6 | bytecodealliance/vscode-wit (Apache-2.0) — the WebAssembly Component Model IDL, the futures-2031 polyglot-substrate bet |
 | crystal.tmLanguage.json | — | crystal-lang-tools/vscode-crystal-lang (MIT) |
 
 To refresh: bump the tag in this table and re-download; the holder

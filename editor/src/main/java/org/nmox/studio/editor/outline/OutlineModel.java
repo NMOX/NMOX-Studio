@@ -59,6 +59,7 @@ public final class OutlineModel {
             case "perl" -> perl(lines);
             case "julia" -> julia(lines);
             case "nim" -> nim(lines);
+            case "wit" -> wit(lines);
             case "racket" -> racket(lines);
             case "elm" -> elm(lines);
             case "fortran" -> fortran(lines);
@@ -116,6 +117,7 @@ public final class OutlineModel {
             case "text/x-fortran" -> "fortran";
             case "text/x-scheme" -> "racket"; // same (define ...) shape — the Racket extractor reads it
             case "text/x-odin" -> "brace"; // Odin is a brace language; the generic extractor reads it
+            case "text/x-wit" -> "wit"; // its own shapes: the brace extractor knows interface but not world/record (measured failing-first)
             case "text/x-haxe" -> "brace"; // Haxe is a brace language; the generic extractor reads it
             case "text/x-janet" -> "clojure"; // same (defn ...) shape — the Clojure extractor reads it
             case "text/x-purescript" -> "haskell"; // Haskell-family syntax shares the extractor
@@ -779,6 +781,32 @@ public final class OutlineModel {
             "^\\s{2,}([A-Z][A-Za-z0-9_]*)\\s*\\*?\\s*=\\s*(?:ref\\s+)?(object|enum|tuple|distinct)");
 
     /** Nim: routines by keyword, types inside top-level {@code type} blocks. */
+    /** WIT declaration shapes: kind + kebab-name + opening brace, plus
+     *  the one-line {@code type x = y;} alias. Funcs inside interfaces
+     *  are deliberately out — the contract's units are the blocks. */
+    private static final Pattern WIT_BLOCK = Pattern.compile(
+            "^\\s*(interface|world|record|variant|enum|flags|resource)\\s+([A-Za-z][\\w-]*)\\s*\\{");
+    private static final Pattern WIT_TYPE = Pattern.compile(
+            "^\\s*type\\s+([A-Za-z][\\w-]*)\\s*=");
+
+    private static List<Item> wit(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            Matcher b = WIT_BLOCK.matcher(lines[i]);
+            if (b.find()) {
+                out.add(new Item("resource".equals(b.group(1)) || "interface".equals(b.group(1))
+                        || "world".equals(b.group(1)) ? OutlineKind.MODULE : OutlineKind.TYPE,
+                        b.group(1) + " " + b.group(2), null, i, 0));
+                continue;
+            }
+            Matcher t = WIT_TYPE.matcher(lines[i]);
+            if (t.find()) {
+                out.add(new Item(OutlineKind.TYPE, t.group(1), null, i, 0));
+            }
+        }
+        return out;
+    }
+
     private static List<Item> nim(String[] lines) {
         List<Item> out = new ArrayList<>();
         for (int i = 0; i < lines.length && i < MAX_LINES; i++) {

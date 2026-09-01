@@ -86,7 +86,8 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
             new JavaScriptMethod("addEventListener", "(type: string, listener: Function): void", "Adds event listener"),
             new JavaScriptMethod("removeEventListener", "(type: string, listener: Function): void", "Removes event listener"),
             new JavaScriptMethod("write", "(text: string): void", "Writes HTML to document"),
-            new JavaScriptMethod("writeln", "(text: string): void", "Writes HTML with newline")
+            new JavaScriptMethod("writeln", "(text: string): void", "Writes HTML with newline"),
+            new JavaScriptMethod("startViewTransition", "(update?: () => void | Promise<void>): ViewTransition", "Animates the DOM change inside a view transition (futures-2031: everyday navigation polish)")
         ));
         
         // Array methods
@@ -167,6 +168,51 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
             new JavaScriptMethod("parse", "(text: string): any", "Parses JSON string"),
             new JavaScriptMethod("stringify", "(value: any, replacer?: Function, space?: string | number): string", "Converts to JSON string")
         ));
+
+        // The futures-2031 vocabulary (docs/engineering/futures-2031.md):
+        // the platform APIs a 2031 web developer types daily, offered the
+        // day they matter. Temporal replaces Date; WebGPU and the
+        // built-in AI task APIs ride navigator; all real shipped/Stage-3
+        // surface, none invented.
+        GLOBAL_OBJECTS.put("Temporal", Arrays.asList(
+            new JavaScriptMethod("Now", ".instant() / .plainDateISO() / .zonedDateTimeISO(): current moment", "The current time, explicit about zone and calendar"),
+            new JavaScriptMethod("PlainDate", ".from('2031-08-29'): Temporal.PlainDate", "A calendar date with no time or zone"),
+            new JavaScriptMethod("PlainTime", ".from('09:30'): Temporal.PlainTime", "A wall-clock time with no date or zone"),
+            new JavaScriptMethod("PlainDateTime", ".from(...): Temporal.PlainDateTime", "Date and time, still zone-free"),
+            new JavaScriptMethod("ZonedDateTime", ".from(...): Temporal.ZonedDateTime", "An exact moment in a named time zone"),
+            new JavaScriptMethod("Instant", ".from(...) / .fromEpochMilliseconds(n)", "An exact moment on the timeline"),
+            new JavaScriptMethod("Duration", ".from({ hours: 2 }): Temporal.Duration", "A length of time, arithmetic-safe"),
+            new JavaScriptMethod("PlainYearMonth", ".from('2031-08'): Temporal.PlainYearMonth", "A month in a year"),
+            new JavaScriptMethod("PlainMonthDay", ".from('08-29'): Temporal.PlainMonthDay", "A recurring calendar day")
+        ));
+        // the built-in AI task APIs (Chrome's shipped task-API family) —
+        // capital-letter globals ride GLOBAL_OBJECTS, not the lowercase
+        // keyword table (measured failing-first: the keyword matcher
+        // never offered them)
+        GLOBAL_OBJECTS.put("LanguageModel", Arrays.asList(
+            new JavaScriptMethod("create", "(options?): Promise<LanguageModelSession>", "Starts an on-device language-model session"),
+            new JavaScriptMethod("availability", "(options?): Promise<'unavailable'|'downloadable'|'downloading'|'available'>", "Whether the on-device model is ready"),
+            new JavaScriptMethod("params", "(): Promise<LanguageModelParams | null>", "The model's parameter ranges")
+        ));
+        GLOBAL_OBJECTS.put("Summarizer", Arrays.asList(
+            new JavaScriptMethod("create", "(options?): Promise<Summarizer>", "Creates an on-device summarizer"),
+            new JavaScriptMethod("availability", "(options?): Promise<string>", "Whether summarization is ready on this device")
+        ));
+        GLOBAL_OBJECTS.put("Translator", Arrays.asList(
+            new JavaScriptMethod("create", "({ sourceLanguage, targetLanguage }): Promise<Translator>", "Creates an on-device translator"),
+            new JavaScriptMethod("availability", "(options): Promise<string>", "Whether this language pair is ready")
+        ));
+        GLOBAL_OBJECTS.put("navigator", Arrays.asList(
+            new JavaScriptMethod("gpu", ".requestAdapter(): Promise<GPUAdapter | null>", "WebGPU — the GPU compute and render API"),
+            new JavaScriptMethod("clipboard", ".readText() / .writeText(text)", "Async clipboard access"),
+            new JavaScriptMethod("serviceWorker", ".register(url): Promise<ServiceWorkerRegistration>", "Service worker registration"),
+            new JavaScriptMethod("storage", ".persist() / .estimate()", "Storage quota and persistence"),
+            new JavaScriptMethod("locks", ".request(name, callback)", "Cross-tab async locks"),
+            new JavaScriptMethod("wakeLock", ".request('screen')", "Keeps the screen awake"),
+            new JavaScriptMethod("share", "(data: ShareData): Promise<void>", "The native share sheet"),
+            new JavaScriptMethod("userActivation", ".isActive / .hasBeenActive", "Whether a user gesture is live"),
+            new JavaScriptMethod("languages", ": readonly string[]", "The user's preferred languages")
+        ));
     }
     
     private static void initializeSnippets() {
@@ -185,6 +231,11 @@ public class JavaScriptCompletionProvider implements CompletionProvider {
         SNIPPETS.add(new JavaScriptSnippet("computed", "const ${1:value} = computed(() => ${2});", "Angular computed"));
         SNIPPETS.add(new JavaScriptSnippet("inject", "private readonly ${1:dep} = inject(${2:Type});", "Angular inject"));
         SNIPPETS.add(new JavaScriptSnippet("bootstrap", "bootstrapApplication(${1:App}, ${2:appConfig});", "Angular bootstrap"));
+        SNIPPETS.add(new JavaScriptSnippet("viewtransition", "document.startViewTransition(() => {\n    ${1:updateTheDom();}\n});", "View transition (animated DOM change)"));
+        SNIPPETS.add(new JavaScriptSnippet("temporal", "const ${1:today} = Temporal.Now.plainDateISO();", "Temporal current date"));
+        SNIPPETS.add(new JavaScriptSnippet("importjson", "import ${1:data} from '${2:./data.json}' with { type: 'json' };", "Import attribute (JSON module)"));
+        SNIPPETS.add(new JavaScriptSnippet("gpu", "const ${1:adapter} = await navigator.gpu.requestAdapter();\nconst ${2:device} = await ${1:adapter}.requestDevice();", "WebGPU device setup"));
+        SNIPPETS.add(new JavaScriptSnippet("llm", "const ${1:session} = await LanguageModel.create();\nconst ${2:reply} = await ${1:session}.prompt(${3:text});", "Built-in AI language model session"));
         SNIPPETS.add(new JavaScriptSnippet("fetch", "fetch('${1:url}')\n    .then(response => response.json())\n    .then(data => {\n        ${2}\n    })\n    .catch(error => console.error(error));", "Fetch API"));
     }
     

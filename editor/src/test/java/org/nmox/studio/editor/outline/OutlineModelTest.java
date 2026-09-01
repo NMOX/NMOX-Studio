@@ -811,6 +811,31 @@ class OutlineModelTest {
     }
 
     @Test
+    @DisplayName("A .wit contract outlines its interfaces and worlds (futures-2031 F1)")
+    void witOutlinesContractBlocks() {
+        String wit = """
+                package docs:demo@1.0.0;
+
+                interface store {
+                  record item {
+                    name: string,
+                    price: u32,
+                  }
+                  get-item: func(name: string) -> option<item>;
+                }
+
+                world shop {
+                  import store;
+                  export serve: func();
+                }
+                """;
+        var items = OutlineModel.extract("text/x-wit", wit);
+        assertThat(items).extracting(i -> i.name())
+                .anySatisfy(n -> assertThat(n).contains("store"))
+                .anySatisfy(n -> assertThat(n).contains("shop"));
+    }
+
+    @Test
     @DisplayName("Mime-to-family routing: every alias lands on its extractor family")
     void familyRouting() {
         // the JS family covers the component dialects too
@@ -832,6 +857,7 @@ class OutlineModelTest {
         assertThat(OutlineModel.family("text/x-purescript")).isEqualTo("haskell");
         // own-family languages
         assertThat(OutlineModel.family("text/x-nim")).isEqualTo("nim");
+        assertThat(OutlineModel.family("text/x-wit")).isEqualTo("wit");
         assertThat(OutlineModel.family("text/x-elm")).isEqualTo("elm");
         assertThat(OutlineModel.family("text/x-fortran")).isEqualTo("fortran");
         assertThat(OutlineModel.family("text/x-fsharp")).isEqualTo("fsharp");

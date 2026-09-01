@@ -61,6 +61,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-d", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-racket", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-elm", service = CompletionProvider.class, position = 560),
+    @MimeRegistration(mimeType = "text/x-wit", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-rescript", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-purescript", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-ocaml", service = CompletionProvider.class, position = 560),
@@ -109,6 +110,9 @@ public class PolyglotCompletionProvider implements CompletionProvider {
             new org.nmox.studio.editor.classic.ClassicLibraryDetector();
 
     static final Map<String, Set<String>> KEYWORDS = Map.ofEntries(
+            Map.entry("text/x-wit", set("package interface world use func resource record variant enum flags "
+                    + "type import export include constructor static as from with own borrow async "
+                    + "u8 u16 u32 u64 s8 s16 s32 s64 f32 f64 char string bool list option result tuple future stream")),
             Map.entry("text/x-java", set("abstract assert boolean break byte case catch char class const continue "
                     + "default do double else enum extends final finally float for goto if implements import "
                     + "instanceof int interface long native new package private protected public record return "
