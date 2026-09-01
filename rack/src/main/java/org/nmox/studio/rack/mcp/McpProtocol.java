@@ -90,13 +90,23 @@ public final class McpProtocol {
     private static JSONObject toolsList(McpTools tools) {
         JSONArray defs = new JSONArray();
         for (Tool t : tools.all()) {
-            defs.put(new JSONObject()
+            JSONObject def = new JSONObject()
                     .put("name", t.name())
+                    .put("title", t.title())
                     .put("description", t.description())
-                    .put("inputSchema", new JSONObject()
-                            .put("type", "object")
-                            .put("properties", new JSONObject())
-                            .put("additionalProperties", false)));
+                    .put("inputSchema", t.inputSchema())
+                    .put("outputSchema", t.outputSchema())
+                    // annotations advertise the read-only guarantee IN the
+                    // protocol — an agent framework can trust the safety of
+                    // every tool without reading our docs (the arc's law,
+                    // stated where the spec puts it)
+                    .put("annotations", new JSONObject()
+                            .put("title", t.title())
+                            .put("readOnlyHint", true)
+                            .put("destructiveHint", false)
+                            .put("idempotentHint", true)
+                            .put("openWorldHint", false));
+            defs.put(def);
         }
         return new JSONObject().put("tools", defs);
     }
@@ -111,21 +121,32 @@ public final class McpProtocol {
         if (tool == null) {
             return error(id, -32602, "Unknown tool: " + name);
         }
-        String text;
+        JSONObject arguments = params.optJSONObject("arguments");
+        if (arguments == null) {
+            arguments = new JSONObject();
+        }
+        McpTools.ToolResult answer;
         boolean isError = false;
         try {
-            text = tool.handler().get();
+            answer = tool.handler().apply(arguments);
         } catch (RuntimeException ex) {
             // a tool failure is a RESULT with isError, not a protocol
             // error — the spec's channel for it, and the message stays
             // honest without a stack trace
-            text = "Tool failed: " + ex.getMessage();
+            answer = new McpTools.ToolResult(
+                    "Tool failed: " + ex.getMessage(), null);
             isError = true;
         }
         JSONObject result = new JSONObject()
+                // the text block is kept for human/legacy clients; the
+                // structuredContent is what a programmatic agent reads,
+                // validated by the tool's declared outputSchema
                 .put("content", new JSONArray().put(new JSONObject()
-                        .put("type", "text").put("text", text)))
+                        .put("type", "text").put("text", answer.text())))
                 .put("isError", isError);
+        if (answer.structured() != null) {
+            result.put("structuredContent", answer.structured());
+        }
         return response(id, result);
     }
 

@@ -3,7 +3,10 @@ package org.nmox.studio.rack.mcp;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.nmox.studio.core.util.GitFacts;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
 import org.nmox.studio.rack.engine.FlightRecorder;
@@ -15,20 +18,34 @@ import org.nmox.studio.rack.service.ServingRegistry;
 /**
  * The Agent Port's tool roster — READ-ONLY BY CONSTRUCTION, the law
  * this arc stands on: a caller that is not the user at the keyboard
- * gets to ASK the IDE things, never to make it DO things. Every
- * handler is a {@code Supplier<String>} over already-bounded state
- * (the failure disclosure is ORACLE's own {@link FailureContext} — the
- * shape a consent dialog already describes); nothing here may touch
- * CommandExecutor, ProcessSupport, or a file write, and
- * {@code McpReadOnlyLedgerTest} pins that structurally. Execution
- * verbs are a RECORDED v2 with the consent design as the entry fee
- * (docs/engineering/futures-2031.md F4).
+ * gets to ASK the IDE things, never to make it DO things. Nothing here
+ * may touch CommandExecutor, ProcessSupport, or a file write, and
+ * {@code McpReadOnlyLedgerTest} pins that structurally.
+ *
+ * <p>Every tool is built for an AGENT, not just a human reader (the
+ * "best MCP server for developers" pass, v2.55.0): each returns
+ * BOTH a human-readable text summary AND a typed {@code structuredContent}
+ * object validated by a declared {@code outputSchema}, carries an
+ * {@code inputSchema} for its arguments, and is annotated
+ * {@code readOnlyHint:true} so an agent framework can TRUST the
+ * read-only guarantee from the protocol itself, not our prose. The
+ * structured shape is the single source of truth; the text is rendered
+ * from it, so the two can never disagree.
  */
 public final class McpTools {
 
-    /** One read-only tool: a name, its story, and a state read. */
-    public record Tool(String name, String description,
-            Supplier<String> handler) {
+    /** A tool's answer: the human text AND the typed structured object. */
+    public record ToolResult(String text, JSONObject structured) {
+    }
+
+    /**
+     * One read-only tool. {@code inputSchema}/{@code outputSchema} are
+     * JSON Schema objects; {@code handler} takes the call's arguments
+     * (never null — an empty object when none) and returns both faces.
+     */
+    public record Tool(String name, String title, String description,
+            JSONObject inputSchema, JSONObject outputSchema,
+            Function<JSONObject, ToolResult> handler) {
     }
 
     private final List<Tool> tools;
@@ -50,124 +67,226 @@ public final class McpTools {
         return null;
     }
 
+    // ---- schema helpers ----------------------------------------------------
+
+    static JSONObject objectSchema(JSONObject properties) {
+        return new JSONObject()
+                .put("type", "object")
+                .put("properties", properties == null ? new JSONObject() : properties)
+                .put("additionalProperties", false);
+    }
+
+    private static JSONObject noArgs() {
+        return objectSchema(new JSONObject());
+    }
+
+    private static JSONObject nullableString() {
+        return new JSONObject().put("type", new JSONArray().put("string").put("null"));
+    }
+
+    private static JSONObject stringType(String description) {
+        return new JSONObject().put("type", "string").put("description", description);
+    }
+
     // ---- production wiring -------------------------------------------------
 
     /** The shipped roster over the rack's real state. */
     public static McpTools production() {
         return new McpTools(List.of(
+                new Tool("ide_context",
+                        "IDE context",
+                        "The whole orienting snapshot in one call: the aimed "
+                        + "project, everything serving, the last failure, and a "
+                        + "diagnostic summary. Start here.",
+                        noArgs(),
+                        objectSchema(new JSONObject()
+                                .put("project", nullableString())
+                                .put("serverCount", new JSONObject().put("type", "integer"))
+                                .put("lastFailureDevice", nullableString())
+                                .put("diagnosticCount", new JSONObject().put("type", "integer"))),
+                        args -> renderIdeContext()),
                 new Tool("project_state",
+                        "Project state",
                         "The aimed project: name, directory, and git branch.",
-                        McpTools::projectState),
+                        noArgs(),
+                        objectSchema(new JSONObject()
+                                .put("project", nullableString())
+                                .put("directory", nullableString())
+                                .put("gitBranch", nullableString())),
+                        args -> render(projectState(defaultAim()))),
                 new Tool("live_servers",
+                        "Live servers",
                         "Every dev server the IDE knows is serving right now, with its URL.",
-                        McpTools::liveServers),
+                        noArgs(),
+                        objectSchema(new JSONObject().put("servers", new JSONArray())),
+                        args -> render(liveServers(defaultServings()))),
                 new Tool("last_failure",
-                        "The most recent failed run: device, command, exit code, and up to five error lines.",
-                        McpTools::lastFailure),
+                        "Last failure",
+                        "The most recent failed run: device, command, exit code, "
+                        + "and up to five error lines.",
+                        noArgs(),
+                        objectSchema(new JSONObject()
+                                .put("failed", new JSONObject().put("type", "boolean"))
+                                .put("device", nullableString())
+                                .put("command", nullableString())),
+                        args -> render(lastFailure(defaultFailure()))),
                 new Tool("diagnostics",
-                        "What the linters and checkers currently report, per tool.",
-                        McpTools::diagnostics),
+                        "Diagnostics",
+                        "What the linters and checkers currently report. Pass "
+                        + "\"file\" to filter to findings whose path contains that "
+                        + "substring.",
+                        objectSchema(new JSONObject().put("file",
+                                stringType("Only findings whose file path contains this substring."))),
+                        objectSchema(new JSONObject()
+                                .put("totalFindings", new JSONObject().put("type", "integer"))
+                                .put("tools", new JSONArray())),
+                        args -> render(diagnostics(defaultDiagnostics(),
+                                args == null ? null : args.optString("file", null)))),
                 new Tool("rack_devices",
+                        "Rack devices",
                         "The devices mounted on the task rack, in rack order.",
-                        McpTools::rackDevices)));
+                        noArgs(),
+                        objectSchema(new JSONObject().put("devices", new JSONArray())),
+                        args -> render(rackDevices(defaultDevices())))));
     }
 
-    static String projectState(Supplier<File> aim) {
+    /** Wraps a structured object into a ToolResult, rendering the text. */
+    private static ToolResult render(JSONObject structured) {
+        return new ToolResult(Texts.of(structured), structured);
+    }
+
+    // ---- the pure, structured builders (one source of truth) ---------------
+
+    static JSONObject projectState(Supplier<File> aim) {
         File dir = aim.get();
+        JSONObject o = new JSONObject();
         if (dir == null) {
-            return "No project is aimed.";
+            return o.put("project", JSONObject.NULL)
+                    .put("directory", JSONObject.NULL)
+                    .put("gitBranch", JSONObject.NULL);
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Project: ").append(dir.getName()).append('\n');
-        sb.append("Directory: ").append(dir.getAbsolutePath()).append('\n');
         File repo = GitFacts.repoRoot(dir);
         String branch = repo == null ? null : GitFacts.branch(repo);
-        sb.append("Git branch: ").append(branch == null
-                ? "(not a git repository)" : branch);
-        return sb.toString();
+        return o.put("project", dir.getName())
+                .put("directory", dir.getAbsolutePath())
+                .put("gitBranch", branch == null ? JSONObject.NULL : branch);
     }
 
-    private static String projectState() {
-        return projectState(() -> RackService.getDefault().getRack().getProjectDir());
-    }
-
-    static String liveServers(List<ServingRegistry.Serving> snapshot) {
-        if (snapshot.isEmpty()) {
-            return "Nothing is serving.";
-        }
-        StringBuilder sb = new StringBuilder();
+    static JSONObject liveServers(List<ServingRegistry.Serving> snapshot) {
+        JSONArray servers = new JSONArray();
         for (ServingRegistry.Serving s : snapshot) {
-            sb.append(s.deviceTitle()).append(" — ").append(s.url()).append('\n');
+            servers.put(new JSONObject()
+                    .put("title", s.deviceTitle())
+                    .put("url", s.url())
+                    .put("kind", s.kind().name()));
         }
-        return sb.toString().stripTrailing();
+        return new JSONObject().put("servers", servers);
     }
 
-    private static String liveServers() {
-        return liveServers(ServingRegistry.getDefault().snapshot());
-    }
-
-    static String lastFailure(java.util.Optional<FailureContext> failure) {
+    static JSONObject lastFailure(java.util.Optional<FailureContext> failure) {
         if (failure.isEmpty()) {
-            return "Nothing has failed — no failed run on record.";
+            return new JSONObject().put("failed", false);
         }
         FailureContext ctx = failure.get();
-        StringBuilder sb = new StringBuilder();
-        sb.append("Device: ").append(ctx.device()).append('\n');
-        sb.append("Command: ").append(ctx.command()).append('\n');
-        sb.append("Exit code: ").append(ctx.exitCode()).append('\n');
-        if (ctx.errorLines().isEmpty()) {
-            sb.append("Error output: (none captured)");
-        } else {
-            sb.append("Error output:\n");
-            for (String line : ctx.errorLines()) {
-                sb.append("  ").append(line).append('\n');
+        JSONArray lines = new JSONArray();
+        ctx.errorLines().forEach(lines::put);
+        return new JSONObject()
+                .put("failed", true)
+                .put("device", ctx.device())
+                .put("command", ctx.command())
+                .put("exitCode", ctx.exitCode())
+                .put("errorLines", lines);
+    }
+
+    static JSONObject diagnostics(Map<String, List<DiagnosticsBus.Problem>> byTool,
+            String fileFilter) {
+        JSONArray tools = new JSONArray();
+        int total = 0;
+        for (Map.Entry<String, List<DiagnosticsBus.Problem>> e : byTool.entrySet()) {
+            List<DiagnosticsBus.Problem> matches = e.getValue().stream()
+                    .filter(p -> fileFilter == null || fileFilter.isBlank()
+                            || p.file().getPath().contains(fileFilter))
+                    .toList();
+            if (matches.isEmpty()) {
+                continue;
             }
+            total += matches.size();
+            JSONArray findings = new JSONArray();
+            // bounded: five per tool — an agent that wants the rest reads
+            // the files; this tool answers "what is failing"
+            matches.stream().limit(5).forEach(p -> findings.put(new JSONObject()
+                    .put("file", p.file().getName())
+                    .put("line", p.line())
+                    .put("severity", p.error() ? "error" : "warning")
+                    .put("message", p.message())));
+            tools.put(new JSONObject()
+                    .put("tool", e.getKey())
+                    .put("count", matches.size())
+                    .put("findings", findings));
         }
-        return sb.toString().stripTrailing();
-    }
-
-    private static String lastFailure() {
-        File dir = RackService.getDefault().getRack().getProjectDir();
-        return lastFailure(FailureContext.fromRecorder(
-                FlightRecorder.getDefault(),
-                dir == null ? "(no project)" : dir.getName()));
-    }
-
-    static String diagnostics(Map<String, List<DiagnosticsBus.Problem>> byTool) {
-        if (byTool.isEmpty()) {
-            return "No findings — every tool that has run is clean.";
+        JSONObject out = new JSONObject().put("totalFindings", total).put("tools", tools);
+        // record the applied filter so an empty result reads honestly:
+        // "nothing matches THIS filter" is a different truth than "clean"
+        if (fileFilter != null && !fileFilter.isBlank()) {
+            out.put("filter", fileFilter);
         }
-        StringBuilder sb = new StringBuilder();
-        byTool.forEach((tool, problems) -> {
-            sb.append('[').append(tool).append("] ")
-                    .append(problems.size()).append(" finding")
-                    .append(problems.size() == 1 ? "" : "s").append('\n');
-            // bounded: five per tool — an agent that wants the rest can
-            // read the files; this tool answers "what is failing"
-            problems.stream().limit(5).forEach(p -> sb.append("  ")
-                    .append(p.file().getName()).append(':').append(p.line())
-                    .append(' ').append(p.error() ? "error" : "warning")
-                    .append(" — ").append(p.message()).append('\n'));
-        });
-        return sb.toString().stripTrailing();
+        return out;
     }
 
-    private static String diagnostics() {
-        return diagnostics(DiagnosticsBus.all());
-    }
-
-    static String rackDevices(List<RackDevice> devices) {
-        if (devices.isEmpty()) {
-            return "The rack is empty.";
-        }
-        StringBuilder sb = new StringBuilder();
+    static JSONObject rackDevices(List<RackDevice> devices) {
+        JSONArray names = new JSONArray();
         for (RackDevice d : devices) {
-            sb.append(d.getTitle()).append('\n');
+            names.put(d.getTitle());
         }
-        return sb.toString().stripTrailing();
+        return new JSONObject().put("devices", names);
     }
 
-    private static String rackDevices() {
-        return rackDevices(RackService.getDefault().getRack().getDevices());
+    static JSONObject ideContext(Supplier<File> aim,
+            List<ServingRegistry.Serving> servings,
+            java.util.Optional<FailureContext> failure,
+            Map<String, List<DiagnosticsBus.Problem>> diags) {
+        JSONObject project = projectState(aim);
+        JSONObject diagnostics = diagnostics(diags, null);
+        JSONObject failObj = lastFailure(failure);
+        return new JSONObject()
+                .put("project", project.get("project"))
+                .put("directory", project.get("directory"))
+                .put("gitBranch", project.get("gitBranch"))
+                .put("serverCount", servings.size())
+                .put("servers", liveServers(servings).getJSONArray("servers"))
+                .put("lastFailureDevice",
+                        failObj.optBoolean("failed") ? failObj.get("device") : JSONObject.NULL)
+                .put("lastFailure", failObj)
+                .put("diagnosticCount", diagnostics.getInt("totalFindings"));
+    }
+
+    // ---- default (live) suppliers ------------------------------------------
+
+    private static Supplier<File> defaultAim() {
+        return () -> RackService.getDefault().getRack().getProjectDir();
+    }
+
+    private static List<ServingRegistry.Serving> defaultServings() {
+        return ServingRegistry.getDefault().snapshot();
+    }
+
+    private static java.util.Optional<FailureContext> defaultFailure() {
+        File dir = RackService.getDefault().getRack().getProjectDir();
+        return FailureContext.fromRecorder(FlightRecorder.getDefault(),
+                dir == null ? "(no project)" : dir.getName());
+    }
+
+    private static Map<String, List<DiagnosticsBus.Problem>> defaultDiagnostics() {
+        return DiagnosticsBus.all();
+    }
+
+    private static List<RackDevice> defaultDevices() {
+        return RackService.getDefault().getRack().getDevices();
+    }
+
+    private static ToolResult renderIdeContext() {
+        JSONObject structured = ideContext(defaultAim(), defaultServings(),
+                defaultFailure(), defaultDiagnostics());
+        return new ToolResult(Texts.of(structured), structured);
     }
 }
