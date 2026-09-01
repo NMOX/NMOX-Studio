@@ -39,7 +39,17 @@ three gate mutants dead by name (planted CommandExecutor →
 readOnlyByConstruction, dropped Origin check → originRefused, inverted
 token demand → tokenDemanded); two SpotBugs findings in the fresh code
 fixed not excluded (shared CSPRNG, AtomicReference for the
-single-window state). 19 tests.
+single-window state). 19 tests. Walk-proven END TO END in the
+assembled app: Tools ▸ Agent Port (MCP)… opened the port on
+127.0.0.1, and a REAL MCP client (curl over HTTP with the dialog's
+token) completed initialize (protocol 2025-06-18), enumerated all five
+tools, and read the live aimed project (NMOX, /Users/david/NMOX) and
+the rack's real device state — while no-token got 401, an Origin
+header 403, GET 405, a wrong token 401, and Stop closed the listener
+(connection refused after). The walk also re-taught the jar-swap law:
+a bare module target/*.jar lacks the NBM's embedded org.json, so the
+first hand-swap threw ClassNotFoundException at request time — the
+cluster jar from a full assembly is the only honest walk target.
 
 ## [2.53.0] - 2026-09-01
 
