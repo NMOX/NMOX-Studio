@@ -38,7 +38,12 @@ IS the space's manifest and the rack's driver IS its toolchain — as
 the resort after the last resort (after STATIC, so a space with a root
 index.html keeps serving and one with package.json stays NODE), blessed
 in the lane-parity gate with its reason; LearnKindTest pins all four
-precedence laws.
+precedence laws. Re-walked on the fixed build: the same RUN printed the
+normalized package in MONITOR (SOLDER "OK 0.055s"), and the refusal leg
+answered "FAIL [1]" with `--> wit/world.wit:15:10` and the caret under
+`nonesuch` — which caught the tutorial quoting line 14 from the
+header-less proof file; the space's own file puts the export at 15,
+and the tutorial now says so.
 
 ## [2.57.0] - 2026-09-02
 
