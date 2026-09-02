@@ -31,6 +31,19 @@
     </folder>
 
     <folder name="Editors">
+        <!-- v2.59.0 the minimap: an East, non-scrollable side bar on EVERY
+             editor (root folder). Same registration shape as the platform's
+             error stripe (editor-errorstripe layer: location East,
+             scrollable false, position 7000); 6900 sits just inside it. -->
+        <folder name="SideBar">
+            <file name="org-nmox-studio-editor-minimap-MinimapSideBarFactory.instance">
+                <attr name="instanceClass" stringvalue="org.nmox.studio.editor.minimap.MinimapSideBarFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.SideBarFactory"/>
+                <attr name="location" stringvalue="East"/>
+                <attr name="scrollable" boolvalue="false"/>
+                <attr name="position" intvalue="6900"/>
+            </file>
+        </folder>
         <folder name="text">
             <folder name="x-ng-template">
                 <folder name="Keybindings">
