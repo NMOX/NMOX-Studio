@@ -48,6 +48,17 @@ class CssFuturesTest {
     }
 
     @Test
+    @DisplayName("The second keyword of a multi-keyword value completes too (v2.58.1)")
+    void secondKeywordCompletes() {
+        CssFutures.ValueContext vc = CssFutures.valueContextAt(".a { position-area: top le");
+        assertThat(vc).isNotNull();
+        assertThat(vc.property().name()).isEqualTo("position-area");
+        assertThat(vc.partial()).isEqualTo("le");
+        // the walk never crosses into the previous declaration
+        assertThat(CssFutures.valueContextAt(".a { color: red; posi")).isNull();
+    }
+
+    @Test
     @DisplayName("Inset and sizing properties gain anchor() / anchor-size() as values")
     void anchorFunctionsOnHosts() {
         CssFutures.ValueContext vc = CssFutures.valueContextAt(".a { top: anc");
@@ -68,6 +79,16 @@ class CssFuturesTest {
     void atRules() {
         assertThat(CssFutures.propertyPrefixAt(".a { @start")).isEqualTo("@start");
         assertThat(CssFutures.AT_RULES).contains("@starting-style", "@position-try");
+    }
+
+    @Test
+    @DisplayName("Top-level at-rules complete at the file top and after a closed block (v2.58.1)")
+    void topLevelAtRules() {
+        assertThat(CssFutures.propertyPrefixAt("@posi")).isEqualTo("@posi");
+        assertThat(CssFutures.propertyPrefixAt(".a { color: red; }\n\n@view")).isEqualTo("@view");
+        // a property NAME at the top level is still a selector, not a declaration
+        assertThat(CssFutures.propertyPrefixAt("anch")).isNull();
+        assertThat(CssFutures.propertyPrefixAt(".a { color: red; }\nanch")).isNull();
     }
 
     @Test
