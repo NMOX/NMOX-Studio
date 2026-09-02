@@ -44,8 +44,20 @@ refused out loud; empty → its own verdict) carry eight tests and three
 mutants dead by name. Same laws as the two bars before it: listeners
 installed only while a ghost is armed and removed with it, the send on
 its own lane, the ghost armed on the EDT only if the caret is still
-where the request left it. The lens moves R4 to PARTIAL: the on-demand
-lane is shipped; an opt-in always-on lane stays recorded, not built.
+where the request left it. Walk-proven in the assembled app against
+the real API: the CODE consent dialog named exactly what would travel
+(264 characters, the file, its language, the question); after Send the
+completion for `const subtotal = ` appeared as gray ghost text on the
+line — `this.items.reduce((sum, item) => …` — with the caret still at
+12:22; Tab inserted all three lines (the reduce, the discounted return,
+the closing brace) as one undo unit and ⌘Z removed them whole; a click
+elsewhere dismissed a fresh ghost with the document untouched; and on
+the final cluster ⌥⌘G itself painted a fresh ghost from the caret. The
+walk paid three times before that: the first ghost never painted (the layer
+was fixed-size), the first chord never reached the action (the D/A/O
+notation), and a probe cluster — not a guess — settled each. The lens
+moves R4 to PARTIAL: the on-demand lane is shipped; an opt-in always-on
+lane stays recorded, not built.
 
 ## [2.60.0] - 2026-09-02
 
