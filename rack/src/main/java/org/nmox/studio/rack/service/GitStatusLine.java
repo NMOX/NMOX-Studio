@@ -418,6 +418,27 @@ public class GitStatusLine implements StatusLineElementProvider {
                         if (co.exitCode() != 0) {
                             String first = (co.stderr() == null ? "" : co.stderr())
                                     .lines().findFirst().orElse("exit " + co.exitCode());
+                            // gh can die AFTER staging the PR's files (measured on a
+                            // shallow clone: "cannot set up tracking information") —
+                            // a tree the guard proved clean must not stay dirty from
+                            // an attempt the user never saw succeed; HEAD is unchanged,
+                            // so reset --hard restores exactly the pre-attempt tracked
+                            // state and never touches untracked files
+                            String after = porcelain(dir);
+                            if (org.nmox.studio.rack.engine.GitCheckoutGuard
+                                    .leftoversToRestore(st.stdout(), after)) {
+                                try {
+                                    org.nmox.studio.core.process.ProcessSupport.runBounded(
+                                            java.util.List.of("git", "reset", "--hard"),
+                                            dir, java.time.Duration.ofSeconds(30));
+                                    first += "; the attempt's leftovers were reset, "
+                                            + "the tree is as it was";
+                                } catch (java.io.IOException ex) {
+                                    first += "; the attempt left staged changes "
+                                            + "(git reset --hard restores them)";
+                                }
+                                java.awt.EventQueue.invokeLater(() -> refreshCount());
+                            }
                             status("gh could not check out #" + pull.number() + " \u2014 " + first);
                             return;
                         }
@@ -493,6 +514,19 @@ public class GitStatusLine implements StatusLineElementProvider {
                 }
                 java.awt.EventQueue.invokeLater(() -> showDraft(drafted.message()));
             });
+        }
+
+        /** Porcelain of the aimed tree after an attempt; "" when git cannot answer. */
+        private static String porcelain(java.io.File dir) {
+            try {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult r =
+                        org.nmox.studio.core.process.ProcessSupport.runBounded(
+                                java.util.List.of("git", "status", "--porcelain"),
+                                dir, java.time.Duration.ofSeconds(10));
+                return r.exitCode() == 0 && r.stdout() != null ? r.stdout() : "";
+            } catch (java.io.IOException ex) {
+                return "";
+            }
         }
 
         private static void status(String message) {

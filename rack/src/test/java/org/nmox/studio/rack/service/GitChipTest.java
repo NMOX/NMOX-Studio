@@ -130,11 +130,13 @@ class GitChipTest {
         // exactly the LAWFUL spawn sites: the status refresh (1), the
         // commit-message draft's stat+diff pair (2, v2.50.0), gh pr list
         // (1, v2.51.0), and v2.62.0's review threads (gh api, 1) + checkout
-        // (git status + gh pr checkout, 2) — a new site fails here until
-        // it takes the guard below
+        // (git status + gh pr checkout + the failed-attempt porcelain re-read
+        // and reset --hard, 4; porcelain() is a private helper reached only
+        // from the guarded checkoutPull) — a new site fails here until it
+        // takes the guard below
         assertThat(source.split("runBounded", -1).length - 1)
                 .as("only the enumerated process launch sites")
-                .isEqualTo(7);
+                .isEqualTo(9);
 
         // and every spawning method opens with the boot guard, before
         // any process code

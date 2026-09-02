@@ -17,6 +17,30 @@ public final class GitCheckoutGuard {
     private GitCheckoutGuard() {
     }
 
+    /**
+     * After a FAILED checkout attempt: whether the tool left tracked
+     * changes behind that the tree did not have before (gh pr checkout on
+     * a shallow clone stages the PR's files and then dies on tracking
+     * setup — measured v2.62.0). Only tracked leftovers count; untracked
+     * files are the user's and were allowed through the guard.
+     */
+    public static boolean leftoversToRestore(String porcelainBefore, String porcelainAfter) {
+        return trackedCount(porcelainBefore) == 0 && trackedCount(porcelainAfter) > 0;
+    }
+
+    private static int trackedCount(String porcelain) {
+        if (porcelain == null || porcelain.isBlank()) {
+            return 0;
+        }
+        int n = 0;
+        for (String line : porcelain.split("\n")) {
+            if (!line.isBlank() && !line.startsWith("??")) {
+                n++;
+            }
+        }
+        return n;
+    }
+
     /** Judges porcelain output; null or blank is a clean tree. */
     public static Verdict judge(String porcelain) {
         if (porcelain == null || porcelain.isBlank()) {

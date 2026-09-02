@@ -73,6 +73,18 @@ class GitReviewsAndCheckoutTest {
     }
 
     @Test
+    @DisplayName("A failed attempt's tracked leftovers are restored; untracked files never count")
+    void leftovers() {
+        assertThat(GitCheckoutGuard.leftoversToRestore("", "M  CHANGELOG.md\nM  README.md\n")).isTrue();
+        assertThat(GitCheckoutGuard.leftoversToRestore("?? notes.txt\n", "?? notes.txt\nM  a.js\n")).isTrue();
+        // nothing new: the attempt left the tree as it was
+        assertThat(GitCheckoutGuard.leftoversToRestore("", "")).isFalse();
+        assertThat(GitCheckoutGuard.leftoversToRestore("?? notes.txt\n", "?? notes.txt\n")).isFalse();
+        // the guard never lets a dirty tree reach an attempt, but the helper stays honest
+        assertThat(GitCheckoutGuard.leftoversToRestore(" M a.js\n", " M a.js\nM  b.js\n")).isFalse();
+    }
+
+    @Test
     @DisplayName("A checkout refuses modified or staged files, allows untracked ones, and says so")
     void checkoutGuard() {
         assertThat(GitCheckoutGuard.judge("")).isEqualTo(new Verdict(true, ""));
