@@ -459,6 +459,8 @@ class WebProjectCommandsTest {
      */
     private static final java.util.Map<ProjectKind, String> BLESSED_NO_LANES = java.util.Map.of(
             ProjectKind.BOWER, "a package manager, not a build system — CRATE installs",
+            ProjectKind.LEARN, "a learning space: the rack's pre-wired driver IS the lane; "
+                    + "the IDE has no Run/Build/Test verb for it by design (v2.58.0)",
             ProjectKind.NONE, "no project, no lanes");
 
     /** Kinds whose toolchain honestly has no test verb, each with the reason. */

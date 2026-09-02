@@ -7,7 +7,7 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
-`53 RACK DEVICES` · `87 LANGUAGE GRAMMARS` · `92 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `87 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
 
@@ -25,7 +25,7 @@ have your staged diff drafted into a commit message
 (consent-gated, keys keychain-only), a **Tests window** that lists every test
 before anything runs, **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
-proven against its real toolchain, and **92 learning spaces** with in-rack
+proven against its real toolchain, and **93 learning spaces** with in-rack
 REPLs. Built on the NetBeans Rich Client Platform, shipped through a gated
 pipeline where the house laws are enforced by tests, not intentions: private
 keys never touch the IDE, a cloned repo's code never runs without your yes,

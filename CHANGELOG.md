@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.58.0] - 2026-09-02
+
+Learning space #93 — **WebAssembly Components (WIT)**, futures-2031
+F1's recorded follow-on: the Component Model's interface language
+taught the house way, contract-first and toolchain-honest. RUN is
+`wasm-tools component wit wit` — the reference tool parses the
+package and prints it back normalized, so a printed package IS a
+valid package and that is the whole loop; the tutorial's second
+section makes the refusal the feature (export a world that does not
+exist and the tool names the file and line: `interface or world
+'nonesuch' does not exist --> world.wit:14`), because a component
+contract cannot lie and that is why languages trust it. The
+v2.52.0 citizenship pays here: the space's world.wit opens colored
+with interface/record/world in the Navigator. Live-proven BEFORE the
+entry was written (the starter-never-installed-is-a-claim law):
+wasm-tools 1.258.0 validated the exact fixture and refused the exact
+broken world at 14:10. Three checkpoints (second function added,
+export intact, package validates by command); wasm-tools already on
+the Doctor. 93 spaces across the five doc homes. **The walk found the
+product refusing what the headless proof had passed** — pressing RUN
+on the space's pre-wired SOLDER lit "NO PROJECT MANIFEST": every
+run-kind space wires SOLDER, SOLDER requires a project manifest, and
+the manifest gate is just detectKind != NONE, which had no rule for a
+directory whose only signal is the learning-space marker. Probed
+headlessly, that condemns every manifest-less run space shipped since
+the v1.74/v1.75 classics (c, cpp, pascal, odin, cobol, haxe, perl,
+graphql) to the same dead RUN — the v1.212.0 class, invisible to
+review, visible to anyone pressing the button, and the v1.77.2 "run
+spaces compile+print" verification must have exercised the command,
+not the device. Fixed at the root: ProjectKind.LEARN — the marker file
+IS the space's manifest and the rack's driver IS its toolchain — as
+the resort after the last resort (after STATIC, so a space with a root
+index.html keeps serving and one with package.json stays NODE), blessed
+in the lane-parity gate with its reason; LearnKindTest pins all four
+precedence laws. Re-walked on the fixed build: the same RUN printed the
+normalized package in MONITOR (SOLDER "OK 0.055s"), and the refusal leg
+answered "FAIL [1]" with `--> wit/world.wit:15:10` and the caret under
+`nonesuch` — which caught the tutorial quoting line 14 from the
+header-less proof file; the space's own file puts the export at 15,
+and the tutorial now says so.
+
 ## [2.57.0] - 2026-09-02
 
 The everyday-2031 CSS vocabulary, completed (futures-2031, the CSS
@@ -15767,6 +15808,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.58.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.57.0...v2.58.0
 [2.57.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.1...v2.57.0
 [2.56.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.0...v2.56.1
 [2.56.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.55.0...v2.56.0

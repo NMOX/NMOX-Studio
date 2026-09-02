@@ -3296,6 +3296,65 @@
         }
       ],
       "tutorial": "# Sass, the indented dialect\n\nSCSS kept CSS's braces and semicolons and added power. The ORIGINAL\nSass syntax — `.sass`, the indented dialect — went the other way: it\nremoved the punctuation entirely. A block is whatever is indented\nunder a selector; a declaration ends at its line; `//` comments to the\nend of the line. Some teams find it the cleanest stylesheet syntax\never shipped; all of Sass's features (variables, nesting, `&`, mixins)\nwork identically.\n\n## The loop\n\n1. Open `theme.sass`. NMOX highlights the dialect natively — note the\n   `tomato` swatch painted AS tomato, and the `#1E90FF` swatch on the\n   custom property (v2.20.0: `.sass` is a first-class language here).\n2. Right-click in the editor → **Compile to CSS**. The status line\n   says `Compiled theme.css — recompiling on save.` — one gesture,\n   and every ⌘S from now on recompiles.\n3. Press GO on the rack's serve lane (or run the space's driver) and\n   open the page — the heading is tomato.\n4. Change `$accent` to any color, ⌘S, refresh: the loop is\n   edit → save → look.\n\n## Things to try\n\n- Type `var(` inside a declaration — the design-token completion\n  offers `--brand`, declared right in this .sass file.\n- Toggle a line with the comment action (Source ▸ Toggle Comment):\n  the dialect's comment is `//`.\n- Add a nested `.note a` block — two more spaces of indent under\n  `.note`, no braces anywhere.\n- Rename `theme.sass` to `theme.scss` and back: the two dialects are\n  siblings, and NMOX gives each its own grammar.\n\n## What deliberately does NOT work\n\nEmmet expansion and Prettier are OFF for `.sass` on purpose — both\nemit braced, semicoloned output, which would corrupt an indented\nfile. The Navigator outline is also off: it anchors on braces. These\nare refusals, not gaps — the dialect's shape is the point.\n"
+    },
+    {
+      "slug": "wit-component",
+      "name": "WebAssembly Components (WIT)",
+      "category": "LANGUAGE",
+      "family": "WebAssembly",
+      "blurb": "Write the typed contract a WebAssembly component exposes — WIT, the Component Model's interface language — and validate it with the reference tool. No compile, just the contract.",
+      "driver": {
+        "kind": "run",
+        "command": [
+          "wasm-tools",
+          "component",
+          "wit",
+          "wit"
+        ],
+        "prompt": "",
+        "snippets": []
+      },
+      "install": {
+        "mac": "brew install wasm-tools",
+        "linux": "cargo install wasm-tools",
+        "windows": "cargo install wasm-tools"
+      },
+      "files": [
+        {
+          "path": "wit/world.wit",
+          "content": "package learn:greeter@0.1.0;\n\n// A WIT package: the CONTRACT a WebAssembly component exposes,\n// written once, usable from any language. Change it, click RUN.\n\ninterface greet {\n  record person {\n    name: string,\n    times: u32,\n  }\n  hello: func(who: person) -> list<string>;\n}\n\nworld app {\n  export greet;\n}\n"
+        }
+      ],
+      "tutorial": "# WebAssembly Components: the contract first\n\nBy 2031 a \"library\" is often a **component**: a WebAssembly module\nwith a typed interface any language can call, and the interface is\nwritten in **WIT**. This space is that interface, alone, checked by\nthe reference tool — no Rust, no compile, just the contract.\n\n## See it validate\n\n1. Click **RUN**. `wasm-tools component wit wit` parses the package\n   in `wit/` and prints it back, normalized. A printed package is a\n   VALID package — that is the whole loop.\n2. Open `wit/world.wit`. The editor colors WIT natively (v2.52.0)\n   and the Navigator lists `interface greet`, `record person`, and\n   `world app` — click one to jump.\n\n## The refusal is the feature\n\n1. In `world app { … }`, change `export greet;` to `export nonesuch;`\n   and click **RUN** again.\n2. The tool refuses with the exact file and line:\n   `interface or world \\`nonesuch\\` does not exist --> world.wit:15`.\n   A component contract cannot lie — that is why languages trust it.\n3. Put `greet` back. RUN prints the package again.\n\n## Try\n\n1. Add a second function to `interface greet`:\n   `goodbye: func(who: person) -> string;` — RUN prints it.\n2. Add a field to `record person` (`greeting: string,`) — every\n   function taking a `person` now carries it, in every language.\n3. Rename the world from `app` to something of yours; the export\n   list is what a host sees.\n\n## Where to next\n\n`wasm-tools component new` turns a core module into a component\nagainst this contract; `cargo component` (Rust) and `jco` (JS)\ngenerate bindings FROM this file. The IDE probes `wasm-tools` in the\nEnvironment Doctor.\n",
+      "checkpoints": [
+        {
+          "label": "You added a second function",
+          "hint": "interface greet still has only hello — add a line like goodbye: func(who: person) -> string; and click RUN.",
+          "file": {
+            "path": "wit/world.wit",
+            "contains": "func",
+            "absent": "  hello: func(who: person) -> list<string>;\\n}"
+          }
+        },
+        {
+          "label": "The world still exports greet",
+          "hint": "world app must export greet, or a host sees nothing — put export greet; back.",
+          "file": {
+            "path": "wit/world.wit",
+            "contains": "export greet;"
+          }
+        },
+        {
+          "label": "The package validates",
+          "hint": "RUN must print the package back; a refusal names the file and line to fix.",
+          "command": [
+            "wasm-tools",
+            "component",
+            "wit",
+            "wit"
+          ]
+        }
+      ]
     }
   ]
 }

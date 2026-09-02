@@ -82,6 +82,17 @@ public final class ProjectInspector {
          * oldest stack on the web deserves to open like any other.
          */
         STATIC("index.html", "index.htm"),
+        /**
+         * A learning space (v2.58.0): the catalog's marker file IS its
+         * manifest, and the rack's pre-wired driver IS its toolchain. The
+         * truest last resort — after STATIC, so a space with a root
+         * index.html keeps serving and a space with package.json stays
+         * NODE. The v2.58.0 walk found every run-kind space with no
+         * known manifest (c, cobol, odin, pascal, haxe, perl, graphql,
+         * and the new WIT space) DEAD on RUN: SOLDER refused
+         * "NO PROJECT MANIFEST" because detectKind saw NONE.
+         */
+        LEARN(".nmox-learn"),
         NONE();
 
         private final String[] manifests;
@@ -111,8 +122,9 @@ public final class ProjectInspector {
     public static java.util.LinkedHashMap<ProjectKind, File> detectKinds(File projectDir) {
         java.util.LinkedHashMap<ProjectKind, File> found = new java.util.LinkedHashMap<>();
         for (ProjectKind kind : ProjectKind.values()) {
-            if (kind == ProjectKind.NONE || kind == ProjectKind.STATIC) {
-                continue;
+            if (kind == ProjectKind.NONE || kind == ProjectKind.STATIC
+                    || kind == ProjectKind.LEARN) {
+                continue; // the two last resorts are decided below, in order
             }
             File dir = manifestDirFor(projectDir, kind);
             if (dir != null) {
@@ -124,6 +136,12 @@ public final class ProjectInspector {
         // index.html beside package.json) never grows a spurious kind.
         if (found.isEmpty() && hasManifestAt(projectDir, ProjectKind.STATIC)) {
             found.put(ProjectKind.STATIC, projectDir);
+        }
+        // LEARN is the resort after the last resort: a learning space whose
+        // files carry no manifest at all is still a project — its marker
+        // says so — and its SOLDER driver must be allowed to run
+        if (found.isEmpty() && hasManifestAt(projectDir, ProjectKind.LEARN)) {
+            found.put(ProjectKind.LEARN, projectDir);
         }
         return found;
     }

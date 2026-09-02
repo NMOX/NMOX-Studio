@@ -40,6 +40,10 @@ class PreflightLaneParityTest {
      * (NODE is primary for every real Tact repo), and NONE is nothing.
      */
     private static final Set<ProjectKind> OUT_OF_GATE = Set.of(
+            // LEARN (v2.58.0): a learning space's manifest is its marker
+            // file and its toolchain is the rack's pre-wired driver — the
+            // IDE has no Run/Build/Test verb for it by design
+            ProjectKind.LEARN,
             ProjectKind.NONE, ProjectKind.STATIC, ProjectKind.MAKE,
             ProjectKind.CMAKE, ProjectKind.WEBPACK, ProjectKind.GRUNT,
             ProjectKind.GULP, ProjectKind.BOWER, ProjectKind.TACT);

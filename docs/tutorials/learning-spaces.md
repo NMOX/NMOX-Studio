@@ -5,7 +5,7 @@
 A Learning Space is a self-contained sandbox for learning a language,
 framework, or library: NMOX Studio generates sample code, a walked
 tutorial, and a rack pre-wired with a **real in-rack REPL** you type
-into. There are 92 built in.
+into. There are 93 built in.
 
 <!-- screenshot: a learning space open — sample code, the tutorial pane, and the REPL device with typed input -->
 
