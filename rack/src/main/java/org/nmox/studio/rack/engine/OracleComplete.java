@@ -18,8 +18,13 @@ public final class OracleComplete {
     public static final int MAX_BEFORE_CHARS = 6_000;
     /** Characters of code after the caret that travel; the rest is cut from the END. */
     public static final int MAX_AFTER_CHARS = 1_500;
-    /** The marker the prompt places at the caret. */
-    public static final String CURSOR = "<CURSOR>";
+    /**
+     * The marker the prompt places at the caret. Deliberately no angle
+     * brackets: a bracketed marker made find-sec-bugs read the prompt as
+     * XML under construction (POTENTIAL_XML_INJECTION on the first verify),
+     * and the honest fix removes the trigger rather than excluding the rule.
+     */
+    public static final String CURSOR = "⟪CURSOR⟫";
 
     private OracleComplete() {
     }

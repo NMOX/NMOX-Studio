@@ -37,7 +37,7 @@ completion's first line, the rest counted ("… +N lines") and inserted
 whole on Tab; at the very end of the file, where no character exists
 to prepend to, the completion is inserted selected instead and the
 status line says ⌘Z removes it. The pure half (OracleComplete: the
-clipped window, the caret-marked prompt, the fenced parse with an
+clipped window, the caret-marked prompt (a bracket-free marker: a bracketed one read as XML to find-sec-bugs, and the trigger was removed rather than the rule excluded), the fenced parse with an
 echoed line-head trimmed, first-line/more-lines) and the gated engine
 (no key → nothing sent; consent declined → nothing sent; prose →
 refused out loud; empty → its own verdict) carry eight tests and three

@@ -10,6 +10,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.nmox.studio.rack.engine.OracleClient;
 import org.nmox.studio.rack.engine.OracleClient.CodeQuestion;
+import org.nmox.studio.rack.engine.OracleComplete;
 import org.nmox.studio.rack.engine.OracleComplete.CompletionRequest;
 import org.nmox.studio.rack.engine.OracleCompleteEngine;
 import org.nmox.studio.rack.engine.OracleCompleteEngine.Proposal;
@@ -94,7 +95,7 @@ public final class CompleteWithOracleAction implements ActionListener {
             OracleCompleteEngine engine = new OracleCompleteEngine(new OracleClient(),
                     OracleKeys::read,
                     r -> OracleConsent.requestCodeConsent(new CodeQuestion(
-                            r.fileName(), r.language(), r.before() + "<CURSOR>" + r.after(),
+                            r.fileName(), r.language(), r.before() + OracleComplete.CURSOR + r.after(),
                             "complete the code at the caret")));
             Proposal p = engine.propose(request, lineHead, model);
             SwingUtilities.invokeLater(() -> deliver(p, target, caret));
