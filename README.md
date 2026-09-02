@@ -7,7 +7,7 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
-`53 RACK DEVICES` · `87 LANGUAGE GRAMMARS` · `92 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `87 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
 

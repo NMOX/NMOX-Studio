@@ -141,7 +141,7 @@ copy beside the original to try a second approach, and **Discard** the rest;
 the shelf shows each one's age and its measured disk cost, an empty
 shelf offers to start one, and re-opening an experiment brings its
 walkthrough back. Want the guided path instead? The dialog fronts the
-92 Learning Spaces.
+93 Learning Spaces.
 
 Both shelves are one ⌘I away — type an experiment's or space's name
 and Enter aims the studio there (experiments quietly, keeping the
@@ -152,7 +152,7 @@ project, with anything still running there stopped first so nothing
 keeps writing into the old path. The Learning Spaces manager
 (File ▸ Learning Spaces…) carries the same teaching header as the
 experiments shelf — count, disk cost, each space's age — and an
-empty shelf offers the 92-space catalog instead of a dead end.
+empty shelf offers the 93-space catalog instead of a dead end.
 
 ![The Learning Spaces shelf — count, disk cost, age, the full lifecycle](images/spaces-shelf.png)
 

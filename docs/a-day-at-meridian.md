@@ -161,7 +161,7 @@ real one, proven against Libera.Chat:
 ![A live Libera session](images/irc-libera.png)
 
 And when the next stack is one you don't know yet, **File ▸ New
-Learning Space…** holds 92 guided tutorials — sample code, a
+Learning Space…** holds 93 guided tutorials — sample code, a
 walkthrough, and a rack wired with a live REPL.
 
 ## 17:00 — close
