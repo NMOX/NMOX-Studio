@@ -48,6 +48,8 @@ import org.nmox.studio.editor.outline.StickyScope;
 public final class StickyScrollSideBar extends JComponent {
 
     static final int MAX_ROWS = 3;
+    /** Lines past which the document is not read — the outline's own cap. */
+    static final int MAX_LINES = 50_000;
 
     private final JTextComponent target;
     private final Timer refresh = new Timer(200, e -> reindexNow());
@@ -162,7 +164,13 @@ public final class StickyScrollSideBar extends JComponent {
         final String[] text = new String[1];
         doc.render(() -> {
             try {
-                text[0] = doc.getText(0, doc.getLength());
+                // bounded like the minimap's read: the outline itself shapes
+                // at most MAX_LINES lines, so copying past them is pure cost
+                Element root = doc.getDefaultRootElement();
+                int end = root.getElementCount() > MAX_LINES
+                        ? root.getElement(MAX_LINES).getStartOffset()
+                        : doc.getLength();
+                text[0] = doc.getText(0, Math.min(end, doc.getLength()));
             } catch (BadLocationException ex) {
                 text[0] = "";
             }
