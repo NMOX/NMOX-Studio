@@ -50,7 +50,13 @@ five span-* values with the property as provenance; inside an HTML
 <style> block "anch" offered anchor-name/anchor-scope while the same
 prefix typed in the page's <p> prose got no popup at all (the region
 gate). The platform checker's yellow underline on `anchor-name` was
-observed live — the ledger-71 limit, stated where it shows.
+observed live — the ledger-71 limit, stated where it shows. The
+folded follow-on walked too: `top: anc` + ⌃Space offered anchor( and
+anchor-size( — and the walk caught the popup's provenance reading a
+placeholder "(anchor host)" beside them instead of the property; the
+context now carries the host's own name, so the column reads "top"
+(pinned: anchorFunctionsOnHosts asserts the name), re-verified and
+re-walked before ship.
 
 ## [2.56.1] - 2026-09-02
 
