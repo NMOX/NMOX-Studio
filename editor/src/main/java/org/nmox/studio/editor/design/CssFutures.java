@@ -154,6 +154,16 @@ public final class CssFutures {
         while (cursor > 0 && Character.isWhitespace(before.charAt(cursor - 1))) {
             cursor--;
         }
+        // an at-rule prefix is legal at the TOP LEVEL too: the file's
+        // start or right after a closed block — @position-try and
+        // @view-transition live only there (the v2.58.1 review find: the
+        // {/; boundary rule alone made them uncompletable where they
+        // belong; property names still need a declaration boundary)
+        if (partial.startsWith("@")) {
+            return cursor == 0 || before.charAt(cursor - 1) == '}'
+                    || before.charAt(cursor - 1) == '{'
+                    || before.charAt(cursor - 1) == ';' ? partial : null;
+        }
         if (cursor == 0) {
             return null; // top of file: a selector, not a declaration
         }
@@ -184,9 +194,18 @@ public final class CssFutures {
             partialStart--;
         }
         String partial = before.substring(partialStart);
+        // walk back over EARLIER keywords of the same value too (the
+        // v2.58.1 review find: "position-area: top le" completed nothing
+        // because only whitespace was crossed on the way to the colon) —
+        // bounded by ; { } so the walk never leaves this declaration
         int cursor = partialStart;
-        while (cursor > 0 && Character.isWhitespace(before.charAt(cursor - 1))) {
-            cursor--;
+        while (cursor > 0) {
+            char c = before.charAt(cursor - 1);
+            if (Character.isWhitespace(c) || isNameChar(c) || c == '(' || c == ')') {
+                cursor--;
+            } else {
+                break;
+            }
         }
         if (cursor == 0 || before.charAt(cursor - 1) != ':') {
             return null;

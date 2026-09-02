@@ -4,6 +4,53 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.58.1] - 2026-09-02
+
+The day shift's second review — hostile lenses over v2.57.0's CSS
+vocabulary and v2.58.0's LEARN kind, hours old. Two finds in the
+former, fixed: **top-level at-rules could never complete where they
+belong** — propertyPrefixAt demanded a { or ; boundary, so
+@position-try and @view-transition, which live only at the file top or
+after a closed block, were uncompletable there (the walk had typed
+@starting-style INSIDE a rule, where it is also legal, and so never
+saw the miss); an @-prefix now completes at the file top and after }
+too, while a bare property name at the top level stays refused as the
+selector it is. And **only the first keyword of a value completed** —
+valueContextAt walked back over whitespace alone on its way to the
+colon, so "position-area: top le" offered nothing for the second
+keyword of a two-keyword property; the walk now crosses earlier
+keyword tokens and stops at ; { } so it never leaves the declaration.
+Both mutants dead by name (drop-the-@-branch → topLevelAtRules,
+whitespace-only-walk → secondKeywordCompletes).
+
+The walk of those two fixes then found the release's real bug, and it
+was never about CSS: **a second Ctrl+Space wiped every NMOX completion
+item, in every provider**. Both fixes showed "No suggestions" in the
+assembled app while their tests passed on identical strings; a probe
+cluster proved the provider WAS queried and the pure core answered
+correctly — on the auto-popup's query, whose popup then rendered the
+right item — and that the explicit Ctrl+Space arrived as queryType 9.
+Decompiled from the platform's CompletionImpl: a Ctrl+Space while a
+popup is showing re-queries as COMPLETION_ALL ("show all"), and an
+empty type-1 result is auto-upgraded the same way. All eleven NMOX
+providers (JS, CSS, HTML, Angular templates, polyglot keywords, class
+names, design tokens, env keys, import maps, the CSS futures) gated
+createTask on queryType != COMPLETION_QUERY_TYPE, so that press
+dropped our items at once while the platform's own survived — a bug
+older than most of the providers, invisible to every walk that pressed
+the chord exactly once. The gate is now the bit mask
+(queryType & COMPLETION_QUERY_TYPE) == 0 at all eleven sites, and
+CompletionAllQueryGateTest makes it a build law twice over: the
+source law names any provider carrying the equality shape, and the
+behavioral law drives every provider's real createTask — 9 must be
+answered exactly like 1, 2 stays refused — so a new provider fails
+either way. The LEARN kind
+verified CLEAN under the same lenses: precedence pinned both ways,
+every kind-keyed switch carries a default, the count gate's sixth doc
+home (docs/tutorials/) recorded. Docs truth rides along: CLAUDE.md's
+version history gains v2.57.0 and v2.58.0 with the multi-space RUN
+find.
+
 ## [2.58.0] - 2026-09-02
 
 Learning space #93 — **WebAssembly Components (WIT)**, futures-2031
@@ -15808,6 +15855,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.58.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.58.0...v2.58.1
 [2.58.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.57.0...v2.58.0
 [2.57.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.1...v2.57.0
 [2.56.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.0...v2.56.1
