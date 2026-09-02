@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.61.1] - 2026-09-02
+
+The day-shift review of the three editor units that shipped in a row —
+the minimap (v2.59.0), sticky scroll (v2.60.0), ghost text (v2.61.0) —
+under the hostile lenses, hours old. One find, fixed: **Complete with
+ORACLE read the whole document to send a window** — the action copied
+everything before the caret and everything after it, then clipped to
+the 6,000/1,500-character window; on a large file that is an unbounded
+read for a bounded send, the exact shape the bounded-read law exists to
+forbid. The window is now bounded at the read itself (the caps decide
+what is copied, not only what travels), and
+BoundedCompletionReadGateTest keeps the whole-document shapes out of the
+action by name. Verified CLEAN under the same lenses: the minimap and
+sticky bars read under Document.render and bound their copies at the
+outline's 50k-line cap (the sticky read was bounded before its own ship,
+the review's inline find); every listener on all three surfaces is
+installed in addNotify or arm and removed in removeNotify or detach; the
+ghost never touches the document until Tab and its EOF fallback says so;
+the two sends of the day (Complete, Edit) share the CODE consent because
+the same data classes travel. Recorded, not fixed: a completion reply
+that legitimately begins with the current line's head is trimmed as an
+echo (extractInsertion) — the honest ceiling of a text-only reply
+channel, documented at the method.
+
 ## [2.61.0] - 2026-09-02
 
 The competitive lens, R4 on the house's terms: **Complete with ORACLE

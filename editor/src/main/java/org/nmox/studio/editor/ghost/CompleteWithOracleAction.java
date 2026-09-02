@@ -71,8 +71,14 @@ public final class CompleteWithOracleAction implements ActionListener {
         String after;
         String lineHead;
         try {
-            before = doc.getText(0, caret);
-            after = doc.getText(caret, doc.getLength() - caret);
+            // bounded at the READ, not after it: the window is what travels,
+            // so the window is all that is copied (the v2.61.1 review find —
+            // the first cut read the whole document and clipped afterwards,
+            // an unbounded read on a large file for a 7,500-character send)
+            int from = Math.max(0, caret - OracleComplete.MAX_BEFORE_CHARS);
+            int to = Math.min(doc.getLength(), caret + OracleComplete.MAX_AFTER_CHARS);
+            before = doc.getText(from, caret - from);
+            after = doc.getText(caret, to - caret);
             Element line = doc.getDefaultRootElement().getElement(
                     doc.getDefaultRootElement().getElementIndex(caret));
             lineHead = doc.getText(line.getStartOffset(), caret - line.getStartOffset());
