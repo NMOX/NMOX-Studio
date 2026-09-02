@@ -68,12 +68,27 @@ public final class McpTools {
     }
 
     // ---- schema helpers ----------------------------------------------------
+    // Every schema below is the CONTRACT for exactly what the matching
+    // builder emits — McpSchemaContractTest validates each builder's real
+    // output against its declared schema, because a schema that was never
+    // checked against its own output is a claim, not a contract (the
+    // v2.56.1 review find: four of six declared additionalProperties:false
+    // while emitting undeclared keys, and three arrays were declared as a
+    // bare [] — not a JSON Schema at all).
 
     static JSONObject objectSchema(JSONObject properties) {
-        return new JSONObject()
+        return objectSchema(properties, null);
+    }
+
+    static JSONObject objectSchema(JSONObject properties, JSONArray required) {
+        JSONObject o = new JSONObject()
                 .put("type", "object")
                 .put("properties", properties == null ? new JSONObject() : properties)
                 .put("additionalProperties", false);
+        if (required != null && !required.isEmpty()) {
+            o.put("required", required);
+        }
+        return o;
     }
 
     private static JSONObject noArgs() {
@@ -84,14 +99,91 @@ public final class McpTools {
         return new JSONObject().put("type", new JSONArray().put("string").put("null"));
     }
 
+    private static JSONObject type(String t) {
+        return new JSONObject().put("type", t);
+    }
+
     private static JSONObject stringType(String description) {
-        return new JSONObject().put("type", "string").put("description", description);
+        return type("string").put("description", description);
+    }
+
+    private static JSONObject arrayOf(JSONObject items) {
+        return type("array").put("items", items);
+    }
+
+    private static JSONArray req(String... names) {
+        JSONArray a = new JSONArray();
+        for (String n : names) {
+            a.put(n);
+        }
+        return a;
+    }
+
+    /** The live_servers array — shared with ide_context so the two
+     *  can never drift. */
+    private static JSONObject serversArray() {
+        return arrayOf(objectSchema(new JSONObject()
+                .put("title", type("string"))
+                .put("url", type("string"))
+                .put("kind", type("string").put("enum",
+                        new JSONArray().put("WEB").put("CHAIN"))),
+                req("title", "url", "kind")));
+    }
+
+    /** The last_failure object — shared with ide_context. Only
+     *  {@code failed} is required: a clean record carries nothing else. */
+    private static JSONObject failureObject() {
+        return objectSchema(new JSONObject()
+                .put("failed", type("boolean"))
+                .put("device", type("string"))
+                .put("command", type("string"))
+                .put("exitCode", type("integer"))
+                .put("errorLines", arrayOf(type("string"))),
+                req("failed"));
+    }
+
+    private static JSONObject projectProperties() {
+        return new JSONObject()
+                .put("project", nullableString())
+                .put("directory", nullableString())
+                .put("gitBranch", nullableString());
+    }
+
+    private static JSONObject diagnosticsObject() {
+        JSONObject finding = objectSchema(new JSONObject()
+                .put("file", type("string"))
+                .put("line", type("integer"))
+                .put("severity", type("string").put("enum",
+                        new JSONArray().put("error").put("warning")))
+                .put("message", type("string")),
+                req("file", "line", "severity", "message"));
+        JSONObject perTool = objectSchema(new JSONObject()
+                .put("tool", type("string"))
+                .put("count", type("integer"))
+                .put("findings", arrayOf(finding)),
+                req("tool", "count", "findings"));
+        return objectSchema(new JSONObject()
+                .put("totalFindings", type("integer"))
+                .put("tools", arrayOf(perTool))
+                // present only when a filter was applied — "nothing
+                // matches THIS filter" is a different truth than "clean"
+                .put("filter", type("string")),
+                req("totalFindings", "tools"));
     }
 
     // ---- production wiring -------------------------------------------------
 
     /** The shipped roster over the rack's real state. */
     public static McpTools production() {
+        JSONObject ideContextSchema = objectSchema(projectProperties()
+                .put("serverCount", type("integer"))
+                .put("servers", serversArray())
+                .put("lastFailureDevice", nullableString())
+                .put("lastFailure", failureObject())
+                .put("diagnosticCount", type("integer")),
+                req("project", "directory", "gitBranch", "serverCount",
+                        "servers", "lastFailureDevice", "lastFailure",
+                        "diagnosticCount"));
         return new McpTools(List.of(
                 new Tool("ide_context",
                         "IDE context",
@@ -99,36 +191,28 @@ public final class McpTools {
                         + "project, everything serving, the last failure, and a "
                         + "diagnostic summary. Start here.",
                         noArgs(),
-                        objectSchema(new JSONObject()
-                                .put("project", nullableString())
-                                .put("serverCount", new JSONObject().put("type", "integer"))
-                                .put("lastFailureDevice", nullableString())
-                                .put("diagnosticCount", new JSONObject().put("type", "integer"))),
+                        ideContextSchema,
                         args -> renderIdeContext()),
                 new Tool("project_state",
                         "Project state",
                         "The aimed project: name, directory, and git branch.",
                         noArgs(),
-                        objectSchema(new JSONObject()
-                                .put("project", nullableString())
-                                .put("directory", nullableString())
-                                .put("gitBranch", nullableString())),
+                        objectSchema(projectProperties(),
+                                req("project", "directory", "gitBranch")),
                         args -> render(projectState(defaultAim()))),
                 new Tool("live_servers",
                         "Live servers",
                         "Every dev server the IDE knows is serving right now, with its URL.",
                         noArgs(),
-                        objectSchema(new JSONObject().put("servers", new JSONArray())),
+                        objectSchema(new JSONObject().put("servers", serversArray()),
+                                req("servers")),
                         args -> render(liveServers(defaultServings()))),
                 new Tool("last_failure",
                         "Last failure",
                         "The most recent failed run: device, command, exit code, "
                         + "and up to five error lines.",
                         noArgs(),
-                        objectSchema(new JSONObject()
-                                .put("failed", new JSONObject().put("type", "boolean"))
-                                .put("device", nullableString())
-                                .put("command", nullableString())),
+                        failureObject(),
                         args -> render(lastFailure(defaultFailure()))),
                 new Tool("diagnostics",
                         "Diagnostics",
@@ -137,16 +221,16 @@ public final class McpTools {
                         + "substring.",
                         objectSchema(new JSONObject().put("file",
                                 stringType("Only findings whose file path contains this substring."))),
-                        objectSchema(new JSONObject()
-                                .put("totalFindings", new JSONObject().put("type", "integer"))
-                                .put("tools", new JSONArray())),
+                        diagnosticsObject(),
                         args -> render(diagnostics(defaultDiagnostics(),
                                 args == null ? null : args.optString("file", null)))),
                 new Tool("rack_devices",
                         "Rack devices",
                         "The devices mounted on the task rack, in rack order.",
                         noArgs(),
-                        objectSchema(new JSONObject().put("devices", new JSONArray())),
+                        objectSchema(new JSONObject()
+                                .put("devices", arrayOf(type("string"))),
+                                req("devices")),
                         args -> render(rackDevices(defaultDevices())))));
     }
 

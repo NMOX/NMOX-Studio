@@ -113,7 +113,18 @@ public final class AgentPort {
                 }
                 body = capped.text();
             }
-            String response = McpProtocol.handle(body, tools, productVersion);
+            String response;
+            try {
+                response = McpProtocol.handle(body, tools, productVersion);
+            } catch (RuntimeException ex) {
+                // defense in depth under the every-refusal-speaks law: an
+                // uncaught throw here would make httpserver DROP the
+                // connection — silence, the one thing this port must
+                // never answer with. Every protocol path guards its own
+                // handlers; this net is for whatever a future path forgets.
+                response = "{\"jsonrpc\":\"2.0\",\"id\":null,\"error\":{\"code\":-32603,"
+                        + "\"message\":\"Internal error\"}}";
+            }
             if (response == null) {
                 // a notification: acknowledged with 202 and no body
                 exchange.sendResponseHeaders(202, -1);

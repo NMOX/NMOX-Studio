@@ -129,6 +129,37 @@ class McpPrimitivesTest {
         assertThat(caps.has("prompts")).isTrue();
     }
 
+    /** A roster whose only tool throws — the live-state failure shape. */
+    private static McpTools throwing() {
+        return new McpTools(List.of(new Tool("ide_context", "ctx", "throws",
+                McpTools.objectSchema(new JSONObject()),
+                McpTools.objectSchema(new JSONObject()),
+                args -> {
+                    throw new IllegalStateException("rack not ready");
+                })));
+    }
+
+    @Test
+    @DisplayName("A throwing handler behind resources/read answers -32603, never escapes")
+    void resourcesReadGuardsThrow() {
+        String out = McpProtocol.handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":11,\"method\":\"resources/read\","
+                + "\"params\":{\"uri\":\"nmox://context\"}}", throwing(), "2.56.1");
+        JSONObject err = new JSONObject(out).getJSONObject("error");
+        assertThat(err.getInt("code")).isEqualTo(-32603);
+        assertThat(err.getString("message")).contains("rack not ready");
+    }
+
+    @Test
+    @DisplayName("A throwing handler behind prompts/get answers -32603, never escapes")
+    void promptsGetGuardsThrow() {
+        String out = McpProtocol.handle(
+                "{\"jsonrpc\":\"2.0\",\"id\":12,\"method\":\"prompts/get\","
+                + "\"params\":{\"name\":\"review_setup\"}}", throwing(), "2.56.1");
+        assertThat(new JSONObject(out).getJSONObject("error").getInt("code"))
+                .isEqualTo(-32603);
+    }
+
     @Test
     @DisplayName("resources/read for an unknown URI is the spec's -32002")
     void protocolUnknownResourceCode() {

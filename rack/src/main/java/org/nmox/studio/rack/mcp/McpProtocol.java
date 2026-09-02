@@ -73,7 +73,16 @@ public final class McpProtocol {
                 if (uri == null) {
                     return error(id, -32602, "resources/read needs params.uri").toString();
                 }
-                JSONObject read = McpResources.read(uri, tools);
+                JSONObject read;
+                try {
+                    read = McpResources.read(uri, tools);
+                } catch (RuntimeException ex) {
+                    // a resource is a view over a tool handler — a live-state
+                    // throw here must answer as JSON-RPC, exactly as
+                    // tools/call does, never escape to the transport (the
+                    // v2.56.1 review find: only tools/call was guarded)
+                    return error(id, -32603, "Internal error: " + ex.getMessage()).toString();
+                }
                 // the spec's dedicated code for an unknown resource URI
                 return read == null
                         ? error(id, -32002, "Resource not found: " + uri).toString()
@@ -89,7 +98,12 @@ public final class McpProtocol {
                 if (name == null) {
                     return error(id, -32602, "prompts/get needs params.name").toString();
                 }
-                JSONObject prompt = McpPrompts.get(name, tools);
+                JSONObject prompt;
+                try {
+                    prompt = McpPrompts.get(name, tools);
+                } catch (RuntimeException ex) {
+                    return error(id, -32603, "Internal error: " + ex.getMessage()).toString();
+                }
                 return prompt == null
                         ? error(id, -32602, "Unknown prompt: " + name).toString()
                         : response(id, prompt).toString();
