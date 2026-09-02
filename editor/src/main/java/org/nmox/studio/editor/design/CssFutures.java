@@ -100,6 +100,26 @@ public final class CssFutures {
                 "numeric-only", "allow-keywords");
     }
 
+    /**
+     * Platform-KNOWN properties that gain the anchor functions as values
+     * — the one place this catalog reaches onto someone else's property,
+     * because {@code top: anchor(--card bottom)} is how anchor positioning
+     * is actually written and the platform cannot offer the function. The
+     * host list is the spec's inset + sizing properties, nothing else.
+     */
+    static final List<String> ANCHOR_HOSTS = List.of(
+            "top", "right", "bottom", "left",
+            "inset", "inset-block", "inset-inline",
+            "inset-block-start", "inset-block-end",
+            "inset-inline-start", "inset-inline-end",
+            "width", "height", "min-width", "min-height",
+            "max-width", "max-height", "block-size", "inline-size");
+
+    static final List<String> ANCHOR_FUNCTIONS = List.of("anchor(", "anchor-size(");
+
+    private static final Property ANCHOR_HOST_VALUES = new Property("(anchor host)",
+            ANCHOR_FUNCTIONS, "position against an anchor");
+
     /** At-rules the platform's database predates. */
     static final List<String> AT_RULES = List.of(
             "@starting-style", "@position-try", "@view-transition");
@@ -182,7 +202,14 @@ public final class CssFutures {
         while (nameStart > 0 && isNameChar(before.charAt(nameStart - 1))) {
             nameStart--;
         }
-        Property prop = PROPERTIES.get(before.substring(nameStart, nameEnd));
-        return prop == null ? null : new ValueContext(prop, partial);
+        String name = before.substring(nameStart, nameEnd);
+        Property prop = PROPERTIES.get(name);
+        if (prop != null) {
+            return new ValueContext(prop, partial);
+        }
+        // a platform-known inset/sizing property: offer the anchor
+        // functions only (the platform owns the rest of its values)
+        return ANCHOR_HOSTS.contains(name)
+                ? new ValueContext(ANCHOR_HOST_VALUES, partial) : null;
     }
 }

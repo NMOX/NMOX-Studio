@@ -48,6 +48,20 @@ class CssFuturesTest {
     }
 
     @Test
+    @DisplayName("Inset and sizing properties gain anchor() / anchor-size() as values")
+    void anchorFunctionsOnHosts() {
+        CssFutures.ValueContext vc = CssFutures.valueContextAt(".a { top: anc");
+        assertThat(vc).isNotNull();
+        assertThat(vc.property().values()).containsExactly("anchor(", "anchor-size(");
+        assertThat(vc.partial()).isEqualTo("anc");
+        assertThat(CssFutures.valueContextAt(".a { width: ").property().values())
+                .contains("anchor-size(");
+        // a non-host platform property stays the platform's alone
+        assertThat(CssFutures.valueContextAt(".a { color: ")).isNull();
+        assertThat(CssFutures.valueContextAt(".a { display: ")).isNull();
+    }
+
+    @Test
     @DisplayName("At-rules complete from a leading @ at a declaration position")
     void atRules() {
         assertThat(CssFutures.propertyPrefixAt(".a { @start")).isEqualTo("@start");
