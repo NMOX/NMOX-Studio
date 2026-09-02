@@ -106,7 +106,10 @@ public final class OracleComplete {
      * The insertion text out of a reply: the single fenced block, or null
      * for prose / ambiguity (the caller refuses out loud). A block that
      * merely repeats the current line's head is trimmed of that repeat,
-     * because models often echo the prefix they were told not to.
+     * because models often echo the prefix they were told not to. The
+     * honest ceiling (v2.61.1 review, recorded not fixed): a reply that
+     * LEGITIMATELY begins with the same characters as the line head is
+     * trimmed too — a text-only reply channel cannot say which it meant.
      */
     public static String extractInsertion(String reply, String lineBeforeCaret) {
         String code = OracleEdit.extractFencedCode(reply);
