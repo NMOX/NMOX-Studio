@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.58.1] - 2026-09-02
+
+The day shift's second review — hostile lenses over v2.57.0's CSS
+vocabulary and v2.58.0's LEARN kind, hours old. Two finds in the
+former, fixed: **top-level at-rules could never complete where they
+belong** — propertyPrefixAt demanded a { or ; boundary, so
+@position-try and @view-transition, which live only at the file top or
+after a closed block, were uncompletable there (the walk had typed
+@starting-style INSIDE a rule, where it is also legal, and so never
+saw the miss); an @-prefix now completes at the file top and after }
+too, while a bare property name at the top level stays refused as the
+selector it is. And **only the first keyword of a value completed** —
+valueContextAt walked back over whitespace alone on its way to the
+colon, so "position-area: top le" offered nothing for the second
+keyword of a two-keyword property; the walk now crosses earlier
+keyword tokens and stops at ; { } so it never leaves the declaration.
+Both mutants dead by name (drop-the-@-branch → topLevelAtRules,
+whitespace-only-walk → secondKeywordCompletes). The LEARN kind
+verified CLEAN under the same lenses: precedence pinned both ways,
+every kind-keyed switch carries a default, the count gate's sixth doc
+home (docs/tutorials/) recorded. Docs truth rides along: CLAUDE.md's
+version history gains v2.57.0 and v2.58.0 with the multi-space RUN
+find.
+
 ## [2.58.0] - 2026-09-02
 
 Learning space #93 — **WebAssembly Components (WIT)**, futures-2031
@@ -15808,6 +15832,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.58.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.58.0...v2.58.1
 [2.58.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.57.0...v2.58.0
 [2.57.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.1...v2.57.0
 [2.56.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.0...v2.56.1
