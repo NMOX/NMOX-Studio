@@ -22,7 +22,23 @@ entry was written (the starter-never-installed-is-a-claim law):
 wasm-tools 1.258.0 validated the exact fixture and refused the exact
 broken world at 14:10. Three checkpoints (second function added,
 export intact, package validates by command); wasm-tools already on
-the Doctor. 93 spaces across the five doc homes.
+the Doctor. 93 spaces across the five doc homes. **The walk found the
+product refusing what the headless proof had passed** — pressing RUN
+on the space's pre-wired SOLDER lit "NO PROJECT MANIFEST": every
+run-kind space wires SOLDER, SOLDER requires a project manifest, and
+the manifest gate is just detectKind != NONE, which had no rule for a
+directory whose only signal is the learning-space marker. Probed
+headlessly, that condemns every manifest-less run space shipped since
+the v1.74/v1.75 classics (c, cpp, pascal, odin, cobol, haxe, perl,
+graphql) to the same dead RUN — the v1.212.0 class, invisible to
+review, visible to anyone pressing the button, and the v1.77.2 "run
+spaces compile+print" verification must have exercised the command,
+not the device. Fixed at the root: ProjectKind.LEARN — the marker file
+IS the space's manifest and the rack's driver IS its toolchain — as
+the resort after the last resort (after STATIC, so a space with a root
+index.html keeps serving and one with package.json stays NODE), blessed
+in the lane-parity gate with its reason; LearnKindTest pins all four
+precedence laws.
 
 ## [2.57.0] - 2026-09-02
 
