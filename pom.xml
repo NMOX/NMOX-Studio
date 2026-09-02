@@ -249,6 +249,9 @@
                         <exclude>**/StickyScrollSideBar*.class</exclude>
                         <exclude>**/StickyScrollSideBarFactory*.class</exclude>
                         <exclude>**/ToggleStickyScrollAction*.class</exclude>
+                        <!-- v2.61.0 ghost text: Swing/editor-view wiring + the action; OracleComplete/Engine stay on the surface -->
+                        <exclude>**/GhostText*.class</exclude>
+                        <exclude>**/CompleteWithOracleAction*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>

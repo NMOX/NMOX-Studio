@@ -1,0 +1,153 @@
+package org.nmox.studio.rack.engine;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.json.JSONObject;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.nmox.studio.rack.engine.OracleComplete.CompletionRequest;
+import org.nmox.studio.rack.engine.OracleCompleteEngine.Proposal;
+import org.nmox.studio.rack.engine.OracleCompleteEngine.Status;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class OracleCompleteTest {
+
+    private static final class SpyTransport implements OracleClient.Transport {
+        final List<String> bodies = new ArrayList<>();
+        final String canned;
+
+        SpyTransport(String canned) {
+            this.canned = canned;
+        }
+
+        @Override
+        public String post(String url, String jsonBody, char[] apiKey) throws IOException {
+            bodies.add(jsonBody);
+            return canned;
+        }
+    }
+
+    private static String messageResponse(String text) {
+        return new JSONObject()
+                .put("stop_reason", "end_turn")
+                .put("content", new org.json.JSONArray().put(
+                        new JSONObject().put("type", "text").put("text", text)))
+                .toString();
+    }
+
+    private static CompletionRequest req(String before, String after) {
+        return CompletionRequest.around("app.js", "text/javascript", before, after);
+    }
+
+    // ---- the request: clipped, never truncated silently -------------------
+
+    @Test
+    @DisplayName("The window clips before from the FRONT and after from the END, and says so")
+    void windowClips() {
+        String before = "x".repeat(OracleComplete.MAX_BEFORE_CHARS + 10) + "TAIL";
+        String after = "HEAD" + "y".repeat(OracleComplete.MAX_AFTER_CHARS + 10);
+        CompletionRequest r = req(before, after);
+        assertThat(r.before()).hasSize(OracleComplete.MAX_BEFORE_CHARS).endsWith("TAIL");
+        assertThat(r.after()).hasSize(OracleComplete.MAX_AFTER_CHARS).startsWith("HEAD");
+        assertThat(r.clipped()).isTrue();
+        assertThat(req("a", "b").clipped()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Nothing before the caret is refused — there is nothing to continue")
+    void emptyBeforeRefuses() {
+        assertThatThrownBy(() -> req("  \n", "rest"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Nothing to continue");
+    }
+
+    // ---- the prompt ------------------------------------------------------
+
+    @Test
+    @DisplayName("The prompt marks the caret, names the file and language, and notes a clipped window")
+    void promptShape() {
+        String p = OracleComplete.assembleCompletionPrompt(req("const a = 1;\nfunction f(", ") {}"));
+        assertThat(p).contains("app.js").contains("text/javascript")
+                .contains("function f(" + OracleComplete.CURSOR + ") {}")
+                .contains("exactly one fenced code block")
+                .doesNotContain("clipped");
+        String clipped = OracleComplete.assembleCompletionPrompt(
+                req("z".repeat(OracleComplete.MAX_BEFORE_CHARS + 1), ""));
+        assertThat(clipped).contains("clipped");
+    }
+
+    // ---- the reply -------------------------------------------------------
+
+    @Test
+    @DisplayName("The insertion is the fenced block with an echoed line head trimmed and no trailing newline")
+    void insertionExtraction() {
+        assertThat(OracleComplete.extractInsertion("```js\nreturn a + b;\n```", "  "))
+                .isEqualTo("return a + b;");
+        // the model echoed the head of the current line: trimmed, not doubled
+        assertThat(OracleComplete.extractInsertion("```js\n  const total = a + b;\n```", "  const total"))
+                .isEqualTo(" = a + b;");
+        assertThat(OracleComplete.extractInsertion("```js\nconst total = a + b;\n```", "  const total"))
+                .isEqualTo(" = a + b;");
+        // prose is null; an empty block is null
+        assertThat(OracleComplete.extractInsertion("I cannot complete this.", "x")).isNull();
+        assertThat(OracleComplete.extractInsertion("```\n\n```", "x")).isNull();
+    }
+
+    @Test
+    @DisplayName("Ghost helpers: first line shown, the rest counted")
+    void ghostHelpers() {
+        assertThat(OracleComplete.firstLine("a\nb\nc")).isEqualTo("a");
+        assertThat(OracleComplete.moreLines("a\nb\nc")).isEqualTo(2);
+        assertThat(OracleComplete.moreLines("one")).isZero();
+    }
+
+    // ---- the engine: two gates in front of one send ------------------------
+
+    @Test
+    @DisplayName("No key: nothing is sent")
+    void noKeySendsNothing() {
+        SpyTransport spy = new SpyTransport(messageResponse("```\nx\n```"));
+        OracleCompleteEngine engine = new OracleCompleteEngine(new OracleClient(spy),
+                () -> new char[0], r -> true);
+        Proposal p = engine.propose(req("let a", ""), "let a", OracleClient.MODEL_HAIKU);
+        assertThat(p.status()).isEqualTo(Status.NO_KEY);
+        assertThat(spy.bodies).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Consent declined: nothing is sent")
+    void noConsentSendsNothing() {
+        SpyTransport spy = new SpyTransport(messageResponse("```\nx\n```"));
+        OracleCompleteEngine engine = new OracleCompleteEngine(new OracleClient(spy),
+                () -> "k".toCharArray(), r -> false);
+        Proposal p = engine.propose(req("let a", ""), "let a", OracleClient.MODEL_HAIKU);
+        assertThat(p.status()).isEqualTo(Status.NO_CONSENT);
+        assertThat(spy.bodies).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A single fenced reply becomes the insertion; prose refuses out loud; empty is its own verdict")
+    void engineVerdicts() {
+        SpyTransport ok = new SpyTransport(messageResponse("```js\n = 1;\n```"));
+        Proposal p = new OracleCompleteEngine(new OracleClient(ok), () -> "k".toCharArray(), r -> true)
+                .propose(req("let a", ""), "let a", OracleClient.MODEL_HAIKU);
+        assertThat(p.status()).isEqualTo(Status.PROPOSED);
+        assertThat(p.insertion()).isEqualTo(" = 1;");
+        assertThat(ok.bodies).hasSize(1);
+        assertThat(ok.bodies.get(0)).contains(OracleComplete.CURSOR);
+
+        SpyTransport prose = new SpyTransport(messageResponse("I would not add anything here."));
+        Proposal q = new OracleCompleteEngine(new OracleClient(prose), () -> "k".toCharArray(), r -> true)
+                .propose(req("let a", ""), "let a", OracleClient.MODEL_HAIKU);
+        assertThat(q.status()).isEqualTo(Status.NOT_CODE);
+        assertThat(q.message()).contains("I would not add anything here.");
+
+        SpyTransport echo = new SpyTransport(messageResponse("```js\nlet a\n```"));
+        Proposal e = new OracleCompleteEngine(new OracleClient(echo), () -> "k".toCharArray(), r -> true)
+                .propose(req("let a", ""), "let a", OracleClient.MODEL_HAIKU);
+        assertThat(e.status()).isEqualTo(Status.EMPTY);
+    }
+}
