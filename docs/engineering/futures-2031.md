@@ -27,8 +27,11 @@ is blind at the seam it exists for.
 bytecodealliance grammar (Apache-2.0, sha256-pinned), CSL language with
 `//` comments, keyword completion, spellcheck, typing, brace outline,
 `wasm-tools` on the Environment Doctor.
+**Shipped v2.58.0:** learning space #93, WebAssembly Components (WIT)
+— contract-first, RUN = `wasm-tools component wit`, the file:line
+refusal taught as the feature, live-proven before the entry existed.
 **Recorded next:** a `wit-bindgen`/`jco` lane when a manifest signal
-exists to hang it on; a Component Model learning space.
+exists to hang it on.
 
 ### F2 — Temporal, WebGPU, view transitions, and built-in AI are the everyday platform. — SHIPPED (vocabulary) v2.52.0
 

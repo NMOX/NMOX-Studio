@@ -25,7 +25,7 @@ have your staged diff drafted into a commit message
 (consent-gated, keys keychain-only), a **Tests window** that lists every test
 before anything runs, **five studios** (Block, API, DB,
 Contract/Web3, Infra), an **11-chain Contract Kit** whose every starter is
-proven against its real toolchain, and **92 learning spaces** with in-rack
+proven against its real toolchain, and **93 learning spaces** with in-rack
 REPLs. Built on the NetBeans Rich Client Platform, shipped through a gated
 pipeline where the house laws are enforced by tests, not intentions: private
 keys never touch the IDE, a cloned repo's code never runs without your yes,

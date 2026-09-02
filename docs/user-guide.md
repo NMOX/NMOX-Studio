@@ -1328,7 +1328,7 @@ your students is exactly what their picker will load.
 
 ![The exporter's report — the file your students drop in](images/export-space.png)
 
-*New Learning Space…* offers 92 built-in tutorials — languages (Python,
+*New Learning Space…* offers 93 built-in tutorials — languages (Python,
 Rust, Go, Ruby, Lua, Elixir, Clojure, Solidity, …), frameworks, and
 libraries. Each generates a small sample project, a walked tutorial, and
 a rack pre-wired with a **real REPL device** — you type into the rack and
