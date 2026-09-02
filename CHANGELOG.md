@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.56.0] - 2026-09-02
+
+The Agent Port becomes a COMPLETE MCP server — all three read-only
+primitives, up from Tools alone (the "best for developers" pass'"'"'s
+second half). **Resources**: resources/list + resources/read expose
+the IDE'"'"'s state as URI-addressed context an agent framework browses
+and attaches — nmox://context, nmox://project, nmox://servers,
+nmox://last-failure, nmox://diagnostics, nmox://devices — each a VIEW
+over the matching tool'"'"'s structured output (byte-identical, the
+single-source-of-truth rule), an unknown URI answered with the spec'"'"'s
+own -32002. **Prompts**: prompts/list + prompts/get offer server-side
+templates that fold the IDE'"'"'s LIVE state into a ready question —
+diagnose_failure wraps the captured failure context, review_setup the
+running servers — so a developer'"'"'s agent runs "diagnose my last
+failure" with nothing pasted. initialize now declares tools +
+resources + prompts. Every new primitive is pure reading — a resource
+can only invoke a ledger-pinned tool handler, a prompt only reads a
+tool'"'"'s text — so the read-only law is INHERITED, not re-argued, and
+McpReadOnlyLedgerTest (which walks the whole mcp package) covers them
+by construction. 9 tests, three mutants dead by name (uri-ignored →
+unknownResourceMisses, skip-the-fold → promptsGetFoldsState,
+drop-capability → initializeDeclaresAllPrimitives).
+
 ## [2.55.0] - 2026-09-01
 
 The Agent Port becomes the best MCP server for developers, not just a
@@ -15647,6 +15670,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.56.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.54.0...v2.55.0
 [2.54.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.53.0...v2.54.0
 [2.53.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.52.0...v2.53.0
