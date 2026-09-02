@@ -403,6 +403,12 @@ any MCP client the idiomatic way.
   a nag.
 - **Navigator outline (⌘7)** shows file structure for 58 file types;
   click to jump.
+- **Minimap** — a silhouette of the whole file beside every editor's
+  scrollbar (one bar per line, indent to length, the visible band drawn
+  over it); click or drag it to scroll. The whole document always fits
+  the strip: rows shrink as the file grows, and past 40,000 lines the
+  strip shows an ellipsis rather than reading on. View ▸ Minimap turns
+  it off and on for every open editor at once.
 - **Go to Symbol (⌥⇧⌘O**, or Navigate ▸ Go to Symbol…**)** jumps to any
   function, class, rule, or heading in the whole aimed project by
   typing its name — every name the outline can see, in every file, with
