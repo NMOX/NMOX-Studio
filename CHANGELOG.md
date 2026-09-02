@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.61.2] - 2026-09-02
+
+Docs truth (docs only): docs/engineering/plan.md — the read-this-first
+plan — was current to v2.43.4 while eighteen releases shipped past it.
+Its head now carries a currency addendum at v2.61.1 (the competitive
+lens, the futures lens, the Agent Port, the token faces, the pipelined
+rhythm, the standing counts) and two dated addenda: the two-lens run
+(v2.44.0–v2.57.0, with the laws those days recorded — full verdict
+lines only, the JSONObject-order distinguisher, rebase --onto past a
+squash, audit background tasks, the bare-jar walk trap, the -pl trap)
+and today's editor day (v2.58.0–v2.61.1: the second-Ctrl+Space class,
+the three side-bar and ghost units, and the method laws they paid for —
+probe by layer, press the chord twice, the status line is not evidence,
+"(built)" is not a verdict, commit before probing, D=⌘ A=⌥ O=⌃).
+
 ## [2.61.1] - 2026-09-02
 
 The day-shift review of the three editor units that shipped in a row —

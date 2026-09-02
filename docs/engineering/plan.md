@@ -1,5 +1,25 @@
 # The Plan
 
+*Currency addendum 2026-09-02, at v2.61.1, after two lenses and one
+editor day (v2.44.0–v2.61.1, ~18 releases in five days). **The
+competitive lens** (docs/engineering/competitive-lens.md — a rival's
+relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
+Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
+R7 minimap AND sticky scroll, R4 on-demand ghost text — six of seven
+relief items closed or partial, R5 remote dev honestly open); **the
+futures lens** (docs/engineering/futures-2031.md — six bets each paying
+today: WIT citizenship, the everyday-2031 JS and CSS vocabularies,
+import maps, and F4 the Agent Port — a complete read-only MCP server
+with tools/resources/prompts, structured output under declared schemas,
+a build-failing read-only ledger); **the token faces** in Contract
+Studio (ERC-20/721/1155 detection, Balance of…, Inspect tx…, History…,
+mainnet-walked); and **today's editor day** (below). The rhythm changed
+after David's "all our time waiting on gates": worktrees pipelined
+branch-atop-branch, batch units per gate, background chains that
+verify→ship→gate→post-ship unattended. Standing counts: 53 devices,
+87 grammars, 93 learning spaces, 60 manifests. The previous currency
+addendum follows.*
+
 *Currency addendum 2026-08-28, at v2.43.4, after the distribution-and-trust
 day (v2.39.6–v2.43.4, ~14 releases in ~36 hours, all four of David's
 greenlights delivered): the canonical PUBLIC Homebrew tap with zero-secret
@@ -2712,3 +2732,103 @@ the recorded direction: features-without-the-mime (register the
 template intelligence for text/html, self-gated on angular.json +
 a templateUrl reference), since MIMESupport's declarative-first
 ordering forecloses programmatic resolution.
+
+## Addendum — 2026-08-29→09-01, the two lenses and the Agent Port (v2.44.0–v2.57.0)
+
+Two directives, two documents, one method. **The competitive lens**
+(David: read the product as a rival's developer would, find where they
+feel relief, build until the relief is gone) became
+docs/engineering/competitive-lens.md — a relief list ranked by what an
+outsider would exploit, not by what an insider finds interesting — and
+its first pass closed the daily-driver gaps in four releases: Edit with
+ORACLE (a single-fence reply, BEFORE/AFTER preview, one-undo apply
+behind a stale-buffer guard, refuse-not-truncate), Go to Symbol
+project-wide (one SymbolProvider over the outline family lighting the
+platform dialog and its ⌘I bridge — the walk found the leading-sigil
+miss and the bridge's query folding), the Tests window (TestIndex
+speaking the focused runner's own patterns), Pull Requests on the git
+chip via the user's own gh (keychain-only by never holding a token),
+and Draft Commit Message with its own git.diff consent kind. **The
+futures lens** (David: return from five years out and bring the product
+up to speed early) became docs/engineering/futures-2031.md — six bets
+argued from real 2026 trajectories, every shipped unit required to pay
+today: WIT/Component-Model citizenship with its own outline family; the
+everyday-2031 vocabularies (Temporal, navigator.gpu,
+startViewTransition, the built-in AI namespaces; then anchor
+positioning, view transitions, @starting-style in CSS); import maps
+(exact-then-longest-prefix, ⌘-click and ⌃Space); and **F4, the Agent
+Port** — an MCP server READ-ONLY BY CONSTRUCTION (loopback-witnessed
+Streamable HTTP, per-start bearer, any Origin → 403, a ledger test that
+fails the build if any mcp class names a spawn/write/trust primitive),
+then made the best server a developer could point an agent at
+(structuredContent under declared outputSchemas, readOnlyHint
+annotations, one-shot ide_context, all three primitives with Resources
+as URI-views over tools and Prompts folding live state), then reviewed:
+the output schemas had never been VALIDATED against their own output —
+a walk must exercise the contract, not the presence of one.
+
+Laws recorded in those five days: full verdict lines only (a -q grep
+faked two surviving mutants); JSONObject hash order needs a
+deterministic distinguisher or a first-match mutant survives;
+`rebase --onto` for pipelined branches past a squash, with the remote's
+real sha as the lease; audit background tasks (a hung rm -i fed
+`git add -A` a junk file); the bare-jar walk trap for any module that
+bundles org.json (only an assembled cluster is an honest walk target);
+`mvn -pl <module>` alone compiles against the INSTALLED sibling jar —
+include the changed sibling in the reactor.
+
+## Addendum — 2026-09-02, the editor day (v2.58.0–v2.61.1)
+
+Six releases, one product-wide bug older than most of its victims, and
+three editor surfaces the competitive lens had recorded as a rival's
+relief. **v2.58.0** added learning space #93 (WebAssembly Components,
+contract-first). **v2.58.1** was the day's review of two CSS fixes —
+and its walk found that BOTH fixes read "No suggestions" live while
+their tests passed on identical strings. A probe cluster split the
+layers instead of guessing: the provider WAS queried, the pure core
+answered correctly, the auto-popup rendered the item, and the explicit
+Ctrl+Space arrived as queryType 9. Decompiled from CompletionImpl: a
+Ctrl+Space while a popup shows re-queries as COMPLETION_ALL, and an
+empty type-1 result is auto-upgraded the same way — and all ELEVEN NMOX
+completion providers gated createTask on `queryType !=
+COMPLETION_QUERY_TYPE`, so a second press wiped every NMOX item while
+the platform's own survived. Invisible to every walk that pressed the
+chord exactly once. The mask at all eleven sites plus
+CompletionAllQueryGateTest (a source law AND a behavioral law driving
+every real createTask) made it a build law twice over. **v2.59.0** the
+minimap and **v2.60.0** sticky scroll closed R7: both ride the editor
+side-bar SPI decompiled from the error stripe's own registration (root
+Editors/SideBar, a location, non-scrollable, a position), so ONE
+registration reaches every editor; both keep pure cores (MinimapModel's
+fit-never-scroll rows and bounded shape; StickyScope's END lines per
+family — brace balance with quote-blanking, indentation, next-item —
+over the outline's (line, depth) items), both mutation-pinned, both
+walked across families. **v2.61.0** moved R4 to PARTIAL on the house's
+terms: Complete with ORACLE, ghost text on demand — the gesture is the
+gate, the CODE consent is shared because the same data classes travel,
+the reply paints as VIRTUAL text through the platform's own
+`virtual-text-prepend` highlight attribute (editor-lib2's view factory
+wraps such a highlight in a PrependedTextView), Tab inserts as one undo
+unit, the document is untouched until Tab. Its walk paid four times:
+a fixed-size highlight layer is merged as a colors-only pass whose
+attributes never reach the view factory (fixedSize=false is
+load-bearing); NetBeans keystroke notation on macOS is D=⌘, A=⌥, O=⌃
+(so "DO-G" bound ⌃⌘G and only the popup ever reached the action until
+"DA-G"); Escape never reaches even a runtime-registered
+KeyEventDispatcher inside a docked editor (the v1.205.0 law holds at
+the dispatcher level — the docs say what dismisses instead); and a
+positioned ROOT MimeRegistration warns on every boot for every mime.
+**v2.61.1**, the review, found the action reading the whole document
+to send a bounded window — bounded at the read now, gate-pinned.
+
+The method lessons, stated as laws: **"tests pass, app says no" → a
+probe cluster by layer, never a guess at the platform**; **press the
+chord twice** (and once with the auto-popup up) — every prior walk
+pressed it once; **the status line is not evidence** (StatusDisplayer
+texts time out in seconds — read messages.log); **"(built)" is not a
+verdict** — guard mvn's exit code explicitly and byte-check the cluster
+jar for the change before driving, or a stale cluster judges the walk;
+**commit before probing** — a probe's `git checkout --` reverted four
+uncommitted fixes (a reapply script rebuilt them); and find-sec-bugs
+reads an angle-bracketed marker as XML under construction — remove the
+trigger (⟪CURSOR⟫), keep the rule.
