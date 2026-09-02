@@ -44,10 +44,17 @@ calls are as unremarkable as `localStorage`.
 `navigator.*` namespaces, `document.startViewTransition`, the built-in
 AI and GPU-usage globals, and snippets (`viewtransition`, `temporal`,
 `importjson`, `gpu`, `llm`).
-**Recorded next:** CSS anchor positioning / `@starting-style` /
-view-transition property vocabulary — pending a probe of what the
-RELEASE310 platform CSS property DB already carries (the v1.231.0
-recon said the property DB was current; re-measure before adding).
+**Shipped v2.57.0 — the CSS half:** the probe was run before adding
+(control terms container-type and text-wrap PRESENT in RELEASE310's
+css-lib DB; anchor positioning, view transitions, `@starting-style`,
+scroll-driven animations, field-sizing, interpolate-size ABSENT — the
+v1.231.0 "current" reading held for the old properties and not for the
+2031 ones). CssFutures completes the 23 absent properties with their
+meanings, their keyword values, and the three at-rules, across the
+stylesheet family and the markup family's style regions. `anchor()`/`anchor-size()` complete as
+values on the spec's inset and sizing properties — the one deliberate
+reach onto platform-known properties. Honest limit: the platform
+checker may still warn on the new names (ledger 71).
 
 ### F3 — Import maps make the CDN-less ESM app normal. — SHIPPED v2.53.0
 

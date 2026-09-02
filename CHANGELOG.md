@@ -4,6 +4,60 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.57.0] - 2026-09-02
+
+The everyday-2031 CSS vocabulary, completed (futures-2031, the CSS
+half of F2): a byte-level probe of RELEASE310's css-lib property
+database — with container-type (2) and text-wrap (4) as PRESENT
+control terms so the zeros mean what they say — found anchor
+positioning, view transitions, @starting-style, scroll-driven
+animations, field-sizing and interpolate-size all ABSENT, so typing
+anchor-name: in a stylesheet today got nothing. Now: at a
+property-name position (after { or ;, never inside a value or a
+selector — hand scans, not regexes, the v1.32.0 idiom) the popup
+offers the 23 properties WITH their one-line meanings (a popup that
+teaches the vocabulary the platform's docs cannot), after one of those
+properties' colons it offers that property's keyword values, and
+@starting-style/@position-try/@view-transition complete from a leading
+@. The whole stylesheet family plus the markup family's style regions
+through the shared HtmlStyleRegions gate — CssFuturesCompletionProvider
+enrolled in MarkupFamilyParityTest so a future family mime cannot skip
+it. Pinned honest: the catalog can never duplicate a platform-known
+name (the control terms asserted absent), and the platform's legacy
+checker may still WARN on these properties — ledger 71 records that
+silencing it is externally blocked three ways; the completion is the
+half this product owns. And the one reach onto the
+platform's own properties, because it is how anchor positioning is
+actually written: after the colon of an inset or sizing property
+(top/right/bottom/left/inset*, width/height/min-*/max-*/block-size/
+inline-size — the spec's host list, nothing else) the popup offers
+anchor( and anchor-size( while the platform keeps every other value
+of those properties (mutant: drop the host fallthrough →
+anchorFunctionsOnHosts). Three mutants by
+name (any-property-values → valueContext, drop-the-;-boundary →
+propertyPositions, boundary-admits-colon → propertyRefusals) — and a
+fourth SURVIVED and was deleted: a "colon since the boundary" guard
+meant to refuse value positions could never fire, because the span
+between the boundary and the typed partial is whitespace by
+construction, so the boundary rule alone is the law; a guard that
+cannot fire is misleading code, and the equivalent-mutant protocol
+says delete it and pin the real rule. Walk-proven in the assembled
+app on all three legs: at a declaration position "posi" + ⌃Space
+listed the six anchor-positioning properties WITH their meanings,
+coexisting with the platform's own `position` row (no duplicate by
+construction); after `position-area: sp` the popup held exactly the
+five span-* values with the property as provenance; inside an HTML
+<style> block "anch" offered anchor-name/anchor-scope while the same
+prefix typed in the page's <p> prose got no popup at all (the region
+gate). The platform checker's yellow underline on `anchor-name` was
+observed live — the ledger-71 limit, stated where it shows. The
+folded follow-on walked too: `top: anc` + ⌃Space offered anchor( and
+anchor-size( — and the walk caught the popup's provenance reading a
+placeholder "(anchor host)" beside them instead of the property; the
+context now carries the host's own name, so the column reads "top"
+(pinned: anchorFunctionsOnHosts asserts the name), re-verified and
+re-walked before ship.
+
 ## [2.56.1] - 2026-09-02
 
 The MCP arc's same-day review (v2.55.0 + v2.56.0 under hostile lenses)
@@ -15713,6 +15767,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.57.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.1...v2.57.0
 [2.56.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.0...v2.56.1
 [2.56.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.54.0...v2.55.0
