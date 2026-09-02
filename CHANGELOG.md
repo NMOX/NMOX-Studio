@@ -30,8 +30,9 @@ against the live IDE: initialize declared resources+tools+prompts; all
 six resources listed; nmox://context returned live structured JSON
 (aimed at NMOX) with an unknown URI answered -32002; both prompts
 folded real state (review_setup embedded "Project: NMOX, 0 servers");
-all six tools carried readOnlyHint with output schemas; Stop left the
-port refusing connections.
+all six tools carried readOnlyHint with output schemas; Stop reported "Agent Port
+stopped — nothing is listening" (the port-close refusal itself pinned
+behaviorally back in v2.54.0).
 
 ## [2.55.0] - 2026-09-01
 
