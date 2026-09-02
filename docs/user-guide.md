@@ -332,6 +332,19 @@ never patched blind. Same consent, same key, same disclosure as Ask
 ORACLE: only the selection, the file's name, its language, and your
 instruction ever leave the machine.
 
+**Let ORACLE complete at the caret.** Press **⌥⌘G** (or right-click ▸
+**Complete with ORACLE**) and the code around the caret is sent once
+— 6,000 characters before it, 1,500 after, clipped from the far ends
+— after the same consent Ask and Edit use. The reply appears as gray
+ghost text at the caret: **Tab** inserts it (one undo unit); typing,
+Backspace, moving the caret, or clicking dismisses it (Escape is
+swallowed by the window system inside a docked editor, so it is not
+the dismiss key). A
+multi-line completion shows its first line with "… +N lines"; Tab
+inserts all of it. Nothing touches your file until Tab. There is no
+always-on stream: no keystroke ever leaves the machine on its own, and
+each press is one bounded send you asked for.
+
 **Let ORACLE draft your commit message.** Click the git branch chip on
 the status line and choose **Draft Commit Message with ORACLE…**: the
 STAGED diff (and only the staged diff — up to 12,000 characters, with

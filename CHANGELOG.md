@@ -4,6 +4,61 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.61.0] - 2026-09-02
+
+The competitive lens, R4 on the house's terms: **Complete with ORACLE
+— ghost text, on demand**. The lens had recorded "no ghost-text inline
+completion" as OPEN BY POSITION: an always-on stream sends keystrokes
+to a network service, and the standing law is no network without a
+gesture, each disclosure kind earning its own consent, every send
+bounded and named. This unit keeps every word of that law and still
+gives the editor the gesture a rival exploits: ⌥⌘G (or Complete with
+ORACLE in the editor popup) sends the code around the caret ONCE —
+6,000 characters before it, 1,500 after, clipped from the far ends and
+the prompt says so — after the same CODE consent Ask and Edit earn
+(the same data classes travel, so no new consent is invented), with the
+key from the keychain and wiped after use; the reply, exactly one
+fenced block holding only the text to insert, appears as gray VIRTUAL
+text at the caret. Tab inserts it as one undo unit; typing, Backspace,
+a caret move, or a click dismisses it — the document is never touched
+until Tab, so a ghost never accepted leaves no edit and no undo step.
+(Escape is deliberately not the dismiss key: inside a docked
+TopComponent the window system consumes it before any listener or
+later-registered dispatcher sees it — the v1.205.0 law, re-measured
+here with a probe.) The chord is "DA-G" in the platform's notation:
+D is ⌘ on macOS and A is ⌥, while O is ⌃ — the first draft's "DO-G"
+bound ⌃⌘G and the walk's probe proved only the popup ever reached the
+action until the letter changed. Rendering is the platform's own, decompiled not guessed:
+editor-lib2's HighlightsViewFactory wraps any highlight carrying the
+`virtual-text-prepend` attribute in a PrependedTextView — the mechanism
+the platform's inline hints paint with — so the ghost is a
+one-character highlight at the caret whose prepended string is the
+completion's first line, the rest counted ("… +N lines") and inserted
+whole on Tab; at the very end of the file, where no character exists
+to prepend to, the completion is inserted selected instead and the
+status line says ⌘Z removes it. The pure half (OracleComplete: the
+clipped window, the caret-marked prompt (a bracket-free marker: a bracketed one read as XML to find-sec-bugs, and the trigger was removed rather than the rule excluded), the fenced parse with an
+echoed line-head trimmed, first-line/more-lines) and the gated engine
+(no key → nothing sent; consent declined → nothing sent; prose →
+refused out loud; empty → its own verdict) carry eight tests and three
+mutants dead by name. Same laws as the two bars before it: listeners
+installed only while a ghost is armed and removed with it, the send on
+its own lane, the ghost armed on the EDT only if the caret is still
+where the request left it. Walk-proven in the assembled app against
+the real API: the CODE consent dialog named exactly what would travel
+(264 characters, the file, its language, the question); after Send the
+completion for `const subtotal = ` appeared as gray ghost text on the
+line — `this.items.reduce((sum, item) => …` — with the caret still at
+12:22; Tab inserted all three lines (the reduce, the discounted return,
+the closing brace) as one undo unit and ⌘Z removed them whole; a click
+elsewhere dismissed a fresh ghost with the document untouched; and on
+the final cluster ⌥⌘G itself painted a fresh ghost from the caret. The
+walk paid three times before that: the first ghost never painted (the layer
+was fixed-size), the first chord never reached the action (the D/A/O
+notation), and a probe cluster — not a guess — settled each. The lens
+moves R4 to PARTIAL: the on-demand lane is shipped; an opt-in always-on
+lane stays recorded, not built.
+
 ## [2.60.0] - 2026-09-02
 
 The competitive lens, R7 closed: **sticky scroll**. The declarations

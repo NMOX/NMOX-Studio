@@ -73,7 +73,16 @@ lives on the git chip — staged diff only, its own git.diff consent
 kind, truncation confessed, an editable draft with Copy, and git
 commit stays the user's hand.
 
-### R4 — "No ghost-text inline completion." — OPEN BY POSITION
+### R4 — "No ghost-text inline completion." — PARTIAL (on-demand ghost text SHIPPED v2.61.0; always-on stays OPEN BY POSITION)
+
+**Delivered (v2.61.0):** Complete with ORACLE — ⌥⌘G sends the code
+around the caret once (clipped window, the CODE consent, keychain key)
+and shows the single-fenced reply as VIRTUAL gray text via the
+platform's own `virtual-text-prepend` highlight attribute (decompiled
+from editor-lib2's view factory); Tab inserts as one undo unit; typing,
+Backspace, a caret move or a click dismisses; the document untouched
+until Tab. Every word of the
+position below still holds: the gesture is the gate.
 
 **The honest state:** true, and deliberate for now. Always-on
 completion streams keystrokes to a network service; the house law is
