@@ -21,7 +21,30 @@ colon, so "position-area: top le" offered nothing for the second
 keyword of a two-keyword property; the walk now crosses earlier
 keyword tokens and stops at ; { } so it never leaves the declaration.
 Both mutants dead by name (drop-the-@-branch → topLevelAtRules,
-whitespace-only-walk → secondKeywordCompletes). The LEARN kind
+whitespace-only-walk → secondKeywordCompletes).
+
+The walk of those two fixes then found the release's real bug, and it
+was never about CSS: **a second Ctrl+Space wiped every NMOX completion
+item, in every provider**. Both fixes showed "No suggestions" in the
+assembled app while their tests passed on identical strings; a probe
+cluster proved the provider WAS queried and the pure core answered
+correctly — on the auto-popup's query, whose popup then rendered the
+right item — and that the explicit Ctrl+Space arrived as queryType 9.
+Decompiled from the platform's CompletionImpl: a Ctrl+Space while a
+popup is showing re-queries as COMPLETION_ALL ("show all"), and an
+empty type-1 result is auto-upgraded the same way. All eleven NMOX
+providers (JS, CSS, HTML, Angular templates, polyglot keywords, class
+names, design tokens, env keys, import maps, the CSS futures) gated
+createTask on queryType != COMPLETION_QUERY_TYPE, so that press
+dropped our items at once while the platform's own survived — a bug
+older than most of the providers, invisible to every walk that pressed
+the chord exactly once. The gate is now the bit mask
+(queryType & COMPLETION_QUERY_TYPE) == 0 at all eleven sites, and
+CompletionAllQueryGateTest makes it a build law twice over: the
+source law names any provider carrying the equality shape, and the
+behavioral law drives every provider's real createTask — 9 must be
+answered exactly like 1, 2 stays refused — so a new provider fails
+either way. The LEARN kind
 verified CLEAN under the same lenses: precedence pinned both ways,
 every kind-keyed switch carries a default, the count gate's sixth doc
 home (docs/tutorials/) recorded. Docs truth rides along: CLAUDE.md's
