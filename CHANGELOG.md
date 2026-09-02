@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.60.0] - 2026-09-02
+
+The competitive lens, R7 closed: **sticky scroll**. The declarations
+you scrolled out of sight — the class and the method enclosing the
+top of the view — stay pinned above the text as up to three rows of
+the source's own lines, in the editor's font, aligned past the gutter;
+click a row to jump there. The rows come from the Navigator's own
+outline (58 file types), so the same names the Structure window shows
+are the ones that stick, and the bar collapses to nothing when nothing
+encloses the top line. The pure core, StickyScope, derives the one
+thing the outline never carried — where an item ENDS — per family and
+honestly: brace families (JS/TS, CSS, Rust, Go and the brace family at
+large) balance the braces from the item's line with the outline's
+comment/template blanking plus a quote-blanking of its own, so a
+function that closed above the viewport is never pinned and a `'{'` in
+a string never counts; indentation families (Python, Nim, YAML) end at
+the last deeper-indented line with blank lines riding along; every
+other family ends where the next same-or-shallower outline item begins.
+Six tests, three mutants dead by name (no-quote-blanking → quotedBraces,
+ends-ignored → enclosingChain, blank-lines-terminate → indentRanges).
+Registration is the v2.59.0 minimap's shape on the other axis — a root
+Editors/SideBar instance, location North, non-scrollable — so EVERY
+editor gets it; View ▸ Sticky Scroll toggles every open editor live.
+Laws from day one: listeners symmetric in addNotify/removeNotify, the
+outline re-extracted through one 200 ms timer on edits (read under
+Document.render, bounded by the outline's own caps), scrolling only
+re-selects the chain from the cached items, accessible name and
+description on the bar. Walk-proven in the assembled app on a
+251-line fixture (a six-method class, then a function whose every line
+carries a '{' inside a string): scrolled into method1, "class
+ShoppingCart {" and "  method1(items) {" pinned above line 11 in the
+editor's font past the gutter; clicking the method row jumped the
+caret to line 3 with the class row still pinned and the method's own
+line on screen, not doubled; the rows followed into method4 and
+method5 as the view moved; View ▸ Sticky Scroll collapsed the bar in
+place (item unchecked while off) and restored it; the standalone
+function pinned as exactly one row over its quoted braces. The
+first screenshot, at the file's top, showed no bar at all — nothing
+enclosed the top line — which is the collapse the design promised.
+
 ## [2.59.0] - 2026-09-02
 
 The competitive lens, R7's first half: **every editor has a minimap**.

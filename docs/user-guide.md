@@ -409,6 +409,12 @@ any MCP client the idiomatic way.
   the strip: rows shrink as the file grows, and past 40,000 lines the
   strip shows an ellipsis rather than reading on. View ▸ Minimap turns
   it off and on for every open editor at once.
+- **Sticky scroll** — the declarations enclosing the top of the view
+  (the class, then the method you scrolled into) stay pinned above the
+  text, up to three rows of the source's own lines; click a row to jump
+  to it. The rows are the Navigator outline's items, so they exist for
+  the same 58 file types; the bar disappears when nothing encloses the
+  top line. View ▸ Sticky Scroll toggles it for every open editor.
 - **Go to Symbol (⌥⇧⌘O**, or Navigate ▸ Go to Symbol…**)** jumps to any
   function, class, rule, or heading in the whole aimed project by
   typing its name — every name the outline can see, in every file, with

@@ -100,7 +100,7 @@ never holding a credential), open-in-Browser per row. Review
 threads/checkout stay honestly open; the list is the daily-driver
 half.
 
-### R7 — "The editor lacks minimap / sticky scroll." — PARTIAL (minimap SHIPPED v2.59.0; sticky scroll OPEN)
+### R7 — "The editor lacks minimap / sticky scroll." — CLOSED (minimap v2.59.0; sticky scroll v2.60.0)
 
 **Evidence:** platform editor surface; both are deep-editor
 investments. Recorded; the walks have never surfaced a user journey
@@ -111,9 +111,14 @@ registration (the error stripe's own shape, decompiled: East,
 non-scrollable, positioned) so EVERY editor gets the silhouette strip;
 pure MinimapModel (fit-never-scroll rows, 120-column bar cap, 40k-line
 bounded shape) mutation-pinned; click/drag scrolls; View ▸ Minimap
-toggles live. Sticky scroll stays open: it needs the outline's
-structure per mime painted as a pinned header, a deeper editor
-investment that earns its own unit.
+toggles live.
+
+**Delivered (v2.60.0):** sticky scroll — the same side-bar SPI on the
+North axis; pure StickyScope derives item END lines per family (brace
+balance with quote-blanking; indentation; next-item) from the
+outline's (line, depth) items, so the pinned rows are exactly the
+Structure window's names; mutation-pinned ×3; View ▸ Sticky Scroll
+toggles live. R7 is closed on both halves.
 
 ## The rule this exercise proved
 

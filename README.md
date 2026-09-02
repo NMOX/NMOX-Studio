@@ -18,8 +18,8 @@ Reason-style **Task Rack**. Every task — install, build, test, serve, lint,
 deploy — is a hardware-styled device with knobs, LEDs, and patch cables; wire a
 FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
 **87-grammar polyglot editor** with LSP, project-wide Go to Symbol
-(⌥⇧⌘O), a minimap beside every editor, and zero-setup JS/TS/Chrome
-debugging,
+(⌥⇧⌘O), a minimap and sticky scroll on every editor, and zero-setup
+JS/TS/Chrome debugging,
 **Ask ORACLE** — select code in any language and hold an AI conversation about
 it, say what to change and approve the rewrite in a before/after preview, or
 have your staged diff drafted into a commit message

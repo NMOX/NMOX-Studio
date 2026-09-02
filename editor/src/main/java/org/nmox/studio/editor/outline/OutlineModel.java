@@ -78,6 +78,11 @@ public final class OutlineModel {
         };
     }
 
+    /** The extractor family for a mime, for consumers outside this package (sticky scroll's range rules). */
+    public static String familyOf(String mime) {
+        return family(mime);
+    }
+
     static String family(String mime) {
         return switch (mime) {
             case "text/javascript", "text/typescript", "text/jsx", "text/tsx",

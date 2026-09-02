@@ -43,6 +43,15 @@
                 <attr name="scrollable" boolvalue="false"/>
                 <attr name="position" intvalue="6900"/>
             </file>
+            <!-- v2.60.0 sticky scroll: a North, non-scrollable side bar on
+                 EVERY editor; the pinned rows sit directly above the text. -->
+            <file name="org-nmox-studio-editor-sticky-StickyScrollSideBarFactory.instance">
+                <attr name="instanceClass" stringvalue="org.nmox.studio.editor.sticky.StickyScrollSideBarFactory"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.SideBarFactory"/>
+                <attr name="location" stringvalue="North"/>
+                <attr name="scrollable" boolvalue="false"/>
+                <attr name="position" intvalue="9000"/>
+            </file>
         </folder>
         <folder name="text">
             <folder name="x-ng-template">
