@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.55.0] - 2026-09-01
+
+The Agent Port becomes the best MCP server for developers, not just a
+correct one — the difference an agent framework feels: it can TRUST
+and PARSE the port without reading our docs. Three things ship, all
+still READ-ONLY BY CONSTRUCTION (the ledger gate holds). **Structured
+output**: every tool now returns BOTH its human text AND a typed
+structuredContent object validated by a declared outputSchema, so a
+programmatic agent reads {"servers":[{"url":…,"kind":"WEB"}]} instead
+of scraping prose — the structured shape is the single source of truth
+and the text is rendered from it (pure Texts), so the two can never
+disagree. **Protocol-level trust**: every tool carries a title,
+input/output schemas, and the readOnlyHint:true annotation (with
+destructiveHint:false, idempotentHint:true, openWorldHint:false) — the
+arc's read-only guarantee stated WHERE the spec puts it, so an agent
+framework trusts the safety from the protocol, not our word.
+**Parameterized + one-shot**: diagnostics takes an optional "file"
+argument (substring filter, with an empty-match reading honestly
+distinct from "clean"), and a new ide_context tool folds project +
+servers + last failure + diagnostic count into ONE call so an agent
+orients in a single round-trip (six tools now). tools/call passes
+params.arguments to the handler (empty object when absent, never
+null). Four mutants dead by name (readOnlyHint→false → toolsListAnnotated,
+drop-structuredContent → toolsCallStructured, ignore-arguments →
+toolsCallStructured, filter-ignored → diagnosticsFilter); the older
+protocol/security/ledger laws all held. Walk-proven live in the
+assembled app: tools/list returned readOnlyHint:true + input/output
+schemas across all six tools (diagnostics declaring its file arg);
+ide_context answered in one call with both a text summary and typed
+structuredContent (project NMOX, serverCount 0, diagnosticCount 0);
+rack_devices returned a structured devices array; and diagnostics
+with a file argument reached the handler and read "No findings match
+that filter" (filter key present) distinct from the no-arg "clean".
+
 ## [2.54.0] - 2026-09-01
 
 Futures bet F4 lands, READ-ONLY BY CONSTRUCTION — **the Agent Port
@@ -15613,6 +15647,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.55.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.54.0...v2.55.0
 [2.54.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.53.0...v2.54.0
 [2.53.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.52.0...v2.53.0
 [2.52.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.51.0...v2.52.0

@@ -29,7 +29,10 @@ class AgentPortSecurityTest {
     @BeforeEach
     void start() throws Exception {
         McpTools tools = new McpTools(List.of(
-                new Tool("project_state", "the aimed project", () -> "Project: demo")));
+                new Tool("project_state", "Project state", "the aimed project",
+                        McpTools.objectSchema(new org.json.JSONObject()),
+                        McpTools.objectSchema(new org.json.JSONObject()),
+                        args -> new McpTools.ToolResult("Project: demo", null))));
         port = AgentPort.start(tools, "9.9.9");
     }
 

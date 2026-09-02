@@ -370,7 +370,10 @@ off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the
 dialog. It is strictly read-only: nothing an agent asks can run a
 command or change a file. Stop it with one click; it also dies when
-the IDE quits.
+the IDE quits. Agents get typed, structured
+answers (not just text) and can start with the `ide_context` tool for
+a one-call overview; every tool is annotated read-only so a well-behaved
+agent knows it can call them freely.
 
 ## 5. The editor
 
