@@ -29,7 +29,14 @@ params.arguments to the handler (empty object when absent, never
 null). Four mutants dead by name (readOnlyHint→false → toolsListAnnotated,
 drop-structuredContent → toolsCallStructured, ignore-arguments →
 toolsCallStructured, filter-ignored → diagnosticsFilter); the older
-protocol/security/ledger laws all held.
+protocol/security/ledger laws all held. Walk-proven live in the
+assembled app: tools/list returned readOnlyHint:true + input/output
+schemas across all six tools (diagnostics declaring its file arg);
+ide_context answered in one call with both a text summary and typed
+structuredContent (project NMOX, serverCount 0, diagnosticCount 0);
+rack_devices returned a structured devices array; and diagnostics
+with a file argument reached the handler and read "No findings match
+that filter" (filter key present) distinct from the no-arg "clean".
 
 ## [2.54.0] - 2026-09-01
 
