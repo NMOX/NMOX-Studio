@@ -27,7 +27,8 @@ import org.openide.util.RequestProcessor;
 /**
  * Complete with ORACLE (⌥⌘G or the editor popup): sends the code around
  * the caret — after the CODE consent, key from the keychain — and shows
- * the reply as ghost text; Tab inserts it, Escape dismisses it.
+ * the reply as ghost text; Tab inserts it, typing or moving the caret
+ * dismisses it.
  *
  * <p>The gesture IS the gate: nothing leaves the machine until the chord
  * is pressed, each press is one bounded send (6,000 chars before the
@@ -40,10 +41,11 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "#CTL_CompleteWithOracle", lazy = true)
 @ActionReferences({
     @ActionReference(path = "Editors/Popup", position = 1957),
-    // ⌥⌘G — a LETTER on purpose: ⌥⌘/ (the first draft) never fired on macOS,
-    // measured twice on the walk (the harness and System Events both), because
-    // Option changes the key char of punctuation before the keymap sees it
-    @ActionReference(path = "Shortcuts", name = "DO-G")
+    // ⌥⌘G is "DA-G": in NetBeans keystroke notation D is ⌘ on macOS and A is
+    // ⌥, while O is ⌃ — the first draft's "DO-G" bound ⌃⌘G and the walk's
+    // probe proved the chord never reached actionPerformed (only the popup
+    // did). The chord also lives in every Keymaps profile (layer.xml).
+    @ActionReference(path = "Shortcuts", name = "DA-G")
 })
 @Messages("CTL_CompleteWithOracle=Complete with ORACLE")
 public final class CompleteWithOracleAction implements ActionListener {

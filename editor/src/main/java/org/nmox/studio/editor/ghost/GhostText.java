@@ -1,8 +1,6 @@
 package org.nmox.studio.editor.ghost;
 
 import java.awt.Color;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.event.CaretEvent;
@@ -23,7 +21,7 @@ import org.openide.awt.StatusDisplayer;
 
 /**
  * The ghost: an ORACLE completion shown as virtual gray text at the caret
- * until Tab inserts it or anything else dismisses it.
+ * until Tab inserts it or any edit, caret move or click dismisses it.
  *
  * <p>Rendering rides the platform's own virtual-text mechanism, decompiled
  * from editor-lib2: a highlight carrying the {@code virtual-text-prepend}
@@ -34,10 +32,10 @@ import org.openide.awt.StatusDisplayer;
  * inserted whole on Tab). The document is never touched until Tab — a
  * ghost that was never accepted leaves no undo step and no edit.
  *
- * <p>Dismissal is total and symmetric: Tab accepts, Escape dismisses,
- * and any caret move, document change or focus change dismisses too; the
- * key, caret and document listeners are installed only while a ghost is
- * armed and removed with it (the v1.44.0 symmetry law).
+ * <p>Dismissal is total and symmetric: Tab accepts; any caret move or
+ * document change dismisses; the key, caret and document listeners are
+ * installed only while a ghost is armed and removed with it (the v1.44.0
+ * symmetry law).
  */
 public final class GhostText {
 
@@ -61,24 +59,13 @@ public final class GhostText {
             }
         }
     };
-    /**
-     * Escape never reaches a KeyListener inside a docked TopComponent — the
-     * window system consumes it first (the v1.205.0 law, re-measured on this
-     * unit's walk) — so dismissal rides a KeyEventDispatcher, which runs
-     * ahead of the component, installed only while a ghost is armed.
-     */
-    private final KeyEventDispatcher escape = this::onEscape;
-
-    private boolean onEscape(KeyEvent e) {
-        if (insertion != null && e.getID() == KeyEvent.KEY_PRESSED
-                && e.getKeyCode() == KeyEvent.VK_ESCAPE
-                && e.getComponent() == component) {
-            e.consume();
-            dismiss("Completion dismissed.");
-            return true;
-        }
-        return false;
-    }
+    // Escape is deliberately NOT a dismiss key: inside a docked TopComponent
+    // the window system's own KeyEventDispatcher consumes it before any
+    // component listener OR a later-registered dispatcher sees it (the
+    // v1.205.0 law, re-measured on this unit's walk with a probe — zero
+    // Escape events reached a dispatcher added at arm time). Dismissal is
+    // therefore what the editor cannot swallow: any edit, a caret move,
+    // a click — and Tab accepts.
     private final CaretListener caret = new CaretListener() {
         @Override
         public void caretUpdate(CaretEvent e) {
@@ -147,10 +134,9 @@ public final class GhostText {
         component.addKeyListener(keys);
         component.addCaretListener(caret);
         doc.addDocumentListener(edits);
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(escape);
         StatusDisplayer.getDefault().setStatusText(
                 "ORACLE completion — Tab inserts" + (more > 0 ? " all " + (more + 1) + " lines" : "")
-                + ", Escape dismisses.");
+                + "; typing or moving the caret dismisses.");
     }
 
     /** Whether a ghost is armed on this pane. */
@@ -200,7 +186,6 @@ public final class GhostText {
         insertion = null;
         offset = -1;
         bag.clear();
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(escape);
         component.removeKeyListener(keys);
         component.removeCaretListener(caret);
         Document doc = component.getDocument();

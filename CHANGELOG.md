@@ -19,10 +19,16 @@ the prompt says so — after the same CODE consent Ask and Edit earn
 (the same data classes travel, so no new consent is invented), with the
 key from the keychain and wiped after use; the reply, exactly one
 fenced block holding only the text to insert, appears as gray VIRTUAL
-text at the caret. Tab inserts it as one undo unit; Escape, a caret
-move, any edit, or a click dismisses it — the document is never
-touched until Tab, so a ghost never accepted leaves no edit and no undo
-step. Rendering is the platform's own, decompiled not guessed:
+text at the caret. Tab inserts it as one undo unit; typing, Backspace,
+a caret move, or a click dismisses it — the document is never touched
+until Tab, so a ghost never accepted leaves no edit and no undo step.
+(Escape is deliberately not the dismiss key: inside a docked
+TopComponent the window system consumes it before any listener or
+later-registered dispatcher sees it — the v1.205.0 law, re-measured
+here with a probe.) The chord is "DA-G" in the platform's notation:
+D is ⌘ on macOS and A is ⌥, while O is ⌃ — the first draft's "DO-G"
+bound ⌃⌘G and the walk's probe proved only the popup ever reached the
+action until the letter changed. Rendering is the platform's own, decompiled not guessed:
 editor-lib2's HighlightsViewFactory wraps any highlight carrying the
 `virtual-text-prepend` attribute in a PrependedTextView — the mechanism
 the platform's inline hints paint with — so the ghost is a

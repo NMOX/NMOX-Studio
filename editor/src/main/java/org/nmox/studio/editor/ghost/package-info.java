@@ -7,8 +7,8 @@
  * earns the CODE consent, sends once through the rack's
  * {@code OracleCompleteEngine}, and hands the insertion to
  * {@link org.nmox.studio.editor.ghost.GhostText}, which shows it as virtual
- * gray text at the caret until Tab inserts it or anything else dismisses
- * it. The pure halves — the capped request, the prompt, the fenced-reply
+ * gray text at the caret until Tab inserts it or an edit, caret move or
+ * click dismisses it. The pure halves — the capped request, the prompt, the fenced-reply
  * parse, the prefix trim — are {@code org.nmox.studio.rack.engine.OracleComplete}
  * beside its Ask/Edit siblings.
  *

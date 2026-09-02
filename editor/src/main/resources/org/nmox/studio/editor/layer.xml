@@ -627,33 +627,32 @@
          since v0.1; unpositioned entries already sorted last) and makes
          it specified. Attribute-only merge: the instance itself still
          comes from the html module. -->
-    <!-- v2.61.0 Complete with ORACLE ⌥⌘G — the chord lives in every keymap
-         profile (the v2.3.0 parity law); a Shortcuts-folder reference alone
-         never fired in the walk (Keymaps shadows are the mechanism that
-         works, ui/layer.xml's Tests-window precedent). -->
+    <!-- v2.61.0 Complete with ORACLE ⌥⌘G = "DA-G" (D is ⌘ on macOS, A is ⌥;
+         O would be ⌃) — the chord lives in every keymap profile (the v2.3.0
+         parity law), ui/layer.xml's Tests-window precedent. -->
     <folder name="Keymaps">
         <folder name="NetBeans">
-            <file name="DO-G.shadow">
+            <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithOracleAction.instance"/>
             </file>
         </folder>
         <folder name="Eclipse">
-            <file name="DO-G.shadow">
+            <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithOracleAction.instance"/>
             </file>
         </folder>
         <folder name="Emacs">
-            <file name="DO-G.shadow">
+            <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithOracleAction.instance"/>
             </file>
         </folder>
         <folder name="Idea">
-            <file name="DO-G.shadow">
+            <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithOracleAction.instance"/>
             </file>
         </folder>
         <folder name="NetBeans55">
-            <file name="DO-G.shadow">
+            <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithOracleAction.instance"/>
             </file>
         </folder>

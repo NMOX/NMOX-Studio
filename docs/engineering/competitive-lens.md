@@ -79,8 +79,9 @@ commit stays the user's hand.
 around the caret once (clipped window, the CODE consent, keychain key)
 and shows the single-fenced reply as VIRTUAL gray text via the
 platform's own `virtual-text-prepend` highlight attribute (decompiled
-from editor-lib2's view factory); Tab inserts as one undo unit, anything
-else dismisses, the document untouched until Tab. Every word of the
+from editor-lib2's view factory); Tab inserts as one undo unit; typing,
+Backspace, a caret move or a click dismisses; the document untouched
+until Tab. Every word of the
 position below still holds: the gesture is the gate.
 
 **The honest state:** true, and deliberate for now. Always-on

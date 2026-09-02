@@ -336,8 +336,10 @@ instruction ever leave the machine.
 **Complete with ORACLE**) and the code around the caret is sent once
 — 6,000 characters before it, 1,500 after, clipped from the far ends
 — after the same consent Ask and Edit use. The reply appears as gray
-ghost text at the caret: **Tab** inserts it (one undo unit), **Escape**
-dismisses it, and so does moving the caret, typing, or clicking. A
+ghost text at the caret: **Tab** inserts it (one undo unit); typing,
+Backspace, moving the caret, or clicking dismisses it (Escape is
+swallowed by the window system inside a docked editor, so it is not
+the dismiss key). A
 multi-line completion shows its first line with "… +N lines"; Tab
 inserts all of it. Nothing touches your file until Tab. There is no
 always-on stream: no keystroke ever leaves the machine on its own, and
