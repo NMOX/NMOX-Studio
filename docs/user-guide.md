@@ -362,6 +362,9 @@ nothing is ever posted); **Checkout…** runs `gh pr checkout` in the
 aimed repo after two guards: a tree with modified or staged files is
 refused out loud (untracked files alone are fine — git leaves them in
 place), then a confirm names the PR and branch with No as the default.
+If `gh` itself fails after staging files (it does on a shallow clone),
+the attempt's leftovers are reset and the tree is as it was — the
+status line says so beside gh's own reason.
 No `gh`, not signed in, or not a GitHub repo? The refusal tells you
 exactly which.
 

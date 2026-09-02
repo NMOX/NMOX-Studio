@@ -29,8 +29,26 @@ names the PR and branch (Enter = No, the v1.98.0 idiom); the chip
 refreshes to the new branch afterwards. Every spawn sits behind the
 chip's mayRunProcess (the v1.40.0 boot law stated at each site) and
 the spawn ledger's classification of the chip now says exactly which
-git and gh argv it runs and which guard the checkout wears. Four tests
-over the pure halves, three mutants dead by name.
+git and gh argv it runs and which guard the checkout wears. The walk
+then found gh's own failure mode: on a shallow clone `gh pr checkout`
+stages the PR's files and THEN dies on "cannot set up tracking
+information", leaving a tree the guard had just proved clean with
+twelve staged changes the user never asked for. A failed attempt now
+re-reads the porcelain, and when tracked changes appeared that were
+absent before (the pure leftoversToRestore — untracked files never
+count, they are the user's), a HEAD-preserving `git reset --hard`
+restores exactly the pre-attempt tracked state and the status line
+says so beside gh's own reason. Five tests over the pure halves, four
+mutants dead by name. Walk-proven in the assembled app against this
+release's own pull request as the live target, in scratch clones that
+are never a working tree: Review Threads… answered "No review comments
+on #647." (the honest empty); Checkout… on a clone with one edited
+file refused with "1 uncommitted change in the working tree — commit
+or stash first; a checkout never carries or clobbers your work"; on the
+clean shallow clone gh died on tracking setup and the tree came back to
+±0 with the reflog showing the restoring reset in the same second gh
+fetched; on a full clone the confirm named "#647 (r6-2620)" with No
+highlighted, Yes checked it out, and the chip read "⎇ r6-2620 ±0".
 
 ## [2.61.2] - 2026-09-02
 
