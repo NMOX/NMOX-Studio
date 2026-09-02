@@ -153,7 +153,10 @@ class SpawnSiteTrustLedgerTest {
             Map.entry("EnvironmentDoctor.java",
                 "BLESSED: the fixed probe table's own `tool --version` argv, bounded (v1.106.0)"),
             Map.entry("GitStatusLine.java",
-                "BLESSED: fixed `git` porcelain argv on the aim — no project-controlled tokens (v1.40.0)"),
+                "BLESSED: fixed `git`/`gh` argv on the aim — porcelain (v1.40.0), gh pr list / gh api "
+                + "review comments (read-only, v2.51.0/v2.62.0), and gh pr checkout behind the "
+                + "GitCheckoutGuard clean-tree refusal + a safe-default confirm (v2.62.0); "
+                + "no project-controlled tokens, every spawn behind mayRunProcess"),
             Map.entry("ImagePress.java",
                 "BLESSED: the user's own cwebp with our fixed flags at an explicit gesture (v1.183.0)"),
             Map.entry("NpmService.java",

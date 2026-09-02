@@ -98,7 +98,7 @@ denial — recorded so the position is chosen, not drifted into.
 the Docker panel are adjacent, not remote workspaces. A platform-scale
 investment; recorded honestly, no small unit closes it.
 
-### R6 — "No PR or code-review surface." — PARTIAL v2.51.0
+### R6 — "No PR or code-review surface." — CLOSED (list v2.51.0; review threads + checkout v2.62.0)
 
 **Evidence:** the Team menu is the platform git suite; PRs lived in
 the browser only.
@@ -106,8 +106,10 @@ the browser only.
 **Response:** Pull Requests… on the git chip (v2.51.0) — the list via
 the user's own gh CLI (the auth story that honors keychain-only by
 never holding a credential), open-in-Browser per row. Review
-threads/checkout stay honestly open; the list is the daily-driver
-half.
+threads/checkout stayed honestly open until v2.62.0: Review Threads…
+(gh api pulls/N/comments, pure GitReviews — capped, clipped, rendered
+as text) and Checkout… (gh pr checkout behind the GitCheckoutGuard
+clean-tree refusal and a safe-default confirm). R6 is closed.
 
 ### R7 — "The editor lacks minimap / sticky scroll." — CLOSED (minimap v2.59.0; sticky scroll v2.60.0)
 

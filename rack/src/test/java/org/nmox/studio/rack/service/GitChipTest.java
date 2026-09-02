@@ -127,18 +127,24 @@ class GitChipTest {
                 "src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
                 StandardCharsets.UTF_8);
 
-        // exactly the LAWFUL spawn sites: the status refresh (1) and the
-        // commit-message draft's stat+diff pair (2, v2.50.0) — a new
-        // site fails here until it takes the guard below
+        // exactly the LAWFUL spawn sites: the status refresh (1), the
+        // commit-message draft's stat+diff pair (2, v2.50.0), gh pr list
+        // (1, v2.51.0), and v2.62.0's review threads (gh api, 1) + checkout
+        // (git status + gh pr checkout + the failed-attempt porcelain re-read
+        // and reset --hard, 4; porcelain() is a private helper reached only
+        // from the guarded checkoutPull) — a new site fails here until it
+        // takes the guard below
         assertThat(source.split("runBounded", -1).length - 1)
                 .as("only the enumerated process launch sites")
-                .isEqualTo(4);
+                .isEqualTo(9);
 
         // and every spawning method opens with the boot guard, before
         // any process code
         for (String sig : new String[] {"private void refreshCount()",
                 "private void draftCommitMessage()",
-                "private void showPullRequests()"}) {
+                "private void showPullRequests()",
+                "private void showReviewThreads(",
+                "private void checkoutPull("}) {
             String body = method(source, sig);
             assertThat(body).as(sig).contains("if (!chip.mayRunProcess())");
             assertThat(body.indexOf("mayRunProcess"))

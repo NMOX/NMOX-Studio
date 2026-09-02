@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.62.0] - 2026-09-02
+
+The competitive lens, R6 closed: **pull requests get their review half**.
+Pull Requests… on the git chip had listed the repo's open PRs through
+the user's own gh and opened one in the Browser; the lens recorded
+review threads and checkout as the honestly-open half. Both ship on the
+same dialog. **Review Threads…** reads the selected PR's review comments
+(gh api on the repo's pulls/N/comments — fixed argv, bounded, the
+user's own login and nothing stored), parsed by the pure GitReviews —
+at most 200 comments, each body clipped at 2,000 characters with an
+honest marker, a comment on an outdated diff keeping its original line
+— and rendered as TEXT in a text area, path:line then author and date
+then the body, so a body that begins with <html> stays characters (the
+v1.306.0 html-render class, honored before it could bite). Nothing is
+posted: the surface is read-only by construction. **Checkout…** runs
+gh pr checkout N in the aimed repo — the one verb on the chip that
+moves the working tree — behind two guards in order: the pure
+GitCheckoutGuard refuses a tree with modified or staged files out loud
+("N uncommitted changes — commit or stash first; a checkout never
+carries or clobbers your work") while untracked files alone are
+allowed because git leaves them in place, then a safe-default confirm
+names the PR and branch (Enter = No, the v1.98.0 idiom); the chip
+refreshes to the new branch afterwards. Every spawn sits behind the
+chip's mayRunProcess (the v1.40.0 boot law stated at each site) and
+the spawn ledger's classification of the chip now says exactly which
+git and gh argv it runs and which guard the checkout wears. The walk
+then found gh's own failure mode: on a shallow clone `gh pr checkout`
+stages the PR's files and THEN dies on "cannot set up tracking
+information", leaving a tree the guard had just proved clean with
+twelve staged changes the user never asked for. A failed attempt now
+re-reads the porcelain, and when tracked changes appeared that were
+absent before (the pure leftoversToRestore — untracked files never
+count, they are the user's), a HEAD-preserving `git reset --hard`
+restores exactly the pre-attempt tracked state and the status line
+says so beside gh's own reason. Five tests over the pure halves, four
+mutants dead by name. Walk-proven in the assembled app against this
+release's own pull request as the live target, in scratch clones that
+are never a working tree: Review Threads… answered "No review comments
+on #647." (the honest empty); Checkout… on a clone with one edited
+file refused with "1 uncommitted change in the working tree — commit
+or stash first; a checkout never carries or clobbers your work"; on the
+clean shallow clone gh died on tracking setup and the tree came back to
+±0 with the reflog showing the restoring reset in the same second gh
+fetched; on a full clone the confirm named "#647 (r6-2620)" with No
+highlighted, Yes checked it out, and the chip read "⎇ r6-2620 ±0".
+
 ## [2.61.2] - 2026-09-02
 
 Docs truth (docs only): docs/engineering/plan.md — the read-this-first

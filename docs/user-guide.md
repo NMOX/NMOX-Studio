@@ -356,8 +356,17 @@ committer. Nothing staged? It says so and sends nothing.
 **Pull requests, from the same chip.** **Pull Requests…** lists the
 repo's open PRs using your own `gh` CLI — your login, your config; the
 IDE never stores a forge token. Select one and **Open in Browser**
-shows it in the in-app Browser. No `gh`, not signed in, or not a
-GitHub repo? The refusal tells you exactly which.
+shows it in the in-app Browser; **Review Threads…** shows its review
+comments as plain text (path:line, author, date, body — read-only,
+nothing is ever posted); **Checkout…** runs `gh pr checkout` in the
+aimed repo after two guards: a tree with modified or staged files is
+refused out loud (untracked files alone are fine — git leaves them in
+place), then a confirm names the PR and branch with No as the default.
+If `gh` itself fails after staging files (it does on a shallow clone),
+the attempt's leftovers are reset and the tree is as it was — the
+status line says so beside gh's own reason.
+No `gh`, not signed in, or not a GitHub repo? The refusal tells you
+exactly which.
 
 **The web that's coming is already typed here.** JavaScript completion
 knows `Temporal`, `navigator.gpu` (WebGPU), `document.startViewTransition`,
