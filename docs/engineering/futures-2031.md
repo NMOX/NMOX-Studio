@@ -51,10 +51,10 @@ scroll-driven animations, field-sizing, interpolate-size ABSENT — the
 v1.231.0 "current" reading held for the old properties and not for the
 2031 ones). CssFutures completes the 23 absent properties with their
 meanings, their keyword values, and the three at-rules, across the
-stylesheet family and the markup family's style regions. Honest
-limits: the platform checker may still warn on them (ledger 71), and
-value functions on platform-known properties (`anchor()` inside
-`top:`) are the recorded follow-on.
+stylesheet family and the markup family's style regions. `anchor()`/`anchor-size()` complete as
+values on the spec's inset and sizing properties — the one deliberate
+reach onto platform-known properties. Honest limit: the platform
+checker may still warn on the new names (ledger 71).
 
 ### F3 — Import maps make the CDN-less ESM app normal. — SHIPPED v2.53.0
 

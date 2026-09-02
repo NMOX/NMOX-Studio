@@ -26,8 +26,14 @@ it. Pinned honest: the catalog can never duplicate a platform-known
 name (the control terms asserted absent), and the platform's legacy
 checker may still WARN on these properties — ledger 71 records that
 silencing it is externally blocked three ways; the completion is the
-half this product owns. Value functions on platform-known properties
-(anchor() inside top:) recorded as the follow-on. Three mutants by
+half this product owns. And the one reach onto the
+platform's own properties, because it is how anchor positioning is
+actually written: after the colon of an inset or sizing property
+(top/right/bottom/left/inset*, width/height/min-*/max-*/block-size/
+inline-size — the spec's host list, nothing else) the popup offers
+anchor( and anchor-size( while the platform keeps every other value
+of those properties (mutant: drop the host fallthrough →
+anchorFunctionsOnHosts). Three mutants by
 name (any-property-values → valueContext, drop-the-;-boundary →
 propertyPositions, boundary-admits-colon → propertyRefusals) — and a
 fourth SURVIVED and was deleted: a "colon since the boundary" guard
