@@ -47,7 +47,10 @@ public class CssVarCompletionProvider implements CompletionProvider {
 
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
-        if (queryType != COMPLETION_QUERY_TYPE) {
+        // COMPLETION (1) or COMPLETION_ALL (9): a second Ctrl+Space while the
+        // popup shows re-queries as ALL, and an equality gate dropped every
+        // NMOX item on that press (the v2.58.1 walk find, all 11 providers)
+        if ((queryType & COMPLETION_QUERY_TYPE) == 0) {
             return null;
         }
         return new AsyncCompletionTask(new Query(), component);
