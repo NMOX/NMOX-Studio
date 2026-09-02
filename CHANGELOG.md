@@ -12,7 +12,7 @@ completion" as OPEN BY POSITION: an always-on stream sends keystrokes
 to a network service, and the standing law is no network without a
 gesture, each disclosure kind earning its own consent, every send
 bounded and named. This unit keeps every word of that law and still
-gives the editor the gesture a rival exploits: ⌥⌘/ (or Complete with
+gives the editor the gesture a rival exploits: ⌥⌘G (or Complete with
 ORACLE in the editor popup) sends the code around the caret ONCE —
 6,000 characters before it, 1,500 after, clipped from the far ends and
 the prompt says so — after the same CODE consent Ask and Edit earn

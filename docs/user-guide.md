@@ -332,7 +332,7 @@ never patched blind. Same consent, same key, same disclosure as Ask
 ORACLE: only the selection, the file's name, its language, and your
 instruction ever leave the machine.
 
-**Let ORACLE complete at the caret.** Press **⌥⌘/** (or right-click ▸
+**Let ORACLE complete at the caret.** Press **⌥⌘G** (or right-click ▸
 **Complete with ORACLE**) and the code around the caret is sent once
 — 6,000 characters before it, 1,500 after, clipped from the far ends
 — after the same consent Ask and Edit use. The reply appears as gray

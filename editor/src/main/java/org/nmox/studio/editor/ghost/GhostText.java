@@ -1,6 +1,8 @@
 package org.nmox.studio.editor.ghost;
 
 import java.awt.Color;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.event.CaretEvent;
@@ -56,12 +58,27 @@ public final class GhostText {
             if (e.getKeyCode() == KeyEvent.VK_TAB && e.getModifiersEx() == 0) {
                 e.consume();
                 accept();
-            } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                e.consume();
-                dismiss("Completion dismissed.");
             }
         }
     };
+    /**
+     * Escape never reaches a KeyListener inside a docked TopComponent — the
+     * window system consumes it first (the v1.205.0 law, re-measured on this
+     * unit's walk) — so dismissal rides a KeyEventDispatcher, which runs
+     * ahead of the component, installed only while a ghost is armed.
+     */
+    private final KeyEventDispatcher escape = this::onEscape;
+
+    private boolean onEscape(KeyEvent e) {
+        if (insertion != null && e.getID() == KeyEvent.KEY_PRESSED
+                && e.getKeyCode() == KeyEvent.VK_ESCAPE
+                && e.getComponent() == component) {
+            e.consume();
+            dismiss("Completion dismissed.");
+            return true;
+        }
+        return false;
+    }
     private final CaretListener caret = new CaretListener() {
         @Override
         public void caretUpdate(CaretEvent e) {
@@ -130,6 +147,7 @@ public final class GhostText {
         component.addKeyListener(keys);
         component.addCaretListener(caret);
         doc.addDocumentListener(edits);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(escape);
         StatusDisplayer.getDefault().setStatusText(
                 "ORACLE completion — Tab inserts" + (more > 0 ? " all " + (more + 1) + " lines" : "")
                 + ", Escape dismisses.");
@@ -182,6 +200,7 @@ public final class GhostText {
         insertion = null;
         offset = -1;
         bag.clear();
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(escape);
         component.removeKeyListener(keys);
         component.removeCaretListener(caret);
         Document doc = component.getDocument();
@@ -205,8 +224,13 @@ public final class GhostText {
         return n;
     }
 
-    /** One ghost layer per editor pane, every mime (root registration). */
-    @MimeRegistration(mimeType = "", service = HighlightsLayerFactory.class, position = 560)
+    /**
+     * One ghost layer per editor pane, every mime (root registration). No
+     * position on purpose: the root folder's platform rows are unpositioned,
+     * and a lone positioned row makes the platform warn on every boot for
+     * every mime (the v2.28.0 quieter-boot law, measured on the first walk).
+     */
+    @MimeRegistration(mimeType = "", service = HighlightsLayerFactory.class)
     public static final class Factory implements HighlightsLayerFactory {
         @Override
         public HighlightsLayer[] createLayers(Context context) {
@@ -214,8 +238,12 @@ public final class GhostText {
             JTextComponent component = context.getComponent();
             GhostText ghost = new GhostText(component, bag);
             component.putClientProperty(KEY, ghost);
+            // fixedSize=FALSE is load-bearing: a fixed-size layer is merged
+            // as a colors-only pass and its attributes never reach the view
+            // factory that honors virtual-text-prepend (the probe walk armed
+            // a ghost at the right offset and nothing painted until this)
             return new HighlightsLayer[] {
-                HighlightsLayer.create("nmox-ghost-text", ZOrder.SHOW_OFF_RACK.forPosition(560), true, bag)
+                HighlightsLayer.create("nmox-ghost-text", ZOrder.SHOW_OFF_RACK.forPosition(560), false, bag)
             };
         }
     }

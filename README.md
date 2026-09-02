@@ -22,7 +22,7 @@ FAIL jack to a trigger and your lanes coordinate themselves. Around the rack: a
 JS/TS/Chrome debugging,
 **Ask ORACLE** — select code in any language and hold an AI conversation about
 it, say what to change and approve the rewrite in a before/after preview, or
-have your staged diff drafted into a commit message, or press ⌥⌘/ for
+have your staged diff drafted into a commit message, or press ⌥⌘G for
 a completion at the caret shown as ghost text (Tab inserts)
 (consent-gated, keys keychain-only), a **Tests window** that lists every test
 before anything runs, **five studios** (Block, API, DB,

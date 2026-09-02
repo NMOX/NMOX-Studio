@@ -25,7 +25,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
- * Complete with ORACLE (⌥⌘/ or the editor popup): sends the code around
+ * Complete with ORACLE (⌥⌘G or the editor popup): sends the code around
  * the caret — after the CODE consent, key from the keychain — and shows
  * the reply as ghost text; Tab inserts it, Escape dismisses it.
  *
@@ -40,7 +40,10 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "#CTL_CompleteWithOracle", lazy = true)
 @ActionReferences({
     @ActionReference(path = "Editors/Popup", position = 1957),
-    @ActionReference(path = "Shortcuts", name = "DO-SLASH")
+    // ⌥⌘G — a LETTER on purpose: ⌥⌘/ (the first draft) never fired on macOS,
+    // measured twice on the walk (the harness and System Events both), because
+    // Option changes the key char of punctuation before the keymap sees it
+    @ActionReference(path = "Shortcuts", name = "DO-G")
 })
 @Messages("CTL_CompleteWithOracle=Complete with ORACLE")
 public final class CompleteWithOracleAction implements ActionListener {

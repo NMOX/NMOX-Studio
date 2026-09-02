@@ -3,7 +3,7 @@
  *
  * <p><b>What lives here.</b>
  * {@link org.nmox.studio.editor.ghost.CompleteWithOracleAction} is the
- * gesture (⌥⌘/ or the editor popup): it gathers the code around the caret,
+ * gesture (⌥⌘G or the editor popup): it gathers the code around the caret,
  * earns the CODE consent, sends once through the rack's
  * {@code OracleCompleteEngine}, and hands the insertion to
  * {@link org.nmox.studio.editor.ghost.GhostText}, which shows it as virtual

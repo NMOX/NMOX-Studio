@@ -75,7 +75,7 @@ commit stays the user's hand.
 
 ### R4 — "No ghost-text inline completion." — PARTIAL (on-demand ghost text SHIPPED v2.61.0; always-on stays OPEN BY POSITION)
 
-**Delivered (v2.61.0):** Complete with ORACLE — ⌥⌘/ sends the code
+**Delivered (v2.61.0):** Complete with ORACLE — ⌥⌘G sends the code
 around the caret once (clipped window, the CODE consent, keychain key)
 and shows the single-fenced reply as VIRTUAL gray text via the
 platform's own `virtual-text-prepend` highlight attribute (decompiled
