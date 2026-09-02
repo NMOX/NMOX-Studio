@@ -362,6 +362,14 @@ carries a `<script type="importmap">`, ⌘-click a bare specifier like
 ⌃Space inside the import quotes to list every mapped specifier with
 its target. Relative paths stay out of it — they never needed the map.
 
+**The newest CSS completes too.** Anchor positioning (`anchor-name`,
+`position-area`, `position-try-fallbacks`…), view transitions,
+scroll-driven animations (`animation-timeline`, `animation-range`…),
+`field-sizing`, `interpolate-size`, and `@starting-style` all complete
+at a property position with a one-line meaning beside each — and after
+the colon, that property's keyword values. The platform's own
+checker may still underline them as unknown; the popup is right.
+
 **Point an agent at your IDE.** Tools ▸ Agent Port (MCP)… starts a
 local server that an AI agent (anything that speaks MCP) can connect
 to and READ your project's live state — what's aimed, what's serving,
