@@ -33,7 +33,12 @@ carries a last-resort -32603 net pinned by McpTransportGateTest at the
 source, because defense in depth no behavior can reach today must not
 silently vanish tomorrow. Docs truth rides along: CLAUDE.md's status
 headline moves v2.38.4 → v2.56.0 with the three-lens run and nine
-version-history entries (v2.48.0–v2.56.0).
+version-history entries (v2.48.0–v2.56.0). Walk-proven the way the
+v2.55.0 walk should have been: against the live IDE, every tool's
+structuredContent AND every resource body validated CLEAN against the
+LIVE outputSchema fetched from tools/list (all six tools, both
+diagnostics branches, all six nmox:// URIs) — the contract holds where
+it is served, not just in the fixture.
 
 ## [2.56.0] - 2026-09-02
 
