@@ -25,7 +25,13 @@ tool'"'"'s text — so the read-only law is INHERITED, not re-argued, and
 McpReadOnlyLedgerTest (which walks the whole mcp package) covers them
 by construction. 9 tests, three mutants dead by name (uri-ignored →
 unknownResourceMisses, skip-the-fold → promptsGetFoldsState,
-drop-capability → initializeDeclaresAllPrimitives).
+drop-capability → initializeDeclaresAllPrimitives). Walk-proven
+against the live IDE: initialize declared resources+tools+prompts; all
+six resources listed; nmox://context returned live structured JSON
+(aimed at NMOX) with an unknown URI answered -32002; both prompts
+folded real state (review_setup embedded "Project: NMOX, 0 servers");
+all six tools carried readOnlyHint with output schemas; Stop left the
+port refusing connections.
 
 ## [2.55.0] - 2026-09-01
 
