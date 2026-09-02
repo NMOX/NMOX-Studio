@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.56.1] - 2026-09-02
+
+The MCP arc's same-day review (v2.55.0 + v2.56.0 under hostile lenses)
+— two finds fixed, one structural. **The output schemas were not
+contracts**: four of six declared additionalProperties:false while the
+builders emitted undeclared keys (ide_context emitted eight properties
+against four declared; last_failure omitted exitCode and errorLines;
+diagnostics omitted its filter), and three array properties were
+declared as a bare [] — not a JSON Schema at all. The v2.55.0 walk had
+asserted "has outputSchema: True" — presence, never validation — and a
+validating MCP client (the spec says clients SHOULD) would have
+rejected every structured result. Every schema is now the exact
+contract of its builder (shared sub-schemas so ide_context can never
+drift from live_servers/last_failure), and McpSchemaContractTest
+validates each builder's REAL output against its declared schema with
+a small structural validator (null-unions, closed objects, required,
+items, enum) — any future drift fails the build by name (mutant: drop
+exitCode from the schema → lastFailure + ideContext both die). **A
+throw could become silence**: resources/read and prompts/get invoked
+tool handlers with no guard (only tools/call caught RuntimeException),
+and the transport had no net either — so a live-state throw via the
+resource path made httpserver DROP the connection, the one answer this
+port must never give under the every-refusal-speaks law. Both protocol
+paths now answer JSON-RPC -32603 with the message (mutant: remove the
+resources/read catch → resourcesReadGuardsThrow dies), and AgentPort
+carries a last-resort -32603 net pinned by McpTransportGateTest at the
+source, because defense in depth no behavior can reach today must not
+silently vanish tomorrow. Docs truth rides along: CLAUDE.md's status
+headline moves v2.38.4 → v2.56.0 with the three-lens run and nine
+version-history entries (v2.48.0–v2.56.0). Walk-proven the way the
+v2.55.0 walk should have been: against the live IDE, every tool's
+structuredContent AND every resource body validated CLEAN against the
+LIVE outputSchema fetched from tools/list (all six tools, both
+diagnostics branches, all six nmox:// URIs) — the contract holds where
+it is served, not just in the fixture.
+
 ## [2.56.0] - 2026-09-02
 
 The Agent Port becomes a COMPLETE MCP server — all three read-only
@@ -15677,6 +15713,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.56.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.0...v2.56.1
 [2.56.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.55.0...v2.56.0
 [2.55.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.54.0...v2.55.0
 [2.54.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.53.0...v2.54.0
