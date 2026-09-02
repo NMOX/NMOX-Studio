@@ -63,6 +63,37 @@ public final class McpProtocol {
                 }
                 return toolsCall(id, params, tools).toString();
             }
+            case "resources/list" ->
+                result = McpResources.list(tools);
+            case "resources/read" -> {
+                if (notification) {
+                    return null;
+                }
+                String uri = params == null ? null : params.optString("uri", null);
+                if (uri == null) {
+                    return error(id, -32602, "resources/read needs params.uri").toString();
+                }
+                JSONObject read = McpResources.read(uri, tools);
+                // the spec's dedicated code for an unknown resource URI
+                return read == null
+                        ? error(id, -32002, "Resource not found: " + uri).toString()
+                        : response(id, read).toString();
+            }
+            case "prompts/list" ->
+                result = McpPrompts.list();
+            case "prompts/get" -> {
+                if (notification) {
+                    return null;
+                }
+                String name = params == null ? null : params.optString("name", null);
+                if (name == null) {
+                    return error(id, -32602, "prompts/get needs params.name").toString();
+                }
+                JSONObject prompt = McpPrompts.get(name, tools);
+                return prompt == null
+                        ? error(id, -32602, "Unknown prompt: " + name).toString()
+                        : response(id, prompt).toString();
+            }
             default -> {
                 if (notification) {
                     return null; // unknown notifications are ignored, per spec
@@ -76,8 +107,13 @@ public final class McpProtocol {
     private static JSONObject initialize(String productVersion) {
         return new JSONObject()
                 .put("protocolVersion", PROTOCOL_VERSION)
+                // all three read-only primitives declared: an agent
+                // framework knows to browse resources and offer prompts,
+                // not just call tools (v2.56.0)
                 .put("capabilities", new JSONObject()
-                        .put("tools", new JSONObject()))
+                        .put("tools", new JSONObject())
+                        .put("resources", new JSONObject())
+                        .put("prompts", new JSONObject()))
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)
                         .put("version", productVersion))
