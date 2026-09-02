@@ -1,12 +1,13 @@
 # The Plan
 
-*Currency addendum 2026-09-02, at v2.61.1, after two lenses and one
-editor day (v2.44.0–v2.61.1, ~18 releases in five days). **The
+*Currency addendum 2026-09-02, at v2.62.1, after two lenses and one
+editor day (v2.44.0–v2.62.1, ~19 releases in five days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
-R7 minimap AND sticky scroll, R4 on-demand ghost text — six of seven
-relief items closed or partial, R5 remote dev honestly open); **the
+R7 minimap AND sticky scroll, R4 on-demand ghost text, R6 review
+threads + checkout (v2.62.0) — six of seven relief items closed or
+partial, R5 remote dev honestly open); **the
 futures lens** (docs/engineering/futures-2031.md — six bets each paying
 today: WIT citizenship, the everyday-2031 JS and CSS vocabularies,
 import maps, and F4 the Agent Port — a complete read-only MCP server
