@@ -245,6 +245,10 @@
                         <exclude>**/MinimapSideBar*.class</exclude>
                         <exclude>**/MinimapSideBarFactory*.class</exclude>
                         <exclude>**/ToggleMinimapAction*.class</exclude>
+                        <!-- v2.60.0 sticky scroll: Swing bar + factory + menu presenter; StickyScope stays on the surface -->
+                        <exclude>**/StickyScrollSideBar*.class</exclude>
+                        <exclude>**/StickyScrollSideBarFactory*.class</exclude>
+                        <exclude>**/ToggleStickyScrollAction*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
