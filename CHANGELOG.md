@@ -27,7 +27,15 @@ name (the control terms asserted absent), and the platform's legacy
 checker may still WARN on these properties — ledger 71 records that
 silencing it is externally blocked three ways; the completion is the
 half this product owns. Value functions on platform-known properties
-(anchor() inside top:) recorded as the follow-on.
+(anchor() inside top:) recorded as the follow-on. Three mutants by
+name (any-property-values → valueContext, drop-the-;-boundary →
+propertyPositions, boundary-admits-colon → propertyRefusals) — and a
+fourth SURVIVED and was deleted: a "colon since the boundary" guard
+meant to refuse value positions could never fire, because the span
+between the boundary and the typed partial is whitespace by
+construction, so the boundary rule alone is the law; a guard that
+cannot fire is misleading code, and the equivalent-mutant protocol
+says delete it and pin the real rule.
 
 ## [2.56.1] - 2026-09-02
 
