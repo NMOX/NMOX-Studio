@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.59.0] - 2026-09-02
+
+The competitive lens, R7's first half: **every editor has a minimap**.
+The lens had recorded "the editor lacks minimap / sticky scroll" as a
+rival's relief and ranked it below the daily-driver gestures; with
+those shipped (R1–R3, R6), the editor chrome is the next thing an
+outsider would exploit. A silhouette strip now sits beside every
+editor's scrollbar — one bar per line from its indent to its length,
+the visible band drawn over it — and a click or drag scrolls the editor
+to the line under the mouse. View ▸ Minimap turns it off and on for
+every open editor at once, no reopen. Recon before the code: the
+platform's editor side-bar SPI, decompiled from the error stripe's own
+registration (root Editors/SideBar, location East, scrollable false,
+an int position — ours at 6900, just inside the stripe's 7000), which is
+why one registration reaches EVERY editor, platform-owned mimes
+included. The rules are a pure MinimapModel with a test per rule: rows
+are 2 px until the document is taller than the strip, then the WHOLE
+document scales to fit (a minimap that scrolls is a second scrollbar);
+bars cap at 120 columns so one long line cannot flatten the silhouette;
+only the first 40,000 lines are shaped, the strip says so with an
+ellipsis (the bounded-read law — a generated monster gets a truncated
+silhouette, not a frozen paint thread). Three mutants dead by name
+(rows-never-scale → rowHeightScales, no-line-cap → truncatedAtCap,
+no-column-cap → bars). The strip carries the house laws from day one:
+listeners symmetric in addNotify/removeNotify, edits coalesced by one
+120 ms timer, the shape read under Document.render, painting from the
+last shape so a paint during an edit storm touches no document,
+accessible name and description on the widget. Walk-proven in the
+assembled app on a 400-line indented fixture: the silhouette showed
+the blocks' indentation with the visible band over the first forty
+lines, sitting just inside the platform's error stripe; a click
+two-thirds down the strip centered the editor on line 280 exactly as
+the row geometry predicts, a drag to the bottom rode to the end of
+the file with the band following; View ▸ Minimap collapsed every strip
+in place (no reopen) and restored it, the menu item reading unchecked
+while off; a line typed into the file reshaped the silhouette. Sticky
+scroll stays OPEN in the lens, recorded rather than half-built.
+
 ## [2.58.1] - 2026-09-02
 
 The day shift's second review — hostile lenses over v2.57.0's CSS

@@ -241,6 +241,10 @@
                              0.66 vs 0.67 on exactly these two classes (the
                              v2.49.0 class) — answered by the seam, never the floor -->
                         <exclude>**/CssFuturesCompletionProvider*.class</exclude>
+                        <!-- v2.59.0 the minimap: Swing strip + platform factory + menu presenter; MinimapModel stays on the surface -->
+                        <exclude>**/MinimapSideBar*.class</exclude>
+                        <exclude>**/MinimapSideBarFactory*.class</exclude>
+                        <exclude>**/ToggleMinimapAction*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
