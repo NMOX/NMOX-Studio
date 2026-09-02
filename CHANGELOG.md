@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.62.1] - 2026-09-02
+
+The day close (docs only): two proofs recorded. **The update-center
+gauntlet across the day's nine releases PASSED** — a stock v2.57.0
+portable, on a throwaway userdir, updated itself in-app through the
+real update center to 2.62.0: the platform chose all eleven module
+updates, downloaded them, and its own updater installed them at exit
+(update_tracking written for every module); all eleven cluster jars
+byte-verified at spec version 2.62.0; a clean boot with a fresh cache
+turned on every module at 2.62.0 with zero SEVERE. Two harness truths
+recorded with it: the update run outlived a fifteen-minute leash
+(the download-and-install phase, not a hang — the jars landed), and a
+reboot started in the same second the updater wrote the jars loaded
+the OLD modules from the still-fresh cache, so the first "clean boot"
+proved nothing until it was re-run after the updater's tracking write
+with a fresh cachedir — a gauntlet must wait for the updater, not for
+the process. **The shipped-app walk of the installed 2.61.1 cask**
+covered the three editor units in one instance: the minimap strip,
+⌥⌘G through the consent to a ghost and Tab inserting three lines, and
+sticky scroll pinning "class ShoppingCart {" and "method1(items) {".
+The plan's currency line moves to v2.62.1 with R6 recorded closed.
+
 ## [2.62.0] - 2026-09-02
 
 The competitive lens, R6 closed: **pull requests get their review half**.
