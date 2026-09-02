@@ -54,6 +54,8 @@ class CssFuturesTest {
         assertThat(vc).isNotNull();
         assertThat(vc.property().values()).containsExactly("anchor(", "anchor-size(");
         assertThat(vc.partial()).isEqualTo("anc");
+        // provenance is the host's own name, never a placeholder
+        assertThat(vc.property().name()).isEqualTo("top");
         assertThat(CssFutures.valueContextAt(".a { width: ").property().values())
                 .contains("anchor-size(");
         // a non-host platform property stays the platform's alone

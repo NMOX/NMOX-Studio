@@ -117,9 +117,6 @@ public final class CssFutures {
 
     static final List<String> ANCHOR_FUNCTIONS = List.of("anchor(", "anchor-size(");
 
-    private static final Property ANCHOR_HOST_VALUES = new Property("(anchor host)",
-            ANCHOR_FUNCTIONS, "position against an anchor");
-
     /** At-rules the platform's database predates. */
     static final List<String> AT_RULES = List.of(
             "@starting-style", "@position-try", "@view-transition");
@@ -209,7 +206,12 @@ public final class CssFutures {
         }
         // a platform-known inset/sizing property: offer the anchor
         // functions only (the platform owns the rest of its values)
+        // the context carries the HOST'S OWN name so the popup's
+        // provenance column reads "top", not a placeholder (the walk's
+        // find: "(anchor host)" beside every item)
         return ANCHOR_HOSTS.contains(name)
-                ? new ValueContext(ANCHOR_HOST_VALUES, partial) : null;
+                ? new ValueContext(new Property(name, ANCHOR_FUNCTIONS,
+                        "position against an anchor"), partial)
+                : null;
     }
 }
