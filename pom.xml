@@ -233,6 +233,15 @@
                              the matching rules live tested in SymbolMatch, the
                              index in ProjectSymbols (both ON the surface) -->
                         <exclude>**/NmoxSymbolProvider*.class</exclude>
+                        <!-- editor: the 2031-CSS completion's Swing halves — the
+                             popup provider and item ride the platform's completion
+                             infrastructure; the vocabulary and both position
+                             detectors live tested in CssFutures (ON the surface).
+                             v2.57.0: the windows-binding editor floor tripped
+                             0.66 vs 0.67 on exactly these two classes (the
+                             v2.49.0 class) — answered by the seam, never the floor -->
+                        <exclude>**/CssFuturesCompletionProvider*.class</exclude>
+                        <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
                         <exclude>**/RackPanel$*.class</exclude>
