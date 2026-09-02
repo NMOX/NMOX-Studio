@@ -61,7 +61,8 @@ code. *Designers*: color swatches on every literal **and through
 `var()` tokens**, project-wide token completion with swatch icons,
 ⌘-click from usage to declaration, a click-to-pick color chooser, live
 viewport presets, save-to-reload. *Engineers*: a 53-device task rack, PREFLIGHT
-ship gates, CI export, six-engine DB Studio, multi-cloud infra designer,
+ship gates, CI export, pull requests on the git chip (list, review
+threads, checkout — through your own `gh`), six-engine DB Studio, multi-cloud infra designer,
 and an update center that has upgraded itself across every release since
 v1.51.
 

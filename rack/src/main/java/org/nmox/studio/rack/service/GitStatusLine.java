@@ -251,25 +251,181 @@ public class GitStatusLine implements StatusLineElementProvider {
             javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(table);
             scroll.setPreferredSize(new java.awt.Dimension(560, 260));
             Object open = "Open in Browser";
+            Object threads = "Review Threads\u2026";
+            Object checkout = "Checkout\u2026";
             Object close = "Close";
             org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(
                     scroll, "Open pull requests",
                     org.openide.NotifyDescriptor.DEFAULT_OPTION,
                     org.openide.NotifyDescriptor.PLAIN_MESSAGE,
-                    new Object[]{open, close}, open);
-            if (org.openide.DialogDisplayer.getDefault().notify(nd) == open) {
-                int row = table.getSelectedRow();
-                if (row >= 0) {
-                    String url = pulls.get(row).url();
-                    org.nmox.studio.core.spi.EmbeddedBrowser browser =
-                            org.nmox.studio.core.spi.EmbeddedBrowser.find();
-                    if (url.isBlank()
-                            || browser == null || !browser.open(url)) {
-                        org.openide.awt.StatusDisplayer.getDefault()
-                                .setStatusText("Could not open the PR in the Browser.");
-                    }
-                }
+                    new Object[]{open, threads, checkout, close}, open);
+            Object choice = org.openide.DialogDisplayer.getDefault().notify(nd);
+            int row = table.getSelectedRow();
+            if (row < 0 || choice == close) {
+                return;
             }
+            var pull = pulls.get(row);
+            if (choice == open) {
+                String url = pull.url();
+                org.nmox.studio.core.spi.EmbeddedBrowser browser =
+                        org.nmox.studio.core.spi.EmbeddedBrowser.find();
+                if (url.isBlank()
+                        || browser == null || !browser.open(url)) {
+                    org.openide.awt.StatusDisplayer.getDefault()
+                            .setStatusText("Could not open the PR in the Browser.");
+                }
+            } else if (choice == threads) {
+                showReviewThreads(pull);
+            } else if (choice == checkout) {
+                checkoutPull(pull);
+            }
+        }
+
+        /**
+         * Review Threads (v2.62.0): the PR's review comments through the
+         * user's own gh — fixed argv, bounded, parsed by the pure
+         * GitReviews (cap + body clip), shown as TEXT in a text area so a
+         * body that begins with {@code <html>} stays characters (the
+         * v1.306.0 html-render class). Read-only: nothing is posted.
+         */
+        private void showReviewThreads(org.nmox.studio.rack.engine.GitPulls.Pull pull) {
+            // the v1.40.0 boot law, stated structurally at every spawn
+            if (!chip.mayRunProcess()) {
+                return;
+            }
+            java.io.File dir = RackService.getDefault().getRack().getProjectDir();
+            if (dir == null) {
+                status("Aim a project first.");
+                return;
+            }
+            RP.post(() -> {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult r;
+                try {
+                    r = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                            java.util.List.of("gh", "api",
+                                    "repos/{owner}/{repo}/pulls/" + pull.number() + "/comments"),
+                            dir, java.time.Duration.ofSeconds(15));
+                } catch (java.io.IOException ex) {
+                    status("GitHub CLI (gh) not found \u2014 install it "
+                            + "(brew install gh) and run gh auth login.");
+                    return;
+                }
+                if (r.exitCode() != 0) {
+                    String first = (r.stderr() == null ? "" : r.stderr())
+                            .lines().findFirst().orElse("exit " + r.exitCode());
+                    status("gh could not read the review threads \u2014 " + first);
+                    return;
+                }
+                java.util.List<org.nmox.studio.rack.engine.GitReviews.Comment> comments;
+                try {
+                    comments = org.nmox.studio.rack.engine.GitReviews.parse(r.stdout());
+                } catch (RuntimeException ex) {
+                    status("gh returned something that is not a comment list.");
+                    return;
+                }
+                if (comments.isEmpty()) {
+                    status("No review comments on #" + pull.number() + ".");
+                    return;
+                }
+                boolean truncated = org.nmox.studio.rack.engine.GitReviews.truncated(r.stdout());
+                String text = org.nmox.studio.rack.engine.GitReviews.render(comments)
+                        + (truncated ? "\n\n[showing the first "
+                                + org.nmox.studio.rack.engine.GitReviews.LIMIT + " comments]" : "");
+                java.awt.EventQueue.invokeLater(() -> {
+                    javax.swing.JTextArea area = new javax.swing.JTextArea(text, 24, 80);
+                    area.setEditable(false);
+                    area.setLineWrap(true);
+                    area.setWrapStyleWord(true);
+                    area.getAccessibleContext().setAccessibleName(
+                            "Review threads of pull request " + pull.number());
+                    org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor(
+                            new javax.swing.JScrollPane(area),
+                            "Review threads \u2014 #" + pull.number() + " " + pull.title(),
+                            org.openide.NotifyDescriptor.DEFAULT_OPTION,
+                            org.openide.NotifyDescriptor.PLAIN_MESSAGE,
+                            new Object[]{"Close"}, "Close"));
+                });
+            });
+        }
+
+        /**
+         * Checkout (v2.62.0): {@code gh pr checkout N} in the aimed repo —
+         * the one verb on the chip that MOVES the working tree, so it sits
+         * behind two guards in order: the pure GitCheckoutGuard refuses a
+         * tree with uncommitted changes out loud (a checkout never carries
+         * or clobbers work — untracked files alone are allowed, git leaves
+         * them in place), then a safe-default confirm names the branch
+         * (Enter = No, the v1.98.0 idiom). The chip refreshes afterwards.
+         */
+        private void checkoutPull(org.nmox.studio.rack.engine.GitPulls.Pull pull) {
+            // the v1.40.0 boot law, stated structurally at every spawn
+            if (!chip.mayRunProcess()) {
+                return;
+            }
+            java.io.File dir = RackService.getDefault().getRack().getProjectDir();
+            if (dir == null) {
+                status("Aim a project first.");
+                return;
+            }
+            RP.post(() -> {
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult st;
+                try {
+                    st = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                            java.util.List.of("git", "status", "--porcelain"),
+                            dir, java.time.Duration.ofSeconds(10));
+                } catch (java.io.IOException ex) {
+                    status("git not found \u2014 nothing was checked out.");
+                    return;
+                }
+                if (st.exitCode() != 0) {
+                    status("git status failed \u2014 nothing was checked out.");
+                    return;
+                }
+                org.nmox.studio.rack.engine.GitCheckoutGuard.Verdict verdict =
+                        org.nmox.studio.rack.engine.GitCheckoutGuard.judge(st.stdout());
+                if (!verdict.allowed()) {
+                    status("Checkout refused: " + verdict.reason());
+                    return;
+                }
+                java.awt.EventQueue.invokeLater(() -> {
+                    String note = verdict.reason().isBlank() ? "" : "\n\n" + verdict.reason();
+                    org.openide.NotifyDescriptor confirm = new org.openide.NotifyDescriptor(
+                            "Check out pull request #" + pull.number() + " (" + pull.branch()
+                            + ") into the aimed project?\nThe working tree switches branches;"
+                            + " nothing is committed or pushed." + note,
+                            "Checkout pull request",
+                            org.openide.NotifyDescriptor.YES_NO_OPTION,
+                            org.openide.NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[]{org.openide.NotifyDescriptor.YES_OPTION,
+                                org.openide.NotifyDescriptor.NO_OPTION},
+                            org.openide.NotifyDescriptor.NO_OPTION);
+                    if (org.openide.DialogDisplayer.getDefault().notify(confirm)
+                            != org.openide.NotifyDescriptor.YES_OPTION) {
+                        status("Checkout cancelled \u2014 nothing changed.");
+                        return;
+                    }
+                    RP.post(() -> {
+                        org.nmox.studio.core.process.ProcessSupport.BoundedResult co;
+                        try {
+                            co = org.nmox.studio.core.process.ProcessSupport.runBounded(
+                                    java.util.List.of("gh", "pr", "checkout",
+                                            String.valueOf(pull.number())),
+                                    dir, java.time.Duration.ofSeconds(60));
+                        } catch (java.io.IOException ex) {
+                            status("GitHub CLI (gh) not found \u2014 nothing was checked out.");
+                            return;
+                        }
+                        if (co.exitCode() != 0) {
+                            String first = (co.stderr() == null ? "" : co.stderr())
+                                    .lines().findFirst().orElse("exit " + co.exitCode());
+                            status("gh could not check out #" + pull.number() + " \u2014 " + first);
+                            return;
+                        }
+                        status("Checked out #" + pull.number() + " (" + pull.branch() + ").");
+                        java.awt.EventQueue.invokeLater(() -> refreshCount());
+                    });
+                });
+            });
         }
 
         /**
