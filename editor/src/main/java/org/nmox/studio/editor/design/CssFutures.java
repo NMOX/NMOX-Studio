@@ -140,13 +140,14 @@ public final class CssFutures {
         if (cursor == 0) {
             return null; // top of file: a selector, not a declaration
         }
+        // the boundary rule IS the whole law: a value position's
+        // preceding non-space character is never { or ; (it is the colon,
+        // a value token, or a quote), so values are refused here. A
+        // second "colon since the boundary" guard was proven an
+        // EQUIVALENT MUTANT in v2.57.0 — the span between boundary and
+        // partial is whitespace by construction — and deleted.
         char boundary = before.charAt(cursor - 1);
         if (boundary != '{' && boundary != ';') {
-            return null;
-        }
-        // a colon between the boundary and the caret means we are in a
-        // VALUE — property names are not offered there
-        if (before.indexOf(':', cursor) >= 0) {
             return null;
         }
         return partial;
