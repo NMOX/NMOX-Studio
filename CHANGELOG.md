@@ -35,7 +35,16 @@ meant to refuse value positions could never fire, because the span
 between the boundary and the typed partial is whitespace by
 construction, so the boundary rule alone is the law; a guard that
 cannot fire is misleading code, and the equivalent-mutant protocol
-says delete it and pin the real rule.
+says delete it and pin the real rule. Walk-proven in the assembled
+app on all three legs: at a declaration position "posi" + ⌃Space
+listed the six anchor-positioning properties WITH their meanings,
+coexisting with the platform's own `position` row (no duplicate by
+construction); after `position-area: sp` the popup held exactly the
+five span-* values with the property as provenance; inside an HTML
+<style> block "anch" offered anchor-name/anchor-scope while the same
+prefix typed in the page's <p> prose got no popup at all (the region
+gate). The platform checker's yellow underline on `anchor-name` was
+observed live — the ledger-71 limit, stated where it shows.
 
 ## [2.56.1] - 2026-09-02
 
