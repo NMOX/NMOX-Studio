@@ -129,15 +129,15 @@ public class UpdateCheck implements Runnable {
         return m.find() ? m.group(1) : null;
     }
 
-    /** The branded product version — stamped by the release workflow. */
+    /**
+     * The branded product version — through core.util.ProductVersion,
+     * the ONE reader that can see the platform's branded bundle. The raw
+     * read that lived here from v1.25.0 to v2.66.0 threw from a module
+     * classloader and returned null in every shipped build, so the daily
+     * notifier skipped as "dev" for its whole life (measured v2.67.0).
+     */
     static String currentVersion() {
-        try {
-            return java.util.ResourceBundle
-                    .getBundle("org.netbeans.core.startup.Bundle")
-                    .getString("currentVersion");
-        } catch (RuntimeException missing) {
-            return null;
-        }
+        return org.nmox.studio.core.util.ProductVersion.current();
     }
 
     /** The platform's Plugin Manager action — the in-app update UI. */

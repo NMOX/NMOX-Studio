@@ -84,13 +84,8 @@ public final class ReportProblemAction implements ActionListener {
     }
 
     static String runningVersion() {
-        try {
-            String v = Versions.extract(java.util.ResourceBundle
-                    .getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"));
-            return Versions.isStamped(v) ? v : null;
-        } catch (RuntimeException missing) {
-            return null;
-        }
+        String v = org.nmox.studio.core.util.ProductVersion.number();
+        return org.nmox.studio.core.util.Versions.isStamped(v) ? v : null;
     }
 
     /** The last 64 KB of the userdir's messages.log; empty when absent. */
