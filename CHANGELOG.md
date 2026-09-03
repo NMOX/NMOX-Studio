@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.65.0] - 2026-09-03
+
+Report a Problem… carries the rack's last failed run. A bug report
+that says "the build failed" without the command, the exit code and
+the last error lines costs a round trip; the rack's flight recorder
+already keeps exactly that bounded record for ORACLE (FailureContext:
+device, command, exit code, at most five error lines, duration), so
+the report now includes a **Last failed run** section from the same
+seam — the command in a code span (a backtick in it cannot break the
+markdown), the exit code with its duration, the error lines fenced —
+placed before the log tail, redacted like it (home path to ~, login to
+<user>, credential shapes to [redacted], because a command line can
+carry either). Nothing failed this session → no section, not an empty
+one. A session without the rack (the soft-dependency law) degrades to
+the same report as before. Pure ProblemReport.compose grows the
+section behind an overload; one mutant dead by name (the section
+dropped → lastFailure). No new gesture, no new consent: the report is
+still shown whole and submitted by the user.
 ## [2.64.1] - 2026-09-03
 
 The day-shift review of the product manager's release, hours old.

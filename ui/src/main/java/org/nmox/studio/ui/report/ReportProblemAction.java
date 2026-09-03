@@ -51,10 +51,36 @@ public final class ReportProblemAction implements ActionListener {
             String os = System.getProperty("os.name") + " " + System.getProperty("os.version")
                     + " (" + System.getProperty("os.arch") + ")";
             String java = System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")";
-            String body = ProblemReport.compose(version, os, java, tail);
+            String body = ProblemReport.compose(version, os, java, tail, lastFailure());
             String title = "NMOX Studio " + (version == null ? "dev" : version) + ": ";
             SwingUtilities.invokeLater(() -> dialog(title, body));
         });
+    }
+
+    /**
+     * The rack's last failed run this session, through the same bounded
+     * FailureContext ORACLE explains (command, exit code, at most five
+     * error lines, duration) — redacted like the log tail, since a
+     * command line can carry a path or a token. Null when nothing failed.
+     */
+    static ProblemReport.LastFailure lastFailure() {
+        try {
+            org.nmox.studio.rack.service.RackService rs = org.nmox.studio.rack.service.RackService.getDefault();
+            File dir = rs == null ? null : rs.getRack().getProjectDir();
+            String project = dir == null ? "" : dir.getName();
+            return org.nmox.studio.rack.engine.OracleClient.FailureContext
+                    .fromRecorder(org.nmox.studio.rack.engine.FlightRecorder.getDefault(), project)
+                    .map(f -> new ProblemReport.LastFailure(f.device(),
+                            ProblemReport.redact(f.command(), System.getProperty("user.home"),
+                                    System.getProperty("user.name")),
+                            f.exitCode(),
+                            f.errorLines().stream().map(l -> ProblemReport.redact(l,
+                                    System.getProperty("user.home"), System.getProperty("user.name"))).toList(),
+                            f.durationMs()))
+                    .orElse(null);
+        } catch (RuntimeException | LinkageError unavailable) {
+            return null; // no rack in this session: the report simply has no failed run
+        }
     }
 
     static String runningVersion() {
