@@ -31,6 +31,10 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
         popupPath = "", popupPosition = 90)
 public class NgTemplateGotoDeclaration extends BaseAction {
 
+    // -J-Dorg.nmox.studio.editor.level=FINE lands these in messages.log (v2.63.0: the platform logger, not stderr)
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(NgTemplateGotoDeclaration.class.getName());
+
     public NgTemplateGotoDeclaration() {
         super("ng-goto-declaration");
     }
@@ -42,9 +46,7 @@ public class NgTemplateGotoDeclaration extends BaseAction {
         }
         Document doc = target.getDocument();
         int offset = target.getCaretPosition();
-        if (Boolean.getBoolean("nmox.ng.probe")) {
-            System.err.println("[ng-probe] chord fired at offset " + offset);
-        }
+        LOG.fine(() -> "[ng-probe] chord fired at offset " + offset);
         // a dashed TAG under the caret is a component selector — jump via
         // the project's own selector index (Angular-top arc, 2026-08-11),
         // which works WITHOUT the language service; this is the proven

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.Threads;
 import org.nmox.studio.core.http.CleartextHttp;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.Color;
@@ -115,7 +116,7 @@ public class BeaconDevice extends RackDevice {
             resultLcd.setTextColor(RackStyle.LCD_AMBER);
             resultLcd.setText("CHECKING…");
         });
-        Thread worker = new Thread(() -> {
+        Thread worker = Threads.daemon(() -> {
             boolean reachable = false;
             long days = -1;
             String detail = "";
@@ -154,7 +155,6 @@ public class BeaconDevice extends RackDevice {
             });
             emit(ok ? "ok" : "fail", Signal.trigger(ok));
         }, "nmox-beacon");
-        worker.setDaemon(true);
         worker.start();
     }
 

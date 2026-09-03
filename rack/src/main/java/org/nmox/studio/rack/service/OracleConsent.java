@@ -1,11 +1,13 @@
 package org.nmox.studio.rack.service;
 
 import java.awt.GraphicsEnvironment;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.nmox.studio.rack.engine.OracleClient;
 import org.nmox.studio.rack.engine.OracleClient.FailureContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbPreferences;
 
 /**
  * The ORACLE outward-data-flow consent, its own one-time gate.
@@ -18,7 +20,8 @@ import org.openide.NotifyDescriptor;
  * what leaves the machine — and, just as importantly, what does not.
  *
  * <p>The grant is a preference, not a secret, so it lives in ordinary
- * {@link Preferences} (unlike the API key, which is Keyring-only) — the
+ * {@link Preferences} under the userdir via NbPreferences (unlike the API
+ * key, which is Keyring-only) — the
  * same {@code java.util.prefs} mechanism {@link WorkspaceTrust} uses, so
  * the consent survives a userdir reset and reads cleanly in a headless
  * test JVM. Headless/CI runs auto-allow with no prompt and no persistence,
@@ -28,7 +31,16 @@ import org.openide.NotifyDescriptor;
  */
 public final class OracleConsent {
 
-    private static final Preferences PREFS = Preferences.userNodeForPackage(OracleConsent.class);
+    /**
+     * Userdir-scoped since v2.63.0: NbPreferences lives under the IDE's own
+     * userdir like every platform setting, so a fresh userdir (a reinstall,
+     * a throwaway walk) starts with NO consent — the v1.39.0 global-prefs
+     * blessing covers WorkspaceTrust alone. Grants recorded by earlier
+     * versions in the JVM-global node are carried over ONCE, then removed.
+     */
+    private static final Preferences PREFS = migrated(
+            NbPreferences.forModule(OracleConsent.class),
+            Preferences.userNodeForPackage(OracleConsent.class));
     private static final String GRANTED_KEY = "oracle.external.consent";
     /** The CODE flow's own grant. The failure-flow dialog above promises
      *  "does not send your source files" — so a grant given there can
@@ -36,6 +48,25 @@ public final class OracleConsent {
     private static final String CODE_GRANTED_KEY = "oracle.code.consent";
 
     private OracleConsent() {
+    }
+
+    /**
+     * Copies every key the legacy JVM-global node still holds that the
+     * userdir node lacks, then drops it from the legacy node — a one-time,
+     * additive move: an existing userdir grant always wins.
+     */
+    static Preferences migrated(Preferences target, Preferences legacy) {
+        try {
+            for (String key : legacy.keys()) {
+                if (target.get(key, null) == null) {
+                    target.put(key, legacy.get(key, ""));
+                }
+                legacy.remove(key);
+            }
+        } catch (BackingStoreException | IllegalStateException e) {
+            // the legacy store is unreadable or gone: nothing to carry over
+        }
+        return target;
     }
 
     /** True once the user has agreed to send failure context to the API. */

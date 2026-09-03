@@ -214,7 +214,6 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>org.nmox.studio.rack.model</publicPackage>
                         <publicPackage>org.nmox.studio.rack.devices</publicPackage>
                         <publicPackage>org.nmox.studio.rack.service</publicPackage>
                         <publicPackage>org.nmox.studio.rack.engine</publicPackage>

@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.sass;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -167,7 +168,7 @@ public final class SassCompiler {
         pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
         Process process = pb.start();
         AtomicReference<String> err = new AtomicReference<>("");
-        Thread drain = new Thread(() -> {
+        Thread drain = Threads.daemon(() -> {
             try (InputStream in = process.getErrorStream()) {
                 // 64k of stderr is plenty for an error message; keep
                 // draining to EOF so the child can't pipe-deadlock
@@ -178,7 +179,6 @@ public final class SassCompiler {
                 // process died; the exit code tells the story
             }
         }, "sass-stderr");
-        drain.setDaemon(true);
         drain.start();
         if (!process.waitFor(TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
             ProcessSupport.killTreeAndWait(process, java.time.Duration.ofSeconds(2));

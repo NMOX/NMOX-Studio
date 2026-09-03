@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.site;
 
+import org.nmox.studio.core.util.Threads;
 import com.sun.net.httpserver.HttpServer;
 import java.io.File;
 import java.io.IOException;
@@ -91,8 +92,7 @@ public final class SiteServer {
             }
         });
         server.setExecutor(Executors.newSingleThreadExecutor(r -> {
-            Thread t = new Thread(r, "nmox-site-server");
-            t.setDaemon(true);
+            Thread t = Threads.daemon(r, "nmox-site-server");
             return t;
         }));
         server.start();

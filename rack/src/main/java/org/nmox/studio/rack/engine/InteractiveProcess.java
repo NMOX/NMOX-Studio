@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.engine;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public final class InteractiveProcess {
         InteractiveProcess session = new InteractiveProcess(process);
         session.pump(process.getInputStream(), onOut);
         session.pump(process.getErrorStream(), onErr);
-        Thread waiter = new Thread(() -> {
+        Thread waiter = Threads.daemon(() -> {
             int code;
             try {
                 code = process.waitFor();
@@ -65,7 +66,6 @@ public final class InteractiveProcess {
             session.finished = true;
             onExit.accept(code);
         }, "nmox-repl-wait");
-        waiter.setDaemon(true);
         waiter.start();
         return session;
     }
@@ -74,7 +74,7 @@ public final class InteractiveProcess {
             java.util.logging.Logger.getLogger(InteractiveProcess.class.getName());
 
     private void pump(InputStream stream, Consumer<String> onLine) {
-        Thread t = new Thread(() -> {
+        Thread t = Threads.daemon(() -> {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 String line;
@@ -95,7 +95,6 @@ public final class InteractiveProcess {
                 // the process ended and the pipe closed; the waiter reports exit
             }
         }, "nmox-repl-pump");
-        t.setDaemon(true);
         t.start();
     }
 

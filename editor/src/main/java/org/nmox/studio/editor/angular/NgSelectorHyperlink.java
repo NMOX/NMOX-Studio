@@ -44,6 +44,10 @@ import org.openide.util.RequestProcessor;
         service = HyperlinkProviderExt.class, position = 90)
 public final class NgSelectorHyperlink implements HyperlinkProviderExt {
 
+    // -J-Dorg.nmox.studio.editor.level=FINE lands these in messages.log (v2.63.0: the platform logger, not stderr)
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(NgSelectorHyperlink.class.getName());
+
     private static final RequestProcessor RP =
             new RequestProcessor("nmox-ng-selector-jump", 1);
     private static final int MAX_SCAN_CHARS = 500_000;
@@ -95,9 +99,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
     }
 
     private static void dispatchJump(Document doc, String tag) {
-        if (Boolean.getBoolean("nmox.ng.probe")) {
-            System.err.println("[ng-probe] dispatchJump tag=" + tag);
-        }
+        LOG.fine(() -> "[ng-probe] dispatchJump tag=" + tag);
         File root = projectDirOf(doc);
         RP.post(() -> {
             NgSelectors.Decl found = NgSelectors.find(root, tag);

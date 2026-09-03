@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.debug.dap;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -370,7 +371,7 @@ public final class DapProxy {
     }
 
     private void pump(String name, Socket socket, FrameHandler handler) {
-        Thread t = new Thread(() -> {
+        Thread t = Threads.daemon(() -> {
             boolean peerClosed = false;
             try {
                 InputStream in = socket.getInputStream();
@@ -402,7 +403,6 @@ public final class DapProxy {
                 }
             }
         }, name);
-        t.setDaemon(true);
         t.start();
     }
 

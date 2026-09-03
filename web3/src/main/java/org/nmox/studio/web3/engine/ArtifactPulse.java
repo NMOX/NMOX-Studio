@@ -1,5 +1,7 @@
 package org.nmox.studio.web3.engine;
 
+import org.nmox.studio.core.util.Threads;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -76,7 +78,7 @@ public final class ArtifactPulse {
         }
         running = true;
         long interval = Math.max(200, intervalMs);
-        thread = new Thread(() -> {
+        thread = Threads.daemon(() -> {
             while (running) {
                 tick();
                 try {
@@ -86,7 +88,6 @@ public final class ArtifactPulse {
                 }
             }
         }, "nmox-web3-pulse");
-        thread.setDaemon(true);
         thread.start();
     }
 
