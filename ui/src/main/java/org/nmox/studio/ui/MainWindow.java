@@ -150,9 +150,9 @@ public final class MainWindow extends TopComponent {
             JLabel version = new JLabel(footerText());
             version.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
             version.setForeground(DIM);
-            JButton whatsNew = textButton("What's new ↗", DIM);
-            whatsNew.setToolTipText("Open the release notes on GitHub");
-            whatsNew.addActionListener(e -> browse(UpdateCheck.RELEASES_PAGE));
+            JButton whatsNew = textButton("What's new", DIM);
+            whatsNew.setToolTipText("The release notes for this version, in the product (v2.64.0)");
+            whatsNew.addActionListener(e -> org.nmox.studio.ui.whatsnew.WhatsNew.showCurrent());
             // v1.216.0 (arc review): v1.210.0 declared USER_GUIDE_URL and
             // its changelog said the Welcome screen offers the User Guide
             // — but the button was never built. The constant sat unused
@@ -344,6 +344,8 @@ public final class MainWindow extends TopComponent {
             welcomePanel.refreshRecents();
         }
         aimFollower.showing();
+        // v2.64.0: the first boot after an update shows what changed, once
+        org.nmox.studio.ui.whatsnew.WhatsNew.firstBoot();
     }
 
     @Override
