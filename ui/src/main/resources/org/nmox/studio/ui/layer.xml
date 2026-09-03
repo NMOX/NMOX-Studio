@@ -2,6 +2,16 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Menu">
+        <!-- v2.64.0 the PM walk's find: the platform's own Help entries that
+             survived the v1.11 chrome eviction and now sit one line from ours —
+             "Report Issue" files bugs at Apache NetBeans (the wrong project) and
+             "Keyboard Shortcuts Card" opens NetBeans' PDF of chords this product
+             does not ship. Report a Problem… and Keyboard Shortcuts… are the
+             product's answers; HelpMenuHidesTest keeps both hides. -->
+        <folder name="Help">
+            <file name="org-netbeans-modules-utilities-ReportNBIssueAction.shadow_hidden"/>
+            <file name="shortcuts.xml_hidden"/>
+        </folder>
         <folder name="File">
             <!-- The platform ships its own Open File and New Project menu
                  items; ours (OpenFileAction, NewProjectAction - wired to the

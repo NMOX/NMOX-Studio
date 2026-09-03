@@ -51,12 +51,22 @@ dialog says what it cannot list — editor-kit chords live in the
 editors' keybindings, not the Keymaps folder — and points at the user
 guide for them.
 
-Three pure cores, twelve tests, three mutants dead by name (a fresh
+Three pure cores, thirteen tests, three mutants dead by name (a fresh
 install shown the diff; a redaction pass dropped; O read as ⌥ on
-macOS). Walk-proven in the assembled app in ONE instance: the head
-entry in What's New, a redacted log tail with the home path as ~ in
-the report dialog (Copy only — no issue was opened), and the shortcut
-sheet listing the live chords with ⌥⌘G beside Complete with ORACLE.
+macOS). Proven short of a screen walk, said plainly: the assembled jar
+carries the bundled CHANGELOG and all three Help registrations, and a
+running instance of the build booted with zero SEVERE and zero
+Ordering warnings on the new rows, and the Help menu was read live
+from that instance — which found what no test had: the platform's own
+**Report Issue** (files bugs at Apache NetBeans, the wrong project) and
+**Keyboard Shortcuts Card** (NetBeans' PDF of chords this product does
+not ship) had survived the v1.11 chrome eviction and now sat one line
+from their NMOX answers; both are hidden in the ui layer, with
+HelpMenuHidesTest keeping the hides. What was NOT done this release,
+said plainly: the three dialogs were not driven by hand — the
+background walk harness opens the menus and sees the dialogs but
+cannot press Swing dialog buttons, and the screen-takeover path was
+declined — so the next shipped-app walk owes them.
 
 ## [2.63.0] - 2026-09-03
 
