@@ -26,7 +26,7 @@ class Ledger55GateTest {
     }
 
     @Test
-    @DisplayName("Prettier's timeout kills the process TREE and the drain is a daemon (M2)")
+    @DisplayName("Prettier's timeout kills the process TREE and the drain is a daemon by construction — core.util.Threads (M2; v2.63.0 gate)")
     void prettierTimeoutKillsTree() throws Exception {
         String src = source("src/main/java/org/nmox/studio/editor/format/PrettierFormatter.java");
         int timeout = src.indexOf("if (!process.waitFor(TIMEOUT_MS");
@@ -37,7 +37,7 @@ class Ledger55GateTest {
                 .contains("ProcessSupport.killTreeAndWait(process");
         assertThat(src)
                 .as("the stdout drain must never pin JVM shutdown")
-                .contains("drain.setDaemon(true)");
+                .contains("Thread drain = Threads.daemon(");
         assertThat(src)
                 .as("the drain reads a bounded prefix, then discards to EOF")
                 .contains("readNBytes(OUTPUT_CAP_BYTES + 1)");
