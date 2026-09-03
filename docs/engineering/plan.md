@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-03, at v2.64.0, after two lenses and one
+*Currency addendum 2026-09-03, at v2.67.1, after two lenses and one
 editor day (v2.44.0–v2.62.1, ~19 releases in five days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
@@ -13,7 +13,11 @@ userdir-scoped, nine dead exports withdrawn, the return-type export law);
 **the product manager's pass** (v2.64.0 — What's New in the product
 from the bundled CHANGELOG, Report a Problem… with a redacted bounded
 log tail the user submits, Keyboard Shortcuts… derived from the running
-keymap); **the
+keymap); **the PM passes continued** (v2.64.1 the review — first-boot
+UI belongs on the platform's @OnShowing hook, never a tab's showing;
+v2.65.0 Report a Problem carries the rack's last failed run; v2.66.0 a
+Getting Started column that ticks itself from the product's own
+records, no telemetry); **the
 futures lens** (docs/engineering/futures-2031.md — six bets each paying
 today: WIT citizenship, the everyday-2031 JS and CSS vocabularies,
 import maps, and F4 the Agent Port — a complete read-only MCP server
