@@ -344,8 +344,9 @@ public final class MainWindow extends TopComponent {
             welcomePanel.refreshRecents();
         }
         aimFollower.showing();
-        // v2.64.0: the first boot after an update shows what changed, once
-        org.nmox.studio.ui.whatsnew.WhatsNew.firstBoot();
+        // the first-boot What's New rides the platform's @OnShowing hook
+        // (WhatsNewOnShowing), not this tab: a closed Welcome must not
+        // silence it, and a boot-time showing must not pop it mid-restore
     }
 
     @Override

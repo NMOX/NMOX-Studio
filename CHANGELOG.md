@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.64.1] - 2026-09-03
+
+The day-shift review of the product manager's release, hours old.
+Two finds in the fresh code, fixed. **What's New's first boot lived in
+the wrong place** — Welcome's componentShowing, which fires DURING boot
+(a modal notes dialog could pop under the window-system restore) and
+never fires at all for a user who closed the Welcome tab, so the one
+audience the feature exists for could miss it forever; the rule now
+rides the platform's own @OnShowing hook (WhatsNewOnShowing), which
+runs once the main window is up, and WhatsNewHookTest keeps it there
+and keeps the Welcome call gone. **The shortcut sheet resolved actions
+on a request-processor thread** for no reason — the system filesystem
+is the in-memory layer cache and lazy actions belong on the thread
+that presents them — so the enumeration runs on the EDT (no disk, no
+process). Blessed in writing: Report a Problem's redaction over-reaches
+on prose that happens to read like a credential ("the secret: sauce")
+and that is the side to err on — a hidden log line costs a clarifying
+question, a leaked token costs a rotation. Report a Problem's log read
+verified off the EDT and bounded; ReleaseNotes.since verified against
+a malformed "Unreleased" heading (Versions.compare reads leading digits
+and never throws).
+
 ## [2.64.0] - 2026-09-03
 
 The product manager's wishes (David's ask: "put on the hat of a very

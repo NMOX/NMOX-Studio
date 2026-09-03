@@ -56,7 +56,7 @@ public final class WhatsNew {
     }
 
     /**
-     * The first-boot hook (Welcome's componentShowing, once per session):
+     * The first-boot hook ({@link WhatsNewOnShowing}, once per session):
      * the decision is the pure rule; SHOW opens the dialog with the unseen
      * entries and every path that decides anything records the running
      * version — so the dialog can never re-appear on the next boot.
