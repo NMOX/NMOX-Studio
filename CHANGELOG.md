@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.62.2] - 2026-09-03
+
+Deps housekeeping, the split way (the v2.19.4 / v2.51.0 law): Dependabot's
+maven group (#649) absorbed onto a release branch so the bumps ride the
+full gate with a changelog entry instead of merging raw — the MongoDB
+driver 5.10.0 → 5.11.0 (DB Studio's Mongo backend), maven-compiler-plugin
+3.15.0 → 3.16.0 (the compiler still TARGETS 21 bytecode; the law at the
+property is untouched), snakeyaml 2.6 → 2.7 (API Studio's OpenAPI YAML
+import). Nothing pinned moved: the NetBeans platform, slf4j-api, and
+OpenJFX lines stay exactly where their gates hold them. Full verify green
+on the bumped tree; the bot PR closed as superseded with the reason.
+
 ## [2.62.1] - 2026-09-02
 
 The day close (docs only): two proofs recorded. **The update-center
