@@ -4,6 +4,52 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.63.0] - 2026-09-03
+
+The senior-RCP pass — David's ask, the platform seams read as a
+senior Java developer reads them, then fixed where the evidence held.
+Four changes, two blessings. **Every background thread is a named
+daemon by construction:** twenty-two raw `new Thread(` sites across
+twenty files (pumps, drains, watchers, pollers, thread factories) now
+come through one `core.util.Threads` helper; eight of them showed no
+daemon flag within the statement's first dozen lines, so a chatty
+child or a stuck watcher could keep the JVM alive past the platform's
+exit, and an anonymous `Thread-17` in a thread dump says nothing — the
+two instruments of the v1.33.x boot-hang and v2.15.0 orphan
+investigations. Shutdown hooks are the written exception (they must
+not be daemon) and keep their own line shape; DaemonThreadGateTest
+reads every module's sources and fails the build on any other raw
+thread by file and line, reading a hook statement to its closing
+parenthesis so a name that ends a long lambda still counts (the
+gate's first fixed window falsely named the rack reaper — caught on
+its first run). **ORACLE's consent grants and the remembered model
+depth live under the userdir now,** via NbPreferences like every
+platform setting, instead of the JVM-global java.util.prefs node: a
+fresh userdir — a reinstall, a throwaway walk — starts with NO
+consent, which is what consent means; grants recorded by earlier
+versions are carried over once and dropped from the legacy node, an
+existing userdir value always winning (OraclePrefsMigrationTest).
+WorkspaceTrust stays global by its v1.39.0 blessing. **The Angular
+diagnostics speak through the platform logger** at FINE
+(`-J-Dorg.nmox.studio.editor.level=FINE` lands them in messages.log)
+instead of a property-gated stderr — three sites. **Nine exported
+packages nobody imported are withdrawn** from the public API
+(tools.npm; infra.model and .api; apiclient.model and .api;
+dbstudio.model and .engine; web3.model and .engine — the census read
+every other module's imports): five leaf modules now export nothing,
+the honest surface for modules reached only through Lookup and
+friends. The tenth candidate, rack.model, went out and came back: the
+nbm plugin's runtime-dependency check refused the UI module because
+rack.model types travel as RETURN TYPES of the exported rack services,
+referenced in a friend's bytecode without any import line — an import
+census cannot see that, the build can, and the reason now sits at the
+export. Blessed in writing: the editor actions that resolve
+their target through EditorRegistry.lastFocusedComponent keep the
+idiom under the v2.30.1 documentBelongsTo law; the eight per-instance-
+looking RequestProcessors are already shared statics. Full verify
+green; mutants by name (a planted raw thread, the migration's legacy
+removal, the helper's daemon flag).
+
 ## [2.62.2] - 2026-09-03
 
 Deps housekeeping, the split way (the v2.19.4 / v2.51.0 law): Dependabot's

@@ -214,6 +214,10 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
                     <publicPackages>
+                        <!-- rack.model stays public: its types travel as RETURN TYPES of the
+                             exported services (RackService.getRack() → Rack), so a friend's
+                             bytecode references the package without ever importing it —
+                             the nbm runtime-dependency check named ui for exactly that (v2.63.0) -->
                         <publicPackage>org.nmox.studio.rack.model</publicPackage>
                         <publicPackage>org.nmox.studio.rack.devices</publicPackage>
                         <publicPackage>org.nmox.studio.rack.service</publicPackage>

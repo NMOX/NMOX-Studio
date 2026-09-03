@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.engine;
 
+import org.nmox.studio.core.util.Threads;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -29,8 +30,7 @@ public final class Coalescer<T> {
         this.windowMs = Math.max(0, windowMs);
         this.downstream = downstream;
         ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(1, r -> {
-            Thread t = new Thread(r, "nmox-coalescer");
-            t.setDaemon(true);
+            Thread t = Threads.daemon(r, "nmox-coalescer");
             return t;
         });
         stpe.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);

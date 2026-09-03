@@ -1,5 +1,6 @@
 package org.nmox.studio.core.process;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -214,7 +215,7 @@ public final class ProcessSupport {
 
     private static Thread drain(InputStream stream, StringBuilder into,
             java.util.concurrent.atomic.AtomicBoolean truncated, String name) {
-        Thread t = new Thread(() -> {
+        Thread t = Threads.daemon(() -> {
             try (BufferedReader r = new BufferedReader(
                     new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                 char[] buf = new char[4096];
@@ -240,7 +241,6 @@ public final class ProcessSupport {
                 // pipe closed by the kill path — the drain's job is done
             }
         }, name);
-        t.setDaemon(true);
         t.start();
         return t;
     }

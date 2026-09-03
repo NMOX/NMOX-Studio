@@ -1,5 +1,7 @@
 package org.nmox.studio.web3.ui;
 
+import org.nmox.studio.core.util.Threads;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -1072,8 +1074,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         logsFromBlock = Long.MAX_VALUE;
         updateWatchAddresses();
         watchExec = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "Contract Studio watch");
-            t.setDaemon(true);
+            Thread t = Threads.daemon(r, "Contract Studio watch");
             return t;
         });
         watchExec.scheduleWithFixedDelay(this::watchTick, 0, 2, TimeUnit.SECONDS);

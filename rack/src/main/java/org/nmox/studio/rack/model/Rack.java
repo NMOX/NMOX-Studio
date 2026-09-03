@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.model;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,8 +37,7 @@ public final class Rack {
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final Map<String, String> envOverrides = new ConcurrentHashMap<>();
     private final ExecutorService router = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "nmox-rack-router");
-        t.setDaemon(true);
+        Thread t = Threads.daemon(r, "nmox-rack-router");
         return t;
     });
     /** Cooldown per cable so trigger feedback loops can't run hot. */

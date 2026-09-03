@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.debug.dap;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -74,7 +75,7 @@ public final class JsDebugServer {
         // failure it already knows about.
         AtomicBoolean sawReady = new AtomicBoolean();
         CountDownLatch settled = new CountDownLatch(1);
-        Thread pump = new Thread(() -> {
+        Thread pump = Threads.daemon(() -> {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(
                     p.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
@@ -93,7 +94,6 @@ public final class JsDebugServer {
                 settled.countDown(); // EOF: the adapter is gone, stop waiting
             }
         }, "nmox-jsdebug-pump");
-        pump.setDaemon(true);
         pump.start();
 
         boolean settledInTime;

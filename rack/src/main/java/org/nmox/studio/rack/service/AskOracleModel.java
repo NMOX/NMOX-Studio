@@ -2,6 +2,7 @@ package org.nmox.studio.rack.service;
 
 import java.util.prefs.Preferences;
 import org.nmox.studio.rack.engine.OracleClient;
+import org.openide.util.NbPreferences;
 
 /**
  * The editor Ask's model preference: Fast (Haiku, the default) or Deep
@@ -13,8 +14,11 @@ import org.nmox.studio.rack.engine.OracleClient;
  */
 public final class AskOracleModel {
 
-    private static final Preferences PREFS =
-            Preferences.userNodeForPackage(AskOracleModel.class);
+    // userdir-scoped since v2.63.0 (see OracleConsent.migrated): the remembered
+    // depth belongs to an install, not to the machine's JVM-global prefs
+    private static final Preferences PREFS = OracleConsent.migrated(
+            NbPreferences.forModule(AskOracleModel.class),
+            Preferences.userNodeForPackage(AskOracleModel.class));
     private static final String KEY = "oracle.ask.model";
 
     /** The two offered depths, label → model id. */

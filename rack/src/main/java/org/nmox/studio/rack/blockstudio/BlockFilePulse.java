@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.blockstudio;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 
 /**
@@ -45,7 +46,7 @@ final class BlockFilePulse {
         long interval = Math.max(200, intervalMs);
         // one long-lived sleep loop with its own start/stop lifecycle — a
         // dedicated daemon thread, not a shared-pool slot held for hours
-        thread = new Thread(() -> {
+        thread = Threads.daemon(() -> {
             while (running) {
                 tick();
                 try {
@@ -55,7 +56,6 @@ final class BlockFilePulse {
                 }
             }
         }, "nmox-blocks-pulse");
-        thread.setDaemon(true);
         thread.start();
     }
 

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.blockstudio;
 
+import org.nmox.studio.core.util.Threads;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -51,8 +52,7 @@ final class BlockPreviewServer {
         // daemon threads: an in-process loopback preview must never be the
         // thing keeping the JVM alive (the JDK default executor is non-daemon)
         server.setExecutor(java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
-            Thread t = new Thread(r, "Block Preview");
-            t.setDaemon(true);
+            Thread t = Threads.daemon(r, "Block Preview");
             return t;
         }));
         server.createContext("/", exchange -> {

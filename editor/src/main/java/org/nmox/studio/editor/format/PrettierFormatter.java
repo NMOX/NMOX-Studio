@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.format;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -252,7 +253,7 @@ public final class PrettierFormatter {
         pb.redirectError(ProcessBuilder.Redirect.DISCARD);
         Process process = pb.start();
         AtomicReference<byte[]> output = new AtomicReference<>(new byte[0]);
-        Thread drain = new Thread(() -> {
+        Thread drain = Threads.daemon(() -> {
             try (InputStream in = process.getInputStream()) {
                 // cap+1 so overflow is detectable, then keep draining to EOF
                 // (never applied — see below) so the child can't pipe-deadlock
@@ -261,8 +262,7 @@ public final class PrettierFormatter {
             } catch (IOException ex) {
                 // process died; the exit code tells the story
             }
-        }, "prettier-stdout");
-        drain.setDaemon(true);   // an unbounded read must never pin shutdown
+        }, "prettier-stdout");   // an unbounded read must never pin shutdown
         drain.start();
         try (OutputStream out = process.getOutputStream()) {
             out.write(stdin.getBytes(StandardCharsets.UTF_8));

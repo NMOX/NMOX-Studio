@@ -28,6 +28,10 @@ import org.openide.util.Lookup;
  */
 public final class LanguageServers {
 
+    // -J-Dorg.nmox.studio.editor.level=FINE lands these in messages.log (v2.63.0: the platform logger, not stderr)
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(LanguageServers.class.getName());
+
     private LanguageServers() {
     }
 
@@ -205,11 +209,9 @@ public final class LanguageServers {
         return null;
     }
 
-    /** Diagnostics for the ALS chain, silent unless -Dnmox.ng.probe. */
+    /** Diagnostics for the ALS chain at FINE (-J-Dorg.nmox.studio.editor.level=FINE → messages.log). */
     private static void ngProbe(String msg) {
-        if (Boolean.getBoolean("nmox.ng.probe")) {
-            System.err.println("[ng-probe] AngularServer " + msg);
-        }
+        LOG.fine(() -> "AngularServer " + msg);
     }
 
     private static File projectDir(Lookup lookup) {

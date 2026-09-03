@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,8 +56,7 @@ public class ServingRegistry {
     private final Map<String, Serving> servings = new LinkedHashMap<>();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
     private final ExecutorService notifier = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "nmox-serving-registry");
-        t.setDaemon(true);
+        Thread t = Threads.daemon(r, "nmox-serving-registry");
         return t;
     });
 

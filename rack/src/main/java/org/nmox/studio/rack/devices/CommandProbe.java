@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
@@ -29,7 +30,7 @@ final class CommandProbe {
     }
 
     static void run(File dir, List<String> command, Consumer<String> onLine, IntConsumer onExit) {
-        Thread t = new Thread(() -> {
+        Thread t = Threads.daemon(() -> {
             int code = -1;
             try {
                 // ProcessSupport.runBounded: PATH augment, GIT_TERMINAL_PROMPT=0,
@@ -49,7 +50,6 @@ final class CommandProbe {
                 onExit.accept(code);
             }
         }, "nmox-rack-probe");
-        t.setDaemon(true);
         t.start();
     }
 

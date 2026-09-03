@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.docker;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,8 +34,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class DockerClient {
 
     private final ExecutorService pool = Executors.newFixedThreadPool(4, r -> {
-        Thread t = new Thread(r, "nmox-docker");
-        t.setDaemon(true);
+        Thread t = Threads.daemon(r, "nmox-docker");
         return t;
     });
 
@@ -108,7 +108,7 @@ public final class DockerClient {
 
     /** Consumes one stream to EOF on a daemon thread; appends under the buffer's lock. */
     private static Thread drainOnThread(java.io.InputStream in, StringBuilder into, String name) {
-        Thread t = new Thread(() -> {
+        Thread t = Threads.daemon(() -> {
             try {
                 String all = readAll(in);
                 synchronized (into) {
@@ -118,7 +118,6 @@ public final class DockerClient {
                 // pipe closed by the kill path; whatever landed is still useful
             }
         }, name);
-        t.setDaemon(true);
         t.start();
         return t;
     }

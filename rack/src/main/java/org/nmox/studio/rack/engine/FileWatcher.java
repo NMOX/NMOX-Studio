@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.engine;
 
+import org.nmox.studio.core.util.Threads;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -72,7 +73,7 @@ public final class FileWatcher {
             return;
         }
         running = true;
-        thread = new Thread(() -> {
+        thread = Threads.daemon(() -> {
             Map<Path, Long> baseline = scan();
             while (running) {
                 try {
@@ -91,7 +92,6 @@ public final class FileWatcher {
                 }
             }
         }, "nmox-rack-watcher");
-        thread.setDaemon(true);
         thread.start();
     }
 

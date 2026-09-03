@@ -166,10 +166,8 @@
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
                 <configuration>
-                    <publicPackages>
-                        <publicPackage>org.nmox.studio.dbstudio.model</publicPackage>
-                        <publicPackage>org.nmox.studio.dbstudio.engine</publicPackage>
-                    </publicPackages>
+                    <!-- no public packages since v2.63.0: nothing outside this module imports it (the senior-RCP pass census); friends and Lookup-published services need no export -->
+                    <publicPackages/>
                 </configuration>
             </plugin>
             <plugin>

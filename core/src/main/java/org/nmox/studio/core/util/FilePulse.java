@@ -46,7 +46,7 @@ public final class FilePulse {
         long interval = Math.max(200, intervalMs);
         // one long-lived sleep loop with its own start/stop lifecycle — a
         // dedicated daemon thread, not a shared-pool slot held for hours
-        thread = new Thread(() -> {
+        thread = Threads.daemon(() -> {
             while (running) {
                 tick();
                 try {
@@ -56,7 +56,6 @@ public final class FilePulse {
                 }
             }
         }, "nmox-file-pulse");
-        thread.setDaemon(true);
         thread.start();
     }
 

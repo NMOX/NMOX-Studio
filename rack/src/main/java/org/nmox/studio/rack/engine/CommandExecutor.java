@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.engine;
 
+import org.nmox.studio.core.util.Threads;
 import org.nmox.studio.core.process.ProcessSupport;
 
 import java.io.BufferedReader;
@@ -178,13 +179,12 @@ public final class CommandExecutor {
         }
 
         OutputWriter err = io == null ? null : io.getErr();
-        Thread errPump = new Thread(
+        Thread errPump = Threads.daemon(
                 () -> pumpStream(process.getErrorStream(), err, true, tabName, dir, onLine),
                 "nmox-rack-errpump-" + tabName);
-        errPump.setDaemon(true);
         errPump.start();
 
-        Thread pump = new Thread(() -> {
+        Thread pump = Threads.daemon(() -> {
             pumpStream(process.getInputStream(), out, false, tabName, dir, onLine);
             int code;
             try {
@@ -200,7 +200,6 @@ public final class CommandExecutor {
             RackBus.publish(tabName, "[exit " + code + "]", code != 0);
             onExit.accept(code);
         }, "nmox-rack-pump-" + tabName);
-        pump.setDaemon(true);
         pump.start();
 
         return new Handle() {
@@ -209,7 +208,7 @@ public final class CommandExecutor {
                 process.descendants().forEach(ProcessHandle::destroy);
                 process.destroy();
                 // escalate if it ignores SIGTERM
-                new Thread(() -> {
+                Threads.daemon(() -> {
                     try {
                         if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
                             process.descendants().forEach(ProcessHandle::destroyForcibly);
