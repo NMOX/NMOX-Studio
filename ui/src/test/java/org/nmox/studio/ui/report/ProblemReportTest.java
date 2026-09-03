@@ -39,6 +39,22 @@ class ProblemReportTest {
     }
 
     @Test
+    @DisplayName("The rack's last failed run rides the report — device, command, exit, error lines — or nothing")
+    void lastFailure() {
+        ProblemReport.LastFailure f = new ProblemReport.LastFailure("VERITAS", "npm test -- --ci", 1,
+                java.util.List.of("FAIL src/cart.test.js", "  ● total › applies discount"), 4321);
+        String body = ProblemReport.compose("2.65.0", "os", "java", "SEVERE: x", f);
+        assertThat(body).contains("**Last failed run**").contains("- Device: VERITAS")
+                .contains("- Command: `npm test -- --ci`").contains("- Exit code: 1 after 4321 ms")
+                .contains("```\nFAIL src/cart.test.js\n  ● total › applies discount\n```");
+        assertThat(body.indexOf("Last failed run")).isLessThan(body.indexOf("Log tail"));
+        // a backtick in the command cannot break the markdown code span
+        assertThat(ProblemReport.compose("v", "o", "j", "", new ProblemReport.LastFailure("d", "echo `x`", 2,
+                java.util.List.of(), 0))).contains("- Command: `echo 'x'`").doesNotContain("after 0 ms");
+        assertThat(ProblemReport.compose("v", "o", "j", "", null)).doesNotContain("Last failed run");
+    }
+
+    @Test
     @DisplayName("The composed body carries environment first; a clipped URL keeps it and says so")
     void composeAndUrl() {
         String body = ProblemReport.compose("2.64.0", "Mac OS X 15.6 (aarch64)", "25.0.1 (Azul)", "SEVERE: boom");

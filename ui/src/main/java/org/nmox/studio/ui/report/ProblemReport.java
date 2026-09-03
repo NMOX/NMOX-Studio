@@ -70,14 +70,46 @@ public final class ProblemReport {
         return SECRET.matcher(out).replaceAll("[redacted]");
     }
 
-    /** The markdown body: environment table + fenced log tail. */
+    /**
+     * The rack's last failed run, as the report carries it: what ran, how
+     * it ended, and its last error lines — the same bounded record ORACLE
+     * explains (FailureContext), never the whole transcript. Null when
+     * nothing failed this session.
+     */
+    public record LastFailure(String device, String command, int exitCode,
+            List<String> errorLines, long durationMs) {
+    }
+
+    /** The markdown body: environment table + the last failed run + fenced log tail. */
     public static String compose(String version, String os, String java, String logTail) {
+        return compose(version, os, java, logTail, null);
+    }
+
+    /** The markdown body with the rack's last failed run, when there is one. */
+    public static String compose(String version, String os, String java, String logTail,
+            LastFailure failure) {
         StringBuilder sb = new StringBuilder();
         sb.append("**What happened**\n\n(describe what you did and what you expected)\n\n");
         sb.append("**Environment**\n\n");
         sb.append("- NMOX Studio: ").append(blankTo(version, "dev build")).append('\n');
         sb.append("- OS: ").append(blankTo(os, "unknown")).append('\n');
         sb.append("- Java: ").append(blankTo(java, "unknown")).append('\n');
+        if (failure != null) {
+            sb.append("\n**Last failed run** (from the rack's flight recorder)\n\n");
+            sb.append("- Device: ").append(blankTo(failure.device(), "unknown")).append('\n');
+            sb.append("- Command: `").append(blankTo(failure.command(), "unknown").replace("`", "'"))
+                    .append("`\n");
+            sb.append("- Exit code: ").append(failure.exitCode())
+                    .append(failure.durationMs() > 0 ? " after " + failure.durationMs() + " ms" : "")
+                    .append('\n');
+            if (failure.errorLines() != null && !failure.errorLines().isEmpty()) {
+                sb.append("\n```\n");
+                for (String line : failure.errorLines()) {
+                    sb.append(line).append('\n');
+                }
+                sb.append("```\n");
+            }
+        }
         if (logTail != null && !logTail.isBlank()) {
             sb.append("\n**Log tail** (redacted — paths under your home show as ~)\n\n```\n")
                     .append(logTail).append("\n```\n");
