@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.67.1] - 2026-09-03
+
+The close (docs only): **the update-center gauntlet across the fix,
+and the proof the fix was for.** A stock 2.63.0 portable updated
+itself in-app to 2.67.0 through the real update center — all eleven
+modules chosen, downloaded and installed by the platform's own updater
+(update_tracking written for each), every cluster jar byte-verified at
+2.67.0, a fresh-cache boot turning on eleven of eleven at 2.67.0 with
+zero SEVERE. Then the line the whole day-close had been missing: after
+one LIVE boot of that updated install ended by an orderly quit, the
+userdir's preferences carry `lastSeenVersion=2.67.0` beside the Getting
+Started tick — What's New's first-boot rule ran, read the product
+version the module classloader could never see before v2.67.0, and
+recorded it (a fresh last-seen means RECORD_ONLY, exactly the rule; the
+SHOW case, an install that has seen an earlier version, is owed to the
+next in-app update of this same userdir and is unit-pinned meanwhile).
+The harness law recorded with it: a `netbeans.close` reboot exits
+before the platform's post-UI hooks run, so a gauntlet proves module
+turn-on that way but must prove first-boot UI with a live boot and an
+orderly quit — preferences persist under both a quit and a SIGTERM
+(the Getting Started tick proved it), so an absent preference means the
+code path never ran, never that the write was lost.
+
 ## [2.67.0] - 2026-09-03
 
 **The version the product could not read — and the day close.** The
