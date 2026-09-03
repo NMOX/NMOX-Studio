@@ -10,7 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import org.nmox.studio.core.util.PlainTables;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -21,7 +20,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -39,15 +37,13 @@ import org.openide.util.Utilities;
 @Messages("CTL_KeyboardShortcutsAction=Keyboard Shortcuts…")
 public final class KeyboardShortcutsAction implements ActionListener {
 
-    private static final RequestProcessor RP = new RequestProcessor("Keyboard Shortcuts", 1, true);
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        RP.post(() -> {
-            String profile = activeProfile();
-            List<ShortcutSheet.Row> rows = rows(profile);
-            SwingUtilities.invokeLater(() -> dialog(profile, rows));
-        });
+        // on the EDT on purpose (v2.64.1 review): the system filesystem is
+        // the in-memory layer cache, and resolving lazy actions belongs on
+        // the thread that will present them — no disk, no process
+        String profile = activeProfile();
+        dialog(profile, rows(profile));
     }
 
     /** The profile the platform marks current on the Keymaps folder, default NetBeans. */
