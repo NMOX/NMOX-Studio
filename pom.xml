@@ -260,6 +260,8 @@
                         <exclude>**/WhatsNewAction*.class</exclude>
                         <exclude>**/ReportProblemAction*.class</exclude>
                         <exclude>**/KeyboardShortcutsAction*.class</exclude>
+                        <!-- v2.66.0 Getting Started: the signals reader touches rack/spi/prefs; GettingStarted (pure) stays measured -->
+                        <exclude>**/GettingStartedSignals*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
