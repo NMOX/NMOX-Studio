@@ -32,13 +32,18 @@ existing userdir value always winning (OraclePrefsMigrationTest).
 WorkspaceTrust stays global by its v1.39.0 blessing. **The Angular
 diagnostics speak through the platform logger** at FINE
 (`-J-Dorg.nmox.studio.editor.level=FINE` lands them in messages.log)
-instead of a property-gated stderr — three sites. **Ten exported
+instead of a property-gated stderr — three sites. **Nine exported
 packages nobody imported are withdrawn** from the public API
-(tools.npm; rack.model; infra.model and .api; apiclient.model and
-.api; dbstudio.model and .engine; web3.model and .engine — the census
-read every other module's imports): five leaf modules now export
-nothing, the honest surface for modules reached only through Lookup
-and friends. Blessed in writing: the editor actions that resolve
+(tools.npm; infra.model and .api; apiclient.model and .api;
+dbstudio.model and .engine; web3.model and .engine — the census read
+every other module's imports): five leaf modules now export nothing,
+the honest surface for modules reached only through Lookup and
+friends. The tenth candidate, rack.model, went out and came back: the
+nbm plugin's runtime-dependency check refused the UI module because
+rack.model types travel as RETURN TYPES of the exported rack services,
+referenced in a friend's bytecode without any import line — an import
+census cannot see that, the build can, and the reason now sits at the
+export. Blessed in writing: the editor actions that resolve
 their target through EditorRegistry.lastFocusedComponent keep the
 idiom under the v2.30.1 documentBelongsTo law; the eight per-instance-
 looking RequestProcessors are already shared statics. Full verify

@@ -282,6 +282,16 @@ real bug, and most are pinned by a test that fails the build if broken:
    proves nothing. You'll see "mutation-proven" throughout the
    changelog meaning exactly this.
 
+**Every background thread is a named daemon** (v2.63.0). Raw threads are
+born in exactly one place, `core.util.Threads` — named, because a thread
+dump is the first instrument in an EDT-hang or exit-hang investigation
+and an anonymous `Thread-17` says nothing; daemon, because a pump or
+watcher that outlives the platform's shutdown must never be what keeps
+the JVM alive. Shutdown hooks are the written exception (named, never
+daemon). `DaemonThreadGateTest` reads every module's sources and fails
+the build on any other `new Thread(`. Origin: the senior-RCP census found
+eight non-daemon pumps and drains among twenty-two raw threads.
+
 ## 5. Where to go next
 
 - **Every important package now carries a `package-info.java`**
