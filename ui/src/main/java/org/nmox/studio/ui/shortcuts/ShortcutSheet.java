@@ -65,7 +65,7 @@ public final class ShortcutSheet {
                 default -> { }
             }
         }
-        String keyText = NAMED_KEYS.getOrDefault(key, key.length() == 1 ? key.toUpperCase() : key);
+        String keyText = NAMED_KEYS.getOrDefault(key, key.length() == 1 ? key.toUpperCase(java.util.Locale.ROOT) : key);
         if (mac) {
             return (ctrl ? "⌃" : "") + (alt ? "⌥" : "") + (shift ? "⇧" : "") + (meta ? "⌘" : "") + keyText;
         }
