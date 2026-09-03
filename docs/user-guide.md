@@ -1371,6 +1371,23 @@ interpreters; if one isn't installed, the INSTALL button installs it
 right there, streaming progress onto the REPL screen. Spaces live in
 `~/.nmox/learn`, apart from your real work.
 
+### The Help menu's three answers (v2.64.0)
+
+- **What's New…** — the release notes for the version you run, bundled
+  in the build. On the first boot after an update the dialog opens once
+  with the releases your install has not seen (newest first, ten at
+  most, the rest counted). A fresh install shows nothing — it just
+  remembers its version.
+- **Report a Problem…** — a bug report with the environment and the last
+  forty lines of the log, redacted (your home path becomes `~`, your
+  login `<user>`, anything shaped like a credential `[redacted]`). Edit
+  it, then **Open on GitHub** pre-fills a new issue that you submit, or
+  **Copy** it. The product never sends anything itself.
+- **Keyboard Shortcuts…** — every NMOX chord in your active keymap
+  profile, read from the running keymap through the platform, so it
+  cannot drift from what the menus do. Editor-kit chords (Emmet ⌥⌘E,
+  template Go to Declaration ⌘B) are documented in chapter 5.
+
 ## 12. When something's wrong
 
 - **Environment Doctor** (Tools menu) live-probes 66 external tools —

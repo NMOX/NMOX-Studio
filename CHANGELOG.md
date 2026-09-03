@@ -4,6 +4,70 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.64.0] - 2026-09-03
+
+The product manager's wishes (David's ask: "put on the hat of a very
+senior product manager, and grant their wishes"). A product that ships
+ten releases in a day has three questions a PM asks before any
+feature: how do users FIND what shipped, how do they TELL you when it
+breaks, and how do they LEARN the gestures. Three grants, all under
+Help, none of them a network call the product makes on its own.
+
+**What's New, in the product.** The ui module now bundles the repo's
+CHANGELOG.md at build time (one source of truth — BundledChangelogTest
+pins the jar's copy byte-for-byte to the repo's), and the pure
+ReleaseNotes parser turns it into the entries an install has not seen:
+on the FIRST boot after an update, a "What's new since 2.63.0" dialog
+lists exactly the releases between what this userdir last saw and what
+runs now (newest first, capped at ten with an honest "… and N earlier
+releases not shown"); a fresh install records its version silently — a
+new user wants Getting Started, not a diff — and a dev build shows
+nothing. Help ▸ What's New… (and the Welcome footer's What's new, now
+in-app) shows the running version's entry any time; "Full notes on
+GitHub" is one click away. The rule is stated once in
+ReleaseNotes.decide and every path records the version, so the dialog
+can never re-appear on the next boot.
+
+**Report a Problem…** gathers what a useful issue needs — product
+version, OS, Java, and the last 40 non-blank lines of messages.log,
+read OFF the EDT from the file's last 64 KB — and redacts what must
+never leave: the home path becomes ~, the login becomes <user>, and
+anything credential-shaped (sk-ant-…, ghp_…, Bearer …, key=… forms)
+becomes [redacted]. The whole report sits in an EDITABLE dialog that
+says the law out loud: NMOX Studio sends nothing; "Open on GitHub"
+pre-fills a new issue you submit yourself, "Copy" puts the text on the
+clipboard. A log tail that would push the issue URL past GitHub's limit
+is clipped from the END with a marker while the environment block
+always survives, and the full text lands on the clipboard so nothing
+is lost — said on the status line.
+
+**Keyboard Shortcuts…** is derived from the RUNNING keymap, never a
+hand-kept list: every NMOX shadow in the active profile's Keymaps
+folder, resolved to its action's display name through the platform
+(the same object the menu shows), rendered with the notation law
+measured in v2.61.0 (D is ⌘ on macOS and Ctrl elsewhere, O is ⌃ on
+macOS and Alt elsewhere, A is ⌥, S is ⇧), with Copy as Markdown. The
+dialog says what it cannot list — editor-kit chords live in the
+editors' keybindings, not the Keymaps folder — and points at the user
+guide for them.
+
+Three pure cores, thirteen tests, three mutants dead by name (a fresh
+install shown the diff; a redaction pass dropped; O read as ⌥ on
+macOS). Proven short of a screen walk, said plainly: the assembled jar
+carries the bundled CHANGELOG and all three Help registrations, and a
+running instance of the build booted with zero SEVERE and zero
+Ordering warnings on the new rows, and the Help menu was read live
+from that instance — which found what no test had: the platform's own
+**Report Issue** (files bugs at Apache NetBeans, the wrong project) and
+**Keyboard Shortcuts Card** (NetBeans' PDF of chords this product does
+not ship) had survived the v1.11 chrome eviction and now sat one line
+from their NMOX answers; both are hidden in the ui layer, with
+HelpMenuHidesTest keeping the hides. What was NOT done this release,
+said plainly: the three dialogs were not driven by hand — the
+background walk harness opens the menus and sees the dialogs but
+cannot press Swing dialog buttons, and the screen-takeover path was
+declined — so the next shipped-app walk owes them.
+
 ## [2.63.0] - 2026-09-03
 
 The senior-RCP pass — David's ask, the platform seams read as a

@@ -81,6 +81,15 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
+The Help menu carries the product manager's trio (v2.64.0): **What's
+New…** shows the release notes bundled in the build — and, once, on the
+first boot after an update, exactly the releases you have not seen;
+**Report a Problem…** drafts a bug report with the version, OS, Java
+and a redacted log tail (home path as ~, credentials as [redacted]) that
+YOU submit on GitHub — the product sends nothing; **Keyboard
+Shortcuts…** lists every NMOX chord from the running keymap, never a
+hand-kept list, with Copy as Markdown.
+
 The product ships its own website: **Help ▸ NMOX Studio Website
 (local)** serves it to you on localhost from inside the app — the ⇄
 serving chip lights on the product's own story.

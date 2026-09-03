@@ -252,6 +252,14 @@
                         <!-- v2.61.0 ghost text: Swing/editor-view wiring + the action; OracleComplete/Engine stay on the surface -->
                         <exclude>**/GhostText*.class</exclude>
                         <exclude>**/CompleteWithOracleAction*.class</exclude>
+                        <!-- v2.64.0 the PM wishes: three Help-menu dialogs (Swing + prefs +
+                             clipboard + Desktop.browse); their pure halves — ReleaseNotes,
+                             ProblemReport, ShortcutSheet — stay on the measured surface -->
+                        <exclude>**/whatsnew/WhatsNew.class</exclude>
+                        <exclude>**/whatsnew/WhatsNew$*.class</exclude>
+                        <exclude>**/WhatsNewAction*.class</exclude>
+                        <exclude>**/ReportProblemAction*.class</exclude>
+                        <exclude>**/KeyboardShortcutsAction*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
