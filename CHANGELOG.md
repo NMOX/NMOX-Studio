@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.66.0] - 2026-09-03
+
+The product manager's activation wish: **a Getting Started column on
+the Welcome page that ticks itself.** A new install's first session
+has five gestures that earn the product its keep — open a project, run
+something in the rack, see a server go live, ask ORACLE about code,
+try a learning space — and every one of them leaves a record the
+product already keeps (recent projects, the flight recorder's LAUNCH
+events, the serving registry, the ORACLE consent grants, ~/.nmox/learn).
+The column reads those records OFF the EDT on every Welcome showing,
+persists a tick the moment it is observed (a server that was live once
+counts forever — the list never un-ticks), shows "GETTING STARTED ·
+2 of 5" with each step's gesture as its tooltip, and disappears when
+all five are done or when the user hides it (a preference; it never
+asks again). No survey, no network, no telemetry: the checklist is a
+mirror of the userdir. Pure GettingStarted (the five steps, the
+arithmetic, next-step and visibility rules) mutation-pinned; the
+signals reader guards every seam so a session without the rack leaves
+a step unticked rather than breaking the page.
 ## [2.65.0] - 2026-09-03
 
 Report a Problem… carries the rack's last failed run. A bug report

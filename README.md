@@ -81,6 +81,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
+The Welcome page's **Getting Started** column (v2.66.0) ticks its five
+first gestures — open a project, run in the rack, see a server live,
+ask ORACLE, try a learning space — from records the product already
+keeps; no survey, no telemetry, and it disappears when done.
+
 The Help menu carries the product manager's trio (v2.64.0): **What's
 New…** shows the release notes bundled in the build — and, once, on the
 first boot after an update, exactly the releases you have not seen;

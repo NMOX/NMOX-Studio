@@ -93,6 +93,11 @@ public final class MainWindow extends TopComponent {
         private static final Color DIM = new Color(110, 112, 118);
 
         private final JPanel recentColumn = column("RECENT");
+        // v2.66.0 the PM's activation wish: five first gestures that tick
+        // themselves from records the product already keeps
+        private final JPanel gettingStarted = column("GETTING STARTED");
+        private static final org.openide.util.RequestProcessor SIGNALS =
+                new org.openide.util.RequestProcessor("Getting Started", 1, true);
 
         WelcomePanel() {
             setLayout(new GridBagLayout());
@@ -140,11 +145,12 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink("Infra Designer  ⌥⌘9", "InfraDesignerTopComponent"));
             windows.add(windowLink("Docker Panel  ⌘8", "DockerPanelTopComponent"));
 
-            JPanel columns = new JPanel(new java.awt.GridLayout(1, 3, 44, 0));
+            JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
             columns.setOpaque(false);
             columns.add(start);
             columns.add(recentColumn);
             columns.add(windows);
+            columns.add(gettingStarted);
             refreshRecents();
 
             JLabel version = new JLabel(footerText());
@@ -222,6 +228,45 @@ public final class MainWindow extends TopComponent {
             } catch (RuntimeException rackUnavailable) {
                 return List.of();
             }
+        }
+
+        /** Signals off the EDT, the column rebuilt on it; hidden or all-done collapses the column. */
+        void refreshGettingStarted() {
+            SIGNALS.post(() -> {
+                java.util.Set<String> done = org.nmox.studio.ui.gettingstarted.GettingStartedSignals.observe();
+                boolean hidden = org.nmox.studio.ui.gettingstarted.GettingStartedSignals.hidden();
+                javax.swing.SwingUtilities.invokeLater(() -> paintGettingStarted(done, hidden));
+            });
+        }
+
+        private void paintGettingStarted(java.util.Set<String> done, boolean hidden) {
+            gettingStarted.removeAll();
+            boolean visible = org.nmox.studio.ui.gettingstarted.GettingStarted.visible(done, hidden);
+            gettingStarted.setVisible(visible);
+            if (visible) {
+                gettingStarted.add(columnHeading("GETTING STARTED · "
+                        + org.nmox.studio.ui.gettingstarted.GettingStarted.progress(done)));
+                for (org.nmox.studio.ui.gettingstarted.GettingStarted.Step step
+                        : org.nmox.studio.ui.gettingstarted.GettingStarted.STEPS) {
+                    boolean ticked = done.contains(step.key());
+                    JLabel row = new JLabel((ticked ? "✓  " : "○  ") + step.label());
+                    row.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+                    row.setForeground(ticked ? DIM : new Color(225, 226, 230));
+                    row.setToolTipText(step.gesture());
+                    row.getAccessibleContext().setAccessibleName(
+                            (ticked ? "done: " : "to do: ") + step.label() + " — " + step.gesture());
+                    gettingStarted.add(row);
+                }
+                JButton hide = textButton("Hide this list", DIM);
+                hide.setToolTipText("Hides the checklist; it never asks again");
+                hide.addActionListener(e -> {
+                    org.nmox.studio.ui.gettingstarted.GettingStartedSignals.hide();
+                    paintGettingStarted(done, true);
+                });
+                gettingStarted.add(hide);
+            }
+            gettingStarted.revalidate();
+            gettingStarted.repaint();
         }
 
         private static JPanel column(String heading) {
@@ -342,6 +387,7 @@ public final class MainWindow extends TopComponent {
         // the recents column is live, not a launch-time snapshot
         if (welcomePanel != null) {
             welcomePanel.refreshRecents();
+            welcomePanel.refreshGettingStarted();
         }
         aimFollower.showing();
         // the first-boot What's New rides the platform's @OnShowing hook
