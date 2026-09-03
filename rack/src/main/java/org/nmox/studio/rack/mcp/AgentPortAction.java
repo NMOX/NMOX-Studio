@@ -60,16 +60,10 @@ public final class AgentPortAction implements ActionListener {
         showRunning();
     }
 
-    /** The running product version, or "dev" — the platform startup
-     *  bundle, the same source UpdateCheck reads (no new dependency). */
+    /** The running product version, or "dev" — through the one reader (core.util.ProductVersion). */
     private static String productVersion() {
-        try {
-            return java.util.ResourceBundle
-                    .getBundle("org.netbeans.core.startup.Bundle")
-                    .getString("currentVersion");
-        } catch (RuntimeException missing) {
-            return "dev";
-        }
+        String cur = org.nmox.studio.core.util.ProductVersion.current();
+        return cur == null ? "dev" : cur;
     }
 
     private void showRunning() {

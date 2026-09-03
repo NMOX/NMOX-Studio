@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.67.0] - 2026-09-03
+
+**The version the product could not read — and the day close.** The
+closing update-center gauntlet (a stock 2.63.0 portable updating itself
+in-app across v2.64.0–v2.66.0) PASSED its update half — the platform's
+own updater installed all eleven modules, every cluster jar
+byte-verified at 2.66.0, a fresh-cache boot turned on eleven of eleven
+at 2.66.0 with zero SEVERE — and then found the release's real bug in
+its last line: the What's New first-boot preference was never written,
+not after a headless reboot, not after a live boot, not after an
+orderly quit, while the same preference file carried the Getting
+Started tick the Welcome had just recorded. The cause reached back
+further than the feature: every product-version read in the codebase —
+the Welcome footer, What's New, Report a Problem, the Agent Port's
+initialize, and **UpdateCheck's daily update notifier since v1.25.0** —
+loaded the platform's branded startup bundle through the MODULE's own
+classloader, which cannot see org.netbeans.core.startup.Bundle at all
+(core.startup is nobody's dependency), so each read threw
+MissingResourceException, was caught, and returned null: the footer
+read plain "NMOX Studio" in every shipped build (visible in this
+shift's own screenshots), What's New decided "dev build → nothing",
+Report a Problem wrote "dev build", and the notifier skipped as dev for
+its entire life. **One reader now, core.util.ProductVersion:** the
+platform's own {@code netbeans.productversion} property first (TopLogging
+sets it from the branded bundle at startup — decompiled), the branded
+bundle through the SYSTEM classloader second (the one the platform hands
+out via Lookup; it sees every module and the branding overlay), null
+last; dev builds stay "NMOX Studio 1.0" and stay dev. All four sites
+route through it and ProductVersionGateTest fails the build on any raw
+read of the startup bundle outside that class. Two mutants dead by
+name (property ignored → order; a throwing source rethrown →
+throwingSourceIsAbsent); the gate proven failing-first with a planted
+raw read. Walked in the assembled app in background mode (the app
+never took the desktop): the Welcome footer read "NMOX Studio 1.0" —
+the dev build's branded string, non-null for the first time — and,
+in the same frame, the Getting Started column stood at "1 of 5" with
+the learning-space tick, the first live sighting of v2.66.0.
+
+**What the walks still owe, said plainly.** The four product manager
+releases of this shift (v2.64.0–v2.66.0) were proven by their pure
+cores, mutants, assembled jars, boot smokes and the live Help-menu read
+— but none of their dialogs were driven by hand (the Getting Started
+column was seen live above, not clicked): the background walk harness (chosen so the app never steals
+the desktop) opens menus and sees dialogs but cannot press Swing dialog
+buttons, and the screen-takeover path stayed declined. The next screen
+walk owes What's New, Report a Problem, Keyboard Shortcuts, and the
+Welcome's checklist; the next update gauntlet owes the What's New
+preference, now that the version can be read.
+
+**Three pipeline laws learned today, kept in the ship scripts.** A
+pipelined branch's fork must be the sha captured at fork time, never
+the parent's current tip (the parent's own ship rebases it). Two
+pipelined branches inserting changelog and CLAUDE.md lines at the same
+anchor collide at rebase; the resolver keeps both, the newer above, and
+the newest headline wins. A conflict-marker check must be line-anchored
+— this changelog's own prose mentions the marker strings, and a
+substring grep refused a clean tree twice.
+
 ## [2.66.0] - 2026-09-03
 
 The product manager's activation wish: **a Getting Started column on

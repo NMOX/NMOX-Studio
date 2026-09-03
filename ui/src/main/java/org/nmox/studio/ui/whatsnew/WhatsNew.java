@@ -31,15 +31,9 @@ public final class WhatsNew {
     private WhatsNew() {
     }
 
-    /** The running product version ("1.0" for a dev build), or null when unbranded. */
+    /** The running product version ("1.0" for a dev build), or null when unbranded — the one reader. */
     static String runningVersion() {
-        try {
-            String branded = java.util.ResourceBundle.getBundle("org.netbeans.core.startup.Bundle")
-                    .getString("currentVersion");
-            return Versions.extract(branded);
-        } catch (RuntimeException missing) {
-            return null;
-        }
+        return org.nmox.studio.core.util.ProductVersion.number();
     }
 
     static Preferences prefs() {
