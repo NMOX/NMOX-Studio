@@ -1,10 +1,6 @@
 package org.nmox.studio.core.util;
 
-import java.util.Locale;
-import java.util.MissingResourceException;
 import java.util.function.Supplier;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * The product version the running install carries, read the one way a
@@ -35,7 +31,7 @@ public final class ProductVersion {
 
     /** The full branded string ("NMOX Studio 2.67.0"), or null when unbranded. */
     public static String current() {
-        return current(() -> System.getProperty("netbeans.productversion"), ProductVersion::brandedBundle);
+        return current(() -> System.getProperty("netbeans.productversion"), ProductVersionBundle::read);
     }
 
     /** The version number alone ("2.67.0", or "1.0" on a dev build), or null. */
@@ -66,14 +62,4 @@ public final class ProductVersion {
         }
     }
 
-    /** The branded bundle via the platform's system classloader; null when it cannot be seen. */
-    static String brandedBundle() {
-        ClassLoader system = Lookup.getDefault().lookup(ClassLoader.class);
-        ClassLoader loader = system != null ? system : ProductVersion.class.getClassLoader();
-        try {
-            return NbBundle.getBundle(STARTUP_BUNDLE, Locale.getDefault(), loader).getString(CURRENT_VERSION);
-        } catch (MissingResourceException missing) {
-            return null;
-        }
-    }
 }

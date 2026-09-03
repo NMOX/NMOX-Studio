@@ -36,13 +36,17 @@ route through it and ProductVersionGateTest fails the build on any raw
 read of the startup bundle outside that class. Two mutants dead by
 name (property ignored → order; a throwing source rethrown →
 throwingSourceIsAbsent); the gate proven failing-first with a planted
-raw read.
+raw read. Walked in the assembled app in background mode (the app
+never took the desktop): the Welcome footer read "NMOX Studio 1.0" —
+the dev build's branded string, non-null for the first time — and,
+in the same frame, the Getting Started column stood at "1 of 5" with
+the learning-space tick, the first live sighting of v2.66.0.
 
 **What the walks still owe, said plainly.** The four product manager
 releases of this shift (v2.64.0–v2.66.0) were proven by their pure
 cores, mutants, assembled jars, boot smokes and the live Help-menu read
-— but none of their dialogs or the Getting Started column were driven
-by hand: the background walk harness (chosen so the app never steals
+— but none of their dialogs were driven by hand (the Getting Started
+column was seen live above, not clicked): the background walk harness (chosen so the app never steals
 the desktop) opens menus and sees dialogs but cannot press Swing dialog
 buttons, and the screen-takeover path stayed declined. The next screen
 walk owes What's New, Report a Problem, Keyboard Shortcuts, and the

@@ -27,6 +27,26 @@ class ProductVersionTest {
     }
 
     @Test
+    @DisplayName("The real reads honor the platform's netbeans.productversion property end to end")
+    void realReadsThroughTheProperty() {
+        String before = System.getProperty("netbeans.productversion");
+        try {
+            System.setProperty("netbeans.productversion", "NMOX Studio 2.67.0");
+            assertThat(ProductVersion.current()).isEqualTo("NMOX Studio 2.67.0");
+            assertThat(ProductVersion.number()).isEqualTo("2.67.0");
+            assertThat(ProductVersion.stamped()).isTrue();
+            System.setProperty("netbeans.productversion", "NMOX Studio 1.0");
+            assertThat(ProductVersion.stamped()).as("a dev build stays dev").isFalse();
+        } finally {
+            if (before == null) {
+                System.clearProperty("netbeans.productversion");
+            } else {
+                System.setProperty("netbeans.productversion", before);
+            }
+        }
+    }
+
+    @Test
     @DisplayName("number() and stamped() read the branded string the way UpdateCheck always meant to")
     void numberAndStamped() {
         assertThat(Versions.extract("NMOX Studio 2.67.0")).isEqualTo("2.67.0");

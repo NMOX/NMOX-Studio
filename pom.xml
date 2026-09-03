@@ -262,6 +262,8 @@
                         <exclude>**/KeyboardShortcutsAction*.class</exclude>
                         <!-- v2.66.0 Getting Started: the signals reader touches rack/spi/prefs; GettingStarted (pure) stays measured -->
                         <exclude>**/GettingStartedSignals*.class</exclude>
+                        <!-- v2.67.0 the branded-bundle read needs a running platform (Lookup ClassLoader + NbBundle); the ordering seam in ProductVersion stays measured -->
+                        <exclude>**/ProductVersionBundle*.class</exclude>
                         <exclude>**/CssFuturesCompletionItem*.class</exclude>
                         <!-- rack: the rack canvas, file tree, and palette list + renderer -->
                         <exclude>**/RackPanel.class</exclude>
