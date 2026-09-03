@@ -70,7 +70,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.15.0</version>
+                    <version>3.16.0</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -384,7 +384,7 @@
              centralizes the VERSION STRING so Dependabot bumps all eight in one
              PR. Every module pom references ${orgjson.version}. -->
         <orgjson.version>20260814</orgjson.version>
-        <snakeyaml.version>2.6</snakeyaml.version>
+        <snakeyaml.version>2.7</snakeyaml.version>
     </properties>
 
     <profiles>
