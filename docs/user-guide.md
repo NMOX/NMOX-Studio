@@ -1335,6 +1335,8 @@ keymaps never costs you the studio chords.
   where the update center installs the new modules in place
   when there's a release. Turn it off in Options ▸ General.
 
+![The daily update check's notification — seen live on a 2.69.2 install the morning 2.69.6 shipped; the link opens the Plugin Manager](images/update-notifier-balloon.png)
+
 ## 11. Learning Spaces
 
 Some spaces **check your work**: pick a space with checkpoints (Your
@@ -1395,6 +1397,8 @@ done, or when you press **Hide this list**.
   with the releases your install has not seen (newest first, ten at
   most, the rest counted). A fresh install shows nothing — it just
   remembers its version.
+
+![The first boot after an update — What's New opens over the main window with the releases this install had not seen](images/whats-new-first-boot.png)
 - **Report a Problem…** — a bug report with the environment and the last
   forty lines of the log, redacted (your home path becomes `~`, your
   login `<user>`, anything shaped like a credential `[redacted]`). Edit

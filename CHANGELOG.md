@@ -4,6 +4,16 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.8] - 2026-09-04
+
+Docs only: the walk's two proof shots become user-guide illustrations —
+the first-boot What's New dialog over the main window (captured on the
+fixed build with a userdir that last saw 2.69.0) and the daily update
+check's notification, seen live on a 2.69.2 install the morning 2.69.6
+shipped ("NMOX Studio 2.69.6 is available — You're on 2.69.2. Click to
+open the Plugin Manager."), the notifier's first illustration since it
+shipped in v1.25.0. Both under the ImageRefsTest law.
+
 ## [2.69.7] - 2026-09-04
 
 The screen walk of the shipped 2.69.6 (David's grant), and what it
