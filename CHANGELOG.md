@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.12] - 2026-09-04
+
+The day-arc review (v2.69.7–v2.69.11, the keyboard day's five
+releases). One thing changed: the Run menu carried two stops side by
+side — our Stop Running Command and the platform's Stop Build/Run,
+which knows our runs through BuildExecutionSupport and adds Repeat —
+so ours is toolbar-only now (the ■ beside Debug). Verified CLEAN: the
+Welcome's serving listener can never meet a null panel (the panel is
+built in the constructor; the showing-time guard is belt and braces),
+Stop kills the whole process tree (the pyenv shim AND the python it
+spawns), the layer census exempts only what it must. Blessed in
+writing: the toolbar action's registry listener lives as long as the
+singleton action; DialogFit clamps to the primary screen; the
+first-boot What's New waits for the main window's first activation if
+the app boots in the background. And the user guide finally says how
+to run and stop a project — the toolbar lanes had shipped in v1.233.0
+without a paragraph.
+
 ## [2.69.11] - 2026-09-04
 
 Two Welcome finds from David's screen. **"We have both a Start and a

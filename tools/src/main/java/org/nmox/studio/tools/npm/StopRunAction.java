@@ -6,7 +6,6 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle.Messages;
@@ -20,10 +19,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "Run", id = "org.nmox.studio.tools.npm.StopRunAction")
 @ActionRegistration(displayName = "#CTL_StopRun", iconBase = "org/nmox/studio/tools/npm/stop.png", lazy = false)
-@ActionReferences({
-    @ActionReference(path = "Toolbars/Build", position = 360),
-    @ActionReference(path = "Menu/BuildProject", position = 1090)
-})
+@ActionReference(path = "Toolbars/Build", position = 360)
 @Messages("CTL_StopRun=Stop Running Command")
 public final class StopRunAction extends AbstractAction {
 
