@@ -81,8 +81,14 @@ class OpenOnServeTest {
     void servingInTheSnapshotToAttachGapIsDelivered() {
         // the seam runs in exactly the window the old code lost: after the
         // pre-existing snapshot was taken, before the listener existed
-        OpenOnServe.getDefault().arm(PROJECT,
-                () -> registry.register(web("VELOCITY", "http://localhost:5173/", PROJECT)));
+        // register AND let the router deliver before the listener exists —
+        // the registry's async delivery would otherwise reach a listener
+        // attached microseconds later and hide the race (the mutant that
+        // removed the rescan survived the first version of this test)
+        OpenOnServe.getDefault().arm(PROJECT, () -> {
+            registry.register(web("VELOCITY", "http://localhost:5173/", PROJECT));
+            registry.awaitIdle();
+        });
         registry.awaitIdle();
         assertThat(OpenOnServe.getDefault().isArmedForTest())
                 .as("the gap serving spends the arm — it is neither pre-existing nor lost")
