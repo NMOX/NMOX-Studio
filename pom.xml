@@ -259,6 +259,8 @@
                         <exclude>**/whatsnew/WhatsNew$*.class</exclude>
                         <exclude>**/WhatsNewAction*.class</exclude>
                         <exclude>**/ReportProblemAction*.class</exclude>
+                        <!-- v2.69.10: the toolbar ■ is a Swing action shell (listener + StatusDisplayer); LiveRuns and IdeRunItem hold the logic and are tested -->
+                        <exclude>**/StopRunAction*.class</exclude>
                         <exclude>**/KeyboardShortcutsAction*.class</exclude>
                         <!-- v2.66.0 Getting Started: the signals reader touches rack/spi/prefs; GettingStarted (pure) stays measured -->
                         <exclude>**/GettingStartedSignals*.class</exclude>

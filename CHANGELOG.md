@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.10] - 2026-09-04
+
+The toolbar's ▶ gets its ■ (David at the keyboard: "there's no way to
+stop a running server when I click the play icon" — the only stop was
+the Cancel inside the status-bar progress popup, which nobody finds;
+each press of ▶ on a static folder started another `python3 -m
+http.server` on the next free port). Every IDE run (Run/Build/Test/
+Clean) now registers with two stop surfaces: a new **Stop Running
+Command** button on the Build toolbar beside Run and Debug (enabled
+while anything runs; kills every live run's process tree and names
+what it stopped on the status line) and the platform's own **Run ▸
+Stop Build/Run** through BuildExecutionSupport (with its Repeat).
+LiveRuns is a pure registry (spawn order, listeners, stop-all
+mutation-pinned); StopRunWiringTest gates the one spawn site so a
+registry with no call site cannot ship (the v1.321.0 law). Walked by
+David on the assembled build: ▶ served the aimed folder, ■ stopped it
+(the server process gone within three seconds of the press), and the
+v2.69.9 Getting Started doors opened their surfaces — "that's all
+working."
+
 ## [2.69.9] - 2026-09-04
 
 Getting Started steps are doors (David's walk: every step was a dud —
