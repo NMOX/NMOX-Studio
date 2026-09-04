@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.2] - 2026-09-03
+
+The update-center gauntlet joins the repo: **scripts/update-gauntlet.sh
+<from-tag>** downloads that release's portable, updates it in-app through
+the real update center to the newest catalog, and proves the result
+three ways — the platform's own updater tracked all eleven modules,
+every cluster jar reads the new version, a fresh-cache boot turns
+eleven on with zero SEVERE — carrying the laws two days of gauntlets
+paid for: a leash long enough for eleven NBMs, waiting for the
+updater's tracking writes rather than the process, a fresh cachedir
+for the proof boot, `--refresh` for a catalog the cachedir already
+holds, and the honest limit that first-boot UI is proven only by a live
+boot and an orderly quit (the recipe is printed, not attempted).
+ShipScriptsGateTest covers it with the other pipeline scripts (parse,
+usage refusal, pipefail).
+
 ## [2.69.1] - 2026-09-03
 
 The night's review of its own tooling, hours old: both in-repo

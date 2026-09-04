@@ -40,11 +40,18 @@ class ShipScriptsGateTest {
     @Test
     @DisplayName("Both pipeline scripts set pipefail — a `cmd | tail` must fail when cmd fails (v2.69.1 review)")
     void pipelineScriptsFailOnPipes() throws Exception {
-        for (String name : List.of("ship-branch.sh", "post-ship.sh")) {
+        for (String name : List.of("ship-branch.sh", "post-ship.sh", "update-gauntlet.sh")) {
             assertThat(Files.readString(SCRIPTS.resolve(name)))
                     .as("%s must set pipefail: its pushes and reinstalls run through `| tail`", name)
                     .contains("set -o pipefail");
         }
+    }
+
+    @Test
+    @DisplayName("update-gauntlet.sh refuses to run without a from-tag")
+    void gauntletDemandsItsTag() throws Exception {
+        assertThat(run("bash", SCRIPTS.resolve("update-gauntlet.sh").toString()))
+                .as("no from-tag → non-zero, never a silent run").isNotZero();
     }
 
     @Test
