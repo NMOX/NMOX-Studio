@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.4] - 2026-09-04
+
+The gauntlet's laws become a build law: ShipScriptsGateTest now pins
+the four corrections v2.69.3's rehearsals paid for — no `--refresh` on
+the fresh-userdir update run (the headless CLI loops either way, and
+`--refresh` multiplied it to 386 iterations), the update JVM TERMed
+after `update_tracking` moves (it never exits on its own), the
+`last="true"` poll (the tracking file keeps a history), and the
+installed-version proof read from the cluster after the update. A
+future edit that reintroduces the 40-minute loop fails the build by
+name instead of the next close.
+
 ## [2.69.3] - 2026-09-04
 
 The night close, proven by the night's own tool. The in-repo gauntlet
