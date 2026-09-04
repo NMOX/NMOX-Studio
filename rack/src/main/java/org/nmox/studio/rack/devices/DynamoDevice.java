@@ -35,7 +35,7 @@ public class DynamoDevice extends CommandDevice {
         runnerKnob.setToolTipText("AUTO follows the taskfile present; dial when a repo carries both");
 
         go.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         // by name: task indexes shift per project, names travel
         paramByName("task", taskKnob);

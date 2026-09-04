@@ -71,7 +71,7 @@ public class TestDevice extends CommandDevice {
         failuresButton.setToolTipText("The failing tests by name — with one-click re-run of just those");
 
         run.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         failuresButton.addActionListener(e -> showFailures());
 
         param("framework", frameworkKnob);

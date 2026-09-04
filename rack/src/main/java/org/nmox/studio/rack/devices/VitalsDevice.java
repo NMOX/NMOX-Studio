@@ -58,7 +58,7 @@ public class VitalsDevice extends CommandDevice {
         place(seoMeter, 560, 74);
 
         audit.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         addInPort("url", "URL", SignalType.DATA);
 

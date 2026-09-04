@@ -68,7 +68,7 @@ public class AngularDevice extends CommandDevice {
         update.addActionListener(e -> launch(List.of("npx", "ng", "update",
                 "@angular/cli", "@angular/core", "--allow-dirty")));
         serve.addActionListener(e -> serve());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         build.addActionListener(e -> primaryAction());
         test.addActionListener(e -> launch(List.of("npx", "ng", "test", "--watch=false")));
         generate.addActionListener(e -> {
@@ -217,7 +217,7 @@ public class AngularDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "serve" -> serve();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::serve, this::stopProcess);
             default -> super.receive(in, signal);
         }

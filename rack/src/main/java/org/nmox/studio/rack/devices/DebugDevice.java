@@ -46,7 +46,7 @@ public class DebugDevice extends CommandDevice {
         armedLed = place(new Led("WIRED", new Color(186, 85, 255)), 254 + 216, 84);
 
         attach.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
@@ -229,7 +229,7 @@ public class DebugDevice extends CommandDevice {
     @Override
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
-            stopProcess();
+            stopByUser();
         } else if ("enable".equals(in.getId())) {
             enableGate(signal.high(), this::primaryAction, this::stopProcess);
         } else {

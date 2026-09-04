@@ -38,7 +38,7 @@ public class PackageManagerDevice extends CommandDevice {
         install.addActionListener(e -> installAll());
         update.addActionListener(e -> launch(cmd("update")));
         outdated.addActionListener(e -> launch(cmd("outdated")));
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         param("manager", managerKnob);
     }

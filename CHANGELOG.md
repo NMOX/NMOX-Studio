@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.15] - 2026-09-04
+
+The rack walked by accessibility, and two finds from SOLDER's
+faceplate. **SOLDER announces the server it prints**: the learning
+spaces' own racks serve through SOLDER (`npx http-server`, `python -m
+http.server`), and while the IDE's Run lane and the seven serve devices
+light the ⇄ chip, a custom command printing `http://127.0.0.1:8081`
+left the chip, ⌘I Live Servers and the VITALS/BEACON targets dark. It
+registers now on the printed address — the IDE Run's own rule, only
+once the process has said it is listening — and deregisters when the
+run ends; no browser auto-open, a pipeline step runs builds too.
+**STOP reads STOPPED**: node's http-server traps TERM and exits 0, so a
+run the user stopped read "OK 37.985s"; the verdict is a pure seam now
+(the user's gesture or a signal exit code), the STOP button sets the
+flag before the kill, every launch clears it, both exit handlers
+consult it. The walk itself is a first: a faceplate button pressed
+through accessibility by coordinate (RackButton's v1.41.0 role answers
+AXPress), the project aimed through Quick Search by keystroke, each
+server's life recorded by a process watcher.
+
 ## [2.69.14] - 2026-09-04
 
 Docs truth: plan.md carries the keyboard day (v2.69.6–v2.69.13) as a

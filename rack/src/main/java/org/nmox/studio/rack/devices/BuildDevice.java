@@ -48,7 +48,7 @@ public class BuildDevice extends CommandDevice {
         watchSwitch = place(new ToggleSwitch("WATCH", false), 324, 42);
 
         build.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         param("tool", toolKnob);
         param("prod", prodSwitch);

@@ -71,7 +71,7 @@ public class AnvilDevice extends CommandDevice {
         forkUrlLcd.setEditable("Fork URL — blank starts a fresh chain, an RPC URL forks its state");
 
         start.addActionListener(e -> startChain());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         addInPort("start", "START", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
@@ -196,7 +196,7 @@ public class AnvilDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "start" -> startChain();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::startChain, this::stopProcess);
             default -> super.receive(in, signal);
         }

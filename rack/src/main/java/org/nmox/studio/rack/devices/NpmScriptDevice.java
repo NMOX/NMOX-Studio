@@ -31,7 +31,7 @@ public class NpmScriptDevice extends CommandDevice {
         managerKnob = place(new Knob("ENGINE", MANAGERS, 3), 254, 40);
 
         runButton.addActionListener(e -> primaryAction());
-        stopButton.addActionListener(e -> stopProcess());
+        stopButton.addActionListener(e -> stopByUser());
 
         // by name: script indexes shift per project, names travel
         paramByName("script", scriptKnob);

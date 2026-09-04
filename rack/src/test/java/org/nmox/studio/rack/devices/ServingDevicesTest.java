@@ -320,4 +320,24 @@ class ServingDevicesTest {
                 "<i> [webpack-dev-server] Loopback: http://localhost:5198/, http://[::1]:5198/"))
                 .isEqualTo("http://localhost:5198/,");
     }
+
+    @Test
+    @DisplayName("SOLDER registers the local address a custom command prints; finish deregisters (v2.69.15)")
+    void solderRegistersWhatItPrints() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            CommandLineDevice solder = new CommandLineDevice();
+            rack.addDevice(solder);
+            solder.onLine("Starting up http-server, serving ./");
+            assertThat(mine()).as("no URL printed yet: nothing announced").isEmpty();
+            solder.onLine("  http://127.0.0.1:8081");
+            assertThat(mine()).extracting(Serving::url).containsExactly("http://127.0.0.1:8081");
+            solder.onLine("  http://127.0.0.1:8081");
+            assertThat(mine()).as("the same banner twice registers once").hasSize(1);
+            solder.onFinished(0);
+            assertThat(mine()).as("the run ended: the chip goes dark").isEmpty();
+        } finally {
+            rack.removeDevice(rack.getDevices().get(0));
+        }
+    }
 }

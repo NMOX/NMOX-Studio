@@ -69,7 +69,7 @@ public class AnchorDevice extends CommandDevice {
 
         check.addActionListener(e -> refreshVersions());
         start.addActionListener(e -> startValidator());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         run.addActionListener(e -> runAction());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
@@ -213,7 +213,7 @@ public class AnchorDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "run" -> runAction();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::startValidator, this::stopProcess);
             default -> super.receive(in, signal);
         }

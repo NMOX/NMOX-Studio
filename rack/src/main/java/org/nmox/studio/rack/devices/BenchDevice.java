@@ -46,7 +46,7 @@ public class BenchDevice extends CommandDevice {
         RackButton fire = place(new RackButton("FIRE", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         fire.setCommandPreview(this::commandPreview);
         RackButton stopBench = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 46);
-        stopBench.addActionListener(e -> stopProcess());
+        stopBench.addActionListener(e -> stopByUser());
         resultLcd = place(new LcdDisplay(120, 1), 328, 82);
         resultLcd.getAccessibleContext().setAccessibleName("throughput");
         resultLcd.setText("—");
