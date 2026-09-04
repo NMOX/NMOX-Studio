@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.68.1] - 2026-09-03
+
+The ship half of the pipeline joins the repo: **scripts/ship-branch.sh**
+beside the gate (in-repo since v2.37.8), parameterized — branch, the
+fork sha captured at fork time, the PR title as a quoted argument, the
+PR body file — carrying every law the last two days paid for: a
+pipelined parent's own ship rebases it, so a child's fork must never be
+resolved from the parent's current tip (PR #645 replayed a whole
+lineage); two pipelined branches inserting changelog and CLAUDE.md lines
+at the same anchor collide at rebase, and the embedded resolver keeps
+both, ours above, the newest headline winning, refusing any non-docs
+conflict; conflict-marker checks are line-anchored because this very
+changelog quotes the marker strings; a title spliced into a generated
+script lost its apostrophe and produced no PR and no error; every exit
+code is checked, because a `| tail` once masked a failed rebase.
+ShipScriptsGateTest parses every script in scripts/ and proves the
+ship script refuses to run without its arguments (POSIX lanes; the
+Windows lane's Git Bash stays out by the v1.42.0 evidence). The Working
+Method's Shipping paragraph names both halves.
 ## [2.68.0] - 2026-09-03
 
 The night shift's debt sprint: two of the ledger's three smallest
