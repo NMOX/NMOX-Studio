@@ -24,8 +24,8 @@ import org.openide.filesystems.FileUtil;
  * the map has no opinion elsewhere.
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class, position = 575),
-    @MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class, position = 575)
+    @MimeRegistration(mimeType = "text/javascript", service = CompletionProvider.class, position = 576),
+    @MimeRegistration(mimeType = "text/typescript", service = CompletionProvider.class, position = 576)
 })
 public class ImportMapCompletionProvider implements CompletionProvider {
 

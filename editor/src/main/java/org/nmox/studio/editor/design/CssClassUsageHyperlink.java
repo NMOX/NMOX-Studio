@@ -35,12 +35,12 @@ import org.openide.util.RequestProcessor;
  * disk on a named RP with only the jump hopping back to the EDT.
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType = "text/css", service = HyperlinkProviderExt.class, position = 150),
-    @MimeRegistration(mimeType = "text/scss", service = HyperlinkProviderExt.class, position = 150),
-    @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 150),
-    @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 150),
-    @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 150),
-    @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 150)
+    @MimeRegistration(mimeType = "text/css", service = HyperlinkProviderExt.class, position = 155),
+    @MimeRegistration(mimeType = "text/scss", service = HyperlinkProviderExt.class, position = 155),
+    @MimeRegistration(mimeType = "text/less", service = HyperlinkProviderExt.class, position = 155),
+    @MimeRegistration(mimeType = "text/x-scss", service = HyperlinkProviderExt.class, position = 155),
+    @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 155),
+    @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 155)
 })
 public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
 

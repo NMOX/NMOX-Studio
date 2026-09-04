@@ -103,9 +103,18 @@ class LayerPositionCensusTest {
     void noMixedPositioning() throws Exception {
         List<String> mixed = new ArrayList<>();
         for (var f : census().entrySet()) {
-            long positioned = f.getValue().values().stream().filter(v -> v != null).count();
-            if (positioned > 0 && positioned < f.getValue().size()) {
-                f.getValue().forEach((name, pos) -> {
+            // the CSL processor emits PLATFORM rows (org-netbeans-*) into our
+            // generated layer without positions — we cannot position them,
+            // blessed in place since v2.28.0; the mixed check reads our own rows
+            Map<String, Integer> ours = new LinkedHashMap<>();
+            f.getValue().forEach((name, pos) -> {
+                if (!name.startsWith("org-netbeans-")) {
+                    ours.put(name, pos);
+                }
+            });
+            long positioned = ours.values().stream().filter(v -> v != null).count();
+            if (positioned > 0 && positioned < ours.size()) {
+                ours.forEach((name, pos) -> {
                     if (pos == null) {
                         mixed.add(f.getKey() + name);
                     }
