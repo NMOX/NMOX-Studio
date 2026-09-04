@@ -38,6 +38,13 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("post-ship.sh refuses to run without a tag")
+    void postShipDemandsItsTag() throws Exception {
+        assertThat(run("bash", SCRIPTS.resolve("post-ship.sh").toString()))
+                .as("no tag → non-zero, never a silent run").isNotZero();
+    }
+
+    @Test
     @DisplayName("ship-branch.sh refuses to run without its four arguments and says the usage")
     void shipBranchDemandsItsArguments() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("ship-branch.sh").toString()))
