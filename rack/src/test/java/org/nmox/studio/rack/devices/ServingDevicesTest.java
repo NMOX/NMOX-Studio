@@ -334,10 +334,54 @@ class ServingDevicesTest {
             assertThat(mine()).extracting(Serving::url).containsExactly("http://127.0.0.1:8081");
             solder.onLine("  http://127.0.0.1:8081");
             assertThat(mine()).as("the same banner twice registers once").hasSize(1);
-            solder.onFinished(0);
+            solder.withdrawPrintedServer();
             assertThat(mine()).as("the run ended: the chip goes dark").isEmpty();
         } finally {
             rack.removeDevice(rack.getDevices().get(0));
+        }
+    }
+
+    @Test
+    @DisplayName("NPM-9000 and DYNAMO announce the local server their script prints (v2.69.16 — the base rule)")
+    void scriptRunnersAnnounce() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            NpmScriptDevice npm = new NpmScriptDevice();
+            rack.addDevice(npm);
+            npm.onLine("  \u279c  Local:   http://localhost:5173/");
+            assertThat(mine()).extracting(Serving::url).containsExactly("http://localhost:5173/");
+            npm.withdrawPrintedServer();
+            rack.removeDevice(npm);
+            DynamoDevice dynamo = new DynamoDevice();
+            rack.addDevice(dynamo);
+            dynamo.onLine("[Browsersync] Access URLs: Local: http://localhost:3000");
+            assertThat(mine()).extracting(Serving::url).containsExactly("http://localhost:3000");
+            dynamo.withdrawPrintedServer();
+            assertThat(mine()).isEmpty();
+        } finally {
+            while (!rack.getDevices().isEmpty()) {
+                rack.removeDevice(rack.getDevices().get(0));
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("HELM and STELLAR never announce a printed local address — a remote host's localhost; a container that outlives the run")
+    void remoteAndContainerRunsRefuse() throws IOException {
+        Rack rack = aimedRack();
+        try {
+            SshDevice helm = new SshDevice();
+            rack.addDevice(helm);
+            helm.onLine("Serving HTTP on 0.0.0.0 port 8000 (http://localhost:8000/) ...");
+            assertThat(mine()).as("the remote machine's localhost is not ours").isEmpty();
+            StellarDevice stellar = new StellarDevice();
+            rack.addDevice(stellar);
+            stellar.onLine("RPC: http://localhost:8000/soroban/rpc");
+            assertThat(mine()).as("the container outlives the process: no gate, no announce").isEmpty();
+        } finally {
+            while (!rack.getDevices().isEmpty()) {
+                rack.removeDevice(rack.getDevices().get(0));
+            }
         }
     }
 }

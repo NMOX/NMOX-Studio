@@ -329,6 +329,7 @@ public abstract class CommandDevice extends RackDevice {
                     statusLcd.setText((ok ? "OK" : "FAIL [" + code + "]") + "  " + (elapsed / 1000.0) + "s");
                 }
             });
+            withdrawPrintedServer();
             onFinished(code);
             if (stopped) {
                 // a deliberate stop is not a failure: no toast, and no
@@ -418,6 +419,7 @@ public abstract class CommandDevice extends RackDevice {
                             + "  " + (elapsed / 1000.0) + "s");
                 }
             });
+            withdrawPrintedServer();
             onFinished(code);
             if (stopped) {
                 return;
@@ -456,6 +458,44 @@ public abstract class CommandDevice extends RackDevice {
 
     /** Hook: inspect each output line (worker thread). */
     protected void onLine(String line) {
+        announcePrintedServer(line);
+    }
+
+    /** The local URL this run printed and announced (v2.69.16); one banner registers once, exit clears it. */
+    private volatile String printedServerUrl;
+
+    /**
+     * A command that prints a local address IS a server (v2.69.16): the
+     * rule the IDE's Run lane and the serve devices already follow, now the
+     * default for every command device that does not shape its own output
+     * (SOLDER's npx http-server, NPM-9000's npm run dev, DYNAMO's gulp
+     * serve). Registers only once the process has SAID it is listening
+     * (the v1.93.0 serving-truth law), never opens a browser, and the exit
+     * handler withdraws it. Devices whose output can name a local address
+     * that is NOT this machine's server opt out via {@link #announcesPrintedServers()}.
+     */
+    protected final void announcePrintedServer(String line) {
+        if (!announcesPrintedServers()) {
+            return;
+        }
+        String url = ServeUrls.firstLocalUrl(line);
+        if (url != null && !url.equals(printedServerUrl)) {
+            printedServerUrl = url;
+            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
+        }
+    }
+
+    /** Whether a printed local address means a server on THIS machine that this run owns. */
+    protected boolean announcesPrintedServers() {
+        return true;
+    }
+
+    /** Package-private for the serving tests: what the exit handler runs before {@link #onFinished(int)}. */
+    void withdrawPrintedServer() {
+        if (printedServerUrl != null) {
+            deregisterServing();
+            printedServerUrl = null;
+        }
     }
 
     /** Hook: inspect the exit code (worker thread). */
