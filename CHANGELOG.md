@@ -4,6 +4,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.14] - 2026-09-04
+
+Docs truth: plan.md carries the keyboard day (v2.69.6–v2.69.13) as a
+dated addendum — the invisible first-boot dialog, the four finds from
+David's own clicks, and nine method laws — and its currency header
+moves to v2.69.13 (docs only).
+
 ## [2.69.13] - 2026-09-04
 
 The walk v2.69.10 owed (docs only): the platform's own Run menu,

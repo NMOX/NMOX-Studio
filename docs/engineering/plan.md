@@ -1,8 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.69.5, after two lenses, one
-editor day, the senior-RCP and PM passes, and the night the pipeline
-moved in-repo (v2.44.0–v2.69.5, ~30 releases in six days). **The
+*Currency addendum 2026-09-04, at v2.69.13, after two lenses, one
+editor day, the senior-RCP and PM passes, the night the pipeline moved
+in-repo, and the keyboard day (v2.44.0–v2.69.13, ~38 releases in six
+days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -2907,3 +2908,52 @@ boot + TERM is honest; **the catalog cache lives in the cachedir** —
 a fresh cachedir on a loaded userdir reads "Updates not found"; and
 **pushes touching .github/workflows need SSH** (a GIT_CONFIG env
 rewrite on the ship script, the remote stays HTTPS).
+
+## Addendum — 2026-09-04, the keyboard day (v2.69.6–v2.69.13)
+
+Eight releases, and the most productive lens of the whole project's
+history was a person clicking. **v2.69.6** closed the night's docs.
+**v2.69.7** was the screen walk David granted: the first-boot What's New
+had been created but NEVER VISIBLE since v2.64.0 — a modal opened from
+the platform's UI-ready hook, before the main window is active, stays
+unmapped on macOS while the same dialog from the Help menu shows fine
+(MainWindowUp waits for showing AND active, else the first activation);
+two dialogs wider than a 1372-pt display (DialogFit clamps a body to 0.8
+of the screen); and three boot Ordering warnings naming our own rows,
+fixed and made a build law by LayerPositionCensusTest over the assembled
+cluster's module layers, whose first run named two more collisions in
+lazily loaded folders the boot log never reports. **v2.69.8** put the
+walk's proof shots in the user guide. Then David sat at the keyboard.
+**v2.69.9**: the five Getting Started rows were labels with a tooltip —
+every step is a door now, its target gated against the generated layer.
+**v2.69.10**: "there's no way to stop a running server when I click the
+play icon" — the only stop was the progress-popup Cancel; a Stop button
+beside Run/Debug (LiveRuns, every live tree) and registration with the
+platform's BuildExecutionSupport (Run ▸ Stop Build/Run + Repeat).
+**v2.69.11**: "We have both a Start and a Getting Started" (FIRST STEPS)
+and a three-second server that never ticked "See a server go live" —
+the tick was poll-at-repaint; listener-driven now, for the Welcome's
+whole OPEN life (the first cut listened only while showing, measured
+dead behind an editor tab). **v2.69.12** reviewed the day: the duplicate
+menu stop dropped, the user guide's first paragraph on Run/Build/Test/
+Stop. **v2.69.13** walked the platform's Run menu by name: "Stop
+Build/Run: Run — first-web-page" stopped our run, Repeat re-ran it.
+
+The method lessons, stated as laws: **a painted list item that looks
+like a link must BE a link** — a checklist without doors reads as
+broken; **a user's click is the walk automation cannot do** on painted
+Java content (no AX, display hit-tests refuse) — and a watcher of prefs,
+window titles and processes started BEFORE the click turns the click
+into a record; **a record-driven tick must be listener-driven when the
+record is transient**, and the listener lives for the tab's open life,
+not its visibility; **AX says a window exists, only a display capture
+proves it is visible** (the phantom dialog answered accessibility with
+the right title and buttons); **an equivalent mutant proves nothing**
+(`[ 1 -eq 1 ;` is a runtime error bash -n accepts; a commented-out call
+still matches a `contains()` gate — strip comment lines); **`-pl` without
+`-am` prints nothing offline**, and nothing is not a pass; **the headless
+`--update-all` CLI loops** (waiting on update_tracking's `last="true"`
+and TERMing the JVM is the harness); **write the PR body before the
+verify step**; and **surefire forks register as java "Launcher"
+processes** that confuse an accessibility walk — walk only when no
+verify runs, or drive System Events by unix id.
