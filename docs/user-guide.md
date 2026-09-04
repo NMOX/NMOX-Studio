@@ -262,7 +262,7 @@ connections) the Java [Device SPI](device-spi.md) is still there.
 device — and the whole rack **exports to GitHub Actions** (your local
 pipeline and your CI are the same wiring). **HELM** runs commands on a
 remote server over ssh. **TAIL** follows any log file. **WORMHOLE**
-tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; STOP reads STOPPED whatever the process's exit code.
+tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code.
 
 **The rack stays in sync by itself.** Edit `package.json` and NPM-9000's
 script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its

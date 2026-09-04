@@ -18,8 +18,6 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 public class CommandLineDevice extends CommandDevice {
 
     private final LcdDisplay commandLcd;
-    /** The local URL this run announced (v2.69.15), so one banner registers once and a restart re-announces. */
-    private volatile String announcedUrl;
 
     public CommandLineDevice() {
         super("cmd", "SOLDER", "CUSTOM COMMAND", new Color(176, 141, 87), 2);
@@ -35,34 +33,6 @@ public class CommandLineDevice extends CommandDevice {
         stop.addActionListener(e -> stopByUser());
 
         param("command", commandLcd);
-    }
-
-    /**
-     * A custom command that prints a local address IS a server (v2.69.15):
-     * the learning spaces' own racks serve through SOLDER (npx http-server,
-     * python -m http.server …) and the ⇄ chip, ⌘I Live Servers, VITALS and
-     * BEACON targets stayed dark for them while the IDE's Run lane and the
-     * serve devices lit up. Same rule as the IDE's Run: register only once
-     * the process has SAID it is listening (the v1.93.0 serving-truth law),
-     * deregister when it ends. No browser auto-open — a pipeline step runs
-     * builds too; the chip is the honest door.
-     */
-    @Override
-    protected void onLine(String line) {
-        String url = ServeUrls.firstLocalUrl(line);
-        if (url != null && !url.equals(announcedUrl)) {
-            announcedUrl = url;
-            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
-        }
-    }
-
-    @Override
-    protected void onFinished(int exitCode) {
-        if (announcedUrl != null) {
-            deregisterServing();
-            announcedUrl = null;
-        }
-        super.onFinished(exitCode);
     }
 
     @Override

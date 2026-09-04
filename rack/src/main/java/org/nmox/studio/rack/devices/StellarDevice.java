@@ -33,6 +33,13 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class StellarDevice extends CommandDevice {
 
+    /** The quickstart local net runs in a container that outlives this process — no serving gate by the v1.93.0 law (v1.130.0), so no announce either (v2.69.16). */
+    @Override
+    protected boolean announcesPrintedServers() {
+        return false;
+    }
+
+
     /** cargo test first: the zero-setup lane every Soroban repo has. */
     private static final String[] ACTIONS = {"test", "net-start", "net-stop"};
     /** cargo search: {@code soroban-sdk = "23.0.2"   # Soroban SDK.} */

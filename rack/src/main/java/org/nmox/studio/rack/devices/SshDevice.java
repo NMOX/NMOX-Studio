@@ -19,6 +19,13 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class SshDevice extends CommandDevice {
 
+    /** A remote command's "http://localhost:8080" is the REMOTE host's — never this machine's server (v2.69.16). */
+    @Override
+    protected boolean announcesPrintedServers() {
+        return false;
+    }
+
+
     private final LcdDisplay hostLcd;
     private final LcdDisplay commandLcd;
 

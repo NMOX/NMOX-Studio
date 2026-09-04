@@ -4,6 +4,21 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.16] - 2026-09-04
+
+The rule v2.69.15 gave SOLDER becomes the command-device default: a
+census after that fix found NPM-9000 (`npm run dev` prints "Local:
+http://localhost:5173") and DYNAMO (`gulp serve`) equally dark on the ⇄
+chip. Every command device that does not shape its own output now
+announces the local address its process prints, once it has printed
+it, and the exit handler withdraws it. Two explicit refusals with their
+reasons in code: HELM — a remote command's "http://localhost" is the
+remote host's — and STELLAR, whose quickstart local net lives in a
+container that outlives the process (the v1.130.0 no-gate decision,
+same law). The serve devices keep their own richer announce; devices
+that shape their output (the debugger's "listening on ws://127.0.0.1"
+among them) keep theirs and inherit nothing.
+
 ## [2.69.15] - 2026-09-04
 
 The rack walked by accessibility, and two finds from SOLDER's
