@@ -1,7 +1,8 @@
 # The Plan
 
-*Currency addendum 2026-09-03, at v2.67.1, after two lenses and one
-editor day (v2.44.0–v2.62.1, ~19 releases in five days). **The
+*Currency addendum 2026-09-04, at v2.69.5, after two lenses, one
+editor day, the senior-RCP and PM passes, and the night the pipeline
+moved in-repo (v2.44.0–v2.69.5, ~30 releases in six days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -2843,3 +2844,66 @@ jar for the change before driving, or a stale cluster judges the walk;
 uncommitted fixes (a reapply script rebuilt them); and find-sec-bugs
 reads an angle-bracketed marker as XML under construction — remove the
 trigger (⟪CURSOR⟫), keep the rule.
+
+## Addendum — 2026-09-03/04, the night the pipeline moved in-repo (v2.62.2–v2.69.5)
+
+Two directed passes and a night shift of ten releases. **v2.62.2** took
+Dependabot's bump through the gate the split way. **v2.63.0**, the
+senior-RCP pass (David's ask): every background thread a named daemon
+by construction (core.util.Threads at 22 sites; DaemonThreadGateTest
+reads every module), ORACLE prefs userdir-scoped, nine never-imported
+public packages withdrawn — and the nbm runtime check taught the
+return-type export law: a package whose types are RETURNED to friends
+must stay exported even when nobody imports it. **v2.64.0–v2.66.0**,
+the product manager's wishes: What's New from the bundled CHANGELOG,
+Report a Problem… with a redacted bounded log tail the USER submits,
+Keyboard Shortcuts… derived from the running keymap (D=⌘ A=⌥ O=⌃ S=⇧
+rendered), the last failed run in the report, a Getting Started
+column that ticks itself from the product's own records. **v2.67.0**
+was the find of the week: every product-version read (Welcome footer,
+What's New, Report a Problem, the Agent Port's initialize, and the
+daily update notifier since v1.25.0) loaded the branded startup bundle
+through the MODULE classloader — MissingResourceException, null, in
+every shipped build. Found because the day-close gauntlet saw the
+What's New preference never written while the Getting Started tick
+was: an ABSENT preference means the path never ran. One reader now
+(core.util.ProductVersion: the netbeans.productversion property, then
+the branded bundle via the system classloader), a gate banning raw
+reads. **v2.67.1/.2** proved it live: the update gauntlet, a live boot
+ending in an orderly quit writing lastSeenVersion, and the notifier's
+first working day — the check ran, the API answered the newer tag,
+Plugins opened on Updates (11). **v2.68.0** closed ledgers 64 and 67
+(OpenOnServe's synthetic rescan; ⌘I device ranking exact-before-loose),
+**v2.68.1/.2** moved the ship pipeline in-repo (ship-branch.sh with the
+fork sha as a parameter and the docs-collision resolver embedded;
+post-ship.sh with every wait leashed), **v2.69.0** delivered futures F7
+(a .ts entry runs through Node's own type stripping; the pump's third
+wall), **v2.69.1** pipefail in both scripts, **v2.69.2/.3** the
+update-center gauntlet in-repo with its first-boot half — its two
+rehearsals paid for the night's biggest harness finding: the headless
+`--modules --update-all` CLI LOOPS (the running JVM never sees its own
+update, so it installs the same eleven every ~6 s; 386 iterations and
+~4,200 NBM installs in 40 minutes with --refresh, 4 in 25 s without),
+so waiting on update_tracking's `last="true"` entry and TERMing the JVM
+is the harness, not a workaround; the version proven is the one that
+INSTALLED. **v2.69.4** pinned those laws in the build; **v2.69.5** made
+CI run the gauntlet after every Release under xvfb, both halves.
+
+The method lessons, stated as laws: **capture the fork sha at fork
+time** — a parent's own ship rebases it, and a stale fork replays a
+whole lineage; **the docs resolver refuses non-docs collisions on
+purpose** — two pipelined units editing the same gate TEST are resolved
+by hand (take main's file, re-apply the insertion, rerun the gate) and
+the docs edits are checked to have LANDED before continuing (a
+mid-rebase assertion silently left them out once); **an equivalent
+mutant proves nothing** — `[ 1 -eq 1 ;` is a RUNTIME error bash -n
+accepts, an unclosed `if` is the parse error the gate exists for; **a
+`| tail` masks the exit code** — pipefail in every chained script;
+**zsh -ilc aliases cp/rm to -i** — a background task hung on
+"overwrite?" (second strike; /bin/cp -f inside the interactive shell);
+**netbeans.close exits before post-UI hooks** — first-boot UI is proven
+by a live boot, and NbPreferences persist under SIGTERM so a timed
+boot + TERM is honest; **the catalog cache lives in the cachedir** —
+a fresh cachedir on a loaded userdir reads "Updates not found"; and
+**pushes touching .github/workflows need SSH** (a GIT_CONFIG env
+rewrite on the ship script, the remote stays HTTPS).
