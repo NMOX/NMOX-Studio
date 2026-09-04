@@ -85,6 +85,16 @@ class RunTargetMatrixTest {
     }
 
     @Test
+    @DisplayName("F7: a TypeScript entry runs without a build — node with the strip-types flag; a JS entry still wins")
+    void typeScriptEntryRunsDirectly() throws IOException {
+        assertThat(commandFor("node", "index.ts"))
+                .containsExactly("node", "--experimental-strip-types", "index.ts");
+        assertThat(commandFor("node", "src/index.ts"))
+                .containsExactly("node", "--experimental-strip-types", "src/index.ts");
+        assertThat(commandFor("node", "index.js", "index.ts")).containsExactly("node", "index.js");
+    }
+
+    @Test
     @DisplayName("Every explicit knob position speaks its toolchain's run verb")
     void explicitTargets() throws IOException {
         assertThat(commandFor("python")).containsExactly("python3", "main.py");

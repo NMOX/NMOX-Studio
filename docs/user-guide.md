@@ -1325,6 +1325,11 @@ keymaps never costs you the studio chords.
   reload when edited outside the IDE — but if you have unsaved changes,
   you're asked, never overwritten. A corrupt file is set aside as `.bak`
   and reported, never silently replaced.
+- **TypeScript without a build** — a project whose entry is `index.ts`,
+  `main.ts` or `src/index.ts` runs from IGNITION (and the node lane) with
+  Node's own type stripping (`--experimental-strip-types`, Node 22.6+; the
+  default from 23.6 and 22.18 LTS). An older Node's refusal is translated
+  into the sentence that names the floor.
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place

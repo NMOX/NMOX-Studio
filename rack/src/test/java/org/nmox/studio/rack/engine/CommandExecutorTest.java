@@ -147,7 +147,7 @@ class CommandExecutorTest {
     }
 
     @org.junit.jupiter.api.Test
-    @org.junit.jupiter.api.DisplayName("both humanizers are wired into the pump, not just defined")
+    @org.junit.jupiter.api.DisplayName("all three humanizers are wired into the pump, not just defined")
     void humanizersAreWiredIntoThePump() throws Exception {
         // A predicate with green tests and no call site is a payload
         // without a gate (the v1.216.0 class): deleting the pump block
@@ -158,5 +158,9 @@ class CommandExecutorTest {
         org.assertj.core.api.Assertions.assertThat(src)
                 .contains("looksLikePortInUse(clean)")
                 .contains("looksLikeNodeTooOld(clean)");
+        // the third wall (v2.69.0): the strip-types refusal is consulted on the same pump path
+        org.assertj.core.api.Assertions.assertThat(src)
+                .as("NodeTypeStripping.wall must be consulted by the pump — a wall with no call site is a payload without a gate")
+                .contains("NodeTypeStripping.wall(clean)");
     }
 }

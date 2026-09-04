@@ -118,6 +118,23 @@ law-dense corner of the product (ledgers 81/83, the workspace-kind
 partition). The watch trigger is written at the pin: when ngserver
 gains native-TS support, the ceiling moves as its own gauntleted arc.
 
+### F7 — TypeScript runs without a build. — DELIVERED (v2.69.0, the run lane)
+
+**Trajectory (2026):** Node strips types itself — `--experimental-strip-types`
+since 22.6 (2024), on by default since 23.6 and in the 22.18 LTS line;
+Deno and Bun ran `.ts` from day one. The build step that TypeScript
+always implied is optional for scripts, tools, and servers.
+**The 2031 claim:** a `.ts` entry is as runnable as a `.js` one; a
+tsconfig is for types, not for producing files. Frameworks still bundle,
+but the everyday `node file.ts` is unremarkable.
+**The unit that pays today:** IGNITION's node lane accepts `index.ts`,
+`main.ts`, `src/index.ts` as entries (JavaScript entries keep
+precedence) and runs them with the flag — one argv for every Node from
+22.6 up, a no-op where stripping is the default, no version probe (the
+command is also built for tooltips and CI export on the EDT). An older
+Node's `bad option` refusal is translated at the pump into the human
+wall naming the floor, the v1.318.0 idiom.
+
 ### F6 — The classic web never dies. — STANDING (no change)
 
 The 2031 web still serves jQuery pages, and this product's classic-web
