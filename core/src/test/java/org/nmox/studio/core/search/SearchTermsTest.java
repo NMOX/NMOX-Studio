@@ -124,4 +124,19 @@ class SearchTermsTest {
             assertThat(SearchTerms.matches("class", "classes of things")).isTrue();
         }
     }
+
+    @Test
+    @DisplayName("score(): a whole-word hit outranks a prefix hit — 'compose' finds docker compose before composer (ledger 67)")
+    void scoreRanksExactAboveLoose() {
+        assertThat(SearchTerms.score("compose", "HARBOR", "Docker Engine", "docker compose containers"))
+                .isEqualTo(SearchTerms.EXACT);
+        assertThat(SearchTerms.score("compose", "ARTISAN", "Laravel console", "composer artisan php"))
+                .isEqualTo(SearchTerms.LOOSE);
+        assertThat(SearchTerms.score("compose", "VITALS", "Lighthouse floor", "lighthouse a11y"))
+                .isEqualTo(SearchTerms.NO_MATCH);
+        // plural/singular still counts as exact both ways; a two-term query is exact only when both are
+        assertThat(SearchTerms.score("logs", "TAIL", "Log Follower", "log tail")).isEqualTo(SearchTerms.EXACT);
+        assertThat(SearchTerms.score("docker compose", "HARBOR", "Docker Engine", "docker compose")).isEqualTo(SearchTerms.EXACT);
+        assertThat(SearchTerms.score("docker composer", "HARBOR", "Docker Engine", "docker compose")).isEqualTo(SearchTerms.NO_MATCH);
+    }
 }

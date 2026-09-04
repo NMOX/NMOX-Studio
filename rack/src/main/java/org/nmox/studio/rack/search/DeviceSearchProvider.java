@@ -19,15 +19,36 @@ import org.nmox.studio.rack.service.RackService;
  */
 public class DeviceSearchProvider implements SearchProvider {
 
+    /**
+     * The matching devices in the order Quick Search lists them: every hit
+     * the one matcher accepts, whole-word hits before prefix hits (ledger
+     * 67 — "compose" listed Laravel and CRATE, whose vocabulary carries
+     * "composer", above HARBOR, whose vocabulary carries "compose"), ties
+     * in shelf order. Pure, so the ranking is a unit test.
+     */
+    static java.util.List<DeviceCatalog.Entry> ranked(String query) {
+        java.util.List<DeviceCatalog.Entry> exact = new java.util.ArrayList<>();
+        java.util.List<DeviceCatalog.Entry> loose = new java.util.ArrayList<>();
+        for (DeviceCatalog.Entry type : DeviceCatalog.all()) {
+            int score = SearchTerms.score(query, type.title(), type.description(), type.keywords());
+            if (score == SearchTerms.EXACT) {
+                exact.add(type);
+            } else if (score == SearchTerms.LOOSE) {
+                loose.add(type);
+            }
+        }
+        exact.addAll(loose);
+        return exact;
+    }
+
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
         String needle = request.getText();
         if (needle == null || needle.isBlank()) {
             return;
         }
-        for (DeviceCatalog.Entry type : DeviceCatalog.all()) {
-            if (SearchTerms.matches(needle,
-                    type.title(), type.description(), type.keywords())) {
+        for (DeviceCatalog.Entry type : ranked(needle)) {
+            {
                 boolean more = response.addResult(() -> javax.swing.SwingUtilities.invokeLater(() -> {
                     // a third-party device's build() can throw — never let it
                     // escape onto the EDT from Quick Search (matches the drop

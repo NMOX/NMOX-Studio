@@ -124,6 +124,49 @@ public final class SearchTerms {
         return false;
     }
 
+    /** No match. */
+    public static final int NO_MATCH = 0;
+    /** Every term matched by prefix, plural, or the loose mid-word fallback. */
+    public static final int LOOSE = 1;
+    /** Every term matched a WHOLE word exactly (or its singular) — the strongest intent. */
+    public static final int EXACT = 2;
+
+    /**
+     * Ranking for the surfaces that list several hits (ledger 67): the
+     * boolean match decides membership, this decides order. "compose"
+     * scores EXACT against a device whose vocabulary carries the word
+     * "compose" and only LOOSE against "composer", so the strongest-intent
+     * device lists first without any surface learning a second matcher.
+     */
+    public static int score(String query, String... haystacks) {
+        if (!matches(query, haystacks)) {
+            return NO_MATCH;
+        }
+        List<String> needles = words(query);
+        List<String> hay = new ArrayList<>();
+        for (String h : haystacks) {
+            if (h != null && !h.isEmpty()) {
+                hay.addAll(words(h));
+            }
+        }
+        for (String needle : needles) {
+            if (!matchesWordExactly(needle, hay)) {
+                return LOOSE;
+            }
+        }
+        return EXACT;
+    }
+
+    private static boolean matchesWordExactly(String needle, List<String> hay) {
+        String stem = singular(needle);
+        for (String word : hay) {
+            if (word.equals(needle) || word.equals(stem) || singular(word).equals(needle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean matchesAnyWord(String needle, List<String> hay) {
         String stem = singular(needle);
         for (String word : hay) {

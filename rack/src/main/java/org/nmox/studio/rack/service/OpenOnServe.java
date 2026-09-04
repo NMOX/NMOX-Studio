@@ -105,6 +105,15 @@ public final class OpenOnServe {
      *                   a no-op, so callers need no branching
      */
     public void arm(File projectDir) {
+        arm(projectDir, () -> { });
+    }
+
+    /**
+     * The seam for ledger 64's proof: {@code betweenSnapshotAndAttach} runs
+     * in the microseconds the old code could lose a serving in. Production
+     * passes a no-op; the test registers a serving there.
+     */
+    void arm(File projectDir, Runnable betweenSnapshotAndAttach) {
         if (projectDir == null || !enabled()) {
             return;
         }
@@ -121,7 +130,14 @@ public final class OpenOnServe {
             disarmLocked();
             arm = fresh;
         }
+        betweenSnapshotAndAttach.run();
         registry.addListener(fresh);
+        // ledger 64 CLOSED: a serving registered between the snapshot above
+        // and the attach just now was neither suppressed as pre-existing nor
+        // delivered as an event — one synthetic rescan right after attaching
+        // treats that window exactly like an event (the same path, the same
+        // urlsBefore), so the gap is zero-width by construction
+        onServingChanged(fresh);
         // the window is also a real deadline: without this an arm that
         // never fires would keep a listener attached for the session
         RP.schedule(() -> expire(fresh), (int) ARM_WINDOW_MS,

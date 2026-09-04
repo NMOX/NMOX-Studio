@@ -77,6 +77,19 @@ class OpenOnServeTest {
     }
 
     @Test
+    @DisplayName("ledger 64: a serving registered between the snapshot and the attach is still delivered (the post-attach rescan)")
+    void servingInTheSnapshotToAttachGapIsDelivered() {
+        // the seam runs in exactly the window the old code lost: after the
+        // pre-existing snapshot was taken, before the listener existed
+        OpenOnServe.getDefault().arm(PROJECT,
+                () -> registry.register(web("VELOCITY", "http://localhost:5173/", PROJECT)));
+        registry.awaitIdle();
+        assertThat(OpenOnServe.getDefault().isArmedForTest())
+                .as("the gap serving spends the arm — it is neither pre-existing nor lost")
+                .isFalse();
+    }
+
+    @Test
     @DisplayName("a serving for a DIFFERENT project leaves the arm standing")
     void otherProjectDoesNotConsumeTheArm() {
         armAndWatch(PROJECT);
