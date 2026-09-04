@@ -38,7 +38,14 @@ echo "catalog offers: $(curl -sL https://github.com/NMOX/NMOX-Studio/releases/la
 # polled for update_tracking, then TERMed. The version proven is the one
 # the updater INSTALLED (read from the cluster after), not the catalog's
 # answer at script start — a release landing mid-run made those differ.
-"$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --refresh --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1 &
+# No --refresh here: the userdir is fresh, so the first --modules run fetches
+# the catalog itself; --refresh belongs to a SECOND update on a loaded
+# userdir (v2.67.1 law). Measured on the first in-repo rehearsal: with
+# --refresh the CLI run re-installed all eleven modules every ~6 s for
+# 40 minutes (386 iterations, ~4,200 NBM installs, 756 connections) until
+# the leash killed it — the running JVM never sees its own update, so a
+# refresh-then-update loop never converges.
+"$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1 &
 UPD=$!
 # update_tracking keeps a HISTORY of module_version entries; the installed
 # one carries last="true" — the poll counts files whose last entry is no
@@ -50,6 +57,7 @@ kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null; echo "update RC=$? (TERM
 grep -E 'updates=|Will update' "$G/update.log" | head -3
 LATEST=$(for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 OpenIDE-Module-Specification-Version | tr -d '\r' | awk '{print $2}'; done | sort -V | tail -1)
 echo "after: $(census) -> installed $LATEST"
+echo "installs recorded per module (1 expected; more = the updater looped): $(grep -c '<module_version' "$CL"/nmoxstudio/update_tracking/org-nmox-NMOX-Studio-core.xml) entries in core's update_tracking; update iterations: $(grep -c 'updates=' "$G/update.log")"
 [ "$n" -ge 11 ] && [ "$LATEST" != "$FROMV" ] || { echo "GAUNTLET-FAIL: the updater did not move 11 modules off $FROMV"; exit 1; }
 rm -rf "$G/cd2"; timeout 300 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd2" --nosplash -J-Dplugin.manager.check.updates=false -J-Dnetbeans.close=true > "$G/boot.log" 2>&1; echo "boot RC=$?"
 L="$G/ud/var/log/messages.log"; ON=$(grep -oE "org\.nmox\.NMOX\.Studio\.[a-z0-9]+ \[$LATEST" "$L" | sort -u | wc -l | tr -d ' '); SEV=$(grep -c SEVERE "$L")
