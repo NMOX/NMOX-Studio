@@ -48,12 +48,12 @@ import org.openide.windows.TopComponent;
  * the EDT on a named RP with newest-wins, plain rendering on every
  * label (test names are file content — external text).
  */
-@TopComponent.Registration(mode = "explorer", openAtStartup = false)
+@TopComponent.Registration(mode = "explorer", openAtStartup = false, position = 80)
 @TopComponent.Description(preferredID = "TestsExplorerTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @ActionID(category = "Window", id = "org.nmox.studio.editor.testing.explorer.TestsExplorerTopComponent")
 @ActionReferences({
-    @ActionReference(path = "Menu/Window", position = 258),
+    @ActionReference(path = "Menu/Window", position = 261),
     @ActionReference(path = "Shortcuts", name = "DA-2")
 })
 @TopComponent.OpenActionRegistration(displayName = "#CTL_TestsExplorerAction",

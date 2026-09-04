@@ -31,7 +31,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.A11yKitAction")
 @ActionRegistration(displayName = "#CTL_A11yKitAction")
-@ActionReference(path = "Menu/File", position = 122)
+@ActionReference(path = "Menu/File", position = 125)
 @Messages("CTL_A11yKitAction=A11y Kit (Web)…")
 public final class A11yKitAction implements ActionListener {
 

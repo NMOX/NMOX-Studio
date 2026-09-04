@@ -120,10 +120,13 @@ public final class ReportProblemAction implements ActionListener {
         area.setCaretPosition(0);
         area.getAccessibleContext().setAccessibleName("Problem report, editable");
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
-        JLabel note = new JLabel("This is the whole report. NMOX Studio sends nothing — Open on GitHub "
-                + "pre-fills a new issue that you submit yourself; Copy puts the text on the clipboard.");
+        // two short labels, not one long line: a single-line label widens the
+        // dialog past a laptop screen (the v2.69.6 walk), and the body is clamped
+        JPanel note = new JPanel(new java.awt.GridLayout(2, 1));
+        note.add(new JLabel("This is the whole report. NMOX Studio sends nothing."));
+        note.add(new JLabel("Open on GitHub pre-fills a new issue that you submit yourself; Copy puts the text on the clipboard."));
         panel.add(note, java.awt.BorderLayout.NORTH);
-        panel.add(new JScrollPane(area), java.awt.BorderLayout.CENTER);
+        panel.add(org.nmox.studio.ui.util.DialogFit.toScreen(new JScrollPane(area)), java.awt.BorderLayout.CENTER);
         Object open = "Open on GitHub";
         Object copy = "Copy";
         Object cancel = "Cancel";

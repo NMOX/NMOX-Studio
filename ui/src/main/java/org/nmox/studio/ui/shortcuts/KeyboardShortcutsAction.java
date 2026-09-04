@@ -98,6 +98,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
                 java.awt.BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new java.awt.Dimension(560, 380));
+        org.nmox.studio.ui.util.DialogFit.toScreen(scroll);
         panel.add(scroll, java.awt.BorderLayout.CENTER);
         Object copy = "Copy as Markdown";
         Object close = "Close";
