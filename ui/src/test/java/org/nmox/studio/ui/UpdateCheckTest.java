@@ -43,8 +43,10 @@ class UpdateCheckTest {
     @Test
     @DisplayName("currentVersion reads the startup Bundle's currentVersion, unstamped in a dev build")
     void currentVersionReadsBundle() {
-        // the platform's startup Bundle is on the test classpath; unbranded it
-        // carries the dev "Platform Dev (Build {0})" string with no x.y version
+        // since v2.67.0 this goes through core.util.ProductVersion (the one
+        // reader a module can trust); in the test JVM no launcher property is
+        // set, so the fallback reads the unbranded platform startup Bundle on
+        // the test classpath — "Platform Dev (Build {0})", no x.y version
         String raw = UpdateCheck.currentVersion();
         assertThat(raw).isNotNull();
         // that dev string has no dotted version, so the update check treats it
