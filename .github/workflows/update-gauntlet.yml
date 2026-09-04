@@ -1,0 +1,63 @@
+name: Update gauntlet
+
+# The update-center gauntlet, run by CI (v2.69.5): after every Release
+# workflow completes (all 21 assets uploaded, the catalog live), a stock
+# portable of the PREVIOUS release updates itself in-app to the newest
+# through the real update center and boots clean, first-boot half
+# included (xvfb gives the What's New hook a display). Informational:
+# a red run here never blocks a release — it names a broken update path
+# within minutes of the tag instead of at the next hand gauntlet.
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      from_tag:
+        description: "Release to start from (vX.Y.Z); default = the previous release"
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  gauntlet:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: 25
+      - name: Pick the from-tag (the previous release)
+        id: from
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          FROM="${{ github.event.inputs.from_tag }}"
+          if [ -z "$FROM" ]; then
+            FROM=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 2 --json tagName -q '.[1].tagName')
+          fi
+          echo "from=$FROM" >> "$GITHUB_OUTPUT"
+          echo "gauntlet: $FROM -> latest"
+      - name: Run the gauntlet under xvfb
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: xvfb-run -a scripts/update-gauntlet.sh "${{ steps.from.outputs.from }}" "$RUNNER_TEMP/nmox-gauntlet"
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: update-gauntlet-logs
+          path: |
+            ${{ runner.temp }}/nmox-gauntlet/*.log
+            ${{ runner.temp }}/nmox-gauntlet/ud/var/log/messages.log
+          if-no-files-found: ignore

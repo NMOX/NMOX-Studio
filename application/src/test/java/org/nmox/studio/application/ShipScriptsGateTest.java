@@ -60,6 +60,16 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("CI runs the gauntlet after every Release under xvfb (v2.69.5) — the script, not a copy of it")
+    void ciRunsTheGauntlet() throws Exception {
+        String wf = Files.readString(SCRIPTS.resolve("../.github/workflows/update-gauntlet.yml"));
+        assertThat(wf).as("triggered by the Release workflow's completion, when the assets and catalog are live")
+                .contains("workflow_run").contains("workflows: [\"Release\"]");
+        assertThat(wf).as("the What's New hook needs a display: xvfb-run in front of the ONE script")
+                .contains("xvfb-run -a scripts/update-gauntlet.sh");
+    }
+
+    @Test
     @DisplayName("update-gauntlet.sh refuses to run without a from-tag")
     void gauntletDemandsItsTag() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("update-gauntlet.sh").toString()))
