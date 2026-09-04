@@ -65,7 +65,7 @@ public class ArtisanDevice extends CommandDevice {
 
         check.addActionListener(e -> refreshVersions());
         serve.addActionListener(e -> serve());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         run.addActionListener(e -> primaryAction());
 
         addInPort("serve", "SERVE", SignalType.TRIGGER);
@@ -213,7 +213,7 @@ public class ArtisanDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "serve" -> serve();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::serve, this::stopProcess);
             default -> super.receive(in, signal);
         }

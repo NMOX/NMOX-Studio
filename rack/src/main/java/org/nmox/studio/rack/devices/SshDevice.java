@@ -36,7 +36,7 @@ public class SshDevice extends CommandDevice {
         commandLcd.setEditable("Remote command");
 
         run.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         // a droplet's address can arrive by cable (infra designer, TAIL of
         // a provisioning log, anything that knows the host)

@@ -68,7 +68,7 @@ public class SpecterDevice extends CommandDevice {
 
         check.addActionListener(e -> refreshVersions());
         run.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         report.addActionListener(e -> report());
         record.addActionListener(e -> record());
         browsers.addActionListener(e -> browsers());
@@ -89,7 +89,7 @@ public class SpecterDevice extends CommandDevice {
     @Override
     public void receive(org.nmox.studio.rack.model.Port in, Signal signal) {
         switch (in.getId()) {
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             // gate semantics: the suite runs while the gate is high and is
             // killed when it drops — wire VELOCITY SERVING → ENABLE and
             // the E2E run dies with the dev server instead of hanging

@@ -42,6 +42,31 @@ public abstract class CommandDevice extends RackDevice {
 
     /** Exit codes from STOP-button kills (SIGINT/SIGKILL/SIGTERM); not real failures. */
     private static final Set<Integer> KILL_EXIT_CODES = Set.of(130, 137, 143);
+    /**
+     * The user pressed STOP on this run (v2.69.15). A server that traps
+     * TERM and exits 0 (node's http-server, measured on the rack walk)
+     * used to read "OK" after the user stopped it; the gesture is the
+     * truth — a stop is a stop, whatever the exit code.
+     */
+    private volatile boolean stopRequested;
+
+    /** Pure: a run is STOPPED when the user asked for it or the exit code says a signal took it. */
+    static boolean stoppedByUserOrSignal(boolean stopRequested, int code) {
+        return stopRequested || KILL_EXIT_CODES.contains(code);
+    }
+
+    /**
+     * The USER's stop — the STOP button, or a patched STOP jack. Sets the
+     * flag the verdict reads, then stops. The internal cancels
+     * ({@code RackDevice.exec} kills any previous run before every spawn;
+     * dispose; panic) call {@link #stopProcess()} directly and stay
+     * unflagged — the first cut flagged them too and every run in a
+     * pipeline read STOPPED, so no ok/fail trigger ever rippled on.
+     */
+    protected final void stopByUser() {
+        stopRequested = true;
+        stopProcess();
+    }
 
     protected final VuMeter activity = new VuMeter("ACTIVITY", false);
     protected final Led runLed = new Led("RUN", RackStyle.MUTATE);
@@ -274,6 +299,7 @@ public abstract class CommandDevice extends RackDevice {
         // captured per launch: a relaunch must not skew a still-running
         // command's elapsed-time readout
         final long launchedAt = System.currentTimeMillis();
+        stopRequested = false;
         onEdt(() -> {
             runLed.setBlinking(true);
             okLed.setOn(false);
@@ -288,7 +314,8 @@ public abstract class CommandDevice extends RackDevice {
         }, code -> {
             long elapsed = System.currentTimeMillis() - launchedAt;
             boolean ok = overallSuccess(code);
-            boolean stopped = KILL_EXIT_CODES.contains(code);
+            boolean stopped = stoppedByUserOrSignal(stopRequested, code);
+            stopRequested = false;
             onEdt(() -> {
                 runLed.setBlinking(false);
                 runLed.setOn(false);
@@ -348,6 +375,7 @@ public abstract class CommandDevice extends RackDevice {
             return;
         }
         final long launchedAt = System.currentTimeMillis();
+        stopRequested = false;
         onEdt(() -> {
             runLed.setBlinking(true);
             okLed.setOn(false);
@@ -368,7 +396,8 @@ public abstract class CommandDevice extends RackDevice {
             onLine(line);
             emit("out", Signal.data(line));
         }, code -> {
-            boolean stopped = KILL_EXIT_CODES.contains(code);
+            boolean stopped = stoppedByUserOrSignal(stopRequested, code);
+            stopRequested = false;
             if (code == 0 && index + 1 < steps.size() && !stopped) {
                 runStep(steps, index + 1, launchedAt);
                 return;

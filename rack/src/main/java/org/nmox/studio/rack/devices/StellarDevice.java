@@ -73,7 +73,7 @@ public class StellarDevice extends CommandDevice {
 
         check.addActionListener(e -> refreshVersions());
         build.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         run.addActionListener(e -> runAction());
 
         // the base CommandDevice already declares the RUN in-jack; our
@@ -224,7 +224,7 @@ public class StellarDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "run" -> runAction();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::runAction, this::stopProcess);
             default -> super.receive(in, signal);
         }

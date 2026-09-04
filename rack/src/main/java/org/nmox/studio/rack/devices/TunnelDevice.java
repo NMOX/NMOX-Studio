@@ -47,7 +47,7 @@ public class TunnelDevice extends CommandDevice {
         liveLed = place(new Led("LIVE", new Color(156, 89, 209)), 442, 58);
 
         open.addActionListener(e -> primaryAction());
-        close.addActionListener(e -> stopProcess());
+        close.addActionListener(e -> stopByUser());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
@@ -128,7 +128,7 @@ public class TunnelDevice extends CommandDevice {
     @Override
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
-            stopProcess();
+            stopByUser();
         } else if ("enable".equals(in.getId())) {
             enableGate(signal.high(), this::primaryAction, this::stopProcess);
         } else {

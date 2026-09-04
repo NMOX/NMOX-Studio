@@ -44,7 +44,7 @@ public class TypecheckDevice extends CommandDevice {
         cleanLed = place(new Led("SOUND", RackStyle.GO), 442, 58);
 
         check.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         param("watch", watchSwitch);
         param("strict", strictSwitch);

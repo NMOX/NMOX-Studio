@@ -61,7 +61,7 @@ public class RunDevice extends CommandDevice {
         liveLed = place(new Led("LIVE", new Color(255, 94, 58)), 444, 58);
 
         ignite.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
@@ -137,7 +137,7 @@ public class RunDevice extends CommandDevice {
     @Override
     public void receive(Port in, Signal signal) {
         if ("stop".equals(in.getId())) {
-            stopProcess();
+            stopByUser();
         } else if ("enable".equals(in.getId())) {
             enableGate(signal.high(), this::primaryAction, this::stopProcess);
         } else {

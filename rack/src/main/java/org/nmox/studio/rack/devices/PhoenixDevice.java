@@ -68,7 +68,7 @@ public class PhoenixDevice extends CommandDevice {
         migrate.addActionListener(e -> launch(List.of("mix", "ecto.migrate")));
         rollback.addActionListener(e -> launch(List.of("mix", "ecto.rollback")));
         server.addActionListener(e -> server());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         test.addActionListener(e -> launch(List.of("mix", "test")));
         gen.addActionListener(e -> {
             String args = genArgsLcd.getText().trim();
@@ -179,7 +179,7 @@ public class PhoenixDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "serve" -> server();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::server, this::stopProcess);
             default -> super.receive(in, signal);
         }

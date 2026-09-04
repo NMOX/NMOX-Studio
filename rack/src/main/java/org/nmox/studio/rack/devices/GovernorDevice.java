@@ -36,7 +36,7 @@ public class GovernorDevice extends CommandDevice {
         toleranceKnob.setToolTipText("Allowed gas drift before the gate closes: 0% holds the snapshot exactly");
 
         check.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
 
         param("tolerance", toleranceKnob);
     }

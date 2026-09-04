@@ -46,7 +46,7 @@ public class ViteDevice extends CommandDevice {
 
         check.addActionListener(e -> refreshVersions());
         dev.addActionListener(e -> dev());
-        stop.addActionListener(e -> stopProcess());
+        stop.addActionListener(e -> stopByUser());
         build.addActionListener(e -> primaryAction());
         preview.addActionListener(e -> preview());
 
@@ -161,7 +161,7 @@ public class ViteDevice extends CommandDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "serve" -> dev();
-            case "stop" -> stopProcess();
+            case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::dev, this::stopProcess);
             default -> super.receive(in, signal);
         }
