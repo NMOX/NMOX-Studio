@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.1] - 2026-09-03
+
+The night's review of its own tooling, hours old: both in-repo
+pipeline scripts pushed and reinstalled through `cmd | tail -1 || …`,
+where the `||` reads tail's exit status, never the command's — the
+exact masking their headers promise to check (a `| tail` hid a failed
+rebase two days ago; a failed push or cask reinstall would have hidden
+the same way). `set -o pipefail` in both, and ShipScriptsGateTest now
+requires it — a pipeline script without it fails the build.
 ## [2.69.0] - 2026-09-03
 
 **TypeScript runs without a build** — futures bet F7 delivered in the

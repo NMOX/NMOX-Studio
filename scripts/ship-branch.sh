@@ -17,6 +17,7 @@
 # Usage (from the unit's worktree, on the unit's branch):
 #   scripts/ship-branch.sh <branch> <fork-sha> "<pr title>" <pr-body-file>
 set -u
+set -o pipefail  # a `cmd | tail` must fail when cmd fails — the exit the header promises to check (v2.69.1 review)
 BRANCH=${1:?usage: ship-branch.sh <branch> <fork-sha> "<pr title>" <pr-body-file>}
 FORK=${2:?usage: ship-branch.sh <branch> <fork-sha> "<pr title>" <pr-body-file>}
 TITLE=${3:?usage: ship-branch.sh <branch> <fork-sha> "<pr title>" <pr-body-file>}

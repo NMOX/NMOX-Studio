@@ -38,6 +38,16 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("Both pipeline scripts set pipefail — a `cmd | tail` must fail when cmd fails (v2.69.1 review)")
+    void pipelineScriptsFailOnPipes() throws Exception {
+        for (String name : List.of("ship-branch.sh", "post-ship.sh")) {
+            assertThat(Files.readString(SCRIPTS.resolve(name)))
+                    .as("%s must set pipefail: its pushes and reinstalls run through `| tail`", name)
+                    .contains("set -o pipefail");
+        }
+    }
+
+    @Test
     @DisplayName("post-ship.sh refuses to run without a tag")
     void postShipDemandsItsTag() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("post-ship.sh").toString()))

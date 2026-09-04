@@ -7,6 +7,7 @@
 # expired; nothing here checks out a branch in a worktree it does not own.
 # Usage: scripts/post-ship.sh <vX.Y.Z> [merged-branch]
 set -u
+set -o pipefail  # a `cmd | tail` must fail when cmd fails — the exit the header promises to check (v2.69.1 review)
 TAG=${1:?usage: post-ship.sh <vX.Y.Z> [merged-branch]}
 BRANCH=${2:-}
 VER=${TAG#v}
