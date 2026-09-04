@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.3] - 2026-09-04
+
+The night close, proven by the night's own tool. The in-repo gauntlet
+gains its **first-boot half**: `netbeans.close` exits before the
+platform's post-UI hooks, but NbPreferences persist under SIGTERM
+(the v2.67.1 measurement), so a timed live boot plus TERM proves that
+What's New recorded the new version — no orderly quit needed, and the
+recipe the script used to print is now a step it runs. Its first two
+runs paid for three corrections: the headless `--update-all` CLI
+**loops** (the running JVM never sees its own update, so it finds the
+same eleven modules every ~6 s — 386 iterations and ~4,200 NBM installs
+in 40 minutes on the first run; 4 iterations in 25 s on the second, so
+`--refresh` was never the cause), which makes waiting on the updater's
+`update_tracking` writes and then TERMing the JVM the harness rather
+than a workaround; `update_tracking` keeps a history, so the poll reads
+the `last="true"` entry, never the absence of the old version; and the
+version proven is the one that INSTALLED (the cluster after), not the
+catalog's answer at script start — v2.69.2 landed mid-run and the two
+differed. The close itself: **2.67.2 → 2.69.2 PASS** — eleven modules
+tracked in 15 s, every cluster jar at 2.69.2, a fresh-cache boot with
+eleven on and zero SEVERE, and the first boot recording
+lastSeenVersion=2.69.2. The night-arc review of the fresh product code
+(OpenOnServe's synthetic rescan, the ⌘I device ranking, the F7 argv and
+its pump wall, ProductVersion) came back CLEAN. Pipeline lesson kept:
+two pipelined units editing the same gate TEST collide in a way the
+docs resolver rightly refuses — v2.69.2 was rebased by hand.
+
 ## [2.69.2] - 2026-09-03
 
 The update-center gauntlet joins the repo: **scripts/update-gauntlet.sh

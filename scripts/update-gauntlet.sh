@@ -40,11 +40,12 @@ echo "catalog offers: $(curl -sL https://github.com/NMOX/NMOX-Studio/releases/la
 # answer at script start — a release landing mid-run made those differ.
 # No --refresh here: the userdir is fresh, so the first --modules run fetches
 # the catalog itself; --refresh belongs to a SECOND update on a loaded
-# userdir (v2.67.1 law). Measured on the first in-repo rehearsal: with
-# --refresh the CLI run re-installed all eleven modules every ~6 s for
-# 40 minutes (386 iterations, ~4,200 NBM installs, 756 connections) until
-# the leash killed it — the running JVM never sees its own update, so a
-# refresh-then-update loop never converges.
+# userdir (v2.67.1 law). The headless CLI run LOOPS either way — the
+# running JVM never sees its own update, so --update-all finds the same
+# eleven again every ~6 s (measured: 386 iterations in 40 minutes with
+# --refresh until a leash killed it; 4 iterations in the 25 s before this
+# script's TERM without it). Waiting on update_tracking and TERMing the
+# JVM is the harness, not a workaround.
 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1 &
 UPD=$!
 # update_tracking keeps a HISTORY of module_version entries; the installed
@@ -73,7 +74,7 @@ echo "GAUNTLET-PASS $FROM -> $LATEST"
 # Skipped when no display can host the window (headless CI): said out loud.
 if [ -n "${DISPLAY:-}" ] || [ "$(uname)" = Darwin ]; then
   rm -rf "$G/cd3"; "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd3" --nosplash -J-Dplugin.manager.check.updates=false > "$G/first-boot.log" 2>&1 &
-  LIVE=$!; sleep 45; pkill -TERM -f "cachedir $G/cd3" 2>/dev/null; for i in $(seq 1 30); do kill -0 "$LIVE" 2>/dev/null || break; sleep 1; done; kill -0 "$LIVE" 2>/dev/null && { kill -KILL "$LIVE"; echo "first boot: KILLED after TERM grace (pref may be absent)"; }
+  LIVE=$!; disown "$LIVE" 2>/dev/null; sleep 45; pkill -TERM -f "cachedir $G/cd3" 2>/dev/null; for i in $(seq 1 30); do kill -0 "$LIVE" 2>/dev/null || break; sleep 1; done; kill -0 "$LIVE" 2>/dev/null && { kill -KILL "$LIVE"; echo "first boot: KILLED after TERM grace (pref may be absent)"; }
   P="$G/ud/config/Preferences/org/nmox/NMOX/Studio/ui.properties"; SEEN=$(grep -h lastSeenVersion "$P" 2>/dev/null | tail -1)
   echo "first boot: ${SEEN:-lastSeenVersion ABSENT — the first-boot hook never ran}"
   echo "$SEEN" | grep -q "$LATEST" || { echo "GAUNTLET-FAIL: first-boot preference"; exit 1; }
