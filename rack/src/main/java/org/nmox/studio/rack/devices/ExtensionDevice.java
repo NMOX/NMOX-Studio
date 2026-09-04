@@ -156,7 +156,7 @@ public final class ExtensionDevice extends RackDevice {
 
         @Override
         public void stop() {
-            stopProcess();
+            stopProcess(); // RackDevice-based: the SPI reports its own status; no CommandDevice verdict to flag
         }
 
         @Override

@@ -77,7 +77,7 @@ public class DevServerDevice extends CommandDevice {
     }
 
     private void shutdown() {
-        stopProcess();
+        stopByUser();
     }
 
     /** AUTO resolves to the project's dev/start script, else vite, else a static server. */
