@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.13] - 2026-09-04
+
+The walk v2.69.10 owed (docs only): the platform's own Run menu,
+driven by name through System Events against an IDE run of the static
+learning-space folder. While the server ran, the platform's item read
+**Stop Build/Run: Run — first-web-page** — our run, registered through
+BuildExecutionSupport, named in the platform's own menu — and clicking
+it killed the server; the menu then offered **Repeat Build/Run: Run —
+first-web-page**, which started a fresh one; our **Stop Running
+Command** killed that. Each server's life recorded by a process watcher
+(13:58:42–13:59:37, 13:59:55–14:00:02). Harness laws worth keeping:
+the platform's stop and repeat items carry the run's name in their
+titles, so a click by the bare title finds nothing; the Java app must
+be frontmost for System Events to read its menu bar; a Swing file
+chooser takes a typed path and a Return through System Events where
+the accessibility tools cannot press its Open button.
+
 ## [2.69.12] - 2026-09-04
 
 The day-arc review (v2.69.7–v2.69.11, the keyboard day's five
