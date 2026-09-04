@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.68.0] - 2026-09-03
+
+The night shift's debt sprint: two of the ledger's three smallest
+open items closed with proofs, the third re-blessed. **Ledger 64
+closed** — OpenOnServe took its "pre-existing servings" snapshot and
+only then attached its registry listener, so a serving registered in
+the microseconds between was neither suppressed as pre-existing nor
+delivered as an event (measured harmless in v1.216.0 because the armed
+project's own server spawns later; recorded, not fixed). One synthetic
+rescan right after the attach now treats that window exactly like an
+event — the same path, the same urlsBefore — so the gap is zero-width
+by construction; a test seam runs a registration in exactly that
+window and the arm is spent (the rescan removed → the test names it).
+**Ledger 67 closed** — "compose" in device search listed Laravel and
+CRATE (vocabulary: composer, a prefix hit) above HARBOR (vocabulary:
+compose, a whole-word hit) because matches had no order but the shelf's.
+The one matcher (v1.215.0) gains a score — EXACT when every term hits
+a whole word, LOOSE for prefix/plural/mid-word hits, NO_MATCH — and the
+device search lists exact hits first, ties in shelf order, membership
+untouched (pinned across five queries: every match still listed, no
+exact hit ever after a loose one; three mutants by name). Every other
+search surface can adopt the score without a second matcher. **Ledger
+65 re-blessed**: a present-but-broken LSP binary relaunched per file
+open is the platform's retry policy; a spawn-probe per open would tax
+every healthy install to guard a broken one — the reason stands.
 ## [2.67.2] - 2026-09-03
 
 The night shift opens with the notifier's first day (docs and one

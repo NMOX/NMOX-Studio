@@ -449,7 +449,7 @@ serve devices and the ide Run lane) share the one scan.
 Mutation-proven; the captured lines are pinned verbatim in
 `ServingDevicesTest.arrowTargetsAreNotServings`.
 
-### 64. OpenOnServe's listener attaches after the arm's registry snapshot
+### 64. ~~OpenOnServe's listener attaches after the arm's registry snapshot~~ — CLOSED v2.68.0 (one synthetic rescan after the attach; seam-tested)
 A serving registered in the microseconds between `urlsBefore` and
 `addListener` is neither suppressed as pre-existing nor delivered as an
 event. Unreachable by the armed project's own server (its process spawns
@@ -458,7 +458,7 @@ same project's URL in that instant, and the next registry event re-scans
 anyway. Deferred as measured-harmless; noting it so the window is a
 recorded decision, not an unknown.
 
-### 65. A present-but-broken LSP server binary can be relaunched per file open
+### 65. A present-but-broken LSP server binary can be relaunched per file open (re-blessed v2.68.0: the platform's retry policy; a per-open spawn probe taxes every healthy install)
 The platform LSP client retries a server that dies at startup. The
 Angular provider declines deterministically detectable breakage
 (TypeScript 7's missing tsserverlibrary); a binary broken for
@@ -488,7 +488,7 @@ lost to the log files the user turned on. Pre-dates the arc (recorded
 by its review). Fixing it means moving logging from the UI bridge to
 the engine layer — a real design change, its own release.
 
-### 67. "compose" ranks Laravel/CRATE above HARBOR in device search
+### 67. ~~"compose" ranks Laravel/CRATE above HARBOR in device search~~ — CLOSED v2.68.0 (SearchTerms.score; exact hits first, membership unchanged)
 `composer` (the PHP tool, correctly in two vocabularies) prefix-matches
 the query "compose", and shelf order puts those devices first. All hits
 are true matches; the strongest-intent device just isn't first. Ranking
