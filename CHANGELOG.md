@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.9] - 2026-09-04
+
+Getting Started steps are doors (David's walk: every step was a dud —
+the five rows were labels with a tooltip, only Hide this list did
+anything). Each step now carries a target and its row is a link: Open
+a project opens the Open Folder chooser, Run something in the rack and
+See a server go live open the Task Rack, Try a learning space opens
+the New Learning Space picker, and Ask ORACLE about code — which has no
+single action — puts the gesture on the status line and opens the user
+guide at ORACLE. The tick stays record-driven: clicking a door does not
+tick it; doing the thing does. GettingStartedTest proves every action
+target is registered in the generated layer (a dead id is a silent
+dud) and that the Welcome builds every row as a link.
+
 ## [2.69.8] - 2026-09-04
 
 Docs only: the walk's two proof shots become user-guide illustrations —
