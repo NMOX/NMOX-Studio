@@ -328,9 +328,13 @@ public class RunDevice extends CommandDevice {
                     String.valueOf(org.nmox.studio.core.util.FreePorts
                             .firstFreeFrom(Integer.parseInt(STATIC_PORT))));
             case "webpack" -> List.of("npx", "webpack", "serve", "--mode", "development");
+            // a TypeScript entry runs without a build (futures F7, v2.69.0):
+            // JavaScript entries keep precedence, then index.ts / main.ts /
+            // src/index.ts run through NodeTypeStripping's one argv
             default -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")
-                    : List.of("node", entryPoint("index.js", "main.js", "src/index.js"));
+                    : org.nmox.studio.core.util.NodeTypeStripping.argv(entryPoint(
+                            "index.js", "main.js", "src/index.js", "index.ts", "main.ts", "src/index.ts"));
         };
         if (base == null) {
             return null; // the toolchain has no run verb — IGNITION greys

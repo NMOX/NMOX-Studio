@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.0] - 2026-09-03
+
+**TypeScript runs without a build** — futures bet F7 delivered in the
+run lane. Node strips types itself (flagged since 22.6, the default
+since 23.6 and in the 22.18 LTS line), so a project whose entry is
+`index.ts`, `main.ts` or `src/index.ts` now runs from IGNITION and the
+IDE's node lane with `node --experimental-strip-types <entry>` —
+JavaScript entries keep precedence, and the flag is one argv for every
+Node from 22.6 up, a harmless no-op where stripping is already the
+default. No version probe, on purpose: the same command is built for
+the GO button's tooltip and for CI export on the EDT, where a process
+is forbidden, and one argv needs none. An older Node refuses the flag
+with `bad option`; the pump translates that line into the human wall
+("This Node cannot run TypeScript directly — type stripping needs Node
+22.6 or newer…"), the v1.318.0 idiom. Pure NodeTypeStripping (entry
+rule — `.d.ts` is never an entry — argv, wall) and the run-target
+matrix pinned; three mutants by name. Proven headlessly on this box's
+Node 22.9: the plain `node index.ts` refuses on line 1 and the exact
+argv the device now builds prints `total 6` from a typed reduce.
+
 ## [2.68.2] - 2026-09-03
 
 The pipeline's third half joins the repo: **scripts/post-ship.sh**

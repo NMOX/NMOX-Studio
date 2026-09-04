@@ -289,6 +289,7 @@ public final class CommandExecutor {
             boolean isErr, String tabName, File dir, Consumer<String> onLine) {
         boolean portExplained = false;
         boolean nodeFloorExplained = false;
+        boolean stripTypesExplained = false;
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
@@ -334,6 +335,19 @@ public final class CommandExecutor {
                         writer.println(human);
                     }
                     RackBus.publish(tabName, human, isErr);
+                }
+                // The third wall (v2.69.0, futures F7): a .ts entry runs
+                // through Node's own type stripping, and a Node older than
+                // 22.6 refuses the flag with "bad option" — the same
+                // beginner-facing raw red text, translated once.
+                String stripWall = !stripTypesExplained
+                        ? org.nmox.studio.core.util.NodeTypeStripping.wall(clean) : null;
+                if (stripWall != null) {
+                    stripTypesExplained = true;
+                    if (writer != null) {
+                        writer.println(stripWall);
+                    }
+                    RackBus.publish(tabName, stripWall, isErr);
                 }
                 safeAccept(onLine, clean);
                 RackBus.publish(tabName, clean, isErr);
