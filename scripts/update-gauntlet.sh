@@ -17,6 +17,7 @@
 #     first-boot UI (What's New) is proven only by a live boot + orderly quit,
 #     which this script prints the recipe for and does not attempt.
 # Usage: scripts/update-gauntlet.sh <from-tag vX.Y.Z> [work-dir]
+# A live window appears for ~45s during the first-boot half (desktop only).
 set -u
 set -o pipefail
 FROM=${1:?usage: update-gauntlet.sh <from-tag vX.Y.Z> [work-dir]}
@@ -27,17 +28,57 @@ gh release download "$FROM" --repo NMOX/NMOX-Studio --pattern '*.zip' --dir "$G"
 Z=$(ls "$G"/*.zip | head -1); unzip -q "$Z" -d "$G/app" || { echo UNZIP-FAILED; exit 1; }
 BIN=$(find "$G/app" -name nmoxstudio -path '*/bin/*' -type f | head -1); CL=$(dirname "$(dirname "$BIN")")
 census() { for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 Specification-Version; done | sort | uniq -c | tr -s ' ' | tr '\n' ';'; }
+FROMV=${FROM#v}
 echo "before: $(census)"
-LATEST=$(curl -sL https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml | grep -oE 'OpenIDE-Module-Specification-Version="[0-9.]+"' | head -1 | grep -oE '[0-9.]+')
-echo "catalog offers: $LATEST"
-timeout 2400 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --refresh --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1; echo "update RC=$? (124 = leash, not a hang)"
+echo "catalog offers: $(curl -sL https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml | grep -oE 'OpenIDE-Module-Specification-Version="[0-9.]+"' | head -1 | grep -oE '[0-9.]+') (informational — the proof reads what installed)"
+# The update run is waited on through the updater's OWN tracking writes,
+# never the process: the CLI JVM has been measured to linger long after
+# the install completes (the first in-repo rehearsal hit a 40-minute
+# leash with all eleven modules already tracked), so the run is backgrounded,
+# polled for update_tracking, then TERMed. The version proven is the one
+# the updater INSTALLED (read from the cluster after), not the catalog's
+# answer at script start — a release landing mid-run made those differ.
+# No --refresh here: the userdir is fresh, so the first --modules run fetches
+# the catalog itself; --refresh belongs to a SECOND update on a loaded
+# userdir (v2.67.1 law). The headless CLI run LOOPS either way — the
+# running JVM never sees its own update, so --update-all finds the same
+# eleven again every ~6 s (measured: 386 iterations in 40 minutes with
+# --refresh until a leash killed it; 4 iterations in the 25 s before this
+# script's TERM without it). Waiting on update_tracking and TERMing the
+# JVM is the harness, not a workaround.
+"$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1 &
+UPD=$!
+# update_tracking keeps a HISTORY of module_version entries; the installed
+# one carries last="true" — the poll counts files whose last entry is no
+# longer the from-version (the from-version's own entry never leaves the file).
+moved() { local n=0 f; for f in "$CL"/nmoxstudio/update_tracking/org-nmox-*.xml; do grep -E '<module_version [^>]*last="true"' "$f" 2>/dev/null | grep -qv "specification_version=\"$FROMV\"" && n=$((n+1)); done; echo "$n"; }
+for i in $(seq 1 360); do n=$(moved); [ "$n" -ge 11 ] && break; kill -0 "$UPD" 2>/dev/null || break; sleep 5; done
+echo "update_tracking last=true moved off $FROMV: $n of 11 ($((i*5))s)"; sleep 10
+kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null; echo "update RC=$? (TERMed after tracking; 143 expected)"
 grep -E 'updates=|Will update' "$G/update.log" | head -3
-for i in $(seq 1 120); do n=$(grep -l "$LATEST" "$CL"/nmoxstudio/update_tracking/org-nmox-*.xml 2>/dev/null | wc -l | tr -d ' '); [ "$n" -ge 11 ] && break; sleep 5; done; echo "update_tracking at $LATEST: $n of 11"; sleep 10
-echo "after: $(census)"
-[ "$n" -ge 11 ] || { echo "GAUNTLET-FAIL: the updater did not track 11 modules at $LATEST"; exit 1; }
+LATEST=$(for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 OpenIDE-Module-Specification-Version | tr -d '\r' | awk '{print $2}'; done | sort -V | tail -1)
+echo "after: $(census) -> installed $LATEST"
+echo "installs recorded per module (1 expected; more = the updater looped): $(grep -c '<module_version' "$CL"/nmoxstudio/update_tracking/org-nmox-NMOX-Studio-core.xml) entries in core's update_tracking; update iterations: $(grep -c 'updates=' "$G/update.log")"
+[ "$n" -ge 11 ] && [ "$LATEST" != "$FROMV" ] || { echo "GAUNTLET-FAIL: the updater did not move 11 modules off $FROMV"; exit 1; }
 rm -rf "$G/cd2"; timeout 300 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd2" --nosplash -J-Dplugin.manager.check.updates=false -J-Dnetbeans.close=true > "$G/boot.log" 2>&1; echo "boot RC=$?"
 L="$G/ud/var/log/messages.log"; ON=$(grep -oE "org\.nmox\.NMOX\.Studio\.[a-z0-9]+ \[$LATEST" "$L" | sort -u | wc -l | tr -d ' '); SEV=$(grep -c SEVERE "$L")
 echo "modules on at $LATEST: $ON of 11; SEVERE: $SEV"
 [ "$ON" -ge 11 ] && [ "$SEV" -eq 0 ] || { echo "GAUNTLET-FAIL: boot"; exit 1; }
 echo "GAUNTLET-PASS $FROM -> $LATEST"
-echo "first-boot UI proof (manual, macOS): $BIN --jdkhome $JH --userdir $G/ud --cachedir $G/cd3 --nosplash ; wait 30s ; ⌘Q ; grep lastSeenVersion $G/ud/config/Preferences/org/nmox/NMOX/Studio/ui.properties"
+# The first-boot half (v2.69.3): `netbeans.close` exits before the platform's
+# post-UI hooks, so What's New's first-boot rule (an @OnShowing hook) is proven
+# only by a LIVE boot. NbPreferences persist under SIGTERM (measured v2.67.1),
+# so a timed boot + TERM is an honest proof and needs no orderly quit — the
+# updated install must record the new version as seen (RECORD_ONLY when the
+# old build never wrote the key; SHOW when it did — either way the key lands).
+# Skipped when no display can host the window (headless CI): said out loud.
+if [ -n "${DISPLAY:-}" ] || [ "$(uname)" = Darwin ]; then
+  rm -rf "$G/cd3"; "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd3" --nosplash -J-Dplugin.manager.check.updates=false > "$G/first-boot.log" 2>&1 &
+  LIVE=$!; disown "$LIVE" 2>/dev/null; sleep 45; pkill -TERM -f "cachedir $G/cd3" 2>/dev/null; for i in $(seq 1 30); do kill -0 "$LIVE" 2>/dev/null || break; sleep 1; done; kill -0 "$LIVE" 2>/dev/null && { kill -KILL "$LIVE"; echo "first boot: KILLED after TERM grace (pref may be absent)"; }
+  P="$G/ud/config/Preferences/org/nmox/NMOX/Studio/ui.properties"; SEEN=$(grep -h lastSeenVersion "$P" 2>/dev/null | tail -1)
+  echo "first boot: ${SEEN:-lastSeenVersion ABSENT — the first-boot hook never ran}"
+  echo "$SEEN" | grep -q "$LATEST" || { echo "GAUNTLET-FAIL: first-boot preference"; exit 1; }
+  echo "FIRST-BOOT-PASS $LATEST recorded as seen"
+else
+  echo "first boot: SKIPPED (no display) — run on a desktop for the What's New half"
+fi
