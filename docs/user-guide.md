@@ -1325,7 +1325,9 @@ keymaps never costs you the studio chords.
   reload when edited outside the IDE — but if you have unsaved changes,
   you're asked, never overwritten. A corrupt file is set aside as `.bak`
   and reported, never silently replaced.
-- **Daily update check** — quiet, once a day, with a one-click download
+- **Daily update check** — quiet, once a day; a newer release shows a
+  notification whose click opens the Plugin Manager on its Updates tab,
+  where the update center installs the new modules in place
   when there's a release. Turn it off in Options ▸ General.
 
 ## 11. Learning Spaces

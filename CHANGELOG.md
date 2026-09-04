@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.67.2] - 2026-09-03
+
+The night shift opens with the notifier's first day (docs and one
+honest test comment). v2.67.0 made the product version readable, which
+turned the daily update notifier from dead-since-v1.25.0 into live
+code running at every boot of every shipped build — so it was walked
+as live code for the first time, in a stock 2.67.0 portable on a fresh
+userdir: the check ran fifteen seconds after the UI (its once-a-day
+throttle preference written), its exact GitHub request replayed from
+the same machine answered 200 with the newer tag, and the balloon's
+click target — Tools ▸ Plugins — opened straight onto **Updates (11)**
+with every NMOX module listed at installed 2.67.0 → available 2.67.1,
+"11 plugins selected", Update armed: the balloon promises exactly what
+the dialog delivers, on a first open, with no catalog refresh needed
+from the user. The balloon itself is not something the background walk
+harness can see (no window, no accessibility node) and is owed to a
+screen walk. Docs truth: the user guide's safety-net line promised a
+"one-click download" — the notifier opens the Plugin Manager, where
+the update center installs; now it says so. UpdateCheckTest's
+currentVersion test carried a comment from the module-classloader
+era; it now states what it proves after the routing. The v2.67.0 code
+re-read under the review lenses: CLEAN (the reader is two cheap reads,
+the platform half its own excluded seam, the four sites one-liners).
+
 ## [2.67.1] - 2026-09-03
 
 The close (docs only): **the update-center gauntlet across the fix,
