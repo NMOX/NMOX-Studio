@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.7] - 2026-09-04
+
+The screen walk of the shipped 2.69.6 (David's grant), and what it
+found in an hour that eleven releases of tests had not. **The
+first-boot What's New never showed**: the dialog was created — its
+window answered accessibility with the right title and buttons — but
+never became visible, while the same dialog from Help ▸ What's New
+showed fine. A modal dialog opened from the platform's UI-ready hook,
+while the main window is still being ordered to the front, stays
+unmapped on macOS; the first boot after every update since v2.64.0 had
+been opening it into nothing. The first-boot path now waits for the
+main window to be showing AND active (MainWindowUp — run now, or on
+the first activation), gate-pinned. **Two dialogs wider than a laptop
+screen**: What's New and Report a Problem asked for an 88-column text
+area plus a one-line note, and on a 1372-pt display their Close and
+Cancel buttons sat past the right edge; DialogFit clamps a dialog body
+to 0.8 of the screen (never below a readable floor), the note is two
+lines, Keyboard Shortcuts rides the same clamp. **Three boot warnings
+naming our own rows** in the shipped app's log: the Tests window's
+unpositioned wstcref beside its positioned siblings, and two menu
+collisions (Menu/File 122, Menu/Window 258) between modules that each
+looked clean alone — fixed, and LayerPositionCensusTest now reads every
+shipped module's layers out of the assembled cluster and fails by
+folder and name on any mixed positioning or shared position; its first
+run named two more collisions the boot log never reports because those
+folders load lazily (completion providers at 575 in JS and TS,
+hyperlink providers at 150 across the stylesheet mimes — where first
+claim wins), both fixed. Processor-emitted platform rows stay blessed
+in place. Walked on the fixed build: Keyboard Shortcuts (14 chords,
+Copy as Markdown byte-checked from the clipboard) and Report a Problem
+both fit the screen; the Welcome's Getting Started column read its live
+state, its painted links being unreachable by this automation. And
+the moment the release exists for, on a cluster stamped 2.69.7 with a
+userdir that last saw 2.69.0: the first-boot dialog came up on the
+desktop over the main window, "What's new since 2.69.0", the entries
+in order, Close on screen — its window rendering an image where the
+phantom could not.
+
 ## [2.69.6] - 2026-09-04
 
 Docs truth: plan.md carries the senior-RCP and PM passes and the night
