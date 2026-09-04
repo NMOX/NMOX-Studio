@@ -68,7 +68,7 @@ public final class WhatsNew {
             case RECORD_ONLY -> prefs().put(LAST_SEEN, running);
             case SHOW -> {
                 prefs().put(LAST_SEEN, running);
-                show(lastSeen, running, "What's new since " + lastSeen);
+                show(lastSeen, running, "What's new since " + lastSeen, true);
             }
         }
     }
@@ -76,11 +76,11 @@ public final class WhatsNew {
     /** Help ▸ What's New…: the running version's entry (or the head, on a dev build). */
     public static void showCurrent() {
         String running = runningVersion();
-        show(null, Versions.isStamped(running) ? running : null, "What's new");
+        show(null, Versions.isStamped(running) ? running : null, "What's new", false);
     }
 
-    /** Off-EDT read of the bundle, EDT dialog. */
-    private static void show(String lastSeen, String running, String title) {
+    /** Off-EDT read of the bundle, EDT dialog; the first-boot one waits for the main window (MainWindowUp). */
+    private static void show(String lastSeen, String running, String title, boolean firstBoot) {
         RP.post(() -> {
             List<ReleaseNotes.Entry> all = ReleaseNotes.parse(bundledChangelog());
             String text;
@@ -98,7 +98,9 @@ public final class WhatsNew {
                         : ReleaseNotes.render(unseen, ReleaseNotes.omitted(all, lastSeen, running));
             }
             String finalText = text;
-            SwingUtilities.invokeLater(() -> dialog(title, finalText));
+            SwingUtilities.invokeLater(firstBoot
+                    ? () -> MainWindowUp.whenUp(() -> dialog(title, finalText))
+                    : () -> dialog(title, finalText));
         });
     }
 
@@ -109,7 +111,7 @@ public final class WhatsNew {
         area.setWrapStyleWord(true);
         area.setCaretPosition(0);
         area.getAccessibleContext().setAccessibleName("Release notes");
-        JScrollPane scroll = new JScrollPane(area);
+        JScrollPane scroll = org.nmox.studio.ui.util.DialogFit.toScreen(new JScrollPane(area));
         Object github = "Full notes on GitHub";
         Object close = "Close";
         NotifyDescriptor nd = new NotifyDescriptor(scroll, title, NotifyDescriptor.DEFAULT_OPTION,
