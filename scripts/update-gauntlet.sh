@@ -28,14 +28,29 @@ gh release download "$FROM" --repo NMOX/NMOX-Studio --pattern '*.zip' --dir "$G"
 Z=$(ls "$G"/*.zip | head -1); unzip -q "$Z" -d "$G/app" || { echo UNZIP-FAILED; exit 1; }
 BIN=$(find "$G/app" -name nmoxstudio -path '*/bin/*' -type f | head -1); CL=$(dirname "$(dirname "$BIN")")
 census() { for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 Specification-Version; done | sort | uniq -c | tr -s ' ' | tr '\n' ';'; }
+FROMV=${FROM#v}
 echo "before: $(census)"
-LATEST=$(curl -sL https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml | grep -oE 'OpenIDE-Module-Specification-Version="[0-9.]+"' | head -1 | grep -oE '[0-9.]+')
-echo "catalog offers: $LATEST"
-timeout 2400 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --refresh --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1; echo "update RC=$? (124 = leash, not a hang)"
+echo "catalog offers: $(curl -sL https://github.com/NMOX/NMOX-Studio/releases/latest/download/updates.xml | grep -oE 'OpenIDE-Module-Specification-Version="[0-9.]+"' | head -1 | grep -oE '[0-9.]+') (informational — the proof reads what installed)"
+# The update run is waited on through the updater's OWN tracking writes,
+# never the process: the CLI JVM has been measured to linger long after
+# the install completes (the first in-repo rehearsal hit a 40-minute
+# leash with all eleven modules already tracked), so the run is backgrounded,
+# polled for update_tracking, then TERMed. The version proven is the one
+# the updater INSTALLED (read from the cluster after), not the catalog's
+# answer at script start — a release landing mid-run made those differ.
+"$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --refresh --update-all -J-Dnetbeans.close=true > "$G/update.log" 2>&1 &
+UPD=$!
+# update_tracking keeps a HISTORY of module_version entries; the installed
+# one carries last="true" — the poll counts files whose last entry is no
+# longer the from-version (the from-version's own entry never leaves the file).
+moved() { local n=0 f; for f in "$CL"/nmoxstudio/update_tracking/org-nmox-*.xml; do grep -E '<module_version [^>]*last="true"' "$f" 2>/dev/null | grep -qv "specification_version=\"$FROMV\"" && n=$((n+1)); done; echo "$n"; }
+for i in $(seq 1 360); do n=$(moved); [ "$n" -ge 11 ] && break; kill -0 "$UPD" 2>/dev/null || break; sleep 5; done
+echo "update_tracking last=true moved off $FROMV: $n of 11 ($((i*5))s)"; sleep 10
+kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null; echo "update RC=$? (TERMed after tracking; 143 expected)"
 grep -E 'updates=|Will update' "$G/update.log" | head -3
-for i in $(seq 1 120); do n=$(grep -l "$LATEST" "$CL"/nmoxstudio/update_tracking/org-nmox-*.xml 2>/dev/null | wc -l | tr -d ' '); [ "$n" -ge 11 ] && break; sleep 5; done; echo "update_tracking at $LATEST: $n of 11"; sleep 10
-echo "after: $(census)"
-[ "$n" -ge 11 ] || { echo "GAUNTLET-FAIL: the updater did not track 11 modules at $LATEST"; exit 1; }
+LATEST=$(for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 OpenIDE-Module-Specification-Version | tr -d '\r' | awk '{print $2}'; done | sort -V | tail -1)
+echo "after: $(census) -> installed $LATEST"
+[ "$n" -ge 11 ] && [ "$LATEST" != "$FROMV" ] || { echo "GAUNTLET-FAIL: the updater did not move 11 modules off $FROMV"; exit 1; }
 rm -rf "$G/cd2"; timeout 300 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd2" --nosplash -J-Dplugin.manager.check.updates=false -J-Dnetbeans.close=true > "$G/boot.log" 2>&1; echo "boot RC=$?"
 L="$G/ud/var/log/messages.log"; ON=$(grep -oE "org\.nmox\.NMOX\.Studio\.[a-z0-9]+ \[$LATEST" "$L" | sort -u | wc -l | tr -d ' '); SEV=$(grep -c SEVERE "$L")
 echo "modules on at $LATEST: $ON of 11; SEVERE: $SEV"
