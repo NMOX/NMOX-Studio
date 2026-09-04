@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.17] - 2026-09-04
+
+The review of the day's rack changes (v2.69.15–v2.69.16), and the
+stop-verdict class one device over: SURGE's STOP button routed through
+the engine's internal cancel, so a user stop of a clean-exiting dev
+server still read OK there — it goes through `stopByUser` now. The
+wiring gate became an allowlist: in the device catalog only
+`CommandDevice.stopByUser` and the two RackDevice-based devices that
+keep their own verdicts (`ExtensionDevice` — dispose and the SPI's
+`stop()`, plugin and JSON devices report their own status — and
+PREFLIGHT's checklist loop) may call `stopProcess()`; a new stop path
+that reaches for the internal cancel fails the build by file and
+count. The Kitchen Sink's first station
+learns the ■. Verified CLEAN: the base announce withdraws on both exit
+paths, HELM and STELLAR refuse by construction, the serve devices'
+own announces are untouched.
+
 ## [2.69.16] - 2026-09-04
 
 The rule v2.69.15 gave SOLDER becomes the command-device default: a

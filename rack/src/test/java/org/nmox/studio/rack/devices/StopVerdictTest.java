@@ -35,18 +35,25 @@ class StopVerdictTest {
     }
 
     @Test
-    @DisplayName("Every STOP button and patched STOP jack in the device catalog goes through stopByUser (source law)")
-    void everyStopButtonIsAUserStop() throws Exception {
+    @DisplayName("Only the engine's own cancels call stopProcess() — every STOP button, patched STOP jack, SURGE shutdown and SPI stop goes through stopByUser (allowlist law, v2.69.17)")
+    void onlyTheEngineCallsTheInternalCancel() throws Exception {
+        java.util.Map<String, Integer> allowed = java.util.Map.of(
+                "CommandDevice.java", 1,   // stopByUser() itself
+                "ExtensionDevice.java", 2, // dispose() + the SPI's stop(): RackDevice-based, the SPI reports its own status
+                "PreflightDevice.java", 1); // RackDevice-based: its own checklist loop and its own stopRequested verdict
         java.util.List<String> offenders = new java.util.ArrayList<>();
         try (java.util.stream.Stream<Path> files = Files.list(Path.of("src/main/java/org/nmox/studio/rack/devices"))) {
-            for (Path f : files.filter(p -> p.toString().endsWith(".java")).toList()) {
-                String src = Files.readString(f);
-                if (src.contains("e -> stopProcess()") || src.contains("case \"stop\" -> stopProcess()")
-                        || src.contains("if (\"stop\".equals(in.getId())) {\n            stopProcess();")) {
-                    offenders.add(f.getFileName().toString());
+            for (Path f : files.filter(p -> p.toString().endsWith(".java")).sorted().toList()) {
+                String src = Files.readAllLines(f).stream()
+                        .filter(l -> !l.strip().startsWith("//") && !l.strip().startsWith("*") && !l.strip().startsWith("/*"))
+                        .collect(java.util.stream.Collectors.joining("\n"));
+                int calls = src.split("stopProcess\\(\\);").length - 1;
+                int permitted = allowed.getOrDefault(f.getFileName().toString(), 0);
+                if (calls > permitted) {
+                    offenders.add(f.getFileName() + " calls stopProcess() " + calls + "x (allowed " + permitted + ")");
                 }
             }
         }
-        assertThat(offenders).as("a STOP button wired to the internal cancel reads OK after a clean-exit server").isEmpty();
+        assertThat(offenders).as("a user-facing stop wired to the internal cancel reads OK after a clean-exit server").isEmpty();
     }
 }

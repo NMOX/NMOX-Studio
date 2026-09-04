@@ -58,7 +58,10 @@ Then press the project's **Run**.
 Run serves it — without pinning a port: if 8080 is busy the server
 scans upward and the announce reads the port the server's own banner
 names. A **⇄ serving** chip appears on the status line, and the served
-page opens in the in-app Browser. The scaffold is pre-trusted because
+page opens in the in-app Browser. Stop it with the **■** to the right of
+Debug on the toolbar (or Run ▸ Stop Build/Run, which offers Repeat
+afterwards); a device's STOP reads STOPPED whatever the process's exit
+code. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP

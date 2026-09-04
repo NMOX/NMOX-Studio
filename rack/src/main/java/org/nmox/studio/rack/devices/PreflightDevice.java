@@ -53,7 +53,7 @@ public class PreflightDevice extends RackDevice {
 
         check.addActionListener(e -> primaryAction());
         stop.addActionListener(e -> {
-            stopRequested = true;
+            stopRequested = true; // PREFLIGHT runs its own checklist loop and keeps its own verdict (RackDevice-based)
             stopProcess();
         });
 
