@@ -48,6 +48,18 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("update-gauntlet.sh keeps the laws its rehearsals paid for (v2.69.3): no --refresh on the fresh userdir, TERM after the tracking wait, the last=\"true\" poll, the installed-version proof")
+    void gauntletKeepsItsLaws() throws Exception {
+        String s = Files.readString(SCRIPTS.resolve("update-gauntlet.sh"));
+        assertThat(s.lines().filter(l -> l.contains("--update-all")).filter(l -> !l.stripLeading().startsWith("#")))
+                .as("the headless --update-all CLI loops either way; --refresh multiplied it to 386 iterations — the fresh userdir fetches its own catalog")
+                .isNotEmpty().allSatisfy(l -> assertThat(l).doesNotContain("--refresh"));
+        assertThat(s).as("the update JVM never exits on its own — it is TERMed after update_tracking moves").contains("kill -TERM \"$UPD\"");
+        assertThat(s).as("update_tracking keeps a history: only the last=\"true\" entry says what is installed").contains("last=\"true\"");
+        assertThat(s).as("the version proven is the one that installed, read from the cluster after the update").contains("-> installed $LATEST");
+    }
+
+    @Test
     @DisplayName("update-gauntlet.sh refuses to run without a from-tag")
     void gauntletDemandsItsTag() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("update-gauntlet.sh").toString()))
