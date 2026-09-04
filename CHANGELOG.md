@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.11] - 2026-09-04
+
+Two Welcome finds from David's screen. **"We have both a Start and a
+Getting Started"** — two columns naming one idea: START keeps the
+launchpad verbs, the checklist is now **FIRST STEPS · n of 5** (the
+stored ticks and the hide preference are untouched, so nobody's list
+resets). **"See a server go live" never ticked for a server that lived
+three seconds**: the tick was read only when the Welcome repainted, and
+by then the ▶-then-■ server was gone. The Welcome now listens to the
+serving registry for its whole open life — a server goes live while
+you look at the editor, not the Welcome (the first cut listened only
+while the tab showed, and the ⇄ chip came up with no tick behind
+TUTORIAL.md) — and ticks the moment a server appears, persisted; the
+gate pins the heading, the listener wiring, and that the listener
+attaches before the tab's first-launch early return. Proven on the
+rebuilt cluster with the Welcome hidden behind the Task Rack: a server
+that lived four seconds flipped "See a server go live" to done.
+
 ## [2.69.10] - 2026-09-04
 
 The toolbar's ▶ gets its ■ (David at the keyboard: "there's no way to

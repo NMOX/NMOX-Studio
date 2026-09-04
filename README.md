@@ -81,7 +81,7 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-The Welcome page's **Getting Started** column (v2.66.0) ticks its five
+The Welcome page's **First Steps** column (v2.66.0) ticks its five
 first gestures — open a project, run in the rack, see a server live,
 ask ORACLE, try a learning space — from records the product already
 keeps; no survey, no telemetry, and it disappears when done.
