@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.68.2] - 2026-09-03
+
+The pipeline's third half joins the repo: **scripts/post-ship.sh**
+lands a release on the machine the way the night's chains did by hand
+— wait for the release's twenty-one assets (leashed, the expiry named),
+fast-forward the MAIN checkout only from the main checkout (a
+post-ship that switched a unit's worktree was the 2026-08-25 reroute
+class), wait for the Homebrew tap to carry the version, reinstall the
+cask, delete the merged unit branch. With ship-branch.sh (v2.68.1) and
+ship-gate.sh (v2.37.8) the whole path from a verified branch to an
+installed cask is in-repo and parameterized; ShipScriptsGateTest
+covers all three (parse, usage refusal).
+
 ## [2.68.1] - 2026-09-03
 
 The ship half of the pipeline joins the repo: **scripts/ship-branch.sh**
