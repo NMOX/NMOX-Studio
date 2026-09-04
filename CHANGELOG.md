@@ -4,6 +4,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.6] - 2026-09-04
+
+Docs truth: plan.md carries the senior-RCP and PM passes and the night
+the pipeline moved in-repo (v2.62.2–v2.69.5) as a dated addendum — the
+version the product could not read, the CLI update loop, and the
+night's eight pipeline laws — and its currency header moves to v2.69.5
+(docs only).
 ## [2.69.5] - 2026-09-04
 
 CI runs the gauntlet. A new **Update gauntlet** workflow fires when
