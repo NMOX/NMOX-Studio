@@ -158,6 +158,18 @@ empty shelf offers the 93-space catalog instead of a dead end.
 
 ![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 
+**Run, Build, Test — and Stop:** the toolbar's ▶ (F6) runs the aimed
+project the way its toolchain runs: a `start` script if package.json
+has one, `cargo run`, `go run`, `dotnet run`, and for a plain folder of
+HTML a small static server on the first free port from 8080. Build,
+Test and Clean sit beside it and in the Run menu. A dev server that
+announces its address lights the ⇄ chip on the status line and opens
+the page in the in-app Browser. Everything runs behind the Workspace
+Trust prompt the first time. To stop: the ■ right of Debug on the
+toolbar stops every running command at once (and says what it stopped
+on the status line), and **Run ▸ Stop Build/Run** — the platform's own
+item — stops one and offers **Repeat** afterwards.
+
 **.env everywhere:** if your project has a `.env`, devices launched from
 the rack get those variables. Edit it and the status line notes that
 restarts will pick it up — running processes honestly keep their old
