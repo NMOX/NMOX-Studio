@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.69.13, after two lenses, one
+*Currency addendum 2026-09-04, at v2.69.17, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
-in-repo, and the keyboard day (v2.44.0–v2.69.13, ~38 releases in six
-days). **The
+in-repo, the keyboard day, and the day shift that walked the rack by
+accessibility (v2.44.0–v2.69.17, ~42 releases in six days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -2957,3 +2957,54 @@ and TERMing the JVM is the harness); **write the PR body before the
 verify step**; and **surefire forks register as java "Launcher"
 processes** that confuse an accessibility walk — walk only when no
 verify runs, or drive System Events by unix id.
+
+## Addendum — 2026-09-04, the day shift: the rack walked by accessibility (v2.69.12–v2.69.17)
+
+Six releases after the keyboard day, driven by the walk toolkit the
+morning matured. **v2.69.12** reviewed the keyboard day's five
+releases: one change (the duplicate Run-menu stop dropped — the
+platform's Stop Build/Run owns the menu, ours is the toolbar ■), three
+blessings, and the user guide's first paragraph on Run/Build/Test/Stop
+(the toolbar lanes had shipped in v1.233.0 without one). **v2.69.13**
+walked the platform's Run menu by name through System Events: "Stop
+Build/Run: Run — first-web-page" stopped our run, Repeat re-ran it,
+our Stop killed that. **v2.69.14** recorded the keyboard day in this
+file. **v2.69.15** was the first accessibility walk of the Task Rack
+itself — a faceplate RUN pressed by coordinate (RackButton's v1.41.0
+role answers AXPress), the project aimed by ⌘I keystrokes, a process
+watcher recording each server's life — and it paid twice: SOLDER
+printed a local address and never announced it (the learning spaces'
+own racks serve through SOLDER; the ⇄ chip, Live Servers and the
+VITALS/BEACON targets stayed dark), and STOP read "OK 37.985s" because
+node's http-server traps TERM and exits 0. The verdict became a pure
+seam and the user's gesture a flag — and the first cut hung that flag
+on `stopProcess()`, which the engine itself calls before EVERY spawn
+(second-exec-cancels-first, v1.57.0), so every pipeline step read
+STOPPED and no ok/fail trigger rippled: the train test and
+RealPipelineTest caught it, and `stopByUser()` (26 STOP buttons, 15
+patched STOP jacks) carries the intent now. **v2.69.16** made the
+announce the command-device default after a census found NPM-9000
+(`npm run dev`) and DYNAMO (`gulp serve`) equally dark, with HELM (a
+remote host's localhost) and STELLAR (a container that outlives the
+run) refusing by construction. **v2.69.17** reviewed the two: SURGE's
+STOP was the internal cancel one device over, and the wiring gate
+became an allowlist — only `stopByUser` and the two RackDevice-based
+devices with their own verdicts may call `stopProcess()`.
+
+The method lessons, stated as laws: **never hang user intent on a
+method the engine also calls** — find every internal caller before
+flagging; **the exit code is not the verdict when the user pressed
+STOP**; **a printed local address is a server** — the same rule at
+every spawn site, with refusals written where the address is not
+this machine's; **stale surefire reports fake a green** — wipe the
+report directory before a targeted run and read the verdict from the
+log; **a chain that echoes its parent's verdict must prefix it**; **one
+worktree, one chain** (third strike: a chain's final detach ran under
+the next unit's branch); **surefire forks register as java processes**
+and confuse an accessibility walk — walk only when no verify runs, or
+drive System Events by unix id, and the app must be frontmost for its
+menu bar to be readable; **the platform's stop and repeat items carry
+the run's name in their titles**; **a Swing chooser takes a typed path
+and a Return through System Events** where accessibility cannot press
+Open; **`screencapture -x` plus a crop is the cheap enabled-state read**
+when the accessibility tree truncates before the toolbar.
