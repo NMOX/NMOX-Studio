@@ -14,16 +14,44 @@ import java.util.Set;
 public final class GettingStarted {
 
     /** One step: a stable key, what the user does, where the gesture lives. */
-    public record Step(String key, String label, String gesture) {
+    /**
+     * Where a click on a step takes you (v2.69.9 — David's walk found every
+     * step a dud: the rows were labels with a tooltip). A step is a door,
+     * not a checkbox: clicking it opens the gesture's own surface, and the
+     * tick still comes from the record the gesture leaves behind.
+     */
+    public record Target(Kind kind, String category, String id) {
+        public enum Kind { ACTION, WINDOW, GUIDE }
+
+        public static Target action(String category, String id) {
+            return new Target(Kind.ACTION, category, id);
+        }
+
+        public static Target window(String topComponentId) {
+            return new Target(Kind.WINDOW, null, topComponentId);
+        }
+
+        /** The user guide at an anchor, plus the gesture on the status line — for steps with no single action. */
+        public static Target guide(String anchor) {
+            return new Target(Kind.GUIDE, null, anchor);
+        }
+    }
+
+    public record Step(String key, String label, String gesture, Target target) {
     }
 
     /** The five, in the order a first session naturally takes them. */
     public static final List<Step> STEPS = List.of(
-            new Step("project", "Open a project", "Open Folder…  ⌥⌘O"),
-            new Step("run", "Run something in the rack", "Task Rack  ⌘9 — press GO on a device"),
-            new Step("serve", "See a server go live", "a serve device lights the ⇄ chip"),
-            new Step("oracle", "Ask ORACLE about code", "select code → right-click → Ask ORACLE"),
-            new Step("learn", "Try a learning space", "New Learning Space…  ⇧⌘L"));
+            new Step("project", "Open a project", "Open Folder…  ⌥⌘O",
+                    Target.action("File", "org.nmox.studio.ui.actions.OpenFolderAction")),
+            new Step("run", "Run something in the rack", "Task Rack  ⌘9 — press GO on a device",
+                    Target.window("RackTopComponent")),
+            new Step("serve", "See a server go live", "a serve device lights the ⇄ chip",
+                    Target.window("RackTopComponent")),
+            new Step("oracle", "Ask ORACLE about code", "select code → right-click → Ask ORACLE",
+                    Target.guide("#oracle--explain-the-last-failure")),
+            new Step("learn", "Try a learning space", "New Learning Space…  ⇧⌘L",
+                    Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")));
 
     private GettingStarted() {
     }

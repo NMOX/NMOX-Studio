@@ -248,14 +248,7 @@ public final class MainWindow extends TopComponent {
                         + org.nmox.studio.ui.gettingstarted.GettingStarted.progress(done)));
                 for (org.nmox.studio.ui.gettingstarted.GettingStarted.Step step
                         : org.nmox.studio.ui.gettingstarted.GettingStarted.STEPS) {
-                    boolean ticked = done.contains(step.key());
-                    JLabel row = new JLabel((ticked ? "✓  " : "○  ") + step.label());
-                    row.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-                    row.setForeground(ticked ? DIM : new Color(225, 226, 230));
-                    row.setToolTipText(step.gesture());
-                    row.getAccessibleContext().setAccessibleName(
-                            (ticked ? "done: " : "to do: ") + step.label() + " — " + step.gesture());
-                    gettingStarted.add(row);
+                    gettingStarted.add(stepLink(step, done.contains(step.key())));
                 }
                 JButton hide = textButton("Hide this list", DIM);
                 hide.setToolTipText("Hides the checklist; it never asks again");
@@ -312,6 +305,43 @@ public final class MainWindow extends TopComponent {
                 }
             });
             return link;
+        }
+
+        /**
+         * A Getting Started row is a door (v2.69.9): the click opens the
+         * gesture's own surface — an action, a window, or the user guide with
+         * the gesture on the status line — while the tick stays record-driven.
+         */
+        private static JButton stepLink(org.nmox.studio.ui.gettingstarted.GettingStarted.Step step,
+                boolean ticked) {
+            JButton row = textButton((ticked ? "✓  " : "○  ") + step.label(),
+                    ticked ? DIM : new Color(225, 226, 230));
+            row.setToolTipText(step.gesture());
+            row.getAccessibleContext().setAccessibleName(
+                    (ticked ? "done: " : "to do: ") + step.label() + " — " + step.gesture());
+            org.nmox.studio.ui.gettingstarted.GettingStarted.Target t = step.target();
+            row.addActionListener(e -> {
+                switch (t.kind()) {
+                    case ACTION -> {
+                        javax.swing.Action action = org.openide.awt.Actions.forID(t.category(), t.id());
+                        if (action != null) {
+                            action.actionPerformed(e);
+                        }
+                    }
+                    case WINDOW -> {
+                        TopComponent tc = WindowManager.getDefault().findTopComponent(t.id());
+                        if (tc != null) {
+                            tc.open();
+                            tc.requestActive();
+                        }
+                    }
+                    case GUIDE -> {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(step.gesture());
+                        browse(USER_GUIDE_URL + t.id());
+                    }
+                }
+            });
+            return row;
         }
 
         private static JButton windowLink(String label, String topComponentId) {
