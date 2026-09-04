@@ -4,6 +4,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.18] - 2026-09-04
+
+Docs truth: plan.md carries the day shift (v2.69.12–v2.69.17) as a
+dated addendum — the rack walked by accessibility, SOLDER's dark chip
+and the stop verdict, the exec-cancel trap and ten method laws — and
+its currency header moves to v2.69.17 (docs only).
+
 ## [2.69.17] - 2026-09-04
 
 The review of the day's rack changes (v2.69.15–v2.69.16), and the
