@@ -77,6 +77,20 @@ public final class GettingStartedSignals {
         return done;
     }
 
+    /**
+     * A serving-registry change: if a server is live now and the serve
+     * step is not yet done, tick it (persisted). Returns true when the
+     * tick just happened so the caller repaints. Listener-driven, so a
+     * server that lives three seconds still counts (v2.69.11).
+     */
+    public static boolean serverAppeared() {
+        if (prefs().getBoolean(DONE_PREFIX + "serve", false) || !serverLive()) {
+            return false;
+        }
+        prefs().putBoolean(DONE_PREFIX + "serve", true);
+        return true;
+    }
+
     private static void tick(Set<String> done, String key) {
         done.add(key);
         prefs().putBoolean(DONE_PREFIX + key, true);

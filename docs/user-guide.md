@@ -1380,7 +1380,7 @@ interpreters; if one isn't installed, the INSTALL button installs it
 right there, streaming progress onto the REPL screen. Spaces live in
 `~/.nmox/learn`, apart from your real work.
 
-### Getting Started, on the Welcome page (v2.66.0)
+### First Steps, on the Welcome page (v2.66.0; named First Steps since v2.69.11)
 
 A fourth Welcome column lists the five first gestures — open a project,
 run something in the rack, see a server go live, ask ORACLE about code,

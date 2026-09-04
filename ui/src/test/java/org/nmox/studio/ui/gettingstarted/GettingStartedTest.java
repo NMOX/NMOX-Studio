@@ -64,4 +64,22 @@ class GettingStartedTest {
         String body = src.substring(start, end);
         assertThat(body).as("rows ride stepLink — a JLabel row is the v2.66.0 dud").contains("stepLink(").doesNotContain("new JLabel(");
     }
+
+    @Test
+    @DisplayName("The checklist is FIRST STEPS (START already names the launchpad verbs), and the serve tick is listener-driven while the Welcome shows (v2.69.11)")
+    void firstStepsAndTheServeListener() throws Exception {
+        String src = Files.readAllLines(Path.of("src/main/java/org/nmox/studio/ui/MainWindow.java"))
+                .stream().filter(l -> !l.strip().startsWith("//") && !l.strip().startsWith("*")).collect(java.util.stream.Collectors.joining("\n"));
+        assertThat(src).contains("\"FIRST STEPS\"").doesNotContain("\"GETTING STARTED\"");
+        assertThat(src).as("a server goes live while the user looks at the editor: the Welcome listens for its whole OPEN life")
+                .contains("live.addListener(servingsListener)").contains("liveClosed.removeListener(servingsListener)")
+                .contains("GettingStartedSignals.serverAppeared()");
+        int opened = src.indexOf("public void componentOpened()");
+        int attach = src.indexOf("live.addListener(servingsListener)");
+        int earlyReturn = src.indexOf("return;", opened);
+        assertThat(attach).as("attached in componentOpened").isGreaterThan(opened);
+        assertThat(attach).as("… BEFORE the welcomeShown early return, or every later start never listens").isLessThan(earlyReturn);
+        assertThat(src.indexOf("public void componentClosed()")).as("detached in componentClosed")
+                .isLessThan(src.indexOf("liveClosed.removeListener(servingsListener)"));
+    }
 }

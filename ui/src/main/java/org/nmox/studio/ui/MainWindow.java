@@ -95,7 +95,7 @@ public final class MainWindow extends TopComponent {
         private final JPanel recentColumn = column("RECENT");
         // v2.66.0 the PM's activation wish: five first gestures that tick
         // themselves from records the product already keeps
-        private final JPanel gettingStarted = column("GETTING STARTED");
+        private final JPanel gettingStarted = column("FIRST STEPS");
         private static final org.openide.util.RequestProcessor SIGNALS =
                 new org.openide.util.RequestProcessor("Getting Started", 1, true);
 
@@ -244,7 +244,7 @@ public final class MainWindow extends TopComponent {
             boolean visible = org.nmox.studio.ui.gettingstarted.GettingStarted.visible(done, hidden);
             gettingStarted.setVisible(visible);
             if (visible) {
-                gettingStarted.add(columnHeading("GETTING STARTED · "
+                gettingStarted.add(columnHeading("FIRST STEPS · "
                         + org.nmox.studio.ui.gettingstarted.GettingStarted.progress(done)));
                 for (org.nmox.studio.ui.gettingstarted.GettingStarted.Step step
                         : org.nmox.studio.ui.gettingstarted.GettingStarted.STEPS) {
@@ -391,6 +391,14 @@ public final class MainWindow extends TopComponent {
 
     @Override
     public void componentOpened() {
+        // a server goes live while the user looks at the EDITOR, not the
+        // Welcome (measured: the Welcome hidden behind TUTORIAL.md, the ⇄
+        // chip up, no tick) — so the serve listener lives for the whole
+        // open life of the tab, not only while it shows (v2.69.11)
+        org.nmox.studio.core.spi.LiveServings live = org.nmox.studio.core.spi.LiveServings.find();
+        if (live != null) {
+            live.addListener(servingsListener);
+        }
         // welcome steals focus exactly once: on the first launch ever.
         // Every later start restores the user's own window arrangement.
         java.util.prefs.Preferences prefs =
@@ -408,6 +416,19 @@ public final class MainWindow extends TopComponent {
      * menu and every project-sensitive action work while the Welcome
      * tab is focused — the tab a fresh launch lands on.
      */
+    /**
+     * "See a server go live" ticks when a server APPEARS (v2.69.11), not
+     * only when one happens to be live at a repaint — David's ▶ then ■
+     * lived three seconds and was never observed — and it happens while
+     * the user looks at the editor, so the listener lives for the tab's
+     * whole OPEN life (componentOpened → componentClosed), not its showing.
+     */
+    private final org.nmox.studio.core.spi.LiveServings.Listener servingsListener = () -> {
+        if (org.nmox.studio.ui.gettingstarted.GettingStartedSignals.serverAppeared()) {
+            javax.swing.SwingUtilities.invokeLater(welcomePanel::refreshGettingStarted);
+        }
+    };
+
     private final org.nmox.studio.rack.service.AimFollower aimFollower =
             new org.nmox.studio.rack.service.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
@@ -432,6 +453,10 @@ public final class MainWindow extends TopComponent {
 
     @Override
     public void componentClosed() {
+        org.nmox.studio.core.spi.LiveServings liveClosed = org.nmox.studio.core.spi.LiveServings.find();
+        if (liveClosed != null) {
+            liveClosed.removeListener(servingsListener);
+        }
         aimFollower.closed();
     }
 
