@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.5] - 2026-09-04
+
+CI runs the gauntlet. A new **Update gauntlet** workflow fires when
+every Release workflow completes (assets uploaded, catalog live), picks
+the previous release as the from-tag, and runs the in-repo script under
+xvfb on ubuntu — the update half and the first-boot half both, because
+xvfb gives the What's New hook a display — with the logs kept as an
+artifact; weekly on a schedule and on demand with a chosen from-tag.
+Informational by design: a red run never blocks a release, it names a
+broken update path minutes after the tag instead of at the next hand
+gauntlet. ShipScriptsGateTest pins the trigger and the xvfb-fronted call
+to the one script.
+
 ## [2.69.4] - 2026-09-04
 
 The gauntlet's laws become a build law: ShipScriptsGateTest now pins
