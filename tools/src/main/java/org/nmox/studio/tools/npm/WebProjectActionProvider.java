@@ -152,6 +152,12 @@ final class WebProjectActionProvider implements ActionProvider {
         // servers on two ports are two servings; each run now owns its id.
         String servingId = "ide-run:" + dir.getAbsolutePath()
                 + "#" + RUN_SEQ.incrementAndGet();
+        // The run is a citizen of two stop surfaces (v2.69.10): our toolbar ■
+        // (LiveRuns) and the platform's Run ▸ Stop Build/Run
+        // (BuildExecutionSupport). Both kill the process tree; the exit
+        // handler withdraws from both.
+        IdeRunItem item = new IdeRunItem(command, project.getProjectDirectory(), label,
+                proc::get, () -> invokeAction(command, context));
         boolean serves = ActionProvider.COMMAND_RUN.equals(command);
         AtomicReference<String> announced = new AtomicReference<>();
         CommandExecutor.Handle handle = CommandExecutor.run(
@@ -172,6 +178,9 @@ final class WebProjectActionProvider implements ActionProvider {
                 },
                 exit -> {
                     ph.finish();
+                    item.finished();
+                    LiveRuns.remove(servingId);
+                    org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
                     // a phantom serving outlives nothing: the gate drops
                     // with the process (the v1.65.1 deregister-on-stop law)
                     if (announced.get() != null) {
@@ -180,6 +189,8 @@ final class WebProjectActionProvider implements ActionProvider {
                     }
                 });
         proc.set(handle);
+        LiveRuns.add(new LiveRuns.Run(servingId, label, handle::kill));
+        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         CommandExecutor.showOutput(label);
     }
 
