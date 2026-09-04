@@ -48,4 +48,18 @@ class RackStatusLineChipTest {
                 .contains("ARTISAN — http://127.0.0.1:8000")
                 .contains("ANVIL — http://127.0.0.1:8545");
     }
+
+    @Test
+    @DisplayName("A pick from the ⇄ chip opens in the in-app Browser; the system browser only when none is wired or it declines (v2.69.19)")
+    void picksOpenInApp() {
+        java.util.List<String> inApp = new java.util.ArrayList<>();
+        java.util.List<String> system = new java.util.ArrayList<>();
+        RackStatusLine.openInBrowser("http://localhost:8081/", url -> { inApp.add(url); return true; }, system::add);
+        assertThat(inApp).containsExactly("http://localhost:8081/");
+        assertThat(system).as("the in-app Browser took it").isEmpty();
+        RackStatusLine.openInBrowser("http://localhost:8082/", null, system::add);
+        assertThat(system).as("no in-app Browser wired: the system browser").containsExactly("http://localhost:8082/");
+        RackStatusLine.openInBrowser("http://localhost:8083/", url -> false, system::add);
+        assertThat(system).as("the in-app Browser declined: the system browser").containsExactly("http://localhost:8082/", "http://localhost:8083/");
+    }
 }

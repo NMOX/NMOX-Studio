@@ -4,6 +4,18 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.69.19] - 2026-09-04
+
+The ⇄ chip opens the product's own Browser. The chip predates the
+in-app Browser (v1.35 vs v1.199) and sent every pick to the system
+browser; a pick now opens in the Browser tab, the system browser only
+when none is wired up or it declines the URL (seam-tested, mutant by
+name). And the beginner's first learning space, whose rack SOLDER now
+announces (v2.69.15), sends the learner to the chip instead of a copied
+address — the Browser tab route stays as the fallback sentence; the
+catalog test pins the chip sentence. The user guide's status-line
+chapter says what the chip does.
+
 ## [2.69.18] - 2026-09-04
 
 Docs truth: plan.md carries the day shift (v2.69.12–v2.69.17) as a

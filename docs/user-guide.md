@@ -1295,6 +1295,8 @@ edits alone; anything it won't overwrite lands as a `.suggested` sibling.
 
 ## 9. Quick Search, status line, and staying oriented
 
+The **⇄ serving** chip on the status line lists every live server (the IDE's Run, the serve devices, and any command that printed a local address); click it and pick one — it opens in the in-app Browser, or your system browser when the Browser tab cannot take it.
+
 ![⌘I finds devices too — typing "grunt" surfaces DYNAMO, ready to jump to](images/quick-search.png)
 
 ![Live Servers: ⌘I finds whatever is serving right now, and Enter opens it](images/live-servers-search.png)

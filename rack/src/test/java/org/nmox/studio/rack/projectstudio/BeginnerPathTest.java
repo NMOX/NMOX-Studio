@@ -40,6 +40,8 @@ class BeginnerPathTest {
                 StandardCharsets.UTF_8);
         assertThat(json).contains("\"first-web-page\"");
         assertThat(json).contains("Your First Web Page");
+        assertThat(json).as("the first space sends the learner to the ⇄ chip SOLDER lights since v2.69.15, not only to a copied address")
+                .contains("Click the **⇄ serving** chip on the status line");
         // FIRST in the catalog: the picker keeps catalog order, and the
         // one reader the other 88 spaces skip should not have to scroll
         int first = json.indexOf("\"slug\"");
