@@ -114,6 +114,16 @@ class DeviceRunsJoinTheStopTest {
             assertThat(device.runningNow()).as("… and is still up").isTrue();
             assertThat(stopRequested(device)).as("nothing stopped yet").isFalse();
             assertThat(LiveRuns.stop(run.id())).isNotNull();
+            // The exit half is POSIX-only (ledger 38, the v2.70.0 NpmRunLaneTest
+            // law): under Git Bash the Windows PID chain breaks, the `sleep 30`
+            // grandchild outlives the tree kill and holds the stdout pipe, and
+            // the exit handler rides the pump's EOF — so onFinished lands when
+            // sleep ends (~30 s), past this wait. The windows lane failed here
+            // twice on one sha (v2.76.0's gate). The join and stop halves
+            // above run everywhere.
+            org.junit.jupiter.api.Assumptions.assumeFalse(
+                    System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+                    "tree-kill exit is POSIX-only (ledger 38)");
             // the flag is cleared by the exit handler, which can run before this
             // line: the VERDICT below is the durable proof (the flag read raced)
             assertThat(device.finished.await(10, TimeUnit.SECONDS)).as("the process died and the exit handler ran").isTrue();

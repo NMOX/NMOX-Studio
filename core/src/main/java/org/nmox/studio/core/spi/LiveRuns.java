@@ -215,6 +215,10 @@ public final class LiveRuns {
                 sb.append(", ");
             }
             sb.append(live.get(i).label());
+            String since = since(live.get(i).id());
+            if (!since.isEmpty()) {
+                sb.append(" (").append(since).append(')');
+            }
         }
         return sb.toString();
     }

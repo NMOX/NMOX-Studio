@@ -109,8 +109,17 @@ class LiveRunsTest {
         assertThat(LiveRuns.tooltip(java.util.List.of())).isEqualTo("Stop Running Command — nothing is running");
         LiveRuns.Run a = new LiveRuns.Run("a", "npm run dev — shop", () -> { });
         LiveRuns.Run b = new LiveRuns.Run("b", "Run — api", () -> { });
+        // a, b were never added: no start stamp, so no "since" (v2.76.0 shows it when there is one)
         assertThat(LiveRuns.tooltip(java.util.List.of(a))).isEqualTo("Stop the running command: npm run dev — shop");
         assertThat(LiveRuns.tooltip(java.util.List.of(a, b))).isEqualTo("Stop 2 running commands: npm run dev — shop, Run — api");
+        LiveRuns.clockForTest(() -> 1_000_000L);
+        try {
+            LiveRuns.add(new LiveRuns.Run("t1", "Run — shop", () -> { }));
+        } finally {
+            LiveRuns.clockForTest(null);
+        }
+        assertThat(LiveRuns.tooltip(LiveRuns.live())).as("a live run says since when (v2.76.0)")
+                .startsWith("Stop the running command: Run — shop (since ");
     }
 
     @Test

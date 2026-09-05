@@ -59,10 +59,24 @@ class WorkbenchRunningRowsTest {
         org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
                 new org.nmox.studio.rack.service.ServingRegistry.Serving("ide-run:/tmp/shop#9", "Run — shop",
                         "http://localhost:3999/", org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, new java.io.File("/tmp/shop")));
-        // the listener requests a coalesced (invokeLater) refresh; drain it
-        SwingUtilities.invokeAndWait(() -> { });
-        SwingUtilities.invokeAndWait(() -> { });
+        // The runs' listener fires on THIS thread; the serving's listener
+        // arrives through the registry's own notifier thread. The Workbench
+        // coalesces both into one invokeLater — and swallows a request while
+        // one is already queued (RefreshCoalescer). So when the window's
+        // boot-time refresh runs between the adds and the register, the
+        // serving's refresh is a SECOND, later hop that two trivial EDT
+        // drains do not cover on a loaded runner (the windows lane, twice
+        // on one sha, v2.76.0). Await the row the way a user would: poll,
+        // draining the EDT each turn, until the serving has joined.
         List<Component> all = tree(tc[0]);
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (System.currentTimeMillis() < deadline
+                && all.stream().noneMatch(c -> c instanceof JButton b
+                        && "Open http://localhost:3999/ in the Browser".equals(b.getAccessibleContext().getAccessibleName()))) {
+            SwingUtilities.invokeAndWait(() -> { });
+            Thread.sleep(20);
+            all = tree(tc[0]);
+        }
         assertThat(all.stream().filter(c -> c instanceof JLabel l && "RUNNING".equals(l.getText())))
                 .as("the section appears once something runs").hasSize(1);
         // every row and every gesture in the section is named for assistive technology (v2.73.0)
