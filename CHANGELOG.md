@@ -4,6 +4,23 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.81.0] - 2026-09-05
+
+The eighth parallel batch — built beside v2.80.0's chain.
+
+1. **`project_state` knows the toolchain** — the detected kind (the
+   rack's own ProjectKind) and, where a package.json exists, the package
+   manager the project's contract names (corepack pin, then lockfile);
+   `ide_context` carries both.
+2. **`run_history`** (and `nmox://history`) — the flight recorder's
+   launches and exits newest first, each exit resolved to the command it
+   exited from (the `last_failure` rule) with its exit code and
+   duration; ERROR lines stay with `last_failure`; bounded, the cap
+   reported. Twelve tools, nine resources; three mutants by name.
+3. **The v2.80.0 review, clean** — blessings in the plan.
+4. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
+   24, plan, this entry.
+
 ## [2.80.0] - 2026-09-05
 
 The seventh parallel batch — built beside v2.79.0's chain.
@@ -17063,6 +17080,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.81.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.80.0...v2.81.0
 [2.80.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.79.0...v2.80.0
 [2.79.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.78.0...v2.79.0
 [2.78.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.77.0...v2.78.0
