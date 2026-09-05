@@ -75,10 +75,30 @@ final class EditorState {
         }
     }
 
+    /**
+     * The tab that counts as "the file being edited" (v2.84.0): the
+     * activated component when it IS an editor tab; otherwise the editor
+     * area's selected tab — the file showing while focus sits on the
+     * Welcome, a studio, or a dialog. The second walk saw
+     * {@code activeFile: null} beside one plainly open file, which was
+     * true of focus and false of the editor. Null when neither exists.
+     */
+    static TopComponent activeEditor(TopComponent activated, boolean activatedIsEditor,
+            TopComponent selectedInEditorMode) {
+        if (activated != null && activatedIsEditor) {
+            return activated;
+        }
+        return selectedInEditorMode;
+    }
+
     /** EDT only: the open editor tabs, files once each, the active one flagged. */
     private static List<OpenFile> snapshotOnEdt() {
         List<OpenFile> out = new ArrayList<>();
-        TopComponent active = TopComponent.getRegistry().getActivated();
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        org.openide.windows.Mode editorMode = WindowManager.getDefault().findMode("editor");
+        TopComponent active = activeEditor(activated,
+                activated != null && WindowManager.getDefault().isOpenedEditorTopComponent(activated),
+                editorMode == null ? null : editorMode.getSelectedTopComponent());
         Set<String> listed = new HashSet<>();
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {

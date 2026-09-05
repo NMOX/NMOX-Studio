@@ -133,6 +133,18 @@ class McpToolsTest {
     }
 
     @Test
+    @DisplayName("the file being edited is the focused editor tab, else the editor area's selected tab (v2.84.0)")
+    void activeEditorRule() {
+        org.openide.windows.TopComponent welcome = new org.openide.windows.TopComponent();
+        org.openide.windows.TopComponent app = new org.openide.windows.TopComponent();
+        org.openide.windows.TopComponent shown = new org.openide.windows.TopComponent();
+        assertThat(EditorState.activeEditor(app, true, shown)).as("a focused editor tab wins").isSameAs(app);
+        assertThat(EditorState.activeEditor(welcome, false, shown)).as("focus elsewhere: the tab showing in the editor area").isSameAs(shown);
+        assertThat(EditorState.activeEditor(null, false, shown)).isSameAs(shown);
+        assertThat(EditorState.activeEditor(welcome, false, null)).as("nothing in the editor area: nothing").isNull();
+    }
+
+    @Test
     @DisplayName("editor_state structures the open tabs with the active one and unsaved flags (v2.78.0)")
     void editorState() {
         JSONObject s = EditorState.editorState("/p/a.js", List.of(
