@@ -143,8 +143,17 @@ final class McpSubscriptions {
         if (root == null || file == null || file.isBlank()) {
             return "not found: no aimed project";
         }
-        java.nio.file.Path base = root.toPath().toAbsolutePath().normalize();
-        java.nio.file.Path target = base.resolve(file).toAbsolutePath().normalize();
+        java.nio.file.Path base;
+        java.nio.file.Path target;
+        try {
+            // REAL paths on both sides (the review): a symlink inside the
+            // project pointing outside would pass a lexical check and be
+            // watched — its mtime is not a secret, but the law is total
+            base = root.toPath().toRealPath();
+            target = base.resolve(file).toRealPath();
+        } catch (IOException | RuntimeException missing) {
+            return "not found: " + file;
+        }
         if (!target.startsWith(base) || !java.nio.file.Files.isRegularFile(target)) {
             return "not found: " + file;
         }

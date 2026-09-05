@@ -227,6 +227,13 @@ class McpSubscriptionsTest {
         assertThat(subs.subscribeFile("nmox://outline/../x", root.toFile(), "../x")).startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/" + escape, root.toFile(), escape))
                 .as("an existing file outside the aim is refused by containment").startsWith("not found");
+        try {
+            java.nio.file.Files.createSymbolicLink(root.resolve("src/link.js"), secret);
+            assertThat(subs.subscribeFile("nmox://outline/src/link.js", root.toFile(), "src/link.js"))
+                    .as("a symlink inside pointing outside is refused by REAL-path containment").startsWith("not found");
+        } catch (UnsupportedOperationException | IOException noSymlinks) {
+            // a filesystem without symlinks has no such escape to refuse
+        }
         assertThat(subs.subscribeFile("nmox://outline/src", root.toFile(), "src")).as("a directory is not a file").startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/none.js", root.toFile(), "none.js")).startsWith("not found");
         assertThat(subs.watchedFiles()).isEqualTo(1);
