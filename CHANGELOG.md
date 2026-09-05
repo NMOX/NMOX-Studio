@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.78.0] - 2026-09-05
+
+The fifth parallel batch — built beside v2.77.0's chain.
+
+1. **The Agent Port finds symbols** — `find_symbol` answers where a name
+   is declared from the same index Go to Symbol reads (prefix hits lead,
+   substring hits follow, the ⌘I bridge's folding; bounded, the partial
+   index said out loud); the index reaches the rack through a new
+   `core.spi.SymbolIndex` seam with the editor's provider behind it, the
+   ProjectAim/LiveServings idiom — no rack→editor dependency.
+2. **The Agent Port knows what you're editing** — `editor_state` (and
+   `nmox://editor`): the active file and every open editor tab with
+   unsaved ones flagged, read on the event thread with a bounded wait
+   ("unavailable" is said, never faked as "nothing open"); `ide_context`
+   gains `activeFile`. Nine tools, eight resources; five mutants by name.
+3. **The v2.77.0 review, clean** — blessings in the plan.
+4. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
+   24 (*Point an agent at it*), plan, this entry.
+
 ## [2.77.0] - 2026-09-05
 
 The fourth parallel batch — built beside v2.76.0's chain.
@@ -17000,6 +17019,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.78.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.77.0...v2.78.0
 [2.77.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.76.0...v2.77.0
 [2.76.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.75.0...v2.76.0
 [2.75.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.74.0...v2.75.0

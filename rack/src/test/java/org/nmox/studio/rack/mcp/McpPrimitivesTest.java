@@ -26,6 +26,7 @@ class McpPrimitivesTest {
     private static McpTools fixture() {
         JSONObject ctx = new JSONObject()
                 .put("project", "demo").put("serverCount", 1).put("runCount", 0)
+                .put("activeFile", JSONObject.NULL)
                 .put("lastFailureDevice", "VERITAS").put("diagnosticCount", 0);
         JSONObject fail = new JSONObject()
                 .put("failed", true).put("device", "VERITAS")
@@ -53,7 +54,7 @@ class McpPrimitivesTest {
         for (int i = 0; i < resources.length(); i++) {
             uris.add(resources.getJSONObject(i).getString("uri"));
         }
-        assertThat(uris).contains("nmox://runs").hasSize(7);
+        assertThat(uris).contains("nmox://runs", "nmox://editor").hasSize(8);
     }
 
     @Test

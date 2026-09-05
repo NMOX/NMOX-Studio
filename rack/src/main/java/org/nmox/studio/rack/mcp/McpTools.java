@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nmox.studio.core.spi.LiveRuns;
+import org.nmox.studio.core.spi.SymbolIndex;
 import org.nmox.studio.core.util.GitFacts;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
 import org.nmox.studio.rack.engine.FlightRecorder;
@@ -141,6 +142,39 @@ public final class McpTools {
                 req("label", "since", "startedAt")));
     }
 
+    /** The find_symbol object (v2.78.0): hits over the Go to Symbol index. */
+    private static JSONObject symbolsObject() {
+        JSONObject hit = objectSchema(new JSONObject()
+                .put("name", type("string"))
+                .put("kind", type("string"))
+                .put("file", type("string"))
+                .put("line", type("integer")),
+                req("name", "kind", "file", "line"));
+        return objectSchema(new JSONObject()
+                .put("query", type("string"))
+                .put("hits", arrayOf(hit))
+                .put("truncated", type("boolean"))
+                .put("available", type("boolean")),
+                req("query", "hits", "truncated", "available"));
+    }
+
+    /** The editor_state object (v2.78.0): the active file and the open tabs. */
+    private static JSONObject editorObject() {
+        JSONObject open = objectSchema(new JSONObject()
+                .put("file", type("string"))
+                .put("modified", type("boolean"))
+                .put("active", type("boolean")),
+                req("file", "modified", "active"));
+        return objectSchema(new JSONObject()
+                .put("activeFile", nullableString())
+                .put("openCount", type("integer"))
+                .put("openFiles", arrayOf(open))
+                // present only when the state could not be read — "nothing
+                // open" and "could not look" are different truths
+                .put("note", type("string")),
+                req("activeFile", "openCount", "openFiles"));
+    }
+
     /** The last_failure object — shared with ide_context. Only
      *  {@code failed} is required: a clean record carries nothing else. */
     private static JSONObject failureObject() {
@@ -191,18 +225,20 @@ public final class McpTools {
                 .put("servers", serversArray())
                 .put("runCount", type("integer"))
                 .put("runs", runsArray())
+                .put("activeFile", nullableString())
                 .put("lastFailureDevice", nullableString())
                 .put("lastFailure", failureObject())
                 .put("diagnosticCount", type("integer")),
                 req("project", "directory", "gitBranch", "serverCount",
-                        "servers", "runCount", "runs", "lastFailureDevice",
-                        "lastFailure", "diagnosticCount"));
+                        "servers", "runCount", "runs", "activeFile",
+                        "lastFailureDevice", "lastFailure", "diagnosticCount"));
         return new McpTools(List.of(
                 new Tool("ide_context",
                         "IDE context",
                         "The whole orienting snapshot in one call: the aimed "
                         + "project, everything serving, everything running, the "
-                        + "last failure, and a diagnostic summary. Start here.",
+                        + "file being edited, the last failure, and a diagnostic "
+                        + "summary. Start here.",
                         noArgs(),
                         ideContextSchema,
                         args -> renderIdeContext()),
@@ -246,6 +282,28 @@ public final class McpTools {
                         diagnosticsObject(),
                         args -> render(diagnostics(defaultDiagnostics(),
                                 args == null ? null : args.optString("file", null)))),
+                new Tool("find_symbol",
+                        "Find symbol",
+                        "Where a name is declared in the aimed project — functions, "
+                        + "classes, routes, selectors — from the IDE's own Go to Symbol "
+                        + "index. Prefix matches lead. Pass \"query\"; \"limit\" caps "
+                        + "the answer (default 20, max 100).",
+                        objectSchema(new JSONObject()
+                                .put("query", stringType("The name, or its start, to look for."))
+                                .put("limit", type("integer").put("description",
+                                        "Most hits to return (default 20, max 100).")),
+                                req("query")),
+                        symbolsObject(),
+                        args -> render(findSymbol(SymbolIndex.find(), defaultAim().get(),
+                                args == null ? "" : args.optString("query", ""),
+                                args == null ? 20 : args.optInt("limit", 20)))),
+                new Tool("editor_state",
+                        "Editor state",
+                        "What the user has open: the file being edited and every open "
+                        + "editor tab, with unsaved ones flagged.",
+                        noArgs(),
+                        editorObject(),
+                        args -> render(EditorState.live())),
                 new Tool("rack_devices",
                         "Rack devices",
                         "The devices mounted on the task rack, in rack order.",
@@ -300,6 +358,28 @@ public final class McpTools {
                     .put("startedAt", LiveRuns.startedAt(r.id())));
         }
         return new JSONObject().put("runs", runs);
+    }
+
+    /** find_symbol over the seam: a missing provider or no aim says so. */
+    static JSONObject findSymbol(SymbolIndex index, File root, String query, int limit) {
+        String q = query == null ? "" : query.strip();
+        JSONObject out = new JSONObject().put("query", q).put("hits", new JSONArray());
+        if (index == null || root == null) {
+            return out.put("truncated", false).put("available", false);
+        }
+        int cap = Math.max(1, Math.min(100, limit));
+        SymbolIndex.Answer a = q.isEmpty()
+                ? new SymbolIndex.Answer(List.of(), false)
+                : index.search(root, q, cap);
+        JSONArray hits = new JSONArray();
+        for (SymbolIndex.Hit h : a.hits()) {
+            hits.put(new JSONObject()
+                    .put("name", h.name())
+                    .put("kind", h.kind())
+                    .put("file", h.file())
+                    .put("line", h.line()));
+        }
+        return out.put("hits", hits).put("truncated", a.truncated()).put("available", true);
     }
 
     static JSONObject lastFailure(java.util.Optional<FailureContext> failure) {
@@ -363,6 +443,7 @@ public final class McpTools {
     static JSONObject ideContext(Supplier<File> aim,
             List<ServingRegistry.Serving> servings,
             List<LiveRuns.Run> runs,
+            String activeFile,
             java.util.Optional<FailureContext> failure,
             Map<String, List<DiagnosticsBus.Problem>> diags) {
         JSONObject project = projectState(aim);
@@ -376,6 +457,7 @@ public final class McpTools {
                 .put("servers", liveServers(servings).getJSONArray("servers"))
                 .put("runCount", runs.size())
                 .put("runs", liveRuns(runs).getJSONArray("runs"))
+                .put("activeFile", activeFile == null ? JSONObject.NULL : activeFile)
                 .put("lastFailureDevice",
                         failObj.optBoolean("failed") ? failObj.get("device") : JSONObject.NULL)
                 .put("lastFailure", failObj)
@@ -411,8 +493,10 @@ public final class McpTools {
     }
 
     private static ToolResult renderIdeContext() {
+        JSONObject editor = EditorState.live();
+        String active = editor.isNull("activeFile") ? null : editor.getString("activeFile");
         JSONObject structured = ideContext(defaultAim(), defaultServings(),
-                defaultRuns(), defaultFailure(), defaultDiagnostics());
+                defaultRuns(), active, defaultFailure(), defaultDiagnostics());
         return new ToolResult(Texts.of(structured), structured);
     }
 }

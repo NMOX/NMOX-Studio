@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.77.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.78.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3442,3 +3442,33 @@ tokenless call got 401; after the ■ (AXPress) `live_runs` answered
 legs stay automation-unreachable in background mode and are pinned at
 unit level: the ■ tooltip (a dwelling hover is display-scope) and the
 NPM Explorer's "● running since" marker (a JTree row gesture).
+
+## Addendum — 2026-09-05, the fifth parallel batch (v2.78.0)
+
+Built beside v2.77.0's chain, in the third worktree.
+
+**The Agent Port learns the editor's own index (units 1–2).** Two
+read-only tools the Agent Port's first three days never had:
+`find_symbol` (the v2.49.0 ProjectSymbols index behind a new
+`core.spi.SymbolIndex` seam — the editor module provides, the rack
+consumes, the soft-dependency idiom of v1.46.0; prefix before
+substring under the bridge's folding; the limit capped at 100; the
+walk's file cap reported as `truncated`) and `editor_state` (the
+window registry read on the EDT through a FutureTask with a 3 s
+leash; a timeout answers a `note`, not an empty list — "could not
+look" and "nothing open" are different truths). `ide_context` carries
+`activeFile`. Five mutants by name: the prefix ranking, the limit cap,
+the unavailable branch, the resource binding, the folded field.
+
+**The review of v2.77.0 (unit 3).** Verified clean: the census gate's
+population is the source annotations, its exemption list is checked
+for staleness both ways; API Studio's `menuMask()` mirrors
+RackTopComponent's headless fallback exactly (a local variable of the
+same name reads the method — legal, and the contract test compiled it
+under both); InfraPalette's drag flag is skipped only where JList
+would throw; `live_runs` reads the registry under its own lock and
+never holds it across the JSON build.
+
+**No walk this batch.** Both tools answer through the same transport
+the v2.77.0 walk proved by curl; their shapes are pinned by the schema
+contract and the protocol tests over the real server.

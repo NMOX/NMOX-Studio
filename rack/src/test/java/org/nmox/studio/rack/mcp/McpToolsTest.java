@@ -30,6 +30,44 @@ class McpToolsTest {
     }
 
     @Test
+    @DisplayName("find_symbol answers hits over the seam, says unavailable without one, and bounds the limit (v2.78.0)")
+    void findSymbol() {
+        org.nmox.studio.core.spi.SymbolIndex fake = (root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
+                List.of(new org.nmox.studio.core.spi.SymbolIndex.Hit("checkout", "FUNCTION", "src/cart.js", 12)).subList(0, Math.min(1, limit)),
+                true);
+        JSONObject s = McpTools.findSymbol(fake, new File("/tmp/proj"), " check ", 20);
+        assertThat(s.getBoolean("available")).isTrue();
+        assertThat(s.getString("query")).isEqualTo("check");
+        assertThat(s.getJSONArray("hits").getJSONObject(0).getInt("line")).isEqualTo(12);
+        assertThat(s.getBoolean("truncated")).isTrue();
+        assertThat(Texts.of(s)).startsWith("checkout (function) \u2014 src/cart.js:12").contains("partial");
+        assertThat(Texts.of(McpTools.findSymbol(null, new File("/tmp/proj"), "x", 5)))
+                .isEqualTo("No symbol index: aim a project first.");
+        assertThat(Texts.of(McpTools.findSymbol(fake, null, "x", 5))).contains("aim a project");
+        assertThat(Texts.of(McpTools.findSymbol(fake, new File("/tmp/proj"), "", 5))).isEqualTo("Pass a name to look for.");
+        int[] seen = {0};
+        org.nmox.studio.core.spi.SymbolIndex counting = (root, q, limit) -> { seen[0] = limit; return new org.nmox.studio.core.spi.SymbolIndex.Answer(List.of(), false); };
+        McpTools.findSymbol(counting, new File("/tmp/proj"), "x", 500);
+        assertThat(seen[0]).as("the limit is capped").isEqualTo(100);
+        assertThat(Texts.of(McpTools.findSymbol(counting, new File("/tmp/proj"), "nonesuch", 5)))
+                .isEqualTo("No symbol matches \"nonesuch\".");
+    }
+
+    @Test
+    @DisplayName("editor_state structures the open tabs with the active one and unsaved flags (v2.78.0)")
+    void editorState() {
+        JSONObject s = EditorState.editorState("/p/a.js", List.of(
+                new EditorState.OpenFile("/p/a.js", true, true),
+                new EditorState.OpenFile("/p/b.css", false, false)), null);
+        assertThat(s.getString("activeFile")).isEqualTo("/p/a.js");
+        assertThat(s.getInt("openCount")).isEqualTo(2);
+        assertThat(Texts.of(s)).isEqualTo("* /p/a.js  (unsaved changes)\n  /p/b.css");
+        assertThat(Texts.of(EditorState.editorState(null, List.of(), null))).isEqualTo("No editor is open.");
+        assertThat(Texts.of(EditorState.editorState(null, List.of(), "editor state unavailable: x")))
+                .startsWith("editor state unavailable");
+    }
+
+    @Test
     @DisplayName("live_runs structures each live run with its label and since-when (v2.77.0)")
     void liveRuns() {
         LiveRuns.add(new LiveRuns.Run("ide-run:/tmp/mcp#1", "Run \u2014 shop", () -> { }));
@@ -128,6 +166,7 @@ class McpToolsTest {
                 List.of(new ServingRegistry.Serving("d", "Vite", "http://x",
                         ServingRegistry.Kind.WEB, new File("/tmp/proj"))),
                 List.of(new LiveRuns.Run("ide-run:/tmp/proj#1", "Run \u2014 proj", () -> { })),
+                "/tmp/proj/src/app.js",
                 Optional.of(new FailureContext("VERITAS", "npm test", 1,
                         List.of("boom"), "proj", 1L)),
                 Map.of("eslint", List.of(new DiagnosticsBus.Problem(
@@ -135,20 +174,22 @@ class McpToolsTest {
         assertThat(s.getString("project")).isEqualTo("proj");
         assertThat(s.getInt("serverCount")).isEqualTo(1);
         assertThat(s.getInt("runCount")).isEqualTo(1);
+        assertThat(s.getString("activeFile")).isEqualTo("/tmp/proj/src/app.js");
         assertThat(s.getString("lastFailureDevice")).isEqualTo("VERITAS");
         assertThat(s.getInt("diagnosticCount")).isEqualTo(1);
         assertThat(Texts.of(s)).contains("Project: proj")
                 .contains("Serving: 1 server").contains("Running: 1 command")
-                .contains("on VERITAS");
+                .contains("Editing: /tmp/proj/src/app.js").contains("on VERITAS");
     }
 
     @Test
-    @DisplayName("The production roster is the seven read-only tools, each fully described")
+    @DisplayName("The production roster is the nine read-only tools, each fully described")
     void productionRoster() {
         McpTools tools = McpTools.production();
         assertThat(tools.all()).extracting(McpTools.Tool::name)
                 .containsExactly("ide_context", "project_state", "live_servers",
-                        "live_runs", "last_failure", "diagnostics", "rack_devices");
+                        "live_runs", "last_failure", "diagnostics", "find_symbol",
+                        "editor_state", "rack_devices");
         // every tool carries a title, a real input schema, and an output schema
         tools.all().forEach(t -> {
             assertThat(t.title()).isNotBlank();
