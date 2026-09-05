@@ -67,6 +67,14 @@ class NpmRunLaneTest {
         assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it").containsExactly("dev");
         assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
         assertThat(NpmService.stopScript(dir.toFile(), "dev")).as("the row's own Stop").isTrue();
+        // The exit half is POSIX-only (ledger 38, v1.42.0): under Git Bash the
+        // Windows PID chain breaks, the `sleep` grandchild outlives the tree
+        // kill and holds the pipe open, so the run's exit arrives only when
+        // sleep ends — the windows lane timed out here on the batch's first
+        // gate. The announce and stop halves above run everywhere.
+        org.junit.jupiter.api.Assumptions.assumeFalse(
+                System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+                "tree-kill exit is POSIX-only (ledger 38)");
         Throwable exit = null;
         try {
             done.get(5, TimeUnit.SECONDS);
