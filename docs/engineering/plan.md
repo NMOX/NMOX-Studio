@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.76.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.77.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3386,3 +3386,39 @@ string suffixes over a registry the v2.73.0/v2.75.0 walks already
 exercised live; the tooltip and marker shapes are pinned by name
 (LiveRunsTest, NpmRunLaneTest) and the mutants for each died. The next
 walk instance batches these with whatever the following batch adds.
+
+## Addendum — 2026-09-05, the fourth parallel batch (v2.77.0)
+
+Built beside v2.76.0's chain, in the other worktree.
+
+**The Agent Port learns what is running (unit 1).** `live_runs` (and
+`nmox://runs`) lists every LiveRuns entry with its label, "since HH:mm"
+and the epoch start; `ide_context` gains `runCount` + `runs`. Read-only
+by construction stayed the law: the ledger test now bans
+`LiveRuns.stop`/`LiveRuns.remove` in the mcp package — the mutant that
+planted a stopAll in the tool died by name. Five mutants total.
+
+**The name law made total (unit 2).** WindowNameLawCensusTest reads
+every `@TopComponent.Registration` in `*/src/main` and demands a
+`*A11yContractTest` that constructs it, or a written exemption. The
+population is the source, not a hand list, so tomorrow's window fails
+the build until it is under contract. Writing the studio contracts
+found the thing the census exists to find: API Studio and the Infra
+Designer could not be CONSTRUCTED headless (Toolkit menu-mask read;
+`JList.setDragEnabled(true)` refuses without a display) — a window the
+contract cannot reach is a window no gate covers. Both now take the
+RackTopComponent idiom (headless → the cross-platform mask; no drag
+flag without a display). The Browser is exempt with its reason.
+
+**The review of v2.76.0 (unit 3).** Verified clean: LiveRuns listener
+symmetry holds in every window that subscribes (Tests, Workbench, NPM
+Explorer add on open and remove on close; StopRunAction's one listener
+lives for the session, blessed — one toolbar action per JVM);
+`SCRIPT_BY_RUN` entries drop at exit so `runningSince` can never name a
+finished run; the tooltip's since string is local-zone by the v2.73.0
+rule.
+
+**No walk this batch.** The MCP surface is proven by the schema
+contract and the protocol tests over the real server; the window
+contracts ARE headless construction. The next walk instance batches
+the ■ tooltip, the marker, and `live_runs` over curl in one sitting.
