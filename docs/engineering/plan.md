@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.75.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.76.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3356,3 +3356,33 @@ one), eleven tab shots regenerated, and the Workbench shot read "● Run
 — meridian http://localhost:3000/ since 11:38 [Open] [Stop]" with the
 ⇄ chip lit — the seeded run painted as the guide describes; the shot
 was looked at, not assumed.
+
+## Addendum — 2026-09-05, the third parallel batch (v2.76.0)
+
+Built beside v2.75.0's chain. Smaller by design: the alternating
+rhythm means each batch is whatever fits the other batch's pipeline
+window, and this one fit the name law's last windows and a review.
+
+**The name law reaches the ui and editor windows (unit 1).** Headless
+contract tests over the Welcome, IRC and the Tests window: every button
+each paints at construction is named. With v2.73.0's Workbench,
+v2.75.0's rack windows and NPM Explorer, every window the product
+constructs headless now answers the rack's v1.41.0 law.
+
+**Since when, everywhere (units 2–3).** The ■'s tooltip names each run
+with its start ("Run — shop (since 10:41)"), and the NPM Explorer's
+running marker reads "● running since 10:41" — the Workbench had it
+since v2.73.0; the two other faces of the same registry caught up.
+
+**The review of v2.75.0 (unit 4).** Verified clean: the forge's seeded
+run is a no-op killer that the forge's own exit reaps; the chip's menu
+items lead with fixed text (the prefix rule, decompiled in v2.70.0)
+even where the tooltip needed escaping; `markStoppedByUser` sits in
+Stop All's loop only, never the shutdown reaper's (a verdict at exit
+is meaningless).
+
+**No walk this batch.** The three units are a headless contract and two
+string suffixes over a registry the v2.73.0/v2.75.0 walks already
+exercised live; the tooltip and marker shapes are pinned by name
+(LiveRunsTest, NpmRunLaneTest) and the mutants for each died. The next
+walk instance batches these with whatever the following batch adds.

@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.76.0] - 2026-09-05
+
+The third parallel batch — built beside v2.75.0's chain.
+
+1. **The name law over the ui and editor windows** — every button the
+   Welcome, IRC and the Tests window paint at construction is named
+   (headless contract tests); every window the product constructs
+   headless now answers the rack's v1.41.0 law.
+2. **Since when, everywhere** — the ■'s tooltip names each run with its
+   start; the NPM Explorer's marker reads "● running since HH:mm".
+3. **The v2.75.0 review, clean** — blessings in the plan.
+4. **Docs, plan, this entry.**
+
 ## [2.75.0] - 2026-09-05
 
 The second parallel batch — built beside v2.74.0's chain.
@@ -16957,6 +16970,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.76.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.75.0...v2.76.0
 [2.75.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.74.0...v2.75.0
 [2.74.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.73.0...v2.74.0
 [2.73.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.72.0...v2.73.0
