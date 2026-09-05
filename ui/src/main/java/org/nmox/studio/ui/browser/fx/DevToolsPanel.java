@@ -279,6 +279,8 @@ public final class DevToolsPanel extends JPanel {
 
     /** A JTree whose labels never interpret page text as HTML. */
     private static JTree safeTree(javax.swing.tree.TreeModel model) {
+        // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
+        // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
         JTree tree = new JTree(model);
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);

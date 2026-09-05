@@ -82,11 +82,10 @@ public final class TestsExplorerTopComponent extends TopComponent {
         setToolTipText("Every test the focused runner can run, before anything runs");
         setLayout(new BorderLayout());
 
-        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
         // test names are FILE CONTENT — a name spelled <html><img src>
-        // must paint as characters, never render (the v1.306.0 law)
-        renderer.putClientProperty("html.disable", Boolean.TRUE);
-        tree.setCellRenderer(renderer);
+        // must paint as characters, never render (the v1.306.0 law; the
+        // one spelling since v2.70.0's JTree gate)
+        tree.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(new DefaultTreeCellRenderer()));
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         tree.getAccessibleContext().setAccessibleName("Discovered tests");

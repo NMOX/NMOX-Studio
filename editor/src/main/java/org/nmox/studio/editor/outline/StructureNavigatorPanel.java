@@ -143,6 +143,10 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
     @Override
     public JComponent getComponent() {
         if (component == null) {
+            // PLAIN-TABLE-EXEMPT: OutlineCellRenderer MEANS its markup (name +
+            // dimmed detail) and escapes every external string it interpolates
+            // (v1.311.0, verified clean) — escape-or-disable depends on
+            // whether the renderer means its markup
             tree = new JTree(new DefaultTreeModel(new DefaultMutableTreeNode()));
             tree.setRootVisible(false);
             tree.setShowsRootHandles(true);

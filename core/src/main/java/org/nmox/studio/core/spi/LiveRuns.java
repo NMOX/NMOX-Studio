@@ -1,4 +1,4 @@
-package org.nmox.studio.tools.npm;
+package org.nmox.studio.core.spi;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -7,18 +7,41 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * The IDE's own running commands (Run/Build/Test/Clean from the toolbar and
- * the Run menu), so a Stop can find them. David's walk of 2.69.8: the ▶
- * started a server and nothing on screen stopped it — the only stop was the
- * Cancel inside the status-bar progress popup, which nobody finds. Pure
- * registry: add on spawn, remove on exit, {@link #stopAll()} kills every
- * live one through its killer; listeners follow the count (any thread —
- * the toolbar action marshals to the EDT itself).
+ * The IDE's own running commands, so a Stop can find them: Run/Build/
+ * Test/Clean from the toolbar and the Run menu (v2.69.10), NPM Explorer's
+ * and Run Script's spawns, and the editor's Focused Test / Tests-window
+ * runs (v2.70.0 — the registry moved here from the tools module so the
+ * editor lane could join; a pure registry has no module to belong to).
+ * David's walk of 2.69.8: the ▶ started a server and nothing on screen
+ * stopped it — the only stop was the Cancel inside the status-bar
+ * progress popup, which nobody finds. Add on spawn, remove on exit,
+ * {@link #stopAll()} kills every live one through its killer; listeners
+ * follow the count (any thread — the toolbar action marshals to the EDT
+ * itself).
  */
 public final class LiveRuns {
 
-    /** One running command: its id, the label the user saw, and how to kill it. */
+    /**
+     * One running command: its id, the label the user saw, and how to kill
+     * it. The label reaches platform-owned Swing text (the status line is a
+     * JLabel, Run ▸ Stop Build/Run is a JMenuItem — both decompiled) and
+     * Swing renders a string that BEGINS with {@code <html>} as markup, an
+     * {@code <img src>} fetching at paint time (the v1.208.0 class). Every
+     * caller's label starts with fixed text today; the record keeps the
+     * shape true by construction rather than by convention.
+     */
     public record Run(String id, String label, Runnable killer) {
+        public Run {
+            label = plainLeading(label);
+        }
+    }
+
+    /** A label that can never be taken for markup: a leading {@code <html} is set off by a space. */
+    static String plainLeading(String label) {
+        if (label != null && label.regionMatches(true, 0, "<html", 0, 5)) {
+            return " " + label;
+        }
+        return label;
     }
 
     private static final Map<String, Run> LIVE = new LinkedHashMap<>();
@@ -49,6 +72,19 @@ public final class LiveRuns {
         synchronized (LIVE) {
             return new ArrayList<>(LIVE.values());
         }
+    }
+
+    /** Kills ONE live run and forgets it (the row's own Stop, v2.70.0); null when no such run. */
+    public static Run stop(String id) {
+        Run r;
+        synchronized (LIVE) {
+            r = LIVE.remove(id);
+        }
+        if (r != null) {
+            r.killer().run();
+            notifyListeners();
+        }
+        return r;
     }
 
     /** Kills every live run and forgets it; returns what was stopped, in spawn order. */

@@ -1,4 +1,4 @@
-package org.nmox.studio.tools.npm;
+package org.nmox.studio.core.spi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,5 +54,38 @@ class LiveRunsTest {
         assertThat(LiveRuns.stoppedMessage(List.of())).isEqualTo("Nothing is running");
         assertThat(LiveRuns.stoppedMessage(List.of(new LiveRuns.Run("a", "Run — one", () -> { }),
                 new LiveRuns.Run("b", "Build — two", () -> { })))).isEqualTo("Stopped: Run — one, Build — two");
+    }
+
+    @Test
+    @DisplayName("stop(id) kills exactly one run, forgets it, and tells the listeners (v2.70.0)")
+    void stopOne() {
+        java.util.List<String> killed = new java.util.ArrayList<>();
+        java.util.concurrent.atomic.AtomicInteger notified = new java.util.concurrent.atomic.AtomicInteger();
+        Runnable l = notified::incrementAndGet;
+        LiveRuns.addListener(l);
+        try {
+            LiveRuns.add(new LiveRuns.Run("a", "npm run dev — p", () -> killed.add("a")));
+            LiveRuns.add(new LiveRuns.Run("b", "npm run test — p", () -> killed.add("b")));
+            int before = notified.get();
+            assertThat(LiveRuns.stop("a")).isNotNull();
+            assertThat(killed).containsExactly("a");
+            assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).containsExactly("b");
+            assertThat(notified.get()).isEqualTo(before + 1);
+            assertThat(LiveRuns.stop("nope")).as("no such run: nothing killed, nobody told").isNull();
+            assertThat(notified.get()).isEqualTo(before + 1);
+        } finally {
+            LiveRuns.removeListener(l);
+        }
+    }
+
+    @Test
+    @DisplayName("a label that begins with <html> can never reach a platform JLabel/JMenuItem as markup (v2.70.0)")
+    void markupLeadingLabelIsSetOff() {
+        LiveRuns.Run r = new LiveRuns.Run("x", "<html><img src='http://evil/x'>", () -> { });
+        assertThat(r.label()).startsWith(" <html>");
+        assertThat(new LiveRuns.Run("y", "<HTML>shout", () -> { }).label()).startsWith(" <HTML>");
+        assertThat(new LiveRuns.Run("z", "Run — <html>inside", () -> { }).label())
+                .as("only the LEADING position is the sniff (BasicHTML.isHTMLString, decompiled)")
+                .isEqualTo("Run — <html>inside");
     }
 }

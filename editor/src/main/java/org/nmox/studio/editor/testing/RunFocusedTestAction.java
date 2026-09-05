@@ -14,6 +14,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.editor.BaseAction;
 import org.nmox.studio.rack.devices.ProjectInspector;
+import org.nmox.studio.core.spi.LiveRuns;
 import org.nmox.studio.rack.engine.CommandExecutor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -118,11 +119,24 @@ public class RunFocusedTestAction extends BaseAction {
         StatusDisplayer.getDefault().setStatusText("Focused test: "
                 + (name != null ? name : "line " + line));
         CommandExecutor.showOutput("Focused Test");
-        CommandExecutor.run("Focused Test", focused.dir(), Map.of(),
-                focused.command(), l -> { }, code -> StatusDisplayer.getDefault()
-                        .setStatusText(code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]"));
+        // The run joins LiveRuns (v2.70.0) so the toolbar ■ can stop it — a
+        // test that opens a server and never exits, or a runner left in
+        // watch mode, had NO stop on screen (the v2.69.10 law's third lane;
+        // the Tests window's Run rides this same method).
+        String runId = "focused-test:" + file.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
+        String runLabel = "Focused test: " + (name != null ? name : "line " + line);
+        CommandExecutor.Handle handle = CommandExecutor.run("Focused Test", focused.dir(), Map.of(),
+                focused.command(), l -> { }, code -> {
+                    LiveRuns.remove(runId);
+                    StatusDisplayer.getDefault()
+                            .setStatusText(code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]");
+                });
+        LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         return true;
     }
+
+    private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
+            new java.util.concurrent.atomic.AtomicLong();
 
     record Focused(List<String> command, File dir) {
     }

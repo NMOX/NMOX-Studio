@@ -4,13 +4,11 @@ import java.awt.BorderLayout;
 import java.io.IOException;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -432,11 +430,11 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private void openPorts(ContainerInfo c) {
+        // a published port opens in the product's own Browser, the system
+        // browser as the fallback (v2.70.0, the ⇄ chip's opener)
         for (Integer port : c.hostPorts()) {
-            try {
-                Desktop.getDesktop().browse(URI.create("http://localhost:" + port));
+            if (org.nmox.studio.rack.service.ServingLinks.open("http://localhost:" + port)) {
                 return;
-            } catch (Exception ignored) {
             }
         }
         // three different truths, told apart: no ports at all, ports we could

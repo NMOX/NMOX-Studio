@@ -216,4 +216,26 @@ class NpmServiceTest {
         assertThat(NpmService.parseArguments(null)).isEmpty();
         assertThat(NpmService.parseArguments("   ")).isEmpty();
     }
+
+    @Test
+    @DisplayName("scriptOf reads the script a run label names; installs name none (v2.70.0)")
+    void scriptOfLabel() {
+        assertThat(NpmService.scriptOf("npm run dev — proj")).isEqualTo("dev");
+        assertThat(NpmService.scriptOf("pnpm run build:prod — proj")).isEqualTo("build:prod");
+        assertThat(NpmService.scriptOf("yarn start — proj")).isEqualTo("start");
+        assertThat(NpmService.scriptOf("npm install — proj")).isNull();
+        assertThat(NpmService.scriptOf("npm")).isNull();
+        assertThat(NpmService.scriptOf(null)).isNull();
+    }
+
+    @Test
+    @DisplayName("run <script> and start may announce a printed server; install never does (v2.70.0)")
+    void announcesOnlyScriptVerbs() {
+        assertThat(NpmService.announcesServer("npm", "run", "dev")).isTrue();
+        assertThat(NpmService.announcesServer("pnpm", "run", "serve")).isTrue();
+        assertThat(NpmService.announcesServer("yarn", "start")).isTrue();
+        assertThat(NpmService.announcesServer("npm", "install")).as("a postinstall URL is lifecycle noise").isFalse();
+        assertThat(NpmService.announcesServer("npm", "ci")).isFalse();
+        assertThat(NpmService.announcesServer("npm")).isFalse();
+    }
 }

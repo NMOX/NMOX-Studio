@@ -9,7 +9,7 @@ import org.nmox.studio.rack.service.ServingRegistry;
 /**
  * Quick Search over what is serving RIGHT NOW: type "serv", a port, or
  * the device's name and the live URL is one Enter away — WEB servings
- * open in the browser, CHAIN servings focus Contract Studio (a devnet
+ * open in the in-app Browser, CHAIN servings focus Contract Studio (a devnet
  * URL in a browser tab is useless; the studio speaks its JSON-RPC).
  */
 public class LiveServerSearchProvider implements SearchProvider {
@@ -46,15 +46,8 @@ public class LiveServerSearchProvider implements SearchProvider {
                 }
             });
         }
-        return () -> {
-            try {
-                if (java.awt.Desktop.isDesktopSupported() && java.awt.Desktop
-                        .getDesktop().isSupported(java.awt.Desktop.Action.BROWSE)) {
-                    java.awt.Desktop.getDesktop().browse(java.net.URI.create(serving.url()));
-                }
-            } catch (Exception ignored) {
-                // no browser available; the pick just does nothing
-            }
-        };
+        // WEB: the in-app Browser, the system browser as the fallback (v2.70.0;
+        // the ⇄ chip's twin, one opener for both doors)
+        return () -> org.nmox.studio.rack.service.ServingLinks.open(serving.url());
     }
 }

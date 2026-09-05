@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.70.0] - 2026-09-05
+
+The bundled day shift — twelve units, one release (David: "we're
+spending a lot of time on each release waiting for CI/CD; bundle the
+next 12"). Each unit was verified locally and mutation-proven by name;
+three full verifies ran between them; one pipeline pass ships them.
+
+1. **One opener for every serving door** — ⌘I "Live Servers" still
+   sent its pick to the system browser after v2.69.19 taught the ⇄ chip
+   the in-app Browser (the sibling-registration lens); `ServingLinks`
+   serves both, gate-pinned.
+2. **NPM Explorer runs join the ■** — double-click, Run Script and
+   install spawned with the handle dropped: nothing could stop an
+   `npm run dev` started there, and its server never announced (the
+   v2.69.10 and v1.212.0 laws' sibling lane). They register with
+   LiveRuns and the platform's Stop Build/Run and announce a printed
+   local address (run/start only — an install's URL is lifecycle noise).
+3. **Docker's published port and SONAR's Browse open in-app first**;
+   the opener answers whether anything took the URL so the Docker
+   panel keeps its three truths.
+4. **LiveRuns moves to core.spi** so the editor's Focused Test and
+   Tests-window runs join the ■ (a hung test process had no stop);
+   the NPM lane is spawned for real in NpmRunLaneTest (announce, stop,
+   withdraw) — the tools coverage trip answered by coverage.
+5. **The batch review** — the ▶ forked on the EDT since v1.2 (the
+   v1.57.0 class): it posts to an "IDE Run" lane after the trust gate;
+   the NPM Repeat rerun posts to its lane; labels handed to the
+   platform's status line and Stop menu can never lead with markup
+   (Swing's sniff is prefix-only, decompiled; LiveRuns.Run sets it off
+   by construction).
+6. **Trees show external text as text** — the v1.306.0 gate learns
+   `new JTree`: NPM Explorer painted package.json names through the
+   default JLabel renderer since v0.1; the Tests window folds into the
+   one spelling; Navigator and DevTools blessed in writing; the four
+   custom tree renderers verified clean.
+7. **NPM Explorer marks running scripts** (● running), offers Stop
+   Script on the row, and refuses a second copy out loud.
+8. **The walk** of the assembled app (one announced instance, `--open`
+   fixture): hostile script name painted as characters; ▶ → announce →
+   Browser auto-open → chip popup → ■ kills the tree (exit 143); the
+   JTree-row and popup-item gestures recorded harness-unverifiable.
+9. **Docs** — user guide and Kitchen Sink carry the ■'s reach, the
+   running marker, Stop Script, and the in-app opens.
+10. **plan.md** — the bundled-day addendum and the batch method.
+11. **tools JaCoCo floor 0.75→0.78** (measured 0.816).
+12. **This entry and the headline** — the release fold; the compare-link
+    block regenerated from the headers (it had dead-ended at 2.58.1).
+
 ## [2.69.19] - 2026-09-04
 
 The ⇄ chip opens the product's own Browser. The chip predates the
@@ -16755,6 +16803,46 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.70.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.19...v2.70.0
+[2.69.19]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.18...v2.69.19
+[2.69.18]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.17...v2.69.18
+[2.69.17]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.16...v2.69.17
+[2.69.16]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.15...v2.69.16
+[2.69.15]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.14...v2.69.15
+[2.69.14]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.13...v2.69.14
+[2.69.13]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.12...v2.69.13
+[2.69.12]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.11...v2.69.12
+[2.69.11]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.10...v2.69.11
+[2.69.10]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.9...v2.69.10
+[2.69.9]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.8...v2.69.9
+[2.69.8]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.7...v2.69.8
+[2.69.7]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.6...v2.69.7
+[2.69.6]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.5...v2.69.6
+[2.69.5]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.4...v2.69.5
+[2.69.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.3...v2.69.4
+[2.69.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.2...v2.69.3
+[2.69.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.1...v2.69.2
+[2.69.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.0...v2.69.1
+[2.69.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.68.2...v2.69.0
+[2.68.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.68.1...v2.68.2
+[2.68.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.68.0...v2.68.1
+[2.68.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.67.2...v2.68.0
+[2.67.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.67.1...v2.67.2
+[2.67.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.67.0...v2.67.1
+[2.67.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.66.0...v2.67.0
+[2.66.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.65.0...v2.66.0
+[2.65.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.64.1...v2.65.0
+[2.64.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.64.0...v2.64.1
+[2.64.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.63.0...v2.64.0
+[2.63.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.62.2...v2.63.0
+[2.62.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.62.1...v2.62.2
+[2.62.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.62.0...v2.62.1
+[2.62.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.61.2...v2.62.0
+[2.61.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.61.1...v2.61.2
+[2.61.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.61.0...v2.61.1
+[2.61.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.60.0...v2.61.0
+[2.60.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.59.0...v2.60.0
+[2.59.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.58.1...v2.59.0
 [2.58.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.58.0...v2.58.1
 [2.58.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.57.0...v2.58.0
 [2.57.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.56.1...v2.57.0

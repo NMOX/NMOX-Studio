@@ -168,7 +168,14 @@ the page in the in-app Browser. Everything runs behind the Workspace
 Trust prompt the first time. To stop: the ■ right of Debug on the
 toolbar stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
-item — stops one and offers **Repeat** afterwards.
+item — stops one and offers **Repeat** afterwards. The ■ sees every
+command the product starts for you: the ▶'s runs, a script
+double-clicked in the **NPM Explorer** or run from a package.json line
+(Run Script), and a Focused Test or a Tests-window run. A script the
+NPM Explorer started prints a local address the same way the ▶ does
+(the ⇄ chip lights, Live Servers sees it), shows **● running** on its
+row, offers **Stop Script** on right-click, and refuses to start a
+second copy while the first runs.
 
 **.env everywhere:** if your project has a `.env`, devices launched from
 the rack get those variables. Edit it and the status line notes that
@@ -262,7 +269,7 @@ connections) the Java [Device SPI](device-spi.md) is still there.
 device — and the whole rack **exports to GitHub Actions** (your local
 pipeline and your CI are the same wiring). **HELM** runs commands on a
 remote server over ssh. **TAIL** follows any log file. **WORMHOLE**
-tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code.
+tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code. Picking a serving from the chip or from ⌘I Live Servers opens it in the in-app Browser (the system browser only when none is wired up); the Docker panel's published port and SONAR's Browse open the same way.
 
 **The rack stays in sync by itself.** Edit `package.json` and NPM-9000's
 script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its

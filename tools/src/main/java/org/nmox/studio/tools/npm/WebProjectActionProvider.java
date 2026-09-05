@@ -1,5 +1,6 @@
 package org.nmox.studio.tools.npm;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +101,20 @@ final class WebProjectActionProvider implements ActionProvider {
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir)) {
             return;
         }
+        // The platform invokes us on the EDT; the fork (pb.start inside
+        // CommandExecutor.run) and everything around it ride a named lane
+        // (v2.70.0 — the v1.57.0 class: the rack's RUN buttons left the
+        // paint thread then, the IDE's own ▶ never did). The trust dialog
+        // above stays on the EDT by design; SpawnThreadGateTest pins the
+        // order: gate, then post, then spawn.
+        RUN_RP.post(() -> launch(command, context, dir, cmd));
+    }
 
+    /** A named lane for the IDE's own forks; four so a hung spawn can't wedge the next. */
+    private static final org.openide.util.RequestProcessor RUN_RP =
+            new org.openide.util.RequestProcessor("IDE Run", 4, true);
+
+    private void launch(String command, Lookup context, File dir, List<String> cmd) {
         // the action and the rack are one mechanism: aim the rack so the
         // monitor, explorer and recent list all follow the same project.
         // Soft aim lookup (ledger 30): no provider (plain tests) — the
