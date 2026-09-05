@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.70.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.71.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.70.0, ~43 releases in seven days). **The
+accessibility (v2.44.0–v2.71.0, ~44 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3084,3 +3084,66 @@ verdict about no committed state); one CHANGELOG entry at the end names
 every unit; the PR body is written before the final verify. The cost
 of the batch is the loss of the per-unit CI walk — the reason to keep
 the local verify honest and the walk in the batch.
+
+## Addendum — 2026-09-05, the bundled night shift (v2.71.0, twelve units in one release)
+
+The day's method ran again at night: one branch, twelve commits, a
+full verify after every few units, one pipeline pass. The theme fell
+out of the day's residue — the ■ that v2.69.10 gave the ▶ and v2.70.0
+gave the NPM and test lanes became a product-wide law, and the review
+found the phantom the shape had been hiding all along.
+
+**The units.** The day chain's post-ship could not delete its own
+branch because the worktree still held it (unit 1: post-ship detaches
+the holder first, the ONE worktree it touches). The ■ said nothing
+about what it would stop (unit 2: the tooltip names the runs with a
+count, pure). NPM runs shared one Output tab while the ▶ named tabs per
+run (unit 3). The v2.70.0 review (unit 4) found the running marker
+parsing the script back out of the run LABEL — a script named with a
+space, legal in package.json, never showed ● running and could not be
+stopped from its row; the run→script map is structural now and the
+lane test runs `my dev`. Then the sibling-registration lens once more:
+`ng generate` (unit 5) and the four setup installs — New Project, New
+Experiment, Project Configuration's add/remove, the language-server
+installer — (unit 6) spawned with no stop on screen; each joined
+LiveRuns, and LiveRunsLedgerTest made the law structural in the
+v1.224.0 spawn-ledger shape: every `CommandExecutor.run` site registers
+or carries a written `LIVERUNS-EXEMPT:` reason (the rack's devices have
+their own STOP; HARBOR's docker verbs are fixed and the things that run
+long are containers).
+
+**The review's find (unit 7).** Reading the fresh registrations with
+the hostile lens asked: what if the launch FAILS? `CommandExecutor.run`
+answers a `pb.start()` IOException by calling the exit callback
+synchronously, before it returns — so every "handle = run(…);
+LiveRuns.add(…)" site (the ▶ since v2.69.10, the NPM lane, the Focused
+Test lane, ng generate, the installs) withdrew a run that was not there
+yet and then added a PHANTOM: the ■ lit for a command that never
+started, its tooltip named it, and a press "stopped" a no-op handle.
+The tool-not-on-PATH case is the beginner's commonest wall, so this was
+the common path, not a corner. Fixed at ONE place: a withdrawal of an
+unknown id leaves a tombstone and the late add dies on it (ids are
+unique per spawn, so a tombstone can never block a real run; the set is
+bounded); the platform's own Stop item is registered BEFORE the spawn
+at both IdeRunItem sites because that registry has no tombstone; and
+the failure shape is spawned for real in the lane test (`no-such-pm run
+dev` → exit −1 → nothing live). Law: **a callback that can fire
+synchronously inverts every register-then-spawn order — register
+first, or make the registry tolerate the inversion.**
+
+**The walk (unit 8).** One announced instance of the assembled app (verify B's
+bytes, throwaway userdir, `--open` a fixture whose scripts include one
+named `my dev`): the ▶ ran `npm start`, announced, the Browser
+auto-opened the page, the chip lit; the ■ killed the tree (`[exit
+143]`, the chip gone, the button greyed) — the tombstone change left
+the normal cycle intact. Harness limits held: the Java window is
+opaque to System Events (no `help` attribute to read the tooltip
+from) and the NPM Explorer's row gestures need a real double-click, so
+the tooltip, the per-run tab and the space-named marker stay at their
+pure tests plus a user's click; every package manager exists on this
+box, so the failed-launch phantom stays proven by the lane test.
+
+**Batch method, second run.** Verify A went red on a source-gate whose
+literal the unit-6 edit had reshaped (the report call moved inside a
+block) — repinned to read the call the gate exists for. The cadence
+held: A after unit 6, B after unit 7, the final one on the PR head.
