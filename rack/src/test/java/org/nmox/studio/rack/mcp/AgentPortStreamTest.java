@@ -37,6 +37,52 @@ class AgentPortStreamTest {
     }
 
     @Test
+    @DisplayName("streams are capped: the ninth GET stream is refused 503 (v2.84.0 review)")
+    void streamsCapped() throws Exception {
+        port = AgentPort.start(new McpTools(List.of()), "2.84.0");
+        HttpClient http = HttpClient.newHttpClient();
+        List<HttpResponse<java.io.InputStream>> open = new java.util.ArrayList<>();
+        for (int i = 0; i < AgentPort.MAX_STREAMS; i++) {
+            HttpResponse<java.io.InputStream> r = http.send(HttpRequest.newBuilder(URI.create(port.url()))
+                    .header("Authorization", "Bearer " + port.token())
+                    .header("Accept", "text/event-stream").GET().build(),
+                    HttpResponse.BodyHandlers.ofInputStream());
+            assertThat(r.statusCode()).isEqualTo(200);
+            open.add(r);
+        }
+        assertThat(port.subscriptions().attachedCount()).isEqualTo(AgentPort.MAX_STREAMS);
+        HttpResponse<Void> ninth = http.send(HttpRequest.newBuilder(URI.create(port.url()))
+                .header("Authorization", "Bearer " + port.token())
+                .header("Accept", "text/event-stream").GET()
+                .timeout(java.time.Duration.ofSeconds(5)).build(),
+                HttpResponse.BodyHandlers.discarding());
+        assertThat(ninth.statusCode()).isEqualTo(503);
+        for (HttpResponse<java.io.InputStream> r : open) {
+            r.body().close();
+        }
+    }
+
+    @Test
+    @DisplayName("every watch the port adds, stop removes — incl. the editor registry (source law)")
+    void watchesAreSymmetric() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/mcp/AgentPort.java"));
+        int watch = src.indexOf("private void watch()");
+        assertThat(watch).isPositive();
+        String body = src.substring(watch, src.indexOf("private static boolean acceptsEventStream", watch));
+        String[][] pairs = {
+            {"LiveRuns.addListener(", "LiveRuns.removeListener("},
+            {"servings.addListener(", "servings.removeListener("},
+            {"getRegistry().addPropertyChangeListener(", "getRegistry().removePropertyChangeListener("},
+            {"DiagnosticsBus.addListener(", "DiagnosticsBus.removeListener("},
+            {"addChangeListener(", "removeChangeListener("}};
+        for (String[] p : pairs) {
+            assertThat(body).as("watch adds " + p[0]).contains(p[0]);
+            assertThat(body).as("unwatch removes " + p[1]).contains(p[1]);
+        }
+        assertThat(body).contains("nmox://editor");
+    }
+
+    @Test
     @DisplayName("a subscribed client is told nmox://runs changed when a run starts")
     void pushOnRunStart() throws Exception {
         port = AgentPort.start(McpTools.production(), "2.84.0");

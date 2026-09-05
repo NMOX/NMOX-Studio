@@ -559,7 +559,9 @@ the package. Twelve typed tools (`ide_context` for the whole picture;
 `last_failure`, `diagnostics`, `find_symbol`, `outline`,
 `search_text`, `editor_state`, `rack_devices`), the same answers as
 `nmox://` resources (with templates for the two that take an
-argument), and prompts that fold live state into the question. See
+argument), and prompts that fold live state into the question; an agent can
+subscribe and be told over the port's event stream when a run starts
+or a server goes live. See
 [the tutorial](docs/tutorials/agent-port.md).
 
 ### 🌐 Standards & PWA, supported with gusto

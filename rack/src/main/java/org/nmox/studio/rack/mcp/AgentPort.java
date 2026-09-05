@@ -34,6 +34,9 @@ public final class AgentPort {
 
     /** Request bodies past this are refused — no MCP message is 1 MB. */
     static final int MAX_REQUEST_BYTES = 1024 * 1024;
+    /** Open GET streams past this are refused (503) — one agent needs one;
+     *  an unbounded count is an unbounded set of sockets and buffers (v2.84.0 review). */
+    static final int MAX_STREAMS = 8;
 
     // a process-lifetime CSPRNG, seeded once and reused for every port
     // start (a per-call new SecureRandom is used-only-once — sharing it
@@ -121,6 +124,20 @@ public final class AgentPort {
             servings.addListener(l);
             unwatch.add(() -> servings.removeListener(l));
         }
+        // the editor: what the user looks at (v2.84.0) — the window registry
+        // fires on the EDT; the frame write rides the push daemon, so the EDT
+        // never waits on a socket
+        java.beans.PropertyChangeListener editor = evt -> {
+            String p = evt.getPropertyName();
+            if (org.openide.windows.TopComponent.Registry.PROP_ACTIVATED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_OPENED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_TC_OPENED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_TC_CLOSED.equals(p)) {
+                subs.updated("nmox://editor", "nmox://context");
+            }
+        };
+        org.openide.windows.TopComponent.getRegistry().addPropertyChangeListener(editor);
+        unwatch.add(() -> org.openide.windows.TopComponent.getRegistry().removePropertyChangeListener(editor));
         try {
             org.nmox.studio.rack.engine.DiagnosticsBus.Listener d =
                     (tool, problems) -> subs.updated("nmox://diagnostics", "nmox://context");
@@ -206,6 +223,13 @@ public final class AgentPort {
      * URIs. Chunked, kept open until the client leaves or the port stops.
      */
     private void openStream(HttpExchange exchange) throws IOException {
+        if (subs.attachedCount() >= MAX_STREAMS) {
+            // refused out loud, with the reason a client can read
+            try (exchange) {
+                exchange.sendResponseHeaders(503, -1);
+            }
+            return;
+        }
         exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
         exchange.getResponseHeaders().set("Cache-Control", "no-cache");
         exchange.sendResponseHeaders(200, 0);
