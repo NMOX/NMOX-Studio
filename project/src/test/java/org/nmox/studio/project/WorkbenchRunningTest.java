@@ -43,6 +43,21 @@ class WorkbenchRunningTest {
     }
 
     @Test
+    @DisplayName("a rack device's run owns the serving its bus announced (device:<bus>#n ↔ bus), so it is one row, not two (v2.74.0)")
+    void deviceRunOwnsItsBusServing() {
+        assertThat(WorkbenchRunning.owns("device:SOLDER#3", "SOLDER")).isTrue();
+        assertThat(WorkbenchRunning.owns("device:SOLDER#3", "SOLDER·2")).as("a sibling bus").isFalse();
+        assertThat(WorkbenchRunning.owns("ide-run:/p#1", "ide-run:/p#1")).isTrue();
+        assertThat(WorkbenchRunning.owns("ide-run:/p#1", "SOLDER")).isFalse();
+        List<WorkbenchRunning.Row> rows = WorkbenchRunning.rows(
+                List.of(run("device:SOLDER#3", "SOLDER — npx")),
+                List.of(serving("SOLDER", "SOLDER", "http://localhost:8080/")));
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).url()).isEqualTo("http://localhost:8080/");
+        assertThat(rows.get(0).stoppable()).isTrue();
+    }
+
+    @Test
     @DisplayName("the window: RUNNING is painted first, follows both registries symmetrically, and every row's Stop is a real button on LiveRuns.stop")
     void windowWiring() throws Exception {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/project/ProjectExplorerTopComponent.java"));
