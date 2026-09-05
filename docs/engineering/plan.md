@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.71.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.72.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.71.0, ~44 releases in seven days). **The
+accessibility (v2.44.0–v2.72.0, ~45 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3147,3 +3147,57 @@ box, so the failed-launch phantom stays proven by the lane test.
 literal the unit-6 edit had reshaped (the report call moved inside a
 block) — repinned to read the call the gate exists for. The cadence
 held: A after unit 6, B after unit 7, the final one on the PR head.
+
+## Addendum — 2026-09-05, the bundled morning shift (v2.72.0, twelve units in one release)
+
+Third run of the batch method in a day and a night. The ■'s registry,
+built over the last two batches, paid off as KNOWLEDGE this morning: the
+product can now answer "is this project still installing?" — and it
+does.
+
+**The units.** The v2.71.0 review (unit 1) found the run→script entry
+put AFTER the spawn — the night's own synchronous-failure law, missed
+one line over: a failed launch removed the entry before the put and
+leaked one per failure. The NPM lane's `run`/`start` now arms the
+Browser auto-open like the ▶ (unit 2 — the v1.212.0 "show me the thing
+running" gesture, one door over). Unit 3 is the morning's substance:
+the New Project wizard and the New Experiment dialog start an install
+so the first Run succeeds (v2.36.0), and a ▶ or an Explorer
+double-click pressed before it finished ran against a half-written
+`node_modules` and ended in a wall of MODULE_NOT_FOUND; since the
+installs joined the registry in v2.71.0 under ids their dialogs own,
+`InstallGuard` refuses both lanes out loud while THIS project's install
+is live (own path only — a sibling whose path merely starts the same
+does not count; mutation-pinned), naming the ■ as the way out. Unit 4
+made FIRST STEPS honest: the ▶ ticks "Run something" (the IDE lanes and
+the rack are one mechanism, and the walk had shown the ▶ ticking the
+old "in the rack" wording). Unit 5 measured futures F5:
+`@typescript/native-preview` is `7.0.0-dev.20260707.2`, one binary
+`tsgo`, no `tsserverlibrary.js` — the TS-5 pin still binds, the watch
+stays recorded. Units 6–7 wrote the README's ▶/■ paragraph, ledger 87
+(two stop registries, two populations, deliberately), and the guide's
+guard and auto-open. Unit 8 gave the ■ a chord: ⌥⌘. (DA-PERIOD,
+unclaimed in every shipped cluster layer and editor keybinding —
+measured) as Keymaps shadows in all five profiles, the ui layer being
+the house's home for cross-module chords; StopChordTest pins the
+TARGET against the tools module's generated layer, and its first mutant
+survived an unbounded folder search (the parity gate caught it; the
+gate was bounded to the profile's own folder and re-proven).
+
+**The walk (unit 9).** One announced instance of the assembled app (verify B's
+bytes, throwaway userdir, `--open` a start-script fixture): the Welcome
+read "Run something" in FIRST STEPS; the ▶ ran `npm start`, announced,
+the Browser auto-opened the page, the chip lit; the ■ killed the tree
+(the watcher read empty within four seconds, read BEFORE the quit so
+the app's own exit reaper could not stand in for the button). Not
+walkable by this harness: the ⌥⌘. chord (background input cannot send
+⌘-chords — the shadow and its target are gate-pinned, the parity gate
+keeps the five profiles identical), the NPM lane's auto-open (a JTree
+double-click), and the install guard (no wizard from here); all three
+live at their pure and lane tests.
+
+**Method notes.** A `cp` to /dev/null inside the tool shell hung on
+the interactive `-i` alias and stalled a whole call for two minutes —
+`/bin/cp -f` or no cp at all; the law was already in memory and was
+still missed. The batch cadence held (A after unit 7, B after unit 8,
+the final one on the PR head).

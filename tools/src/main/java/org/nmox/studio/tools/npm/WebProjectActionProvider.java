@@ -101,6 +101,12 @@ final class WebProjectActionProvider implements ActionProvider {
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir)) {
             return;
         }
+        // a Run while the project's own install is still live (v2.72.0):
+        // refuse out loud instead of failing on a half-written node_modules
+        if (InstallGuard.installing(dir)) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.message(dir));
+            return;
+        }
         // The platform invokes us on the EDT; the fork (pb.start inside
         // CommandExecutor.run) and everything around it ride a named lane
         // (v2.70.0 — the v1.57.0 class: the rack's RUN buttons left the

@@ -22,6 +22,22 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
+### 87. Two stop registries, two populations — BLESSED (2026-09-05, v2.72.0)
+
+The toolbar ■ stops everything registered with `core.spi.LiveRuns`
+(the ▶'s runs, NPM Explorer scripts, Focused Test / Tests-window runs,
+`ng generate`, the setup installs, the language-server installer;
+LiveRunsLedgerTest keeps the population complete). The platform's own
+**Run ▸ Stop Build/Run** lists only `BuildExecutionSupport` items —
+the ▶'s runs and the NPM lane — because that menu's contract is
+PROJECT ACTIONS with a Repeat, and an install or a schematic is neither.
+The asymmetry is deliberate: the ■ is the product's stop, the menu is
+the platform's, and a run that belongs on both is registered on both
+(before the spawn, v2.71.0). Likewise the Focused Test lane keeps ONE
+"Focused Test" output tab while the ▶ and the NPM lane name tabs per
+run: a test runner's tab is a place you return to, a dev server's tab
+is the run's own.
+
 ### 86. Official release signing — a v3.0 milestone (David's decision, 2026-08-27)
 
 Until v3.0, the trust chain is deliberately SELF-SIGNED (v2.42.0):

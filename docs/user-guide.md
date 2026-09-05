@@ -170,7 +170,7 @@ Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
 Trust prompt the first time. To stop: the ■ right of Debug on the
-toolbar stops every running command at once (and says what it stopped
+toolbar (⌥⌘.) stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
 command the product starts for you: the ▶'s runs, a script
@@ -179,7 +179,12 @@ double-clicked in the **NPM Explorer** or run from a package.json line
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running** on its
 row, offers **Stop Script** on right-click, and refuses to start a
-second copy while the first runs. The ■ also sees the installs the
+second copy while the first runs. It also arms the Browser the way the
+▶ does: the script's first printed address opens in the in-app Browser.
+And while a new project's or experiment's dependency install is still
+running, both the ▶ and the Explorer refuse to run the project — the
+status line says so and names the ■ — because a run against a
+half-written `node_modules` only ends in a wall of missing modules. The ■ also sees the installs the
 product starts for you (a new project's or experiment's `npm install`,
 Project Configuration's add/remove, a language-server install) and an
 `ng generate` — hover it and the tooltip names exactly what a press

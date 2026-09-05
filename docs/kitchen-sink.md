@@ -59,13 +59,15 @@ Run serves it — without pinning a port: if 8080 is busy the server
 scans upward and the announce reads the port the server's own banner
 names. A **⇄ serving** chip appears on the status line, and the served
 page opens in the in-app Browser. Stop it with the **■** to the right of
-Debug on the toolbar (or Run ▸ Stop Build/Run, which offers Repeat
+Debug on the toolbar — ⌥⌘. from anywhere — (or Run ▸ Stop Build/Run, which offers Repeat
 afterwards); a device's STOP reads STOPPED whatever the process's exit
 code. The same ■ stops a script you double-clicked in the NPM Explorer
 (its row reads **● running** meanwhile, and right-click offers **Stop
 Script** for just that one), a Focused Test that never returns, an
 `ng generate` that stalls, and any install the product started for you;
-its tooltip names what it would stop. The scaffold is pre-trusted because
+its tooltip names what it would stop. Press Run while that install is
+still going and the status line refuses out loud instead of running
+against a half-written `node_modules`. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP

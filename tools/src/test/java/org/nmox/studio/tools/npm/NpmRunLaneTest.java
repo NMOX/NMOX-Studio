@@ -104,6 +104,17 @@ class NpmRunLaneTest {
     }
 
     @Test
+    @DisplayName("a run while the project's setup install is live is refused out loud: no spawn, the wall returned (v2.72.0)")
+    void runWhileInstallingIsRefused() throws Exception {
+        Files.writeString(dir.resolve("run"), "echo \"  Local:   http://localhost:45673/\"\n");
+        LiveRuns.add(new LiveRuns.Run("project-setup:" + dir.toFile().getAbsolutePath() + "#1", "npm install — x", () -> { }));
+        String out = new NpmService().runCommand(dir.toFile(), "sh", "run", "dev").get(5, TimeUnit.SECONDS);
+        assertThat(out).contains("still installing").contains("■");
+        assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).as("nothing spawned").allMatch(id -> id.startsWith("project-setup:"));
+        assertThat(announced("http://localhost:45673/")).isFalse();
+    }
+
+    @Test
     @DisplayName("install prints a URL: no serving — lifecycle output never announces")
     void installNeverAnnounces() throws Exception {
         Files.writeString(dir.resolve("install"), "echo \"postinstall: see http://localhost:45672/\"\n");
