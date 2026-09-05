@@ -90,6 +90,14 @@
     </folder>
     <folder name="Keymaps">
         <folder name="NetBeans">
+            <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
+                 had no chord, and neither has the platform's Stop Build/Run;
+                 DA-PERIOD is unclaimed in every shipped cluster layer and
+                 editor keybinding (measured). Lives here, the house's home
+                 for cross-module chords (the Tests window's DA-2 too). -->
+            <file name="DA-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
+            </file>
             <file name="DA-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-editor-testing-explorer-TestsExplorerTopComponent.instance"/>
             </file>
@@ -152,6 +160,14 @@
             </file>
         </folder>
         <folder name="Eclipse">
+            <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
+                 had no chord, and neither has the platform's Stop Build/Run;
+                 DA-PERIOD is unclaimed in every shipped cluster layer and
+                 editor keybinding (measured). Lives here, the house's home
+                 for cross-module chords (the Tests window's DA-2 too). -->
+            <file name="DA-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
+            </file>
             <file name="DA-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-editor-testing-explorer-TestsExplorerTopComponent.instance"/>
             </file>
@@ -184,6 +200,14 @@
             </file>
         </folder>
         <folder name="Emacs">
+            <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
+                 had no chord, and neither has the platform's Stop Build/Run;
+                 DA-PERIOD is unclaimed in every shipped cluster layer and
+                 editor keybinding (measured). Lives here, the house's home
+                 for cross-module chords (the Tests window's DA-2 too). -->
+            <file name="DA-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
+            </file>
             <file name="DA-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-editor-testing-explorer-TestsExplorerTopComponent.instance"/>
             </file>
@@ -216,6 +240,14 @@
             </file>
         </folder>
         <folder name="Idea">
+            <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
+                 had no chord, and neither has the platform's Stop Build/Run;
+                 DA-PERIOD is unclaimed in every shipped cluster layer and
+                 editor keybinding (measured). Lives here, the house's home
+                 for cross-module chords (the Tests window's DA-2 too). -->
+            <file name="DA-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
+            </file>
             <file name="DA-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-editor-testing-explorer-TestsExplorerTopComponent.instance"/>
             </file>
@@ -248,6 +280,14 @@
             </file>
         </folder>
         <folder name="NetBeans55">
+            <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
+                 had no chord, and neither has the platform's Stop Build/Run;
+                 DA-PERIOD is unclaimed in every shipped cluster layer and
+                 editor keybinding (measured). Lives here, the house's home
+                 for cross-module chords (the Tests window's DA-2 too). -->
+            <file name="DA-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Run/org-nmox-studio-tools-npm-StopRunAction.instance"/>
+            </file>
             <file name="DA-2.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-editor-testing-explorer-TestsExplorerTopComponent.instance"/>
             </file>

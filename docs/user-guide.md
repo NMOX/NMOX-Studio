@@ -170,7 +170,7 @@ Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
 Trust prompt the first time. To stop: the ■ right of Debug on the
-toolbar stops every running command at once (and says what it stopped
+toolbar (⌥⌘.) stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
 command the product starts for you: the ▶'s runs, a script
