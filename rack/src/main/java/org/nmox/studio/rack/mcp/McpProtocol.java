@@ -38,11 +38,17 @@ public final class McpProtocol {
     /** As above, with the port's subscriptions (v2.84.0); null = no subscriptions are kept. */
     public static String handle(String requestJson, McpTools tools,
             String productVersion, McpSubscriptions subs) {
-        return handleWith(requestJson, tools, productVersion, subs);
+        return handleWith(requestJson, tools, productVersion, subs, McpCompletions.production());
+    }
+
+    /** As above with an explicit completer (v2.84.0) — the port's, or a test's. */
+    static String handle(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs, McpCompletions completions) {
+        return handleWith(requestJson, tools, productVersion, subs, completions);
     }
 
     private static String handleWith(String requestJson, McpTools tools,
-            String productVersion, McpSubscriptions subs) {
+            String productVersion, McpSubscriptions subs, McpCompletions completions) {
         JSONObject request;
         try {
             request = new JSONObject(requestJson == null ? "" : requestJson);
@@ -121,6 +127,18 @@ public final class McpProtocol {
                         ? error(id, -32002, "Resource not found: " + uri).toString()
                         : response(id, read).toString();
             }
+            case "completion/complete" -> {
+                if (notification) {
+                    return null;
+                }
+                try {
+                    result = completions.complete(params);
+                } catch (IllegalArgumentException bad) {
+                    return error(id, -32602, bad.getMessage()).toString();
+                } catch (RuntimeException ex) {
+                    return error(id, -32603, "Internal error: " + ex.getMessage()).toString();
+                }
+            }
             case "prompts/list" ->
                 result = McpPrompts.list();
             case "prompts/get" -> {
@@ -164,7 +182,8 @@ public final class McpProtocol {
                         // subscribe: an agent learns a run started or a server
                         // went live over the GET stream, no polling (v2.84.0)
                         .put("resources", new JSONObject().put("subscribe", true))
-                        .put("prompts", new JSONObject()))
+                        .put("prompts", new JSONObject())
+                        .put("completions", new JSONObject()))
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)
                         .put("version", productVersion))

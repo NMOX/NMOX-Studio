@@ -49,6 +49,9 @@ public final class AgentPort {
     private final McpTools tools;
     private final McpSubscriptions subs = new McpSubscriptions();
     private final List<Runnable> unwatch = new ArrayList<>();
+    // the completion/complete resolver (v2.84.0): the symbol index and the
+    // aim, looked up lazily per request — nothing at construction
+    private final McpCompletions completions = McpCompletions.production();
 
     private AgentPort(HttpServer server, String token, McpTools tools,
             String productVersion) {
@@ -188,7 +191,7 @@ public final class AgentPort {
             }
             String response;
             try {
-                response = McpProtocol.handle(body, tools, productVersion, subs);
+                response = McpProtocol.handle(body, tools, productVersion, subs, completions);
             } catch (RuntimeException ex) {
                 // defense in depth under the every-refusal-speaks law: an
                 // uncaught throw here would make httpserver DROP the

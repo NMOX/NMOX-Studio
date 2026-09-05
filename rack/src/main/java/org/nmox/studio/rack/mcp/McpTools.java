@@ -663,7 +663,7 @@ public final class McpTools {
 
     // ---- default (live) suppliers ------------------------------------------
 
-    private static Supplier<File> defaultAim() {
+    static Supplier<File> defaultAim() {
         return () -> RackService.getDefault().getRack().getProjectDir();
     }
 

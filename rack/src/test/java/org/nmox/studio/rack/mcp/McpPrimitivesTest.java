@@ -215,7 +215,7 @@ class McpPrimitivesTest {
     // ---- capability wiring through the real protocol -----------------------
 
     @Test
-    @DisplayName("initialize declares all three read-only primitives")
+    @DisplayName("initialize declares all four read-only primitives")
     void initializeDeclaresAllPrimitives() {
         String out = McpProtocol.handle(
                 "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}",
@@ -225,6 +225,7 @@ class McpPrimitivesTest {
         assertThat(caps.has("tools")).isTrue();
         assertThat(caps.has("resources")).isTrue();
         assertThat(caps.has("prompts")).isTrue();
+        assertThat(caps.has("completions")).as("completion/complete (v2.84.0)").isTrue();
     }
 
     /** A roster whose only tool throws — the live-state failure shape. */

@@ -467,7 +467,8 @@ besides tools it exposes **resources** (browsable URIs like
 server going live is pushed over the port's event stream instead of
 polled for, plus templates —
 `nmox://outline/{file}` and `nmox://search/{query}` — for the two
-tools that take an argument) and **prompts** (ready-made templates
+tools that take an argument, with **argument completion** for the file
+slot from the project's own files) and **prompts** (ready-made templates
 like *Diagnose the last failure* that fold your IDE's live state into
 the question; *Where is a symbol declared* takes a name and folds the
 symbol hits in), so it drops into any MCP client the idiomatic way. The

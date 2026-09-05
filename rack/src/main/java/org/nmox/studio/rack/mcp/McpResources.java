@@ -58,6 +58,16 @@ final class McpResources {
 
     static final String MIME = "application/json";
 
+    /** The slot name of the template whose uriTemplate is {@code uriTemplate}, or null (v2.84.0). */
+    static String templateArgument(String uriTemplate) {
+        for (Template t : TEMPLATES) {
+            if (t.uriTemplate().equals(uriTemplate)) {
+                return t.argument();
+            }
+        }
+        return null;
+    }
+
     /** Whether {@code uri} is a catalogued (subscribable) resource with a live tool behind it. */
     static boolean isCatalogued(String uri, McpTools tools) {
         for (Bound b : CATALOG) {

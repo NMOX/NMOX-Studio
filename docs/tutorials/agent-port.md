@@ -85,6 +85,16 @@ Three prompts fold live state into a question: `diagnose_failure`
 — the one that takes an argument, `name` — which folds the symbol hits
 for that name.
 
+An agent filling that argument, or the outline template's `{file}`,
+can ask first: `completion/complete` (the spec's fourth primitive)
+answers `where_is`'s `name` from the symbol index (the same hits
+`find_symbol` returns, distinct, prefix hits first) and `{file}` from
+the project's own files (prefix hits, then contains; the search walk's
+skip list applies, so `node_modules` never completes) — at most 100
+values, with the honest `total` and `hasMore`. The search template's
+literal is anything, so it completes to nothing; an unknown prompt,
+template or argument name is refused as `-32602`.
+
 ## 4. The walk, by hand
 
 With the token in a shell variable (never on a command line you would

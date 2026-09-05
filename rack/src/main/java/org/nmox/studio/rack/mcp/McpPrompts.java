@@ -86,6 +86,16 @@ final class McpPrompts {
      * declares an argument refuses without it — {@link IllegalArgumentException}
      * names the missing one, which the protocol answers as -32602.
      */
+    /** Whether prompt {@code name} declares {@code argument} (v2.84.0, for completion/complete). */
+    static boolean hasArgument(String name, String argument) {
+        for (Template tpl : CATALOG) {
+            if (tpl.name().equals(name)) {
+                return tpl.argument() != null && tpl.argument().equals(argument);
+            }
+        }
+        return false;
+    }
+
     static JSONObject get(String name, McpTools tools, JSONObject arguments) {
         for (Template tpl : CATALOG) {
             if (tpl.name().equals(name)) {

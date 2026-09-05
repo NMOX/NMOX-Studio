@@ -81,6 +81,17 @@ final class TextSearch {
         return new Answer(List.copyOf(hits), scanned, truncated);
     }
 
+    /** The project's files relative to root, forward-slashed, the same walk and caps search uses (v2.84.0). */
+    static List<String> relativeFiles(Path root) {
+        List<Path> files = new java.util.ArrayList<>();
+        collect(root, files);
+        List<String> rel = new java.util.ArrayList<>(files.size());
+        for (Path f : files) {
+            rel.add(root.relativize(f).toString().replace(java.io.File.separatorChar, '/'));
+        }
+        return rel;
+    }
+
     /** Files under root in walk order; true when the file cap stopped the walk. */
     private static boolean collect(Path root, List<Path> into) {
         try (Stream<Path> walk = Files.walk(root, MAX_DEPTH)) {
