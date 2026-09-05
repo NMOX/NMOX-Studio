@@ -28,7 +28,10 @@ class StopVerdictTest {
     void wiring() throws Exception {
         String src = Files.readAllLines(Path.of("src/main/java/org/nmox/studio/rack/devices/CommandDevice.java"))
                 .stream().filter(l -> !l.strip().startsWith("//") && !l.strip().startsWith("*")).collect(java.util.stream.Collectors.joining("\n"));
-        assertThat(src).contains("stopRequested = true;\n        stopProcess();");
+        // v2.75.0: the flag half is its own hook (Stop All marks, then panics)
+        src = src.replace("\r\n", "\n");
+        assertThat(src).contains("markStoppedByUser();\n        stopProcess();")
+                .contains("protected void markStoppedByUser() {\n        stopRequested = true;");
         assertThat(src).as("the internal cancel stays unflagged: no stopProcess override in CommandDevice").doesNotContain("protected void stopProcess()");
         assertThat(src.split("stopRequested = false;").length - 1).as("cleared at both launch sites and after each verdict").isGreaterThanOrEqualTo(4);
         assertThat(src.split("stoppedByUserOrSignal\\(stopRequested, code\\)").length - 1).as("both exit handlers consult the flag").isEqualTo(2);
@@ -40,7 +43,7 @@ class StopVerdictTest {
         java.util.Map<String, Integer> allowed = java.util.Map.of(
                 "CommandDevice.java", 1,   // stopByUser() itself
                 "ExtensionDevice.java", 2, // dispose() + the SPI's stop(): RackDevice-based, the SPI reports its own status
-                "PreflightDevice.java", 1); // RackDevice-based: its own checklist loop and its own stopRequested verdict (v2.74.0: one stopByUser both doors call)
+                "PreflightDevice.java", 1); // RackDevice-based: its own checklist loop and its own stopRequested verdict (v2.74.0: one stopByUser both doors call; v2.75.0: markStoppedByUser is the flag half)
         java.util.List<String> offenders = new java.util.ArrayList<>();
         try (java.util.stream.Stream<Path> files = Files.list(Path.of("src/main/java/org/nmox/studio/rack/devices"))) {
             for (Path f : files.filter(p -> p.toString().endsWith(".java")).sorted().toList()) {

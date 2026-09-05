@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.75.0] - 2026-09-05
+
+The second parallel batch — built beside v2.74.0's chain.
+
+1. **The ⇄ chip's tooltip escapes titles and URLs** — since v2.70.0 a
+   serving title can carry an npm script name from a cloned
+   package.json, and a tooltip renders `<html>`; the v1.208.0 class one
+   component over from the trees the v1.306 gate covers.
+2. **Stop All reads STOPPED** — the rack's Stop All reached devices
+   through the internal cancel, so every device read OK/FAIL after it;
+   a flag-only hook set before the unchanged bounded panic (the kill
+   itself untouched, the v1.44.0 guarantee kept).
+3. **The name law over the rack's windows and the NPM Explorer** —
+   every button Task Rack, Project Studio, Block Studio and the NPM
+   Explorer paint at construction is named (headless contract tests).
+4. **The docs forge paints the RUNNING section** —
+   `-Dnmox.shots.fakerun=<label>|<url>` seeds one run and its serving;
+   the eleven tab shots regenerated, the Workbench shot showing what the
+   guide describes.
+5. **Docs, plan, this entry.**
+
 ## [2.74.0] - 2026-09-05
 
 The parallel batch — forked from the long shift's head while that PR
@@ -16936,6 +16957,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.75.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.74.0...v2.75.0
 [2.74.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.73.0...v2.74.0
 [2.73.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.72.0...v2.73.0
 [2.72.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.71.0...v2.72.0

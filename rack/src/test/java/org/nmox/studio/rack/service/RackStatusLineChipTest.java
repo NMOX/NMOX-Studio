@@ -47,6 +47,17 @@ class RackStatusLineChipTest {
     }
 
     @Test
+    @DisplayName("the chip's tooltip escapes titles and URLs — a script-name serving cannot make the tooltip fetch (v2.75.0)")
+    void tooltipEscapes() {
+        String tip = RackStatusLine.chipTooltip(List.of(
+                serving("npm run <img src=\"http://evil/x\"> — shop", "http://localhost:5173/<b>")));
+        assertThat(tip).startsWith("<html>")
+                .contains("npm run &lt;img src=&quot;http://evil/x&quot;&gt; — shop")
+                .contains("http://localhost:5173/&lt;b&gt;")
+                .doesNotContain("<img").doesNotContain("<b>");
+    }
+
+    @Test
     @DisplayName("many servings: first URL +N, tooltip lists them all")
     void many() {
         List<Serving> servings = List.of(

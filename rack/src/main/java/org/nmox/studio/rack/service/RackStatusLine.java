@@ -48,6 +48,11 @@ public class RackStatusLine implements StatusLineElementProvider {
     }
 
     /** Tooltip: every serving, one per line. */
+    /** HTML-escapes an external string for the tooltip that means its markup. */
+    static String esc(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     static String chipTooltip(List<ServingRegistry.Serving> servings) {
         if (servings.isEmpty()) {
             return null;
@@ -58,7 +63,12 @@ public class RackStatusLine implements StatusLineElementProvider {
                 sb.append("<br>");
             }
             ServingRegistry.Serving s = servings.get(i);
-            sb.append(s.deviceTitle()).append(" — ").append(s.url());
+            // the tooltip MEANS its markup (<br> between servings), so every
+            // external string is escaped (v2.75.0): since v2.70.0 a title can
+            // carry an npm SCRIPT NAME from a cloned package.json, and a
+            // JToolTip renders <html> text — the v1.208.0 fetch class, one
+            // component over from the trees the v1.306 gate covers
+            sb.append(esc(s.deviceTitle())).append(" — ").append(esc(s.url()));
         }
         return sb.append("</html>").toString();
     }

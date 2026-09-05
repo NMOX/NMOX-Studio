@@ -50,7 +50,16 @@ class DeviceRunsJoinTheStopTest {
             // the marker proves a REAL process ran before the stop — the
             // pending handle answers "alive" before the spawn, so the first
             // cut of this test stopped a process that never existed (36 ms)
-            return List.of("sh", "-c", "touch '" + started + "'; sleep 30");
+            // a process that TRAPS the stop and exits 0 — a dev server's shape:
+            // a signal exit reads STOPPED by the v2.69.15 code rule alone, so
+            // only THIS shape tells the flag apart (the first mutant survived
+            // a plain sleep)
+            return List.of("sh", "-c", "trap 'exit 0' TERM; touch '" + started + "'; sleep 30 & wait");
+        }
+
+        /** The verdict the exit handler paints (EDT): "STOPPED  1.2s", "OK  …", "FAIL [n]  …". */
+        String verdict() {
+            return statusLcd.getText();
         }
 
         @Override
@@ -105,9 +114,17 @@ class DeviceRunsJoinTheStopTest {
             assertThat(device.runningNow()).as("… and is still up").isTrue();
             assertThat(stopRequested(device)).as("nothing stopped yet").isFalse();
             assertThat(LiveRuns.stop(run.id())).isNotNull();
-            assertThat(stopRequested(device)).as("the outside stop is the USER's stop: the verdict reads STOPPED").isTrue();
+            // the flag is cleared by the exit handler, which can run before this
+            // line: the VERDICT below is the durable proof (the flag read raced)
             assertThat(device.finished.await(10, TimeUnit.SECONDS)).as("the process died and the exit handler ran").isTrue();
             assertThat(CommandDevice.stoppedByUserOrSignal(true, device.exitCode)).isTrue();
+            long deadline = System.currentTimeMillis() + 5_000;
+            String[] v = {""};
+            while (!v[0].startsWith("STOPPED") && System.currentTimeMillis() < deadline) {
+                javax.swing.SwingUtilities.invokeAndWait(() -> v[0] = device.verdict());
+                Thread.sleep(25);
+            }
+            assertThat(v[0]).as("the faceplate itself reads STOPPED").startsWith("STOPPED");
             assertThat(poll(() -> LiveRuns.live().stream().noneMatch(r -> isOurs(r)), 5_000))
                     .as("the exit withdrew the run").isTrue();
         } finally {

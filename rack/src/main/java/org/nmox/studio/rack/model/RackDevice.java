@@ -381,6 +381,15 @@ public abstract class RackDevice extends JPanel {
         stopProcess();
     }
 
+    /**
+     * The flag half of a user's stop, alone (v2.75.0): the rack's Stop All
+     * kills through the bounded {@link #panic()} and must not kill twice,
+     * so it marks the verdict here and panics after. Devices that keep a
+     * verdict override it; the engine's default is nothing.
+     */
+    protected void markStoppedByUser() {
+    }
+
     /** Full control: extra env and an explicit working directory. */
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
