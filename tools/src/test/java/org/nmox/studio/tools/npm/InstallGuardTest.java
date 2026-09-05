@@ -21,12 +21,16 @@ class InstallGuardTest {
     @DisplayName("only THIS project's setup installs count: wizard or experiment, not another dir, not a plain run")
     void onlyOwnSetupInstalls() {
         File p = new File("/tmp/shop");
+        // ids carry the platform's own absolute path (a drive-rooted one on
+        // Windows — the first gate of v2.72.0 went red there on a "/tmp" literal)
+        String shop = p.getAbsolutePath();
+        String sibling = new File("/tmp/shop-two").getAbsolutePath();
         assertThat(InstallGuard.installing(p, List.of())).isFalse();
-        assertThat(InstallGuard.installing(p, List.of(run("project-setup:/tmp/shop#1")))).isTrue();
-        assertThat(InstallGuard.installing(p, List.of(run("experiment-setup:/tmp/shop#7")))).isTrue();
-        assertThat(InstallGuard.installing(p, List.of(run("project-setup:/tmp/shop-two#1"))))
+        assertThat(InstallGuard.installing(p, List.of(run("project-setup:" + shop + "#1")))).isTrue();
+        assertThat(InstallGuard.installing(p, List.of(run("experiment-setup:" + shop + "#7")))).isTrue();
+        assertThat(InstallGuard.installing(p, List.of(run("project-setup:" + sibling + "#1"))))
                 .as("a sibling whose path merely starts the same").isFalse();
-        assertThat(InstallGuard.installing(p, List.of(run("npm-run:/tmp/shop#1"))))
+        assertThat(InstallGuard.installing(p, List.of(run("npm-run:" + shop + "#1"))))
                 .as("a running script is not an install").isFalse();
         assertThat(InstallGuard.message(p)).contains("shop").contains("■");
     }
