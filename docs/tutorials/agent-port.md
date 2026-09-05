@@ -80,7 +80,8 @@ text/event-stream`, same token, no `Origin`) carries a
 `notifications/resources/updated` frame the moment the thing behind it
 changes — a run starts and `nmox://runs` is announced, a server goes
 live and `nmox://servers` is, a linter reports and `nmox://diagnostics`
-is; `nmox://context` follows all of them. The frame names the URI and
+is, a tab changes or a file is saved and `nmox://editor` is;
+`nmox://context` follows all of them. The frame names the URI and
 nothing else; the agent re-reads what it cares about. An outline an
 agent attached follows its file too: subscribe to
 `nmox://outline/src/app.ts` and the port announces that URI when the
