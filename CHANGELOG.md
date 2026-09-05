@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.83.0] - 2026-09-05
+
+The tenth parallel batch — the Agent Port arc's review.
+
+1. **The Agent Port arc review (v2.77.0–v2.82.0), one find fixed** — a
+   templated resource read decoded its tail as FORM encoding, where `+`
+   means a space, so `nmox://outline/lib/a+b.js` could never name that
+   file; a URI path's `+` is now literal (percent-escapes still decode);
+   mutant by name. Verified clean under the security and bounds lenses:
+   Origin→403 before the token, the constant-time compare, the 413
+   over-cap refusal, every handler throw answered as JSON-RPC; `outline`
+   and `search_text` read only under real paths inside the aim and never
+   follow a symlink out; `editor_state`'s EDT leash; the read-only
+   ledger over the whole package. Blessed in writing: a looping agent
+   can keep its own port busy with `search_text` (bounded per call,
+   loopback, its own token) — it slows nobody but itself.
+2. **Today's gauntlets** — the CI update gauntlet ran after each of the
+   six releases from v2.75.0 to v2.80.0 and passed every time (a stock
+   previous release updating itself in-app to the new one and booting
+   clean); recorded, not re-run.
+3. **Docs, plan, this entry.**
+
 ## [2.82.0] - 2026-09-05
 
 The ninth parallel batch — built beside v2.81.0's chain.
@@ -17098,6 +17120,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0
 [2.81.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.80.0...v2.81.0
 [2.80.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.79.0...v2.80.0

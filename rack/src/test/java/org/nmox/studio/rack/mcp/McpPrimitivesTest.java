@@ -119,6 +119,9 @@ class McpPrimitivesTest {
         assertThat(read.getJSONArray("contents").getJSONObject(0).getString("text")).contains("\"echo\":\"src/my app.js\"");
         assertThat(McpResources.read("nmox://search/is%20live", fixture()).getJSONArray("contents")
                 .getJSONObject(0).getString("text")).contains("is live");
+        assertThat(McpResources.read("nmox://outline/lib/a+b.js", fixture()).getJSONArray("contents")
+                .getJSONObject(0).getString("text")).as("a URI path's + is literal, not a form-encoded space (v2.83.0)")
+                .contains("\"echo\":\"lib/a+b.js\"");
         assertThat(McpResources.read("nmox://outline/", fixture())).as("an empty tail names nothing").isNull();
         assertThat(McpResources.read("nmox://outline/%zz", fixture())).as("a broken escape names nothing").isNull();
         // a template whose tool is absent is not offered
