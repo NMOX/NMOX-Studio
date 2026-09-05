@@ -102,7 +102,7 @@ final class McpSubscriptions {
 
     /** One keepalive pass: a comment to every stream, on the writer; the dead are dropped. */
     void keepalive() {
-        if (sinks.isEmpty() || closed) {
+        if (sinks.isEmpty()) {
             return;
         }
         submit(() -> {
@@ -133,7 +133,7 @@ final class McpSubscriptions {
                 hit.add(u);
             }
         }
-        if (hit.isEmpty() || sinks.isEmpty() || closed) {
+        if (hit.isEmpty() || sinks.isEmpty()) {
             return;
         }
         submit(() -> {
@@ -154,7 +154,9 @@ final class McpSubscriptions {
         try {
             writer().execute(write);
         } catch (java.util.concurrent.RejectedExecutionException stopping) {
-            // close() raced a listener: the port is going away, the frame with it
+            // close() raced a listener (LiveRuns fires on the EDT): the port is
+            // going away and the frame with it — this catch IS the guard, no
+            // flag check precedes it (a flag would make it unprovable)
         }
     }
 
