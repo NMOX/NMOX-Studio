@@ -102,6 +102,16 @@ class StopAllReadsStoppedTest {
             CountDownLatch all = new CountDownLatch(1);
             assertThat(rack.stopAllAsync(all::countDown)).as("a pass started").isTrue();
             assertThat(all.await(15, TimeUnit.SECONDS)).as("Stop All finished").isTrue();
+            // The exit half is POSIX-only (ledger 38, the v2.70.0 NpmRunLaneTest
+            // law): under Git Bash the Windows PID chain breaks, the `sleep 30`
+            // grandchild outlives the tree kill and holds the stdout pipe, and
+            // the exit handler rides the pump's EOF — so onFinished lands when
+            // sleep ends (~30 s), past this wait. The windows lane failed here
+            // twice on one sha (v2.76.0's gate). The join and stop halves
+            // above run everywhere.
+            org.junit.jupiter.api.Assumptions.assumeFalse(
+                    System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+                    "tree-kill exit is POSIX-only (ledger 38)");
             assertThat(device.finished.await(10, TimeUnit.SECONDS)).isTrue();
             // the flag is CLEARED after the verdict, so read the verdict itself
             // (painted on the EDT after onFinished): poll it

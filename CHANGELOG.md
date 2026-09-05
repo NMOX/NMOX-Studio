@@ -15,7 +15,10 @@ The third parallel batch — built beside v2.75.0's chain.
 2. **Since when, everywhere** — the ■'s tooltip names each run with its
    start; the NPM Explorer's marker reads "● running since HH:mm".
 3. **The v2.75.0 review, clean** — blessings in the plan.
-4. **Docs, plan, this entry.**
+4. **Docs, plan, this entry.** And the windows lane's find: the two rack
+   stop tests' exit halves are POSIX-only (ledger 38 — the `sleep`
+   grandchild outlives the tree kill and holds the pump's pipe), the
+   v2.70.0 NpmRunLaneTest law applied to its siblings.
 
 ## [2.75.0] - 2026-09-05
 
