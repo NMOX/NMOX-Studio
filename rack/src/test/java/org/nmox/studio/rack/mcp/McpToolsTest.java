@@ -23,6 +23,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * snapshot into one call.
  */
 class McpToolsTest {
+    /** A seam fake that answers only search — outline refuses (the seam grew a second method in v2.79.0). */
+    private interface Searcher {
+        org.nmox.studio.core.spi.SymbolIndex.Answer search(File root, String q, int limit);
+    }
+
+    private static org.nmox.studio.core.spi.SymbolIndex searchOnly(Searcher s) {
+        return new org.nmox.studio.core.spi.SymbolIndex() {
+            @Override public Answer search(File root, String q, int limit) { return s.search(root, q, limit); }
+            @Override public Outline outline(File root, String file) { return new Outline(List.of(), "no such file: " + file); }
+        };
+    }
+
 
     @AfterEach
     void drainRuns() {
@@ -32,9 +44,9 @@ class McpToolsTest {
     @Test
     @DisplayName("find_symbol answers hits over the seam, says unavailable without one, and bounds the limit (v2.78.0)")
     void findSymbol() {
-        org.nmox.studio.core.spi.SymbolIndex fake = (root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
+        org.nmox.studio.core.spi.SymbolIndex fake = searchOnly((root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
                 List.of(new org.nmox.studio.core.spi.SymbolIndex.Hit("checkout", "FUNCTION", "src/cart.js", 12)).subList(0, Math.min(1, limit)),
-                true);
+                true));
         JSONObject s = McpTools.findSymbol(fake, new File("/tmp/proj"), " check ", 20);
         assertThat(s.getBoolean("available")).isTrue();
         assertThat(s.getString("query")).isEqualTo("check");
@@ -46,11 +58,45 @@ class McpToolsTest {
         assertThat(Texts.of(McpTools.findSymbol(fake, null, "x", 5))).contains("aim a project");
         assertThat(Texts.of(McpTools.findSymbol(fake, new File("/tmp/proj"), "", 5))).isEqualTo("Pass a name to look for.");
         int[] seen = {0};
-        org.nmox.studio.core.spi.SymbolIndex counting = (root, q, limit) -> { seen[0] = limit; return new org.nmox.studio.core.spi.SymbolIndex.Answer(List.of(), false); };
+        org.nmox.studio.core.spi.SymbolIndex counting = searchOnly((root, q, limit) -> { seen[0] = limit; return new org.nmox.studio.core.spi.SymbolIndex.Answer(List.of(), false); });
         McpTools.findSymbol(counting, new File("/tmp/proj"), "x", 500);
         assertThat(seen[0]).as("the limit is capped").isEqualTo(100);
         assertThat(Texts.of(McpTools.findSymbol(counting, new File("/tmp/proj"), "nonesuch", 5)))
                 .isEqualTo("No symbol matches \"nonesuch\".");
+    }
+
+    @Test
+    @DisplayName("outline carries the seam's nodes or its refusal; search_text bounds and says no-aim (v2.79.0)")
+    void outlineAndSearch() throws Exception {
+        org.nmox.studio.core.spi.SymbolIndex fake = new org.nmox.studio.core.spi.SymbolIndex() {
+            @Override public Answer search(File root, String q, int limit) { return new Answer(List.of(), false); }
+            @Override public Outline outline(File root, String file) {
+                return file.equals("a.js")
+                        ? new Outline(List.of(new Node("Cart", "CLASS", "", 2, 0), new Node("total", "METHOD", "()", 3, 1)), null)
+                        : new Outline(List.of(), "no such file: " + file);
+            }
+        };
+        JSONObject ok = McpTools.outline(fake, new File("/tmp/proj"), " a.js ");
+        assertThat(ok.getBoolean("available")).isTrue();
+        assertThat(ok.getJSONArray("items").getJSONObject(1).getInt("depth")).isEqualTo(1);
+        assertThat(Texts.of(ok)).isEqualTo("Cart (class) :2\n  total (method) :3");
+        JSONObject refused = McpTools.outline(fake, new File("/tmp/proj"), "zzz");
+        assertThat(refused.getBoolean("available")).isFalse();
+        assertThat(Texts.of(refused)).isEqualTo("No outline: no such file: zzz.");
+        assertThat(Texts.of(McpTools.outline(null, new File("/tmp/proj"), "a.js"))).contains("aim a project");
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("mcp-search");
+        try {
+            java.nio.file.Files.writeString(dir.resolve("a.js"), "let total = 0;\nfunction Checkout() {}\n");
+            JSONObject s = McpTools.searchText(dir.toFile(), "checkout", 20);
+            assertThat(s.getBoolean("available")).isTrue();
+            assertThat(s.getJSONArray("matches").getJSONObject(0).getInt("line")).isEqualTo(2);
+            assertThat(Texts.of(s)).isEqualTo("a.js:2 function Checkout() {}");
+            assertThat(Texts.of(McpTools.searchText(dir.toFile(), "nonesuch", 20))).startsWith("No line contains \"nonesuch\"");
+            assertThat(Texts.of(McpTools.searchText(null, "x", 20))).isEqualTo("No project is aimed.");
+        } finally {
+            java.nio.file.Files.deleteIfExists(dir.resolve("a.js"));
+            java.nio.file.Files.deleteIfExists(dir);
+        }
     }
 
     @Test
@@ -183,13 +229,13 @@ class McpToolsTest {
     }
 
     @Test
-    @DisplayName("The production roster is the nine read-only tools, each fully described")
+    @DisplayName("The production roster is the eleven read-only tools, each fully described")
     void productionRoster() {
         McpTools tools = McpTools.production();
         assertThat(tools.all()).extracting(McpTools.Tool::name)
                 .containsExactly("ide_context", "project_state", "live_servers",
                         "live_runs", "last_failure", "diagnostics", "find_symbol",
-                        "editor_state", "rack_devices");
+                        "outline", "search_text", "editor_state", "rack_devices");
         // every tool carries a title, a real input schema, and an output schema
         tools.all().forEach(t -> {
             assertThat(t.title()).isNotBlank();

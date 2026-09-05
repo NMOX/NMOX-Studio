@@ -447,8 +447,10 @@ to and READ your project's live state — what's aimed, what's serving,
 what's running (every command the toolbar ■ would stop, with when it
 started), what you have open in the editor (the active file, unsaved
 tabs flagged), where a name is declared (`find_symbol` answers from
-the same Go to Symbol index as ⌥⇧⌘O), what failed last, what the
-linters found, what's on the rack. It is
+the same Go to Symbol index as ⌥⇧⌘O), one file's structure
+(`outline`, the Navigator's own items), which lines contain a literal
+(`search_text`, bounded and every cap reported), what failed last,
+what the linters found, what's on the rack. It is
 off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the
 dialog. It is strictly read-only: nothing an agent asks can run a

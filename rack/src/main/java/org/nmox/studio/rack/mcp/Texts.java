@@ -34,6 +34,12 @@ final class Texts {
         if (s.has("openFiles")) {
             return editor(s);
         }
+        if (s.has("items")) {
+            return outline(s);
+        }
+        if (s.has("matches")) {
+            return search(s);
+        }
         if (s.has("failed")) {
             return failure(s);
         }
@@ -110,6 +116,51 @@ final class Texts {
         }
         if (s.getBoolean("truncated")) {
             sb.append("\n(the index is partial: the project passed the walk's file cap)");
+        }
+        return sb.toString();
+    }
+
+    private static String outline(JSONObject s) {
+        if (!s.getBoolean("available")) {
+            return "No outline: " + s.optString("refusal", "unavailable") + '.';
+        }
+        JSONArray items = s.getJSONArray("items");
+        if (items.isEmpty()) {
+            return "No structure to show in " + s.getString("file") + '.';
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject n = items.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append("  ".repeat(Math.max(0, n.getInt("depth"))))
+                    .append(n.getString("name")).append(" (").append(n.getString("kind").toLowerCase(java.util.Locale.ROOT))
+                    .append(") :").append(n.getInt("line"));
+        }
+        return sb.toString();
+    }
+
+    private static String search(JSONObject s) {
+        if (!s.getBoolean("available")) {
+            return "No project is aimed.";
+        }
+        JSONArray m = s.getJSONArray("matches");
+        if (m.isEmpty()) {
+            return s.getString("query").isEmpty()
+                    ? "Pass text to look for."
+                    : "No line contains \"" + s.getString("query") + "\" (" + s.getInt("filesScanned") + " files read).";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < m.length(); i++) {
+            JSONObject h = m.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append(h.getString("file")).append(':').append(h.getInt("line")).append(' ').append(h.getString("text"));
+        }
+        if (s.getBoolean("truncated")) {
+            sb.append("\n(more matches than shown, or the walk hit a cap \u2014 narrow the query)");
         }
         return sb.toString();
     }
