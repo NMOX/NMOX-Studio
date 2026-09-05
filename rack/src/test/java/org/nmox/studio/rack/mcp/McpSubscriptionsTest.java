@@ -97,17 +97,43 @@ class McpSubscriptionsTest {
     }
 
     @Test
-    @DisplayName("an update that races close() is dropped quietly — the caller (often the EDT) never sees the shut-down executor")
-    void updateAfterCloseIsQuiet() throws Exception {
-        McpSubscriptions subs = new McpSubscriptions();
-        subs.attach(new ByteArrayOutputStream(), () -> { });
+    @DisplayName("a stream whose client stopped reading stalls only itself: the other streams keep flowing and its keepalive is skipped (the review's find)")
+    void stuckStreamIsIsolated() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions(40);
+        java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        OutputStream stuck = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                try {
+                    gate.await();
+                } catch (InterruptedException e) {
+                    throw new IOException(e);
+                }
+            }
+        };
+        ByteArrayOutputStream live = new ByteArrayOutputStream();
+        subs.attach(stuck, () -> { });
+        subs.attach(live, () -> { });
         subs.subscribe("nmox://runs");
+        subs.setLevel("debug");
+        for (int i = 0; i < McpSubscriptions.MAX_PENDING + 5; i++) {
+            subs.log("debug", "Run — x", "line " + i);
+        }
         subs.updated("nmox://runs");
-        subs.awaitIdle();
+        // the live stream saw every line and the update while the stuck one has written nothing
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (!live.toString(StandardCharsets.UTF_8).contains("resources/updated") && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        String text = live.toString(StandardCharsets.UTF_8);
+        assertThat(text).contains("line " + (McpSubscriptions.MAX_PENDING + 4)).contains("resources/updated");
+        assertThat(subs.attachedCount()).as("the stuck stream is not dropped — it is alive, just slow").isEqualTo(2);
+        Thread.sleep(120);
+        assertThat(live.toString(StandardCharsets.UTF_8)).as("keepalives reach the live stream while the other is stuck")
+                .contains(McpSubscriptions.KEEPALIVE);
+        gate.countDown();
         subs.close();
-        subs.attach(new ByteArrayOutputStream(), () -> { });
-        subs.updated("nmox://runs");
-        subs.keepalive();
+        assertThat(subs.attachedCount()).isZero();
     }
 
     @Test
@@ -171,5 +197,13 @@ class McpSubscriptionsTest {
         assertThat(lines).as("the cap's worth of lines plus the one notice").isEqualTo(McpSubscriptions.MAX_PENDING + 1);
         assertThat(text).contains("line 0").contains("line " + (McpSubscriptions.MAX_PENDING - 1)).doesNotContain("line " + McpSubscriptions.MAX_PENDING + "\"");
         subs.close();
+    }
+
+    @Test
+    @DisplayName("a sink dropped between the snapshot and its submit is left alone: the catch is the mechanism (structurally pinned — the race has no deterministic reproduction)")
+    void droppedSinkSubmitIsCaught() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/mcp/McpSubscriptions.java"));
+        assertThat(src.split("catch \\(java.util.concurrent.RejectedExecutionException").length - 1)
+                .as("submit and log both catch the shut-down writer; awaitIdle too").isEqualTo(3);
     }
 }
