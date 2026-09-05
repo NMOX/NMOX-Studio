@@ -163,6 +163,25 @@ class McpSchemaContractTest {
     }
 
     @Test
+    @DisplayName("find_symbol validates with hits, empty, and unavailable (v2.78.0)")
+    void findSymbol() {
+        org.nmox.studio.core.spi.SymbolIndex fake = (root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
+                List.of(new org.nmox.studio.core.spi.SymbolIndex.Hit("a", "FUNCTION", "a.js", 1)), false);
+        assertValid("find_symbol", McpTools.findSymbol(fake, new File("/tmp"), "a", 5));
+        assertValid("find_symbol", McpTools.findSymbol(fake, new File("/tmp"), "", 5));
+        assertValid("find_symbol", McpTools.findSymbol(null, null, "a", 5));
+    }
+
+    @Test
+    @DisplayName("editor_state validates open, empty, and unavailable (v2.78.0)")
+    void editorState() {
+        assertValid("editor_state", EditorState.editorState("/p/a.js",
+                List.of(new EditorState.OpenFile("/p/a.js", true, true)), null));
+        assertValid("editor_state", EditorState.editorState(null, List.of(), null));
+        assertValid("editor_state", EditorState.editorState(null, List.of(), "unavailable"));
+    }
+
+    @Test
     @DisplayName("last_failure validates failed and clean — exitCode/errorLines declared")
     void lastFailure() {
         assertValid("last_failure", McpTools.lastFailure(FAILURE));
@@ -187,9 +206,9 @@ class McpSchemaContractTest {
     @DisplayName("ide_context validates — every emitted key is declared")
     void ideContext() {
         assertValid("ide_context", McpTools.ideContext(
-                () -> new File("/tmp"), SERVINGS, List.of(), FAILURE, DIAGS));
+                () -> new File("/tmp"), SERVINGS, List.of(), "/tmp/a.js", FAILURE, DIAGS));
         assertValid("ide_context", McpTools.ideContext(
-                () -> null, List.of(), List.of(), Optional.empty(), Map.of()));
+                () -> null, List.of(), List.of(), null, Optional.empty(), Map.of()));
     }
 
     @Test

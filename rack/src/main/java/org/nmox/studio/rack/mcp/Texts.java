@@ -28,6 +28,12 @@ final class Texts {
         if (s.has("runs")) {
             return runs(s.getJSONArray("runs"));
         }
+        if (s.has("hits")) {
+            return symbols(s);
+        }
+        if (s.has("openFiles")) {
+            return editor(s);
+        }
         if (s.has("failed")) {
             return failure(s);
         }
@@ -78,6 +84,53 @@ final class Texts {
             sb.append(r.getString("label"));
             if (!r.getString("since").isEmpty()) {
                 sb.append(" (").append(r.getString("since")).append(')');
+            }
+        }
+        return sb.toString();
+    }
+
+    private static String symbols(JSONObject s) {
+        if (!s.getBoolean("available")) {
+            return "No symbol index: aim a project first.";
+        }
+        JSONArray hits = s.getJSONArray("hits");
+        if (hits.isEmpty()) {
+            return s.getString("query").isEmpty()
+                    ? "Pass a name to look for."
+                    : "No symbol matches \"" + s.getString("query") + "\".";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < hits.length(); i++) {
+            JSONObject h = hits.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append(h.getString("name")).append(" (").append(h.getString("kind").toLowerCase(java.util.Locale.ROOT))
+                    .append(") \u2014 ").append(h.getString("file")).append(':').append(h.getInt("line"));
+        }
+        if (s.getBoolean("truncated")) {
+            sb.append("\n(the index is partial: the project passed the walk's file cap)");
+        }
+        return sb.toString();
+    }
+
+    private static String editor(JSONObject s) {
+        if (s.has("note")) {
+            return s.getString("note");
+        }
+        JSONArray open = s.getJSONArray("openFiles");
+        if (open.isEmpty()) {
+            return "No editor is open.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < open.length(); i++) {
+            JSONObject f = open.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append(f.getBoolean("active") ? "* " : "  ").append(f.getString("file"));
+            if (f.getBoolean("modified")) {
+                sb.append("  (unsaved changes)");
             }
         }
         return sb.toString();
@@ -149,6 +202,9 @@ final class Texts {
                 .append(s.getInt("serverCount") == 1 ? " server" : " servers");
         sb.append("\nRunning: ").append(s.getInt("runCount"))
                 .append(s.getInt("runCount") == 1 ? " command" : " commands");
+        if (!s.isNull("activeFile")) {
+            sb.append("\nEditing: ").append(s.getString("activeFile"));
+        }
         sb.append("\nLast failure: ").append(s.isNull("lastFailureDevice")
                 ? "none on record" : "on " + s.getString("lastFailureDevice"));
         sb.append("\nDiagnostics: ").append(s.getInt("diagnosticCount"))
