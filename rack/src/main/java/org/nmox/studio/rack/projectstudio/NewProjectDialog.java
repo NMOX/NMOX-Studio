@@ -326,6 +326,9 @@ public class NewProjectDialog extends JDialog {
                                 return true;
                             });
                     installing.start();
+                    // the spawn leaves the EDT (v2.73.0 review — the v1.57.0
+                    // class, here since the install shipped in v2.36.0)
+                    org.openide.util.RequestProcessor.getDefault().post(() -> {
                     CommandExecutor.Handle handle = CommandExecutor.run("Project Setup", dir, Map.of(),
                             List.of(pm, "install"), line -> {
                             }, code -> {
@@ -341,6 +344,7 @@ public class NewProjectDialog extends JDialog {
                                 reportInstall(pm, code);
                             });
                     LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
+                    });
                 }
                 dispose();
             });

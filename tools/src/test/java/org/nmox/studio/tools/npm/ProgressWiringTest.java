@@ -34,6 +34,11 @@ class ProgressWiringTest {
             // a handle created but never started paints nothing — the first
             // mutant (start dropped) survived the create/spawn/finish order alone
             assertThat(src.substring(create, spawn)).as(f + ": … and started before the spawn").contains(".start();");
+            if (!f.endsWith("NpmService.java")) {
+                // the two dialog installs are invoked on the EDT: the spawn is posted (v2.73.0 review)
+                assertThat(src.substring(create, spawn)).as(f + ": the install spawns off the EDT")
+                        .contains("RequestProcessor.getDefault().post(() -> {");
+            }
         }
     }
 }

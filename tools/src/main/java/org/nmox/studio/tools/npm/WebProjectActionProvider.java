@@ -107,13 +107,6 @@ final class WebProjectActionProvider implements ActionProvider {
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.message(dir));
             return;
         }
-        // the third wall (v2.73.0): a Node Run with declared, uninstalled
-        // dependencies is refused out loud and pointed at Install; Build/
-        // Test/Clean pass — a Build may be the thing that installs
-        if (ActionProvider.COMMAND_RUN.equals(command) && InstallGuard.needsInstall(dir)) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.needsInstallMessage(dir));
-            return;
-        }
         // The platform invokes us on the EDT; the fork (pb.start inside
         // CommandExecutor.run) and everything around it ride a named lane
         // (v2.70.0 — the v1.57.0 class: the rack's RUN buttons left the
@@ -128,6 +121,16 @@ final class WebProjectActionProvider implements ActionProvider {
             new org.openide.util.RequestProcessor("IDE Run", 4, true);
 
     private void launch(String command, Lookup context, File dir, List<String> cmd) {
+        // the third wall (v2.73.0): a Node Run with declared, uninstalled
+        // dependencies is refused out loud and pointed at Install; Build/
+        // Test/Clean pass — a Build may be the thing that installs. Here,
+        // on the lane, because the check READS package.json (the batch
+        // review: its first home was invokeAction, on the EDT)
+        if (ActionProvider.COMMAND_RUN.equals(command) && InstallGuard.needsInstall(dir)) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.needsInstallMessage(dir));
+            InstallDoor.offer(dir);
+            return;
+        }
         // the action and the rack are one mechanism: aim the rack so the
         // monitor, explorer and recent list all follow the same project.
         // Soft aim lookup (ledger 30): no provider (plain tests) — the

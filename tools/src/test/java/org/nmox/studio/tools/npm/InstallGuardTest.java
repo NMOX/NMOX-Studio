@@ -66,6 +66,9 @@ class InstallGuardTest {
             assertThat(guard).as(f + " consults the guard").isPositive();
             assertThat(guard).as(f + ": before the spawn").isLessThan(spawn);
             assertThat(wall).as(f + " consults the third wall, before the spawn (v2.73.0)").isPositive().isLessThan(spawn);
+            // the registry guard may sit on the EDT (no disk); the disk-reading
+            // wall must follow the guard, never precede it (the review moved it)
+            assertThat(wall).as(f + ": the disk wall after the registry guard").isGreaterThan(guard);
         }
     }
 }

@@ -138,6 +138,8 @@ public final class NewExperimentAction implements ActionListener {
                                     return true;
                                 });
                         installing.start();
+                        // the spawn leaves the EDT (v2.73.0 review)
+                        org.openide.util.RequestProcessor.getDefault().post(() -> {
                         CommandExecutor.Handle setup = CommandExecutor.run("Experiment Setup", dir, Map.of(),
                                 List.of(pm, "install"), line -> {
                                 }, code -> {
@@ -151,6 +153,7 @@ public final class NewExperimentAction implements ActionListener {
                                     reportInstall(pm, code);
                                 });
                         LiveRuns.add(new LiveRuns.Run(runId, runLabel, setup::kill));
+                        });
                     }
                     // the teaching moment: the walkthrough is the first
                     // thing the learner sees, open in the editor
