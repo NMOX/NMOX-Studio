@@ -51,7 +51,12 @@ public final class GettingStarted {
             new Step("oracle", "Ask ORACLE about code", "select code → right-click → Ask ORACLE",
                     Target.guide("#oracle--explain-the-last-failure")),
             new Step("learn", "Try a learning space", "New Learning Space…  ⇧⌘L",
-                    Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")));
+                    Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")),
+            // v2.84.0: the Agent Port had eight releases and no place on the
+            // first-run checklist; the door is this module's thin action over
+            // the rack's, so the door gate can see it in the ui layer
+            new Step("agent", "Point an agent at the IDE", "Tools ▸ Agent Port (MCP)…",
+                    Target.action("Tools", "org.nmox.studio.ui.gettingstarted.PointAnAgentAction")));
 
     private GettingStarted() {
     }

@@ -49,6 +49,11 @@ public final class AgentPortAction implements ActionListener {
         AgentPort port;
         try {
             port = AgentPort.start(tools, productVersion());
+            // the FIRST STEPS record (v2.84.0): the port was started once —
+            // a userdir preference, the Getting Started column's own idiom;
+            // it never carries the token
+            org.openide.util.NbPreferences.forModule(AgentPortAction.class)
+                    .putBoolean("agentport.started", true);
         } catch (IOException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     "The Agent Port could not start: " + ex.getMessage()));

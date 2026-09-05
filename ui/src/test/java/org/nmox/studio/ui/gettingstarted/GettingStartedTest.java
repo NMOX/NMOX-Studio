@@ -11,23 +11,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GettingStartedTest {
 
     @Test
-    @DisplayName("Five steps with stable keys, counted and phrased as 'n of 5'")
+    @DisplayName("Six steps with stable keys, counted and phrased as 'n of 6'")
     void arithmetic() {
         assertThat(GettingStarted.STEPS).extracting(GettingStarted.Step::key)
-                .containsExactly("project", "run", "serve", "oracle", "learn");
-        assertThat(GettingStarted.progress(Set.of())).isEqualTo("0 of 5");
-        assertThat(GettingStarted.progress(Set.of("project", "learn"))).isEqualTo("2 of 5");
+                .containsExactly("project", "run", "serve", "oracle", "learn", "agent");
+        assertThat(GettingStarted.progress(Set.of())).isEqualTo("0 of 6");
+        assertThat(GettingStarted.progress(Set.of("project", "learn"))).isEqualTo("2 of 6");
         // an unknown key never counts
         assertThat(GettingStarted.done(Set.of("project", "bogus"))).isEqualTo(1);
     }
 
     @Test
-    @DisplayName("next() is the first untouched step in order; all five done means no next")
+    @DisplayName("next() is the first untouched step in order; all six done means no next")
     void next() {
         assertThat(GettingStarted.next(Set.of()).key()).isEqualTo("project");
         assertThat(GettingStarted.next(Set.of("project", "serve")).key()).isEqualTo("run");
-        assertThat(GettingStarted.next(Set.of("project", "run", "serve", "oracle", "learn"))).isNull();
-        assertThat(GettingStarted.allDone(Set.of("project", "run", "serve", "oracle", "learn"))).isTrue();
+        assertThat(GettingStarted.next(Set.of("project", "run", "serve", "oracle", "learn", "agent"))).isNull();
+        assertThat(GettingStarted.allDone(Set.of("project", "run", "serve", "oracle", "learn", "agent"))).isTrue();
     }
 
     @Test
@@ -35,7 +35,7 @@ class GettingStartedTest {
     void visibility() {
         assertThat(GettingStarted.visible(Set.of(), false)).isTrue();
         assertThat(GettingStarted.visible(Set.of(), true)).isFalse();
-        assertThat(GettingStarted.visible(Set.of("project", "run", "serve", "oracle", "learn"), false)).isFalse();
+        assertThat(GettingStarted.visible(Set.of("project", "run", "serve", "oracle", "learn", "agent"), false)).isFalse();
     }
 
     @Test
@@ -46,13 +46,54 @@ class GettingStartedTest {
             GettingStarted.Target t = s.target();
             assertThat(t).as("step %s has a target", s.key()).isNotNull();
             switch (t.kind()) {
-                case ACTION -> assertThat(layer)
+                // the layer nests folders (Actions → category → the .instance
+                // file); an action WITH a menu reference also carries its flat
+                // path in a shadow attribute, which is all the first cut read —
+                // a door with no menu item (the Agent Port's, v2.84.0) is
+                // registered just as well
+                case ACTION -> assertThat(registered(layer, t.category(), t.id()))
                         .as("step %s: the action %s/%s must be registered — a dead id is a silent dud", s.key(), t.category(), t.id())
-                        .contains("Actions/" + t.category() + "/" + t.id().replace('.', '-') + ".instance");
+                        .isTrue();
                 case WINDOW -> assertThat(t.id()).as("step %s names a TopComponent", s.key()).endsWith("TopComponent");
                 case GUIDE -> assertThat(t.id()).as("step %s names a guide anchor", s.key()).startsWith("#");
             }
         }
+    }
+
+    private static boolean registered(String layer, String category, String id) {
+        String instance = id.replace('.', '-') + ".instance";
+        if (layer.contains("Actions/" + category + "/" + instance)) {
+            return true;
+        }
+        int actions = layer.indexOf("<folder name=\"Actions\">");
+        if (actions < 0) {
+            return false;
+        }
+        int cat = layer.indexOf("<folder name=\"" + category + "\">", actions);
+        if (cat < 0) {
+            return false;
+        }
+        int end = layer.indexOf("</folder>", layer.indexOf("<file ", cat) < 0 ? cat : cat);
+        // the category folder's own closing tag: the first "</folder>" after
+        // its last nested file — scan files until a closing tag at this depth
+        int depth = 1;
+        int i = cat + 1;
+        while (i < layer.length() && depth > 0) {
+            int open = layer.indexOf("<folder ", i);
+            int close = layer.indexOf("</folder>", i);
+            if (close < 0) {
+                break;
+            }
+            if (open >= 0 && open < close) {
+                depth++;
+                i = open + 1;
+            } else {
+                depth--;
+                end = close;
+                i = close + 1;
+            }
+        }
+        return layer.substring(cat, end).contains("name=\"" + instance + "\"");
     }
 
     @Test
