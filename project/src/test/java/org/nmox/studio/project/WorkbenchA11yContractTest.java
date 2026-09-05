@@ -18,7 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * accessible name, DeviceContractTest) applied to the Workbench (v2.73.0):
  * every button the home base paints — with and without something running —
  * carries a non-blank accessible name, so the page reads the same to a
- * screen reader as to the eye.
+ * screen reader as to the eye. A JButton's name falls back to its text,
+ * so this contract is the FLOOR (nothing nameless); the per-run names
+ * ("Stop Run — shop", not a bare "Stop") are pinned by
+ * WorkbenchRunningRowsTest, which finds the buttons BY those names — the
+ * mutant that drops the explicit name dies there, not here.
  */
 class WorkbenchA11yContractTest {
 
