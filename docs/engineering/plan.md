@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.74.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.75.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.74.0, ~47 releases in seven days). **The
+accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3316,3 +3316,43 @@ button now, not a painted label (the walk's whole point). The ■ over a
 rack device, the balloon replacement and the Enter door stay at their
 tests (no rack device dialed from this harness, no wall, no keyboard
 input in background mode).
+
+## Addendum — 2026-09-05, the second parallel batch (v2.75.0)
+
+Built beside v2.74.0's chain the way v2.74.0 was built beside
+v2.73.0's — the alternating-worktree rhythm is the shift now.
+
+**The review's finds.** The ⇄ chip's tooltip builds `<html>` from
+serving titles and URLs, and since v2.70.0 a title can carry an npm
+SCRIPT NAME from a cloned package.json: a `<img src>` script would have
+rendered in the tooltip — the v1.208.0 fetch class one component over
+from the trees the v1.306 gate covers (unit 1; escaped, mutant by
+name). The rack's own Stop All reached devices through `panic()`, the
+internal cancel, so after a user's Stop All every device read OK or
+FAIL while the faceplate STOP and the toolbar ■ read STOPPED (unit 4).
+The first fix routed it through the ■'s door and would have killed
+asynchronously, leaving the bounded panic nothing to wait on — the
+v1.44.0 orphan guarantee, measured, silently gone; the shape that
+survived is a flag-only hook (`markStoppedByUser`) set before the
+unchanged panic. **A law with two halves (mark, then kill) must be
+addable one half at a time.**
+
+**The name law, wider (unit 3).** Headless contract tests over Task
+Rack, Project Studio, Block Studio and the NPM Explorer: every button
+each paints at construction is named. They passed on the first run —
+the earlier passes had paid.
+
+**The forge paints RUNNING (units 2, 5).** The docs forge's workbench
+shot could never show the RUNNING section (nothing runs during a
+forge boot); `-Dnmox.shots.fakerun=<label>|<url>` seeds one run and its
+serving before the first tab is painted, and the script asks for it —
+the guide's illustration now shows what the guide describes.
+
+**The walk (unit 5, the forge boot).** This batch's app boot was the docs forge itself:
+`scripts/docs-shots.sh` on wt4's assembled bytes (run from the tool
+shell — under the interactive shell its own `mvn clean package` could
+not read the provided-scope JavaFX jars, a harness fact, not a product
+one), eleven tab shots regenerated, and the Workbench shot read "● Run
+— meridian http://localhost:3000/ since 11:38 [Open] [Stop]" with the
+⇄ chip lit — the seeded run painted as the guide describes; the shot
+was looked at, not assumed.
