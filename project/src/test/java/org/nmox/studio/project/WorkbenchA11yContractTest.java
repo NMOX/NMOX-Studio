@@ -47,10 +47,24 @@ class WorkbenchA11yContractTest {
         SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
         SwingUtilities.invokeAndWait(tc[0]::componentOpened);
         LiveRuns.add(new LiveRuns.Run("ide-run:/tmp/a11y#1", "Run — a11y", () -> { }));
-        SwingUtilities.invokeAndWait(() -> { });
-        SwingUtilities.invokeAndWait(() -> { });
+        // the run's row arrives through a coalesced refresh the EDT may be
+        // mid-way through (the v2.82.0 convergence law): poll for the row's
+        // own Stop button, so the contract really covers it, never count drains
         List<Component> all = new ArrayList<>();
-        collect(tc[0], all);
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (System.currentTimeMillis() < deadline) {
+            SwingUtilities.invokeAndWait(() -> { });
+            all.clear();
+            collect(tc[0], all);
+            if (all.stream().anyMatch(c -> c instanceof AbstractButton b
+                    && "Stop Run — a11y".equals(b.getAccessibleContext().getAccessibleName()))) {
+                break;
+            }
+            Thread.sleep(20);
+        }
+        assertThat(all.stream().anyMatch(c -> c instanceof AbstractButton b
+                && "Stop Run — a11y".equals(b.getAccessibleContext().getAccessibleName())))
+                .as("the run's row (and its Stop) is on the page, so the contract covers it").isTrue();
         List<String> unnamed = new ArrayList<>();
         int buttons = 0;
         for (Component c : all) {
