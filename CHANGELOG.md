@@ -4,6 +4,19 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.84.0] - 2026-09-05
+
+The eleventh parallel batch — built beside v2.83.0's chain.
+
+1. **`editor_state` names the file you are looking at** — the second
+   curl walk answered `activeFile: null` beside one plainly open file,
+   because focus sat on the Welcome: true of focus, false of the
+   editor. The file being edited is now the focused editor tab, else
+   the editor area's selected tab; pure rule, mutant by name.
+2. **The v2.83.0 review, clean** — a one-line decode fix under its
+   protocol test.
+3. **Docs, plan, this entry.**
+
 ## [2.83.0] - 2026-09-05
 
 The tenth parallel batch — the Agent Port arc's review.
@@ -17120,6 +17133,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.84.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.83.0...v2.84.0
 [2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0
 [2.81.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.80.0...v2.81.0

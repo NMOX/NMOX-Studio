@@ -51,7 +51,7 @@ real output by the build), and is annotated `readOnlyHint: true`.
 | `find_symbol` | Where a name is declared — the same index as Go to Symbol (⌥⇧⌘O) | `query`, `limit` |
 | `outline` | One file's structure — the Navigator's own items | `file` |
 | `search_text` | Lines containing a literal, case-insensitive, bounded and every cap reported | `query`, `limit` |
-| `editor_state` | The active file and every open editor tab, unsaved ones flagged | — |
+| `editor_state` | The file being edited (the focused editor tab, else the one showing in the editor area) and every open tab, unsaved ones flagged | — |
 | `rack_devices` | The devices mounted on the task rack, in order | — |
 
 Every list is bounded and says so: `find_symbol` and `outline` report a

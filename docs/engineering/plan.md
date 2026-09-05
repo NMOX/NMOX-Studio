@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.83.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.84.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3617,3 +3617,20 @@ Recorded from the workflow's verdicts, not re-run locally.
 
 **No walk this batch.** A one-character decode fix under an existing
 protocol test.
+
+## Addendum — 2026-09-05, the eleventh parallel batch (v2.84.0)
+
+Built beside v2.83.0's chain.
+
+**The walk's honest null, made useful (unit 1).** `editor_state` read
+`TopComponent.getRegistry().getActivated()`, which is focus — and
+focus sat on the Welcome while server.js showed in the editor area,
+so the tool said `activeFile: null` beside one open file. The rule is
+now the editor's, not focus's: the activated component when it is an
+editor tab, else the editor mode's selected tab (`WindowManager.findMode
+("editor")`), pure and pinned (`activeEditor`), with the fallback's
+mutant dying by name. An agent asking "what am I looking at" gets the
+file on screen.
+
+**No walk this batch.** The rule is pure; the EDT snapshot around it
+is the v2.78.0 one the walk already exercised.
