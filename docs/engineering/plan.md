@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.85.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.83.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3618,7 +3618,7 @@ Recorded from the workflow's verdicts, not re-run locally.
 **No walk this batch.** A one-character decode fix under an existing
 protocol test.
 
-## Addendum — 2026-09-05, the eleventh parallel batch (v2.84.0)
+## Addendum — 2026-09-05, the eleventh parallel batch (folded into v2.83.0)
 
 Built beside v2.83.0's chain.
 
@@ -3635,7 +3635,7 @@ file on screen.
 **No walk this batch.** The rule is pure; the EDT snapshot around it
 is the v2.78.0 one the walk already exercised.
 
-## Addendum — 2026-09-05, the twelfth parallel batch (v2.85.0)
+## Addendum — 2026-09-05, the twelfth parallel batch (folded into v2.83.0)
 
 Built beside v2.84.0's chain: the day's own flake, explained.
 
@@ -3660,3 +3660,10 @@ the failure was real and deterministic given the box's state, and
 the state was ours.
 
 **No walk this batch.** A test census, proven by decoy.
+
+**The fold (David's call, 14:50).** Three batches had queued behind one
+gate and a runner was shepherding them one release at a time — the
+opposite of "bundle the batches into one gate". Batches 2830, 2840 and
+2850 were already a linear chain, so they ship as ONE release, v2.83.0,
+and nothing new is built until the queue is empty. The efficiency
+problem was never CI's; it was one release per batch.
