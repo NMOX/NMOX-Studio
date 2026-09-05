@@ -45,7 +45,7 @@ real output by the build), and is annotated `readOnlyHint: true`.
 |------|-----------------|-----------|
 | `ide_context` | The whole orienting snapshot in one call: project, toolchain, servers, runs, the file being edited, the last failure, a diagnostics count | — |
 | `project_state` | The aimed project: name, directory, git branch, detected kind, Node package manager | — |
-| `run_history` | The flight recorder's launches and exits, newest first, each exit with its command, code and duration | `limit` |
+| `run_history` | The flight recorder's launches and exits, newest first, each exit with its command, code and duration; a run you stopped yourself reads `stopped`, never `failed` | `limit` |
 | `live_servers` | Every dev server the IDE knows is serving, with its URL | — |
 | `live_runs` | Every command running right now (what the toolbar ■ would stop), with when it started | — |
 | `last_failure` | The most recent failed run: device, command, exit code, up to five error lines | — |
