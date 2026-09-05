@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -314,9 +315,18 @@ public class NewProjectDialog extends JDialog {
                             .nodePackageManager(dir);
                     org.openide.awt.StatusDisplayer.getDefault()
                             .setStatusText("Installing dependencies with " + pm + "…");
-                    CommandExecutor.run("Project Setup", dir, Map.of(),
+                    // the install joins the toolbar ■ (v2.71.0): a hung
+                    // registry fetch is the beginner's most common wall,
+                    // and it had no stop on screen
+                    String runLabel = pm + " install — " + dir.getName();
+                    String runId = "project-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
+                    CommandExecutor.Handle handle = CommandExecutor.run("Project Setup", dir, Map.of(),
                             List.of(pm, "install"), line -> {
-                            }, code -> reportInstall(pm, code));
+                            }, code -> {
+                                LiveRuns.remove(runId);
+                                reportInstall(pm, code);
+                            });
+                    LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
                 }
                 dispose();
             });

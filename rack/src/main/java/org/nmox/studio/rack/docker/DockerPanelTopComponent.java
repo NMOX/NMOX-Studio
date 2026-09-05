@@ -849,6 +849,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         cmd.add("docker");
         java.util.Collections.addAll(cmd, args);
         status("docker " + String.join(" ", args));
+        // LIVERUNS-EXEMPT: fixed docker verbs against the daemon (v1.224.0
+        // blessing); the things that run long are CONTAINERS, and the panel's
+        // own Stop stops those — a wedged daemon is the v1.36.0 timeout's job
         org.nmox.studio.rack.engine.CommandExecutor.run("HARBOR", projectDir(), Map.of(),
                 cmd, line -> {
                 }, code -> {

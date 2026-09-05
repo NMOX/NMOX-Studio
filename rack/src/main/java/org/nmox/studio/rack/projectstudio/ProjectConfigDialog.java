@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -227,9 +228,14 @@ public class ProjectConfigDialog extends JDialog {
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir)) {
             return;
         }
-        CommandExecutor.run("Project Config", projectDir, Map.of(), command,
+        // the mutation joins the toolbar ■ (v2.71.0) — an add/remove is an
+        // install under the hood, and a hung one had no stop on screen
+        String runLabel = String.join(" ", command) + " — " + projectDir.getName();
+        String runId = "project-config:" + projectDir.getAbsolutePath() + "#" + System.nanoTime();
+        CommandExecutor.Handle handle = CommandExecutor.run("Project Config", projectDir, Map.of(), command,
                 line -> {
                 }, code -> javax.swing.SwingUtilities.invokeLater(() -> {
+                    LiveRuns.remove(runId);
                     try {
                         pkg = PackageJsonFile.load(projectDir);
                         loadFields();
@@ -241,6 +247,7 @@ public class ProjectConfigDialog extends JDialog {
                                 + " — see the \"Rack: Project Config\" output tab.");
                     }
                 }));
+        LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
     }
 
     private void loadFields() {

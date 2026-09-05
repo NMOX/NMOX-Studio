@@ -413,6 +413,9 @@ public abstract class RackDevice extends JPanel {
                 exitOnce.accept(-1);
                 return;
             }
+            // LIVERUNS-EXEMPT: a device's run has its own faceplate STOP
+            // (stopByUser, v2.69.15) and the rack's Stop All; the toolbar ■
+            // is the IDE lanes' stop, not the rack's
             CommandExecutor.Handle real = CommandExecutor.run(busName(), workingDir, env,
                     command, onLine, exitOnce);
             if (!pending.resolve(real)) {

@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.lsp;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.io.File;
 import java.util.Map;
 import org.nmox.studio.editor.lsp.LanguageServerCatalog.Server;
@@ -81,14 +82,19 @@ public final class LanguageServerInstaller {
 
         listener.onStarted(server);
         String tab = "Install " + server.binary();
+        // the install joins the toolbar ■ (v2.71.0): a global install that
+        // hangs on the registry had no stop on screen
+        String runId = "lsp-install:" + server.binary() + "#" + System.nanoTime();
         CommandExecutor.Handle handle = CommandExecutor.run(
                 tab, cwd, Map.of(), server.command(), line -> {
                 }, exit -> {
+                    LiveRuns.remove(runId);
                     // success = the command succeeded; a freshly-installed binary may
                     // not be on the resolved PATH until restart, so trust the exit code
                     Result r = exit == 0 ? Result.INSTALLED : Result.FAILED;
                     listener.onFinished(server, r, exit);
                 });
+        LiveRuns.add(new LiveRuns.Run(runId, tab, handle::kill));
         CommandExecutor.showOutput(tab);
         return handle;
     }
