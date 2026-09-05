@@ -4,6 +4,24 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.82.0] - 2026-09-05
+
+The ninth parallel batch — built beside v2.81.0's chain.
+
+1. **The Agent Port tutorial** — docs/tutorials/agent-port.md: start it,
+   the config snippet, the twelve-tool roster with arguments, the
+   resources and templates, the three prompts, a curl walk, and the
+   refusals-are-features table; the README gains its Agent Port section
+   (the README had never mentioned the port since v2.54.0) and the
+   tutorials index its row.
+2. **AgentPortDocsTest** — the tutorial cannot lie: every production
+   tool, catalogued resource, template and prompt must be named in it,
+   the roster table must list exactly the production tools in order,
+   and the snippet may never carry a real token shape (the DeviceDocsTest
+   idiom, both directions).
+3. **The v2.81.0 review, clean** — blessings in the plan.
+4. **Docs, plan, this entry.**
+
 ## [2.81.0] - 2026-09-05
 
 The eighth parallel batch — built beside v2.80.0's chain.
@@ -17080,6 +17098,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0
 [2.81.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.80.0...v2.81.0
 [2.80.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.79.0...v2.80.0
 [2.79.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.78.0...v2.79.0

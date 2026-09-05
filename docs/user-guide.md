@@ -468,7 +468,8 @@ besides tools it exposes **resources** (browsable URIs like
 tools that take an argument) and **prompts** (ready-made templates
 like *Diagnose the last failure* that fold your IDE's live state into
 the question; *Where is a symbol declared* takes a name and folds the
-symbol hits in), so it drops into any MCP client the idiomatic way.
+symbol hits in), so it drops into any MCP client the idiomatic way. The
+[Agent Port tutorial](tutorials/agent-port.md) walks it by hand.
 
 ## 5. The editor
 
