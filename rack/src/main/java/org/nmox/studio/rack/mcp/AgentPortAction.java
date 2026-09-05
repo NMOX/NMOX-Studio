@@ -107,7 +107,9 @@ public final class AgentPortAction implements ActionListener {
         panel.add(new JLabel("<html><b>The Agent Port is listening on "
                 + "127.0.0.1:" + port.port() + "</b> — loopback only.<br><br>"
                 + "Any program holding the token below can READ, and only read: "
-                + "<i>" + McpProtocol.disclosure(McpTools.production()) + "</i>.<br>"
+                + "<i>" + McpProtocol.disclosure(McpTools.production()) + "</i> — "
+                + "and be told when a run starts, a server goes live, or a file you edit changes, "
+                + "and hear a run's own output at the level it asks for.<br>"
                 + "Nothing it says can run a command or change a file. "
                 + "Paste this into a .mcp.json to connect an agent:</html>"),
                 BorderLayout.NORTH);
