@@ -128,8 +128,10 @@ public class RunFocusedTestAction extends BaseAction {
         CommandExecutor.Handle handle = CommandExecutor.run("Focused Test", focused.dir(), Map.of(),
                 focused.command(), l -> { }, code -> {
                     LiveRuns.remove(runId);
-                    StatusDisplayer.getDefault()
-                            .setStatusText(code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]");
+                    // STOP reads STOPPED (v2.69.15), one registry over
+                    StatusDisplayer.getDefault().setStatusText(LiveRuns.wasStoppedByUser(runId)
+                            ? "Focused test stopped"
+                            : code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]");
                 });
         LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         return true;

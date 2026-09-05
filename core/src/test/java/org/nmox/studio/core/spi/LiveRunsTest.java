@@ -70,6 +70,40 @@ class LiveRunsTest {
     }
 
     @Test
+    @DisplayName("a user's Stop is remembered for the exit handler, once; a natural exit is not (v2.73.0 review)")
+    void stoppedByUserIsRemembered() {
+        LiveRuns.add(new LiveRuns.Run("u1", "npm install — x", () -> { }));
+        LiveRuns.add(new LiveRuns.Run("u2", "Focused test: adds", () -> { }));
+        LiveRuns.add(new LiveRuns.Run("u3", "Run — x", () -> { }));
+        LiveRuns.stop("u1");
+        LiveRuns.stopAll();
+        assertThat(LiveRuns.wasStoppedByUser("u1")).as("stop(id)").isTrue();
+        assertThat(LiveRuns.wasStoppedByUser("u1")).as("consumed").isFalse();
+        assertThat(LiveRuns.wasStoppedByUser("u2")).as("stopAll").isTrue();
+        assertThat(LiveRuns.wasStoppedByUser("u3")).isTrue();
+        LiveRuns.add(new LiveRuns.Run("u4", "natural", () -> { }));
+        LiveRuns.remove("u4");
+        assertThat(LiveRuns.wasStoppedByUser("u4")).as("a natural exit was not a user stop").isFalse();
+    }
+
+    @Test
+    @DisplayName("a live run knows since when; a withdrawn one forgets (v2.73.0)")
+    void startedAtAndSince() {
+        LiveRuns.clockForTest(() -> 1_000_000L);
+        try {
+            LiveRuns.add(new LiveRuns.Run("s1", "npm run dev — shop", () -> { }));
+        } finally {
+            LiveRuns.clockForTest(null);
+        }
+        assertThat(LiveRuns.startedAt("s1")).isEqualTo(1_000_000L);
+        assertThat(LiveRuns.since(1_000_000L, java.time.ZoneId.of("UTC"))).isEqualTo("since 00:16");
+        assertThat(LiveRuns.since(-1L, java.time.ZoneId.of("UTC"))).isEmpty();
+        LiveRuns.remove("s1");
+        assertThat(LiveRuns.startedAt("s1")).as("gone with the run").isEqualTo(-1L);
+        assertThat(LiveRuns.since("s1")).isEmpty();
+    }
+
+    @Test
     @DisplayName("the ■ tooltip names what a press would stop, with a count; nothing running says so (v2.71.0)")
     void tooltipNamesTheRuns() {
         assertThat(LiveRuns.tooltip(java.util.List.of())).isEqualTo("Stop Running Command — nothing is running");

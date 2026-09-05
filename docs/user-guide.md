@@ -169,7 +169,17 @@ HTML a small static server on the first free port from 8080. Build,
 Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
-Trust prompt the first time. To stop: the ■ right of Debug on the
+Trust prompt the first time. A run that could not start (the tool is
+not on your PATH) says so on the status line and raises a balloon whose
+click opens the Environment Doctor; the reason itself is in the Output
+tab. A Node project that declares dependencies but has no
+`node_modules` yet — a fresh clone, a wizard project whose install was
+skipped — is refused out loud before it can die in "Cannot find
+module", and pointed at **NPM Explorer ▸ Install** — the balloon that
+comes with it runs the install on click, through the same trust gate.
+Every command the
+product runs for you also shows in the status bar's progress area with
+a Cancel that stops exactly that command. To stop: the ■ right of Debug on the
 toolbar (⌥⌘.) stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
@@ -283,7 +293,7 @@ connections) the Java [Device SPI](device-spi.md) is still there.
 device — and the whole rack **exports to GitHub Actions** (your local
 pipeline and your CI are the same wiring). **HELM** runs commands on a
 remote server over ssh. **TAIL** follows any log file. **WORMHOLE**
-tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code. Picking a serving from the chip or from ⌘I Live Servers opens it in the in-app Browser (the system browser only when none is wired up); the Docker panel's published port and SONAR's Browse open the same way.
+tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code. Picking a serving from the chip or from ⌘I Live Servers opens it in the in-app Browser (the system browser only when none is wired up); the Docker panel's published port and SONAR's Browse open the same way. A serving the ▶ or an NPM script started also carries a **Stop** in the chip's menu, right under its Open; a rack device's server keeps its faceplate STOP.
 
 **The rack stays in sync by itself.** Edit `package.json` and NPM-9000's
 script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its
@@ -482,7 +492,9 @@ any MCP client the idiomatic way.
   the aimed project *before anything runs* — discovered with the same
   patterns Run Focused Test uses, so the window never lists a test it
   cannot run. Double-click opens the declaration; **Run** executes
-  exactly that test through the same trust gate as the editor gesture.
+  exactly that test through the same trust gate as the editor gesture,
+  and **Stop** ends the test runs (only those — never the dev server)
+  while one is live.
   On a very large project the footer says the listing is partial rather
   than pretending it read everything.
 - **LSP**: open a file whose language server is installed (typescript,
@@ -1333,7 +1345,18 @@ whenever dev servers are up — click it to see URLs and open one. Next to
 it: the aimed project and toolchain.
 
 **The Workbench tab** is home base: current project, open and recent
-files, recent projects, and launchers for every tool surface.
+files, recent projects, and launchers for every tool surface. While
+anything runs, a **RUNNING** section leads the page — every command the
+product started for you (the ▶'s run, an NPM script, a test, an
+install, an `ng generate`) with its address when it announced one and
+since when it runs, plus every server a rack device is serving. Each
+row has real **Open** and **Stop** buttons (keyboard and screen-reader
+reachable), so one run can be stopped without taking the rest down.
+⌘I reaches the same runs: type "stop" or the run's own words and Enter
+stops exactly that one. A run you stopped yourself reads *stopped*
+wherever its outcome is reported — the wizard's install says "Install
+stopped", a stopped test reads "Focused test stopped" — never a
+failure.
 
 **Emacs (and Eclipse, IntelliJ) keyboard shortcuts:** Tools ▸ Options ▸
 Keymap switches the whole keymap profile — Emacs movement and kill/yank

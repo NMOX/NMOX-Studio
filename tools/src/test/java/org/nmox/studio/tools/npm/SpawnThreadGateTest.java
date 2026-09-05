@@ -31,6 +31,9 @@ class SpawnThreadGateTest {
         assertThat(post).as("the fork is posted to the IDE Run lane").isGreaterThan(gate);
         assertThat(spawn).as("the spawn lives in the posted body").isGreaterThan(post);
         assertThat(src).contains("new org.openide.util.RequestProcessor(\"IDE Run\"");
+        // the third wall reads package.json: it lives on the lane, after the post (v2.73.0 review)
+        assertThat(src.indexOf("InstallGuard.needsInstall(dir)")).as("the disk-reading wall sits in launch(), off the EDT")
+                .isGreaterThan(post);
     }
 
     @Test

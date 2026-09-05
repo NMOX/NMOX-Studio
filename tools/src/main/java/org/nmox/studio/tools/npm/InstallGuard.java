@@ -37,6 +37,39 @@ final class InstallGuard {
         return false;
     }
 
+    /**
+     * The third beginner wall (v2.73.0): a Node project that DECLARES
+     * dependencies but has no node_modules — a clone, or a wizard project
+     * whose install was unchecked or stopped — runs straight into
+     * "Cannot find module". Pure over the filesystem: package.json with a
+     * non-empty dependencies or devDependencies object, and no
+     * node_modules directory beside it. A project with no dependencies
+     * needs no install; a missing or malformed package.json is not this
+     * wall (the run will say what it says).
+     */
+    static boolean needsInstall(File projectDir) {
+        File pkg = new File(projectDir, "package.json");
+        if (!pkg.isFile() || new File(projectDir, "node_modules").isDirectory()) {
+            return false;
+        }
+        try {
+            org.json.JSONObject json = new org.json.JSONObject(
+                    java.nio.file.Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            return declares(json, "dependencies") || declares(json, "devDependencies");
+        } catch (java.io.IOException | RuntimeException malformed) {
+            return false;
+        }
+    }
+
+    private static boolean declares(org.json.JSONObject json, String key) {
+        return json.optJSONObject(key) != null && !json.getJSONObject(key).isEmpty();
+    }
+
+    static String needsInstallMessage(File projectDir) {
+        return projectDir.getName() + " declares dependencies that aren't installed — "
+                + "NPM Explorer ▸ Install first (or run npm install)";
+    }
+
     static String message(File projectDir) {
         return "Dependencies are still installing for " + projectDir.getName()
                 + " — wait for the install, or stop it with the toolbar ■";

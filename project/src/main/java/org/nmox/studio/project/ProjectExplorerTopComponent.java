@@ -1,5 +1,6 @@
 package org.nmox.studio.project;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -128,6 +129,16 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
 
     /**
+     * The RUNNING section follows the ■'s registry and the ⇄ chip's
+     * (v2.73.0); both fold into the coalesced refresh, added in
+     * componentOpened and removed in componentClosed beside rackListener —
+     * the same symmetry, for the same reason (a closed workbench must not
+     * rebuild offscreen on every run).
+     */
+    private final Runnable runsListener = refreshCoalescer::request;
+    private final org.nmox.studio.core.spi.LiveServings.Listener servingsListener = refreshCoalescer::request;
+
+    /**
      * Guards double-attach: the rack's listener list is a
      * CopyOnWriteArrayList, so adding the same listener twice would
      * double-fire every event.
@@ -192,6 +203,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         TopComponent.getRegistry().addPropertyChangeListener(registryListener);
+        LiveRuns.addListener(runsListener);
+        org.nmox.studio.core.spi.LiveServings liveServings = org.nmox.studio.core.spi.LiveServings.find();
+        if (liveServings != null) {
+            liveServings.addListener(servingsListener);
+        }
         if (!rackListenerAttached) {
             // soft aim lookup (ledger 30): a null provider (plain tests,
             // stripped platform) leaves a static workbench, same as before
@@ -239,6 +255,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         TopComponent.getRegistry().removePropertyChangeListener(registryListener);
+        LiveRuns.removeListener(runsListener);
+        org.nmox.studio.core.spi.LiveServings liveServings = org.nmox.studio.core.spi.LiveServings.find();
+        if (liveServings != null) {
+            liveServings.removeListener(servingsListener);
+        }
         if (rackListenerAttached) {
             org.nmox.studio.core.spi.ProjectAim aim =
                     org.nmox.studio.core.spi.ProjectAim.find();
@@ -259,6 +280,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private void refresh() {
         rebuildHeader();
         content.removeAll();
+        addRunning();
         addOpenFiles();
         addRecentFiles();
         addProjects();
@@ -371,6 +393,65 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     // ---- sections ----
+
+    /**
+     * RUNNING (v2.73.0): what the product runs for you right now, from the
+     * ■'s registry and the ⇄ chip's — a row per run with its address when
+     * it announced one, a row per rack server nobody's run owns. Present
+     * only while something runs (the FIRST STEPS idiom: a section with
+     * nothing to say says nothing). Click opens the address in the in-app
+     * Browser; the row's own Stop button stops that one run — a real
+     * button, so it is reachable by keyboard and assistive technology,
+     * unlike a context menu.
+     */
+    private void addRunning() {
+        org.nmox.studio.core.spi.LiveServings servings = org.nmox.studio.core.spi.LiveServings.find();
+        List<WorkbenchRunning.Row> rows = WorkbenchRunning.rows(LiveRuns.live(),
+                servings != null ? servings.snapshot() : List.of());
+        if (rows.isEmpty()) {
+            return;
+        }
+        section("RUNNING");
+        for (WorkbenchRunning.Row r : rows) {
+            Runnable open = r.openable()
+                    ? () -> org.nmox.studio.rack.service.ServingLinks.open(r.url())
+                    : () -> { };
+            JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), false, ACCENT,
+                    r.openable() ? r.url() + "  — click to open in the Browser" : "running — Stop ends it",
+                    open);
+            if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
+                // the row itself is named for assistive technology; its
+                // gestures are REAL buttons (v2.73.0): the row click is a
+                // mouse-only door, Open and Stop are the keyboard's
+                rowPanel.getAccessibleContext().setAccessibleName(
+                        r.title() + " — " + WorkbenchRunning.subtitle(r));
+                if (r.openable()) {
+                    javax.swing.JButton openButton = flatButton("Open", "Open " + r.url() + " in the Browser");
+                    openButton.addActionListener(e -> open.run());
+                    rowPanel.add(openButton);
+                }
+            }
+            if (r.stoppable() && sub != null && sub.getParent() instanceof JPanel rowPanel) {
+                javax.swing.JButton stop = flatButton("Stop", "Stop " + r.title());
+                stop.addActionListener(e -> {
+                    LiveRuns.stop(r.runId());
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText("Stopped: " + r.title());
+                });
+                rowPanel.add(stop);
+            }
+        }
+    }
+
+    /** A small focusable button for a row's gesture, named for assistive technology. */
+    private static javax.swing.JButton flatButton(String text, String accessibleName) {
+        javax.swing.JButton b = new javax.swing.JButton(text);
+        b.setFont(TINY);
+        b.setFocusable(true);
+        b.setMargin(new java.awt.Insets(0, 6, 0, 6));
+        b.setToolTipText(accessibleName);
+        b.getAccessibleContext().setAccessibleName(accessibleName);
+        return b;
+    }
 
     /** Editor tabs open right now; the active one leads in bold. */
     private void addOpenFiles() {

@@ -47,6 +47,20 @@ public final class LiveRuns {
     private static final Map<String, Run> LIVE = new LinkedHashMap<>();
 
     /**
+     * Runs the USER stopped (v2.73.0 review): a deliberate Stop — the ■, a
+     * RUNNING row, ⌘I, the Tests window — ends the process with the same
+     * exit code a crash would, and the exit handlers that report failure
+     * (the wizard's "install didn't finish" dialog, "Focused test FAILED
+     * [143]") could not tell the two apart: the v2.69.15 law (STOP reads
+     * STOPPED) one registry over. Marked at the stop, consumed by the exit
+     * handler's {@link #wasStoppedByUser}; bounded like the tombstones.
+     */
+    private static final java.util.LinkedHashSet<String> STOPPED_BY_USER = new java.util.LinkedHashSet<>();
+
+    /** When each live run was registered (v2.73.0) — the Workbench row says "since 10:41". */
+    private static final Map<String, Long> STARTED = new java.util.HashMap<>();
+
+    /**
      * Ids withdrawn BEFORE they were added (v2.71.0 review find): when a
      * launch fails — the tool not on PATH, the beginner's commonest wall —
      * CommandExecutor.run fires the exit callback synchronously, before it
@@ -71,15 +85,63 @@ public final class LiveRuns {
                 return false; // withdrawn before it was added: never live
             }
             LIVE.put(run.id(), run);
+            STARTED.put(run.id(), clock.getAsLong());
         }
         notifyListeners();
         return true;
+    }
+
+    private static void markStopped(String id) {
+        STOPPED_BY_USER.add(id);
+        if (STOPPED_BY_USER.size() > TOMBSTONES) {
+            STOPPED_BY_USER.remove(STOPPED_BY_USER.iterator().next());
+        }
+    }
+
+    /**
+     * Whether the user stopped this run (through any Stop surface) — for
+     * the exit handler that would otherwise report a failure. Consumed:
+     * true once, so a later run under a reused id starts clean.
+     */
+    public static boolean wasStoppedByUser(String id) {
+        synchronized (LIVE) {
+            return STOPPED_BY_USER.remove(id);
+        }
+    }
+
+    /** The clock behind {@link #startedAt}; tests pin it. */
+    private static java.util.function.LongSupplier clock = System::currentTimeMillis;
+
+    static void clockForTest(java.util.function.LongSupplier c) {
+        clock = c == null ? System::currentTimeMillis : c;
+    }
+
+    /** Epoch millis the run was registered, or -1 when it is not live. */
+    public static long startedAt(String id) {
+        synchronized (LIVE) {
+            Long t = STARTED.get(id);
+            return t == null || !LIVE.containsKey(id) ? -1L : t;
+        }
+    }
+
+    /** "since HH:mm" for a live run, in the local zone; empty when not live. */
+    public static String since(String id) {
+        return since(startedAt(id), java.time.ZoneId.systemDefault());
+    }
+
+    static String since(long startedAt, java.time.ZoneId zone) {
+        if (startedAt < 0) {
+            return "";
+        }
+        return "since " + java.time.Instant.ofEpochMilli(startedAt).atZone(zone)
+                .toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
     }
 
     public static void remove(String id) {
         boolean removed;
         synchronized (LIVE) {
             removed = LIVE.remove(id) != null;
+            STARTED.remove(id);
             if (!removed) {
                 WITHDRAWN.add(id);
                 if (WITHDRAWN.size() > TOMBSTONES) {
@@ -104,6 +166,10 @@ public final class LiveRuns {
         Run r;
         synchronized (LIVE) {
             r = LIVE.remove(id);
+            STARTED.remove(id);
+            if (r != null) {
+                markStopped(id);
+            }
         }
         if (r != null) {
             r.killer().run();
@@ -117,7 +183,11 @@ public final class LiveRuns {
         List<Run> stopped;
         synchronized (LIVE) {
             stopped = new ArrayList<>(LIVE.values());
+            for (Run r : stopped) {
+                markStopped(r.id());
+            }
             LIVE.clear();
+            STARTED.clear();
         }
         for (Run r : stopped) {
             r.killer().run();

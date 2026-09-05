@@ -115,6 +115,19 @@ class NpmRunLaneTest {
     }
 
     @Test
+    @DisplayName("declared dependencies with no node_modules: the run is refused out loud and points at Install; the install verb itself passes (v2.73.0)")
+    void uninstalledDependenciesRefuseTheRun() throws Exception {
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"w\",\"dependencies\":{\"express\":\"^5\"}}");
+        Files.writeString(dir.resolve("run"), "echo \"  Local:   http://localhost:45674/\"\n");
+        Files.writeString(dir.resolve("install"), "echo installing\n");
+        String out = new NpmService().runCommand(dir.toFile(), "sh", "run", "dev").get(5, TimeUnit.SECONDS);
+        assertThat(out).contains("aren't installed").contains("Install");
+        assertThat(announced("http://localhost:45674/")).as("nothing ran").isFalse();
+        assertThat(new NpmService().runCommand(dir.toFile(), "sh", "install").get(10, TimeUnit.SECONDS))
+                .as("the install itself is the way through the wall").contains("installing");
+    }
+
+    @Test
     @DisplayName("install prints a URL: no serving — lifecycle output never announces")
     void installNeverAnnounces() throws Exception {
         Files.writeString(dir.resolve("install"), "echo \"postinstall: see http://localhost:45672/\"\n");

@@ -37,5 +37,12 @@
             <attr name="position" intvalue="275"/>
             <file name="org-nmox-studio-rack-search-LiveServerSearchProvider.instance"/>
         </folder>
+        <!-- What is RUNNING right now (v2.73.0): every command the product
+             started for you, one Enter from a stop — beside the servers. -->
+        <folder name="LiveRuns">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.rack.search.Bundle"/>
+            <attr name="position" intvalue="276"/>
+            <file name="org-nmox-studio-rack-search-LiveRunSearchProvider.instance"/>
+        </folder>
     </folder>
 </filesystem>

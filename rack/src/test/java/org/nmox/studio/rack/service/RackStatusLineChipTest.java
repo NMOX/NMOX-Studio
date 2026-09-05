@@ -35,6 +35,18 @@ class RackStatusLineChipTest {
     }
 
     @Test
+    @DisplayName("a serving a run registered under its own id gets a Stop in the chip's menu; a rack device's server does not (v2.73.0)")
+    void stopBesideOpen() throws Exception {
+        java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live = java.util.List.of(
+                new org.nmox.studio.core.spi.LiveRuns.Run("ide-run:/p#1", "Run — shop", () -> { }));
+        assertThat(RackStatusLine.runOwning(new Serving("ide-run:/p#1", "Run — shop", "http://localhost:3000/", Kind.WEB, new File("/p")), live))
+                .isNotNull();
+        assertThat(RackStatusLine.runOwning(serving("SURGE", "http://localhost:5173"), live)).as("a rack device has its own STOP").isNull();
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/service/RackStatusLine.java"));
+        assertThat(src).contains("runOwning(s, live) != null").contains("LiveRuns.stop(s.deviceId())");
+    }
+
+    @Test
     @DisplayName("many servings: first URL +N, tooltip lists them all")
     void many() {
         List<Serving> servings = List.of(

@@ -121,6 +121,16 @@ final class WebProjectActionProvider implements ActionProvider {
             new org.openide.util.RequestProcessor("IDE Run", 4, true);
 
     private void launch(String command, Lookup context, File dir, List<String> cmd) {
+        // the third wall (v2.73.0): a Node Run with declared, uninstalled
+        // dependencies is refused out loud and pointed at Install; Build/
+        // Test/Clean pass — a Build may be the thing that installs. Here,
+        // on the lane, because the check READS package.json (the batch
+        // review: its first home was invokeAction, on the EDT)
+        if (ActionProvider.COMMAND_RUN.equals(command) && InstallGuard.needsInstall(dir)) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.needsInstallMessage(dir));
+            InstallDoor.offer(dir);
+            return;
+        }
         // the action and the rack are one mechanism: aim the rack so the
         // monitor, explorer and recent list all follow the same project.
         // Soft aim lookup (ledger 30): no provider (plain tests) — the
@@ -205,6 +215,17 @@ final class WebProjectActionProvider implements ActionProvider {
                     ph.finish();
                     item.finished();
                     LiveRuns.remove(servingId);
+                    // a launch that never started (exit -1: the tool is not on
+                    // PATH — the beginner's commonest wall) speaks on the status
+                    // line and names the two places that hold the answer
+                    // (v2.73.0); the Output tab carries the friendly reason
+                    if (exit == -1) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                LaunchFailure.status(label));
+                        // and a balloon with the door (v2.73.0): the status
+                        // line fades, the bell keeps the link
+                        LaunchFailure.notify(label);
+                    }
                     org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
                     // a phantom serving outlives nothing: the gate drops
                     // with the process (the v1.65.1 deregister-on-stop law)

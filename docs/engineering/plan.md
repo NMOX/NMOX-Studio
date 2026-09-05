@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.72.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.73.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.72.0, ~45 releases in seven days). **The
+accessibility (v2.44.0–v2.73.0, ~46 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3201,3 +3201,76 @@ the interactive `-i` alias and stalled a whole call for two minutes —
 `/bin/cp -f` or no cp at all; the law was already in memory and was
 still missed. The batch cadence held (A after unit 7, B after unit 8,
 the final one on the PR head).
+
+## Addendum — 2026-09-05, the long shift (v2.73.0, a several-hour batch)
+
+David, after three one-hour batches: "these shifts are lasting about an
+hour; I'd prefer you to work several hours — maybe you need more than
+12 things per gate." So this batch ran through the afternoon in a
+second worktree, forked from the morning PR's head while that PR was
+still in its gate (rebase --onto past the squash once it landed),
+with a full verify after every three or four units. Twenty-three units,
+one gate.
+
+**The arc: what the product is running for you.** Two batches had built
+the ■'s registry; this one made it KNOWLEDGE with faces. The Workbench
+gained a RUNNING section (units 1, 2, 5, 6): every command the product
+started, joined with the ⇄ chip's servings by id (the ▶ and the NPM
+lane register the serving under the run's own id), the rack's servers
+as rows of their own, "since 10:41" on each, and real Open and Stop
+BUTTONS (keyboard- and screen-reader-reachable — a context menu is a
+mouse-only door), proven on a headless Workbench by pressing them.
+⌘I reaches the same runs (unit 10: "Stop · npm run dev — shop since
+10:41", Enter stops exactly that one). The Tests window got its own
+Stop for test runs only (unit 3). Every lane the ■ knows also shows in
+the platform's progress bar with a Cancel that IS the run's stop
+(unit 12 — the ▶ had one since v1.2; the NPM lane and the installs
+never did; the rack module gained the progress API for the wizard).
+
+**The beginner's walls, all three with doors.** A run that could not
+start (the tool not on PATH) now says so on the status line AND raises
+a balloon whose click opens the Environment Doctor by its action id —
+tools carries no dependency on the ui module that owns it, and the id
+is pinned against the Doctor's SOURCE (units 4, 15). A Node Run with
+declared, uninstalled dependencies — a clone, a wizard project whose
+install was skipped or stopped — is refused out loud before it can die
+in "Cannot find module", pointed at NPM Explorer ▸ Install, and offered
+a balloon whose click IS the install through the trust-gated lane
+(units 13, 17). The morning's run-while-installing guard was the second
+wall; these are the first and third.
+
+**The review's find (unit 9).** STOP reads STOPPED (v2.69.15) held for
+rack devices but not one registry over: a deliberate Stop of a setup
+install — from the new RUNNING row, ⌘I, the ■, the progress Cancel —
+ended the process with the same exit code a crash would, and the
+wizard's exit handler raised its "install didn't finish" dialog; a
+stopped Focused Test read "FAILED [143]". LiveRuns now remembers a
+user's stop (marked at every stop surface, consumed once by the exit
+handler), and both report *stopped*. The batch also caught two of its
+own gates lying: the progress gate's first mutant survived an order
+check that never demanded the START (a handle created but never
+started paints nothing), and the chord gate of the morning had read a
+sibling module's target/ — both re-pinned (source, and the start).
+
+**The walk (unit 16).** One announced instance of the assembled app (verify
+D's bytes, throwaway userdir, `--open` a start-script fixture): the ▶
+ran, announced, the Browser auto-opened; Window ▸ Workbench showed the
+RUNNING section leading the page — "● Run — batch-walk4
+http://localhost:63874/ since 10:43 [Open] [Stop]"; the row's Stop,
+pressed by accessibility (it answered as "AXPress on AXButton 'Stop Run
+— batch-walk4'" — the per-run name, though the truncated AX capture had
+not listed it), killed the tree within four seconds, the status line
+read "Stopped: Run — batch-walk4", the row lost its Stop and the ■
+greyed. The Tests window's Stop, the balloons, the third wall and the
+chip's Stop item stay at their tests (no test run, no missing tool, no
+uninstalled fixture and no popup item reachable from this harness).
+
+**Method notes.** A core timing test (ProcessSupportTest's
+grandchild-kill) failed once inside a verify while leftover walk
+watcher loops were still polling the box, and passed 3/3 alone in
+2.5 s — kill every watcher before a verify; a timing test that fails
+only under load and passes alone three times is a load flake. A gate
+test committed red (unit 6's wiring gate still named a helper the same
+unit had replaced) — the targeted run's failure line was in the
+output and I read past it; every commit's own tests must be green in
+the SAME output before the commit.

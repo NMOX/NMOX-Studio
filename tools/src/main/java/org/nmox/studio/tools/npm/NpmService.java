@@ -175,6 +175,14 @@ public class NpmService {
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
             return CompletableFuture.completedFuture(wall);
         }
+        // the third wall (v2.73.0): declared dependencies, no node_modules —
+        // a script run now only ends in "Cannot find module"
+        if (announcesServer(command) && InstallGuard.needsInstall(workingDir)) {
+            String wall = InstallGuard.needsInstallMessage(workingDir);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
+            InstallDoor.offer(workingDir);
+            return CompletableFuture.completedFuture(wall);
+        }
         // Route through CommandExecutor: its named daemon pump threads
         // stream to the Output window and the future completes from onExit —
         // no "NPM Service" RP thread sits draining stdout, so a long-running
@@ -209,6 +217,14 @@ public class NpmService {
         // run happened in a tab you had to know existed. Raise it — the
         // user just asked for this command, so its output is what they
         // are waiting to see (Run Focused Test has always done this).
+        // the platform's progress bar too (v2.73.0): the status line shows
+        // the run with a Cancel that IS this run's stop — the ▶ had one since
+        // v1.2, the NPM lane and the installs never did
+        org.netbeans.api.progress.ProgressHandle ph = org.netbeans.api.progress.ProgressHandle.createHandle(label, () -> {
+            LiveRuns.stop(runId);
+            return true;
+        });
+        ph.start();
         // the tab carries the run's own label (v2.71.0) — the ▶'s convention,
         // so the tab, the ■'s tooltip, the Stop menu and the status line all
         // name the same thing; two scripts no longer interleave in one tab
@@ -253,6 +269,7 @@ public class NpmService {
                     }
                 },
                 exit -> {
+                    ph.finish();
                     item.finished();
                     SCRIPT_BY_RUN.remove(runId);
                     LiveRuns.remove(runId);

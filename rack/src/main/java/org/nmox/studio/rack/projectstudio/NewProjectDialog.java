@@ -320,13 +320,31 @@ public class NewProjectDialog extends JDialog {
                     // and it had no stop on screen
                     String runLabel = pm + " install — " + dir.getName();
                     String runId = "project-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
+                    org.netbeans.api.progress.ProgressHandle installing =
+                            org.netbeans.api.progress.ProgressHandle.createHandle(runLabel, () -> {
+                                LiveRuns.stop(runId);
+                                return true;
+                            });
+                    installing.start();
+                    // the spawn leaves the EDT (v2.73.0 review — the v1.57.0
+                    // class, here since the install shipped in v2.36.0)
+                    org.openide.util.RequestProcessor.getDefault().post(() -> {
                     CommandExecutor.Handle handle = CommandExecutor.run("Project Setup", dir, Map.of(),
                             List.of(pm, "install"), line -> {
                             }, code -> {
+                                installing.finish();
                                 LiveRuns.remove(runId);
+                                if (LiveRuns.wasStoppedByUser(runId)) {
+                                    // STOP reads STOPPED (v2.69.15), one registry over:
+                                    // the user ended it, so no "didn't finish" dialog
+                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                            "Install stopped — run " + pm + " install when you are ready");
+                                    return;
+                                }
                                 reportInstall(pm, code);
                             });
                     LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
+                    });
                 }
                 dispose();
             });

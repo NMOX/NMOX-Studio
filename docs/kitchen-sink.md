@@ -63,11 +63,16 @@ Debug on the toolbar — ⌥⌘. from anywhere — (or Run ▸ Stop Build/Run, w
 afterwards); a device's STOP reads STOPPED whatever the process's exit
 code. The same ■ stops a script you double-clicked in the NPM Explorer
 (its row reads **● running** meanwhile, and right-click offers **Stop
-Script** for just that one), a Focused Test that never returns, an
+Script** for just that one; the Workbench's **RUNNING** section lists
+every one of them with its own Open and Stop), a Focused Test that never returns, an
 `ng generate` that stalls, and any install the product started for you;
 its tooltip names what it would stop. Press Run while that install is
 still going and the status line refuses out loud instead of running
-against a half-written `node_modules`. The scaffold is pre-trusted because
+against a half-written `node_modules`. Delete `node_modules` and press
+Run: the status line refuses again, this time pointing at NPM Explorer
+▸ Install. Open the **Workbench** while something runs: the RUNNING
+section leads the page with Open and Stop on every row, and ⌘I "stop"
+finds the same runs. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP

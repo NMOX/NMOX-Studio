@@ -27,6 +27,17 @@ public class RackStatusLine implements StatusLineElementProvider {
         return new RackStrip();
     }
 
+    /** The live run that registered this serving under its own id (the ▶, the NPM lane), or null for a rack device's server. */
+    static org.nmox.studio.core.spi.LiveRuns.Run runOwning(ServingRegistry.Serving s,
+            java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live) {
+        for (org.nmox.studio.core.spi.LiveRuns.Run r : live) {
+            if (r.id().equals(s.deviceId())) {
+                return r;
+            }
+        }
+        return null;
+    }
+
     /** Chip text: "⇄ serving: <first url>" (+N for more); null when idle. */
     static String chipText(List<ServingRegistry.Serving> servings) {
         if (servings.isEmpty()) {
@@ -135,10 +146,22 @@ public class RackStatusLine implements StatusLineElementProvider {
                 return;
             }
             JPopupMenu menu = new JPopupMenu();
+            java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live = org.nmox.studio.core.spi.LiveRuns.live();
             for (ServingRegistry.Serving s : servings) {
                 JMenuItem item = new JMenuItem(s.deviceTitle() + " — " + s.url());
                 item.addActionListener(e -> ServingLinks.open(s.url()));
                 menu.add(item);
+                // a serving a run owns gets its Stop beside its Open (v2.73.0):
+                // the chip is where the eye already is when a server is up
+                if (runOwning(s, live) != null) {
+                    JMenuItem stop = new JMenuItem("    Stop " + s.deviceTitle());
+                    stop.addActionListener(e -> {
+                        org.nmox.studio.core.spi.LiveRuns.Run r = org.nmox.studio.core.spi.LiveRuns.stop(s.deviceId());
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle());
+                    });
+                    menu.add(stop);
+                }
             }
             menu.show(servingLabel, 0, -menu.getPreferredSize().height);
         }
