@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +47,9 @@ import org.openide.util.RequestProcessor;
 @ActionReference(path = "Menu/File", position = 122)
 @Messages("CTL_NgSchematicAction=New Angular Schematic…")
 public final class NgSchematicAction implements ActionListener {
+
+    private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
+            new java.util.concurrent.atomic.AtomicLong();
 
     private static final RequestProcessor RP =
             new RequestProcessor("nmox-ng-schematic", 1);
@@ -109,10 +113,16 @@ public final class NgSchematicAction implements ActionListener {
             // left the path on screen
             java.util.List<String> lines =
                     java.util.Collections.synchronizedList(new java.util.ArrayList<>());
-            CommandExecutor.run("Angular: generate " + schematic + " — " + rawName.trim(),
+            // the generate joins the toolbar ■ (v2.71.0): a schematic that
+            // stalls (a prompt with no TTY, a hung registry fetch) had NO
+            // stop on screen — the third lane after the ▶ and the NPM runs
+            String runLabel = "Angular: generate " + schematic + " — " + rawName.trim();
+            String runId = "ng-generate:" + root.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
+            CommandExecutor.Handle handle = CommandExecutor.run(runLabel,
                     target, Map.of(), NgSchematic.argv(schematic, rawName),
                     lines::add,
                     exit -> java.awt.EventQueue.invokeLater(() -> {
+                        LiveRuns.remove(runId);
                         String created = exit == 0
                                 ? NgSchematic.primaryCreated(lines) : null;
                         // the status must report what HAPPENED, not what was
@@ -140,6 +150,7 @@ public final class NgSchematicAction implements ActionListener {
                                                 : " — done.")
                                 : "ng generate failed (exit " + exit + ") — see Output.");
                     }));
+            LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         });
     }
 
