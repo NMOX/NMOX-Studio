@@ -58,7 +58,9 @@ class StopVerdictTest {
         // v2.74.0: the outside stop (■ / RUNNING row / ⌘I) is the user's stop on
         // every device that keeps its own verdict — CommandDevice and PREFLIGHT
         for (String f : java.util.List.of("CommandDevice.java", "PreflightDevice.java")) {
-            String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/devices/" + f));
+            // CRLF folded: the windows lane's checkout carries \r\n and a two-line
+            // literal never matched there (the v1.42.0 folding law, relearned on PR #686)
+            String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/devices/" + f)).replace("\r\n", "\n");
             assertThat(src).as(f + ": stopFromOutside routes through stopByUser").contains("protected void stopFromOutside() {\n        stopByUser();");
         }
     }
