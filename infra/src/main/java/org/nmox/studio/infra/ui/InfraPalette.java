@@ -52,7 +52,12 @@ public class InfraPalette extends JPanel {
         list.getAccessibleContext().setAccessibleName("Infrastructure palette");
         list.setBackground(getBackground());
         list.setCellRenderer(new Renderer());
-        list.setDragEnabled(true);
+        // a drag needs a display: JList refuses the flag headless, and a
+        // headless JVM has no mouse to drag with — the guard is what lets
+        // the window be constructed under the name-law contract (v2.77.0)
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            list.setDragEnabled(true);
+        }
         list.setTransferHandler(new TransferHandler() {
             @Override
             public int getSourceActions(JComponent c) {

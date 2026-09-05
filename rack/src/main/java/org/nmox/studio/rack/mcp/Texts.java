@@ -25,6 +25,9 @@ final class Texts {
         if (s.has("servers")) {
             return servers(s.getJSONArray("servers"));
         }
+        if (s.has("runs")) {
+            return runs(s.getJSONArray("runs"));
+        }
         if (s.has("failed")) {
             return failure(s);
         }
@@ -58,6 +61,24 @@ final class Texts {
                 sb.append('\n');
             }
             sb.append(srv.getString("title")).append(" — ").append(srv.getString("url"));
+        }
+        return sb.toString();
+    }
+
+    private static String runs(JSONArray runs) {
+        if (runs.isEmpty()) {
+            return "Nothing is running.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < runs.length(); i++) {
+            JSONObject r = runs.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append(r.getString("label"));
+            if (!r.getString("since").isEmpty()) {
+                sb.append(" (").append(r.getString("since")).append(')');
+            }
         }
         return sb.toString();
     }
@@ -126,6 +147,8 @@ final class Texts {
                 ? "No project is aimed." : "Project: " + s.getString("project"));
         sb.append("\nServing: ").append(s.getInt("serverCount"))
                 .append(s.getInt("serverCount") == 1 ? " server" : " servers");
+        sb.append("\nRunning: ").append(s.getInt("runCount"))
+                .append(s.getInt("runCount") == 1 ? " command" : " commands");
         sb.append("\nLast failure: ").append(s.isNull("lastFailureDevice")
                 ? "none on record" : "on " + s.getString("lastFailureDevice"));
         sb.append("\nDiagnostics: ").append(s.getInt("diagnosticCount"))

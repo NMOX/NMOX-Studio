@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.77.0] - 2026-09-05
+
+The fourth parallel batch — built beside v2.76.0's chain.
+
+1. **The Agent Port lists live runs** — a `live_runs` tool (and
+   `nmox://runs`) names every command the IDE is running with when it
+   started; `ide_context` folds the count and the list in; the read-only
+   ledger now bans the run registry's stop half (an agent LISTS, the ■
+   stops); typed and schema-validated like its siblings.
+2. **The name law, total** — API Studio, DB Studio, Contract Studio, the
+   Infra Designer, the Task Board and the Docker Panel join the headless
+   contracts, and WindowNameLawCensusTest derives the population from
+   every `@TopComponent.Registration` in the source: a registered window
+   no contract constructs fails the build (the Browser exempt in writing —
+   its toolbar is FX-bound). The census found two windows the law could
+   not reach: API Studio and the Infra Designer threw HeadlessException at
+   construction (a menu-mask read, a JList drag flag); both guarded.
+3. **The v2.76.0 review, clean** — blessings in the plan.
+4. **The walk** — `live_runs` proven over curl against the assembled app
+   (the run named with its start, `nmox://runs` byte-identical,
+   `ide_context` counting it, 401 without the token; empty after the ■).
+5. **Docs, plan, this entry.**
+
 ## [2.76.0] - 2026-09-05
 
 The third parallel batch — built beside v2.75.0's chain.
@@ -16977,6 +17000,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.77.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.76.0...v2.77.0
 [2.76.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.75.0...v2.76.0
 [2.75.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.74.0...v2.75.0
 [2.74.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.73.0...v2.74.0

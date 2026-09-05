@@ -444,7 +444,9 @@ checker may still underline them as unknown; the popup is right.
 **Point an agent at your IDE.** Tools ▸ Agent Port (MCP)… starts a
 local server that an AI agent (anything that speaks MCP) can connect
 to and READ your project's live state — what's aimed, what's serving,
-what failed last, what the linters found, what's on the rack. It is
+what's running (every command the toolbar ■ would stop, with when it
+started), what failed last, what the linters found, what's on the
+rack. It is
 off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the
 dialog. It is strictly read-only: nothing an agent asks can run a
@@ -454,7 +456,8 @@ answers (not just text) and can start with the `ide_context` tool for
 a one-call overview; every tool is annotated read-only so a well-behaved
 agent knows it can call them freely. It is a complete MCP server —
 besides tools it exposes **resources** (browsable URIs like
-`nmox://context` and `nmox://diagnostics` an agent attaches as context)
+`nmox://context`, `nmox://runs` and `nmox://diagnostics` an agent
+attaches as context)
 and **prompts** (ready-made templates like *Diagnose the last failure*
 that fold your IDE's live state into the question), so it drops into
 any MCP client the idiomatic way.
@@ -770,7 +773,10 @@ press buttons and flip toggles. Every knob, button, LED, LCD and meter
 on all 53 devices reports its name, role, value and state to assistive
 technology, so screen readers announce the rack the way they announce
 native controls. (With a control focused, Tab traverses; use the
-toolbar's Rear toggle to flip the rack.)
+toolbar's Rear toggle to flip the rack.) The same name law covers every
+window the product opens — the Workbench, the studios, the explorers,
+the Welcome, IRC, the Tests window: every button they paint carries an
+accessible name, and a window added without one fails the build.
 
 ![Keyboard focus on the rack: a focus ring on DYNAMO's GO button after tabbing from the RUNNER knob](images/a11y-knob-focus.png)
 

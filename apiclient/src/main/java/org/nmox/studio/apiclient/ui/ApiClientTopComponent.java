@@ -185,6 +185,22 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JPanel testResults = new JPanel();
     private final JPanel standardsPanel = new JPanel();
 
+    /**
+     * The platform's menu-shortcut modifier (⌘ on macOS, Ctrl elsewhere).
+     * A headless JVM has no toolkit and no key events, so any mask serves
+     * there — the cross-platform default — which is what lets the window
+     * be CONSTRUCTED headless at all (v2.77.0: the name-law contract
+     * could not reach this window while the ctor threw HeadlessException;
+     * the RackTopComponent idiom).
+     */
+    private static int menuMask() {
+        try {
+            return java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (java.awt.HeadlessException ex) {
+            return java.awt.event.InputEvent.CTRL_DOWN_MASK;
+        }
+    }
+
     public ApiClientTopComponent() {
         setName(Bundle.CTL_ApiClientTopComponent());
         setToolTipText(Bundle.HINT_ApiClientTopComponent());
@@ -216,7 +232,7 @@ public final class ApiClientTopComponent extends TopComponent {
         // platform Keymaps profile (the v1.38.1 shortcut-theft class
         // lives in Shortcuts/, not here). It mirrors the button exactly:
         // while a send is in flight the same chord cancels it.
-        int menuMask = java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        int menuMask = menuMask();
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 javax.swing.KeyStroke.getKeyStroke(
                         java.awt.event.KeyEvent.VK_ENTER, menuMask),
@@ -969,7 +985,7 @@ public final class ApiClientTopComponent extends TopComponent {
         // the tree so it can't shadow an editor binding elsewhere
         tree.getInputMap().put(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_D,
-                java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                menuMask()),
                 "nmox-duplicate");
         tree.getActionMap().put("nmox-duplicate", new javax.swing.AbstractAction() {
             @Override
@@ -1284,7 +1300,7 @@ public final class ApiClientTopComponent extends TopComponent {
         // ⌘F / Ctrl+F in the body focuses the find field — the muscle memory
         responseBody.getInputMap().put(javax.swing.KeyStroke.getKeyStroke(
                 java.awt.event.KeyEvent.VK_F,
-                java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                menuMask()),
                 "nmox-find-in-body");
         responseBody.getActionMap().put("nmox-find-in-body", new javax.swing.AbstractAction() {
             @Override

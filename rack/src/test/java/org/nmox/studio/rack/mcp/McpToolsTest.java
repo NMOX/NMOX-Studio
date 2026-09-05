@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
+import org.nmox.studio.core.spi.LiveRuns;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
@@ -21,6 +23,24 @@ import static org.assertj.core.api.Assertions.assertThat;
  * snapshot into one call.
  */
 class McpToolsTest {
+
+    @AfterEach
+    void drainRuns() {
+        LiveRuns.stopAll();
+    }
+
+    @Test
+    @DisplayName("live_runs structures each live run with its label and since-when (v2.77.0)")
+    void liveRuns() {
+        LiveRuns.add(new LiveRuns.Run("ide-run:/tmp/mcp#1", "Run \u2014 shop", () -> { }));
+        JSONObject s = McpTools.liveRuns(LiveRuns.live());
+        JSONObject run = s.getJSONArray("runs").getJSONObject(0);
+        assertThat(run.getString("label")).isEqualTo("Run \u2014 shop");
+        assertThat(run.getString("since")).startsWith("since ");
+        assertThat(run.getLong("startedAt")).isPositive();
+        assertThat(Texts.of(s)).startsWith("Run \u2014 shop (since ");
+        assertThat(Texts.of(McpTools.liveRuns(List.of()))).isEqualTo("Nothing is running.");
+    }
 
     @Test
     @DisplayName("project_state is structured and the text is derived from it")
@@ -107,25 +127,28 @@ class McpToolsTest {
                 () -> new File("/tmp/proj"),
                 List.of(new ServingRegistry.Serving("d", "Vite", "http://x",
                         ServingRegistry.Kind.WEB, new File("/tmp/proj"))),
+                List.of(new LiveRuns.Run("ide-run:/tmp/proj#1", "Run \u2014 proj", () -> { })),
                 Optional.of(new FailureContext("VERITAS", "npm test", 1,
                         List.of("boom"), "proj", 1L)),
                 Map.of("eslint", List.of(new DiagnosticsBus.Problem(
                         new File("a.js"), 1, "x", true))));
         assertThat(s.getString("project")).isEqualTo("proj");
         assertThat(s.getInt("serverCount")).isEqualTo(1);
+        assertThat(s.getInt("runCount")).isEqualTo(1);
         assertThat(s.getString("lastFailureDevice")).isEqualTo("VERITAS");
         assertThat(s.getInt("diagnosticCount")).isEqualTo(1);
         assertThat(Texts.of(s)).contains("Project: proj")
-                .contains("Serving: 1 server").contains("on VERITAS");
+                .contains("Serving: 1 server").contains("Running: 1 command")
+                .contains("on VERITAS");
     }
 
     @Test
-    @DisplayName("The production roster is the six read-only tools, each fully described")
+    @DisplayName("The production roster is the seven read-only tools, each fully described")
     void productionRoster() {
         McpTools tools = McpTools.production();
         assertThat(tools.all()).extracting(McpTools.Tool::name)
                 .containsExactly("ide_context", "project_state", "live_servers",
-                        "last_failure", "diagnostics", "rack_devices");
+                        "live_runs", "last_failure", "diagnostics", "rack_devices");
         // every tool carries a title, a real input schema, and an output schema
         tools.all().forEach(t -> {
             assertThat(t.title()).isNotBlank();

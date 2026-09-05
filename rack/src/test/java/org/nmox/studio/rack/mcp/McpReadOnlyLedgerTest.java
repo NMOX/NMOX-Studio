@@ -26,7 +26,11 @@ class McpReadOnlyLedgerTest {
     private static final List<String> FORBIDDEN = List.of(
             "CommandExecutor", "ProcessSupport", "ProcessBuilder",
             "Runtime.getRuntime", ".exec(", "Files.write", "Files.newOutputStream",
-            "Files.newBufferedWriter", "WorkspaceTrust", "requestTrust");
+            "Files.newBufferedWriter", "WorkspaceTrust", "requestTrust",
+            // the run registry's write half (v2.77.0): live_runs LISTS, the
+            // \u25a0 stops — an agent that may stop the user's server is a v2
+            // execution surface with its own consent design
+            "LiveRuns.stop", "LiveRuns.remove");
 
     private static Path mcpDir() {
         return Path.of("src/main/java/org/nmox/studio/rack/mcp");

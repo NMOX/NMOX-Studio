@@ -34,7 +34,7 @@ final class McpPrompts {
                     + "next step to fix it?"),
             new Template("review_setup", "Review what's running",
                     "Asks for a sanity check of the current dev setup — the "
-                    + "aimed project and everything serving.",
+                    + "aimed project, everything serving, everything running.",
                     "ide_context",
                     "This is my current development setup in NMOX Studio:\n\n"
                     + "{state}\n\nDoes anything look off or worth checking?"));
