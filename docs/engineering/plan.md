@@ -3778,3 +3778,17 @@ the run's own Stop (the v2.82.0 law's sibling); `initialize`'s
 instructions name every tool, pinned; the tutorial's dialog shot with
 the token redacted under the forge property, pinned by a real-port
 test — a screenshot is a file that outlives the port.
+
+**The shift's shape (for the next one).** Twenty-eight units between
+15:15 and the fold, one worktree, one verify, one gate. What the clock
+bought: the insurance verify at 17:44 — twelve minutes that found two
+SpotBugs findings the unit tests never see (a lazily published
+scheduler, DC_PARTIALLY_CONSTRUCTED) three hours before the chain
+would have died on them. What the walks bought: three instances,
+every one with a find the tests had blessed (a stop recorded as a
+failure; a dialog that outgrew its screen clamp; a process name that
+changed under the automation). The rhythm to keep: build with tests
+→ mutants → walk on the assembled bytes every four or five units →
+an insurance verify at mid-shift → fold at T-2h → the single chain →
+the next shift's branch forked from the shipped head while the gate
+runs.
