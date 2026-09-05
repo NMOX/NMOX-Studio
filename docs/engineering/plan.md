@@ -3416,7 +3416,17 @@ Explorer add on open and remove on close; StopRunAction's one listener
 lives for the session, blessed — one toolbar action per JVM);
 `SCRIPT_BY_RUN` entries drop at exit so `runningSince` can never name a
 finished run; the tooltip's since string is local-zone by the v2.73.0
-rule.
+rule. **One flake recorded, not excused:** v2.76.0's first windows
+lane failed WorkbenchRunningRowsTest on the serving row's Open button
+(the run's row, the Stop button and the RUNNING section all present;
+the serving absent from the snapshot the refresh read); the same test
+was green on the previous windows lane, is green 8/8 locally in the
+lane's own alphabetical order, and touches no code this batch or the
+last changed. Rerun on the same sha before the tag, per the v2.21.4
+law. If it recurs, the suspect is the refresh reading
+LiveServings.find() before the registry's notifier has delivered —
+a drain that makes it deterministic is the tell of a real race
+(flaky-test-can-hide-a-real-bug).
 
 **No walk this batch.** The MCP surface is proven by the schema
 contract and the protocol tests over the real server; the window
