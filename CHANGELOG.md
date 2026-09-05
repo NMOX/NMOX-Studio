@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.74.0] - 2026-09-05
+
+The parallel batch — forked from the long shift's head while that PR
+gated, its units written beside the pipeline's wait (David: "I'll bet
+there are some things you could do in parallel").
+
+1. **The ■ is total** — every rack device run registers with the ■'s
+   registry on exec (under the device's title) and leaves on exit; an
+   outside stop (■, RUNNING row, ⌘I) routes through the device's own
+   user-stop so the faceplate reads STOPPED; the ledger exemption
+   withdrawn; proven against a real process. A device run owns the
+   serving its bus announced — one Workbench row, not two.
+2. **Workbench rows are real buttons** — every row's title is a
+   focusable button named "title — subtitle": Tab reaches it, Enter
+   opens it, a screen reader reads it; the panel's click stays.
+3. **The review's finds** — one live balloon per wall (three refused
+   presses stacked three bell entries); PREFLIGHT's outside stop read
+   FAILED (its verdict flag lives on its own door — one user-stop both
+   doors call); the NPM Explorer's tree runs the selected script on
+   Enter.
+4. **Ledger 87 amended, docs, the walk, this entry.**
+
 ## [2.73.0] - 2026-09-05
 
 The long shift — one several-hour batch, one release (David: work
@@ -16914,6 +16936,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.74.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.73.0...v2.74.0
 [2.73.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.72.0...v2.73.0
 [2.72.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.71.0...v2.72.0
 [2.71.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.70.0...v2.71.0
