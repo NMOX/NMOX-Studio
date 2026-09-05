@@ -64,6 +64,11 @@ class DeviceRunsJoinTheStopTest {
         }
     }
 
+    /** Every device exec registers now, so other rack tests' runs may be live too: pick OURS by label. */
+    private static boolean isOurs(LiveRuns.Run r) {
+        return r.id().startsWith("device:") && r.label().startsWith("SLEEPER — ");
+    }
+
     private static boolean stopRequested(CommandDevice d) throws Exception {
         Field f = CommandDevice.class.getDeclaredField("stopRequested");
         f.setAccessible(true);
@@ -92,9 +97,9 @@ class DeviceRunsJoinTheStopTest {
         try {
             rack.addDevice(device);
             device.primaryAction();
-            assertThat(poll(() -> LiveRuns.live().stream().anyMatch(r -> r.id().startsWith("device:")), 5_000))
+            assertThat(poll(() -> LiveRuns.live().stream().anyMatch(r -> isOurs(r)), 5_000))
                     .as("the run is in the ■'s registry").isTrue();
-            LiveRuns.Run run = LiveRuns.live().stream().filter(r -> r.id().startsWith("device:")).findFirst().orElseThrow();
+            LiveRuns.Run run = LiveRuns.live().stream().filter(r -> isOurs(r)).findFirst().orElseThrow();
             assertThat(run.label()).isEqualTo("SLEEPER — sh");
             assertThat(poll(() -> Files.exists(device.started), 10_000)).as("a REAL process ran (the marker)").isTrue();
             assertThat(device.runningNow()).as("… and is still up").isTrue();
@@ -103,7 +108,7 @@ class DeviceRunsJoinTheStopTest {
             assertThat(stopRequested(device)).as("the outside stop is the USER's stop: the verdict reads STOPPED").isTrue();
             assertThat(device.finished.await(10, TimeUnit.SECONDS)).as("the process died and the exit handler ran").isTrue();
             assertThat(CommandDevice.stoppedByUserOrSignal(true, device.exitCode)).isTrue();
-            assertThat(poll(() -> LiveRuns.live().stream().noneMatch(r -> r.id().startsWith("device:")), 5_000))
+            assertThat(poll(() -> LiveRuns.live().stream().noneMatch(r -> isOurs(r)), 5_000))
                     .as("the exit withdrew the run").isTrue();
         } finally {
             rack.shutdown();
