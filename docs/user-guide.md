@@ -451,7 +451,8 @@ started), what you have open in the editor (the active file, unsaved
 tabs flagged), where a name is declared (`find_symbol` answers from
 the same Go to Symbol index as ⌥⇧⌘O), one file's structure
 (`outline`, the Navigator's own items), which lines contain a literal
-(`search_text`, bounded and every cap reported), what failed last,
+(`search_text`, bounded, every cap reported, and `.env` files, rc
+tokens and private keys never searched), what failed last,
 what the linters found, what's on the rack. It is
 off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the

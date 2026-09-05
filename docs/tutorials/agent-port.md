@@ -52,7 +52,7 @@ real output by the build), and is annotated `readOnlyHint: true`.
 | `diagnostics` | What the linters and checkers currently report | `file` (substring filter) |
 | `find_symbol` | Where a name is declared — the same index as Go to Symbol (⌥⇧⌘O) | `query`, `limit` |
 | `outline` | One file's structure — the Navigator's own items | `file` |
-| `search_text` | Lines containing a literal, case-insensitive, bounded and every cap reported | `query`, `limit` |
+| `search_text` | Lines containing a literal, case-insensitive, bounded and every cap reported; `.env` files, package-manager rc files and private keys are never searched | `query`, `limit` |
 | `editor_state` | The file being edited (the focused editor tab, else the one showing in the editor area) and every open tab, unsaved ones flagged | — |
 | `rack_devices` | The devices mounted on the task rack, in order | — |
 
@@ -135,6 +135,8 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 | Read `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Ask `where_is` without `name` | `-32602`, naming the missing argument |
 | Ask for a file outside the project (`../../.zshrc`) | `outline` refuses — *outside the aimed project* — and never reads it |
+| Search for a value that lives in `.env`, `.npmrc`, or a `.pem` | nothing — those files are never searched, never counted, never completed; the IDE's own env law (a key's name, never its value) holds for agents too |
+| Set the log level to `loud` | `-32602`, naming the eight levels |
 | Ask it to run, write, or stop anything | there is no such tool; the ledger test keeps it that way |
 
 That last row is the design. An agent that can run your server can also

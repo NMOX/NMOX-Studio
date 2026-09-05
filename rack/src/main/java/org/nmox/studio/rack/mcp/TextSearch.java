@@ -34,7 +34,34 @@ final class TextSearch {
             "node_modules", ".git", "dist", "build", "coverage", "target",
             "out", "vendor", ".next", ".nuxt", ".svelte-kit", "__pycache__");
 
+    /** Files that exist to hold secrets: never searched, never listed (v2.84.0). */
+    static final Set<String> SECRET_NAMES = Set.of(
+            ".npmrc", ".yarnrc", ".yarnrc.yml", ".netrc", ".git-credentials", ".pypirc",
+            "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519");
+    static final Set<String> SECRET_EXTENSIONS = Set.of(
+            "pem", "key", "p12", "pfx", "jks", "keystore", "ppk");
+
     private TextSearch() {
+    }
+
+    /**
+     * Whether a file is one the product never reads on an agent's behalf:
+     * the .env family (the editor's own env law — an agent may learn a
+     * KEY's name through the IDE, never its value), package-manager rc
+     * files that carry auth tokens, and private keys / certificates. A
+     * search that could return {@code API_KEY=…} is a disclosure, so the
+     * answer is total: not searched, not counted, not completable.
+     */
+    static boolean isSecretBearing(String fileName) {
+        String n = fileName.toLowerCase(Locale.ROOT);
+        if (n.equals(".env") || n.startsWith(".env.")) {
+            return true;
+        }
+        if (SECRET_NAMES.contains(n)) {
+            return true;
+        }
+        int dot = n.lastIndexOf('.');
+        return dot > 0 && SECRET_EXTENSIONS.contains(n.substring(dot + 1));
     }
 
     /** One hit: file relative to the root, 1-based line, the clipped line text. */
@@ -106,7 +133,7 @@ final class TextSearch {
                         break;
                     }
                 }
-                if (skipped) {
+                if (skipped || isSecretBearing(p.getFileName().toString())) {
                     continue;
                 }
                 if (into.size() >= MAX_FILES) {

@@ -557,7 +557,8 @@ build-failing ledger bans every spawn, write and stop primitive from
 the package. Twelve typed tools (`ide_context` for the whole picture;
 `project_state`, `live_servers`, `live_runs`, `run_history`,
 `last_failure`, `diagnostics`, `find_symbol`, `outline`,
-`search_text`, `editor_state`, `rack_devices`), the same answers as
+`search_text` — which never reads `.env` files, rc tokens or private
+keys — `editor_state`, `rack_devices`), the same answers as
 `nmox://` resources (with templates for the two that take an
 argument), prompts that fold live state into the question, and argument
 completion for the prompt and template that take one; an agent can
