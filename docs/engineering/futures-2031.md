@@ -117,6 +117,10 @@ becomes a liability on a schedule someone else controls.
 law-dense corner of the product (ledgers 81/83, the workspace-kind
 partition). The watch trigger is written at the pin: when ngserver
 gains native-TS support, the ceiling moves as its own gauntleted arc.
+**Measured 2026-09-05 (v2.72.0):** `@typescript/native-preview` on npm
+is `7.0.0-dev.20260707.2` (still a dev tag, no stable 7.0), shipping one
+binary, `tsgo`; no `tsserverlibrary.js`, so the ngserver pin (TS 5)
+still binds. Watch stays RECORDED; re-measure when a non-dev tag lands.
 
 ### F7 — TypeScript runs without a build. — DELIVERED (v2.69.0, the run lane)
 
