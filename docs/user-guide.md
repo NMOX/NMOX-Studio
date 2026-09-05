@@ -185,7 +185,10 @@ on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
 command the product starts for you: the ▶'s runs, a script
 double-clicked in the **NPM Explorer** or run from a package.json line
-(Run Script), and a Focused Test or a Tests-window run. A script the
+(Run Script), a Focused Test or a Tests-window run, and — since
+v2.74.0 — every rack device's run too (a device stopped this way reads
+STOPPED on its faceplate, as if you had pressed its own STOP); the
+Workbench's RUNNING section and ⌘I list them all. A script the
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running** on its
 row, offers **Stop Script** on right-click, and refuses to start a

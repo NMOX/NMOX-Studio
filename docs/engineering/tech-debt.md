@@ -22,7 +22,15 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
-### 87. Two stop registries, two populations — BLESSED (2026-09-05, v2.72.0)
+### 87. Two stop registries, two populations — BLESSED (2026-09-05, v2.72.0; amended v2.74.0: the ■ is TOTAL)
+
+*Amendment (v2.74.0):* the rack's device runs joined `LiveRuns` too —
+every `RackDevice.exec` registers under the device's title and an
+outside stop routes through `CommandDevice.stopByUser` so the verdict
+reads STOPPED. "Stop every running command" now means every one; the
+faceplate STOP and the rack's Stop All stay. The platform's Run menu
+population is unchanged (project actions only). The ledger test's
+RackDevice exemption is withdrawn.
 
 The toolbar ■ stops everything registered with `core.spi.LiveRuns`
 (the ▶'s runs, NPM Explorer scripts, Focused Test / Tests-window runs,
