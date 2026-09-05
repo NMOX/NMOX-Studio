@@ -47,7 +47,8 @@ class SpawnTrustGateTest {
     @DisplayName("NpmService.runCommand requests trust BEFORE it spawns the script")
     void npmServiceGatesBeforeSpawn() throws Exception {
         String src = read("src/main/java/org/nmox/studio/tools/npm/NpmService.java");
-        int m = src.indexOf("private CompletableFuture<String> runCommand(");
+        // package-private since v2.70.0: the lane test spawns through it for real
+        int m = src.indexOf("    CompletableFuture<String> runCommand(File workingDir, String... command) {");
         assertThat(m).as("runCommand exists").isPositive();
         String body = src.substring(m, src.indexOf("\n    }\n", m));
         // v1.114.0: the spawn is CommandExecutor.run (streams via its own

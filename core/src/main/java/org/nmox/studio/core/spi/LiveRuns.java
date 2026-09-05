@@ -1,4 +1,4 @@
-package org.nmox.studio.tools.npm;
+package org.nmox.studio.core.spi;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -7,13 +7,17 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * The IDE's own running commands (Run/Build/Test/Clean from the toolbar and
- * the Run menu), so a Stop can find them. David's walk of 2.69.8: the ▶
- * started a server and nothing on screen stopped it — the only stop was the
- * Cancel inside the status-bar progress popup, which nobody finds. Pure
- * registry: add on spawn, remove on exit, {@link #stopAll()} kills every
- * live one through its killer; listeners follow the count (any thread —
- * the toolbar action marshals to the EDT itself).
+ * The IDE's own running commands, so a Stop can find them: Run/Build/
+ * Test/Clean from the toolbar and the Run menu (v2.69.10), NPM Explorer's
+ * and Run Script's spawns, and the editor's Focused Test / Tests-window
+ * runs (v2.70.0 — the registry moved here from the tools module so the
+ * editor lane could join; a pure registry has no module to belong to).
+ * David's walk of 2.69.8: the ▶ started a server and nothing on screen
+ * stopped it — the only stop was the Cancel inside the status-bar
+ * progress popup, which nobody finds. Add on spawn, remove on exit,
+ * {@link #stopAll()} kills every live one through its killer; listeners
+ * follow the count (any thread — the toolbar action marshals to the EDT
+ * itself).
  */
 public final class LiveRuns {
 

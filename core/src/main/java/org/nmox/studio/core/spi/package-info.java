@@ -17,7 +17,10 @@
  * listeners), {@code LiveServings} (dev servers currently running),
  * {@code TrustGate} (workspace-trust checks for modules that spawn
  * project-controlled code), and {@code OracleAsk} (text-only questions
- * to the AI device). The frozen third-party Device SPI lives one level
+ * to the AI device). One resident is not a seam but a shared registry:
+ * {@code LiveRuns} (the IDE's own running commands, so the toolbar ■ can
+ * stop a run spawned by any module — a pure class with no module to
+ * belong to, v2.70.0). The frozen third-party Device SPI lives one level
  * down in {@code core.spi.device} and has its own package doc.
  */
 package org.nmox.studio.core.spi;

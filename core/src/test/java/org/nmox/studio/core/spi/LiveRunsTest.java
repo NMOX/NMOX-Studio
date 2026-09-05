@@ -1,4 +1,4 @@
-package org.nmox.studio.tools.npm;
+package org.nmox.studio.core.spi;
 
 import java.util.ArrayList;
 import java.util.List;

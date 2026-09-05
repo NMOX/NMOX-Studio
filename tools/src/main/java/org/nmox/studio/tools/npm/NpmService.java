@@ -1,5 +1,6 @@
 package org.nmox.studio.tools.npm;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -155,7 +156,7 @@ public class NpmService {
     /** Cap on the in-memory output accumulator — a runaway build can't OOM. */
     private static final int MAX_OUTPUT_CHARS = 4 * 1024 * 1024;
 
-    private CompletableFuture<String> runCommand(File workingDir, String... command) {
+    CompletableFuture<String> runCommand(File workingDir, String... command) {
         // npm install runs pre/postinstall lifecycle scripts and
         // `npm run <script>` runs the package.json script body — all
         // PROJECT-controlled, i.e. attacker code in a cloned repo.
