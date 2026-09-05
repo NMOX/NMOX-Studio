@@ -70,6 +70,16 @@ two templates for the tools that take an argument:
 `nmox://outline/{file}` and `nmox://search/{query}` (percent-encoded).
 A resource's text is its tool's structured JSON, byte for byte.
 
+An agent that would rather be told than ask again can **subscribe**:
+`resources/subscribe` on any of those URIs, and the port's GET stream
+(Streamable HTTP's server-to-client channel, `Accept:
+text/event-stream`, same token, no `Origin`) carries a
+`notifications/resources/updated` frame the moment the thing behind it
+changes — a run starts and `nmox://runs` is announced, a server goes
+live and `nmox://servers` is, a linter reports and `nmox://diagnostics`
+is; `nmox://context` follows all of them. The frame names the URI and
+nothing else; the agent re-reads what it cares about.
+
 Three prompts fold live state into a question: `diagnose_failure`
 (the last failure), `review_setup` (the whole context), and `where_is`
 — the one that takes an argument, `name` — which folds the symbol hits
@@ -95,7 +105,8 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 |--------|---------------|
 | Call without the token, or with a stale one | `401` — nothing else, not even the tool list |
 | Call from a page in a browser (any `Origin`) | `403` |
-| Anything but `POST` | refused; the port is a request/response server, not a page |
+| A plain `GET` | `405` — the port is not a page; only the SSE `GET` (with `Accept: text/event-stream`) is served, as the subscription stream |
+| Subscribe to `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Read `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Ask `where_is` without `name` | `-32602`, naming the missing argument |
 | Ask for a file outside the project (`../../.zshrc`) | `outline` refuses — *outside the aimed project* — and never reads it |
