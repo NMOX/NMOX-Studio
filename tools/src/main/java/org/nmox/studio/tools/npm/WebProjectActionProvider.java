@@ -107,6 +107,13 @@ final class WebProjectActionProvider implements ActionProvider {
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.message(dir));
             return;
         }
+        // the third wall (v2.73.0): a Node Run with declared, uninstalled
+        // dependencies is refused out loud and pointed at Install; Build/
+        // Test/Clean pass — a Build may be the thing that installs
+        if (ActionProvider.COMMAND_RUN.equals(command) && InstallGuard.needsInstall(dir)) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.needsInstallMessage(dir));
+            return;
+        }
         // The platform invokes us on the EDT; the fork (pb.start inside
         // CommandExecutor.run) and everything around it ride a named lane
         // (v2.70.0 — the v1.57.0 class: the rack's RUN buttons left the
@@ -212,6 +219,9 @@ final class WebProjectActionProvider implements ActionProvider {
                     if (exit == -1) {
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
                                 LaunchFailure.status(label));
+                        // and a balloon with the door (v2.73.0): the status
+                        // line fades, the bell keeps the link
+                        LaunchFailure.notify(label);
                     }
                     org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
                     // a phantom serving outlives nothing: the gate drops

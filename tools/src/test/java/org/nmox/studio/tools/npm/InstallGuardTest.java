@@ -36,14 +36,36 @@ class InstallGuardTest {
     }
 
     @Test
+    @DisplayName("needsInstall: declared dependencies with no node_modules; a bare project, an installed one, or a malformed manifest never (v2.73.0)")
+    void needsInstall(@org.junit.jupiter.api.io.TempDir Path dir) throws Exception {
+        File d = dir.toFile();
+        assertThat(InstallGuard.needsInstall(d)).as("no package.json").isFalse();
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"x\",\"scripts\":{\"start\":\"node a.js\"}}");
+        assertThat(InstallGuard.needsInstall(d)).as("nothing declared").isFalse();
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"x\",\"dependencies\":{}}");
+        assertThat(InstallGuard.needsInstall(d)).as("an empty dependencies object").isFalse();
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"x\",\"dependencies\":{\"express\":\"^5\"}}");
+        assertThat(InstallGuard.needsInstall(d)).as("declared, uninstalled").isTrue();
+        Files.writeString(dir.resolve("package.json"), "{\"name\":\"x\",\"devDependencies\":{\"vitest\":\"^3\"}}");
+        assertThat(InstallGuard.needsInstall(d)).as("devDependencies count too").isTrue();
+        Files.createDirectories(dir.resolve("node_modules"));
+        assertThat(InstallGuard.needsInstall(d)).as("installed").isFalse();
+        Files.writeString(dir.resolve("package.json"), "{not json");
+        assertThat(InstallGuard.needsInstall(d)).as("malformed is not this wall").isFalse();
+        assertThat(InstallGuard.needsInstallMessage(d)).contains(d.getName()).contains("NPM Explorer ▸ Install");
+    }
+
+    @Test
     @DisplayName("both lanes consult the guard before they spawn (source law)")
     void bothLanesConsultTheGuard() throws Exception {
         for (String f : List.of("NpmService.java", "WebProjectActionProvider.java")) {
             String src = Files.readString(Path.of("src/main/java/org/nmox/studio/tools/npm/" + f));
             int guard = src.indexOf("InstallGuard.installing(");
+            int wall = src.indexOf("InstallGuard.needsInstall(");
             int spawn = src.indexOf("CommandExecutor.run(");
             assertThat(guard).as(f + " consults the guard").isPositive();
             assertThat(guard).as(f + ": before the spawn").isLessThan(spawn);
+            assertThat(wall).as(f + " consults the third wall, before the spawn (v2.73.0)").isPositive().isLessThan(spawn);
         }
     }
 }
