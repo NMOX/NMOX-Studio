@@ -205,6 +205,14 @@ final class WebProjectActionProvider implements ActionProvider {
                     ph.finish();
                     item.finished();
                     LiveRuns.remove(servingId);
+                    // a launch that never started (exit -1: the tool is not on
+                    // PATH — the beginner's commonest wall) speaks on the status
+                    // line and names the two places that hold the answer
+                    // (v2.73.0); the Output tab carries the friendly reason
+                    if (exit == -1) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                LaunchFailure.status(label));
+                    }
                     org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
                     // a phantom serving outlives nothing: the gate drops
                     // with the process (the v1.65.1 deregister-on-stop law)
