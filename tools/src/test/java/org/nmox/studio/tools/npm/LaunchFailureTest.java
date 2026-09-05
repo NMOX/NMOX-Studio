@@ -18,6 +18,18 @@ class LaunchFailureTest {
     }
 
     @Test
+    @DisplayName("the balloon names the run, points at Output, and its action id is the Doctor's real registration")
+    void balloon() throws Exception {
+        assertThat(LaunchFailure.title("Run — shop")).isEqualTo("Run — shop didn't start");
+        assertThat(LaunchFailure.detail("Run — shop")).contains("Output ▸ Rack: Run — shop").contains("Environment Doctor");
+        String doctor = Files.readString(Path.of("../ui/src/main/java/org/nmox/studio/ui/actions/EnvironmentDoctorAction.java"));
+        assertThat(doctor).as("the id the balloon resolves is the Doctor's own @ActionID (source, not a sibling's target/)")
+                .contains("@ActionID(category = \"" + LaunchFailure.DOCTOR_CATEGORY + "\", id = \"" + LaunchFailure.DOCTOR_ID + "\")");
+        String provider = Files.readString(Path.of("src/main/java/org/nmox/studio/tools/npm/WebProjectActionProvider.java"));
+        assertThat(provider).contains("LaunchFailure.notify(label)");
+    }
+
+    @Test
     @DisplayName("the ▶'s exit handler speaks it on exit -1, after the run leaves the ■")
     void wiredAtTheExitHandler() throws Exception {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/tools/npm/WebProjectActionProvider.java"));
