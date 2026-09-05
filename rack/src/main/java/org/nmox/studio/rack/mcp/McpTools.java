@@ -225,7 +225,29 @@ public final class McpTools {
         return new JSONObject()
                 .put("project", nullableString())
                 .put("directory", nullableString())
-                .put("gitBranch", nullableString());
+                .put("gitBranch", nullableString())
+                // v2.81.0: the toolchain the IDE detected (a ProjectKind name)
+                // and, for the Node family, the package manager the project's
+                // own contract names — null where nothing is aimed
+                .put("kind", nullableString())
+                .put("packageManager", nullableString());
+    }
+
+    /** The run_history object (v2.81.0): the flight recorder's launches and exits, newest first. */
+    private static JSONObject historyObject() {
+        JSONObject event = objectSchema(new JSONObject()
+                .put("at", type("integer"))
+                .put("device", type("string"))
+                .put("kind", type("string").put("enum",
+                        new JSONArray().put("launched").put("ok").put("failed")))
+                .put("text", type("string"))
+                .put("durationMs", new JSONObject().put("type", new JSONArray().put("integer").put("null")))
+                .put("exitCode", new JSONObject().put("type", new JSONArray().put("integer").put("null"))),
+                req("at", "device", "kind", "text", "durationMs", "exitCode"));
+        return objectSchema(new JSONObject()
+                .put("events", arrayOf(event))
+                .put("truncated", type("boolean")),
+                req("events", "truncated"));
     }
 
     private static JSONObject diagnosticsObject() {
@@ -263,8 +285,8 @@ public final class McpTools {
                 .put("lastFailureDevice", nullableString())
                 .put("lastFailure", failureObject())
                 .put("diagnosticCount", type("integer")),
-                req("project", "directory", "gitBranch", "serverCount",
-                        "servers", "runCount", "runs", "activeFile",
+                req("project", "directory", "gitBranch", "kind", "packageManager",
+                        "serverCount", "servers", "runCount", "runs", "activeFile",
                         "lastFailureDevice", "lastFailure", "diagnosticCount"));
         return new McpTools(List.of(
                 new Tool("ide_context",
@@ -281,8 +303,18 @@ public final class McpTools {
                         "The aimed project: name, directory, and git branch.",
                         noArgs(),
                         objectSchema(projectProperties(),
-                                req("project", "directory", "gitBranch")),
+                                req("project", "directory", "gitBranch", "kind", "packageManager")),
                         args -> render(projectState(defaultAim()))),
+                new Tool("run_history",
+                        "Run history",
+                        "What ran lately: the flight recorder's launches and exits "
+                        + "(device, command, exit code, duration), newest first. Pass "
+                        + "\"limit\" (default 20, max 100).",
+                        objectSchema(new JSONObject().put("limit", type("integer").put("description",
+                                "Most events to return (default 20, max 100)."))),
+                        historyObject(),
+                        args -> render(runHistory(FlightRecorder.getDefault().timeline(),
+                                args == null ? 20 : args.optInt("limit", 20)))),
                 new Tool("live_servers",
                         "Live servers",
                         "Every dev server the IDE knows is serving right now, with its URL.",
@@ -383,18 +415,87 @@ public final class McpTools {
     // ---- the pure, structured builders (one source of truth) ---------------
 
     static JSONObject projectState(Supplier<File> aim) {
+        return projectState(aim, McpTools::kindOf, McpTools::packageManagerOf);
+    }
+
+    /** The project fields with the detectors as seams (v2.81.0): the real
+     *  ones walk the directory's manifests, the tests hand in answers. */
+    static JSONObject projectState(Supplier<File> aim,
+            Function<File, String> kindOf, Function<File, String> packageManagerOf) {
         File dir = aim.get();
         JSONObject o = new JSONObject();
         if (dir == null) {
             return o.put("project", JSONObject.NULL)
                     .put("directory", JSONObject.NULL)
-                    .put("gitBranch", JSONObject.NULL);
+                    .put("gitBranch", JSONObject.NULL)
+                    .put("kind", JSONObject.NULL)
+                    .put("packageManager", JSONObject.NULL);
         }
         File repo = GitFacts.repoRoot(dir);
         String branch = repo == null ? null : GitFacts.branch(repo);
+        String kind = kindOf.apply(dir);
+        String pm = packageManagerOf.apply(dir);
         return o.put("project", dir.getName())
                 .put("directory", dir.getAbsolutePath())
-                .put("gitBranch", branch == null ? JSONObject.NULL : branch);
+                .put("gitBranch", branch == null ? JSONObject.NULL : branch)
+                .put("kind", kind == null ? JSONObject.NULL : kind)
+                .put("packageManager", pm == null ? JSONObject.NULL : pm);
+    }
+
+    private static String kindOf(File dir) {
+        org.nmox.studio.rack.devices.ProjectInspector.ProjectKind k =
+                org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
+        return k == null ? null : k.name();
+    }
+
+    /** The package manager only where a Node contract exists — a package.json under the aim. */
+    private static String packageManagerOf(File dir) {
+        return new File(dir, "package.json").isFile()
+                ? org.nmox.studio.rack.devices.ProjectInspector.nodePackageManager(dir) : null;
+    }
+
+    /** run_history: launches and exits newest first, ERROR lines left out (they belong to last_failure). */
+    static JSONObject runHistory(List<FlightRecorder.Event> timeline, int limit) {
+        int cap = Math.max(1, Math.min(100, limit));
+        JSONArray events = new JSONArray();
+        boolean truncated = false;
+        for (int i = timeline.size() - 1; i >= 0; i--) {
+            FlightRecorder.Event e = timeline.get(i);
+            if (e.kind() == FlightRecorder.Kind.ERROR) {
+                continue;
+            }
+            if (events.length() >= cap) {
+                truncated = true;
+                break;
+            }
+            boolean exit = e.kind() != FlightRecorder.Kind.LAUNCH;
+            // an exit row names the COMMAND that exited — the device's latest
+            // launch at or before it (last_failure's own rule) — not the
+            // recorder's "[exit N]" line; the exit code has its own field
+            String text = e.text();
+            if (exit) {
+                text = "";
+                for (int j = i - 1; j >= 0; j--) {
+                    FlightRecorder.Event l = timeline.get(j);
+                    if (l.device().equals(e.device()) && l.kind() == FlightRecorder.Kind.LAUNCH) {
+                        text = l.text();
+                        break;
+                    }
+                }
+            }
+            events.put(new JSONObject()
+                    .put("at", e.at())
+                    .put("device", e.device())
+                    .put("kind", switch (e.kind()) {
+                        case LAUNCH -> "launched";
+                        case EXIT_OK -> "ok";
+                        default -> "failed";
+                    })
+                    .put("text", text)
+                    .put("durationMs", exit && e.durationMs() >= 0 ? (Object) e.durationMs() : JSONObject.NULL)
+                    .put("exitCode", exit ? (Object) FlightRecorder.parseExit(e.text()) : JSONObject.NULL));
+        }
+        return new JSONObject().put("events", events).put("truncated", truncated);
     }
 
     static JSONObject liveServers(List<ServingRegistry.Serving> snapshot) {
@@ -546,6 +647,8 @@ public final class McpTools {
                 .put("project", project.get("project"))
                 .put("directory", project.get("directory"))
                 .put("gitBranch", project.get("gitBranch"))
+                .put("kind", project.get("kind"))
+                .put("packageManager", project.get("packageManager"))
                 .put("serverCount", servings.size())
                 .put("servers", liveServers(servings).getJSONArray("servers"))
                 .put("runCount", runs.size())

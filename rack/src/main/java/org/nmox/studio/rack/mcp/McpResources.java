@@ -34,6 +34,7 @@ final class McpResources {
             new Bound("nmox://runs", "live_runs"),
             new Bound("nmox://editor", "editor_state"),
             new Bound("nmox://last-failure", "last_failure"),
+            new Bound("nmox://history", "run_history"),
             new Bound("nmox://diagnostics", "diagnostics"),
             new Bound("nmox://devices", "rack_devices"));
 
