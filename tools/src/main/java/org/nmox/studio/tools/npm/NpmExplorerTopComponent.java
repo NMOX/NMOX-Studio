@@ -1,5 +1,6 @@
 package org.nmox.studio.tools.npm;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -178,7 +179,22 @@ public final class NpmExplorerTopComponent extends TopComponent {
         // repo's "<html><img src=…>" script must paint as characters, never
         // render and fetch (the v1.306.0 law's JTree half, v2.70.0)
         tree.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(
-                new javax.swing.tree.DefaultTreeCellRenderer()));
+                new javax.swing.tree.DefaultTreeCellRenderer() {
+                    @Override
+                    public java.awt.Component getTreeCellRendererComponent(JTree t, Object value,
+                            boolean sel, boolean expanded, boolean leaf, int row, boolean focus) {
+                        super.getTreeCellRendererComponent(t, value, sel, expanded, leaf, row, focus);
+                        // a running script says so on its row (v2.70.0): the
+                        // explorer follows LiveRuns while open, so the marker
+                        // appears on spawn and leaves on exit or Stop
+                        if (value instanceof DefaultMutableTreeNode n
+                                && n.getUserObject() instanceof ScriptInfo s
+                                && runningScripts.contains(s.name)) {
+                            setText(s.name + "  ● running");
+                        }
+                        return this;
+                    }
+                }));
 
         // Add double-click handler
         tree.addMouseListener(new MouseAdapter() {
@@ -204,6 +220,35 @@ public final class NpmExplorerTopComponent extends TopComponent {
             }
         });
         popup.add(runItem);
+        // Stop Script: the row's own ■ (v2.70.0) — enabled only while the
+        // clicked script is running; the toolbar ■ stops everything at once
+        JMenuItem stopItem = new JMenuItem("Stop Script");
+        stopItem.addActionListener(e -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            if (node != null && node.getUserObject() instanceof ScriptInfo s && currentProjectDir != null) {
+                boolean stopped = NpmService.stopScript(currentProjectDir, s.name);
+                org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                        stopped ? "Stopped " + s.name : s.name + " is not running");
+            }
+        });
+        popup.add(stopItem);
+        popup.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent e) {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                boolean script = node != null && node.getUserObject() instanceof ScriptInfo;
+                runItem.setEnabled(script);
+                stopItem.setEnabled(script && runningScripts.contains(((ScriptInfo) node.getUserObject()).name));
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent e) {
+            }
+
+            @Override
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent e) {
+            }
+        });
         
         // Run Script spawns the SELECTED node's script; select the
         // clicked node first so a right-click can't run a different
@@ -421,8 +466,27 @@ public final class NpmExplorerTopComponent extends TopComponent {
         Object userObject = node.getUserObject();
         if (userObject instanceof ScriptInfo) {
             ScriptInfo script = (ScriptInfo) userObject;
+            if (runningScripts.contains(script.name)) {
+                // a second copy of a running dev server only fights for
+                // the port — refuse out loud and name the way to stop it
+                org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                        script.name + " is already running — Stop Script (right-click) or the toolbar ■ stops it");
+                return;
+            }
             runNpmCommand("run " + script.name);
         }
+    }
+
+    /** Scripts of the current project running right now; refreshed by the LiveRuns listener on the EDT. */
+    private java.util.Set<String> runningScripts = java.util.Set.of();
+
+    /** Any-thread listener: recompute on the EDT and repaint the rows. */
+    private final Runnable liveRunsListener = () -> SwingUtilities.invokeLater(this::refreshRunning);
+
+    private void refreshRunning() {
+        runningScripts = currentProjectDir == null ? java.util.Set.of()
+                : NpmService.runningScripts(currentProjectDir);
+        tree.repaint();
     }
 
     private void runNpmCommand(String command) {
@@ -444,6 +508,9 @@ public final class NpmExplorerTopComponent extends TopComponent {
         if (rackRef != null && rackListener != null) {
             rackRef.addListener(rackListener);
         }
+        // symmetric with componentClosed (the listener-symmetry law)
+        LiveRuns.addListener(liveRunsListener);
+        refreshRunning();
         // No refresh here: open-at-startup tabs get componentOpened during
         // window-system load while hidden behind the selected tab, and the
         // no-project fallback spawns `npm ls -g` — a process this IDE has no
@@ -466,6 +533,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
         if (rackRef != null && rackListener != null) {
             rackRef.removeListener(rackListener);
         }
+        LiveRuns.removeListener(liveRunsListener);
         // symmetric with the publish in refreshProjectView: a closed
         // explorer neither publishes nor pins the project's DataObject,
         // and a reopen re-resolves past the equality guard

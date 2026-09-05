@@ -41,6 +41,18 @@ class StopRunWiringTest {
     }
 
     @Test
+    @DisplayName("NPM Explorer follows LiveRuns symmetrically (open adds, close removes) and offers Stop Script on the row (v2.70.0)")
+    void explorerFollowsLiveRuns() throws Exception {
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/tools/npm/NpmExplorerTopComponent.java"));
+        int opened = src.indexOf("public void componentOpened()");
+        int closed = src.indexOf("public void componentClosed()");
+        assertThat(src.indexOf("LiveRuns.addListener(liveRunsListener)")).isGreaterThan(opened).isLessThan(closed);
+        assertThat(src.indexOf("LiveRuns.removeListener(liveRunsListener)")).isGreaterThan(closed);
+        assertThat(src).contains("new JMenuItem(\"Stop Script\")").contains("NpmService.stopScript(currentProjectDir, s.name)");
+        assertThat(src).as("a second copy is refused out loud").contains("is already running");
+    }
+
+    @Test
     @DisplayName("The ■ sits on the Build toolbar beside ▶ and in the Run menu (generated layer)")
     void stopButtonIsRegistered() throws Exception {
         String layer = Files.readString(Path.of("target/classes/META-INF/generated-layer.xml"));

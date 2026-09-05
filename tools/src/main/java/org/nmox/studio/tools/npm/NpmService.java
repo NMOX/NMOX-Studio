@@ -185,7 +185,7 @@ public class NpmService {
         // prints (the v1.212.0 law's sibling: the ▶ announced, this lane
         // didn't — no ⇄ chip, no Live Servers, no VITALS target).
         String label = String.join(" ", command) + " — " + workingDir.getName();
-        String runId = "npm-run:" + workingDir.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
+        String runId = runIdPrefix(workingDir) + RUN_SEQ.incrementAndGet();
         java.util.concurrent.atomic.AtomicReference<CommandExecutor.Handle> proc =
                 new java.util.concurrent.atomic.AtomicReference<>();
         java.util.concurrent.atomic.AtomicReference<String> announced =
@@ -252,6 +252,57 @@ public class NpmService {
 
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
             new java.util.concurrent.atomic.AtomicLong();
+
+    /** The id prefix every run of {@code dir} through this service carries. */
+    static String runIdPrefix(File dir) {
+        return "npm-run:" + dir.getAbsolutePath() + "#";
+    }
+
+    /**
+     * The script a run label names: {@code "<pm> run <script> — <dir>"} → the
+     * script, {@code "<pm> start — <dir>"} → {@code start}; anything else
+     * (install, ci) → null. Pure; the label is what {@link #runCommand} built.
+     */
+    static String scriptOf(String label) {
+        if (label == null) {
+            return null;
+        }
+        String[] parts = label.split(" ");
+        if (parts.length > 2 && "run".equals(parts[1])) {
+            return parts[2];
+        }
+        if (parts.length > 1 && "start".equals(parts[1])) {
+            return "start";
+        }
+        return null;
+    }
+
+    /** The scripts of {@code dir} running through this service right now (NPM Explorer's marker, v2.70.0). */
+    public static java.util.Set<String> runningScripts(File dir) {
+        java.util.Set<String> running = new java.util.LinkedHashSet<>();
+        String prefix = runIdPrefix(dir);
+        for (LiveRuns.Run r : LiveRuns.live()) {
+            if (r.id().startsWith(prefix)) {
+                String script = scriptOf(r.label());
+                if (script != null) {
+                    running.add(script);
+                }
+            }
+        }
+        return running;
+    }
+
+    /** Stops every running copy of {@code script} in {@code dir}; false when none was running. */
+    public static boolean stopScript(File dir, String script) {
+        boolean stopped = false;
+        String prefix = runIdPrefix(dir);
+        for (LiveRuns.Run r : LiveRuns.live()) {
+            if (r.id().startsWith(prefix) && script.equals(scriptOf(r.label()))) {
+                stopped |= LiveRuns.stop(r.id()) != null;
+            }
+        }
+        return stopped;
+    }
 
     /**
      * Which NPM Service runs may announce a printed local URL as a serving:

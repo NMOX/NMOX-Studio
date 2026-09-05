@@ -74,6 +74,19 @@ public final class LiveRuns {
         }
     }
 
+    /** Kills ONE live run and forgets it (the row's own Stop, v2.70.0); null when no such run. */
+    public static Run stop(String id) {
+        Run r;
+        synchronized (LIVE) {
+            r = LIVE.remove(id);
+        }
+        if (r != null) {
+            r.killer().run();
+            notifyListeners();
+        }
+        return r;
+    }
+
     /** Kills every live run and forgets it; returns what was stopped, in spawn order. */
     public static List<Run> stopAll() {
         List<Run> stopped;

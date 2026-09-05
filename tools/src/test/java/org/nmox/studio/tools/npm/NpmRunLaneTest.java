@@ -64,7 +64,9 @@ class NpmRunLaneTest {
         assertThat(LiveRuns.live()).as("the toolbar ■ can see the run").anyMatch(r -> r.id().startsWith("npm-run:")
                 && r.label().equals("sh run dev — " + dir.toFile().getName()));
 
-        assertThat(LiveRuns.stopAll()).as("the ■ stopped something").isNotEmpty();
+        assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it").containsExactly("dev");
+        assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
+        assertThat(NpmService.stopScript(dir.toFile(), "dev")).as("the row's own Stop").isTrue();
         Throwable exit = null;
         try {
             done.get(5, TimeUnit.SECONDS);

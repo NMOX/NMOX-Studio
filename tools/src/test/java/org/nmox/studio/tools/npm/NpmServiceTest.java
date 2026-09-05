@@ -218,6 +218,17 @@ class NpmServiceTest {
     }
 
     @Test
+    @DisplayName("scriptOf reads the script a run label names; installs name none (v2.70.0)")
+    void scriptOfLabel() {
+        assertThat(NpmService.scriptOf("npm run dev — proj")).isEqualTo("dev");
+        assertThat(NpmService.scriptOf("pnpm run build:prod — proj")).isEqualTo("build:prod");
+        assertThat(NpmService.scriptOf("yarn start — proj")).isEqualTo("start");
+        assertThat(NpmService.scriptOf("npm install — proj")).isNull();
+        assertThat(NpmService.scriptOf("npm")).isNull();
+        assertThat(NpmService.scriptOf(null)).isNull();
+    }
+
+    @Test
     @DisplayName("run <script> and start may announce a printed server; install never does (v2.70.0)")
     void announcesOnlyScriptVerbs() {
         assertThat(NpmService.announcesServer("npm", "run", "dev")).isTrue();
