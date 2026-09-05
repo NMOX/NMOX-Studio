@@ -135,7 +135,7 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 | Read `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Ask `where_is` without `name` | `-32602`, naming the missing argument |
 | Ask for a file outside the project (`../../.zshrc`) | `outline` refuses — *outside the aimed project* — and never reads it |
-| Search for a value that lives in `.env`, `.npmrc`, or a `.pem` | nothing — those files are never searched, never counted, never completed; the IDE's own env law (a key's name, never its value) holds for agents too |
+| Search for a value that lives in `.env`, `.npmrc`, or a `.pem` — or ask for their outline | nothing — those files are never searched, never counted, never completed, and `outline` refuses them by name; the IDE's own env law (a key's name, never its value) holds for agents too |
 | Set the log level to `loud` | `-32602`, naming the eight levels |
 | Ask it to run, write, or stop anything | there is no such tool; the ledger test keeps it that way |
 

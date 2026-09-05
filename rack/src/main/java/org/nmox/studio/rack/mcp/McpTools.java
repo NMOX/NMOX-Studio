@@ -552,6 +552,14 @@ public final class McpTools {
         if (index == null || root == null) {
             return out.put("available", false).put("refusal", "no symbol index: aim a project first");
         }
+        // the search's secret law at the outline too (v2.84.0): .npmrc is an
+        // ini file whose outline would be its keys and values — refused
+        // before the index reads a byte
+        String base = f.replace('\\', '/');
+        base = base.substring(base.lastIndexOf('/') + 1);
+        if (TextSearch.isSecretBearing(base)) {
+            return out.put("available", false).put("refusal", "secret-bearing file, never read for an agent: " + f);
+        }
         SymbolIndex.Outline o = index.outline(root, f);
         if (o.refusal() != null) {
             return out.put("available", false).put("refusal", o.refusal());

@@ -80,6 +80,9 @@ class McpToolsTest {
         assertThat(ok.getBoolean("available")).isTrue();
         assertThat(ok.getJSONArray("items").getJSONObject(1).getInt("depth")).isEqualTo(1);
         assertThat(Texts.of(ok)).isEqualTo("Cart (class) :2\n  total (method) :3");
+        JSONObject secret = McpTools.outline(fake, new File("/tmp/proj"), "config/.npmrc");
+        assertThat(secret.getBoolean("available")).isFalse();
+        assertThat(secret.getString("refusal")).contains("secret-bearing").contains("config/.npmrc");
         JSONObject refused = McpTools.outline(fake, new File("/tmp/proj"), "zzz");
         assertThat(refused.getBoolean("available")).isFalse();
         assertThat(Texts.of(refused)).isEqualTo("No outline: no such file: zzz.");
