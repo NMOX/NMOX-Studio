@@ -41,6 +41,7 @@ CD="$WORK/shots-cachedir"
 echo "== booting with nmox.shots.dir=$OUT_ABS (throwaway userdir + cachedir) =="
 "$APP" --nosplash --userdir "$UD" --cachedir "$CD" \
   -J-Dnmox.shots.dir="$OUT_ABS" \
+  -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dapple.awt.application.name="NMOX Studio"
 

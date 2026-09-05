@@ -83,7 +83,7 @@ public class DocsShots implements Runnable {
     }
 
     /** One capture run: walks SHOTS in order on the EDT, then exits the app. */
-    private static final class Session {
+    static final class Session {
 
         private final File dir;
         private final java.util.Iterator<Map.Entry<String, String>> queue =
@@ -102,6 +102,37 @@ public class DocsShots implements Runnable {
             Frame main = WindowManager.getDefault().getMainWindow();
             main.setSize(1600, 1000);
             main.validate();
+            seedFakeRun();
+        }
+
+        /**
+         * The Workbench's RUNNING section paints only while something runs
+         * (v2.75.0): {@code -Dnmox.shots.fakerun=<label>|<url>} registers one
+         * run with the ■'s registry and its serving with the ⇄ chip's, so
+         * the forge's workbench shot shows the section the guide describes.
+         * A fake: the killer is a no-op, nothing is spawned, and the forge
+         * exits at the end of its run. Never read on a normal boot.
+         */
+        static void seedFakeRun() {
+            String spec = System.getProperty("nmox.shots.fakerun");
+            if (spec == null || spec.isBlank()) {
+                return;
+            }
+            String[] parts = fakeRunParts(spec);
+            String id = "docs-shot:" + parts[0];
+            org.nmox.studio.core.spi.LiveRuns.add(new org.nmox.studio.core.spi.LiveRuns.Run(id, parts[0], () -> { }));
+            if (parts[1] != null) {
+                org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                        new org.nmox.studio.rack.service.ServingRegistry.Serving(id, parts[0], parts[1],
+                                org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, new File(System.getProperty("user.home"))));
+            }
+        }
+
+        /** "label|url" → {label, url}; "label" → {label, null}. Pure, pinned. */
+        static String[] fakeRunParts(String spec) {
+            int bar = spec.indexOf('|');
+            return bar < 0 ? new String[] {spec.trim(), null}
+                    : new String[] {spec.substring(0, bar).trim(), spec.substring(bar + 1).trim()};
         }
 
         void next() {
