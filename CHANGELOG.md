@@ -4,6 +4,22 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.85.0] - 2026-09-05
+
+The twelfth parallel batch — the day's own flake, explained.
+
+1. **The grandchild-kill test counts its own grandchild** — the orphan
+   census in ProcessSupportTest counted every process named `sleep` that
+   appeared on the machine during the test; three unrelated `sleep 10`
+   polling loops (a ship pipeline's own runners) read as orphans twice in
+   one day at load, while the product's tree kill was correct both times.
+   The grandchild now sleeps a duration nothing else on a build box
+   sleeps for and the census filters on it; proven with a decoy that
+   spawns a `sleep 3` every 0.2 s beside the test — a foreign sleep born
+   inside the test's own window — under which the old census fails and
+   the new one passes.
+2. **Docs, plan, this entry.**
+
 ## [2.84.0] - 2026-09-05
 
 The eleventh parallel batch — built beside v2.83.0's chain.
@@ -17133,6 +17149,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.85.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.84.0...v2.85.0
 [2.84.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.83.0...v2.84.0
 [2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0

@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.84.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.85.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3634,3 +3634,29 @@ file on screen.
 
 **No walk this batch.** The rule is pure; the EDT snapshot around it
 is the v2.78.0 one the walk already exercised.
+
+## Addendum — 2026-09-05, the twelfth parallel batch (v2.85.0)
+
+Built beside v2.84.0's chain: the day's own flake, explained.
+
+**A machine-wide census is not a test of this process tree (unit 1).**
+`ProcessSupportTest.shouldKillGrandchildHoldingPipeOnTimeout` went
+red twice today under load — once in a pre-verify, once in a runner's
+front — each time naming three living `sleep` pids as orphans. They
+were not orphans: they were the ship pipeline's own `sleep 10` polling
+loops, born after the test's baseline census and alive inside its
+15-second grace. The product's kill was correct both times; the
+test's census was the whole box. The grandchild now sleeps 617 s and
+the census counts only sleeps carrying that argument. The proof took
+two tries: three `sleep 10` loops beside the test did NOT fail the old
+census (a foreign sleep only counts when it is born inside the ~0.6 s
+between the baseline census and the first re-census, after which the
+15-second poll never empties — a 6%-per-loop chance, which is why the
+day saw two reds in five core runs); a decoy that spawns a `sleep 3`
+every 0.2 s is born inside any window, and under it the old census
+fails and the new one passes, deterministically. The earlier
+diagnosis ("the load flake") was wrong in the way flakes usually are:
+the failure was real and deterministic given the box's state, and
+the state was ours.
+
+**No walk this batch.** A test census, proven by decoy.

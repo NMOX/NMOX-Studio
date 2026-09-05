@@ -108,7 +108,7 @@ class ProcessSupportTest {
 
         long start = System.nanoTime();
         ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                List.of("sh", "-c", "sleep 60 & wait"), null, Duration.ofMillis(500));
+                List.of("sh", "-c", "sleep " + GRANDCHILD_SECONDS + " & wait"), null, Duration.ofMillis(500));
         long elapsedMs = (System.nanoTime() - start) / 1_000_000;
 
         assertThat(r.timedOut()).isTrue();
@@ -135,12 +135,26 @@ class ProcessSupportTest {
     }
 
     /** PIDs of live processes whose command names them "sleep". */
+    /**
+     * The grandchild's own duration — a number nothing else on the box
+     * sleeps for. The census below counts only sleeps carrying it: the
+     * first cut counted EVERY process named sleep that appeared during the
+     * test, and on 2026-09-05 three unrelated `sleep 10` polling loops on
+     * the build box (a ship pipeline's runners) read as "orphans" — twice
+     * in one day, at load, while the product's kill was correct both times.
+     * A machine-wide census is not a test of this process tree.
+     */
+    private static final String GRANDCHILD_SECONDS = "617";
+
     private static java.util.Set<Long> livingSleepPids() {
         return ProcessHandle.allProcesses()
                 .filter(ph -> ph.info().command()
                         .map(c -> c.replace('\\', '/'))
                         .map(c -> c.substring(c.lastIndexOf('/') + 1))
                         .map(name -> name.equals("sleep") || name.equals("sleep.exe"))
+                        .orElse(false))
+                .filter(ph -> ph.info().arguments()
+                        .map(args -> args.length == 1 && GRANDCHILD_SECONDS.equals(args[0]))
                         .orElse(false))
                 .map(ProcessHandle::pid)
                 .collect(java.util.stream.Collectors.toCollection(java.util.HashSet::new));
