@@ -176,13 +176,32 @@ public class NpmService {
         // rides CommandExecutor's kill/orphan guarantee at shutdown.
         CompletableFuture<String> done = new CompletableFuture<>();
         StringBuilder output = new StringBuilder();
+        // The run is a citizen of the same two stop surfaces as the ▶ (v2.70.0;
+        // v2.69.10 wired the toolbar's Run and this path — NPM Explorer's
+        // double-click, Run Script on a package.json line — was its sibling
+        // with the handle dropped on the floor: nothing on screen could stop
+        // `npm run dev` started here) and announces the server its script
+        // prints (the v1.212.0 law's sibling: the ▶ announced, this lane
+        // didn't — no ⇄ chip, no Live Servers, no VITALS target).
+        String label = String.join(" ", command) + " — " + workingDir.getName();
+        String runId = "npm-run:" + workingDir.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
+        java.util.concurrent.atomic.AtomicReference<CommandExecutor.Handle> proc =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.atomic.AtomicReference<String> announced =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        boolean serves = announcesServer(command);
+        String[] again = command.clone();
+        IdeRunItem item = new IdeRunItem(command.length > 1 ? command[1] : command[0],
+                org.openide.filesystems.FileUtil.toFileObject(
+                        org.openide.filesystems.FileUtil.normalizeFile(workingDir)),
+                label, proc::get, () -> runCommand(workingDir, again));
         // Double-clicking a script in NPM Explorer used to look broken:
         // CommandExecutor.getIO deliberately never steals focus, so the
         // run happened in a tab you had to know existed. Raise it — the
         // user just asked for this command, so its output is what they
         // are waiting to see (Run Focused Test has always done this).
         CommandExecutor.showOutput("NPM Output");
-        CommandExecutor.run("NPM Output", workingDir, java.util.Map.of(),
+        CommandExecutor.Handle handle = CommandExecutor.run("NPM Output", workingDir, java.util.Map.of(),
                 java.util.List.of(command),
                 line -> {
                     synchronized (output) {
@@ -192,8 +211,26 @@ public class NpmService {
                             output.append(line).append('\n');
                         }
                     }
+                    if (!serves) {
+                        return;
+                    }
+                    String url = WebProjectActionProvider.servingUrlFor(line);
+                    if (url != null && !url.equals(announced.get())) {
+                        announced.set(url);
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                                new org.nmox.studio.rack.service.ServingRegistry.Serving(
+                                        runId, label, url,
+                                        org.nmox.studio.rack.service.ServingRegistry.Kind.WEB,
+                                        workingDir));
+                    }
                 },
                 exit -> {
+                    item.finished();
+                    LiveRuns.remove(runId);
+                    org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
+                    if (announced.get() != null) {
+                        org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister(runId);
+                    }
                     String text;
                     synchronized (output) {
                         text = output.toString();
@@ -206,7 +243,27 @@ public class NpmService {
                                         + "\nOutput: " + text));
                     }
                 });
+        proc.set(handle);
+        LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
+        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         return done;
+    }
+
+    private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * Which NPM Service runs may announce a printed local URL as a serving:
+     * `<pm> run <script>` and `<pm> start` — the verbs whose body is a user
+     * script that can start a server. An install's output is lifecycle
+     * noise (a postinstall may print a URL nothing listens on), so it never
+     * announces (the v1.93.0 serving-truth law).
+     */
+    static boolean announcesServer(String... command) {
+        if (command.length < 2) {
+            return false;
+        }
+        return "run".equals(command[1]) || "start".equals(command[1]);
     }
     
     /**

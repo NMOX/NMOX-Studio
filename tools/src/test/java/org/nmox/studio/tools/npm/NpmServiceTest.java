@@ -216,4 +216,15 @@ class NpmServiceTest {
         assertThat(NpmService.parseArguments(null)).isEmpty();
         assertThat(NpmService.parseArguments("   ")).isEmpty();
     }
+
+    @Test
+    @DisplayName("run <script> and start may announce a printed server; install never does (v2.70.0)")
+    void announcesOnlyScriptVerbs() {
+        assertThat(NpmService.announcesServer("npm", "run", "dev")).isTrue();
+        assertThat(NpmService.announcesServer("pnpm", "run", "serve")).isTrue();
+        assertThat(NpmService.announcesServer("yarn", "start")).isTrue();
+        assertThat(NpmService.announcesServer("npm", "install")).as("a postinstall URL is lifecycle noise").isFalse();
+        assertThat(NpmService.announcesServer("npm", "ci")).isFalse();
+        assertThat(NpmService.announcesServer("npm")).isFalse();
+    }
 }
