@@ -3496,6 +3496,16 @@ same lock, blessed. One blessing in writing: the provider holds its
 OWN ProjectSymbols cache beside the jumpto provider's — two bounded
 walks of one tree rather than a shared mutable index across modules.
 
-**No walk this batch.** The transport and the token path were proven
-by curl in the v2.77.0 walk; these tools' shapes are pinned by the
-schema contract and their cores by name.
+**The walk (wt5 bytes = v2.78.0 + v2.79.0, one throwaway instance,
+background mode).** `--open <dir> <file>` in ONE flag (two `--open`
+flags are refused by the launcher); the Agent Port's config read the
+System Events way again — the text control surfaced as `text field 1`
+this time where the v2.77.0 walk saw `text area 1`, so read whichever
+`entire contents` names. Over curl: `find_symbol check` →
+`checkout (function) — shop.js:4`; `outline shop.js` → Cart (class)
+/ total (method, depth 1) / checkout; `outline ../../.zshrc` →
+`outside the aimed project`, never read; `search_text "is live"` →
+`server.js:2` with 2 files scanned; `editor_state` → server.js open,
+`active:false` because the Welcome held activation, `activeFile`
+null — the honest answer; `tools/list` eleven, `resources/list`
+eight.

@@ -20,7 +20,10 @@ The sixth parallel batch — built beside v2.78.0's chain.
    most 50 hits with lines clipped code-point-safely, `truncated` set
    only when a further match exists. Eleven tools; four mutants by name.
 3. **The v2.78.0 review, clean** — blessings in the plan.
-4. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
+4. **The walk** — all four new tools (v2.78.0's and this batch's) proven
+   over curl on the assembled app: hits with file:line, the `..` escape
+   refused, the search line found, the open file listed.
+5. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
    24, plan, this entry.
 
 ## [2.78.0] - 2026-09-05
