@@ -517,7 +517,10 @@ the file you're editing, the last failure, a diagnostics count),
 file's structure, `search_text` for a literal across the project (heavy
 directories and binaries skipped, at most 50 hits, said when capped),
 `editor_state` with unsaved tabs flagged. Every tool is typed and annotated
-read-only; the same answers are browsable as `nmox://` resources. It
+read-only; the same answers are browsable as `nmox://` resources —
+attach `nmox://outline/src/app.js` and the agent has the file's
+structure as context — and the *Where is a symbol declared* prompt
+folds the hits for a name you give it. It
 is read-only by construction: an agent can ask, never run — the build
 fails if any Agent Port class so much as names a spawn, a write, or
 the run registry's stop.

@@ -65,6 +65,8 @@ public final class McpProtocol {
             }
             case "resources/list" ->
                 result = McpResources.list(tools);
+            case "resources/templates/list" ->
+                result = McpResources.templates(tools);
             case "resources/read" -> {
                 if (notification) {
                     return null;
@@ -100,7 +102,9 @@ public final class McpProtocol {
                 }
                 JSONObject prompt;
                 try {
-                    prompt = McpPrompts.get(name, tools);
+                    prompt = McpPrompts.get(name, tools, params.optJSONObject("arguments"));
+                } catch (IllegalArgumentException missing) {
+                    return error(id, -32602, missing.getMessage()).toString();
                 } catch (RuntimeException ex) {
                     return error(id, -32603, "Internal error: " + ex.getMessage()).toString();
                 }

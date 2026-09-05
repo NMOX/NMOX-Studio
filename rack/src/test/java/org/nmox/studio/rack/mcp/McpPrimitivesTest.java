@@ -12,6 +12,7 @@ import org.nmox.studio.rack.mcp.McpTools.Tool;
 import org.nmox.studio.rack.mcp.McpTools.ToolResult;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * The Resources and Prompts primitives (v2.56.0): resources are a
@@ -34,7 +35,21 @@ class McpPrimitivesTest {
                 .put("errorLines", new JSONArray().put("Expected 2, got 3"));
         return new McpTools(List.of(
                 tool("ide_context", ctx),
-                tool("last_failure", fail)));
+                tool("last_failure", fail),
+                echoTool("outline", "file"),
+                echoTool("search_text", "query"),
+                echoTool("find_symbol", "query")));
+    }
+
+    /** A fake argument-taking tool: its structured answer echoes the argument it received. */
+    private static Tool echoTool(String name, String arg) {
+        return new Tool(name, name, name + " desc",
+                McpTools.objectSchema(new JSONObject().put(arg, new JSONObject().put("type", "string"))),
+                McpTools.objectSchema(new JSONObject()),
+                args -> {
+                    JSONObject structured = new JSONObject().put("echo", args.optString(arg, "(none)"));
+                    return new ToolResult("echo " + args.optString(arg, "(none)"), structured);
+                });
     }
 
     private static Tool tool(String name, JSONObject structured) {
@@ -61,7 +76,7 @@ class McpPrimitivesTest {
     @DisplayName("resources/list offers a resource per bound tool with a URI")
     void resourcesList() {
         JSONArray resources = McpResources.list(fixture()).getJSONArray("resources");
-        // only the two fixture tools are bound; the catalog skips the rest
+        // only the two catalogued fixture tools are bound; the catalog skips the rest
         assertThat(resources.length()).isEqualTo(2);
         JSONObject first = resources.getJSONObject(0);
         assertThat(first.getString("uri")).isEqualTo("nmox://context");
@@ -92,18 +107,40 @@ class McpPrimitivesTest {
         assertThat(McpResources.read("file:///etc/passwd", fixture())).isNull();
     }
 
+    @Test
+    @DisplayName("resources/templates/list offers a template per argument-taking tool; a templated read fills the argument, percent-decoded (v2.80.0)")
+    void resourceTemplates() {
+        JSONArray templates = McpResources.templates(fixture()).getJSONArray("resourceTemplates");
+        assertThat(templates.length()).isEqualTo(2);
+        assertThat(templates.getJSONObject(0).getString("uriTemplate")).isEqualTo("nmox://outline/{file}");
+        assertThat(templates.getJSONObject(1).getString("name")).isEqualTo("search_text");
+        JSONObject read = McpResources.read("nmox://outline/src/my%20app.js", fixture());
+        assertThat(read).isNotNull();
+        assertThat(read.getJSONArray("contents").getJSONObject(0).getString("text")).contains("\"echo\":\"src/my app.js\"");
+        assertThat(McpResources.read("nmox://search/is%20live", fixture()).getJSONArray("contents")
+                .getJSONObject(0).getString("text")).contains("is live");
+        assertThat(McpResources.read("nmox://outline/", fixture())).as("an empty tail names nothing").isNull();
+        assertThat(McpResources.read("nmox://outline/%zz", fixture())).as("a broken escape names nothing").isNull();
+        // a template whose tool is absent is not offered
+        assertThat(McpResources.templates(new McpTools(List.of())).getJSONArray("resourceTemplates")).isEmpty();
+    }
+
     // ---- prompts -----------------------------------------------------------
 
     @Test
     @DisplayName("prompts/list offers the templates with no arguments")
     void promptsList() {
         JSONArray prompts = McpPrompts.list().getJSONArray("prompts");
-        assertThat(prompts.length()).isEqualTo(2);
+        assertThat(prompts.length()).isEqualTo(3);
         List<String> names = List.of(
                 prompts.getJSONObject(0).getString("name"),
-                prompts.getJSONObject(1).getString("name"));
-        assertThat(names).containsExactly("diagnose_failure", "review_setup");
+                prompts.getJSONObject(1).getString("name"),
+                prompts.getJSONObject(2).getString("name"));
+        assertThat(names).containsExactly("diagnose_failure", "review_setup", "where_is");
         assertThat(prompts.getJSONObject(0).getJSONArray("arguments")).isEmpty();
+        JSONObject arg = prompts.getJSONObject(2).getJSONArray("arguments").getJSONObject(0);
+        assertThat(arg.getString("name")).isEqualTo("name");
+        assertThat(arg.getBoolean("required")).isTrue();
     }
 
     @Test
@@ -118,6 +155,31 @@ class McpPrimitivesTest {
                 .contains("next step to fix it");
         assertThat(got.getJSONArray("messages").getJSONObject(0)
                 .getString("role")).isEqualTo("user");
+    }
+
+    @Test
+    @DisplayName("where_is folds the argument into the tool call and the frame; without it, it refuses by name (v2.80.0)")
+    void promptWithArgument() {
+        JSONObject got = McpPrompts.get("where_is", fixture(), new JSONObject().put("name", "checkout"));
+        String text = got.getJSONArray("messages").getJSONObject(0).getJSONObject("content").getString("text");
+        assertThat(text).contains("\"checkout\" is declared").contains("echo checkout");
+        assertThatThrownBy(() -> McpPrompts.get("where_is", fixture(), null))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("arguments.name");
+        assertThatThrownBy(() -> McpPrompts.get("where_is", fixture(), new JSONObject().put("name", "  ")))
+                .isInstanceOf(IllegalArgumentException.class);
+        // the argument-less prompts ignore arguments
+        assertThat(McpPrompts.get("review_setup", fixture(), new JSONObject().put("name", "x"))).isNotNull();
+    }
+
+    @Test
+    @DisplayName("through the protocol: resources/templates/list answers and a where_is without its argument is -32602 (v2.80.0)")
+    void protocolTemplatesAndArguments() {
+        String list = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/templates/list\"}", fixture(), "2.80.0");
+        assertThat(list).contains("nmox://outline/{file}").contains("nmox://search/{query}");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"prompts/get\",\"params\":{\"name\":\"where_is\"}}", fixture(), "2.80.0");
+        assertThat(missing).contains("-32602").contains("arguments.name");
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"prompts/get\",\"params\":{\"name\":\"where_is\",\"arguments\":{\"name\":\"checkout\"}}}", fixture(), "2.80.0");
+        assertThat(ok).contains("echo checkout").doesNotContain("-32602");
     }
 
     @Test

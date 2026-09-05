@@ -461,10 +461,12 @@ a one-call overview; every tool is annotated read-only so a well-behaved
 agent knows it can call them freely. It is a complete MCP server —
 besides tools it exposes **resources** (browsable URIs like
 `nmox://context`, `nmox://runs`, `nmox://editor` and
-`nmox://diagnostics` an agent attaches as context)
-and **prompts** (ready-made templates like *Diagnose the last failure*
-that fold your IDE's live state into the question), so it drops into
-any MCP client the idiomatic way.
+`nmox://diagnostics` an agent attaches as context, plus templates —
+`nmox://outline/{file}` and `nmox://search/{query}` — for the two
+tools that take an argument) and **prompts** (ready-made templates
+like *Diagnose the last failure* that fold your IDE's live state into
+the question; *Where is a symbol declared* takes a name and folds the
+symbol hits in), so it drops into any MCP client the idiomatic way.
 
 ## 5. The editor
 

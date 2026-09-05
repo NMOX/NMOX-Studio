@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.79.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.80.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3509,3 +3509,30 @@ this time where the v2.77.0 walk saw `text area 1`, so read whichever
 `active:false` because the Welcome held activation, `activeFile`
 null — the honest answer; `tools/list` eleven, `resources/list`
 eight.
+
+## Addendum — 2026-09-05, the seventh parallel batch (v2.80.0)
+
+Built beside v2.79.0's chain, in the freed third worktree.
+
+**The Agent Port's last two primitives grow up (units 1–3).** Resource
+templates make the argument-taking tools browsable
+(`nmox://outline/{file}`, `nmox://search/{query}` — the tail
+percent-decoded, an empty tail and a malformed escape both -32002 by
+naming nothing); the first argumented prompt (`where_is`) keeps the
+prompt's vocabulary (`name`) apart from the tool's schema (`query`) and
+refuses a missing argument as -32602 by name; the read-only ledger
+bans every `Files` mutator, the stream writers and `AtomicFiles` in
+the package, because two tools now read the project and the law must
+name the ways to write it before anyone reaches for them.
+
+**The review of v2.79.0 (unit 4).** Verified clean: `Files.walk` does
+not follow symlinks (a link to a large tree is not walked); the size
+cap is read before the bytes; `outline`'s containment runs on
+`toRealPath()` so a symlinked escape resolves outside and refuses.
+One blessing in writing: the NUL probe reads the first 8 KB — a file
+whose first binary byte sits past that is read as text, bounded by the
+256 KB cap either way.
+
+**No walk this batch.** The transport is the v2.77.0 walk's; the
+template read and the prompt argument are protocol tests over the real
+handler.

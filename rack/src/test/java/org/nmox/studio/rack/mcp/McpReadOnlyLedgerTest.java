@@ -30,7 +30,13 @@ class McpReadOnlyLedgerTest {
             // the run registry's write half (v2.77.0): live_runs LISTS, the
             // \u25a0 stops — an agent that may stop the user's server is a v2
             // execution surface with its own consent design
-            "LiveRuns.stop", "LiveRuns.remove");
+            "LiveRuns.stop", "LiveRuns.remove",
+            // every other way to change a file (v2.80.0): the outline and
+            // search tools READ the project; the read-only law must ban the
+            // mutators by name, not trust that nobody reaches for them
+            "Files.delete", "Files.move", "Files.copy", "Files.createFile",
+            "Files.createDirector", "Files.setLastModifiedTime", "Files.setPosixFilePermissions",
+            "FileOutputStream", "FileWriter", "RandomAccessFile", "AtomicFiles");
 
     private static Path mcpDir() {
         return Path.of("src/main/java/org/nmox/studio/rack/mcp");
