@@ -465,7 +465,9 @@ besides tools it exposes **resources** (browsable URIs like
 `nmox://context`, `nmox://runs`, `nmox://editor` and
 `nmox://diagnostics` an agent attaches as context and can **subscribe** to, so a run starting or a
 server going live is pushed over the port's event stream instead of
-polled for, plus templates —
+polled for — the same stream carries every run's start and end as
+**log messages**, and its whole output once the agent asks for the
+`debug` level — plus templates —
 `nmox://outline/{file}` and `nmox://search/{query}` — for the two
 tools that take an argument, with **argument completion** for the file
 slot from the project's own files) and **prompts** (ready-made templates

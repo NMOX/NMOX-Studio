@@ -95,6 +95,17 @@ values, with the honest `total` and `hasMore`. The search template's
 literal is anything, so it completes to nothing; an unknown prompt,
 template or argument name is refused as `-32602`.
 
+The same stream carries **log messages**: every line every run prints
+arrives as `notifications/message` with the run as its `logger` —
+lifecycle at `info` (`$ npm run build`, `[exit 0]`, `[exit 143]
+stopped`; a failed exit at `error`), stderr at `warning`, ordinary
+output at `debug`. The level starts at `info`, so an agent hears runs
+start and end and nothing else until it asks: `logging/setLevel` with
+`debug` opens the firehose. A build that prints faster than the client
+reads never grows the port's memory — past a thousand unwritten lines
+the overflow is counted and announced as one `warning` line, never
+silently lost. A level the spec does not name is refused as `-32602`.
+
 ## 4. The walk, by hand
 
 With the token in a shell variable (never on a command line you would

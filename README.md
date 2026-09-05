@@ -562,7 +562,8 @@ the package. Twelve typed tools (`ide_context` for the whole picture;
 argument), prompts that fold live state into the question, and argument
 completion for the prompt and template that take one; an agent can
 subscribe and be told over the port's event stream when a run starts
-or a server goes live. See
+or a server goes live, and hear every run's lifecycle — or, on request,
+its whole output — as MCP log messages. See
 [the tutorial](docs/tutorials/agent-port.md).
 
 ### 🌐 Standards & PWA, supported with gusto

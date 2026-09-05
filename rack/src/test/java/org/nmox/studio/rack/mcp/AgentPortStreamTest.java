@@ -74,6 +74,7 @@ class AgentPortStreamTest {
             {"servings.addListener(", "servings.removeListener("},
             {"getRegistry().addPropertyChangeListener(", "getRegistry().removePropertyChangeListener("},
             {"DiagnosticsBus.addListener(", "DiagnosticsBus.removeListener("},
+            {"RackBus.subscribe(", "RackBus.unsubscribe("},
             {"addChangeListener(", "removeChangeListener("}};
         for (String[] p : pairs) {
             assertThat(body).as("watch adds " + p[0]).contains(p[0]);

@@ -127,6 +127,20 @@ public final class McpProtocol {
                         ? error(id, -32002, "Resource not found: " + uri).toString()
                         : response(id, read).toString();
             }
+            case "logging/setLevel" -> {
+                if (notification) {
+                    return null;
+                }
+                String level = params == null ? null : params.optString("level", null);
+                if (level == null) {
+                    return error(id, -32602, "logging/setLevel needs params.level").toString();
+                }
+                if (subs == null || !subs.setLevel(level)) {
+                    return error(id, -32602, "unknown level: " + level + " (one of "
+                            + String.join(", ", McpSubscriptions.LEVELS) + ")").toString();
+                }
+                result = new JSONObject();
+            }
             case "completion/complete" -> {
                 if (notification) {
                     return null;
@@ -183,7 +197,8 @@ public final class McpProtocol {
                         // went live over the GET stream, no polling (v2.84.0)
                         .put("resources", new JSONObject().put("subscribe", true))
                         .put("prompts", new JSONObject())
-                        .put("completions", new JSONObject()))
+                        .put("completions", new JSONObject())
+                        .put("logging", new JSONObject()))
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)
                         .put("version", productVersion))

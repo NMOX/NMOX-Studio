@@ -109,4 +109,67 @@ class McpSubscriptionsTest {
         subs.updated("nmox://runs");
         subs.keepalive();
     }
+
+    @Test
+    @DisplayName("log lines reach the streams only at or above the set level; the default is info")
+    void logLevelGates() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        subs.attach(out, () -> { });
+        assertThat(subs.level()).isEqualTo("info");
+        subs.log("debug", "Run — x", "compiled 3 files");
+        subs.log("info", "Run — x", "$ npm run build");
+        subs.log("error", "Run — x", "[exit 1]");
+        subs.awaitIdle();
+        String text = out.toString(StandardCharsets.UTF_8);
+        assertThat(text).contains("\"method\":\"notifications/message\"")
+                .contains("$ npm run build").contains("[exit 1]").doesNotContain("compiled 3 files");
+        assertThat(subs.setLevel("debug")).isTrue();
+        assertThat(subs.setLevel("loud")).as("a level the spec does not name").isFalse();
+        subs.log("debug", "Run — x", "compiled 3 files");
+        subs.awaitIdle();
+        assertThat(out.toString(StandardCharsets.UTF_8)).contains("compiled 3 files");
+        assertThat(subs.setLevel("error")).isTrue();
+        subs.log("warning", "Run — x", "deprecated");
+        subs.awaitIdle();
+        assertThat(out.toString(StandardCharsets.UTF_8)).doesNotContain("deprecated");
+        subs.close();
+    }
+
+    @Test
+    @DisplayName("a firehose past the pending cap is counted and announced once, never silently lost")
+    void overflowIsCountedNotLost() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions();
+        java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        OutputStream slow = new OutputStream() {
+            boolean first = true;
+            @Override
+            public void write(int b) throws IOException {
+                if (first) {
+                    first = false;
+                    try {
+                        gate.await();
+                    } catch (InterruptedException e) {
+                        throw new IOException(e);
+                    }
+                }
+                out.write(b);
+            }
+        };
+        subs.attach(slow, () -> { });
+        subs.setLevel("debug");
+        int total = McpSubscriptions.MAX_PENDING + 250;
+        for (int i = 0; i < total; i++) {
+            subs.log("debug", "Run — x", "line " + i);
+        }
+        gate.countDown();
+        subs.awaitIdle();
+        String text = out.toString(StandardCharsets.UTF_8);
+        int lines = text.split("notifications/message").length - 1;
+        assertThat(text).contains("250 log lines dropped");
+        assertThat(lines).as("the cap's worth of lines plus the one notice").isEqualTo(McpSubscriptions.MAX_PENDING + 1);
+        assertThat(text).contains("line 0").contains("line " + (McpSubscriptions.MAX_PENDING - 1)).doesNotContain("line " + McpSubscriptions.MAX_PENDING + "\"");
+        subs.close();
+    }
 }

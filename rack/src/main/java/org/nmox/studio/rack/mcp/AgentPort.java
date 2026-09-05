@@ -142,6 +142,14 @@ public final class AgentPort {
         org.openide.windows.TopComponent.getRegistry().addPropertyChangeListener(editor);
         unwatch.add(() -> org.openide.windows.TopComponent.getRegistry().removePropertyChangeListener(editor));
         try {
+            // every line every run prints, as MCP log messages (v2.84.0):
+            // lifecycle at info (a failed exit at error), stderr at warning,
+            // output at debug — so the default level carries only starts and
+            // ends, and an agent that wants the firehose asks for it
+            org.nmox.studio.rack.engine.RackBus.Listener bus = (device, line, err) ->
+                    subs.log(logLevel(line, err), device, line);
+            org.nmox.studio.rack.engine.RackBus.subscribe(bus);
+            unwatch.add(() -> org.nmox.studio.rack.engine.RackBus.unsubscribe(bus));
             org.nmox.studio.rack.engine.DiagnosticsBus.Listener d =
                     (tool, problems) -> subs.updated("nmox://diagnostics", "nmox://context");
             org.nmox.studio.rack.engine.DiagnosticsBus.addListener(d);
@@ -213,6 +221,17 @@ public final class AgentPort {
                 out.write(bytes);
             }
         }
+    }
+
+    /** The log level of one bus line — the flight recorder's own reading of the lifecycle marks. */
+    static String logLevel(String line, boolean err) {
+        if (line.startsWith("$ ")) {
+            return "info";
+        }
+        if (line.startsWith("[exit ")) {
+            return err ? "error" : "info";
+        }
+        return err ? "warning" : "debug";
     }
 
     private static boolean acceptsEventStream(HttpExchange exchange) {

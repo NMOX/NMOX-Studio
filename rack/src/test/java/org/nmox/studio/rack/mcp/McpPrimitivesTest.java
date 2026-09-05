@@ -226,6 +226,33 @@ class McpPrimitivesTest {
         assertThat(caps.has("resources")).isTrue();
         assertThat(caps.has("prompts")).isTrue();
         assertThat(caps.has("completions")).as("completion/complete (v2.84.0)").isTrue();
+        assertThat(caps.has("logging")).as("logging/setLevel (v2.84.0)").isTrue();
+    }
+
+    @Test
+    @DisplayName("logging/setLevel sets the stream's level; an unnamed level and a missing one are -32602 (v2.84.0)")
+    void loggingSetLevel() {
+        McpSubscriptions subs = new McpSubscriptions();
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"logging/setLevel\",\"params\":{\"level\":\"debug\"}}", fixture(), "2.84.0", subs);
+        assertThat(ok).doesNotContain("error");
+        assertThat(subs.level()).isEqualTo("debug");
+        String bad = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"logging/setLevel\",\"params\":{\"level\":\"loud\"}}", fixture(), "2.84.0", subs);
+        assertThat(bad).contains("-32602").contains("loud");
+        assertThat(subs.level()).as("a refused level leaves the old one").isEqualTo("debug");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"logging/setLevel\"}", fixture(), "2.84.0", subs);
+        assertThat(missing).contains("-32602");
+        subs.close();
+    }
+
+    @Test
+    @DisplayName("a bus line's log level reads the lifecycle marks the recorder reads (v2.84.0)")
+    void busLineLevels() {
+        assertThat(AgentPort.logLevel("$ npm run build", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 0]", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 143] stopped", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 1]", true)).isEqualTo("error");
+        assertThat(AgentPort.logLevel("warning: deprecated", true)).isEqualTo("warning");
+        assertThat(AgentPort.logLevel("compiled 3 files", false)).isEqualTo("debug");
     }
 
     /** A roster whose only tool throws — the live-state failure shape. */

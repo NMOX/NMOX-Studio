@@ -30,6 +30,14 @@ import org.nmox.studio.core.util.Threads;
  */
 final class McpSubscriptions {
 
+    /** The spec's log levels, least to most severe (logging/setLevel, v2.84.0). */
+    static final List<String> LEVELS = List.of("debug", "info", "notice", "warning",
+            "error", "critical", "alert", "emergency");
+    /** Nothing floods unless asked: lifecycle lines only until a client lowers the level. */
+    static final String DEFAULT_LEVEL = "info";
+    /** Log frames queued but not yet written; past this a line is counted, not queued. */
+    static final int MAX_PENDING = 1_000;
+
     /** The SSE comment a client's parser ignores and a dead socket refuses. */
     static final String KEEPALIVE = ": keepalive\n\n";
     static final long KEEPALIVE_MILLIS = 15_000;
@@ -48,6 +56,9 @@ final class McpSubscriptions {
     private final Set<String> subscribed = ConcurrentHashMap.newKeySet();
     private final List<Sink> sinks = new CopyOnWriteArrayList<>();
     private final long keepaliveMillis;
+    private volatile int level = LEVELS.indexOf(DEFAULT_LEVEL);
+    private final java.util.concurrent.atomic.AtomicInteger pending = new java.util.concurrent.atomic.AtomicInteger();
+    private final java.util.concurrent.atomic.AtomicInteger dropped = new java.util.concurrent.atomic.AtomicInteger();
     private volatile ExecutorService writer;
     private volatile java.util.concurrent.ScheduledExecutorService keepalive;
     private volatile boolean closed;
@@ -84,6 +95,72 @@ final class McpSubscriptions {
                 .put("method", "notifications/resources/updated")
                 .put("params", new JSONObject().put("uri", uri));
         return "event: message\ndata: " + msg + "\n\n";
+    }
+
+    /** logging/setLevel: false for a level the spec does not name. */
+    boolean setLevel(String name) {
+        int i = LEVELS.indexOf(name);
+        if (i < 0) {
+            return false;
+        }
+        level = i;
+        return true;
+    }
+
+    String level() {
+        return LEVELS.get(level);
+    }
+
+    /** The SSE frame for one log message: level, logger, the line as data. */
+    static String logFrame(String level, String logger, String data) {
+        JSONObject msg = new JSONObject()
+                .put("jsonrpc", "2.0")
+                .put("method", "notifications/message")
+                .put("params", new JSONObject().put("level", level).put("logger", logger).put("data", data));
+        return "event: message\ndata: " + msg + "\n\n";
+    }
+
+    /**
+     * A log line for every attached stream, if {@code level} reaches the
+     * set one. Bounded the honest way: a build printing faster than a
+     * client reads never grows the queue past {@link #MAX_PENDING} —
+     * the overflow is counted and announced as ONE line when the queue
+     * drains, never silently lost.
+     */
+    void log(String level, String logger, String data) {
+        int i = LEVELS.indexOf(level);
+        if (i < 0 || i < this.level || sinks.isEmpty()) {
+            return;
+        }
+        if (pending.get() >= MAX_PENDING) {
+            dropped.incrementAndGet();
+            return;
+        }
+        pending.incrementAndGet();
+        submit(() -> {
+            try {
+                int lost = dropped.getAndSet(0);
+                StringBuilder frames = new StringBuilder();
+                if (lost > 0) {
+                    frames.append(logFrame("warning", "agent-port", lost + " log lines dropped — the stream fell behind"));
+                }
+                frames.append(logFrame(level, logger, data));
+                byte[] bytes = frames.toString().getBytes(StandardCharsets.UTF_8);
+                for (Sink s : sinks) {
+                    try {
+                        s.out.write(bytes);
+                        s.out.flush();
+                    } catch (IOException gone) {
+                        drop(s);
+                    }
+                }
+            } finally {
+                // a line is pending until it is WRITTEN: a client that stops
+                // reading holds the count at the cap, and the overflow is
+                // counted instead of queued
+                pending.decrementAndGet();
+            }
+        });
     }
 
     /** Attaches a client stream; {@code onClose} runs once when it is dropped. */
