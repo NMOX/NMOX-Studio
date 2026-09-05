@@ -751,10 +751,22 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             dotLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             rowPanel.add(dotLabel);
         }
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(bold ? ROW_BOLD : ROW_FONT);
-        titleLabel.setForeground(TEXT);
-        rowPanel.add(titleLabel);
+        // the title is a real BUTTON (v2.74.0 — the v2.69.9 lesson one window
+        // over: a painted row with a mouse listener is a door only a mouse
+        // can open; Tab reaches this, Enter/Space open it, a screen reader
+        // reads it by name). The panel's own click stays for the mouse.
+        javax.swing.JButton titleButton = new javax.swing.JButton(title);
+        titleButton.setFont(bold ? ROW_BOLD : ROW_FONT);
+        titleButton.setForeground(TEXT);
+        titleButton.setContentAreaFilled(false);
+        titleButton.setBorder(BorderFactory.createEmptyBorder());
+        titleButton.setFocusPainted(true);
+        titleButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        titleButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        titleButton.getAccessibleContext().setAccessibleName(
+                subtitle != null && !subtitle.isBlank() ? title + " — " + subtitle : title);
+        titleButton.addActionListener(e -> onClick.run());
+        rowPanel.add(titleButton);
         JLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
             sub = new JLabel(shorten(subtitle, 38));

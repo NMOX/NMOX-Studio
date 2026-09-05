@@ -72,6 +72,12 @@ class WorkbenchRunningRowsTest {
                         && p.getAccessibleContext().getAccessibleName() != null
                         && p.getAccessibleContext().getAccessibleName().startsWith("Run — shop — ")))
                 .as("the row panel carries the title and subtitle as its name").hasSize(1);
+        // the row's title is a real button (v2.74.0): named title — subtitle, focusable
+        JButton title = (JButton) all.stream()
+                .filter(c -> c instanceof JButton b && "npm run test — shop".equals(b.getText()))
+                .findFirst().orElseThrow(() -> new AssertionError("the row title is a button"));
+        assertThat(title.getAccessibleContext().getAccessibleName()).startsWith("npm run test — shop — running");
+        assertThat(title.isFocusable()).isTrue();
         JButton stop = (JButton) all.stream()
                 .filter(c -> c instanceof JButton b && "Stop Run — shop".equals(b.getAccessibleContext().getAccessibleName()))
                 .findFirst().orElseThrow(() -> new AssertionError("the row's Stop button, named for assistive technology"));
