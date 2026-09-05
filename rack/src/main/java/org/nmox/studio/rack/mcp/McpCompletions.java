@@ -118,6 +118,11 @@ final class McpCompletions {
         return prefix;
     }
 
+    /** The aimed project's root right now, or null. */
+    File root() {
+        return root.get();
+    }
+
     /** Test seam: a root path as the production supplier would hand it. */
     static Supplier<File> rootOf(Path p) {
         return p::toFile;

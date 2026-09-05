@@ -92,14 +92,23 @@ public final class McpProtocol {
                 if (uri == null) {
                     return error(id, -32602, method + " needs params.uri").toString();
                 }
-                if (!McpResources.isCatalogued(uri, tools)) {
+                String outlineFile = McpResources.outlineFile(uri);
+                if (!McpResources.isCatalogued(uri, tools) && (outlineFile == null || tools.byName("outline") == null)) {
                     return error(id, -32002, "Resource not found: " + uri).toString();
                 }
                 if (subs != null) {
-                    if (method.equals("resources/subscribe")) {
+                    if (!method.equals("resources/subscribe")) {
+                        subs.unsubscribe(uri);
+                    } else if (outlineFile == null) {
                         subs.subscribe(uri);
                     } else {
-                        subs.unsubscribe(uri);
+                        // an outline instance FOLLOWS its file (v2.84.0): inside
+                        // the aim, a regular file, at most 32 of them
+                        String refusal = subs.subscribeFile(uri, completions.root(), outlineFile);
+                        if (refusal != null) {
+                            return error(id, refusal.startsWith("capped") ? -32602 : -32002,
+                                    refusal.startsWith("capped") ? refusal : "Resource not found: " + uri).toString();
+                        }
                     }
                 }
                 result = new JSONObject();

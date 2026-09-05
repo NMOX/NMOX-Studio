@@ -206,4 +206,54 @@ class McpSubscriptionsTest {
         assertThat(src.split("catch \\(java.util.concurrent.RejectedExecutionException").length - 1)
                 .as("submit and log both catch the shut-down writer; awaitIdle too").isEqualTo(3);
     }
+
+    @Test
+    @DisplayName("an outline subscription follows its file: a change on disk announces the URI, a vanished file announces once and is dropped (v2.84.0)")
+    void fileSubscriptionFollowsTheFile(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root) throws Exception {
+        java.nio.file.Files.createDirectories(root.resolve("src"));
+        java.nio.file.Path app = root.resolve("src/app.js");
+        java.nio.file.Files.writeString(app, "const a = 1;\n");
+        McpSubscriptions subs = new McpSubscriptions(60_000, 30);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        subs.attach(out, () -> { });
+        assertThat(subs.subscribeFile("nmox://outline/src/app.js", root.toFile(), "src/app.js")).isNull();
+        assertThat(subs.subscribeFile("nmox://outline/../x", root.toFile(), "../x")).startsWith("not found");
+        assertThat(subs.subscribeFile("nmox://outline/src", root.toFile(), "src")).as("a directory is not a file").startsWith("not found");
+        assertThat(subs.subscribeFile("nmox://outline/none.js", root.toFile(), "none.js")).startsWith("not found");
+        assertThat(subs.watchedFiles()).isEqualTo(1);
+        Thread.sleep(80);
+        assertThat(out.toString(StandardCharsets.UTF_8)).as("unchanged: silence").isEmpty();
+        java.nio.file.Files.writeString(app, "const a = 1;\nconst b = 2;\n");
+        java.nio.file.Files.setLastModifiedTime(app, java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis() + 5_000));
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (!out.toString(StandardCharsets.UTF_8).contains("nmox://outline/src/app.js") && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertThat(out.toString(StandardCharsets.UTF_8)).contains("resources/updated").contains("nmox://outline/src/app.js");
+        java.nio.file.Files.delete(app);
+        deadline = System.currentTimeMillis() + 5_000;
+        while (subs.watchedFiles() != 0 && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertThat(subs.watchedFiles()).as("a vanished file is dropped after one announcement").isZero();
+        subs.awaitIdle();
+        assertThat(out.toString(StandardCharsets.UTF_8).split("nmox://outline/src/app.js").length - 1).isEqualTo(2);
+        subs.close();
+    }
+
+    @Test
+    @DisplayName("file subscriptions are capped at 32; unsubscribe frees a slot")
+    void fileSubscriptionsCapped(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root) throws Exception {
+        McpSubscriptions subs = new McpSubscriptions(60_000, 60_000);
+        for (int i = 0; i < McpSubscriptions.MAX_FILE_WATCHES; i++) {
+            java.nio.file.Files.writeString(root.resolve("f" + i + ".js"), "x");
+            assertThat(subs.subscribeFile("nmox://outline/f" + i + ".js", root.toFile(), "f" + i + ".js")).isNull();
+        }
+        java.nio.file.Files.writeString(root.resolve("more.js"), "x");
+        assertThat(subs.subscribeFile("nmox://outline/more.js", root.toFile(), "more.js")).startsWith("capped");
+        assertThat(subs.subscribeFile("nmox://outline/f0.js", root.toFile(), "f0.js")).as("re-subscribing a watched file is not a new slot").isNull();
+        subs.unsubscribe("nmox://outline/f0.js");
+        assertThat(subs.subscribeFile("nmox://outline/more.js", root.toFile(), "more.js")).isNull();
+        subs.close();
+    }
 }

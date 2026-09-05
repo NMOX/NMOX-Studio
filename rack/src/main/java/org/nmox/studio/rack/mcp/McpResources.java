@@ -58,6 +58,20 @@ final class McpResources {
 
     static final String MIME = "application/json";
 
+    /** The outline template's decoded {file} for an instance URI, or null when {@code uri} is not one (v2.84.0, file subscriptions). */
+    static String outlineFile(String uri) {
+        String prefix = "nmox://outline/";
+        if (uri == null || !uri.startsWith(prefix) || uri.length() <= prefix.length()) {
+            return null;
+        }
+        try {
+            return java.net.URLDecoder.decode(uri.substring(prefix.length()).replace("+", "%2B"),
+                    java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException malformed) {
+            return null;
+        }
+    }
+
     /** The slot name of the template whose uriTemplate is {@code uriTemplate}, or null (v2.84.0). */
     static String templateArgument(String uriTemplate) {
         for (Template t : TEMPLATES) {

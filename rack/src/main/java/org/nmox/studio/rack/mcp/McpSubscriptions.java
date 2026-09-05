@@ -42,6 +42,23 @@ final class McpSubscriptions {
     /** Frames queued for one stream but not yet written; past this a log line is counted, not queued. */
     static final int MAX_PENDING = 1_000;
 
+    /** Outline subscriptions that follow a file on disk: at most this many, polled on a schedule. */
+    static final int MAX_FILE_WATCHES = 32;
+    static final long FILE_POLL_MILLIS = 2_000;
+
+    /** One watched file: its path and the stamp last seen. */
+    private static final class Watched {
+        final java.nio.file.Path path;
+        volatile long mtime;
+        volatile long size;
+
+        Watched(java.nio.file.Path path, long mtime, long size) {
+            this.path = path;
+            this.mtime = mtime;
+            this.size = size;
+        }
+    }
+
     /** The SSE comment a client's parser ignores and a dead socket refuses. */
     static final String KEEPALIVE = ": keepalive\n\n";
     static final long KEEPALIVE_MILLIS = 15_000;
@@ -83,17 +100,26 @@ final class McpSubscriptions {
     private final Set<String> subscribed = ConcurrentHashMap.newKeySet();
     private final List<Sink> sinks = new CopyOnWriteArrayList<>();
     private final long keepaliveMillis;
+    private final long filePollMillis;
+    private final java.util.Map<String, Watched> watched = new ConcurrentHashMap<>();
+    private volatile java.util.concurrent.ScheduledExecutorService filePoll;
     private volatile int level = LEVELS.indexOf(DEFAULT_LEVEL);
     private volatile java.util.concurrent.ScheduledExecutorService keepalive;
     private volatile boolean closed;
 
     McpSubscriptions() {
-        this(KEEPALIVE_MILLIS);
+        this(KEEPALIVE_MILLIS, FILE_POLL_MILLIS);
     }
 
     /** Test seam: a short keepalive period. */
     McpSubscriptions(long keepaliveMillis) {
+        this(keepaliveMillis, FILE_POLL_MILLIS);
+    }
+
+    /** Test seam: short keepalive and file-poll periods. */
+    McpSubscriptions(long keepaliveMillis, long filePollMillis) {
         this.keepaliveMillis = keepaliveMillis;
+        this.filePollMillis = filePollMillis;
     }
 
     void subscribe(String uri) {
@@ -102,6 +128,70 @@ final class McpSubscriptions {
 
     void unsubscribe(String uri) {
         subscribed.remove(uri);
+        watched.remove(uri);
+    }
+
+    /**
+     * Subscribes an outline instance ({@code nmox://outline/{file}}) that
+     * FOLLOWS its file on disk (v2.84.0): the file must be a regular file
+     * inside {@code root} (a path that escapes is refused, never read);
+     * at most {@link #MAX_FILE_WATCHES}. Returns null on success, else
+     * the refusal — "not found" shapes for the protocol's -32002, the
+     * cap for its -32602.
+     */
+    String subscribeFile(String uri, java.io.File root, String file) {
+        if (root == null || file == null || file.isBlank()) {
+            return "not found: no aimed project";
+        }
+        java.nio.file.Path base = root.toPath().toAbsolutePath().normalize();
+        java.nio.file.Path target = base.resolve(file).toAbsolutePath().normalize();
+        if (!target.startsWith(base) || !java.nio.file.Files.isRegularFile(target)) {
+            return "not found: " + file;
+        }
+        if (!watched.containsKey(uri) && watched.size() >= MAX_FILE_WATCHES) {
+            return "capped: at most " + MAX_FILE_WATCHES + " file subscriptions";
+        }
+        try {
+            watched.put(uri, new Watched(target,
+                    java.nio.file.Files.getLastModifiedTime(target).toMillis(), java.nio.file.Files.size(target)));
+        } catch (IOException gone) {
+            return "not found: " + file;
+        }
+        subscribed.add(uri);
+        if (filePoll == null) {
+            synchronized (this) {
+                if (filePoll == null && !closed) {
+                    filePoll = Executors.newSingleThreadScheduledExecutor(
+                            r -> Threads.daemon(r, "nmox-agent-port-files"));
+                    filePoll.scheduleAtFixedRate(this::pollFiles, filePollMillis, filePollMillis, TimeUnit.MILLISECONDS);
+                }
+            }
+        }
+        return null;
+    }
+
+    int watchedFiles() {
+        return watched.size();
+    }
+
+    /** One poll: a file whose stamp moved (or that vanished) announces its URI; a vanished file announces once and is dropped. */
+    void pollFiles() {
+        for (java.util.Map.Entry<String, Watched> e : watched.entrySet()) {
+            Watched w = e.getValue();
+            try {
+                long m = java.nio.file.Files.getLastModifiedTime(w.path).toMillis();
+                long s = java.nio.file.Files.size(w.path);
+                if (m != w.mtime || s != w.size) {
+                    w.mtime = m;
+                    w.size = s;
+                    updated(e.getKey());
+                }
+            } catch (IOException vanished) {
+                watched.remove(e.getKey());
+                updated(e.getKey());
+                subscribed.remove(e.getKey());
+            }
+        }
     }
 
     boolean isSubscribed(String uri) {
@@ -271,6 +361,11 @@ final class McpSubscriptions {
         if (k != null) {
             k.shutdownNow();
         }
+        java.util.concurrent.ScheduledExecutorService f = filePoll;
+        if (f != null) {
+            f.shutdownNow();
+        }
+        watched.clear();
         for (Sink s : new ArrayList<>(sinks)) {
             drop(s);
         }

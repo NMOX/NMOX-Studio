@@ -82,7 +82,13 @@ text/event-stream`, same token, no `Origin`) carries a
 changes — a run starts and `nmox://runs` is announced, a server goes
 live and `nmox://servers` is, a linter reports and `nmox://diagnostics`
 is; `nmox://context` follows all of them. The frame names the URI and
-nothing else; the agent re-reads what it cares about.
+nothing else; the agent re-reads what it cares about. An outline an
+agent attached follows its file too: subscribe to
+`nmox://outline/src/app.ts` and the port announces that URI when the
+file changes on disk (a save, a format, a generator), once more if it
+vanishes — a regular file inside the aimed project, at most thirty-two
+of them, polled every two seconds; a path outside the project is
+`-32002`, never read.
 
 Three prompts fold live state into a question: `diagnose_failure`
 (the last failure), `review_setup` (the whole context), and `where_is`
@@ -131,7 +137,8 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 | Call without the token, or with a stale one | `401` — nothing else, not even the tool list |
 | Call from a page in a browser (any `Origin`) | `403` |
 | A plain `GET` | `405` — the port is not a page; only the SSE `GET` (with `Accept: text/event-stream`) is served, as the subscription stream |
-| Subscribe to `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
+| Subscribe to `nmox://nonesuch`, or to an outline outside the project | JSON-RPC `-32002` (resource not found) |
+| Subscribe to a thirty-third outline | `-32602`, naming the cap |
 | Read `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Ask `where_is` without `name` | `-32602`, naming the missing argument |
 | Ask for a file outside the project (`../../.zshrc`) | `outline` refuses — *outside the aimed project* — and never reads it |

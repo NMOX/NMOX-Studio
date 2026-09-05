@@ -137,4 +137,29 @@ class McpCompletionsTest {
         String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"completion/complete\"}", tools, "2.84.0", null, c);
         assertThat(missing).contains("-32602");
     }
+
+    @Test
+    @DisplayName("through the protocol: an outline instance subscribes when its file is inside the aim, -32002 outside or missing, -32602 past the cap")
+    void fileSubscriptionThroughTheProtocol(@TempDir Path root) throws Exception {
+        Files.writeString(root.resolve("app.js"), "x");
+        McpTools tools = new McpTools(List.of(new McpTools.Tool("outline", "outline", "d",
+                McpTools.objectSchema(new JSONObject()), McpTools.objectSchema(new JSONObject()),
+                args -> new McpTools.ToolResult("", new JSONObject()))));
+        McpCompletions c = new McpCompletions(index(List.of(), false), McpCompletions.rootOf(root));
+        McpSubscriptions subs = new McpSubscriptions(60_000, 60_000);
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://outline/app.js\"}}", tools, "2.84.0", subs, c);
+        assertThat(ok).doesNotContain("error");
+        assertThat(subs.isSubscribed("nmox://outline/app.js")).isTrue();
+        String out = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://outline/..%2F..%2Fetc%2Fpasswd\"}}", tools, "2.84.0", subs, c);
+        assertThat(out).contains("-32002");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://outline/none.js\"}}", tools, "2.84.0", subs, c);
+        assertThat(missing).contains("-32002");
+        String un = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"resources/unsubscribe\",\"params\":{\"uri\":\"nmox://outline/app.js\"}}", tools, "2.84.0", subs, c);
+        assertThat(un).doesNotContain("error");
+        assertThat(subs.isSubscribed("nmox://outline/app.js")).isFalse();
+        assertThat(subs.watchedFiles()).isZero();
+        String search = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://search/todo\"}}", tools, "2.84.0", subs, c);
+        assertThat(search).as("a search instance has nothing on disk to follow").contains("-32002");
+        subs.close();
+    }
 }
