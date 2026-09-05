@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.81.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.82.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3563,3 +3563,27 @@ package-private only by accident of history.
 
 **No walk this batch.** Both answers are pure folds over records the
 v2.77.0 and v2.79.0 walks already proved reachable.
+
+## Addendum — 2026-09-05, the ninth parallel batch (v2.82.0)
+
+Built beside v2.81.0's chain, in the fourth worktree again.
+
+**The Agent Port gets its tutorial, and the README its section (units
+1–2).** Eight releases into the Agent Port arc the README still did not
+name it — the user guide and the Kitchen Sink did, the front page did
+not. The tutorial follows the house shape (do/see, the config snippet
+with placeholders, the roster table, a curl walk, the refusals table),
+and AgentPortDocsTest makes it a gate in both directions: the code's
+rosters must appear in the page, the page's table must be exactly the
+code's roster, and the snippet must never carry a token-shaped string.
+
+**The review of v2.81.0 (unit 3).** Verified clean: `packageManagerOf`
+answers null without a package.json (a Cargo project is not "npm");
+`run_history` resolves an exit to the latest launch AT OR BEFORE it, so
+a device relaunched after an exit never claims the newer command; the
+seamed detectors keep the disk walk out of the pure tests. One
+blessing: `run_history` reads the recorder's whole timeline under its
+monitor and folds newest-first afterwards — the timeline is bounded by
+the recorder's own cap.
+
+**No walk this batch.** Docs and a gate.

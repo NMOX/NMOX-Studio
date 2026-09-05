@@ -548,6 +548,20 @@ through the devnet's own unlocked accounts (`eth_sendTransaction` on
 anvil); remote networks are read-only in the Studio, and RPC URLs
 that embed API keys live only in the OS keychain, never on disk.
 
+### 🤖 The Agent Port (MCP)
+
+Tools ▸ **Agent Port (MCP)…** starts a Model Context Protocol server any
+agent can connect to — loopback only, a per-start bearer token, any
+browser `Origin` refused — and it is **read-only by construction**: a
+build-failing ledger bans every spawn, write and stop primitive from
+the package. Twelve typed tools (`ide_context` for the whole picture;
+`project_state`, `live_servers`, `live_runs`, `run_history`,
+`last_failure`, `diagnostics`, `find_symbol`, `outline`,
+`search_text`, `editor_state`, `rack_devices`), the same answers as
+`nmox://` resources (with templates for the two that take an
+argument), and prompts that fold live state into the question. See
+[the tutorial](docs/tutorials/agent-port.md).
+
 ### 🌐 Standards & PWA, supported with gusto
 `.editorconfig` is **honored, not just highlighted** — every save
 applies the spec for real (trim_trailing_whitespace,
