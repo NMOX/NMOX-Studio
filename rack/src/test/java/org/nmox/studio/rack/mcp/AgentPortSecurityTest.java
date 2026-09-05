@@ -44,7 +44,10 @@ class AgentPortSecurityTest {
     }
 
     private HttpRequest.Builder req() {
-        return HttpRequest.newBuilder(URI.create(port.url()));
+        // a leash on every request: a mutant that serves the SSE stream to a
+        // refused caller would otherwise hand a discarding handler a body
+        // that never ends (the v2.84.0 proof run hung an hour on exactly that)
+        return HttpRequest.newBuilder(URI.create(port.url())).timeout(java.time.Duration.ofSeconds(5));
     }
 
     private static final String PING =
