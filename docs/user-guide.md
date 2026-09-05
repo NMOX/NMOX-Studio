@@ -73,6 +73,10 @@ a release asset is still right for major platform jumps.
 
 ## 2. First launch
 
+From a terminal, `nmoxstudio --open <folder>` launches the app with
+that folder opened as a project and the rack aimed at it — the same
+door the Welcome page's Open Folder… opens.
+
 The IDE opens with the full suite of tabs along the editor area:
 **Welcome → Task Rack → DB Studio → Contract Studio → Infra Designer →
 API Studio → Docker Panel** — every major surface is one click away from
@@ -175,7 +179,12 @@ double-clicked in the **NPM Explorer** or run from a package.json line
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running** on its
 row, offers **Stop Script** on right-click, and refuses to start a
-second copy while the first runs.
+second copy while the first runs. The ■ also sees the installs the
+product starts for you (a new project's or experiment's `npm install`,
+Project Configuration's add/remove, a language-server install) and an
+`ng generate` — hover it and the tooltip names exactly what a press
+would stop. Each NPM Explorer run gets its own Output tab named like
+the ■'s entry.
 
 **.env everywhere:** if your project has a `.env`, devices launched from
 the rack get those variables. Edit it and the status line notes that
