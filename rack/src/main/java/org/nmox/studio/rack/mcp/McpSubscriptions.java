@@ -22,9 +22,17 @@ import org.nmox.studio.core.util.Threads;
  * more; the agent re-reads. Writes to client streams ride one named
  * daemon so a slow or dead client can never stall the registry thread
  * that noticed the change (LiveRuns fires on the caller — often the EDT);
- * a stream that fails is dropped, never retried.
+ * a stream that fails is dropped, never retried. A keepalive comment
+ * rides every stream on a schedule (the review's find): a client that
+ * vanished without closing is only ever NOTICED by a write, and a quiet
+ * IDE could otherwise hold eight ghost streams until the next event —
+ * the cap refusing a live agent for the sake of dead ones.
  */
 final class McpSubscriptions {
+
+    /** The SSE comment a client's parser ignores and a dead socket refuses. */
+    static final String KEEPALIVE = ": keepalive\n\n";
+    static final long KEEPALIVE_MILLIS = 15_000;
 
     /** One attached GET stream. */
     private static final class Sink {
@@ -39,7 +47,19 @@ final class McpSubscriptions {
 
     private final Set<String> subscribed = ConcurrentHashMap.newKeySet();
     private final List<Sink> sinks = new CopyOnWriteArrayList<>();
+    private final long keepaliveMillis;
     private volatile ExecutorService writer;
+    private volatile java.util.concurrent.ScheduledExecutorService keepalive;
+    private volatile boolean closed;
+
+    McpSubscriptions() {
+        this(KEEPALIVE_MILLIS);
+    }
+
+    /** Test seam: a short keepalive period. */
+    McpSubscriptions(long keepaliveMillis) {
+        this.keepaliveMillis = keepaliveMillis;
+    }
 
     void subscribe(String uri) {
         subscribed.add(uri);
@@ -69,6 +89,32 @@ final class McpSubscriptions {
     /** Attaches a client stream; {@code onClose} runs once when it is dropped. */
     void attach(OutputStream out, Runnable onClose) {
         sinks.add(new Sink(out, onClose));
+        if (keepalive == null) {
+            synchronized (this) {
+                if (keepalive == null && !closed) {
+                    keepalive = Executors.newSingleThreadScheduledExecutor(
+                            r -> Threads.daemon(r, "nmox-agent-port-keepalive"));
+                    keepalive.scheduleAtFixedRate(this::keepalive, keepaliveMillis, keepaliveMillis, TimeUnit.MILLISECONDS);
+                }
+            }
+        }
+    }
+
+    /** One keepalive pass: a comment to every stream, on the writer; the dead are dropped. */
+    void keepalive() {
+        if (sinks.isEmpty() || closed) {
+            return;
+        }
+        submit(() -> {
+            for (Sink s : sinks) {
+                try {
+                    s.out.write(KEEPALIVE.getBytes(StandardCharsets.UTF_8));
+                    s.out.flush();
+                } catch (IOException gone) {
+                    drop(s);
+                }
+            }
+        });
     }
 
     int attachedCount() {
@@ -87,10 +133,10 @@ final class McpSubscriptions {
                 hit.add(u);
             }
         }
-        if (hit.isEmpty() || sinks.isEmpty()) {
+        if (hit.isEmpty() || sinks.isEmpty() || closed) {
             return;
         }
-        writer().execute(() -> {
+        submit(() -> {
             for (Sink s : sinks) {
                 try {
                     for (String u : hit) {
@@ -102,6 +148,14 @@ final class McpSubscriptions {
                 }
             }
         });
+    }
+
+    private void submit(Runnable write) {
+        try {
+            writer().execute(write);
+        } catch (java.util.concurrent.RejectedExecutionException stopping) {
+            // close() raced a listener: the port is going away, the frame with it
+        }
     }
 
     /** Test barrier: every queued write has run. */
@@ -130,6 +184,11 @@ final class McpSubscriptions {
 
     /** Closes every stream and stops the writer — the port is stopping. */
     void close() {
+        closed = true;
+        java.util.concurrent.ScheduledExecutorService k = keepalive;
+        if (k != null) {
+            k.shutdownNow();
+        }
         for (Sink s : new ArrayList<>(sinks)) {
             drop(s);
         }

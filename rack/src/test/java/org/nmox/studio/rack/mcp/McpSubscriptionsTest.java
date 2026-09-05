@@ -67,4 +67,46 @@ class McpSubscriptionsTest {
         subs.close();
         assertThat(subs.attachedCount()).isZero();
     }
+
+    @Test
+    @DisplayName("a client that vanished without closing is dropped by the keepalive, not held until the next event")
+    void ghostStreamDroppedByKeepalive() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions(40);
+        AtomicInteger closed = new AtomicInteger();
+        OutputStream ghost = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                throw new IOException("peer reset");
+            }
+        };
+        ByteArrayOutputStream live = new ByteArrayOutputStream();
+        subs.attach(ghost, closed::incrementAndGet);
+        subs.attach(live, () -> { });
+        // no subscription, no event: only the schedule can notice the ghost
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (subs.attachedCount() != 1 && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertThat(subs.attachedCount()).as("the ghost is gone, the live stream stays").isEqualTo(1);
+        assertThat(closed.get()).isEqualTo(1);
+        subs.awaitIdle();
+        assertThat(live.toString(StandardCharsets.UTF_8)).as("the live stream saw a comment its parser ignores")
+                .contains(McpSubscriptions.KEEPALIVE).doesNotContain("event:");
+        subs.close();
+        assertThat(subs.attachedCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("an update that races close() is dropped quietly — the caller (often the EDT) never sees the shut-down executor")
+    void updateAfterCloseIsQuiet() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions();
+        subs.attach(new ByteArrayOutputStream(), () -> { });
+        subs.subscribe("nmox://runs");
+        subs.updated("nmox://runs");
+        subs.awaitIdle();
+        subs.close();
+        subs.attach(new ByteArrayOutputStream(), () -> { });
+        subs.updated("nmox://runs");
+        subs.keepalive();
+    }
 }
