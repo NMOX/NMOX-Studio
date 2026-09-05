@@ -28,9 +28,15 @@ public final class StopRunAction extends AbstractAction {
         super(Bundle.CTL_StopRun());
         putValue(SHORT_DESCRIPTION, Bundle.CTL_StopRun());
         putValue("iconBase", "org/nmox/studio/tools/npm/stop.png");
-        setEnabled(!LiveRuns.live().isEmpty());
-        LiveRuns.addListener(() -> SwingUtilities.invokeLater(
-                () -> setEnabled(!LiveRuns.live().isEmpty())));
+        follow();
+        LiveRuns.addListener(() -> SwingUtilities.invokeLater(this::follow));
+    }
+
+    /** Enabled while anything runs; the tooltip names what a press would stop (v2.71.0). */
+    private void follow() {
+        List<LiveRuns.Run> live = LiveRuns.live();
+        setEnabled(!live.isEmpty());
+        putValue(SHORT_DESCRIPTION, LiveRuns.tooltip(live));
     }
 
     @Override

@@ -103,6 +103,27 @@ public final class LiveRuns {
         return stopped;
     }
 
+    /**
+     * The ■'s tooltip (and accessible description) BEFORE a press: what it
+     * would stop, by label, with a count — a disabled button that only says
+     * "Stop Running Command" leaves the user guessing which command
+     * (v2.71.0). Pure; the toolbar action re-reads it on every change.
+     */
+    public static String tooltip(List<Run> live) {
+        if (live.isEmpty()) {
+            return "Stop Running Command — nothing is running";
+        }
+        StringBuilder sb = new StringBuilder(live.size() == 1
+                ? "Stop the running command: " : "Stop " + live.size() + " running commands: ");
+        for (int i = 0; i < live.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(live.get(i).label());
+        }
+        return sb.toString();
+    }
+
     /** The status line after a ■ press: what was stopped, or that nothing was running. */
     public static String stoppedMessage(List<Run> stopped) {
         if (stopped.isEmpty()) {
