@@ -210,6 +210,15 @@ public final class NpmExplorerTopComponent extends TopComponent {
             }
         });
         
+        // Enter runs the selected script (v2.74.0): the double-click was the
+        // only door and a keyboard user had none (the v2.69.9 lesson)
+        tree.registerKeyboardAction(e -> {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            if (node != null) {
+                handleNodeDoubleClick(node);
+            }
+        }, javax.swing.KeyStroke.getKeyStroke("ENTER"), javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
         // Add popup menu
         JPopupMenu popup = new JPopupMenu();
         JMenuItem runItem = new JMenuItem("Run Script");

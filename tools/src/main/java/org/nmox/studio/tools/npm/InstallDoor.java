@@ -26,11 +26,12 @@ final class InstallDoor {
 
     /** The balloon; the click installs on the NPM lane (trust-gated inside, ■-registered, progress-barred). */
     static void offer(File projectDir) {
-        org.openide.awt.NotificationDisplayer.getDefault().notify(title(projectDir),
+        Balloons.replace("install:" + projectDir.getAbsolutePath(),
+                org.openide.awt.NotificationDisplayer.getDefault().notify(title(projectDir),
                 javax.swing.UIManager.getIcon("OptionPane.informationIcon"), detail(projectDir), e -> {
                     NpmService npm = NpmService.getDefault();
                     org.openide.util.RequestProcessor.getDefault().post(() ->
                             npm.install(projectDir, npm.detectPackageManager(projectDir)));
-                });
+                }));
     }
 }

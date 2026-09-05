@@ -41,7 +41,7 @@ final class WorkbenchRunning {
         for (LiveRuns.Run r : runs) {
             String url = null;
             for (LiveServings.Serving s : servings) {
-                if (s.deviceId().equals(r.id())) {
+                if (owns(r.id(), s.deviceId())) {
                     url = s.url();
                     owned.add(s.deviceId());
                     break;
@@ -55,6 +55,24 @@ final class WorkbenchRunning {
             }
         }
         return out;
+    }
+
+    /**
+     * Whether a run owns a serving: the ▶ and the NPM lane register the
+     * serving under the run's own id; a rack device registers its run as
+     * {@code device:<bus>#n} (v2.74.0) while its serving carries the bus
+     * name — so a device run owns the serving of its bus.
+     */
+    static boolean owns(String runId, String servingId) {
+        if (servingId.equals(runId)) {
+            return true;
+        }
+        if (runId.startsWith("device:")) {
+            int hash = runId.lastIndexOf('#');
+            String bus = hash > 7 ? runId.substring(7, hash) : runId.substring(7);
+            return servingId.equals(bus);
+        }
+        return false;
     }
 
     /** The row's subtitle: the address when it serves, else since when it runs (v2.73.0), else that it runs. */

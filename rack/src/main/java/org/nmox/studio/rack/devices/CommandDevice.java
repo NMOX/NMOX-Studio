@@ -68,6 +68,12 @@ public abstract class CommandDevice extends RackDevice {
         stopProcess();
     }
 
+    /** The toolbar ■ / RUNNING row / ⌘I stop is the USER's stop: it reads STOPPED (v2.74.0). */
+    @Override
+    protected void stopFromOutside() {
+        stopByUser();
+    }
+
     protected final VuMeter activity = new VuMeter("ACTIVITY", false);
     protected final Led runLed = new Led("RUN", RackStyle.MUTATE);
     protected final Led okLed = new Led("OK", RackStyle.GO);

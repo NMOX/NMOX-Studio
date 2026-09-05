@@ -65,6 +65,8 @@ class StopRunWiringTest {
         assertThat(src.indexOf("LiveRuns.removeListener(liveRunsListener)")).isGreaterThan(closed);
         assertThat(src).contains("new JMenuItem(\"Stop Script\")").contains("NpmService.stopScript(currentProjectDir, s.name)");
         assertThat(src).as("a second copy is refused out loud").contains("is already running");
+        assertThat(src).as("Enter is the keyboard's double-click (v2.74.0)")
+                .contains("KeyStroke.getKeyStroke(\"ENTER\"), javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT");
     }
 
     @Test

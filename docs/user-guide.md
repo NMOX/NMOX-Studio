@@ -172,7 +172,8 @@ the page in the in-app Browser. Everything runs behind the Workspace
 Trust prompt the first time. A run that could not start (the tool is
 not on your PATH) says so on the status line and raises a balloon whose
 click opens the Environment Doctor; the reason itself is in the Output
-tab. A Node project that declares dependencies but has no
+tab (one balloon per wall — pressing Run again replaces it, never stacks
+another). A Node project that declares dependencies but has no
 `node_modules` yet — a fresh clone, a wizard project whose install was
 skipped — is refused out loud before it can die in "Cannot find
 module", and pointed at **NPM Explorer ▸ Install** — the balloon that
@@ -185,11 +186,15 @@ on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
 command the product starts for you: the ▶'s runs, a script
 double-clicked in the **NPM Explorer** or run from a package.json line
-(Run Script), and a Focused Test or a Tests-window run. A script the
+(Run Script), a Focused Test or a Tests-window run, and — since
+v2.74.0 — every rack device's run too (a device stopped this way reads
+STOPPED on its faceplate, as if you had pressed its own STOP); the
+Workbench's RUNNING section and ⌘I list them all. A script the
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running** on its
 row, offers **Stop Script** on right-click, and refuses to start a
-second copy while the first runs. It also arms the Browser the way the
+second copy while the first runs; Enter on a selected script runs it
+too. It also arms the Browser the way the
 ▶ does: the script's first printed address opens in the in-app Browser.
 And while a new project's or experiment's dependency install is still
 running, both the ▶ and the Explorer refuse to run the project — the
@@ -1351,7 +1356,11 @@ product started for you (the ▶'s run, an NPM script, a test, an
 install, an `ng generate`) with its address when it announced one and
 since when it runs, plus every server a rack device is serving. Each
 row has real **Open** and **Stop** buttons (keyboard and screen-reader
-reachable), so one run can be stopped without taking the rest down.
+reachable), so one run can be stopped without taking the rest down;
+a rack device's run appears here too, with the server its device
+announced on the same row. Every row's title on the Workbench — open
+files, recent files, projects, running commands — is a real button:
+Tab reaches it, Enter opens it.
 ⌘I reaches the same runs: type "stop" or the run's own words and Enter
 stops exactly that one. A run you stopped yourself reads *stopped*
 wherever its outcome is reported — the wizard's install says "Install

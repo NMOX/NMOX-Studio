@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.73.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.74.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.73.0, ~46 releases in seven days). **The
+accessibility (v2.44.0–v2.74.0, ~47 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3274,3 +3274,45 @@ test committed red (unit 6's wiring gate still named a helper the same
 unit had replaced) — the targeted run's failure line was in the
 output and I read past it; every commit's own tests must be green in
 the SAME output before the commit.
+
+## Addendum — 2026-09-05, the parallel batch (v2.74.0)
+
+David, watching the pipeline wait: "I'll bet there are some things you
+could do in parallel." There were. This batch forked from the long
+shift's head while that PR was still in its gate, ran its reads and
+drafts beside the chain, and ran its own maven only once the chain's
+verify had finished — the pipeline's twenty idle minutes became units.
+
+**The ■ is total (unit 1).** Two ledgers had blessed the rack's devices
+as exempt from the toolbar ■ ("they have their own STOP"). Once the
+Workbench listed every running command and ⌘I could stop any of them,
+the exemption read as a hole: a SOLDER serving a site was the one
+running thing the product would not stop for you. Now every
+`RackDevice.exec` registers its run under the device's title, an
+outside stop routes through `stopFromOutside()`, and `CommandDevice`
+answers that with its own user-stop — the faceplate reads STOPPED, the
+verdict never flips to OK or FAIL (the v2.69.15 law kept across the new
+door). The test's first cut passed in 36 ms: the pending handle answers
+"alive" before the spawn, so it had stopped a process that never
+existed; a marker file the command touches now proves a real process
+ran. A device run owns the serving its bus announced (unit 6:
+`device:<bus>#n` ↔ bus), so it is one row on the Workbench, not two.
+
+**Rows are doors (unit 2).** Every Workbench row's title became a
+focusable button named "title — subtitle": the v2.69.9 lesson (a
+painted row with a mouse listener is a door only a mouse can open) one
+window over; the panel's click stays for the mouse.
+
+**The review's finds (units 4–5).** Every refused Run raised a fresh
+balloon, so three presses stacked three bell entries for one wall — one
+live balloon per key now, the previous cleared. The NPM Explorer's tree
+had only the double-click; Enter runs the selected script.
+
+**The walk (unit 9).** One announced instance (verify C's bytes, throwaway
+userdir, `--open` a start-script fixture): the ▶ ran and the Workbench's
+RUNNING row appeared with Open and Stop; a press on the row's TITLE
+answered as "AXPress on AXButton" and re-opened the page — the row is a
+button now, not a painted label (the walk's whole point). The ■ over a
+rack device, the balloon replacement and the Enter door stay at their
+tests (no rack device dialed from this harness, no wall, no keyboard
+input in background mode).

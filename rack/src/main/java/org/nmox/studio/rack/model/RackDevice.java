@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.model;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -367,6 +368,19 @@ public abstract class RackDevice extends JPanel {
      */
     static java.util.function.Consumer<Runnable> execLane = EXEC_RP::post;
 
+    private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * A stop that arrives from OUTSIDE the faceplate — the toolbar ■, the
+     * Workbench's RUNNING row, ⌘I (v2.74.0). The engine's default is the
+     * internal cancel; CommandDevice overrides it with its user-stop so
+     * the verdict reads STOPPED.
+     */
+    protected void stopFromOutside() {
+        stopProcess();
+    }
+
     /** Full control: extra env and an explicit working directory. */
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
@@ -385,13 +399,22 @@ public abstract class RackDevice extends JPanel {
         // to kill the live process. Only the expensive part — dotenv file
         // reads and the fork — rides the lane.
         PendingHandle pending = new PendingHandle();
+        // the run joins the toolbar ■'s registry (v2.74.0 — the ■ is TOTAL
+        // now: "stop every running command" includes the rack's; the
+        // faceplate STOP stays). The outside stop routes through
+        // stopFromOutside(), which CommandDevice answers with its own
+        // user-stop so STOP reads STOPPED (v2.69.15), never OK/FAIL.
+        String runId = "device:" + busName() + "#" + RUN_SEQ.incrementAndGet();
+        String runLabel = getTitle() + " — " + (command.isEmpty() ? "?" : command.get(0));
         IntConsumer exitOnce = code -> {
+            LiveRuns.remove(runId);
             if (running == pending) {
                 running = null;
             }
             onExit.accept(code);
         };
         running = pending;
+        LiveRuns.add(new LiveRuns.Run(runId, runLabel, this::stopFromOutside));
         // capture rack state on the calling thread; only file IO + spawn defer
         File root = rack != null ? rack.getProjectDir() : null;
         Map<String, String> overrides = rack != null ? rack.getEnvOverrides() : Map.of();
@@ -413,9 +436,6 @@ public abstract class RackDevice extends JPanel {
                 exitOnce.accept(-1);
                 return;
             }
-            // LIVERUNS-EXEMPT: a device's run has its own faceplate STOP
-            // (stopByUser, v2.69.15) and the rack's Stop All; the toolbar ■
-            // is the IDE lanes' stop, not the rack's
             CommandExecutor.Handle real = CommandExecutor.run(busName(), workingDir, env,
                     command, onLine, exitOnce);
             if (!pending.resolve(real)) {

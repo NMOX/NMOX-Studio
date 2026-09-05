@@ -35,6 +35,23 @@ public class PreflightDevice extends RackDevice {
     private final AtomicBoolean running = new AtomicBoolean();
     private volatile boolean stopRequested;
 
+    /**
+     * The USER's stop — the faceplate STOP, and (v2.74.0) the toolbar ■ /
+     * RUNNING row / ⌘I through {@link #stopFromOutside}. PREFLIGHT runs
+     * its own checklist loop and keeps its own verdict (RackDevice-based),
+     * so the flag must be set on every user door or the verdict reads
+     * FAILED after a stop.
+     */
+    private void stopByUser() {
+        stopRequested = true;
+        stopProcess();
+    }
+
+    @Override
+    protected void stopFromOutside() {
+        stopByUser();
+    }
+
     public PreflightDevice() {
         super("preflight", "PREFLIGHT", "SHIP CHECK", new Color(126, 217, 87), 3);
 
@@ -52,10 +69,7 @@ public class PreflightDevice extends RackDevice {
         verdictLcd.setToolTipText("the machine's opinion of whether you can ship");
 
         check.addActionListener(e -> primaryAction());
-        stop.addActionListener(e -> {
-            stopRequested = true; // PREFLIGHT runs its own checklist loop and keeps its own verdict (RackDevice-based)
-            stopProcess();
-        });
+        stop.addActionListener(e -> stopByUser());
 
         addInPort("run", "RUN", SignalType.TRIGGER);
         addOutPort("ok", "OK", SignalType.TRIGGER);
