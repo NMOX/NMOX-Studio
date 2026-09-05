@@ -146,6 +146,11 @@ public final class AgentPort {
         };
         org.openide.windows.TopComponent.getRegistry().addPropertyChangeListener(editor);
         unwatch.add(() -> org.openide.windows.TopComponent.getRegistry().removePropertyChangeListener(editor));
+        // a save (or the first edit) changes editor_state's unsaved flags
+        // without moving a window: the loaders' modified set is that signal
+        javax.swing.event.ChangeListener saved = evt -> subs.updated("nmox://editor", "nmox://context");
+        org.openide.loaders.DataObject.getRegistry().addChangeListener(saved);
+        unwatch.add(() -> org.openide.loaders.DataObject.getRegistry().removeChangeListener(saved));
         try {
             // every line every run prints, as MCP log messages (v2.84.0):
             // lifecycle at info (a failed exit at error), stderr at warning,
