@@ -31,12 +31,13 @@ final class LaunchFailure {
     static final String DOCTOR_ID = "org.nmox.studio.ui.actions.EnvironmentDoctorAction";
 
     static void notify(String label) {
-        org.openide.awt.NotificationDisplayer.getDefault().notify(title(label),
+        Balloons.replace("launch:" + label,
+                org.openide.awt.NotificationDisplayer.getDefault().notify(title(label),
                 javax.swing.UIManager.getIcon("OptionPane.warningIcon"), detail(label), e -> {
                     javax.swing.Action doctor = org.openide.awt.Actions.forID(DOCTOR_CATEGORY, DOCTOR_ID);
                     if (doctor != null) {
                         doctor.actionPerformed(e);
                     }
-                });
+                }));
     }
 }
