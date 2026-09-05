@@ -344,7 +344,13 @@ final class McpSubscriptions {
 
     private void drop(Sink s) {
         if (sinks.remove(s)) {
-            s.writer.shutdownNow();
+            // shutdown, not shutdownNow: drop() runs INSIDE the sink's own
+            // writer task, and shutdownNow would discard the frames queued
+            // behind it — including a test barrier's no-op, whose future then
+            // never completes (seen as a 5 s awaitIdle timeout under load).
+            // Queued writes to the closed stream fail harmlessly into a
+            // second drop that finds nothing to remove
+            s.writer.shutdown();
             try {
                 s.out.close();
             } catch (IOException ignored) {
