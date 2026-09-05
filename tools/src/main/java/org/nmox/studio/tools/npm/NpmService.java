@@ -180,6 +180,7 @@ public class NpmService {
         if (announcesServer(command) && InstallGuard.needsInstall(workingDir)) {
             String wall = InstallGuard.needsInstallMessage(workingDir);
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
+            InstallDoor.offer(workingDir);
             return CompletableFuture.completedFuture(wall);
         }
         // Route through CommandExecutor: its named daemon pump threads
