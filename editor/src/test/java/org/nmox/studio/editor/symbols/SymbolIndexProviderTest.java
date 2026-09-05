@@ -46,8 +46,14 @@ class SymbolIndexProviderTest {
         assertThat(o.nodes()).extracting(SymbolIndex.Node::name).contains("Cart", "checkout");
         assertThat(o.nodes().get(0).line()).isEqualTo(2);
         assertThat(provider().outline(root.toFile(), root.resolve("a.js").toString()).nodes()).isNotEmpty();
-        assertThat(provider().outline(root.toFile(), "../" + root.getFileName() + "/../" + root.getFileName() + "/../../etc/passwd").refusal())
-                .startsWith("no such file").isNotNull();
+        // the escape's REASON is the host's: on linux /etc/passwd exists past the
+        // climb (refused as outside), on macOS the climb lands nowhere (no such
+        // file) — either way it is refused with nothing read (the ubuntu lane
+        // caught the macOS-shaped assertion on v2.79.0's first gate)
+        SymbolIndex.Outline escape = provider().outline(root.toFile(),
+                "../" + root.getFileName() + "/../" + root.getFileName() + "/../../etc/passwd");
+        assertThat(escape.refusal()).isNotNull().matches("(no such file|outside the aimed project).*");
+        assertThat(escape.nodes()).isEmpty();
         java.nio.file.Path outside = Files.writeString(root.getParent().resolve("outside-" + root.getFileName() + ".js"), "function x() {}\n");
         try {
             assertThat(provider().outline(root.toFile(), outside.toString()).refusal()).startsWith("outside the aimed project");
