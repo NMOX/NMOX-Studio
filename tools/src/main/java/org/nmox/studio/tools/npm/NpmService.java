@@ -230,6 +230,7 @@ public class NpmService {
                 },
                 exit -> {
                     item.finished();
+                    SCRIPT_BY_RUN.remove(runId);
                     LiveRuns.remove(runId);
                     org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerFinishedItem(item);
                     if (announced.get() != null) {
@@ -248,6 +249,10 @@ public class NpmService {
                     }
                 });
         proc.set(handle);
+        String script = scriptOf(command);
+        if (script != null) {
+            SCRIPT_BY_RUN.put(runId, script);
+        }
         LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
         org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         return done;
@@ -262,19 +267,20 @@ public class NpmService {
     }
 
     /**
-     * The script a run label names: {@code "<pm> run <script> — <dir>"} → the
-     * script, {@code "<pm> start — <dir>"} → {@code start}; anything else
-     * (install, ci) → null. Pure; the label is what {@link #runCommand} built.
+     * The script each live run of this service is running, by run id
+     * (v2.71.0 review find: v2.70.0 parsed the script back out of the run
+     * LABEL by splitting on spaces, so a script named with a space —
+     * legal in package.json — never showed ● running and could not be
+     * stopped from its row). Put at spawn, removed at exit.
      */
-    static String scriptOf(String label) {
-        if (label == null) {
-            return null;
+    private static final java.util.Map<String, String> SCRIPT_BY_RUN = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The script argv names for the marker: run <script> → script, start → start, else null. */
+    static String scriptOf(String... command) {
+        if (command.length > 2 && "run".equals(command[1])) {
+            return command[2];
         }
-        String[] parts = label.split(" ");
-        if (parts.length > 2 && "run".equals(parts[1])) {
-            return parts[2];
-        }
-        if (parts.length > 1 && "start".equals(parts[1])) {
+        if (command.length > 1 && "start".equals(command[1])) {
             return "start";
         }
         return null;
@@ -285,11 +291,9 @@ public class NpmService {
         java.util.Set<String> running = new java.util.LinkedHashSet<>();
         String prefix = runIdPrefix(dir);
         for (LiveRuns.Run r : LiveRuns.live()) {
-            if (r.id().startsWith(prefix)) {
-                String script = scriptOf(r.label());
-                if (script != null) {
-                    running.add(script);
-                }
+            String script = r.id().startsWith(prefix) ? SCRIPT_BY_RUN.get(r.id()) : null;
+            if (script != null) {
+                running.add(script);
             }
         }
         return running;
@@ -300,7 +304,7 @@ public class NpmService {
         boolean stopped = false;
         String prefix = runIdPrefix(dir);
         for (LiveRuns.Run r : LiveRuns.live()) {
-            if (r.id().startsWith(prefix) && script.equals(scriptOf(r.label()))) {
+            if (r.id().startsWith(prefix) && script.equals(SCRIPT_BY_RUN.get(r.id()))) {
                 stopped |= LiveRuns.stop(r.id()) != null;
             }
         }

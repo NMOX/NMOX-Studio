@@ -57,16 +57,18 @@ class NpmRunLaneTest {
     @DisplayName("run <script> announces its printed server, joins LiveRuns, and the ■ stops it; the exit withdraws both")
     void runAnnouncesAndStops() throws Exception {
         Files.writeString(dir.resolve("run"), "echo \"  Local:   http://localhost:45671/\"\nsleep 30\n");
-        CompletableFuture<String> done = new NpmService().runCommand(dir.toFile(), "sh", "run", "dev");
+        // the script is named WITH A SPACE on purpose (v2.71.0): legal in package.json,
+        // and the one shape a label-parsing marker could never find
+        CompletableFuture<String> done = new NpmService().runCommand(dir.toFile(), "sh", "run", "my dev");
 
         assertThat(poll(() -> announced("http://localhost:45671/"), 5_000))
                 .as("the printed address is a serving (⇄ chip, Live Servers)").isTrue();
         assertThat(LiveRuns.live()).as("the toolbar ■ can see the run").anyMatch(r -> r.id().startsWith("npm-run:")
-                && r.label().equals("sh run dev — " + dir.toFile().getName()));
+                && r.label().equals("sh run my dev — " + dir.toFile().getName()));
 
-        assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it").containsExactly("dev");
+        assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it, space and all").containsExactly("my dev");
         assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
-        assertThat(NpmService.stopScript(dir.toFile(), "dev")).as("the row's own Stop").isTrue();
+        assertThat(NpmService.stopScript(dir.toFile(), "my dev")).as("the row's own Stop").isTrue();
         // The exit half is POSIX-only (ledger 38, v1.42.0): under Git Bash the
         // Windows PID chain breaks, the `sleep` grandchild outlives the tree
         // kill and holds the pipe open, so the run's exit arrives only when
