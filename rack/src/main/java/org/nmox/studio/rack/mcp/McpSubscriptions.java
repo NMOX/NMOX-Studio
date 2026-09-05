@@ -170,9 +170,10 @@ final class McpSubscriptions {
         if (filePoll == null) {
             synchronized (this) {
                 if (filePoll == null && !closed) {
-                    filePoll = Executors.newSingleThreadScheduledExecutor(
+                    java.util.concurrent.ScheduledExecutorService f = Executors.newSingleThreadScheduledExecutor(
                             r -> Threads.daemon(r, "nmox-agent-port-files"));
-                    filePoll.scheduleAtFixedRate(this::pollFiles, filePollMillis, filePollMillis, TimeUnit.MILLISECONDS);
+                    f.scheduleAtFixedRate(this::pollFiles, filePollMillis, filePollMillis, TimeUnit.MILLISECONDS);
+                    filePoll = f;
                 }
             }
         }
@@ -249,9 +250,13 @@ final class McpSubscriptions {
         if (keepalive == null) {
             synchronized (this) {
                 if (keepalive == null && !closed) {
-                    keepalive = Executors.newSingleThreadScheduledExecutor(
+                    // schedule on the LOCAL, publish after (SpotBugs
+                    // DC_PARTIALLY_CONSTRUCTED: a field read between the
+                    // assignment and the schedule would see an idle executor)
+                    java.util.concurrent.ScheduledExecutorService k = Executors.newSingleThreadScheduledExecutor(
                             r -> Threads.daemon(r, "nmox-agent-port-keepalive"));
-                    keepalive.scheduleAtFixedRate(this::keepalive, keepaliveMillis, keepaliveMillis, TimeUnit.MILLISECONDS);
+                    k.scheduleAtFixedRate(this::keepalive, keepaliveMillis, keepaliveMillis, TimeUnit.MILLISECONDS);
+                    keepalive = k;
                 }
             }
         }
