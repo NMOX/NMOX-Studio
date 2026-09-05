@@ -23,4 +23,19 @@ class AgentPortActionRedactionTest {
             port.stop();
         }
     }
+
+    @Test
+    @DisplayName("the disclosure wraps: a twelve-tool roster never makes the label wider than its bounded body (the walk's clipped-sentence find)")
+    void disclosureWraps() {
+        StringBuilder roster = new StringBuilder();
+        for (int i = 0; i < 12; i++) {
+            roster.append(i > 0 ? ", " : "").append("a_rather_long_tool_name_").append(i);
+        }
+        javax.swing.JLabel label = new javax.swing.JLabel(AgentPortAction.disclosureHtml(55988, roster.toString()));
+        int width = label.getPreferredSize().width;
+        assertThat(width).as("wrapped to the bounded body, not one long line")
+                .isLessThan(AgentPortAction.LABEL_WIDTH + 40).isGreaterThan(AgentPortAction.LABEL_WIDTH / 2);
+        assertThat(label.getPreferredSize().height).as("several lines tall").isGreaterThan(60);
+        assertThat(AgentPortAction.disclosureHtml(1, "x")).contains("127.0.0.1:1").contains("<i>x</i>").contains("hear a run's own output");
+    }
 }

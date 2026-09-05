@@ -45,6 +45,30 @@ public final class AgentPortAction implements ActionListener {
      * in — a screenshot is a file that outlives the port, and a secret in a
      * file is a secret leaked, dead or not.
      */
+    /** The disclosure label's wrap width — under the 0.8-screen clamp of every laptop the product supports. */
+    static final int LABEL_WIDTH = 720;
+
+    /**
+     * The dialog's disclosure, as HTML that WRAPS (the second walk's find): a
+     * bare {@code <html>} label lays its whole text on one line, and once
+     * that line outgrew the 0.8-screen clamp DialogFit put the dialog in a
+     * scroll pane with the disclosure clipped mid-word — the one sentence
+     * that must never be clipped. A width-bounded body wraps it.
+     */
+    static String disclosureHtml(int port, String tools) {
+        // UNITLESS on purpose: Swing's CSS reads "width: 720" and ignores
+        // "width: 720px" for a body (probed headless — 935 px one-line vs 720
+        // wrapped); a units-bearing value would silently restore the bug
+        return "<html><body style='width: " + LABEL_WIDTH + "'><b>The Agent Port is listening on "
+                + "127.0.0.1:" + port + "</b> — loopback only.<br><br>"
+                + "Any program holding the token below can READ, and only read: "
+                + "<i>" + tools + "</i> — "
+                + "and be told when a run starts, a server goes live, or a file you edit changes, "
+                + "and hear a run's own output at the level it asks for.<br>"
+                + "Nothing it says can run a command or change a file. "
+                + "Paste this into a .mcp.json to connect an agent:</body></html>";
+    }
+
     static String shownToken(AgentPort port) {
         return System.getProperty("nmox.shots.dir") != null ? "TOKEN" : port.token();
     }
@@ -104,14 +128,7 @@ public final class AgentPortAction implements ActionListener {
                 }""".formatted(port.url(), shownToken(port));
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("<html><b>The Agent Port is listening on "
-                + "127.0.0.1:" + port.port() + "</b> — loopback only.<br><br>"
-                + "Any program holding the token below can READ, and only read: "
-                + "<i>" + McpProtocol.disclosure(McpTools.production()) + "</i> — "
-                + "and be told when a run starts, a server goes live, or a file you edit changes, "
-                + "and hear a run's own output at the level it asks for.<br>"
-                + "Nothing it says can run a command or change a file. "
-                + "Paste this into a .mcp.json to connect an agent:</html>"),
+        panel.add(new JLabel(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production()))),
                 BorderLayout.NORTH);
         JTextArea config = new JTextArea(snippet);
         config.setEditable(false);
