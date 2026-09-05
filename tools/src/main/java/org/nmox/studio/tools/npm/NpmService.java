@@ -201,8 +201,11 @@ public class NpmService {
         // run happened in a tab you had to know existed. Raise it — the
         // user just asked for this command, so its output is what they
         // are waiting to see (Run Focused Test has always done this).
-        CommandExecutor.showOutput("NPM Output");
-        CommandExecutor.Handle handle = CommandExecutor.run("NPM Output", workingDir, java.util.Map.of(),
+        // the tab carries the run's own label (v2.71.0) — the ▶'s convention,
+        // so the tab, the ■'s tooltip, the Stop menu and the status line all
+        // name the same thing; two scripts no longer interleave in one tab
+        CommandExecutor.showOutput(label);
+        CommandExecutor.Handle handle = CommandExecutor.run(label, workingDir, java.util.Map.of(),
                 java.util.List.of(command),
                 line -> {
                     synchronized (output) {
