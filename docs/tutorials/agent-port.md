@@ -2,6 +2,8 @@
 
 *Point an AI agent at your IDE — and let it READ, never run.*
 
+![The Agent Port dialog — the loopback endpoint, the per-start token (a placeholder in this shot), and the ready-made client config to copy](../images/tabs/agent-port.png)
+
 NMOX Studio ships a Model Context Protocol server. Any agent that speaks
 MCP (Claude Code, an editor assistant, your own script) can connect to
 it and ask the IDE what it knows: which project is aimed, what is

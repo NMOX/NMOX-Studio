@@ -33,7 +33,7 @@ class DocsShotsTest {
                 .doesNotHaveDuplicates();
         // forge v2's reason to exist: the two dialog-only tutorials
         assertThat(DocsShots.DIALOG_SHOTS.values())
-                .contains("learning-spaces.png", "wizards-and-kits.png");
+                .contains("learning-spaces.png", "wizards-and-kits.png", "agent-port.png");
     }
 
     @Test

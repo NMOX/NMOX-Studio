@@ -39,6 +39,16 @@ public final class AgentPortAction implements ActionListener {
     private static final java.util.concurrent.atomic.AtomicReference<AgentPort> RUNNING =
             new java.util.concurrent.atomic.AtomicReference<>();
 
+    /**
+     * The token as the dialog shows it: the real one, except under the docs
+     * forge ({@code nmox.shots.dir}, v2.84.0), where the placeholder stands
+     * in — a screenshot is a file that outlives the port, and a secret in a
+     * file is a secret leaked, dead or not.
+     */
+    static String shownToken(AgentPort port) {
+        return System.getProperty("nmox.shots.dir") != null ? "TOKEN" : port.token();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (RUNNING.get() != null) {
@@ -85,7 +95,7 @@ public final class AgentPortAction implements ActionListener {
                       "headers": { "Authorization": "Bearer %s" }
                     }
                   }
-                }""".formatted(port.url(), port.token());
+                }""".formatted(port.url(), shownToken(port));
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("<html><b>The Agent Port is listening on "
