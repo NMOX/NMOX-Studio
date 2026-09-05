@@ -163,4 +163,48 @@ class CommandExecutorTest {
                 .as("NodeTypeStripping.wall must be consulted by the pump — a wall with no call site is a payload without a gate")
                 .contains("NodeTypeStripping.wall(clean)");
     }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("a kill through the handle exits as '[exit N] stopped' — the recorder reads STOPPED, not a failure (v2.84.0)")
+    void stopThroughTheHandleReadsStopped() throws Exception {
+        String device = "stopverdict-" + System.nanoTime();
+        List<String> busLines = new java.util.concurrent.CopyOnWriteArrayList<>();
+        RackBus.Listener tap = (d, line, err) -> {
+            if (d.equals(device)) {
+                busLines.add(line + "|" + err);
+            }
+        };
+        RackBus.subscribe(tap);
+        try {
+            CountDownLatch done = new CountDownLatch(1);
+            CommandExecutor.Handle h = CommandExecutor.run(device, new File("."), Map.of(),
+                    List.of("sh", "-c", "sleep 30"), l -> { }, code -> done.countDown());
+            long deadline = System.currentTimeMillis() + 5_000;
+            while (!h.isAlive() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(20);
+            }
+            h.kill();
+            assertThat(done.await(10, TimeUnit.SECONDS)).as("the killed run exits").isTrue();
+            assertThat(busLines).as("the exit line carries the stop mark and is not an error line")
+                    .anyMatch(l -> l.startsWith("[exit ") && l.endsWith("] stopped|false"));
+            // the real recorder classifies it — poll: the bus fans out on the pump thread
+            FlightRecorder rec = FlightRecorder.getDefault();
+            FlightRecorder.Event last = null;
+            deadline = System.currentTimeMillis() + 5_000;
+            while (System.currentTimeMillis() < deadline) {
+                last = rec.timeline().stream().filter(e -> e.device().equals(device))
+                        .reduce((a, b) -> b).orElse(null);
+                if (last != null && last.kind() != FlightRecorder.Kind.LAUNCH) {
+                    break;
+                }
+                Thread.sleep(20);
+            }
+            assertThat(last).isNotNull();
+            assertThat(last.kind()).isEqualTo(FlightRecorder.Kind.STOPPED);
+            assertThat(rec.statistics().get(device)).as("a stop is not a run for the stats").isNull();
+        } finally {
+            RackBus.unsubscribe(tap);
+        }
+    }
 }

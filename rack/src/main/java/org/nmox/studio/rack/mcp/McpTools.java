@@ -239,7 +239,7 @@ public final class McpTools {
                 .put("at", type("integer"))
                 .put("device", type("string"))
                 .put("kind", type("string").put("enum",
-                        new JSONArray().put("launched").put("ok").put("failed")))
+                        new JSONArray().put("launched").put("ok").put("failed").put("stopped")))
                 .put("text", type("string"))
                 .put("durationMs", new JSONObject().put("type", new JSONArray().put("integer").put("null")))
                 .put("exitCode", new JSONObject().put("type", new JSONArray().put("integer").put("null"))),
@@ -489,6 +489,7 @@ public final class McpTools {
                     .put("kind", switch (e.kind()) {
                         case LAUNCH -> "launched";
                         case EXIT_OK -> "ok";
+                        case STOPPED -> "stopped";
                         default -> "failed";
                     })
                     .put("text", text)

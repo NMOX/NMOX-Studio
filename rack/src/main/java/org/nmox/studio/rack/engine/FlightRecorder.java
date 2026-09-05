@@ -21,7 +21,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public final class FlightRecorder implements RackBus.Listener {
 
     public enum Kind {
-        LAUNCH, EXIT_OK, EXIT_FAIL, ERROR
+        LAUNCH, EXIT_OK, EXIT_FAIL, ERROR,
+        /** Ended deliberately from inside the IDE (v2.84.0): neither a success nor a failure. */
+        STOPPED
     }
 
     /** One timeline entry. durationMs is -1 except on exits. */
@@ -107,7 +109,12 @@ public final class FlightRecorder implements RackBus.Listener {
                 int code = parseExit(line);
                 Long started = launchAt.remove(device);
                 long ms = started == null ? -1 : now - started;
-                if (code == 0) {
+                if (line.endsWith(" stopped")) {
+                    // the executor's mark for a kill through its handle — the
+                    // user's stop reads STOPPED whatever the code (the v2.74.0
+                    // faceplate law, now in the record too)
+                    record(new Event(now, device, Kind.STOPPED, "exit " + code, ms));
+                } else if (code == 0) {
                     Stats st = stats.computeIfAbsent(device, d -> new Stats());
                     st.addOk(ms);
                     st.stampOk(now);
@@ -188,10 +195,15 @@ public final class FlightRecorder implements RackBus.Listener {
         return result;
     }
 
+    /**
+     * The latest run's verdict: OK, FAIL, or STOPPED (v2.84.0 — a stop after
+     * a failure means the newest run was the stop, so last_failure and
+     * ORACLE stop explaining a failure the user already moved past).
+     */
     public synchronized Event last() {
         for (var it = events.descendingIterator(); it.hasNext();) {
             Event e = it.next();
-            if (e.kind() == Kind.EXIT_OK || e.kind() == Kind.EXIT_FAIL) {
+            if (e.kind() == Kind.EXIT_OK || e.kind() == Kind.EXIT_FAIL || e.kind() == Kind.STOPPED) {
                 return e;
             }
         }
