@@ -31,6 +31,9 @@ class ProgressWiringTest {
             assertThat(spawn).as(f + ": … before the spawn").isGreaterThan(create);
             assertThat(finish).as(f + ": … and finished after it (in the exit handler)").isGreaterThan(spawn);
             assertThat(src.substring(create, spawn)).as(f + ": Cancel is the run's stop").contains("LiveRuns.stop(runId)");
+            // a handle created but never started paints nothing — the first
+            // mutant (start dropped) survived the create/spawn/finish order alone
+            assertThat(src.substring(create, spawn)).as(f + ": … and started before the spawn").contains(".start();");
         }
     }
 }
