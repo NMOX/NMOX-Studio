@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.84.0] - 2026-09-05
 
-The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-two units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
+The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-eight units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
 
 1. **The Agent Port pushes** — `resources/subscribe` on any `nmox://`
    resource, and the Streamable HTTP GET stream (`Accept:
@@ -116,7 +116,23 @@ The first eight-hour shift (David: a shift is eight hours and gets ONE release; 
     unitless, because Swing's CSS honors `width: 720` on a body and
     ignores `width: 720px` (probed headless); pinned by a headless
     preferred-size test, mutant by name; the tutorial's shot re-forged.
-17. **Docs, plan, this entry.**
+17. **The insurance verify, and what it bought** — a full `mvn clean
+    verify` at mid-shift found two SpotBugs findings the unit tests
+    never see (a lazily published scheduler assigned before it was
+    scheduled, `DC_PARTIALLY_CONSTRUCTED`, twice) three hours before
+    the chain would have died on them; file subscriptions contain by
+    REAL path (a symlink inside pointing outside is refused); a save
+    pushes `nmox://editor` (the loaders' modified set is the unsaved
+    flags' own source); floors ratcheted from the verify's own numbers
+    (project 0.88→0.89, infra 0.85→0.87; editor and rack stay
+    windows-binding by law).
+18. **The official-client walk ships** — `scripts/agent-port-walk.mjs`
+    exercises every primitive the port declares with the refusals as
+    passes; pinned by the docs test (primitives named, `node --check`
+    when node is on PATH); the tutorial and the user guide (now three
+    paragraphs: what it reads, what gates it, the complete server)
+    point at it.
+19. **Docs, plan, this entry.**
 
 ## [2.83.0] - 2026-09-05
 
