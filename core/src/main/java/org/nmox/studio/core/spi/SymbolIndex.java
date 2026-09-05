@@ -34,6 +34,26 @@ public interface SymbolIndex {
     record Answer(List<Hit> hits, boolean truncated) {
     }
 
+    /** One outline node of a single file (v2.79.0): the Navigator's own
+     *  item — kind, name, detail, 1-based line, nesting depth. */
+    record Node(String name, String kind, String detail, int line, int depth) {
+    }
+
+    /** A file's outline, or the reason there is none (v2.79.0). Exactly
+     *  one of {@code nodes} (possibly empty, for a file with no
+     *  structure) and {@code refusal} is meaningful: a refusal names why
+     *  the file could not be outlined — outside the root, missing, over
+     *  the size cap, no outline family for its type. */
+    record Outline(List<Node> nodes, String refusal) {
+    }
+
+    /**
+     * The outline of {@code file} (relative to {@code root}, or absolute
+     * and INSIDE it — a path that escapes the root is refused, never
+     * read), from the same extractor the Navigator paints.
+     */
+    Outline outline(File root, String file);
+
     /**
      * Symbols under {@code root} whose folded name starts with, then
      * contains, the folded {@code query} (leading stylesheet sigils

@@ -27,6 +27,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the build by name.
  */
 class McpSchemaContractTest {
+    /** A seam fake that answers only search — outline refuses (the seam grew a second method in v2.79.0). */
+    private interface Searcher {
+        org.nmox.studio.core.spi.SymbolIndex.Answer search(File root, String q, int limit);
+    }
+
+    private static org.nmox.studio.core.spi.SymbolIndex searchOnly(Searcher s) {
+        return new org.nmox.studio.core.spi.SymbolIndex() {
+            @Override public Answer search(File root, String q, int limit) { return s.search(root, q, limit); }
+            @Override public Outline outline(File root, String file) { return new Outline(List.of(), "no such file: " + file); }
+        };
+    }
+
 
     // ---- the validator -----------------------------------------------------
 
@@ -165,11 +177,36 @@ class McpSchemaContractTest {
     @Test
     @DisplayName("find_symbol validates with hits, empty, and unavailable (v2.78.0)")
     void findSymbol() {
-        org.nmox.studio.core.spi.SymbolIndex fake = (root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
-                List.of(new org.nmox.studio.core.spi.SymbolIndex.Hit("a", "FUNCTION", "a.js", 1)), false);
+        org.nmox.studio.core.spi.SymbolIndex fake = searchOnly((root, q, limit) -> new org.nmox.studio.core.spi.SymbolIndex.Answer(
+                List.of(new org.nmox.studio.core.spi.SymbolIndex.Hit("a", "FUNCTION", "a.js", 1)), false));
         assertValid("find_symbol", McpTools.findSymbol(fake, new File("/tmp"), "a", 5));
         assertValid("find_symbol", McpTools.findSymbol(fake, new File("/tmp"), "", 5));
         assertValid("find_symbol", McpTools.findSymbol(null, null, "a", 5));
+    }
+
+    @Test
+    @DisplayName("outline and search_text validate populated, empty, and refused (v2.79.0)")
+    void outlineAndSearch() throws Exception {
+        org.nmox.studio.core.spi.SymbolIndex fake = new org.nmox.studio.core.spi.SymbolIndex() {
+            @Override public Answer search(File root, String q, int limit) { return new Answer(List.of(), false); }
+            @Override public Outline outline(File root, String file) {
+                return file.isEmpty() ? new Outline(List.of(), "no file named")
+                        : new Outline(List.of(new Node("a", "FUNCTION", "", 1, 0)), null);
+            }
+        };
+        assertValid("outline", McpTools.outline(fake, new File("/tmp"), "a.js"));
+        assertValid("outline", McpTools.outline(fake, new File("/tmp"), ""));
+        assertValid("outline", McpTools.outline(null, null, "a.js"));
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("mcp-schema");
+        try {
+            java.nio.file.Files.writeString(dir.resolve("a.txt"), "hello world\n");
+            assertValid("search_text", McpTools.searchText(dir.toFile(), "hello", 5));
+            assertValid("search_text", McpTools.searchText(dir.toFile(), "", 5));
+            assertValid("search_text", McpTools.searchText(null, "hello", 5));
+        } finally {
+            java.nio.file.Files.deleteIfExists(dir.resolve("a.txt"));
+            java.nio.file.Files.deleteIfExists(dir);
+        }
     }
 
     @Test

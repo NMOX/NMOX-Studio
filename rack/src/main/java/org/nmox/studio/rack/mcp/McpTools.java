@@ -158,6 +158,40 @@ public final class McpTools {
                 req("query", "hits", "truncated", "available"));
     }
 
+    /** The outline object (v2.79.0): one file's Navigator items, or a refusal. */
+    private static JSONObject outlineObject() {
+        JSONObject node = objectSchema(new JSONObject()
+                .put("name", type("string"))
+                .put("kind", type("string"))
+                .put("detail", type("string"))
+                .put("line", type("integer"))
+                .put("depth", type("integer")),
+                req("name", "kind", "detail", "line", "depth"));
+        return objectSchema(new JSONObject()
+                .put("file", type("string"))
+                .put("items", arrayOf(node))
+                .put("available", type("boolean"))
+                // present only when the file could not be outlined
+                .put("refusal", type("string")),
+                req("file", "items", "available"));
+    }
+
+    /** The search_text object (v2.79.0): bounded literal hits with every cap reported. */
+    private static JSONObject searchObject() {
+        JSONObject hit = objectSchema(new JSONObject()
+                .put("file", type("string"))
+                .put("line", type("integer"))
+                .put("text", type("string")),
+                req("file", "line", "text"));
+        return objectSchema(new JSONObject()
+                .put("query", type("string"))
+                .put("matches", arrayOf(hit))
+                .put("filesScanned", type("integer"))
+                .put("truncated", type("boolean"))
+                .put("available", type("boolean")),
+                req("query", "matches", "filesScanned", "truncated", "available"));
+    }
+
     /** The editor_state object (v2.78.0): the active file and the open tabs. */
     private static JSONObject editorObject() {
         JSONObject open = objectSchema(new JSONObject()
@@ -297,6 +331,33 @@ public final class McpTools {
                         args -> render(findSymbol(SymbolIndex.find(), defaultAim().get(),
                                 args == null ? "" : args.optString("query", ""),
                                 args == null ? 20 : args.optInt("limit", 20)))),
+                new Tool("outline",
+                        "Outline a file",
+                        "The structure of one file in the aimed project — the same "
+                        + "items the Navigator shows: classes, functions, routes, "
+                        + "selectors, headings — with nesting depth. Pass \"file\" "
+                        + "relative to the project (or absolute, inside it).",
+                        objectSchema(new JSONObject()
+                                .put("file", stringType("The file to outline, relative to the aimed project.")),
+                                req("file")),
+                        outlineObject(),
+                        args -> render(outline(SymbolIndex.find(), defaultAim().get(),
+                                args == null ? "" : args.optString("file", "")))),
+                new Tool("search_text",
+                        "Search text",
+                        "Lines in the aimed project containing a literal, case-insensitive; "
+                        + "heavy directories and binaries skipped, at most 50 hits, lines "
+                        + "clipped — every cap reported. Pass \"query\"; \"limit\" caps "
+                        + "the hits (default 20).",
+                        objectSchema(new JSONObject()
+                                .put("query", stringType("The literal text to look for (not a regex)."))
+                                .put("limit", type("integer").put("description",
+                                        "Most hits to return (default 20, max 50).")),
+                                req("query")),
+                        searchObject(),
+                        args -> render(searchText(defaultAim().get(),
+                                args == null ? "" : args.optString("query", ""),
+                                args == null ? 20 : args.optInt("limit", 20)))),
                 new Tool("editor_state",
                         "Editor state",
                         "What the user has open: the file being edited and every open "
@@ -380,6 +441,38 @@ public final class McpTools {
                     .put("line", h.line()));
         }
         return out.put("hits", hits).put("truncated", a.truncated()).put("available", true);
+    }
+
+    /** outline over the seam: no provider or no aim says so; a refusal is carried. */
+    static JSONObject outline(SymbolIndex index, File root, String file) {
+        String f = file == null ? "" : file.strip();
+        JSONObject out = new JSONObject().put("file", f).put("items", new JSONArray());
+        if (index == null || root == null) {
+            return out.put("available", false).put("refusal", "no symbol index: aim a project first");
+        }
+        SymbolIndex.Outline o = index.outline(root, f);
+        if (o.refusal() != null) {
+            return out.put("available", false).put("refusal", o.refusal());
+        }
+        JSONArray items = new JSONArray();
+        for (SymbolIndex.Node n : o.nodes()) {
+            items.put(new JSONObject()
+                    .put("name", n.name())
+                    .put("kind", n.kind())
+                    .put("detail", n.detail())
+                    .put("line", n.line())
+                    .put("depth", n.depth()));
+        }
+        return out.put("items", items).put("available", true);
+    }
+
+    /** search_text over the aimed project: no aim says so. */
+    static JSONObject searchText(File root, String query, int limit) {
+        if (root == null) {
+            return TextSearch.toJson(query, new TextSearch.Answer(List.of(), 0, false)).put("available", false);
+        }
+        return TextSearch.toJson(query, TextSearch.search(root.toPath(), query, Math.max(1, limit)))
+                .put("available", true);
     }
 
     static JSONObject lastFailure(java.util.Optional<FailureContext> failure) {
