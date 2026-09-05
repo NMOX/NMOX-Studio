@@ -72,7 +72,9 @@ against a half-written `node_modules`. Delete `node_modules` and press
 Run: the status line refuses again, this time pointing at NPM Explorer
 ▸ Install. Open the **Workbench** while something runs: the RUNNING
 section leads the page with Open and Stop on every row, and ⌘I "stop"
-finds the same runs. The scaffold is pre-trusted because
+finds the same runs. Press GO on a rack device and it appears there
+as well — the ■ stops every running command, the rack's included, and
+the device's faceplate reads STOPPED. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP
