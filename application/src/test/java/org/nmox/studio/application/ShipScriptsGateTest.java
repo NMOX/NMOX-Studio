@@ -77,6 +77,18 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("post-ship.sh detaches the worktree that still holds the merged branch before deleting it (v2.71.0)")
+    void postShipDetachesTheHoldingWorktree() throws Exception {
+        String src = java.nio.file.Files.readString(SCRIPTS.resolve("post-ship.sh"));
+        int holder = src.indexOf("git worktree list --porcelain");
+        int detach = src.indexOf("checkout -q --detach");
+        int delete = src.indexOf("git branch -D \"$BRANCH\"");
+        assertThat(holder).as("the holder is found from the worktree list").isPositive();
+        assertThat(detach).as("… detached").isGreaterThan(holder);
+        assertThat(delete).as("… before the branch is deleted").isGreaterThan(detach);
+    }
+
+    @Test
     @DisplayName("post-ship.sh refuses to run without a tag")
     void postShipDemandsItsTag() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("post-ship.sh").toString()))
