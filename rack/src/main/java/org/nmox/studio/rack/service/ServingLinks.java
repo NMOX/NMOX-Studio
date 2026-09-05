@@ -1,11 +1,12 @@
 package org.nmox.studio.rack.service;
 
-import java.util.function.Consumer;
+import java.util.function.Predicate;
 import org.nmox.studio.core.spi.EmbeddedBrowser;
 
 /**
- * The one way a live serving's URL is opened from the registry's front
- * doors — the status line's ⇄ chip and ⌘I "Live Servers" (v2.70.0). A
+ * The one way a local URL is opened from the product's own doors — the
+ * status line's ⇄ chip, ⌘I "Live Servers", the Docker panel's published
+ * port, SONAR's Browse (v2.70.0). A
  * pick opens in the product's own Browser (v2.69.19 taught the chip;
  * the review found ⌘I still sending its twin to the system browser —
  * the sibling-registration lens); the system browser is the fallback
@@ -18,27 +19,34 @@ public final class ServingLinks {
     private ServingLinks() {
     }
 
-    /** Opens {@code url} in the in-app Browser, else the system browser. */
-    public static void open(String url) {
-        open(url, EmbeddedBrowser.find(), ServingLinks::systemBrowse);
+    /**
+     * Opens {@code url} in the in-app Browser, else the system browser.
+     * @return false when neither took it — the caller may say so (the
+     *         Docker panel tells "the browser refused" apart from "no
+     *         port"); a bare click site may ignore it.
+     */
+    public static boolean open(String url) {
+        return open(url, EmbeddedBrowser.find(), ServingLinks::systemBrowse);
     }
 
     /** The seam: in-app first, system browser when absent or declining. */
-    static void open(String url, EmbeddedBrowser inApp, Consumer<String> system) {
+    static boolean open(String url, EmbeddedBrowser inApp, Predicate<String> system) {
         if (inApp != null && inApp.open(url)) {
-            return;
+            return true;
         }
-        system.accept(url);
+        return system.test(url);
     }
 
-    static void systemBrowse(String url) {
+    static boolean systemBrowse(String url) {
         try {
             if (java.awt.Desktop.isDesktopSupported()
                     && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.BROWSE)) {
                 java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+                return true;
             }
         } catch (Exception ignored) {
-            // no browser available; the click just does nothing
+            // no browser available: the caller decides whether to say so
         }
+        return false;
     }
 }

@@ -211,11 +211,9 @@ public class SonarDevice extends RackDevice {
         browse.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
-                try {
-                    java.awt.Desktop.getDesktop().browse(
-                            java.net.URI.create("http://localhost:" + model.getValueAt(row, 0)));
-                } catch (Exception ignored) {
-                }
+                // the in-app Browser first (v2.70.0, the ⇄ chip's opener)
+                org.nmox.studio.rack.service.ServingLinks.open(
+                        "http://localhost:" + model.getValueAt(row, 0));
             }
         });
         south.add(browse);

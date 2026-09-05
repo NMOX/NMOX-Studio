@@ -22,26 +22,33 @@ class ServingLinksTest {
     void picksInAppFirst() {
         List<String> inApp = new ArrayList<>();
         List<String> system = new ArrayList<>();
-        ServingLinks.open("http://localhost:8081/", url -> { inApp.add(url); return true; }, system::add);
+        assertThat(ServingLinks.open("http://localhost:8081/", url -> { inApp.add(url); return true; }, system::add)).isTrue();
         assertThat(inApp).containsExactly("http://localhost:8081/");
         assertThat(system).as("the in-app Browser took it").isEmpty();
-        ServingLinks.open("http://localhost:8082/", null, system::add);
+        assertThat(ServingLinks.open("http://localhost:8082/", null, system::add)).isTrue();
         assertThat(system).as("no in-app Browser wired: the system browser").containsExactly("http://localhost:8082/");
-        ServingLinks.open("http://localhost:8083/", url -> false, system::add);
+        assertThat(ServingLinks.open("http://localhost:8083/", url -> false, system::add)).isTrue();
         assertThat(system).as("the in-app Browser declined: the system browser")
                 .containsExactly("http://localhost:8082/", "http://localhost:8083/");
+        assertThat(ServingLinks.open("http://localhost:8084/", url -> false, url -> false))
+                .as("neither took it: the caller may say so (Docker's browser-refused truth)").isFalse();
     }
 
     @Test
-    @DisplayName("both registry front doors ride ServingLinks.open and neither dials Desktop.browse itself")
+    @DisplayName("every local-URL door rides ServingLinks.open and none dials Desktop.browse itself")
     void bothDoorsRideTheOpener() throws Exception {
         Path base = Path.of("src/main/java/org/nmox/studio/rack");
-        for (String door : List.of("service/RackStatusLine.java", "search/LiveServerSearchProvider.java")) {
+        for (String door : List.of("service/RackStatusLine.java", "search/LiveServerSearchProvider.java",
+                "docker/DockerPanelTopComponent.java", "devices/SonarDevice.java")) {
             String src = Files.readString(base.resolve(door));
             assertThat(src).as(door + " opens picks through the shared opener")
                     .contains("ServingLinks.open(");
             assertThat(src).as(door + " never dials the system browser on its own (v2.70.0)")
                     .doesNotContain("Desktop.getDesktop().browse(");
+        }
+        for (String rack : List.of("docker/DockerPanelTopComponent.java", "devices/SonarDevice.java")) {
+            assertThat(Files.readString(base.resolve(rack))).as(rack + " opens the port in-app first")
+                    .contains("ServingLinks.open(");
         }
         String opener = Files.readString(base.resolve("service/ServingLinks.java"));
         assertThat(opener).as("the opener is where the system-browser fallback lives")
