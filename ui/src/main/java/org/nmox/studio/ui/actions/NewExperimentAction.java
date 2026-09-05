@@ -132,9 +132,16 @@ public final class NewExperimentAction implements ActionListener {
                         // joins the toolbar ■ (v2.71.0), like the wizard's install
                         String runLabel = pm + " install — " + dir.getName();
                         String runId = "experiment-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
+                        org.netbeans.api.progress.ProgressHandle installing =
+                                org.netbeans.api.progress.ProgressHandle.createHandle(runLabel, () -> {
+                                    LiveRuns.stop(runId);
+                                    return true;
+                                });
+                        installing.start();
                         CommandExecutor.Handle setup = CommandExecutor.run("Experiment Setup", dir, Map.of(),
                                 List.of(pm, "install"), line -> {
                                 }, code -> {
+                                    installing.finish();
                                     LiveRuns.remove(runId);
                                     if (LiveRuns.wasStoppedByUser(runId)) {
                                         StatusDisplayer.getDefault().setStatusText(

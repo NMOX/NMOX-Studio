@@ -320,9 +320,16 @@ public class NewProjectDialog extends JDialog {
                     // and it had no stop on screen
                     String runLabel = pm + " install — " + dir.getName();
                     String runId = "project-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
+                    org.netbeans.api.progress.ProgressHandle installing =
+                            org.netbeans.api.progress.ProgressHandle.createHandle(runLabel, () -> {
+                                LiveRuns.stop(runId);
+                                return true;
+                            });
+                    installing.start();
                     CommandExecutor.Handle handle = CommandExecutor.run("Project Setup", dir, Map.of(),
                             List.of(pm, "install"), line -> {
                             }, code -> {
+                                installing.finish();
                                 LiveRuns.remove(runId);
                                 if (LiveRuns.wasStoppedByUser(runId)) {
                                     // STOP reads STOPPED (v2.69.15), one registry over:
