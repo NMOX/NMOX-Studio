@@ -503,6 +503,23 @@ module NBM is signed and the certificate ships inside the product,
 so the whole update flow runs with no certificate prompts at all. The git chip on the status
 line knows your branch; the Team menu is the full git suite.
 
+## 24. Point an agent at it
+
+**Do:** Tools ▸ **Agent Port (MCP)…** ▸ Copy Config, paste it into
+your agent's `.mcp.json`, and ask the agent what is running, what you
+have open, or where `checkout` is declared.
+
+**See:** A loopback-only MCP server with a per-start token, answering
+from the IDE's own records — `ide_context` in one call (the aimed
+project, everything serving, everything running with when it started,
+the file you're editing, the last failure, a diagnostics count),
+`find_symbol` from the same index as Go to Symbol, `editor_state`
+with unsaved tabs flagged. Every tool is typed and annotated
+read-only; the same answers are browsable as `nmox://` resources. It
+is read-only by construction: an agent can ask, never run — the build
+fails if any Agent Port class so much as names a spawn, a write, or
+the run registry's stop.
+
 ---
 
 ## The refusals are features

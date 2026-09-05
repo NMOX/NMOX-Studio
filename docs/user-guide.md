@@ -445,8 +445,10 @@ checker may still underline them as unknown; the popup is right.
 local server that an AI agent (anything that speaks MCP) can connect
 to and READ your project's live state — what's aimed, what's serving,
 what's running (every command the toolbar ■ would stop, with when it
-started), what failed last, what the linters found, what's on the
-rack. It is
+started), what you have open in the editor (the active file, unsaved
+tabs flagged), where a name is declared (`find_symbol` answers from
+the same Go to Symbol index as ⌥⇧⌘O), what failed last, what the
+linters found, what's on the rack. It is
 off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the
 dialog. It is strictly read-only: nothing an agent asks can run a
@@ -456,8 +458,8 @@ answers (not just text) and can start with the `ide_context` tool for
 a one-call overview; every tool is annotated read-only so a well-behaved
 agent knows it can call them freely. It is a complete MCP server —
 besides tools it exposes **resources** (browsable URIs like
-`nmox://context`, `nmox://runs` and `nmox://diagnostics` an agent
-attaches as context)
+`nmox://context`, `nmox://runs`, `nmox://editor` and
+`nmox://diagnostics` an agent attaches as context)
 and **prompts** (ready-made templates like *Diagnose the last failure*
 that fold your IDE's live state into the question), so it drops into
 any MCP client the idiomatic way.
