@@ -40,7 +40,7 @@ class StopVerdictTest {
         java.util.Map<String, Integer> allowed = java.util.Map.of(
                 "CommandDevice.java", 1,   // stopByUser() itself
                 "ExtensionDevice.java", 2, // dispose() + the SPI's stop(): RackDevice-based, the SPI reports its own status
-                "PreflightDevice.java", 1); // RackDevice-based: its own checklist loop and its own stopRequested verdict
+                "PreflightDevice.java", 1); // RackDevice-based: its own checklist loop and its own stopRequested verdict (v2.74.0: one stopByUser both doors call)
         java.util.List<String> offenders = new java.util.ArrayList<>();
         try (java.util.stream.Stream<Path> files = Files.list(Path.of("src/main/java/org/nmox/studio/rack/devices"))) {
             for (Path f : files.filter(p -> p.toString().endsWith(".java")).sorted().toList()) {
@@ -55,5 +55,11 @@ class StopVerdictTest {
             }
         }
         assertThat(offenders).as("a user-facing stop wired to the internal cancel reads OK after a clean-exit server").isEmpty();
+        // v2.74.0: the outside stop (■ / RUNNING row / ⌘I) is the user's stop on
+        // every device that keeps its own verdict — CommandDevice and PREFLIGHT
+        for (String f : java.util.List.of("CommandDevice.java", "PreflightDevice.java")) {
+            String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/devices/" + f));
+            assertThat(src).as(f + ": stopFromOutside routes through stopByUser").contains("protected void stopFromOutside() {\n        stopByUser();");
+        }
     }
 }
