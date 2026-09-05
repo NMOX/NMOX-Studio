@@ -37,10 +37,16 @@ class SpawnTrustGateTest {
         assertThat(m).as("invokeAction exists").isPositive();
         String body = src.substring(m, src.indexOf("\n    }", m));
         int gate = body.indexOf("WorkspaceTrust.requestTrust(dir)");
-        int spawn = body.indexOf("CommandExecutor.run(");
+        // v2.70.0: the spawn moved to launch(), posted from invokeAction
+        // AFTER the gate (SpawnThreadGateTest owns the thread half)
+        int post = body.indexOf("RUN_RP.post(() -> launch(");
         assertThat(gate).as("the trust gate is present").isGreaterThan(0);
-        assertThat(spawn).as("the spawn is present").isGreaterThan(0);
-        assertThat(gate).as("trust is checked BEFORE the spawn").isLessThan(spawn);
+        assertThat(post).as("the launch is posted from invokeAction").isGreaterThan(0);
+        assertThat(gate).as("trust is checked BEFORE the launch is posted").isLessThan(post);
+        int l = src.indexOf("private void launch(");
+        String launch = src.substring(l, src.indexOf("\n    }\n", l));
+        assertThat(launch.indexOf("CommandExecutor.run(")).as("the spawn lives in launch()").isPositive();
+        assertThat(launch).as("launch() never re-asks — the gate is invokeAction's").doesNotContain("requestTrust(");
     }
 
     @Test

@@ -21,8 +21,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public final class LiveRuns {
 
-    /** One running command: its id, the label the user saw, and how to kill it. */
+    /**
+     * One running command: its id, the label the user saw, and how to kill
+     * it. The label reaches platform-owned Swing text (the status line is a
+     * JLabel, Run ▸ Stop Build/Run is a JMenuItem — both decompiled) and
+     * Swing renders a string that BEGINS with {@code <html>} as markup, an
+     * {@code <img src>} fetching at paint time (the v1.208.0 class). Every
+     * caller's label starts with fixed text today; the record keeps the
+     * shape true by construction rather than by convention.
+     */
     public record Run(String id, String label, Runnable killer) {
+        public Run {
+            label = plainLeading(label);
+        }
+    }
+
+    /** A label that can never be taken for markup: a leading {@code <html} is set off by a space. */
+    static String plainLeading(String label) {
+        if (label != null && label.regionMatches(true, 0, "<html", 0, 5)) {
+            return " " + label;
+        }
+        return label;
     }
 
     private static final Map<String, Run> LIVE = new LinkedHashMap<>();

@@ -195,7 +195,7 @@ public class NpmService {
         IdeRunItem item = new IdeRunItem(command.length > 1 ? command[1] : command[0],
                 org.openide.filesystems.FileUtil.toFileObject(
                         org.openide.filesystems.FileUtil.normalizeFile(workingDir)),
-                label, proc::get, () -> runCommand(workingDir, again));
+                label, proc::get, () -> RP.post(() -> runCommand(workingDir, again)));
         // Double-clicking a script in NPM Explorer used to look broken:
         // CommandExecutor.getIO deliberately never steals focus, so the
         // run happened in a tab you had to know existed. Raise it — the

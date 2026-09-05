@@ -55,4 +55,15 @@ class LiveRunsTest {
         assertThat(LiveRuns.stoppedMessage(List.of(new LiveRuns.Run("a", "Run — one", () -> { }),
                 new LiveRuns.Run("b", "Build — two", () -> { })))).isEqualTo("Stopped: Run — one, Build — two");
     }
+
+    @Test
+    @DisplayName("a label that begins with <html> can never reach a platform JLabel/JMenuItem as markup (v2.70.0)")
+    void markupLeadingLabelIsSetOff() {
+        LiveRuns.Run r = new LiveRuns.Run("x", "<html><img src='http://evil/x'>", () -> { });
+        assertThat(r.label()).startsWith(" <html>");
+        assertThat(new LiveRuns.Run("y", "<HTML>shout", () -> { }).label()).startsWith(" <HTML>");
+        assertThat(new LiveRuns.Run("z", "Run — <html>inside", () -> { }).label())
+                .as("only the LEADING position is the sniff (BasicHTML.isHTMLString, decompiled)")
+                .isEqualTo("Run — <html>inside");
+    }
 }
