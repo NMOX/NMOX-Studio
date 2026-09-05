@@ -324,6 +324,13 @@ public class NewProjectDialog extends JDialog {
                             List.of(pm, "install"), line -> {
                             }, code -> {
                                 LiveRuns.remove(runId);
+                                if (LiveRuns.wasStoppedByUser(runId)) {
+                                    // STOP reads STOPPED (v2.69.15), one registry over:
+                                    // the user ended it, so no "didn't finish" dialog
+                                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                            "Install stopped — run " + pm + " install when you are ready");
+                                    return;
+                                }
                                 reportInstall(pm, code);
                             });
                     LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));

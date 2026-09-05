@@ -70,6 +70,23 @@ class LiveRunsTest {
     }
 
     @Test
+    @DisplayName("a user's Stop is remembered for the exit handler, once; a natural exit is not (v2.73.0 review)")
+    void stoppedByUserIsRemembered() {
+        LiveRuns.add(new LiveRuns.Run("u1", "npm install — x", () -> { }));
+        LiveRuns.add(new LiveRuns.Run("u2", "Focused test: adds", () -> { }));
+        LiveRuns.add(new LiveRuns.Run("u3", "Run — x", () -> { }));
+        LiveRuns.stop("u1");
+        LiveRuns.stopAll();
+        assertThat(LiveRuns.wasStoppedByUser("u1")).as("stop(id)").isTrue();
+        assertThat(LiveRuns.wasStoppedByUser("u1")).as("consumed").isFalse();
+        assertThat(LiveRuns.wasStoppedByUser("u2")).as("stopAll").isTrue();
+        assertThat(LiveRuns.wasStoppedByUser("u3")).isTrue();
+        LiveRuns.add(new LiveRuns.Run("u4", "natural", () -> { }));
+        LiveRuns.remove("u4");
+        assertThat(LiveRuns.wasStoppedByUser("u4")).as("a natural exit was not a user stop").isFalse();
+    }
+
+    @Test
     @DisplayName("a live run knows since when; a withdrawn one forgets (v2.73.0)")
     void startedAtAndSince() {
         LiveRuns.clockForTest(() -> 1_000_000L);

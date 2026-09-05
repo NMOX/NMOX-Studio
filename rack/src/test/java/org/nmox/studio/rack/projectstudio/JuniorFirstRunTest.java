@@ -54,6 +54,8 @@ class JuniorFirstRunTest {
                 .as("both callbacks used to be empty lambdas, so a failed install "
                         + "(no Node on PATH) was completely invisible")
                 .contains("reportInstall(pm, code);");
+        assertThat(src).as("a user's Stop reads stopped, not failed (v2.73.0)")
+                .contains("LiveRuns.wasStoppedByUser(runId)");
         // v2.71.0: the exit callback ALSO withdraws the run from the ■ —
         // the report call is what this gate exists for, so it is what it reads
         // and the failure message must name where to look

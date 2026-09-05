@@ -136,6 +136,11 @@ public final class NewExperimentAction implements ActionListener {
                                 List.of(pm, "install"), line -> {
                                 }, code -> {
                                     LiveRuns.remove(runId);
+                                    if (LiveRuns.wasStoppedByUser(runId)) {
+                                        StatusDisplayer.getDefault().setStatusText(
+                                                "Install stopped — run " + pm + " install when you are ready");
+                                        return;
+                                    }
                                     reportInstall(pm, code);
                                 });
                         LiveRuns.add(new LiveRuns.Run(runId, runLabel, setup::kill));
