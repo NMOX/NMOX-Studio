@@ -175,7 +175,9 @@ click opens the Environment Doctor; the reason itself is in the Output
 tab. A Node project that declares dependencies but has no
 `node_modules` yet — a fresh clone, a wizard project whose install was
 skipped — is refused out loud before it can die in "Cannot find
-module", and pointed at **NPM Explorer ▸ Install**. Every command the
+module", and pointed at **NPM Explorer ▸ Install** — the balloon that
+comes with it runs the install on click, through the same trust gate.
+Every command the
 product runs for you also shows in the status bar's progress area with
 a Cancel that stops exactly that command. To stop: the ■ right of Debug on the
 toolbar (⌥⌘.) stops every running command at once (and says what it stopped
@@ -291,7 +293,7 @@ connections) the Java [Device SPI](device-spi.md) is still there.
 device — and the whole rack **exports to GitHub Actions** (your local
 pipeline and your CI are the same wiring). **HELM** runs commands on a
 remote server over ssh. **TAIL** follows any log file. **WORMHOLE**
-tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code. Picking a serving from the chip or from ⌘I Live Servers opens it in the in-app Browser (the system browser only when none is wired up); the Docker panel's published port and SONAR's Browse open the same way.
+tunnels. **PHOSPHOR** is a terminal in the rack. If the command prints a local address (npx http-server, python -m http.server, npm run dev through NPM-9000, gulp serve through DYNAMO), the ⇄ chip lights like any serve device — ⌘I Live Servers, VITALS and BEACON see it — and goes dark when the run ends; HELM never announces (a remote host's localhost is not yours). STOP reads STOPPED whatever the process's exit code. Picking a serving from the chip or from ⌘I Live Servers opens it in the in-app Browser (the system browser only when none is wired up); the Docker panel's published port and SONAR's Browse open the same way. A serving the ▶ or an NPM script started also carries a **Stop** in the chip's menu, right under its Open; a rack device's server keeps its faceplate STOP.
 
 **The rack stays in sync by itself.** Edit `package.json` and NPM-9000's
 script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its
