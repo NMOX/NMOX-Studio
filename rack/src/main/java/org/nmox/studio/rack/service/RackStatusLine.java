@@ -137,41 +137,10 @@ public class RackStatusLine implements StatusLineElementProvider {
             JPopupMenu menu = new JPopupMenu();
             for (ServingRegistry.Serving s : servings) {
                 JMenuItem item = new JMenuItem(s.deviceTitle() + " — " + s.url());
-                item.addActionListener(e -> openInBrowser(s.url()));
+                item.addActionListener(e -> ServingLinks.open(s.url()));
                 menu.add(item);
             }
             menu.show(servingLabel, 0, -menu.getPreferredSize().height);
-        }
-
-        /** The SCOPE device's open-URL idiom: the system browser. */
-        private static void openInBrowser(String url) {
-            RackStatusLine.openInBrowser(url, org.nmox.studio.core.spi.EmbeddedBrowser.find(),
-                    RackStatusLine::systemBrowse);
-        }
-    }
-
-    /**
-     * A serving picked from the ⇄ chip opens in the product's own Browser
-     * (v2.69.19 — the chip predates it, v1.35 vs v1.199, and sent every pick
-     * to the system browser); the system browser is the fallback when no
-     * in-app Browser is wired up or it declines the URL. Package-private seam.
-     */
-    static void openInBrowser(String url, org.nmox.studio.core.spi.EmbeddedBrowser inApp,
-            java.util.function.Consumer<String> system) {
-        if (inApp != null && inApp.open(url)) {
-            return;
-        }
-        system.accept(url);
-    }
-
-    static void systemBrowse(String url) {
-        try {
-            if (java.awt.Desktop.isDesktopSupported()
-                    && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.BROWSE)) {
-                java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-            }
-        } catch (Exception ignored) {
-            // no browser available; the click just does nothing
         }
     }
 }
