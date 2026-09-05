@@ -81,6 +81,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
+The toolbar's ▶ runs the aimed project the way its toolchain runs, and
+the ■ beside Debug stops every command the product started for you
+(the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an
+`ng generate`), naming them in its tooltip; a Run pressed while the
+project's own dependency install is still going is refused out loud.
 The Welcome page's **First Steps** column (v2.66.0) ticks its five
 first gestures — open a project, run something, see a server live,
 ask ORACLE, try a learning space — from records the product already
