@@ -82,7 +82,7 @@ brew install nmox/nmox-studio/nmox-studio
 ```
 
 The Welcome page's **First Steps** column (v2.66.0) ticks its five
-first gestures — open a project, run in the rack, see a server live,
+first gestures — open a project, run something, see a server live,
 ask ORACLE, try a learning space — from records the product already
 keeps; no survey, no telemetry, and it disappears when done.
 

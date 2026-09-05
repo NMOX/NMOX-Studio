@@ -44,7 +44,7 @@ public final class GettingStarted {
     public static final List<Step> STEPS = List.of(
             new Step("project", "Open a project", "Open Folder…  ⌥⌘O",
                     Target.action("File", "org.nmox.studio.ui.actions.OpenFolderAction")),
-            new Step("run", "Run something in the rack", "Task Rack  ⌘9 — press GO on a device",
+            new Step("run", "Run something", "▶ (F6), or GO on a rack device  ⌘9",
                     Target.window("RackTopComponent")),
             new Step("serve", "See a server go live", "a serve device lights the ⇄ chip",
                     Target.window("RackTopComponent")),
