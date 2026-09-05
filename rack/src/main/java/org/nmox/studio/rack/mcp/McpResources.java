@@ -37,7 +37,42 @@ final class McpResources {
             new Bound("nmox://diagnostics", "diagnostics"),
             new Bound("nmox://devices", "rack_devices"));
 
+    /** A parameterised resource (v2.80.0): the tool behind it and the
+     *  argument the URI's tail fills, percent-decoded. */
+    private record Template(String uriTemplate, String toolName, String argument,
+            String title, String description) {
+        String prefix() {
+            return uriTemplate.substring(0, uriTemplate.indexOf('{'));
+        }
+    }
+
+    // resource templates (the spec's resources/templates/list): the two
+    // tools that take an argument, browsable as URIs — an agent that
+    // attaches nmox://outline/src/app.js gets the outline as context
+    private static final List<Template> TEMPLATES = List.of(
+            new Template("nmox://outline/{file}", "outline", "file",
+                    "Outline of a file", "The Navigator's items for one file of the aimed project (path relative to it, percent-encoded)."),
+            new Template("nmox://search/{query}", "search_text", "query",
+                    "Text search", "Lines in the aimed project containing a literal (percent-encoded), bounded."));
+
     static final String MIME = "application/json";
+
+    /** The resources/templates/list payload: one entry per template whose tool exists. */
+    static JSONObject templates(McpTools tools) {
+        JSONArray out = new JSONArray();
+        for (Template t : TEMPLATES) {
+            if (tools.byName(t.toolName()) == null) {
+                continue;
+            }
+            out.put(new JSONObject()
+                    .put("uriTemplate", t.uriTemplate())
+                    .put("name", t.toolName())
+                    .put("title", t.title())
+                    .put("description", t.description())
+                    .put("mimeType", MIME));
+        }
+        return new JSONObject().put("resourceTemplates", out);
+    }
 
     /** The resources/list payload: one entry per bound tool. */
     static JSONObject list(McpTools tools) {
@@ -73,6 +108,27 @@ final class McpResources {
                 // empty arguments: a resource read is the no-parameter
                 // form of its tool (diagnostics reads unfiltered)
                 JSONObject structured = t.handler().apply(new JSONObject()).structured();
+                JSONArray contents = new JSONArray().put(new JSONObject()
+                        .put("uri", uri)
+                        .put("mimeType", MIME)
+                        .put("text", structured == null ? "{}" : structured.toString()));
+                return new JSONObject().put("contents", contents);
+            }
+        }
+        for (Template t : TEMPLATES) {
+            if (uri.startsWith(t.prefix()) && uri.length() > t.prefix().length()) {
+                McpTools.Tool tool = tools.byName(t.toolName());
+                if (tool == null) {
+                    return null;
+                }
+                String value;
+                try {
+                    value = java.net.URLDecoder.decode(uri.substring(t.prefix().length()),
+                            java.nio.charset.StandardCharsets.UTF_8);
+                } catch (IllegalArgumentException malformed) {
+                    return null; // a broken percent-escape names nothing
+                }
+                JSONObject structured = tool.handler().apply(new JSONObject().put(t.argument(), value)).structured();
                 JSONArray contents = new JSONArray().put(new JSONObject()
                         .put("uri", uri)
                         .put("mimeType", MIME)

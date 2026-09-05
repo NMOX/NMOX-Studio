@@ -20,7 +20,10 @@ final class McpPrompts {
     }
 
     private record Template(String name, String title, String description,
-            String toolName, String frame) {
+            String toolName, String frame, String argument, String argumentDescription) {
+        Template(String name, String title, String description, String toolName, String frame) {
+            this(name, title, description, toolName, frame, null, null);
+        }
     }
 
     // the frame carries a {state} placeholder the live tool text fills.
@@ -37,17 +40,34 @@ final class McpPrompts {
                     + "aimed project, everything serving, everything running.",
                     "ide_context",
                     "This is my current development setup in NMOX Studio:\n\n"
-                    + "{state}\n\nDoes anything look off or worth checking?"));
+                    + "{state}\n\nDoes anything look off or worth checking?"),
+            // the first prompt WITH an argument (v2.80.0): the name is the
+            // agent's, the answer is the IDE's own symbol index
+            new Template("where_is", "Where is a symbol declared",
+                    "Asks about a name in the aimed project, with the IDE's own "
+                    + "symbol hits folded in.",
+                    "find_symbol",
+                    "Here is where \"{argument}\" is declared in my project, "
+                    + "from my IDE's symbol index:\n\n{state}\n\nWhat does it do, "
+                    + "and what should I read next to understand it?",
+                    "name", "The symbol to look for (a function, class, route, selector...)."));
 
     /** The prompts/list payload. */
     static JSONObject list() {
         JSONArray prompts = new JSONArray();
         for (Template t : CATALOG) {
+            JSONArray arguments = new JSONArray();
+            if (t.argument() != null) {
+                arguments.put(new JSONObject()
+                        .put("name", t.argument())
+                        .put("description", t.argumentDescription())
+                        .put("required", true));
+            }
             prompts.put(new JSONObject()
                     .put("name", t.name())
                     .put("title", t.title())
                     .put("description", t.description())
-                    .put("arguments", new JSONArray()));
+                    .put("arguments", arguments));
         }
         return new JSONObject().put("prompts", prompts);
     }
@@ -58,12 +78,34 @@ final class McpPrompts {
      * tool's live text into the frame.
      */
     static JSONObject get(String name, McpTools tools) {
+        return get(name, tools, null);
+    }
+
+    /**
+     * As above with the request's {@code arguments}; a template that
+     * declares an argument refuses without it — {@link IllegalArgumentException}
+     * names the missing one, which the protocol answers as -32602.
+     */
+    static JSONObject get(String name, McpTools tools, JSONObject arguments) {
         for (Template tpl : CATALOG) {
             if (tpl.name().equals(name)) {
                 McpTools.Tool tool = tools.byName(tpl.toolName());
+                JSONObject args = new JSONObject();
+                String value = "";
+                if (tpl.argument() != null) {
+                    value = arguments == null ? "" : arguments.optString(tpl.argument(), "").strip();
+                    if (value.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "prompt " + name + " needs arguments." + tpl.argument());
+                    }
+                    // the tool's own argument name differs from the prompt's
+                    // (find_symbol takes "query"): the prompt is the agent's
+                    // vocabulary, the tool keeps its schema
+                    args.put("query", value);
+                }
                 String state = tool == null ? "(unavailable)"
-                        : tool.handler().apply(new JSONObject()).text();
-                String text = tpl.frame().replace("{state}", state);
+                        : tool.handler().apply(args).text();
+                String text = tpl.frame().replace("{state}", state).replace("{argument}", value);
                 JSONArray messages = new JSONArray().put(new JSONObject()
                         .put("role", "user")
                         .put("content", new JSONObject()

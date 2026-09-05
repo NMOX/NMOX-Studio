@@ -4,6 +4,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.80.0] - 2026-09-05
+
+The seventh parallel batch — built beside v2.79.0's chain.
+
+1. **Resource templates** — `resources/templates/list` offers
+   `nmox://outline/{file}` and `nmox://search/{query}`, and
+   `resources/read` fills the argument from the URI's tail
+   (percent-decoded; an empty tail or a broken escape names nothing) —
+   the two argument-taking tools are now browsable, so an agent attaches
+   a file's outline as context instead of calling for it.
+2. **The first prompt with an argument** — *Where is a symbol declared*
+   (`where_is`, argument `name`) folds `find_symbol`'s hits for the name
+   into the question; a call without the argument is refused as -32602
+   naming it; the argument-less prompts ignore arguments.
+3. **The read-only ledger widens** — every `Files` mutator, the stream
+   writers and `AtomicFiles` join the banned names in the Agent Port
+   package: the outline and search tools READ the project, and the law
+   bans the ways to write it by name.
+4. **The v2.79.0 review, clean** — blessings in the plan.
+5. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
+   24, plan, this entry.
+
 ## [2.79.0] - 2026-09-05
 
 The sixth parallel batch — built beside v2.78.0's chain.
@@ -17041,6 +17063,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.80.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.79.0...v2.80.0
 [2.79.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.78.0...v2.79.0
 [2.78.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.77.0...v2.78.0
 [2.77.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.76.0...v2.77.0
