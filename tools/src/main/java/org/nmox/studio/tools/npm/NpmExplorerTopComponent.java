@@ -174,7 +174,12 @@ public final class NpmExplorerTopComponent extends TopComponent {
         rootNode = new DefaultMutableTreeNode("NPM Project");
         treeModel = new DefaultTreeModel(rootNode);
         tree = new JTree(treeModel);
-        
+        // Script and package names are package.json CONTENT — a cloned
+        // repo's "<html><img src=…>" script must paint as characters, never
+        // render and fetch (the v1.306.0 law's JTree half, v2.70.0)
+        tree.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(
+                new javax.swing.tree.DefaultTreeCellRenderer()));
+
         // Add double-click handler
         tree.addMouseListener(new MouseAdapter() {
             @Override

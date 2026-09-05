@@ -27,7 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>The fix is {@code core.util.PlainTables} (the one place the
  * {@code "html.disable"} property is spelled). This gate makes it a
  * build law: every main source that constructs a {@code new JTable}
- * must also reference {@code PlainTables}, so a NEW table starts safe
+ * (or, since v2.70.0, a {@code new JTree} — the default tree renderer is
+ * the same JLabel) must also reference {@code PlainTables}, so a NEW table starts safe
  * or names its reason. The scan runs from the application module — the
  * last reactor member — so it sees every sibling module's sources.
  *
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PlainTableGateTest {
 
     @Test
-    @DisplayName("every production new JTable file references PlainTables")
+    @DisplayName("every production new JTable / new JTree file references PlainTables or carries the written exemption")
     void everyTableIsPlainText() throws IOException {
         Path root = Path.of("..").toRealPath();
         List<String> offenders = new ArrayList<>();
@@ -64,10 +65,14 @@ class PlainTableGateTest {
                     continue;
                 }
                 String src = Files.readString(p);
-                if (!src.contains("new JTable(")) {
+                // v2.70.0: a JTree's DefaultTreeCellRenderer is a JLabel and
+                // renders <html> exactly as a table cell does — NPM Explorer
+                // painted package.json script names through it since v0.1
+                if (!src.contains("new JTable(") && !src.contains("new JTree(")) {
                     continue;
                 }
                 sites += src.split("new JTable\\(", -1).length - 1;
+                sites += src.split("new JTree\\(", -1).length - 1;
                 if (!src.contains("PlainTables")
                         && !src.contains("PLAIN-TABLE-EXEMPT:")) {
                     offenders.add(root.relativize(p).toString());
@@ -81,7 +86,7 @@ class PlainTableGateTest {
                         + "PlainTables.disableHtml / PlainTables.plain")
                 .isEmpty();
         assertThat(sites)
-                .as("the gate has subjects (the swept table sites exist)")
-                .isGreaterThanOrEqualTo(8);
+                .as("the gate has subjects (the swept table + tree sites exist)")
+                .isGreaterThanOrEqualTo(16);
     }
 }
