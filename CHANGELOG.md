@@ -22,7 +22,10 @@ The fourth parallel batch — built beside v2.76.0's chain.
    not reach: API Studio and the Infra Designer threw HeadlessException at
    construction (a menu-mask read, a JList drag flag); both guarded.
 3. **The v2.76.0 review, clean** — blessings in the plan.
-4. **Docs, plan, this entry.**
+4. **The walk** — `live_runs` proven over curl against the assembled app
+   (the run named with its start, `nmox://runs` byte-identical,
+   `ide_context` counting it, 401 without the token; empty after the ■).
+5. **Docs, plan, this entry.**
 
 ## [2.76.0] - 2026-09-05
 

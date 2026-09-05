@@ -3428,7 +3428,17 @@ LiveServings.find() before the registry's notifier has delivered —
 a drain that makes it deterministic is the tell of a real race
 (flaky-test-can-hide-a-real-bug).
 
-**No walk this batch.** The MCP surface is proven by the schema
-contract and the protocol tests over the real server; the window
-contracts ARE headless construction. The next walk instance batches
-the ■ tooltip, the marker, and `live_runs` over curl in one sitting.
+**The walk (wt4 bytes, one throwaway instance, background mode).**
+▶ ran `npm run dev`; Tools ▸ Agent Port (MCP)… opened; the dialog's
+Copy Config button is not AX-pressable (the Exit-IDE class) but its
+config text area IS readable through System Events — `text area 1 of
+scroll area 1 of window "Agent Port (MCP)"` (the scroll area is the
+parent; the bare index is "Invalid index"). With the token held in a
+shell variable and never printed: `live_runs` answered
+`Run — batch-walk6 (since 12:24)` with the epoch start, `nmox://runs`
+was byte-identical, `ide_context` said `Running: 1 command`, a
+tokenless call got 401; after the ■ (AXPress) `live_runs` answered
+"Nothing is running." and the watcher saw the node tree gone. Two
+legs stay automation-unreachable in background mode and are pinned at
+unit level: the ■ tooltip (a dwelling hover is display-scope) and the
+NPM Explorer's "● running since" marker (a JTree row gesture).
