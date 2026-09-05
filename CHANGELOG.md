@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.71.0] - 2026-09-05
+
+The bundled night shift — twelve units, one release, the day's method
+carried into the night. The ■ became a product-wide fact: every
+command the product starts for you is stoppable or blessed in writing,
+and the review found the phantom the shape had been hiding.
+
+1. **post-ship detaches the worktree that still holds the merged
+   branch** before deleting it (the day's chain could not delete its
+   own branch); gate-pinned.
+2. **The ■'s tooltip names what a press would stop**, with a count
+   (pure `LiveRuns.tooltip`; the action re-reads it on every change).
+3. **NPM Explorer runs get their own Output tab**, named like the ■'s
+   entry — the ▶'s convention; two scripts no longer interleave.
+4. **The v2.70.0 review's find** — the running marker parsed the script
+   back out of the run label, so a script named with a space (legal in
+   package.json) never showed ● running and could not be stopped from
+   its row; the run→script map is structural now, and the lane test
+   runs a script called `my dev`.
+5. **`ng generate` joins the ■** — a stalled schematic had no stop.
+6. **The setup installs join the ■** (New Project, New Experiment,
+   Project Configuration add/remove, the language-server installer)
+   and **LiveRunsLedgerTest** makes the law structural: every
+   `CommandExecutor.run` site registers with LiveRuns or carries a
+   written `LIVERUNS-EXEMPT:` reason (the rack's devices — their own
+   STOP; HARBOR's fixed docker verbs).
+7. **The night review** — a launch that fails before it starts (the
+   tool not on PATH, the beginner's commonest wall) fires the exit
+   callback synchronously, so every register-after-spawn site withdrew
+   a run that was not there yet and then added a PHANTOM: the ■ lit for
+   a command that never ran. A withdrawal that precedes its add now
+   leaves a tombstone the late add dies on (one place, all nine sites),
+   the platform's Stop item is registered before the spawn, and the
+   failure shape is spawned for real in the lane test.
+8. **The walk** of the assembled app — see the plan addendum.
+9. **Docs** — user guide (`--open <folder>`, the ■'s full reach, the
+   tooltip, per-run tabs) and the Kitchen Sink.
+10. **plan.md** — the night's addendum.
+11. **The day's gauntlet** — CI's update gauntlet passed for 2.70.0
+    (previous release → 2.70.0 in-app, both halves), recorded.
+12. **This entry and the headline.**
+
 ## [2.70.0] - 2026-09-05
 
 The bundled day shift — twelve units, one release (David: "we're
@@ -16803,6 +16845,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.71.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.70.0...v2.71.0
 [2.70.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.19...v2.70.0
 [2.69.19]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.18...v2.69.19
 [2.69.18]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.17...v2.69.18
