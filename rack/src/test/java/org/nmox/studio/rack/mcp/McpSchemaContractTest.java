@@ -155,6 +155,18 @@ class McpSchemaContractTest {
     }
 
     @Test
+    @DisplayName("run_history validates populated, capped, and empty (v2.81.0)")
+    void runHistory() {
+        List<org.nmox.studio.rack.engine.FlightRecorder.Event> tl = List.of(
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(1L, "V", org.nmox.studio.rack.engine.FlightRecorder.Kind.LAUNCH, "x", -1),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(2L, "V", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_FAIL, "[exit 2]", 1));
+        assertValid("run_history", McpTools.runHistory(tl, 5));
+        assertValid("run_history", McpTools.runHistory(tl, 1));
+        assertValid("run_history", McpTools.runHistory(List.of(), 5));
+        assertValid("project_state", McpTools.projectState(() -> new File("/tmp"), d -> "NODE", d -> "pnpm"));
+    }
+
+    @Test
     @DisplayName("live_servers validates populated and empty")
     void liveServers() {
         assertValid("live_servers", McpTools.liveServers(SERVINGS));

@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.80.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.81.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3536,3 +3536,30 @@ whose first binary byte sits past that is read as text, bounded by the
 **No walk this batch.** The transport is the v2.77.0 walk's; the
 template read and the prompt argument are protocol tests over the real
 handler.
+
+## Addendum — 2026-09-05, the eighth parallel batch (v2.81.0)
+
+Built beside v2.80.0's chain, in a sixth worktree.
+
+**The Agent Port's orienting answers get their last two facts (units
+1–2).** `project_state` names the toolchain (`ProjectInspector`'s kind
+through a seam, the tests handing in answers) and the Node package
+manager only where a package.json exists — a Cargo project has none,
+and null is the honest value. `run_history` reads the flight
+recorder's timeline newest first; the first cut put the recorder's
+`[exit 0]` line where the command belongs — an agent reading "FORGE ok
+[0] [exit 0]" learns nothing — so an exit resolves to its device's
+latest launch at or before it, the rule `last_failure` has used since
+v1.52.0. Three mutants by name: the ERROR filter, the order, the
+resolution.
+
+**The review of v2.80.0 (unit 3).** Verified clean: a templated read
+percent-decodes the tail and a malformed escape names nothing rather
+than throwing; the prompt's argument name stays the agent's while the
+tool keeps its schema; the ledger's new bans matched nothing in the
+package (the walk and the read are the only I/O). One blessing:
+`FlightRecorder.parseExit` went public for the mcp package — it was
+package-private only by accident of history.
+
+**No walk this batch.** Both answers are pure folds over records the
+v2.77.0 and v2.79.0 walks already proved reachable.

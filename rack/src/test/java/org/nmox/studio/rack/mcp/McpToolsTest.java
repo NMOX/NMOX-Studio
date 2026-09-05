@@ -100,6 +100,39 @@ class McpToolsTest {
     }
 
     @Test
+    @DisplayName("project_state carries the detected kind and the Node package manager; run_history lists launches and exits newest first (v2.81.0)")
+    void kindAndHistory() {
+        JSONObject s = McpTools.projectState(() -> new File("/tmp/proj"), d -> "NODE", d -> "pnpm");
+        assertThat(s.getString("kind")).isEqualTo("NODE");
+        assertThat(s.getString("packageManager")).isEqualTo("pnpm");
+        assertThat(Texts.of(s)).contains("Kind: NODE (pnpm)");
+        JSONObject bare = McpTools.projectState(() -> new File("/tmp/proj"), d -> null, d -> null);
+        assertThat(bare.isNull("kind")).isTrue();
+        assertThat(Texts.of(bare)).contains("Kind: unknown");
+        assertThat(McpTools.projectState(() -> null, d -> "NODE", d -> "npm").isNull("kind")).isTrue();
+        List<org.nmox.studio.rack.engine.FlightRecorder.Event> tl = List.of(
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(1_000L, "VERITAS", org.nmox.studio.rack.engine.FlightRecorder.Kind.LAUNCH, "npm test", -1),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(1_500L, "VERITAS", org.nmox.studio.rack.engine.FlightRecorder.Kind.ERROR, "boom", -1),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(3_100L, "VERITAS", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_FAIL, "[exit 1]", 2_100),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(4_000L, "FORGE", org.nmox.studio.rack.engine.FlightRecorder.Kind.LAUNCH, "npm run build", -1),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(9_000L, "FORGE", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_OK, "[exit 0]", 5_000));
+        JSONObject h = McpTools.runHistory(tl, 20);
+        assertThat(h.getJSONArray("events").length()).as("ERROR lines are not history").isEqualTo(4);
+        JSONObject newest = h.getJSONArray("events").getJSONObject(0);
+        assertThat(newest.getString("kind")).isEqualTo("ok");
+        assertThat(newest.getInt("exitCode")).isEqualTo(0);
+        assertThat(newest.getLong("durationMs")).isEqualTo(5_000);
+        assertThat(h.getJSONArray("events").getJSONObject(3).isNull("exitCode")).as("a launch has no exit").isTrue();
+        assertThat(h.getBoolean("truncated")).isFalse();
+        assertThat(Texts.of(h)).contains("FORGE ok [0] npm run build (5.0 s)").contains("VERITAS failed [1] npm test (2.1 s)");
+        JSONObject two = McpTools.runHistory(tl, 2);
+        assertThat(two.getJSONArray("events").length()).isEqualTo(2);
+        assertThat(two.getBoolean("truncated")).isTrue();
+        assertThat(Texts.of(two)).endsWith("(older events not shown)");
+        assertThat(Texts.of(McpTools.runHistory(List.of(), 5))).isEqualTo("Nothing has run yet.");
+    }
+
+    @Test
     @DisplayName("editor_state structures the open tabs with the active one and unsaved flags (v2.78.0)")
     void editorState() {
         JSONObject s = EditorState.editorState("/p/a.js", List.of(
@@ -229,11 +262,11 @@ class McpToolsTest {
     }
 
     @Test
-    @DisplayName("The production roster is the eleven read-only tools, each fully described")
+    @DisplayName("The production roster is the twelve read-only tools, each fully described")
     void productionRoster() {
         McpTools tools = McpTools.production();
         assertThat(tools.all()).extracting(McpTools.Tool::name)
-                .containsExactly("ide_context", "project_state", "live_servers",
+                .containsExactly("ide_context", "project_state", "run_history", "live_servers",
                         "live_runs", "last_failure", "diagnostics", "find_symbol",
                         "outline", "search_text", "editor_state", "rack_devices");
         // every tool carries a title, a real input schema, and an output schema

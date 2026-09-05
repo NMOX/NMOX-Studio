@@ -130,7 +130,7 @@ public final class FlightRecorder implements RackBus.Listener {
         }
     }
 
-    static int parseExit(String line) {
+    public static int parseExit(String line) {
         try {
             return Integer.parseInt(line.replaceAll("[^0-9-]", ""));
         } catch (NumberFormatException ex) {

@@ -31,6 +31,9 @@ final class Texts {
         if (s.has("hits")) {
             return symbols(s);
         }
+        if (s.has("events")) {
+            return history(s);
+        }
         if (s.has("openFiles")) {
             return editor(s);
         }
@@ -56,8 +59,13 @@ final class Texts {
         if (s.isNull("project")) {
             return "No project is aimed.";
         }
+        String kind = s.isNull("kind") ? "unknown" : s.getString("kind");
+        if (!s.isNull("packageManager")) {
+            kind += " (" + s.getString("packageManager") + ")";
+        }
         return "Project: " + s.getString("project") + '\n'
                 + "Directory: " + s.getString("directory") + '\n'
+                + "Kind: " + kind + '\n'
                 + "Git branch: " + (s.isNull("gitBranch")
                 ? "(not a git repository)" : s.getString("gitBranch"));
     }
@@ -91,6 +99,34 @@ final class Texts {
             if (!r.getString("since").isEmpty()) {
                 sb.append(" (").append(r.getString("since")).append(')');
             }
+        }
+        return sb.toString();
+    }
+
+    private static String history(JSONObject s) {
+        JSONArray events = s.getJSONArray("events");
+        if (events.isEmpty()) {
+            return "Nothing has run yet.";
+        }
+        StringBuilder sb = new StringBuilder();
+        java.time.format.DateTimeFormatter clock = java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss");
+        for (int i = 0; i < events.length(); i++) {
+            JSONObject e = events.getJSONObject(i);
+            if (i > 0) {
+                sb.append('\n');
+            }
+            sb.append(java.time.Instant.ofEpochMilli(e.getLong("at")).atZone(java.time.ZoneId.systemDefault()).format(clock))
+                    .append(' ').append(e.getString("device")).append(' ').append(e.getString("kind"));
+            if (!e.isNull("exitCode")) {
+                sb.append(" [").append(e.getInt("exitCode")).append(']');
+            }
+            sb.append(' ').append(e.getString("text"));
+            if (!e.isNull("durationMs")) {
+                sb.append(" (").append(String.format(java.util.Locale.ROOT, "%.1f", e.getLong("durationMs") / 1000.0)).append(" s)");
+            }
+        }
+        if (s.getBoolean("truncated")) {
+            sb.append("\n(older events not shown)");
         }
         return sb.toString();
     }

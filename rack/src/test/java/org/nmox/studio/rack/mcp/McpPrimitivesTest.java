@@ -69,7 +69,7 @@ class McpPrimitivesTest {
         for (int i = 0; i < resources.length(); i++) {
             uris.add(resources.getJSONObject(i).getString("uri"));
         }
-        assertThat(uris).contains("nmox://runs", "nmox://editor").hasSize(8);
+        assertThat(uris).contains("nmox://runs", "nmox://editor", "nmox://history").hasSize(9);
     }
 
     @Test

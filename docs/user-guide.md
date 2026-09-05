@@ -443,7 +443,9 @@ checker may still underline them as unknown; the popup is right.
 
 **Point an agent at your IDE.** Tools ▸ Agent Port (MCP)… starts a
 local server that an AI agent (anything that speaks MCP) can connect
-to and READ your project's live state — what's aimed, what's serving,
+to and READ your project's live state — what's aimed (and which
+toolchain and package manager it uses), what ran lately (the flight
+recorder's launches and exits with their codes and durations), what's serving,
 what's running (every command the toolbar ■ would stop, with when it
 started), what you have open in the editor (the active file, unsaved
 tabs flagged), where a name is declared (`find_symbol` answers from
