@@ -26,6 +26,7 @@ class WorkbenchRunningRowsTest {
     @AfterEach
     void drain() {
         LiveRuns.stopAll();
+        org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister("ide-run:/tmp/shop#9");
     }
 
     private static void collect(Container c, List<Component> out) {
@@ -55,15 +56,27 @@ class WorkbenchRunningRowsTest {
         AtomicBoolean killed = new AtomicBoolean();
         LiveRuns.add(new LiveRuns.Run("ide-run:/tmp/shop#9", "Run — shop", () -> killed.set(true)));
         LiveRuns.add(new LiveRuns.Run("npm-run:/tmp/shop#10", "npm run test — shop", () -> { }));
+        org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
+                new org.nmox.studio.rack.service.ServingRegistry.Serving("ide-run:/tmp/shop#9", "Run — shop",
+                        "http://localhost:3999/", org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, new java.io.File("/tmp/shop")));
         // the listener requests a coalesced (invokeLater) refresh; drain it
         SwingUtilities.invokeAndWait(() -> { });
         SwingUtilities.invokeAndWait(() -> { });
         List<Component> all = tree(tc[0]);
         assertThat(all.stream().filter(c -> c instanceof JLabel l && "RUNNING".equals(l.getText())))
                 .as("the section appears once something runs").hasSize(1);
+        // every row and every gesture in the section is named for assistive technology (v2.73.0)
+        assertThat(all.stream().filter(c -> c instanceof JButton).map(c -> ((JButton) c).getAccessibleContext().getAccessibleName()))
+                .contains("Stop Run — shop", "Stop npm run test — shop");
+        assertThat(all.stream().filter(c -> c instanceof javax.swing.JPanel p
+                        && p.getAccessibleContext().getAccessibleName() != null
+                        && p.getAccessibleContext().getAccessibleName().startsWith("Run — shop — ")))
+                .as("the row panel carries the title and subtitle as its name").hasSize(1);
         JButton stop = (JButton) all.stream()
                 .filter(c -> c instanceof JButton b && "Stop Run — shop".equals(b.getAccessibleContext().getAccessibleName()))
                 .findFirst().orElseThrow(() -> new AssertionError("the row's Stop button, named for assistive technology"));
+        assertThat(all.stream().filter(c -> c instanceof JButton b && "Open http://localhost:3999/ in the Browser".equals(b.getAccessibleContext().getAccessibleName())))
+                .as("the serving row has a real Open button").hasSize(1);
         SwingUtilities.invokeAndWait(stop::doClick);
         assertThat(killed).as("the row's Stop ran THAT run's killer").isTrue();
         assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id)

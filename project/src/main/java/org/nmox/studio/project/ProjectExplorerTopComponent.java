@@ -419,13 +419,20 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), false, ACCENT,
                     r.openable() ? r.url() + "  — click to open in the Browser" : "running — Stop ends it",
                     open);
+            if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
+                // the row itself is named for assistive technology; its
+                // gestures are REAL buttons (v2.73.0): the row click is a
+                // mouse-only door, Open and Stop are the keyboard's
+                rowPanel.getAccessibleContext().setAccessibleName(
+                        r.title() + " — " + WorkbenchRunning.subtitle(r));
+                if (r.openable()) {
+                    javax.swing.JButton openButton = flatButton("Open", "Open " + r.url() + " in the Browser");
+                    openButton.addActionListener(e -> open.run());
+                    rowPanel.add(openButton);
+                }
+            }
             if (r.stoppable() && sub != null && sub.getParent() instanceof JPanel rowPanel) {
-                javax.swing.JButton stop = new javax.swing.JButton("Stop");
-                stop.setFont(TINY);
-                stop.setFocusable(true);
-                stop.setMargin(new java.awt.Insets(0, 6, 0, 6));
-                stop.setToolTipText("Stop " + r.title());
-                stop.getAccessibleContext().setAccessibleName("Stop " + r.title());
+                javax.swing.JButton stop = flatButton("Stop", "Stop " + r.title());
                 stop.addActionListener(e -> {
                     LiveRuns.stop(r.runId());
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText("Stopped: " + r.title());
@@ -433,6 +440,17 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 rowPanel.add(stop);
             }
         }
+    }
+
+    /** A small focusable button for a row's gesture, named for assistive technology. */
+    private static javax.swing.JButton flatButton(String text, String accessibleName) {
+        javax.swing.JButton b = new javax.swing.JButton(text);
+        b.setFont(TINY);
+        b.setFocusable(true);
+        b.setMargin(new java.awt.Insets(0, 6, 0, 6));
+        b.setToolTipText(accessibleName);
+        b.getAccessibleContext().setAccessibleName(accessibleName);
+        return b;
     }
 
     /** Editor tabs open right now; the active one leads in bold. */
