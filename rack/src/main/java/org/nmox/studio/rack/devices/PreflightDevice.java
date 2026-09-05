@@ -43,8 +43,13 @@ public class PreflightDevice extends RackDevice {
      * FAILED after a stop.
      */
     private void stopByUser() {
-        stopRequested = true;
+        markStoppedByUser();
         stopProcess();
+    }
+
+    @Override
+    protected void markStoppedByUser() {
+        stopRequested = true;
     }
 
     @Override

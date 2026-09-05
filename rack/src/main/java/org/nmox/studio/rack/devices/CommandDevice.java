@@ -64,8 +64,14 @@ public abstract class CommandDevice extends RackDevice {
      * pipeline read STOPPED, so no ok/fail trigger ever rippled on.
      */
     protected final void stopByUser() {
-        stopRequested = true;
+        markStoppedByUser();
         stopProcess();
+    }
+
+    /** The verdict flag alone (v2.75.0): Stop All sets it, then panics. */
+    @Override
+    protected void markStoppedByUser() {
+        stopRequested = true;
     }
 
     /** The toolbar ■ / RUNNING row / ⌘I stop is the USER's stop: it reads STOPPED (v2.74.0). */

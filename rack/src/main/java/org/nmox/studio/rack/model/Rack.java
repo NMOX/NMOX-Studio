@@ -154,6 +154,13 @@ public final class Rack {
         for (RackDevice d : doomed) {
             STOP_RP.post(() -> {
                 try {
+                    // Stop All is the USER's stop (v2.75.0 review): set the
+                    // verdict flag FIRST, then the unchanged bounded panic —
+                    // routing through stopFromOutside() would have killed
+                    // asynchronously and left panic() nothing to wait on (the
+                    // v1.44.0 orphan guarantee, measured), so the flag is its
+                    // own hook
+                    d.markStoppedByUser();
                     d.panic();
                 } catch (RuntimeException ignored) {
                     // best effort, like the reaper: one failing device must
