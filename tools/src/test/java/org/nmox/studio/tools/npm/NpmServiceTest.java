@@ -218,14 +218,13 @@ class NpmServiceTest {
     }
 
     @Test
-    @DisplayName("scriptOf reads the script a run label names; installs name none (v2.70.0)")
-    void scriptOfLabel() {
-        assertThat(NpmService.scriptOf("npm run dev — proj")).isEqualTo("dev");
-        assertThat(NpmService.scriptOf("pnpm run build:prod — proj")).isEqualTo("build:prod");
-        assertThat(NpmService.scriptOf("yarn start — proj")).isEqualTo("start");
-        assertThat(NpmService.scriptOf("npm install — proj")).isNull();
+    @DisplayName("scriptOf reads argv, never the label: run <script> → script, start → start, install → none (v2.71.0)")
+    void scriptOfArgv() {
+        assertThat(NpmService.scriptOf("npm", "run", "dev")).isEqualTo("dev");
+        assertThat(NpmService.scriptOf("npm", "run", "my dev")).as("a script name with a space is legal").isEqualTo("my dev");
+        assertThat(NpmService.scriptOf("yarn", "start")).isEqualTo("start");
+        assertThat(NpmService.scriptOf("npm", "install")).isNull();
         assertThat(NpmService.scriptOf("npm")).isNull();
-        assertThat(NpmService.scriptOf(null)).isNull();
     }
 
     @Test

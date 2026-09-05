@@ -45,22 +45,47 @@ public final class LiveRuns {
     }
 
     private static final Map<String, Run> LIVE = new LinkedHashMap<>();
+
+    /**
+     * Ids withdrawn BEFORE they were added (v2.71.0 review find): when a
+     * launch fails — the tool not on PATH, the beginner's commonest wall —
+     * CommandExecutor.run fires the exit callback synchronously, before it
+     * returns, so every "register after the spawn" site removed a run that
+     * was not there yet and then added a phantom: the ■ lit for a command
+     * that never started and "stopped" a no-op handle. A withdrawal of an
+     * unknown id leaves a tombstone; the late add sees it and is dropped.
+     * Ids are unique per spawn, so a tombstone can never block a real run;
+     * the set is bounded (the oldest tombstone is forgotten past 256).
+     */
+    private static final java.util.LinkedHashSet<String> WITHDRAWN = new java.util.LinkedHashSet<>();
+    private static final int TOMBSTONES = 256;
     private static final List<Runnable> LISTENERS = new CopyOnWriteArrayList<>();
 
     private LiveRuns() {
     }
 
-    public static void add(Run run) {
+    /** Registers a run; returns false when its exit already came through (a launch failure). */
+    public static boolean add(Run run) {
         synchronized (LIVE) {
+            if (WITHDRAWN.remove(run.id())) {
+                return false; // withdrawn before it was added: never live
+            }
             LIVE.put(run.id(), run);
         }
         notifyListeners();
+        return true;
     }
 
     public static void remove(String id) {
         boolean removed;
         synchronized (LIVE) {
             removed = LIVE.remove(id) != null;
+            if (!removed) {
+                WITHDRAWN.add(id);
+                if (WITHDRAWN.size() > TOMBSTONES) {
+                    WITHDRAWN.remove(WITHDRAWN.iterator().next());
+                }
+            }
         }
         if (removed) {
             notifyListeners();
@@ -101,6 +126,27 @@ public final class LiveRuns {
             notifyListeners();
         }
         return stopped;
+    }
+
+    /**
+     * The ■'s tooltip (and accessible description) BEFORE a press: what it
+     * would stop, by label, with a count — a disabled button that only says
+     * "Stop Running Command" leaves the user guessing which command
+     * (v2.71.0). Pure; the toolbar action re-reads it on every change.
+     */
+    public static String tooltip(List<Run> live) {
+        if (live.isEmpty()) {
+            return "Stop Running Command — nothing is running";
+        }
+        StringBuilder sb = new StringBuilder(live.size() == 1
+                ? "Stop the running command: " : "Stop " + live.size() + " running commands: ");
+        for (int i = 0; i < live.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(live.get(i).label());
+        }
+        return sb.toString();
     }
 
     /** The status line after a ■ press: what was stopped, or that nothing was running. */

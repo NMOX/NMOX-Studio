@@ -174,6 +174,11 @@ final class WebProjectActionProvider implements ActionProvider {
                 proc::get, () -> invokeAction(command, context));
         boolean serves = ActionProvider.COMMAND_RUN.equals(command);
         AtomicReference<String> announced = new AtomicReference<>();
+        // registered BEFORE the spawn (v2.71.0): a launch failure fires the
+        // exit handler synchronously, and a finished item must already be
+        // a registered one — LiveRuns tolerates the inversion with a
+        // tombstone, the platform's registry does not
+        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         CommandExecutor.Handle handle = CommandExecutor.run(
                 label, dir, Map.of(), cmd,
                 line -> {
@@ -204,7 +209,6 @@ final class WebProjectActionProvider implements ActionProvider {
                 });
         proc.set(handle);
         LiveRuns.add(new LiveRuns.Run(servingId, label, handle::kill));
-        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         CommandExecutor.showOutput(label);
     }
 

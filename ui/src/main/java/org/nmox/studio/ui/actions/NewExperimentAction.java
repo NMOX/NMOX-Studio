@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -128,9 +129,16 @@ public final class NewExperimentAction implements ActionListener {
                                 .nodePackageManager(dir);
                         StatusDisplayer.getDefault()
                                 .setStatusText("Installing dependencies with " + pm + "…");
-                        CommandExecutor.run("Experiment Setup", dir, Map.of(),
+                        // joins the toolbar ■ (v2.71.0), like the wizard's install
+                        String runLabel = pm + " install — " + dir.getName();
+                        String runId = "experiment-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
+                        CommandExecutor.Handle setup = CommandExecutor.run("Experiment Setup", dir, Map.of(),
                                 List.of(pm, "install"), line -> {
-                                }, code -> reportInstall(pm, code));
+                                }, code -> {
+                                    LiveRuns.remove(runId);
+                                    reportInstall(pm, code);
+                                });
+                        LiveRuns.add(new LiveRuns.Run(runId, runLabel, setup::kill));
                     }
                     // the teaching moment: the walkthrough is the first
                     // thing the learner sees, open in the editor

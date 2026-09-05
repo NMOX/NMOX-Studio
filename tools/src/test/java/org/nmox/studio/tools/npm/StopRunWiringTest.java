@@ -25,6 +25,9 @@ class StopRunWiringTest {
         assertThat(src).as("the exit handler withdraws it").contains("LiveRuns.remove(servingId);");
         assertThat(src).as("the platform's Run ▸ Stop Build/Run finds it").contains("BuildExecutionSupport.registerRunningItem(item)");
         assertThat(src).as("… and forgets it on exit").contains("BuildExecutionSupport.registerFinishedItem(item)");
+        assertThat(src.indexOf("BuildExecutionSupport.registerRunningItem(item)"))
+                .as("registered BEFORE the spawn — a synchronous launch failure finishes a registered item (v2.71.0)")
+                .isLessThan(src.indexOf("CommandExecutor.Handle handle = CommandExecutor.run("));
     }
 
     @Test
@@ -36,8 +39,14 @@ class StopRunWiringTest {
         assertThat(src).as("the exit handler withdraws it").contains("LiveRuns.remove(runId);");
         assertThat(src).as("the platform's Run ▸ Stop Build/Run finds it").contains("BuildExecutionSupport.registerRunningItem(item)");
         assertThat(src).as("… and forgets it on exit").contains("BuildExecutionSupport.registerFinishedItem(item)");
+        assertThat(src.indexOf("BuildExecutionSupport.registerRunningItem(item)"))
+                .as("registered BEFORE the spawn (v2.71.0)")
+                .isLessThan(src.indexOf("CommandExecutor.Handle handle = CommandExecutor.run(label"));
         assertThat(src).as("a printed local URL announces through the ▶'s own reader").contains("WebProjectActionProvider.servingUrlFor(line)");
         assertThat(src).as("… and the serving dies with the process").contains(".deregister(runId)");
+        assertThat(src).as("the output tab carries the run's label, the ▶'s convention (v2.71.0)")
+                .contains("CommandExecutor.showOutput(label);").contains("CommandExecutor.run(label, workingDir");
+        assertThat(src).as("no shared NPM Output tab").doesNotContain("\"NPM Output\"");
     }
 
     @Test

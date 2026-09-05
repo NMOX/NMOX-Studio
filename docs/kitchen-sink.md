@@ -63,7 +63,9 @@ Debug on the toolbar (or Run ▸ Stop Build/Run, which offers Repeat
 afterwards); a device's STOP reads STOPPED whatever the process's exit
 code. The same ■ stops a script you double-clicked in the NPM Explorer
 (its row reads **● running** meanwhile, and right-click offers **Stop
-Script** for just that one) and a Focused Test that never returns. The scaffold is pre-trusted because
+Script** for just that one), a Focused Test that never returns, an
+`ng generate` that stalls, and any install the product started for you;
+its tooltip names what it would stop. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP

@@ -53,7 +53,9 @@ class JuniorFirstRunTest {
         assertThat(src)
                 .as("both callbacks used to be empty lambdas, so a failed install "
                         + "(no Node on PATH) was completely invisible")
-                .contains("code -> reportInstall(pm, code)");
+                .contains("reportInstall(pm, code);");
+        // v2.71.0: the exit callback ALSO withdraws the run from the ■ —
+        // the report call is what this gate exists for, so it is what it reads
         // and the failure message must name where to look
         assertThat(src)
                 .as("a beginner needs the two places that hold the answer")

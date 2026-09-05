@@ -57,6 +57,29 @@ class LiveRunsTest {
     }
 
     @Test
+    @DisplayName("a withdrawal that arrives before the add leaves a tombstone: the late add is dropped, no phantom (v2.71.0)")
+    void withdrawalBeforeAddIsATombstone() {
+        LiveRuns.remove("failed-launch#1");
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#1", "npm install — x", () -> { })))
+                .as("the exit came first: the run was never live").isFalse();
+        assertThat(LiveRuns.live()).isEmpty();
+        // a fresh id is unaffected, and a tombstone is spent once
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#2", "ok", () -> { }))).isTrue();
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#1", "again", () -> { }))).as("spent").isTrue();
+        assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).containsExactly("failed-launch#2", "failed-launch#1");
+    }
+
+    @Test
+    @DisplayName("the ■ tooltip names what a press would stop, with a count; nothing running says so (v2.71.0)")
+    void tooltipNamesTheRuns() {
+        assertThat(LiveRuns.tooltip(java.util.List.of())).isEqualTo("Stop Running Command — nothing is running");
+        LiveRuns.Run a = new LiveRuns.Run("a", "npm run dev — shop", () -> { });
+        LiveRuns.Run b = new LiveRuns.Run("b", "Run — api", () -> { });
+        assertThat(LiveRuns.tooltip(java.util.List.of(a))).isEqualTo("Stop the running command: npm run dev — shop");
+        assertThat(LiveRuns.tooltip(java.util.List.of(a, b))).isEqualTo("Stop 2 running commands: npm run dev — shop, Run — api");
+    }
+
+    @Test
     @DisplayName("stop(id) kills exactly one run, forgets it, and tells the listeners (v2.70.0)")
     void stopOne() {
         java.util.List<String> killed = new java.util.ArrayList<>();
