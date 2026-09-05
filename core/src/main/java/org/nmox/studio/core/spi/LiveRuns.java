@@ -46,6 +46,9 @@ public final class LiveRuns {
 
     private static final Map<String, Run> LIVE = new LinkedHashMap<>();
 
+    /** When each live run was registered (v2.73.0) — the Workbench row says "since 10:41". */
+    private static final Map<String, Long> STARTED = new java.util.HashMap<>();
+
     /**
      * Ids withdrawn BEFORE they were added (v2.71.0 review find): when a
      * launch fails — the tool not on PATH, the beginner's commonest wall —
@@ -71,15 +74,45 @@ public final class LiveRuns {
                 return false; // withdrawn before it was added: never live
             }
             LIVE.put(run.id(), run);
+            STARTED.put(run.id(), clock.getAsLong());
         }
         notifyListeners();
         return true;
+    }
+
+    /** The clock behind {@link #startedAt}; tests pin it. */
+    private static java.util.function.LongSupplier clock = System::currentTimeMillis;
+
+    static void clockForTest(java.util.function.LongSupplier c) {
+        clock = c == null ? System::currentTimeMillis : c;
+    }
+
+    /** Epoch millis the run was registered, or -1 when it is not live. */
+    public static long startedAt(String id) {
+        synchronized (LIVE) {
+            Long t = STARTED.get(id);
+            return t == null || !LIVE.containsKey(id) ? -1L : t;
+        }
+    }
+
+    /** "since HH:mm" for a live run, in the local zone; empty when not live. */
+    public static String since(String id) {
+        return since(startedAt(id), java.time.ZoneId.systemDefault());
+    }
+
+    static String since(long startedAt, java.time.ZoneId zone) {
+        if (startedAt < 0) {
+            return "";
+        }
+        return "since " + java.time.Instant.ofEpochMilli(startedAt).atZone(zone)
+                .toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
     }
 
     public static void remove(String id) {
         boolean removed;
         synchronized (LIVE) {
             removed = LIVE.remove(id) != null;
+            STARTED.remove(id);
             if (!removed) {
                 WITHDRAWN.add(id);
                 if (WITHDRAWN.size() > TOMBSTONES) {
@@ -104,6 +137,7 @@ public final class LiveRuns {
         Run r;
         synchronized (LIVE) {
             r = LIVE.remove(id);
+            STARTED.remove(id);
         }
         if (r != null) {
             r.killer().run();
@@ -118,6 +152,7 @@ public final class LiveRuns {
         synchronized (LIVE) {
             stopped = new ArrayList<>(LIVE.values());
             LIVE.clear();
+            STARTED.clear();
         }
         for (Run r : stopped) {
             r.killer().run();

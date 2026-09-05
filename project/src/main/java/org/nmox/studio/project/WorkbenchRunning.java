@@ -57,8 +57,15 @@ final class WorkbenchRunning {
         return out;
     }
 
-    /** The row's subtitle: the address when it serves, else that it is running. */
+    /** The row's subtitle: the address when it serves, else since when it runs (v2.73.0), else that it runs. */
     static String subtitle(Row row) {
-        return row.openable() ? row.url() : "running";
+        return subtitle(row, row.stoppable() ? LiveRuns.since(row.runId()) : "");
+    }
+
+    static String subtitle(Row row, String since) {
+        if (row.openable()) {
+            return since.isEmpty() ? row.url() : row.url() + "  " + since;
+        }
+        return since.isEmpty() ? "running" : "running " + since;
     }
 }
