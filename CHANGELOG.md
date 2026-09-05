@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.72.0] - 2026-09-05
+
+The bundled morning shift — twelve units, one release. The ■'s
+registry became knowledge the product acts on.
+
+1. **The v2.71.0 review** — the run→script entry was put after the
+   spawn, so a synchronous launch failure leaked one entry per failure;
+   it precedes the spawn now, gate-pinned.
+2. **NPM Explorer runs arm the Browser auto-open** the way the ▶ does
+   (`run`/`start` are the same "show me the thing running" gesture).
+3. **A Run while the project's own install is still live is refused
+   out loud** on both lanes (InstallGuard over the ■'s registry; own
+   path only), naming the ■ as the way out — the v2.36.0 first-Run
+   concern answered.
+4. **FIRST STEPS says "Run something"** — the ▶ ticks it.
+5. **Futures F5 measured** — `@typescript/native-preview`
+   7.0.0-dev.20260707.2, one binary `tsgo`, no tsserverlibrary; the
+   TS-5 pin still binds.
+6. **README** carries the ▶/■ paragraph; **ledger 87** blesses the two
+   stop registries' populations and the Focused Test tab.
+7. **Docs** — the guide and the Kitchen Sink carry the auto-open and
+   the guard.
+8. **⌥⌘. stops every running command** — DA-PERIOD in all five keymap
+   profiles, target-pinned against the generated layer.
+9. **The walk** of the assembled app — see the plan addendum.
+10. **plan.md** — the morning's addendum.
+11. **The 2.71.0 CI gauntlet PASS** recorded.
+12. **This entry and the headline.**
+
 ## [2.71.0] - 2026-09-05
 
 The bundled night shift — twelve units, one release, the day's method
@@ -16845,6 +16874,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.72.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.71.0...v2.72.0
 [2.71.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.70.0...v2.71.0
 [2.70.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.19...v2.70.0
 [2.69.19]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.18...v2.69.19
