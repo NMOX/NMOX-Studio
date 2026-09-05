@@ -67,6 +67,8 @@ class NpmRunLaneTest {
                 && r.label().equals("sh run my dev — " + dir.toFile().getName()));
 
         assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it, space and all").containsExactly("my dev");
+        assertThat(NpmService.runningSince(dir.toFile(), "my dev")).as("… and since when (v2.76.0)").startsWith("since ");
+        assertThat(NpmService.runningSince(dir.toFile(), "build")).as("a script that isn't running").isEmpty();
         assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
         assertThat(NpmService.stopScript(dir.toFile(), "my dev")).as("the row's own Stop").isTrue();
         // The exit half is POSIX-only (ledger 38, v1.42.0): under Git Bash the

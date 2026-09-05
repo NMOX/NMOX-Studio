@@ -190,7 +190,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
                         if (value instanceof DefaultMutableTreeNode n
                                 && n.getUserObject() instanceof ScriptInfo s
                                 && runningScripts.contains(s.name)) {
-                            setText(s.name + "  ● running");
+                            String since = currentProjectDir == null ? "" : NpmService.runningSince(currentProjectDir, s.name);
+                            setText(s.name + "  ● running" + (since.isEmpty() ? "" : " " + since));
                         }
                         return this;
                     }

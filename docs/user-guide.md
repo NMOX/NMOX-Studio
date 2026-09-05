@@ -192,8 +192,8 @@ STOPPED on its faceplate, as if you had pressed its own STOP, and so
 does the rack's own **Stop All** since v2.75.0); the Workbench's
 RUNNING section and ⌘I list them all. A script the
 NPM Explorer started prints a local address the same way the ▶ does
-(the ⇄ chip lights, Live Servers sees it), shows **● running** on its
-row, offers **Stop Script** on right-click, and refuses to start a
+(the ⇄ chip lights, Live Servers sees it), shows **● running since
+HH:mm** on its row, offers **Stop Script** on right-click, and refuses to start a
 second copy while the first runs; Enter on a selected script runs it
 too. It also arms the Browser the way the
 ▶ does: the script's first printed address opens in the in-app Browser.
@@ -204,7 +204,7 @@ half-written `node_modules` only ends in a wall of missing modules. The ■ also
 product starts for you (a new project's or experiment's `npm install`,
 Project Configuration's add/remove, a language-server install) and an
 `ng generate` — hover it and the tooltip names exactly what a press
-would stop. Each NPM Explorer run gets its own Output tab named like
+would stop, and since when each has run. Each NPM Explorer run gets its own Output tab named like
 the ■'s entry.
 
 **.env everywhere:** if your project has a `.env`, devices launched from
