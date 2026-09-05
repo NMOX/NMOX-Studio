@@ -167,6 +167,14 @@ public class NpmService {
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(workingDir)) {
             return CompletableFuture.completedFuture("");
         }
+        // a run while the project's own dependency install is still live
+        // only fails on a half-written node_modules (the v2.36.0 first-Run
+        // concern, now knowable through the ■'s registry, v2.72.0)
+        if (announcesServer(command) && InstallGuard.installing(workingDir)) {
+            String wall = InstallGuard.message(workingDir);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
+            return CompletableFuture.completedFuture(wall);
+        }
         // Route through CommandExecutor: its named daemon pump threads
         // stream to the Output window and the future completes from onExit —
         // no "NPM Service" RP thread sits draining stdout, so a long-running
@@ -207,6 +215,20 @@ public class NpmService {
         CommandExecutor.showOutput(label);
         // registered BEFORE the spawn (v2.71.0; see WebProjectActionProvider)
         org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
+        // the run→script entry too (v2.72.0 review): a synchronous launch
+        // failure removed it BEFORE the old post-spawn put, leaking one
+        // entry per failed launch for the life of the session
+        String script = scriptOf(command);
+        if (script != null) {
+            SCRIPT_BY_RUN.put(runId, script);
+        }
+        // unit 2: `run <script>` / `start` is the "show me the thing running"
+        // gesture the ▶ arms the Browser for (v1.212.0); the Explorer's
+        // double-click and Run Script are the same gesture one door over —
+        // preference-gated inside arm(), announce-gated by the registry
+        if (serves) {
+            org.nmox.studio.rack.service.OpenOnServe.getDefault().arm(workingDir);
+        }
         CommandExecutor.Handle handle = CommandExecutor.run(label, workingDir, java.util.Map.of(),
                 java.util.List.of(command),
                 line -> {
@@ -251,10 +273,6 @@ public class NpmService {
                     }
                 });
         proc.set(handle);
-        String script = scriptOf(command);
-        if (script != null) {
-            SCRIPT_BY_RUN.put(runId, script);
-        }
         LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
         return done;
     }

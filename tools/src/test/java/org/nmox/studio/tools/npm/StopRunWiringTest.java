@@ -39,9 +39,15 @@ class StopRunWiringTest {
         assertThat(src).as("the exit handler withdraws it").contains("LiveRuns.remove(runId);");
         assertThat(src).as("the platform's Run ▸ Stop Build/Run finds it").contains("BuildExecutionSupport.registerRunningItem(item)");
         assertThat(src).as("… and forgets it on exit").contains("BuildExecutionSupport.registerFinishedItem(item)");
+        int spawn = src.indexOf("CommandExecutor.Handle handle = CommandExecutor.run(label");
         assertThat(src.indexOf("BuildExecutionSupport.registerRunningItem(item)"))
-                .as("registered BEFORE the spawn (v2.71.0)")
-                .isLessThan(src.indexOf("CommandExecutor.Handle handle = CommandExecutor.run(label"));
+                .as("registered BEFORE the spawn (v2.71.0)").isLessThan(spawn);
+        assertThat(src.indexOf("SCRIPT_BY_RUN.put(runId, script)"))
+                .as("the run→script entry precedes the spawn too (v2.72.0 review: a synchronous failure removed it before the put)")
+                .isLessThan(spawn);
+        assertThat(src.indexOf("OpenOnServe.getDefault().arm(workingDir)"))
+                .as("run/start arms the Browser auto-open before the spawn, the ▶'s gesture (v2.72.0)")
+                .isPositive().isLessThan(spawn);
         assertThat(src).as("a printed local URL announces through the ▶'s own reader").contains("WebProjectActionProvider.servingUrlFor(line)");
         assertThat(src).as("… and the serving dies with the process").contains(".deregister(runId)");
         assertThat(src).as("the output tab carries the run's label, the ▶'s convention (v2.71.0)")
