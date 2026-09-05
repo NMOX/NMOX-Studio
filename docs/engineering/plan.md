@@ -1,9 +1,9 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.69.17, after two lenses, one
+*Currency addendum 2026-09-04, at v2.70.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
-accessibility (v2.44.0–v2.69.17, ~42 releases in six days). **The
+accessibility (v2.44.0–v2.70.0, ~43 releases in seven days). **The
 competitive lens** (docs/engineering/competitive-lens.md — a rival's
 relief list kept as a living backlog: R1 Edit with ORACLE, R2 Go to
 Symbol, R3 the Tests window, R6 Pull Requests + Draft Commit Message,
@@ -3008,3 +3008,79 @@ the run's name in their titles**; **a Swing chooser takes a typed path
 and a Return through System Events** where accessibility cannot press
 Open; **`screencapture -x` plus a crop is the cheap enabled-state read**
 when the accessibility tree truncates before the toolbar.
+
+## Addendum — 2026-09-05, the bundled day shift (v2.70.0, twelve units in one release)
+
+David's call at the top of the day: "we're spending a lot of time on
+each release waiting for CI/CD — bundle the next 12 releases into a
+single one at the end." So the day ran as one branch in one worktree,
+twelve units accumulated as commits (each verified locally, each
+mutation-proven by name, a full `mvn clean verify` after every two or
+three units), and ONE pipeline pass at the end. The rhythm held: three
+full verifies before the ship (4,806 → 4,809 tests), zero CI waits
+between units, and the review units happened INSIDE the batch instead
+of a day later.
+
+**What the units found, in order.** The v2.69.19 review's
+sibling-registration lens (unit 1): the ⇄ chip learned the in-app
+Browser one release earlier, and ⌘I "Live Servers" — the registry's
+twin door — still sent its pick to the system browser; one opener
+(`ServingLinks`) now serves both, and the Docker panel's published
+port and SONAR's Browse ride it too (unit 3), the opener answering
+whether anything took the URL so Docker keeps its three truths. The
+same lens on v2.69.10 (unit 2): the ▶ had joined the ■ and the
+platform's Stop Build/Run, but NPM Explorer's double-click, Run Script
+and install spawned through `NpmService.runCommand` with the handle
+dropped on the floor — nothing on screen could stop an `npm run dev`
+started there, and (the v1.212.0 law's sibling) its dev server never
+announced. Unit 4 moved the pure `LiveRuns` registry into core.spi so
+the editor's Focused Test / Tests-window lane could join too (a hung
+test process had NO stop), and answered a tools coverage trip with a
+REAL-SPAWN test (`sh run dev` — argv[1] is the verb the rule reads, sh
+exists on every CI lane) rather than the floor; the floor then rose
+0.75→0.78 (unit 11). The batch's own review (unit 5): the ▶ forked on
+the EDT since v1.2 (the v1.57.0 class the rack's RUN buttons left
+behind) — it posts to an "IDE Run" lane after the trust gate now; the
+NPM Repeat rerun posts to its lane; and the html-render lens over the
+labels the product hands the platform's status line (a JLabel) and the
+Run menu's Stop item (a JMenuItem): Swing's sniff is PREFIX-ONLY
+(`BasicHTML.isHTMLString`, decompiled — `<html` at index 0), every
+label begins with fixed text, and `LiveRuns.Run` now sets off a
+markup-leading label by construction rather than by convention. Unit 6
+came from that same lens one component over: the v1.306.0 gate covered
+`new JTable`, and NPM Explorer had painted package.json script and
+package names through the default `JTree` renderer — the same JLabel —
+since v0.1; the gate learned trees, the Tests window folded its own
+spelling into `PlainTables`, the Navigator (means its markup, escapes)
+and DevTools (own idiom, own gate) carry the written exemption, and
+the four custom tree renderers (API/DB/Web3/IRC) were read and verified
+clean. Unit 7 gave NPM Explorer the affordances the registry made
+possible: `● running` on a script's row, Stop Script on right-click
+(one run, not all — `LiveRuns.stop(id)`), and a second copy refused
+out loud.
+
+**The walk (unit 8)** ran once, announced, on the assembled app from
+the third verify with a throwaway userdir and `--open <dir>` (which
+opens AND aims a project on a fresh userdir — no seeding needed):
+the hostile-named script painted as characters; the ▶ ran, announced,
+the Browser auto-opened the page, FIRST STEPS ticked 2→4 of 5; the
+chip's popup listed the serving; the ■ killed the tree (`[exit 143]`,
+chip gone, button greyed). Harness laws added: a JTree row's
+double-click is an AXPress that toggles expansion (fourth strike) — the
+row gestures stay a user's click; a JPopupMenu ITEM under raw input
+dismisses without firing (its own NSWindow), so the closed-tab-then-
+pick proof of the chip was not obtained (the code path was read:
+`showUrl` opens+activates a PERSISTENCE_ALWAYS window); tab clicks via
+AX are "ineffective" on the split group — reach windows through the
+Window menu; and raw-input clicks DO front the Java app despite
+background mode, which is exactly the flicker David objected to —
+prefer AX-actionable targets (buttons, menu bar) and keep raw input to
+the minimum.
+
+**The batch method, recorded.** Verify after every two or three units,
+never two verifies in flight; edits wait for a running verify to finish
+(a reactor compiles module by module — an edit mid-run makes the
+verdict about no committed state); one CHANGELOG entry at the end names
+every unit; the PR body is written before the final verify. The cost
+of the batch is the loss of the per-unit CI walk — the reason to keep
+the local verify honest and the walk in the batch.
