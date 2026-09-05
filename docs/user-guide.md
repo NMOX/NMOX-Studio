@@ -455,7 +455,8 @@ the same Go to Symbol index as ⌥⇧⌘O), one file's structure
 what the linters found, what's on the rack. It is
 off until you start it, listens on loopback only, and hands you a
 token the agent must present; copy the ready-made `.mcp.json` from the
-dialog. It is strictly read-only: nothing an agent asks can run a
+dialog. While it listens the status line shows **⌁ agent port :N**
+(click it for the dialog, or to stop). It is strictly read-only: nothing an agent asks can run a
 command or change a file. Stop it with one click; it also dies when
 the IDE quits. Agents get typed, structured
 answers (not just text) and can start with the `ide_context` tool for

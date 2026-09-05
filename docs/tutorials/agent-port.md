@@ -70,6 +70,10 @@ two templates for the tools that take an argument:
 `nmox://outline/{file}` and `nmox://search/{query}` (percent-encoded).
 A resource's text is its tool's structured JSON, byte for byte.
 
+While the port listens, the status line shows **⌁ agent port :N** — a
+port that can read your IDE is never invisible; its tooltip counts the
+agents streaming, and a click reopens the dialog (config, or Stop).
+
 An agent that would rather be told than ask again can **subscribe**:
 `resources/subscribe` on any of those URIs, and the port's GET stream
 (Streamable HTTP's server-to-client channel, `Accept:

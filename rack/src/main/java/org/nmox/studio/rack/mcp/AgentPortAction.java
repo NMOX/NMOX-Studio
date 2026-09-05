@@ -49,6 +49,12 @@ public final class AgentPortAction implements ActionListener {
         return System.getProperty("nmox.shots.dir") != null ? "TOKEN" : port.token();
     }
 
+    /** The listening port and its attached stream count, or null while nothing listens (v2.84.0, the status-line chip). */
+    public static int[] listening() {
+        AgentPort p = RUNNING.get();
+        return p == null ? null : new int[]{p.port(), p.attachedStreams()};
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (RUNNING.get() != null) {

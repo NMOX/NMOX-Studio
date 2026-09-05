@@ -107,6 +107,11 @@ public final class AgentPort {
     }
 
     /** The port's subscriptions — tests read them. */
+    /** GET streams attached right now — agents listening for pushes. */
+    public int attachedStreams() {
+        return subs.attachedCount();
+    }
+
     McpSubscriptions subscriptions() {
         return subs;
     }

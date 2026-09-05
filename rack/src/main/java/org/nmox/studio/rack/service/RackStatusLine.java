@@ -53,6 +53,21 @@ public class RackStatusLine implements StatusLineElementProvider {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
+    /** Agent Port chip: "⌁ agent port :N" while it listens (v2.84.0) — a port that can read the IDE is never invisible; null when off. */
+    static String agentChipText(int[] listening) {
+        return listening == null ? null : "⌁ agent port :" + listening[0];
+    }
+
+    static String agentChipTooltip(int[] listening) {
+        if (listening == null) {
+            return null;
+        }
+        int n = listening[1];
+        return "The Agent Port is listening on 127.0.0.1:" + listening[0] + " (read-only) — "
+                + (n == 0 ? "no agent streaming" : n == 1 ? "one agent streaming" : n + " agents streaming")
+                + ". Click for the config, or to stop it.";
+    }
+
     static String chipTooltip(List<ServingRegistry.Serving> servings) {
         if (servings.isEmpty()) {
             return null;
@@ -79,6 +94,7 @@ public class RackStatusLine implements StatusLineElementProvider {
         private final JLabel liveLabel = new JLabel();
         private final JLabel servingLabel = new JLabel();
         private final JLabel envLabel = new JLabel();
+        private final JLabel agentLabel = new JLabel();
         private final Timer poll = new Timer(2_000, e -> refresh());
         private final ServingRegistry.Listener servingListener =
                 () -> javax.swing.SwingUtilities.invokeLater(this::refresh);
@@ -96,8 +112,18 @@ public class RackStatusLine implements StatusLineElementProvider {
                     showServingMenu();
                 }
             });
+            agentLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            agentLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+            agentLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mousePressed(java.awt.event.MouseEvent e) {
+                    // the action's own dialog: config + Stop; a no-op when nothing listens
+                    new org.nmox.studio.rack.mcp.AgentPortAction().actionPerformed(null);
+                }
+            });
             add(liveLabel);
             add(servingLabel);
+            add(agentLabel);
             add(envLabel);
         }
 
@@ -144,6 +170,11 @@ public class RackStatusLine implements StatusLineElementProvider {
             servingLabel.setText(chip == null ? "" : chip);
             servingLabel.setForeground(new java.awt.Color(90, 170, 235));
             servingLabel.setToolTipText(chipTooltip(servings));
+            int[] listening = org.nmox.studio.rack.mcp.AgentPortAction.listening();
+            String agent = agentChipText(listening);
+            agentLabel.setText(agent == null ? "" : agent);
+            agentLabel.setForeground(new java.awt.Color(200, 150, 235));
+            agentLabel.setToolTipText(agentChipTooltip(listening));
             boolean envNote = RackService.getDefault().envNoteActive();
             envLabel.setText(envNote ? "env changed — restarts pick it up" : "");
             envLabel.setForeground(new java.awt.Color(222, 178, 80));
