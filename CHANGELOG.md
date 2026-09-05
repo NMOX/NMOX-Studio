@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.73.0] - 2026-09-05
+
+The long shift — one several-hour batch, one release (David: work
+several hours per gate). The ■'s registry became knowledge with faces:
+what the product runs for you, everywhere you look, and every
+beginner's wall with a door.
+
+1. **The Workbench's RUNNING section** — every command the product runs
+   for you, joined with the ⇄ chip's servings by id (a run carries its
+   address), the rack's servers as rows of their own, "since HH:mm" on
+   each; click opens in-app; real **Open** and **Stop** buttons
+   (keyboard and screen-reader reachable), proven by pressing them on a
+   headless Workbench; listeners symmetric with the window life.
+2. **The Tests window's own Stop** — test runs only, never the dev
+   server.
+3. **A run that could not start** speaks on the status line and raises
+   a balloon whose click opens the Environment Doctor (by action id;
+   pinned against the Doctor's source).
+4. **⌘I reaches every running command** — "Stop · npm run dev — shop
+   since 10:41", Enter stops exactly that one.
+5. **The platform's progress bar for every lane the ■ knows** — the NPM
+   lane and both setup installs get a Cancel that IS the run's stop
+   (the ▶ had one since v1.2); the gate demands the start.
+6. **The third beginner wall** — a Node Run with declared, uninstalled
+   dependencies is refused out loud, pointed at NPM Explorer ▸ Install,
+   and offered a balloon whose click IS the install (trust-gated lane).
+7. **The ⇄ chip's menu carries a Stop** under each Open for a serving
+   a run owns.
+8. **The review's find** — STOP reads STOPPED one registry over: a
+   user's Stop from any surface is remembered by LiveRuns; the wizard's
+   and the experiment's installs say "Install stopped" instead of the
+   didn't-finish dialog, a stopped Focused Test never reads FAILED
+   [143]. Also: the ▶'s dependency wall read package.json on the EDT
+   (moved onto the lane) and both setup installs had spawned on the
+   EDT since v2.36.0 (posted to the RP); the Workbench's a11y contract
+   (every button named; LAF chrome excluded in writing).
+9. **The walk** — see the plan addendum.
+10. **Docs, plan, and this entry**; the 2.72.0 CI gauntlet PASS
+    recorded.
+
 ## [2.72.0] - 2026-09-05
 
 The bundled morning shift — twelve units, one release. The ■'s
@@ -16874,6 +16914,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.73.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.72.0...v2.73.0
 [2.72.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.71.0...v2.72.0
 [2.71.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.70.0...v2.71.0
 [2.70.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.69.19...v2.70.0
