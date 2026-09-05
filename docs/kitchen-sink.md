@@ -521,7 +521,11 @@ lately with exit codes and durations. Every tool is typed and annotated
 read-only; the same answers are browsable as `nmox://` resources —
 attach `nmox://outline/src/app.js` and the agent has the file's
 structure as context — and the *Where is a symbol declared* prompt
-folds the hits for a name you give it. It
+folds the hits for a name you give it — and `completion/complete`
+suggests that name from the index, or a file for the outline template
+from the project's own files. Subscribe to `nmox://runs` and the port's
+event stream says when a run starts; stop a run yourself and
+`run_history` reads `stopped`, never `failed`. It
 is read-only by construction: an agent can ask, never run — the build
 fails if any Agent Port class so much as names a spawn, a write, or
 the run registry's stop.
