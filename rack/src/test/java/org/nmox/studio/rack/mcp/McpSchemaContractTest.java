@@ -150,6 +150,19 @@ class McpSchemaContractTest {
     }
 
     @Test
+    @DisplayName("live_runs validates populated and empty (v2.77.0)")
+    void liveRuns() {
+        org.nmox.studio.core.spi.LiveRuns.add(new org.nmox.studio.core.spi.LiveRuns.Run(
+                "ide-run:/tmp/schema#1", "Run \u2014 schema", () -> { }));
+        try {
+            assertValid("live_runs", McpTools.liveRuns(org.nmox.studio.core.spi.LiveRuns.live()));
+        } finally {
+            org.nmox.studio.core.spi.LiveRuns.stopAll();
+        }
+        assertValid("live_runs", McpTools.liveRuns(List.of()));
+    }
+
+    @Test
     @DisplayName("last_failure validates failed and clean — exitCode/errorLines declared")
     void lastFailure() {
         assertValid("last_failure", McpTools.lastFailure(FAILURE));
@@ -174,9 +187,9 @@ class McpSchemaContractTest {
     @DisplayName("ide_context validates — every emitted key is declared")
     void ideContext() {
         assertValid("ide_context", McpTools.ideContext(
-                () -> new File("/tmp"), SERVINGS, FAILURE, DIAGS));
+                () -> new File("/tmp"), SERVINGS, List.of(), FAILURE, DIAGS));
         assertValid("ide_context", McpTools.ideContext(
-                () -> null, List.of(), Optional.empty(), Map.of()));
+                () -> null, List.of(), List.of(), Optional.empty(), Map.of()));
     }
 
     @Test

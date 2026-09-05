@@ -25,7 +25,7 @@ class McpPrimitivesTest {
     /** A tiny fixture roster mirroring two production tools' shapes. */
     private static McpTools fixture() {
         JSONObject ctx = new JSONObject()
-                .put("project", "demo").put("serverCount", 1)
+                .put("project", "demo").put("serverCount", 1).put("runCount", 0)
                 .put("lastFailureDevice", "VERITAS").put("diagnosticCount", 0);
         JSONObject fail = new JSONObject()
                 .put("failed", true).put("device", "VERITAS")
@@ -44,6 +44,17 @@ class McpPrimitivesTest {
     }
 
     // ---- resources ---------------------------------------------------------
+
+    @Test
+    @DisplayName("the production catalog binds nmox://runs to live_runs (v2.77.0)")
+    void productionBindsRuns() {
+        JSONArray resources = McpResources.list(McpTools.production()).getJSONArray("resources");
+        java.util.List<String> uris = new java.util.ArrayList<>();
+        for (int i = 0; i < resources.length(); i++) {
+            uris.add(resources.getJSONObject(i).getString("uri"));
+        }
+        assertThat(uris).contains("nmox://runs").hasSize(7);
+    }
 
     @Test
     @DisplayName("resources/list offers a resource per bound tool with a URI")

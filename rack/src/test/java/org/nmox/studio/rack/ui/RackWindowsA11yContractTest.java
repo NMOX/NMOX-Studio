@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The rack's name law (v1.41.0, DeviceContractTest) over the rack's windows (Task Rack, Project Studio, Block Studio) (v2.75.0):
+ * The rack's name law (v1.41.0, DeviceContractTest) over the rack's windows (Task Rack, Project Studio, Block Studio; the Docker Panel since v2.77.0) (v2.75.0):
  * every button the window paints at construction carries a non-blank
  * accessible name; look-and-feel chrome (javax.swing.plaf.*) is the
  * platform's to name and is excluded in writing.
@@ -34,7 +34,7 @@ class RackWindowsA11yContractTest {
         List<String> unnamed = new ArrayList<>();
         int[] buttons = {0};
         SwingUtilities.invokeAndWait(() -> {
-            for (Container window : List.<Container>of(new org.nmox.studio.rack.RackTopComponent(), new org.nmox.studio.rack.projectstudio.ProjectStudioTopComponent(), new org.nmox.studio.rack.blockstudio.BlockStudioTopComponent())) {
+            for (Container window : List.<Container>of(new org.nmox.studio.rack.RackTopComponent(), new org.nmox.studio.rack.projectstudio.ProjectStudioTopComponent(), new org.nmox.studio.rack.blockstudio.BlockStudioTopComponent(), new org.nmox.studio.rack.docker.DockerPanelTopComponent())) {
                 List<Component> all = new ArrayList<>();
                 collect(window, all);
                 for (Component c : all) {

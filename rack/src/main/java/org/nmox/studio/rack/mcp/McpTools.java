@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.nmox.studio.core.spi.LiveRuns;
 import org.nmox.studio.core.util.GitFacts;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
 import org.nmox.studio.rack.engine.FlightRecorder;
@@ -130,6 +131,16 @@ public final class McpTools {
                 req("title", "url", "kind")));
     }
 
+    /** The live_runs array — shared with ide_context (v2.77.0): every
+     *  command the IDE is running, with when it started. */
+    private static JSONObject runsArray() {
+        return arrayOf(objectSchema(new JSONObject()
+                .put("label", type("string"))
+                .put("since", type("string"))
+                .put("startedAt", type("integer")),
+                req("label", "since", "startedAt")));
+    }
+
     /** The last_failure object — shared with ide_context. Only
      *  {@code failed} is required: a clean record carries nothing else. */
     private static JSONObject failureObject() {
@@ -178,18 +189,20 @@ public final class McpTools {
         JSONObject ideContextSchema = objectSchema(projectProperties()
                 .put("serverCount", type("integer"))
                 .put("servers", serversArray())
+                .put("runCount", type("integer"))
+                .put("runs", runsArray())
                 .put("lastFailureDevice", nullableString())
                 .put("lastFailure", failureObject())
                 .put("diagnosticCount", type("integer")),
                 req("project", "directory", "gitBranch", "serverCount",
-                        "servers", "lastFailureDevice", "lastFailure",
-                        "diagnosticCount"));
+                        "servers", "runCount", "runs", "lastFailureDevice",
+                        "lastFailure", "diagnosticCount"));
         return new McpTools(List.of(
                 new Tool("ide_context",
                         "IDE context",
                         "The whole orienting snapshot in one call: the aimed "
-                        + "project, everything serving, the last failure, and a "
-                        + "diagnostic summary. Start here.",
+                        + "project, everything serving, everything running, the "
+                        + "last failure, and a diagnostic summary. Start here.",
                         noArgs(),
                         ideContextSchema,
                         args -> renderIdeContext()),
@@ -207,6 +220,15 @@ public final class McpTools {
                         objectSchema(new JSONObject().put("servers", serversArray()),
                                 req("servers")),
                         args -> render(liveServers(defaultServings()))),
+                new Tool("live_runs",
+                        "Live runs",
+                        "Every command the IDE is running right now (the toolbar "
+                        + "\u25a0 would stop these), each with when it started. "
+                        + "Lists only — nothing here stops a run.",
+                        noArgs(),
+                        objectSchema(new JSONObject().put("runs", runsArray()),
+                                req("runs")),
+                        args -> render(liveRuns(defaultRuns()))),
                 new Tool("last_failure",
                         "Last failure",
                         "The most recent failed run: device, command, exit code, "
@@ -265,6 +287,19 @@ public final class McpTools {
                     .put("kind", s.kind().name()));
         }
         return new JSONObject().put("servers", servers);
+    }
+
+    /** The live runs, in registration order — the same population the
+     *  \u25a0 tooltip and the Workbench's RUNNING section read. */
+    static JSONObject liveRuns(List<LiveRuns.Run> live) {
+        JSONArray runs = new JSONArray();
+        for (LiveRuns.Run r : live) {
+            runs.put(new JSONObject()
+                    .put("label", r.label())
+                    .put("since", LiveRuns.since(r.id()))
+                    .put("startedAt", LiveRuns.startedAt(r.id())));
+        }
+        return new JSONObject().put("runs", runs);
     }
 
     static JSONObject lastFailure(java.util.Optional<FailureContext> failure) {
@@ -327,6 +362,7 @@ public final class McpTools {
 
     static JSONObject ideContext(Supplier<File> aim,
             List<ServingRegistry.Serving> servings,
+            List<LiveRuns.Run> runs,
             java.util.Optional<FailureContext> failure,
             Map<String, List<DiagnosticsBus.Problem>> diags) {
         JSONObject project = projectState(aim);
@@ -338,6 +374,8 @@ public final class McpTools {
                 .put("gitBranch", project.get("gitBranch"))
                 .put("serverCount", servings.size())
                 .put("servers", liveServers(servings).getJSONArray("servers"))
+                .put("runCount", runs.size())
+                .put("runs", liveRuns(runs).getJSONArray("runs"))
                 .put("lastFailureDevice",
                         failObj.optBoolean("failed") ? failObj.get("device") : JSONObject.NULL)
                 .put("lastFailure", failObj)
@@ -352,6 +390,10 @@ public final class McpTools {
 
     private static List<ServingRegistry.Serving> defaultServings() {
         return ServingRegistry.getDefault().snapshot();
+    }
+
+    private static List<LiveRuns.Run> defaultRuns() {
+        return LiveRuns.live();
     }
 
     private static java.util.Optional<FailureContext> defaultFailure() {
@@ -370,7 +412,7 @@ public final class McpTools {
 
     private static ToolResult renderIdeContext() {
         JSONObject structured = ideContext(defaultAim(), defaultServings(),
-                defaultFailure(), defaultDiagnostics());
+                defaultRuns(), defaultFailure(), defaultDiagnostics());
         return new ToolResult(Texts.of(structured), structured);
     }
 }

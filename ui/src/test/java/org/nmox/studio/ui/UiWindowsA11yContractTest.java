@@ -34,7 +34,7 @@ class UiWindowsA11yContractTest {
         List<String> unnamed = new ArrayList<>();
         int[] buttons = {0};
         SwingUtilities.invokeAndWait(() -> {
-            for (Container window : List.<Container>of(new MainWindow(), new org.nmox.studio.ui.irc.IrcTopComponent())) {
+            for (Container window : List.<Container>of(new MainWindow(), new org.nmox.studio.ui.irc.IrcTopComponent(), new org.nmox.studio.ui.tasks.TasksTopComponent())) {
                 List<Component> all = new ArrayList<>();
                 collect(window, all);
                 for (Component c : all) {
