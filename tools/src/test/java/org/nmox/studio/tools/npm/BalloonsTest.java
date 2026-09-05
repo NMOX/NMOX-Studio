@@ -14,6 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** One live balloon per key (v2.74.0): a repeat clears the previous; both balloon sites route through it. */
 class BalloonsTest {
 
+    // the map is static and other tests' refusals (the lane test's walls)
+    // add balloons to it — verify B's find: the count assertion saw theirs
+    @org.junit.jupiter.api.BeforeEach
     @AfterEach
     void drain() {
         Balloons.clearForTest();
