@@ -33,7 +33,10 @@ per-start bearer token, and a ready-made client configuration:
 
 Paste it into your agent's `.mcp.json`. The token exists only in that
 dialog — it is never logged or persisted — and dies with the port.
-**Stop Agent Port** ends it; so does quitting the IDE.
+**Stop Agent Port** ends it; so does quitting the IDE. While it
+listens, the status line shows **⌁ agent port :N** — a port that can
+read your IDE is never invisible; the chip's tooltip counts the agents
+streaming, and a click reopens the dialog (config, or Stop).
 
 ## 2. The tools
 
@@ -60,7 +63,7 @@ Every list is bounded and says so: `find_symbol` and `outline` report a
 partial index, `search_text` reports `truncated` only when a further
 match exists, `run_history` reports when older events were left out.
 
-## 3. Resources and prompts
+## 3. Resources, prompts, and the stream
 
 The same answers are browsable as resources an agent attaches as
 context — `nmox://context`, `nmox://project`, `nmox://history`,
@@ -69,10 +72,6 @@ context — `nmox://context`, `nmox://project`, `nmox://history`,
 two templates for the tools that take an argument:
 `nmox://outline/{file}` and `nmox://search/{query}` (percent-encoded).
 A resource's text is its tool's structured JSON, byte for byte.
-
-While the port listens, the status line shows **⌁ agent port :N** — a
-port that can read your IDE is never invisible; its tooltip counts the
-agents streaming, and a click reopens the dialog (config, or Stop).
 
 An agent that would rather be told than ask again can **subscribe**:
 `resources/subscribe` on any of those URIs, and the port's GET stream
