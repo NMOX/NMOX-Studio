@@ -4,6 +4,7 @@
 // org.nmox.studio.editor.testing's bundle
 package org.nmox.studio.editor.testing.explorer;
 
+import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.nio.file.Path;
@@ -98,8 +99,20 @@ public final class TestsExplorerTopComponent extends TopComponent {
         JButton run = new JButton("Run");
         run.addActionListener(e -> runSelected());
         run.getAccessibleContext().setAccessibleName("Run selected test");
+        // the window's own Stop (v2.73.0): enabled while a focused-test run
+        // is live (the lane joined the ■ in v2.70.0; this stops ONLY test
+        // runs, the toolbar ■ stops everything), following LiveRuns while
+        // the window shows
+        stop.addActionListener(e -> {
+            int stopped = TestRunsStop.stopAll();
+            StatusDisplayer.getDefault().setStatusText(stopped == 0
+                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s"));
+        });
+        stop.getAccessibleContext().setAccessibleName("Stop running test");
+        stop.setEnabled(false);
         bar.add(refresh);
         bar.add(run);
+        bar.add(stop);
         add(bar, BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
         status.getAccessibleContext().setAccessibleName("Test discovery status");
@@ -124,6 +137,8 @@ public final class TestsExplorerTopComponent extends TopComponent {
         if (aim != null) {
             aim.addListener(aimListener);
         }
+        LiveRuns.addListener(runsListener);
+        followRuns();
         refreshAsync();
     }
 
@@ -133,6 +148,16 @@ public final class TestsExplorerTopComponent extends TopComponent {
         if (aim != null) {
             aim.removeListener(aimListener);
         }
+        LiveRuns.removeListener(runsListener);
+    }
+
+    private final JButton stop = new JButton("Stop");
+
+    /** Any-thread listener: the Stop follows the test runs on the EDT. */
+    private final Runnable runsListener = () -> javax.swing.SwingUtilities.invokeLater(this::followRuns);
+
+    private void followRuns() {
+        stop.setEnabled(TestRunsStop.anyLive());
     }
 
     private void aimChanged() {
