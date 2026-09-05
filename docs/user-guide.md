@@ -170,8 +170,14 @@ Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
 Trust prompt the first time. A run that could not start (the tool is
-not on your PATH) says so on the status line and names the Output tab
-and the Environment Doctor. To stop: the ■ right of Debug on the
+not on your PATH) says so on the status line and raises a balloon whose
+click opens the Environment Doctor; the reason itself is in the Output
+tab. A Node project that declares dependencies but has no
+`node_modules` yet — a fresh clone, a wizard project whose install was
+skipped — is refused out loud before it can die in "Cannot find
+module", and pointed at **NPM Explorer ▸ Install**. Every command the
+product runs for you also shows in the status bar's progress area with
+a Cancel that stops exactly that command. To stop: the ■ right of Debug on the
 toolbar (⌥⌘.) stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
@@ -1344,6 +1350,11 @@ install, an `ng generate`) with its address when it announced one and
 since when it runs, plus every server a rack device is serving. Each
 row has real **Open** and **Stop** buttons (keyboard and screen-reader
 reachable), so one run can be stopped without taking the rest down.
+⌘I reaches the same runs: type "stop" or the run's own words and Enter
+stops exactly that one. A run you stopped yourself reads *stopped*
+wherever its outcome is reported — the wizard's install says "Install
+stopped", a stopped test reads "Focused test stopped" — never a
+failure.
 
 **Emacs (and Eclipse, IntelliJ) keyboard shortcuts:** Tools ▸ Options ▸
 Keymap switches the whole keymap profile — Emacs movement and kill/yank
