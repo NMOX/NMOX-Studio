@@ -135,10 +135,17 @@ public final class McpProtocol {
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)
                         .put("version", productVersion))
-                .put("instructions", "NMOX Studio's read-only state: what "
-                        + "project is aimed, what is serving, what failed "
-                        + "last, what the linters found, what is on the rack. "
-                        + "Nothing here executes or edits anything.");
+                // an agent reads this before any tool: name what the port
+                // answers, incl. the v2.77–v2.81 tools (v2.84.0 currency)
+                .put("instructions", "NMOX Studio's read-only state. Start with "
+                        + "ide_context. Then: project_state (toolchain, package "
+                        + "manager, branch), live_servers, live_runs (what the "
+                        + "toolbar stop would end), run_history, last_failure, "
+                        + "diagnostics, find_symbol (where a name is declared), "
+                        + "outline (one file's structure), search_text (a literal "
+                        + "across the project), editor_state (what is open), "
+                        + "rack_devices. The same answers are nmox:// resources. "
+                        + "Nothing here executes, edits, or stops anything.");
     }
 
     private static JSONObject toolsList(McpTools tools) {

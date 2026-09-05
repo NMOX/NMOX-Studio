@@ -274,6 +274,17 @@ class McpToolsTest {
     }
 
     @Test
+    @DisplayName("initialize's instructions name every tool the roster offers (v2.84.0 — an agent reads them first)")
+    void instructionsNameEveryTool() {
+        String out = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}", McpTools.production(), "2.84.0");
+        String instructions = new JSONObject(out).getJSONObject("result").getString("instructions");
+        for (McpTools.Tool t : McpTools.production().all()) {
+            assertThat(instructions).as("instructions name " + t.name()).contains(t.name());
+        }
+        assertThat(instructions).contains("Nothing here executes");
+    }
+
+    @Test
     @DisplayName("The production roster is the twelve read-only tools, each fully described")
     void productionRoster() {
         McpTools tools = McpTools.production();
