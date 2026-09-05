@@ -124,7 +124,11 @@ final class McpResources {
                 }
                 String value;
                 try {
-                    value = java.net.URLDecoder.decode(uri.substring(t.prefix().length()),
+                    // URLDecoder speaks FORM encoding, where '+' is a space; a
+                    // URI path's '+' is a literal (v2.83.0 review find: a file
+                    // named a+b.js could never be addressed) — keep it literal
+                    value = java.net.URLDecoder.decode(
+                            uri.substring(t.prefix().length()).replace("+", "%2B"),
                             java.nio.charset.StandardCharsets.UTF_8);
                 } catch (IllegalArgumentException malformed) {
                     return null; // a broken percent-escape names nothing

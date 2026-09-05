@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.82.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.83.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3587,3 +3587,83 @@ monitor and folds newest-first afterwards — the timeline is bounded by
 the recorder's own cap.
 
 **No walk this batch.** Docs and a gate.
+
+## Addendum — 2026-09-05, the tenth parallel batch (v2.83.0)
+
+Built beside v2.82.0's chain: the Agent Port arc's review.
+
+**The review (unit 1).** Two lenses over v2.77.0–v2.82.0 — security
+and bounds; protocol conformance. One find, fixed: `URLDecoder` is a
+form-encoding decoder and turns `+` into a space, so the resource
+template `nmox://outline/{file}` could not address `a+b.js`; the tail
+now keeps `+` literal and decodes only percent-escapes (mutant by
+name: the raw decode dies on the new case). Verified clean: the
+transport refuses in the right order (Origin, token, method, cap) and
+its last-resort net answers JSON-RPC rather than dropping the socket;
+`tools/call` turns a handler throw into `isError`, never a protocol
+error; `outline` resolves real paths and refuses outside the aim;
+`search_text` walks without following symlinks and reads only under
+its caps; `editor_state` never blocks an HTTP thread past 3 s; the
+ledger bans every write and stop primitive in the package.
+Blessings: a looping agent can keep its own port busy (`search_text`
+is bounded per call; loopback; the user's own token) — no other
+surface slows; `find_symbol` and the ⌘I bridge share the index's
+`synchronized` refresh, bounded by the 2,000-file cap.
+
+**The gauntlets (unit 2).** The CI update gauntlet ran after each
+release today and passed six times in a row — stock 2.74.0 → 2.75.0
+… stock 2.79.0 → 2.80.0, each updating in-app and booting clean.
+Recorded from the workflow's verdicts, not re-run locally.
+
+**No walk this batch.** A one-character decode fix under an existing
+protocol test.
+
+## Addendum — 2026-09-05, the eleventh parallel batch (folded into v2.83.0)
+
+Built beside v2.83.0's chain.
+
+**The walk's honest null, made useful (unit 1).** `editor_state` read
+`TopComponent.getRegistry().getActivated()`, which is focus — and
+focus sat on the Welcome while server.js showed in the editor area,
+so the tool said `activeFile: null` beside one open file. The rule is
+now the editor's, not focus's: the activated component when it is an
+editor tab, else the editor mode's selected tab (`WindowManager.findMode
+("editor")`), pure and pinned (`activeEditor`), with the fallback's
+mutant dying by name. An agent asking "what am I looking at" gets the
+file on screen.
+
+**No walk this batch.** The rule is pure; the EDT snapshot around it
+is the v2.78.0 one the walk already exercised.
+
+## Addendum — 2026-09-05, the twelfth parallel batch (folded into v2.83.0)
+
+Built beside v2.84.0's chain: the day's own flake, explained.
+
+**A machine-wide census is not a test of this process tree (unit 1).**
+`ProcessSupportTest.shouldKillGrandchildHoldingPipeOnTimeout` went
+red twice today under load — once in a pre-verify, once in a runner's
+front — each time naming three living `sleep` pids as orphans. They
+were not orphans: they were the ship pipeline's own `sleep 10` polling
+loops, born after the test's baseline census and alive inside its
+15-second grace. The product's kill was correct both times; the
+test's census was the whole box. The grandchild now sleeps 617 s and
+the census counts only sleeps carrying that argument. The proof took
+two tries: three `sleep 10` loops beside the test did NOT fail the old
+census (a foreign sleep only counts when it is born inside the ~0.6 s
+between the baseline census and the first re-census, after which the
+15-second poll never empties — a 6%-per-loop chance, which is why the
+day saw two reds in five core runs); a decoy that spawns a `sleep 3`
+every 0.2 s is born inside any window, and under it the old census
+fails and the new one passes, deterministically. The earlier
+diagnosis ("the load flake") was wrong in the way flakes usually are:
+the failure was real and deterministic given the box's state, and
+the state was ours.
+
+**No walk this batch.** A test census, proven by decoy.
+
+**The fold (David's call, 14:50).** Three batches had queued behind one
+gate and a runner was shepherding them one release at a time — the
+opposite of "bundle the batches into one gate". Batches 2830, 2840 and
+2850 were already a linear chain, so they ship as ONE release, v2.83.0,
+and nothing new is built until the queue is empty. The efficiency
+problem was never CI's; it was one release per batch.
