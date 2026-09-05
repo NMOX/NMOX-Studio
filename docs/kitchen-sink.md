@@ -65,7 +65,9 @@ code. The same ■ stops a script you double-clicked in the NPM Explorer
 (its row reads **● running** meanwhile, and right-click offers **Stop
 Script** for just that one), a Focused Test that never returns, an
 `ng generate` that stalls, and any install the product started for you;
-its tooltip names what it would stop. The scaffold is pre-trusted because
+its tooltip names what it would stop. Press Run while that install is
+still going and the status line refuses out loud instead of running
+against a half-written `node_modules`. The scaffold is pre-trusted because
 you just created it; a *cloned* repository would have shown the
 Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP

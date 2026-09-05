@@ -179,7 +179,12 @@ double-clicked in the **NPM Explorer** or run from a package.json line
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running** on its
 row, offers **Stop Script** on right-click, and refuses to start a
-second copy while the first runs. The ■ also sees the installs the
+second copy while the first runs. It also arms the Browser the way the
+▶ does: the script's first printed address opens in the in-app Browser.
+And while a new project's or experiment's dependency install is still
+running, both the ▶ and the Explorer refuse to run the project — the
+status line says so and names the ■ — because a run against a
+half-written `node_modules` only ends in a wall of missing modules. The ■ also sees the installs the
 product starts for you (a new project's or experiment's `npm install`,
 Project Configuration's add/remove, a language-server install) and an
 `ng generate` — hover it and the tooltip names exactly what a press
