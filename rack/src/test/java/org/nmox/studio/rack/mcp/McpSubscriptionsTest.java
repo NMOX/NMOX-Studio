@@ -209,8 +209,15 @@ class McpSubscriptionsTest {
 
     @Test
     @DisplayName("an outline subscription follows its file: a change on disk announces the URI, a vanished file announces once and is dropped (v2.84.0)")
-    void fileSubscriptionFollowsTheFile(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root) throws Exception {
+    void fileSubscriptionFollowsTheFile(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root,
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path elsewhere) throws Exception {
         java.nio.file.Files.createDirectories(root.resolve("src"));
+        // a REAL file outside the aim, reached by a relative escape: the
+        // containment law, not the missing-file law, must refuse it (the
+        // first mutant survived on a fixture whose escape target did not exist)
+        java.nio.file.Path secret = java.nio.file.Files.writeString(elsewhere.resolve("secret.js"), "KEY=1");
+        String escape = root.relativize(secret).toString().replace(java.io.File.separatorChar, '/');
+        assertThat(escape).startsWith("..");
         java.nio.file.Path app = root.resolve("src/app.js");
         java.nio.file.Files.writeString(app, "const a = 1;\n");
         McpSubscriptions subs = new McpSubscriptions(60_000, 30);
@@ -218,6 +225,8 @@ class McpSubscriptionsTest {
         subs.attach(out, () -> { });
         assertThat(subs.subscribeFile("nmox://outline/src/app.js", root.toFile(), "src/app.js")).isNull();
         assertThat(subs.subscribeFile("nmox://outline/../x", root.toFile(), "../x")).startsWith("not found");
+        assertThat(subs.subscribeFile("nmox://outline/" + escape, root.toFile(), escape))
+                .as("an existing file outside the aim is refused by containment").startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/src", root.toFile(), "src")).as("a directory is not a file").startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/none.js", root.toFile(), "none.js")).startsWith("not found");
         assertThat(subs.watchedFiles()).isEqualTo(1);
