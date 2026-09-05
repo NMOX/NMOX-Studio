@@ -513,8 +513,10 @@ have open, or where `checkout` is declared.
 from the IDE's own records — `ide_context` in one call (the aimed
 project, everything serving, everything running with when it started,
 the file you're editing, the last failure, a diagnostics count),
-`find_symbol` from the same index as Go to Symbol, `editor_state`
-with unsaved tabs flagged. Every tool is typed and annotated
+`find_symbol` from the same index as Go to Symbol, `outline` for one
+file's structure, `search_text` for a literal across the project (heavy
+directories and binaries skipped, at most 50 hits, said when capped),
+`editor_state` with unsaved tabs flagged. Every tool is typed and annotated
 read-only; the same answers are browsable as `nmox://` resources. It
 is read-only by construction: an agent can ask, never run — the build
 fails if any Agent Port class so much as names a spawn, a write, or

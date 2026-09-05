@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.78.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.79.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3472,3 +3472,30 @@ never holds it across the JSON build.
 **No walk this batch.** Both tools answer through the same transport
 the v2.77.0 walk proved by curl; their shapes are pinned by the schema
 contract and the protocol tests over the real server.
+
+## Addendum — 2026-09-05, the sixth parallel batch (v2.79.0)
+
+Built beside v2.78.0's chain, in a fifth worktree.
+
+**The Agent Port reads files the way the IDE does (units 1–2).**
+`outline` is the Navigator's extractor behind the seam (the seam grew
+its second method; the fakes in the tests became anonymous classes —
+a functional interface was a convenience, not a contract), with
+containment on `toRealPath()` so `a/../../etc` and a symlink out of
+the project both refuse before any read. `search_text` is a bounded
+literal grep in the rack (pure `TextSearch`): the same skip list as the
+index, a NUL probe for binaries, and an EXACT `truncated` — the first
+cut set it whenever the cap was reached and a file with exactly `cap`
+matches would have lied; the test caught it before the mutant did.
+
+**The review of v2.78.0 (unit 3).** Verified clean: `editor_state`'s
+FutureTask is cancelled on timeout so a late EDT never runs it into a
+dead answer; `find_symbol` blocks on the index's own `synchronized`
+refresh — bounded by the 2,000-file cap, and the ⌘I bridge takes the
+same lock, blessed. One blessing in writing: the provider holds its
+OWN ProjectSymbols cache beside the jumpto provider's — two bounded
+walks of one tree rather than a shared mutable index across modules.
+
+**No walk this batch.** The transport and the token path were proven
+by curl in the v2.77.0 walk; these tools' shapes are pinned by the
+schema contract and their cores by name.

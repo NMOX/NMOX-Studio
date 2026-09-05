@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.79.0] - 2026-09-05
+
+The sixth parallel batch — built beside v2.78.0's chain.
+
+1. **The Agent Port outlines a file** — `outline` answers one file's
+   structure from the Navigator's own extractor through the
+   `SymbolIndex` seam; containment is checked on REAL paths (a `..`
+   escape or a symlink out of the project is refused, never read) and
+   every refusal is spoken — missing, outside, over the 256 KB cap, no
+   outline family for the type.
+2. **The Agent Port searches text** — `search_text`: a case-insensitive
+   LITERAL over the aimed project (the symbol index's heavy-directory
+   list, 2,000 files, 256 KB each, binaries skipped by a NUL probe), at
+   most 50 hits with lines clipped code-point-safely, `truncated` set
+   only when a further match exists. Eleven tools; four mutants by name.
+3. **The v2.78.0 review, clean** — blessings in the plan.
+4. **Docs** — the user guide's Agent Port paragraph, Kitchen Sink station
+   24, plan, this entry.
+
 ## [2.78.0] - 2026-09-05
 
 The fifth parallel batch — built beside v2.77.0's chain.
@@ -17019,6 +17038,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.79.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.78.0...v2.79.0
 [2.78.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.77.0...v2.78.0
 [2.77.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.76.0...v2.77.0
 [2.76.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.75.0...v2.76.0
