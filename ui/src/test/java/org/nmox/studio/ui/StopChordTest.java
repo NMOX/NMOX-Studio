@@ -33,8 +33,12 @@ class StopChordTest {
                     .isGreaterThan(folder).isLessThan(end);
             assertThat(layer.substring(chord, chord + 400)).as(prof + ": the chord's target").contains(target);
         }
-        String tools = Files.readString(Path.of("../tools/target/classes/META-INF/generated-layer.xml"));
-        assertThat(tools).as("the target exists in the tools module's generated layer")
-                .contains("<folder name=\"Run\">").contains("org-nmox-studio-tools-npm-StopRunAction.instance");
+        // the target is pinned against the tools module's SOURCE annotation:
+        // in the reactor ui builds BEFORE tools, so its generated layer does
+        // not exist on a clean build (the first gate of v2.72.0 went red on
+        // all three lanes reading it — a stale local build had supplied it)
+        String action = Files.readString(Path.of("../tools/src/main/java/org/nmox/studio/tools/npm/StopRunAction.java"));
+        assertThat(action).as("the ■ is registered where the chord points (category + id → the instance path)")
+                .contains("@ActionID(category = \"Run\", id = \"org.nmox.studio.tools.npm.StopRunAction\")");
     }
 }
