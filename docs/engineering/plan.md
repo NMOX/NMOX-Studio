@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.82.0, after two lenses, one
+*Currency addendum 2026-09-04, at v2.83.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3587,3 +3587,33 @@ monitor and folds newest-first afterwards — the timeline is bounded by
 the recorder's own cap.
 
 **No walk this batch.** Docs and a gate.
+
+## Addendum — 2026-09-05, the tenth parallel batch (v2.83.0)
+
+Built beside v2.82.0's chain: the Agent Port arc's review.
+
+**The review (unit 1).** Two lenses over v2.77.0–v2.82.0 — security
+and bounds; protocol conformance. One find, fixed: `URLDecoder` is a
+form-encoding decoder and turns `+` into a space, so the resource
+template `nmox://outline/{file}` could not address `a+b.js`; the tail
+now keeps `+` literal and decodes only percent-escapes (mutant by
+name: the raw decode dies on the new case). Verified clean: the
+transport refuses in the right order (Origin, token, method, cap) and
+its last-resort net answers JSON-RPC rather than dropping the socket;
+`tools/call` turns a handler throw into `isError`, never a protocol
+error; `outline` resolves real paths and refuses outside the aim;
+`search_text` walks without following symlinks and reads only under
+its caps; `editor_state` never blocks an HTTP thread past 3 s; the
+ledger bans every write and stop primitive in the package.
+Blessings: a looping agent can keep its own port busy (`search_text`
+is bounded per call; loopback; the user's own token) — no other
+surface slows; `find_symbol` and the ⌘I bridge share the index's
+`synchronized` refresh, bounded by the 2,000-file cap.
+
+**The gauntlets (unit 2).** The CI update gauntlet ran after each
+release today and passed six times in a row — stock 2.74.0 → 2.75.0
+… stock 2.79.0 → 2.80.0, each updating in-app and booting clean.
+Recorded from the workflow's verdicts, not re-run locally.
+
+**No walk this batch.** A one-character decode fix under an existing
+protocol test.
