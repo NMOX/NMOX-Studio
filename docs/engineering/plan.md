@@ -3760,6 +3760,17 @@ the working shape is worth keeping: Swing's CSS honors a UNITLESS
 width>` works too. The comment at the site says so, because the
 units-bearing spelling is the one every hand would reach for.
 
+**Two lessons from one unit (unit 22).** Outline subscriptions follow
+their file (a bounded poll, containment before any read), and the
+proof protocol paid twice in ten minutes: the containment mutant
+SURVIVED because the fixture escaped to a path that did not exist —
+the missing-file law masked the containment law (test each guard with
+an input only IT refuses); and the mutant runs surfaced a flake the
+green runs had hidden — `drop()` ran inside the stream's own writer
+task and `shutdownNow` threw away the frames queued behind it, the
+test barrier included. A mutant run is also a stress run; a timeout
+under one is a finding, not noise.
+
 **The rest (units 1, 4, 5, 11, 13, 16).** A sixth Welcome step; the
 status-line chip (a port that can read the IDE is never invisible);
 the dialog's honest disclosure; the story's Agent Port scene. The Workbench a11y contract polls for

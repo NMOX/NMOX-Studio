@@ -524,8 +524,13 @@ structure as context — and the *Where is a symbol declared* prompt
 folds the hits for a name you give it — and `completion/complete`
 suggests that name from the index, or a file for the outline template
 from the project's own files. Subscribe to `nmox://runs` and the port's
-event stream says when a run starts; stop a run yourself and
-`run_history` reads `stopped`, never `failed`. It
+event stream says when a run starts (subscribe to an outline and it
+follows the file); set the log level and every run's lines arrive as
+log messages — lifecycle only until you ask for `debug`; the status
+line shows `⌁ agent port :N` the whole time; stop a run yourself and
+`run_history` reads `stopped`, never `failed`; search for a value that
+lives in `.env` and get nothing — secret-bearing files are never
+searched. It
 is read-only by construction: an agent can ask, never run — the build
 fails if any Agent Port class so much as names a spawn, a write, or
 the run registry's stop.

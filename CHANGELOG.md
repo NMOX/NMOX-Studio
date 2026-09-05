@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.84.0] - 2026-09-05
 
-The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-one units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
+The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-two units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
 
 1. **The Agent Port pushes** — `resources/subscribe` on any `nmox://`
    resource, and the Streamable HTTP GET stream (`Accept:
@@ -93,7 +93,17 @@ The first eight-hour shift (David: a shift is eight hours and gets ONE release; 
 14. **The story and the sink** — A Day at Meridian gains its 16:40 scene
     (the Agent Port with the dialog shot); the Kitchen Sink station
     learns completion, subscribe, and the stop verdict.
-15. **Walked, twice, and the second walk's find** — units 10–12 on the
+15. **An attached outline follows its file** — `resources/subscribe` on
+    `nmox://outline/{file}` watches a regular file inside the aim (at
+    most thirty-two, polled every two seconds, a vanished file announced
+    once); an escape is `-32002` and never read — and the containment
+    mutant survived its first run because the fixture's escape target
+    did not exist: the missing-file law masked the containment law
+    until the test escaped to a REAL file. The mutant runs also caught
+    a flake the green runs never showed — `drop()` ran inside the
+    stream's own writer and `shutdownNow` discarded the frames queued
+    behind it; graceful shutdown now.
+16. **Walked, twice, and the second walk's find** — units 10–12 on the
     assembled bytes with the official client (completions live, ▶ then
     ■ read back as `stopped` with `last_failure` empty, the keepalive
     comment on a raw SSE curl); then logging and the chip in a second
@@ -106,7 +116,7 @@ The first eight-hour shift (David: a shift is eight hours and gets ONE release; 
     unitless, because Swing's CSS honors `width: 720` on a body and
     ignores `width: 720px` (probed headless); pinned by a headless
     preferred-size test, mutant by name; the tutorial's shot re-forged.
-16. **Docs, plan, this entry.**
+17. **Docs, plan, this entry.**
 
 ## [2.83.0] - 2026-09-05
 
