@@ -63,7 +63,8 @@ Debug on the toolbar — ⌥⌘. from anywhere — (or Run ▸ Stop Build/Run, w
 afterwards); a device's STOP reads STOPPED whatever the process's exit
 code. The same ■ stops a script you double-clicked in the NPM Explorer
 (its row reads **● running** meanwhile, and right-click offers **Stop
-Script** for just that one), a Focused Test that never returns, an
+Script** for just that one; the Workbench's **RUNNING** section lists
+every one of them with its own Open and Stop), a Focused Test that never returns, an
 `ng generate` that stalls, and any install the product started for you;
 its tooltip names what it would stop. Press Run while that install is
 still going and the status line refuses out loud instead of running

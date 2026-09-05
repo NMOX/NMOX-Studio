@@ -169,7 +169,9 @@ HTML a small static server on the first free port from 8080. Build,
 Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
-Trust prompt the first time. To stop: the ■ right of Debug on the
+Trust prompt the first time. A run that could not start (the tool is
+not on your PATH) says so on the status line and names the Output tab
+and the Environment Doctor. To stop: the ■ right of Debug on the
 toolbar (⌥⌘.) stops every running command at once (and says what it stopped
 on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
@@ -482,7 +484,9 @@ any MCP client the idiomatic way.
   the aimed project *before anything runs* — discovered with the same
   patterns Run Focused Test uses, so the window never lists a test it
   cannot run. Double-click opens the declaration; **Run** executes
-  exactly that test through the same trust gate as the editor gesture.
+  exactly that test through the same trust gate as the editor gesture,
+  and **Stop** ends the test runs (only those — never the dev server)
+  while one is live.
   On a very large project the footer says the listing is partial rather
   than pretending it read everything.
 - **LSP**: open a file whose language server is installed (typescript,
@@ -1333,7 +1337,13 @@ whenever dev servers are up — click it to see URLs and open one. Next to
 it: the aimed project and toolchain.
 
 **The Workbench tab** is home base: current project, open and recent
-files, recent projects, and launchers for every tool surface.
+files, recent projects, and launchers for every tool surface. While
+anything runs, a **RUNNING** section leads the page — every command the
+product started for you (the ▶'s run, an NPM script, a test, an
+install, an `ng generate`) with its address when it announced one and
+since when it runs, plus every server a rack device is serving. Each
+row has real **Open** and **Stop** buttons (keyboard and screen-reader
+reachable), so one run can be stopped without taking the rest down.
 
 **Emacs (and Eclipse, IntelliJ) keyboard shortcuts:** Tools ▸ Options ▸
 Keymap switches the whole keymap profile — Emacs movement and kill/yank
