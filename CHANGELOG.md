@@ -18,7 +18,11 @@ The third parallel batch — built beside v2.75.0's chain.
 4. **Docs, plan, this entry.** And the windows lane's find: the two rack
    stop tests' exit halves are POSIX-only (ledger 38 — the `sleep`
    grandchild outlives the tree kill and holds the pump's pipe), the
-   v2.70.0 NpmRunLaneTest law applied to its siblings.
+   v2.70.0 NpmRunLaneTest law applied to its siblings; and its second:
+   WorkbenchRunningRowsTest awaits the serving's refresh, which arrives
+   through the registry's notifier while the coalescer swallows a
+   request already queued — two EDT drains were a race on a loaded
+   runner, a poll is the truth.
 
 ## [2.75.0] - 2026-09-05
 
