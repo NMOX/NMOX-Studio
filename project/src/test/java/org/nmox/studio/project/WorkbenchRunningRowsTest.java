@@ -38,6 +38,18 @@ class WorkbenchRunningRowsTest {
         }
     }
 
+    /** The state the product converges on: both runs' Stop buttons and the serving row's Open button. */
+    private static boolean converged(List<Component> all) {
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (Component c : all) {
+            if (c instanceof JButton b && b.getAccessibleContext().getAccessibleName() != null) {
+                names.add(b.getAccessibleContext().getAccessibleName());
+            }
+        }
+        return names.contains("Stop Run — shop") && names.contains("Stop npm run test — shop")
+                && names.contains("Open http://localhost:3999/ in the Browser");
+    }
+
     private static List<Component> tree(ProjectExplorerTopComponent tc) {
         List<Component> all = new ArrayList<>();
         collect(tc, all);
@@ -68,11 +80,15 @@ class WorkbenchRunningRowsTest {
         // drains do not cover on a loaded runner (the windows lane, twice
         // on one sha, v2.76.0). Await the row the way a user would: poll,
         // draining the EDT each turn, until the serving has joined.
+        // And the EDT runs the window's boot-time refresh CONCURRENTLY with
+        // this thread: one refresh reads LiveRuns.live() and then the servings
+        // snapshot, and the two reads can straddle the adds above, painting
+        // the first run with its serving and not yet the second (the macOS
+        // lane, v2.82.0's gate). So the poll waits for the CONVERGED state —
+        // every row and every button the product settles on — not one marker.
         List<Component> all = tree(tc[0]);
         long deadline = System.currentTimeMillis() + 5_000;
-        while (System.currentTimeMillis() < deadline
-                && all.stream().noneMatch(c -> c instanceof JButton b
-                        && "Open http://localhost:3999/ in the Browser".equals(b.getAccessibleContext().getAccessibleName()))) {
+        while (System.currentTimeMillis() < deadline && !converged(all)) {
             SwingUtilities.invokeAndWait(() -> { });
             Thread.sleep(20);
             all = tree(tc[0]);
