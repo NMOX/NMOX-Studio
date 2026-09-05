@@ -55,8 +55,10 @@ class WorkbenchRunningTest {
         assertThat(src.indexOf("liveServings.addListener(servingsListener)")).isGreaterThan(opened).isLessThan(closed);
         assertThat(src.indexOf("LiveRuns.removeListener(runsListener)")).isGreaterThan(closed);
         assertThat(src.indexOf("liveServings.removeListener(servingsListener)")).isGreaterThan(closed);
-        assertThat(src).contains("new javax.swing.JButton(\"Stop\")")
-                .contains("setAccessibleName(\"Stop \" + r.title())")
+        // unit 6 moved the buttons through flatButton(text, accessibleName): the
+        // gate reads the calls that name them (the behavioral test presses them)
+        assertThat(src).contains("flatButton(\"Stop\", \"Stop \" + r.title())")
+                .contains("flatButton(\"Open\", \"Open \" + r.url() + \" in the Browser\")")
                 .contains("LiveRuns.stop(r.runId())")
                 .contains("ServingLinks.open(r.url())");
     }
