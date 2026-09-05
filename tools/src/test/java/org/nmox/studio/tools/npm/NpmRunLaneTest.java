@@ -90,6 +90,20 @@ class NpmRunLaneTest {
     }
 
     @Test
+    @DisplayName("a launch that fails before it starts (tool not on PATH) leaves NO phantom in the ■ (v2.71.0 review find)")
+    void failedLaunchLeavesNoPhantom() throws Exception {
+        CompletableFuture<String> done = new NpmService().runCommand(dir.toFile(), "no-such-package-manager-xyz", "run", "dev");
+        Throwable exit = null;
+        try {
+            done.get(10, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.ExecutionException e) {
+            exit = e.getCause();
+        }
+        assertThat(exit).as("the launch failed").isNotNull();
+        assertThat(LiveRuns.live()).as("the ■ has nothing to stop — the exit came before the add").isEmpty();
+    }
+
+    @Test
     @DisplayName("install prints a URL: no serving — lifecycle output never announces")
     void installNeverAnnounces() throws Exception {
         Files.writeString(dir.resolve("install"), "echo \"postinstall: see http://localhost:45672/\"\n");

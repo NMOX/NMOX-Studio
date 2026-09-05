@@ -57,6 +57,19 @@ class LiveRunsTest {
     }
 
     @Test
+    @DisplayName("a withdrawal that arrives before the add leaves a tombstone: the late add is dropped, no phantom (v2.71.0)")
+    void withdrawalBeforeAddIsATombstone() {
+        LiveRuns.remove("failed-launch#1");
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#1", "npm install — x", () -> { })))
+                .as("the exit came first: the run was never live").isFalse();
+        assertThat(LiveRuns.live()).isEmpty();
+        // a fresh id is unaffected, and a tombstone is spent once
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#2", "ok", () -> { }))).isTrue();
+        assertThat(LiveRuns.add(new LiveRuns.Run("failed-launch#1", "again", () -> { }))).as("spent").isTrue();
+        assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).containsExactly("failed-launch#2", "failed-launch#1");
+    }
+
+    @Test
     @DisplayName("the ■ tooltip names what a press would stop, with a count; nothing running says so (v2.71.0)")
     void tooltipNamesTheRuns() {
         assertThat(LiveRuns.tooltip(java.util.List.of())).isEqualTo("Stop Running Command — nothing is running");

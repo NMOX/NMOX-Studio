@@ -205,6 +205,8 @@ public class NpmService {
         // so the tab, the ■'s tooltip, the Stop menu and the status line all
         // name the same thing; two scripts no longer interleave in one tab
         CommandExecutor.showOutput(label);
+        // registered BEFORE the spawn (v2.71.0; see WebProjectActionProvider)
+        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         CommandExecutor.Handle handle = CommandExecutor.run(label, workingDir, java.util.Map.of(),
                 java.util.List.of(command),
                 line -> {
@@ -254,7 +256,6 @@ public class NpmService {
             SCRIPT_BY_RUN.put(runId, script);
         }
         LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
-        org.netbeans.spi.project.ui.support.BuildExecutionSupport.registerRunningItem(item);
         return done;
     }
 
