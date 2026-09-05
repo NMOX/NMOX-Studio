@@ -80,11 +80,18 @@ class AgentPortSecurityTest {
     }
 
     @Test
-    @DisplayName("GET is 405 — only the stateless POST shape is served")
+    @DisplayName("a plain GET is 405 (not a page); the SSE GET is the subscription stream (v2.84.0)")
     void getRefused() throws Exception {
         var r = http.send(req().header("Authorization", "Bearer " + port.token())
                 .GET().build(), HttpResponse.BodyHandlers.discarding());
         assertThat(r.statusCode()).isEqualTo(405);
+        var noToken = http.send(req().header("Accept", "text/event-stream").GET().build(),
+                HttpResponse.BodyHandlers.discarding());
+        assertThat(noToken.statusCode()).as("the stream needs the token too").isEqualTo(401);
+        var origin = http.send(req().header("Accept", "text/event-stream").header("Origin", "http://evil")
+                .header("Authorization", "Bearer " + port.token()).GET().build(),
+                HttpResponse.BodyHandlers.discarding());
+        assertThat(origin.statusCode()).as("the stream refuses a browser Origin too").isEqualTo(403);
     }
 
     @Test

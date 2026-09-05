@@ -58,6 +58,16 @@ final class McpResources {
 
     static final String MIME = "application/json";
 
+    /** Whether {@code uri} is a catalogued (subscribable) resource with a live tool behind it. */
+    static boolean isCatalogued(String uri, McpTools tools) {
+        for (Bound b : CATALOG) {
+            if (b.uri().equals(uri)) {
+                return tools.byName(b.toolName()) != null;
+            }
+        }
+        return false;
+    }
+
     /** The resources/templates/list payload: one entry per template whose tool exists. */
     static JSONObject templates(McpTools tools) {
         JSONArray out = new JSONArray();

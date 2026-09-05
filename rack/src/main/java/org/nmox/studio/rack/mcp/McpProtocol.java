@@ -32,6 +32,17 @@ public final class McpProtocol {
      */
     public static String handle(String requestJson, McpTools tools,
             String productVersion) {
+        return handle(requestJson, tools, productVersion, null);
+    }
+
+    /** As above, with the port's subscriptions (v2.84.0); null = no subscriptions are kept. */
+    public static String handle(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs) {
+        return handleWith(requestJson, tools, productVersion, subs);
+    }
+
+    private static String handleWith(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs) {
         JSONObject request;
         try {
             request = new JSONObject(requestJson == null ? "" : requestJson);
@@ -67,6 +78,26 @@ public final class McpProtocol {
                 result = McpResources.list(tools);
             case "resources/templates/list" ->
                 result = McpResources.templates(tools);
+            case "resources/subscribe", "resources/unsubscribe" -> {
+                if (notification) {
+                    return null;
+                }
+                String uri = params == null ? null : params.optString("uri", null);
+                if (uri == null) {
+                    return error(id, -32602, method + " needs params.uri").toString();
+                }
+                if (!McpResources.isCatalogued(uri, tools)) {
+                    return error(id, -32002, "Resource not found: " + uri).toString();
+                }
+                if (subs != null) {
+                    if (method.equals("resources/subscribe")) {
+                        subs.subscribe(uri);
+                    } else {
+                        subs.unsubscribe(uri);
+                    }
+                }
+                result = new JSONObject();
+            }
             case "resources/read" -> {
                 if (notification) {
                     return null;
@@ -130,7 +161,9 @@ public final class McpProtocol {
                 // not just call tools (v2.56.0)
                 .put("capabilities", new JSONObject()
                         .put("tools", new JSONObject())
-                        .put("resources", new JSONObject())
+                        // subscribe: an agent learns a run started or a server
+                        // went live over the GET stream, no polling (v2.84.0)
+                        .put("resources", new JSONObject().put("subscribe", true))
                         .put("prompts", new JSONObject()))
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)

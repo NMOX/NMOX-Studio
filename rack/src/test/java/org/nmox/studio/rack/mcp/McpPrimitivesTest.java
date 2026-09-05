@@ -175,6 +175,27 @@ class McpPrimitivesTest {
     }
 
     @Test
+    @DisplayName("resources/subscribe tracks a catalogued URI, refuses an unknown one, needs params.uri; initialize declares subscribe (v2.84.0)")
+    void subscriptions() {
+        McpSubscriptions subs = new McpSubscriptions();
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0", subs);
+        assertThat(ok).contains("\"result\":{}").doesNotContain("error");
+        assertThat(subs.isSubscribed("nmox://context")).isTrue();
+        String unknown = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://nonesuch\"}}", fixture(), "2.84.0", subs);
+        assertThat(unknown).contains("-32002");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/subscribe\"}", fixture(), "2.84.0", subs);
+        assertThat(missing).contains("-32602").contains("params.uri");
+        String un = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"resources/unsubscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0", subs);
+        assertThat(un).contains("\"result\":{}");
+        assertThat(subs.isSubscribed("nmox://context")).isFalse();
+        String init = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"initialize\"}", fixture(), "2.84.0");
+        assertThat(new JSONObject(init).getJSONObject("result").getJSONObject("capabilities")
+                .getJSONObject("resources").getBoolean("subscribe")).isTrue();
+        // the three-arg form still answers, keeping nothing
+        assertThat(McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0")).contains("\"result\":{}");
+    }
+
+    @Test
     @DisplayName("through the protocol: resources/templates/list answers and a where_is without its argument is -32602 (v2.80.0)")
     void protocolTemplatesAndArguments() {
         String list = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/templates/list\"}", fixture(), "2.80.0");

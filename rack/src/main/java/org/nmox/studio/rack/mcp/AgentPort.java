@@ -11,7 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.HexFormat;
+import java.util.ArrayList;
+import java.util.List;
 import org.nmox.studio.core.http.HttpBodies;
+import org.nmox.studio.core.spi.LiveRuns;
+import org.nmox.studio.core.spi.LiveServings;
 
 /**
  * The Agent Port's transport (futures-2031 F4): a loopback-witnessed
@@ -40,6 +44,8 @@ public final class AgentPort {
     private final String token;
     private final String productVersion;
     private final McpTools tools;
+    private final McpSubscriptions subs = new McpSubscriptions();
+    private final List<Runnable> unwatch = new ArrayList<>();
 
     private AgentPort(HttpServer server, String token, McpTools tools,
             String productVersion) {
@@ -68,6 +74,7 @@ public final class AgentPort {
         }
         AgentPort port = new AgentPort(server, token, tools, productVersion);
         server.createContext("/mcp", port::handle);
+        port.watch();
         server.start();
         return port;
     }
@@ -85,10 +92,58 @@ public final class AgentPort {
     }
 
     public void stop() {
+        for (Runnable r : unwatch) {
+            r.run();
+        }
+        unwatch.clear();
+        subs.close();
         server.stop(0);
     }
 
+    /** The port's subscriptions — tests read them. */
+    McpSubscriptions subscriptions() {
+        return subs;
+    }
+
+    /**
+     * The registries whose changes become {@code resources/updated} frames
+     * (v2.84.0), each with the URIs it moves; listener symmetry — every
+     * add here has its remove in {@link #stop}. Absent registries (no
+     * rack in the session) are simply not watched.
+     */
+    private void watch() {
+        Runnable runs = () -> subs.updated("nmox://runs", "nmox://context");
+        LiveRuns.addListener(runs);
+        unwatch.add(() -> LiveRuns.removeListener(runs));
+        LiveServings servings = LiveServings.find();
+        if (servings != null) {
+            LiveServings.Listener l = () -> subs.updated("nmox://servers", "nmox://context");
+            servings.addListener(l);
+            unwatch.add(() -> servings.removeListener(l));
+        }
+        try {
+            org.nmox.studio.rack.engine.DiagnosticsBus.Listener d =
+                    (tool, problems) -> subs.updated("nmox://diagnostics", "nmox://context");
+            org.nmox.studio.rack.engine.DiagnosticsBus.addListener(d);
+            unwatch.add(() -> org.nmox.studio.rack.engine.DiagnosticsBus.removeListener(d));
+            Runnable rec = () -> subs.updated("nmox://history", "nmox://last-failure", "nmox://context");
+            org.nmox.studio.rack.engine.FlightRecorder.getDefault().addChangeListener(rec);
+            unwatch.add(() -> org.nmox.studio.rack.engine.FlightRecorder.getDefault().removeChangeListener(rec));
+        } catch (RuntimeException | LinkageError absent) {
+            // a session without the rack's engine: those resources never change
+        }
+    }
+
     private void handle(HttpExchange exchange) throws IOException {
+        // the GET stream stays open past this method — it must not sit
+        // inside the try-with-resources that closes every other exchange
+        if ("GET".equals(exchange.getRequestMethod())
+                && exchange.getRequestHeaders().getFirst("Origin") == null
+                && authorized(exchange)
+                && acceptsEventStream(exchange)) {
+            openStream(exchange);
+            return;
+        }
         try (exchange) {
             // a browser-originated request carries Origin; no native MCP
             // client does — refuse the whole class before anything else
@@ -101,6 +156,7 @@ public final class AgentPort {
                 return;
             }
             if (!"POST".equals(exchange.getRequestMethod())) {
+                // a plain GET is not a page (405); the SSE GET was served above
                 refuse(exchange, 405);
                 return;
             }
@@ -115,7 +171,7 @@ public final class AgentPort {
             }
             String response;
             try {
-                response = McpProtocol.handle(body, tools, productVersion);
+                response = McpProtocol.handle(body, tools, productVersion, subs);
             } catch (RuntimeException ex) {
                 // defense in depth under the every-refusal-speaks law: an
                 // uncaught throw here would make httpserver DROP the
@@ -137,6 +193,26 @@ public final class AgentPort {
                 out.write(bytes);
             }
         }
+    }
+
+    private static boolean acceptsEventStream(HttpExchange exchange) {
+        String accept = exchange.getRequestHeaders().getFirst("Accept");
+        return accept != null && accept.contains("text/event-stream");
+    }
+
+    /**
+     * The Streamable HTTP GET stream (v2.84.0): server-to-client frames —
+     * here only {@code notifications/resources/updated} for subscribed
+     * URIs. Chunked, kept open until the client leaves or the port stops.
+     */
+    private void openStream(HttpExchange exchange) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+        exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+        exchange.sendResponseHeaders(200, 0);
+        OutputStream out = exchange.getResponseBody();
+        out.write(": connected\n\n".getBytes(StandardCharsets.UTF_8));
+        out.flush();
+        subs.attach(out, exchange::close);
     }
 
     private boolean authorized(HttpExchange exchange) {
