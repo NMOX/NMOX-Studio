@@ -1465,13 +1465,15 @@ right there, streaming progress onto the REPL screen. Spaces live in
 
 ### First Steps, on the Welcome page (v2.66.0; named First Steps since v2.69.11)
 
-A fourth Welcome column lists the five first gestures — open a project,
+A fourth Welcome column lists the six first gestures — open a project,
 run something in the rack, see a server go live, ask ORACLE about code,
-try a learning space — and ticks each one from records the product
-already keeps (recent projects, the rack's flight recorder, the serving
-registry, your ORACLE consent, `~/.nmox/learn`). Hover a step for its
-gesture. A tick never un-ticks; the column disappears when all five are
-done, or when you press **Hide this list**.
+try a learning space, point an agent at the IDE — and ticks each one
+from records the product already keeps (recent projects, the rack's
+flight recorder, the serving registry, your ORACLE consent,
+`~/.nmox/learn`, the Agent Port's started-once record). Every row is a
+door: click it and the gesture's window or action opens. Hover a step
+for its gesture. A tick never un-ticks; the column disappears when all
+six are done, or when you press **Hide this list**.
 
 ### The Help menu's three answers (v2.64.0)
 
