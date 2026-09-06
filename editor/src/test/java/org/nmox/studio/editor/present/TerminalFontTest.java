@@ -52,7 +52,7 @@ class TerminalFontTest {
     void wiring() throws Exception {
         JPanel root = new JPanel();
         JLabel t = term("Monospaced", 12);
-        JPanel childOfTerm = new JPanel();
+        JLabel childOfTerm = term("Monospaced", 9); // a "terminal" inside a terminal: its own business, never listed
         JPanel fakeTerm = new JPanel();
         fakeTerm.setName("term");
         fakeTerm.add(childOfTerm);

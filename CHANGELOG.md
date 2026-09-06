@@ -4,6 +4,12 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.89.0] - 2026-09-06
+
+The fourth surface the room must read.
+
+1. **Presentation Mode reaches the Terminal** — code, page and output followed in v2.87.0; the shell you type into is the fourth thing a live-coding room has to read. Every open terminal (the platform's `Term`, a public-package JComponent whose `setFont` recomputes its metrics and screen size — decompiled; found by walking the open windows' trees for that class by name, no new module dependency) is bumped the same +10 pt on entry and restored PER TERMINAL on leaving — two terminals at two sizes both come back to their own; a second entry remembers the ORIGINAL, never the bumped font. Live and never persisted: the terminal's own options, which `TerminalPhosphor` writes once, are untouched. A terminal opened while presenting keeps its own size — a written limit. The walk is a pure function over roots and a predicate, tested with stand-ins; two mutants by name (the remembered font overwritten on re-entry; the walk descending into a terminal's own children).
+
 ## [2.88.0] - 2026-09-06
 
 The developer evangelist's afternoon, built while v2.87.0 flew: the README motion.
@@ -17592,6 +17598,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.89.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.88.0...v2.89.0
 [2.88.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.87.0...v2.88.0
 [2.87.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.86.0...v2.87.0
 [2.86.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.85.0...v2.86.0
