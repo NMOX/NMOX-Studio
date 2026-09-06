@@ -81,7 +81,11 @@ public final class ManageLearningSpacesAction implements ActionListener {
                     "Learning Spaces", NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{browse, NotifyDescriptor.CANCEL_OPTION}, browse);
-            if (DialogDisplayer.getDefault().notify(d) == browse) {
+            // equals, not ==: the option is built at runtime now (SpotBugs
+            // ES_COMPARING_STRINGS_WITH_EQ caught the identity compare on the
+            // sixth insurance verify); the descriptor hands back this very
+            // object, so equals is exact
+            if (browse.equals(DialogDisplayer.getDefault().notify(d))) {
                 javax.swing.Action pick = org.openide.awt.Actions.forID("File",
                         "org.nmox.studio.ui.actions.NewLearningSpaceAction");
                 if (pick != null) {
