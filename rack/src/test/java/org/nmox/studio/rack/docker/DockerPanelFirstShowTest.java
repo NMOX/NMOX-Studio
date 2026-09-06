@@ -20,7 +20,11 @@ class DockerPanelFirstShowTest {
     @Test
     @DisplayName("componentShowing refreshes once; the constructor and componentOpened never do")
     void firstShowRefreshes() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/docker/DockerPanelTopComponent.java"));
+        // normalize CRLF: the Windows checkout has native line endings (.gitattributes
+        // text=auto), and the "\n    }\n" method-end search needs a newline AFTER the
+        // brace — a bare \r would make indexOf return -1 and substring(start, -1) throw
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/docker/DockerPanelTopComponent.java"))
+                .replace("\r\n", "\n");
         int showing = src.indexOf("protected void componentShowing()");
         assertThat(showing).isPositive();
         String body = src.substring(showing, src.indexOf("\n    }\n", showing));
