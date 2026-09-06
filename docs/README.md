@@ -26,6 +26,29 @@ front to back or dipped into by section.
   and number in it is real.
 - **[🎛️ The Device Reference](devices.md)** — every device in the rack,
   its knobs and its jacks. Generated from the source, so it never drifts.
+- **[🖼️ The visual tour](tour.md)** — every major feature on one page,
+  with real screenshots; [tour.html](tour.html) is the phosphor-styled
+  browser version.
+- **[🧪 The Kitchen Sink](kitchen-sink.md)** — every surface of the
+  product exercised in one sitting: twenty-five do/see stations, each
+  claim matched to a proof.
+- **[🏙️ A Day at Meridian](a-day-at-meridian.md)** — one story, one real
+  build through every area, screenshots from a live session.
+- **[🎓 Learning Spaces: the community catalog](learning-spaces.md)** —
+  the drop-in format for your own tutorials, the schema, the parser's
+  refusals, and the exporter that turns a project into a space.
+- **[🧩 Your own project templates](project-templates.md)** — the
+  `~/.nmox/templates.d` drop-in that puts your templates in the New
+  Project wizard beside the built-ins.
+- **[🎛️ Device files — write your own rack device](device-files.md)** —
+  the JSON device format: any `*.json` in `~/.nmox/devices.d` becomes a
+  real device on the shelf, no Java, no plugin, no restart.
+- **[🔌 Writing a Rack Device (the Device SPI)](device-spi.md)** — the
+  plugin route: the frozen `core.spi.device` contract with a worked
+  example that installs through Tools ▸ Plugins.
+- **[⛓️ A Beginner's Guide to Smart Contracts](smart-contracts-beginners-guide.md)**
+  — five contract shapes with the kit's chains as evidence, real refusal
+  idioms, and a ten-minute first contract on three paths.
 
 ## Installing
 
