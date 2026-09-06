@@ -235,6 +235,17 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     official-SDK walk ran on the reviewed bytes: `WALK CLEAN — 19
     steps, 0 surprises`, the outline subscription FOLLOW-PROVEN
     through the one enqueue path.
+38. **The shortcut sheet lists the doors** — the Help-menu walk
+    (Keyboard Shortcuts…, Report a Problem…, What's New…, About, all
+    read through accessibility: the report's body carries no home path
+    and no user name, nothing is sent; What's New shows the head entry)
+    found the sheet saying "15 NMOX shortcuts" without the Welcome's own
+    ⇧⌘E / ⇧⌘N / ⇧⌘L: those doors register in the platform's global
+    `Shortcuts/` folder and the sheet read only the profile's
+    `Keymaps/`. Both folders now, a chord bound in both listed once the
+    Keymaps way (the v1.38.1 precedence, so the sheet says what a
+    keypress does); a memory-filesystem test, the folder-walk mutant
+    dead by name.
 
 ## [2.84.0] - 2026-09-05
 

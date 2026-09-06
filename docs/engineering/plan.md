@@ -3873,7 +3873,10 @@ the branch's one real bug in its riskiest unit: resource updates and
 keepalives bypassed the per-stream backlog cap the log lines
 honored — one enqueue path now, every frame kind bounded and the
 overflow announced — and the precheck's unbounded read of a
-project-controlled package.json, bounded. One
+project-controlled package.json, bounded. The Help menu walked
+last: the shortcut sheet had never listed the Welcome's own doors
+(they live in the global Shortcuts folder, not the profile's
+Keymaps) — it reads both now. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its
