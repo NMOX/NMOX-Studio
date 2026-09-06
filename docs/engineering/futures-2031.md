@@ -105,6 +105,12 @@ WorkspaceTrust; it needs a consent model of its own (a per-session
 grant the user arms at the keyboard, scoped to named verbs). The
 read-only ledger is what makes that a DELIBERATE future step instead
 of an accident waiting in a pull request.
+**Designed 2026-09-05 (the v2.84.0 shift's close):**
+[agent-port-execution-dossier.md](./agent-port-execution-dossier.md)
+— lanes not commands, a per-session grant armed only at the keyboard,
+verbs that appear in `tools/list` only while armed, every existing law
+kept in order, the audit in the flight recorder. Three ways to go,
+David's call.
 
 ### F5 — TypeScript's native port replaces tsserver. — RECORDED (watch item)
 
