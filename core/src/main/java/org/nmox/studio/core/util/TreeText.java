@@ -18,6 +18,9 @@ import java.util.stream.Stream;
  * remainder counted honestly rather than dropped. Every read is bounded:
  * the walk never follows a symlinked directory (a loop would be a
  * bounded-read violation) and stops the moment the entry cap is hit.
+ * The IDE's own workspace files ({@link IdeWorkspaceFiles}) are left out:
+ * they are the product's, not the project's, and a README tree that
+ * listed them would be edited by hand every time (the walk's find).
  */
 public final class TreeText {
 
@@ -72,7 +75,9 @@ public final class TreeText {
     static List<Path> children(Path dir) {
         List<Path> out = new ArrayList<>();
         try (Stream<Path> s = Files.list(dir)) {
-            s.forEach(out::add);
+            // the IDE's own workspace files (.nmoxrack.json and its siblings) are the product's,
+            // not the project's — README noise the walk found; left out, not counted as elided
+            s.filter(p -> !IdeWorkspaceFiles.isOwn(p.getFileName().toString())).forEach(out::add);
         } catch (IOException | RuntimeException ex) {
             return out;
         }

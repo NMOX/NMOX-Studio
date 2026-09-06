@@ -21,6 +21,8 @@ class TreeTextTest {
         Files.writeString(root.resolve("index.html"), "");
         Files.writeString(root.resolve("package.json"), "");
         Files.writeString(root.resolve("README.md"), "");
+        Files.writeString(root.resolve(".nmoxrack.json"), "{}");
+        Files.writeString(root.resolve(".nmoxtasks.json"), "{}");
         return root;
     }
 
@@ -41,6 +43,7 @@ class TreeTextTest {
                 "├── package.json",
                 "└── README.md") + "\n");
         assertThat(r.text()).doesNotContain("react/");
+        assertThat(r.text()).as("the IDE's own workspace files are the product's, not the project's").doesNotContain(".nmox");
     }
 
     @Test
