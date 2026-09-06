@@ -813,6 +813,15 @@ reader, or a feed — the developer-evangelist grant:
   snippet that itself contains three backticks gets a longer fence so it
   renders whole instead of ending early. The status line says how many
   lines were copied and which tag they carry.
+- **Edit ▸ Copy as Markdown with Link** (or right-click). The same block,
+  followed by a link to those exact lines on GitHub —
+  `[src/App.jsx#L3-L14](https://github.com/you/repo/blob/main/src/App.jsx#L3-L14)`
+  — for an issue, a review comment or a post that should say where the
+  code lives. It links the branch you have checked out (a detached HEAD
+  links by commit), so what you paste is what a reader can open. It only
+  vouches for what it can read: a file outside a git repository, a
+  repository without an `origin`, or an origin that is not GitHub is a
+  spoken refusal on the status line, and nothing is copied.
 - **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
   2x, saved as a PNG where you choose (Pictures by default, named by
   the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
