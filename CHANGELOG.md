@@ -4,6 +4,10 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.93.0] - 2026-09-06
+
+1. **The front page points at the indexes** — the README linked the User Guide and nothing else in `docs/`: the docs index (made true in v2.90.0) and the tutorials index were reachable only by browsing the repository tree. One sentence in the User Guide's own line now points at both, and `DocsIndexGateTest` keeps it there (failing-first).
+
 ## [2.92.0] - 2026-09-06
 
 The reader's side, continued.
@@ -17623,6 +17627,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.93.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.92.0...v2.93.0
 [2.92.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.91.0...v2.92.0
 [2.91.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.90.0...v2.91.0
 [2.90.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.89.0...v2.90.0

@@ -71,4 +71,12 @@ class DocsIndexGateTest {
         }
         assertThat(unlisted).as("docs/engineering/README.md omits live documents beside it").isEmpty();
     }
+
+    /** An index nobody links is as invisible as the documents it omitted: the front page must point at both indexes (v2.93.0). */
+    @org.junit.jupiter.api.Test
+    @DisplayName("the README links the docs index and the tutorials index")
+    void readmeLinksTheIndexes() throws IOException {
+        String readme = Files.readString(Path.of("..", "README.md"));
+        assertThat(readme).contains("(docs/README.md)").contains("(docs/tutorials/README.md)");
+    }
 }
