@@ -77,9 +77,19 @@ final class TsServerPrecheck {
         return new Verdict(tsserver ? Kind.SERVEABLE : Kind.NO_TSSERVER, version, typescriptDir);
     }
 
+    /** How much of a package.json the version read looks at: the field sits at the top of every real one. */
+    static final int VERSION_READ_CAP = 64 * 1024;
+
+    /**
+     * Reads the version from a capped PREFIX (v2.85.0 review): this file
+     * lives under a cloned project's node_modules, so it is other people's
+     * bytes, and the bounded-read law holds for a file the way it does for
+     * a socket — a multi-gigabyte package.json must cost 64 KB on file
+     * open, not the heap.
+     */
     static String version(File packageJson) {
-        try {
-            String text = Files.readString(packageJson.toPath(), StandardCharsets.UTF_8);
+        try (java.io.InputStream in = Files.newInputStream(packageJson.toPath())) {
+            String text = new String(in.readNBytes(VERSION_READ_CAP), StandardCharsets.UTF_8);
             Matcher m = Pattern.compile("\"version\"\\s*:\\s*\"([^\"]+)\"").matcher(text);
             return m.find() ? m.group(1) : "?";
         } catch (java.io.IOException e) {

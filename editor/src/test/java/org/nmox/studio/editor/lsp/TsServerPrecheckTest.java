@@ -23,6 +23,20 @@ class TsServerPrecheckTest {
     }
 
     @Test
+    @org.junit.jupiter.api.DisplayName("the version read is bounded: a package.json whose version sits past the cap costs the cap, not the heap")
+    void versionReadIsBounded(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) throws Exception {
+        java.nio.file.Path normal = dir.resolve("normal.json");
+        java.nio.file.Files.writeString(normal, "{\n  \"name\": \"typescript\",\n  \"version\": \"5.9.2\"\n}\n");
+        assertThat(TsServerPrecheck.version(normal.toFile())).isEqualTo("5.9.2");
+        java.nio.file.Path padded = dir.resolve("padded.json");
+        String pad = " ".repeat(TsServerPrecheck.VERSION_READ_CAP + 1024);
+        java.nio.file.Files.writeString(padded, "{" + pad + "\"version\": \"9.9.9\"}");
+        assertThat(TsServerPrecheck.version(padded.toFile()))
+                .as("past the cap is unread — the bounded-read law for a file under someone else's node_modules")
+                .isEqualTo("?");
+    }
+
+    @Test
     @DisplayName("the workspace's typescript wins: 5 with a tsserver serves, 7 without one is the wall")
     void workspaceTypescript(@TempDir Path project, @TempDir Path prefix) throws Exception {
         typescript(project.resolve("node_modules/typescript"), "5.9.2", true);
