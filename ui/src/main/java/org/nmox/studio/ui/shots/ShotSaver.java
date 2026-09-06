@@ -2,6 +2,7 @@ package org.nmox.studio.ui.shots;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,23 @@ final class ShotSaver {
             String s = status;
             SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(s)));
         });
+    }
+
+    /**
+     * EDT only. Paints {@code target} at 2x straight onto the system
+     * clipboard as an image — no chooser, no disk — and says so. A target
+     * with no size is a spoken refusal, never an empty clipboard.
+     */
+    static void copy(Component target, String what) {
+        BufferedImage img = Screenshot.paint2x(target);
+        if (img == null) {
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(
+                    "Not copied — the " + what + " target has no size to paint"));
+            return;
+        }
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new ImageTransferable(img), null);
+        StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copied " + what + " to the clipboard ("
+                + img.getWidth() + "×" + img.getHeight() + ", 2x)"));
     }
 
     static File defaultDir() {
