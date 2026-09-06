@@ -8,6 +8,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 1. **The front page points at the indexes** — the README linked the User Guide and nothing else in `docs/`: the docs index (made true in v2.90.0) and the tutorials index were reachable only by browsing the repository tree. One sentence in the User Guide's own line now points at both, and `DocsIndexGateTest` keeps it there (failing-first).
 2. **The afternoon's close proof** — the update-center gauntlet ran a two-release jump: a stock v2.88.0 portable updated itself in-app to 2.90.0 (11 of 11 modules, zero SEVERE), and the first-boot half passed too — the updated install's What's New recorded 2.90.0 as seen.
+3. **The day's close** — plan.md carries the finish line: seven releases from one persona ask, three gauntlet passes, the two lane catches (a macOS flake rerun on the same sha; a real Windows-only separator bug in a day-old gate exemption), and the process lessons the pipeline taught.
 
 ## [2.92.0] - 2026-09-06
 

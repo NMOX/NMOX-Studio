@@ -4072,6 +4072,22 @@ delta was docs-only and gate-checked by hand, but the verified sha and
 the shipped sha differed — so the next units go to ANOTHER worktree from
 the moment a guard is armed, and a fold happens only before the gate is
 armed, with its own full verify. Recorded in memory, not just here.
+
+### The finish line (2026-09-06, 11:05 MT — David: "aim for a finish line for today")
+
+Seven releases in one day from one persona ask — v2.87.0 through
+v2.93.0 — with the pipeline finishing the last two on its own:
+v2.92.0 (the engineering index made true and gated banner-aware; the
+Markdown tree stats once per entry) and v2.93.0 (the front page points
+at the two indexes it never linked; the 2.88.0→2.90.0 gauntlet recorded).
+Three gauntlets passed across the day's own releases. The lanes caught
+two more things before any tag: a `CommandExecutorReaperTest` flake on
+macOS (rerun on the same sha, green — the v2.21.4 rule held) and a real
+Windows-only bug in a day-old gate exemption (`release/website` matched
+as a string; Windows paths read `release\website` — separator-normalized;
+the CRLF trap's sibling, now in memory). Nothing was built after the
+finish line was named; every worktree with a chain stayed frozen and the
+close is this addendum, one commit, verified before its own ship.
 - **Presentation Mode reaches the Browser and the Output window** — one
   product-wide state (`core.util.Presentation`, symmetric listeners);
   the page at 150% of the user's zoom, restored exactly; the Output
