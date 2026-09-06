@@ -68,7 +68,9 @@ class UiCountLiteralGateTest {
                     }).filter(f -> !f.toString().contains("learn-catalog")).toList()) {
                         String body = Files.readString(p);
                         Matcher c = CLAIM.matcher(body);
-                        boolean website = p.toString().contains("release/website");
+                        // separator-normalized: on Windows the path reads release\website and the
+                        // exemption never matched — the #704 windows lane found it (the CRLF trap's sibling)
+                        boolean website = p.toString().replace('\\', '/').contains("release/website");
                         while (c.find()) {
                             // the website is static bytes with no runtime to derive from; its
                             // numerals are allowed ONLY where SiteShipsTest.countsAreTrue binds
