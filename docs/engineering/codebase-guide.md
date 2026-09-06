@@ -346,6 +346,26 @@ gates (`PlainMessageGateTest`, `PlainStatusGateTest`, `PlainLabelGateTest`,
 opened from a directory named `<html>PWNED` rendered its name as markup
 in the Project Studio header and the recent-projects row.
 
+**A live push must reach the object the listener listens to** (v2.87.0).
+When a feature changes a live setting by writing to a singleton, first
+decompile WHO listens to WHAT: every platform `OutputTab` listens to its
+IO's OWN `OutputOptions` copy, so `OutputOptions.getDefault().setFont`
+re-rendered nothing — the walk (run vite, present, photograph) found the
+first cut inert while its status line said "on". The push is the one the
+platform's own Options panel makes (`Controller.updateOptions(copy)` into
+every open IO), and a follower's refusal is composed INTO the mode's
+status rather than set and overwritten a moment later. Origin:
+Presentation Mode's Output follow, `OutputFont`.
+
+**Match a platform class by hierarchy, never by exact name** (v2.89.0).
+Finding a platform component by class name without a module dependency
+is legitimate, but an exact-name match found no terminal at all: the
+terminal module's component is `ActiveTerm extends StreamTerm extends
+Term`. `TerminalFont.isTerm` walks `getSuperclass()` comparing names, and
+the test tree carries a stand-in class with the platform's exact name so
+the hierarchy rule is proven without the module. Origin: the same
+Presentation Mode walk, one surface later.
+
 ## 5. Where to go next
 
 - **Every important package now carries a `package-info.java`**

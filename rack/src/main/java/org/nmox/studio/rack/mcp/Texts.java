@@ -296,6 +296,9 @@ final class Texts {
                 ? "none on record" : "on " + s.getString("lastFailureDevice"));
         sb.append("\nDiagnostics: ").append(s.getInt("diagnosticCount"))
                 .append(" finding").append(s.getInt("diagnosticCount") == 1 ? "" : "s");
+        if (s.optBoolean("presenting")) {
+            sb.append("\nPresentation Mode is ON — the IDE is being shown to a room");
+        }
         return sb.toString();
     }
 }

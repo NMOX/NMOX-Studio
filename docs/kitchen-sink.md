@@ -549,7 +549,8 @@ then Tools ▸ **Copy Editor Screenshot** and paste into a chat; then
 Tools ▸ **Copy Project Tree as Markdown**.
 
 **See:** Every open editor +10 pt, the in-app Browser's page at 150%,
-the Output window's text grown with them — and all three back exactly
+the Output window's text and every open Terminal grown with them — and
+all four back exactly
 where they were when you toggle off (nothing is written to your
 settings). A dark pill reading `⌘S` at the bottom of the window for a
 moment; type a word and nothing appears — only chords with ⌘, ⌃ or ⌥

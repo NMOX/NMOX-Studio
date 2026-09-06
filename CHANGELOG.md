@@ -4,6 +4,15 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.89.0] - 2026-09-06
+
+The fourth surface the room must read.
+
+1. **Presentation Mode reaches the Terminal** — code, page and output followed in v2.87.0; the shell you type into is the fourth thing a live-coding room has to read. Every open terminal (the platform's `Term`, a public-package JComponent whose `setFont` recomputes its metrics and screen size — decompiled; found by walking the open windows' trees for that class by name, no new module dependency) is bumped the same +10 pt on entry and restored PER TERMINAL on leaving — two terminals at two sizes both come back to their own; a second entry remembers the ORIGINAL, never the bumped font. Live and never persisted: the terminal's own options, which `TerminalPhosphor` writes once, are untouched. A terminal opened while presenting keeps its own size — a written limit. The walk is a pure function over roots and a predicate, tested with stand-ins; three mutants by name (the remembered font overwritten on re-entry; the walk descending into a terminal's own children — which SURVIVED its first test because the input never exercised the guard, then died on a nested terminal; and the exact-name match). That last one was the live walk's find: the first cut matched the class NAME and reached no terminal at all, because the terminal module's component is `ActiveTerm extends StreamTerm extends Term`; the hierarchy is now walked by name, proven with a stand-in class of the platform's exact name in the test tree.
+2. **The day's close proof** — the update-center gauntlet ran across the morning's release: a stock v2.86.0 portable updated itself in-app to 2.87.0 through the real update center (`update_tracking` moved for 11 of 11 modules in 15 s, every cluster jar reading 2.87.0, a fresh-cache boot turning all eleven on with zero SEVERE). Docs truth rides along: the Terminal joins the presenting family on the front page and in the Kitchen Sink's station 25.
+3. **The Agent Port knows when you are presenting** — `ide_context` gains a `presenting` boolean (the product-wide `core.util.Presentation` state; schema-contract-tested like every field) and its text says "Presentation Mode is ON — the IDE is being shown to a room" only when it is, so an agent helping with a live demo can keep quiet. Read-only, like everything on the port.
+4. **The keystroke pill, finally walked** — v2.87.0 shipped Show Keystrokes "proven at the pure half and the toggle only" because a pill that lives 1.6 s cannot be listed or photographed by background automation. The pill's linger is now a walk seam, `-J-Dnmox.keystrokes.linger=<ms>` (the DocsShots `nmox.shots.dir` precedent: property-gated, bounded to 200 ms–10 min, nothing changes for a user who never sets it; one mutant by name), and with it held at 60 s the walk did what the record said it could not: a raw Escape reached the toolkit listener, a second window 112×63 appeared at the bottom-centre of the frame, and its photograph reads `Esc`. The ⌘-chord branch still cannot be delivered from the background (a chord arrives as an accessibility action) and stays pinned at the pure half — said so, not pretended.
+
 ## [2.88.0] - 2026-09-06
 
 The developer evangelist's afternoon, built while v2.87.0 flew: the README motion.
@@ -17592,6 +17601,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.89.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.88.0...v2.89.0
 [2.88.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.87.0...v2.88.0
 [2.87.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.86.0...v2.87.0
 [2.86.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.85.0...v2.86.0

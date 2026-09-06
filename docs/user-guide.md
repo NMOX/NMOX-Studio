@@ -804,9 +804,9 @@ reader, or a feed — the developer-evangelist grant:
   settings — toggle it off, or restart, and the font is exactly what it
   was. The in-app Browser follows: the page zooms to 150% of your own
   zoom while presenting and comes back exactly when you stop, so a demo
-  of the running app reads from the back row too — and so does the
-  Output window, so the run you just started can be read along with the
-  code that started it. The menu item shows a
+  of the running app reads from the back row too — and so do the
+  Output window and every open Terminal, so the run you just started and
+  the shell you type into can be read along with the code. The menu item shows a
   check while the mode is on and the status line says so.
 - **View ▸ Show Keystrokes.** The chord you just pressed appears large at
   the bottom of the window for a moment — ⌘S, ⌥⌘G, ⇧⌘O, or `⌘Z ×3` when

@@ -67,11 +67,12 @@ public final class PresentationMode {
                 apply(c, delta);
             }
             String outputNote = OutputFont.follow(enable); // the Output window reads from the back row too
+            TerminalFont.follow(enable); // and the terminal you type into
             // the status is composed AFTER the follow so a refusal rides along instead of being
             // overwritten (the walk's find); PlainStatus.text because the note is runtime text
             if (enable) {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                        "Presentation Mode on — editors and Output +" + DELTA_POINTS + " pt, Browser at "
+                        "Presentation Mode on — editors, Output and Terminal +" + DELTA_POINTS + " pt, Browser at "
                         + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)"
                         + (outputNote == null ? "" : "; " + outputNote)));
             } else {

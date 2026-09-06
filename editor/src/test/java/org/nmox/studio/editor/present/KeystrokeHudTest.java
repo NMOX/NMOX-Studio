@@ -68,4 +68,39 @@ class KeystrokeHudTest {
         String action = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/ShowKeystrokesAction.java"));
         assertThat(action).contains("path = \"Menu/View\", position = 1180");
     }
+
+    @Test
+    @DisplayName("the pill's linger is 1.6 s unless a walk sets -Dnmox.keystrokes.linger, and nonsense reads as the default")
+    void lingerProperty() {
+        String key = "nmox.keystrokes.linger";
+        String before = System.getProperty(key);
+        try {
+            System.clearProperty(key);
+            assertThat(KeystrokeOverlay.lingerMs()).isEqualTo(1600);
+            System.setProperty(key, "60000");
+            assertThat(KeystrokeOverlay.lingerMs()).isEqualTo(60000);
+            System.setProperty(key, "5");
+            assertThat(KeystrokeOverlay.lingerMs()).isEqualTo(1600);
+            System.setProperty(key, "999999999");
+            assertThat(KeystrokeOverlay.lingerMs()).isEqualTo(1600);
+            System.setProperty(key, "soon");
+            assertThat(KeystrokeOverlay.lingerMs()).isEqualTo(1600);
+        } finally {
+            if (before == null) {
+                System.clearProperty(key);
+            } else {
+                System.setProperty(key, before);
+            }
+        }
+        String src = readOverlay();
+        assertThat(src).contains("new Timer(lingerMs(), e -> hideNow())");
+    }
+
+    private static String readOverlay() {
+        try {
+            return Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/KeystrokeOverlay.java"));
+        } catch (java.io.IOException ex) {
+            throw new AssertionError(ex);
+        }
+    }
 }
