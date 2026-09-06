@@ -178,7 +178,7 @@ public final class GhostText {
         }
         detach();
         if (!note.isEmpty()) {
-            StatusDisplayer.getDefault().setStatusText(note);
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(note));
         }
     }
 

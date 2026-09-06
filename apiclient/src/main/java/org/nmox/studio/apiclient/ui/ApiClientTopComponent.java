@@ -1154,9 +1154,9 @@ public final class ApiClientTopComponent extends TopComponent {
         selectRequest(target.name, restored.name);
         touch();
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                entry.authType == AuthType.NONE
+                org.nmox.studio.core.util.PlainStatus.text(entry.authType == AuthType.NONE
                 ? "Restored from history."
-                : "Restored from history — re-enter the auth token (secrets never ride history).");
+                : "Restored from history — re-enter the auth token (secrets never ride history)."));
     }
 
     private void clearHistory() {
@@ -1395,7 +1395,7 @@ public final class ApiClientTopComponent extends TopComponent {
                         ? "Saved (response was truncated at the capture cap)."
                         : "Saved " + file.getName() + ".";
                 java.awt.EventQueue.invokeLater(() ->
-                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(note));
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(note)));
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(

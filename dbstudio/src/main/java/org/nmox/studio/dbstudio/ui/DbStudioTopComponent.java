@@ -2195,7 +2195,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private void status(String message, Color color) {
         statusLabel.setForeground(color);
         statusLabel.setText(message);
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(message);
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 
     // ---- lifecycle ----

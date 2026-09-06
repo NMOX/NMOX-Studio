@@ -129,6 +129,6 @@ public final class FormatWithPrettierAction implements ActionListener {
     }
 
     private static void status(String message) {
-        StatusDisplayer.getDefault().setStatusText(message);
+        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 }

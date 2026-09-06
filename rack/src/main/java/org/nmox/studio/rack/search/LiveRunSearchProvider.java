@@ -39,6 +39,6 @@ public class LiveRunSearchProvider implements SearchProvider {
     private static void stop(String id, String label) {
         LiveRuns.Run r = LiveRuns.stop(id);
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                r == null ? label + " had already finished" : "Stopped: " + label);
+                org.nmox.studio.core.util.PlainStatus.text(r == null ? label + " had already finished" : "Stopped: " + label));
     }
 }

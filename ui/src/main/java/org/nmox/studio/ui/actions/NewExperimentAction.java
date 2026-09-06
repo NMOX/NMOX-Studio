@@ -192,9 +192,9 @@ public final class NewExperimentAction implements ActionListener {
      */
     private static void reportInstall(String pm, int code) {
         SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(
-                code == 0
+                org.nmox.studio.core.util.PlainStatus.text(code == 0
                 ? "Dependencies installed — press F6 and follow EXPERIMENT.md"
-                : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help"));
+                : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help")));
     }
 
     /** The manager's Open re-uses the same guide-opening path (v2.36.1). */

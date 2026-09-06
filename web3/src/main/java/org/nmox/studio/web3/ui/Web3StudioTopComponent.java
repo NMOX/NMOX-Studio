@@ -2743,7 +2743,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void status(String message, Color color) {
         statusLabel.setForeground(color);
         statusLabel.setText(message);
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(message);
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 
     /** Async outcomes land as balloons too — the DB Studio feedback idiom. */

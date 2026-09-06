@@ -146,12 +146,12 @@ public final class NgSchematicAction implements ActionListener {
                         }
                         boolean opened = createdFile != null
                                 && openInEditor(createdFile);
-                        StatusDisplayer.getDefault().setStatusText(exit == 0
+                        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(exit == 0
                                 ? "ng generate " + schematic + " " + rawName.trim()
                                         + (opened
                                                 ? " — opened " + new File(created).getName()
                                                 : " — done.")
-                                : "ng generate failed (exit " + exit + ") — see Output.");
+                                : "ng generate failed (exit " + exit + ") — see Output."));
                     }));
             LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         });

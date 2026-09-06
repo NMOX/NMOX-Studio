@@ -105,8 +105,8 @@ public final class TestsExplorerTopComponent extends TopComponent {
         // the window shows
         stop.addActionListener(e -> {
             int stopped = TestRunsStop.stopAll();
-            StatusDisplayer.getDefault().setStatusText(stopped == 0
-                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s"));
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(stopped == 0
+                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s")));
         });
         stop.getAccessibleContext().setAccessibleName("Stop running test");
         stop.setEnabled(false);

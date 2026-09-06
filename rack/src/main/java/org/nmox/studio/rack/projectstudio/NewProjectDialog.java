@@ -383,7 +383,7 @@ public class NewProjectDialog extends JDialog {
             return;
         }
         org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText(pm + " install failed (exit " + code + ")");
+                .setStatusText(org.nmox.studio.core.util.PlainStatus.text(pm + " install failed (exit " + code + ")"));
         org.openide.NotifyDescriptor d = new org.openide.NotifyDescriptor.Message(
                 "<html><b>" + pm + " install didn't finish.</b><br><br>"
                 + "Your project files were created fine — only the dependency<br>"

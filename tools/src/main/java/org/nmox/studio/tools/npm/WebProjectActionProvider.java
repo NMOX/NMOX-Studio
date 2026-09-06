@@ -104,7 +104,7 @@ final class WebProjectActionProvider implements ActionProvider {
         // a Run while the project's own install is still live (v2.72.0):
         // refuse out loud instead of failing on a half-written node_modules
         if (InstallGuard.installing(dir)) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.message(dir));
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(InstallGuard.message(dir)));
             return;
         }
         // The platform invokes us on the EDT; the fork (pb.start inside
@@ -127,7 +127,7 @@ final class WebProjectActionProvider implements ActionProvider {
         // on the lane, because the check READS package.json (the batch
         // review: its first home was invokeAction, on the EDT)
         if (ActionProvider.COMMAND_RUN.equals(command) && InstallGuard.needsInstall(dir)) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(InstallGuard.needsInstallMessage(dir));
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(InstallGuard.needsInstallMessage(dir)));
             InstallDoor.offer(dir);
             return;
         }
@@ -221,7 +221,7 @@ final class WebProjectActionProvider implements ActionProvider {
                     // (v2.73.0); the Output tab carries the friendly reason
                     if (exit == -1) {
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                LaunchFailure.status(label));
+                                org.nmox.studio.core.util.PlainStatus.text(LaunchFailure.status(label)));
                         // and a balloon with the door (v2.73.0): the status
                         // line fades, the bell keeps the link
                         LaunchFailure.notify(label);

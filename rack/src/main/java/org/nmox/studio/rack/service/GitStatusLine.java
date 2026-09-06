@@ -531,7 +531,7 @@ public class GitStatusLine implements StatusLineElementProvider {
 
         private static void status(String message) {
             java.awt.EventQueue.invokeLater(() -> org.openide.awt
-                    .StatusDisplayer.getDefault().setStatusText(message));
+                    .StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message)));
         }
 
         /** The editable draft — Copy puts it on the clipboard; never commits. */
@@ -680,7 +680,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** The honest refusal: name where the verb still works, never a dead click. */
         private static void teamMenuFallback(String verb, String why) {
             StatusDisplayer.getDefault().setStatusText(
-                    verb + " unavailable (" + why + ") — use the Team menu");
+                    org.nmox.studio.core.util.PlainStatus.text(verb + " unavailable (" + why + ") — use the Team menu"));
         }
 
         /**

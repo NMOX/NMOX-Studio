@@ -278,7 +278,7 @@ public final class TasksTopComponent extends TopComponent {
      *  destructive-by-side-effect gesture on this board says what
      *  happened (the blockDialog precedent, made the house rule). */
     private static void status(String text) {
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(text);
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
     }
 
     // ---- UI --------------------------------------------------------------

@@ -110,7 +110,7 @@ public final class CompleteWithOracleAction implements ActionListener {
 
     private static void deliver(Proposal p, JTextComponent target, int caret) {
         if (p.status() != OracleCompleteEngine.Status.PROPOSED) {
-            StatusDisplayer.getDefault().setStatusText(firstLine(p.message()));
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(firstLine(p.message())));
             return;
         }
         if (target.getCaretPosition() != caret) {

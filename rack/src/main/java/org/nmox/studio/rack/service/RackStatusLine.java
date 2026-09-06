@@ -212,7 +212,7 @@ public class RackStatusLine implements StatusLineElementProvider {
                     stop.addActionListener(e -> {
                         org.nmox.studio.core.spi.LiveRuns.Run r = org.nmox.studio.core.spi.LiveRuns.stop(s.deviceId());
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle());
+                                org.nmox.studio.core.util.PlainStatus.text(r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle()));
                     });
                     menu.add(stop);
                 }

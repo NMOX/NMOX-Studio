@@ -260,10 +260,10 @@ public final class RenameClassAction implements ActionListener {
 
     private static void status(String message) {
         if (EventQueue.isDispatchThread()) {
-            StatusDisplayer.getDefault().setStatusText(message);
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
         } else {
             EventQueue.invokeLater(
-                    () -> StatusDisplayer.getDefault().setStatusText(message));
+                    () -> StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message)));
         }
     }
 }

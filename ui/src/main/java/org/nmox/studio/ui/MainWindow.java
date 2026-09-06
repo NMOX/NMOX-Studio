@@ -336,7 +336,7 @@ public final class MainWindow extends TopComponent {
                         }
                     }
                     case GUIDE -> {
-                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(step.gesture());
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(step.gesture()));
                         browse(USER_GUIDE_URL + t.id());
                     }
                 }

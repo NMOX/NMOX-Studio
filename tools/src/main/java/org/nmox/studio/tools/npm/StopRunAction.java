@@ -41,6 +41,6 @@ public final class StopRunAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        StatusDisplayer.getDefault().setStatusText(LiveRuns.stoppedMessage(LiveRuns.stopAll()));
+        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(LiveRuns.stoppedMessage(LiveRuns.stopAll())));
     }
 }
