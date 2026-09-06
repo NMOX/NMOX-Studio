@@ -62,15 +62,18 @@ public final class ManageLearningSpacesAction implements ActionListener {
         // (the v1.33.1 lesson: a network-mounted home must not freeze a click)
         SPACES_RP.post(() -> {
             java.util.List<File> spaces = LearningSpace.list();
-            SwingUtilities.invokeLater(() -> showDialog(spaces));
+            int catalogSize = org.nmox.studio.rack.projectstudio.LearningCatalog.all().size();
+            SwingUtilities.invokeLater(() -> showDialog(spaces, catalogSize));
         });
     }
 
-    private void showDialog(java.util.List<File> spaces) {
+    private void showDialog(java.util.List<File> spaces, int catalogSize) {
         if (spaces.isEmpty()) {
             // the empty shelf OFFERS the door, default button acts
             // (the experiments manager's v2.36.1 sentence, mirrored)
-            Object browse = "Browse the 92 tutorials…";
+            // the catalog counts itself; the read stays off the EDT with the
+            // shelf scan that brought us here (v2.85.0)
+            Object browse = "Browse the " + catalogSize + " tutorials…";
             NotifyDescriptor d = new NotifyDescriptor(
                     "No learning spaces yet — pick a language, framework, or"
                     + " library and it arrives with sample code, a walkthrough,"

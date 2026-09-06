@@ -79,7 +79,15 @@ public final class NewExperimentAction implements ActionListener {
         // the guided path, one click away: David's framing is that this
         // dialog is the front door for learning a stack, and the catalog
         // (50 languages / 24 frameworks / 18 libraries) is its deep end
-        JButton spaces = new JButton("Guided instead? Browse 92 Learning Spaces…");
+        JButton spaces = new JButton("Guided instead? Browse the Learning Spaces…");
+        // the number comes from the catalog, never a literal (v2.85.0: the
+        // button promised 92 while 93 shipped) — read off the EDT, the
+        // label-only update lands when it lands
+        org.openide.util.RequestProcessor.getDefault().post(() -> {
+            int n = org.nmox.studio.rack.projectstudio.LearningCatalog.all().size();
+            javax.swing.SwingUtilities.invokeLater(() ->
+                    spaces.setText("Guided instead? Browse " + n + " Learning Spaces…"));
+        });
         spaces.setToolTipText("Languages, frameworks, and libraries — sample code, a tutorial, a live REPL");
         JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         south.add(spaces);
