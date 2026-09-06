@@ -1782,10 +1782,89 @@ public enum ProjectTemplates {
             return;
         }
         run(dir, "git", "add", "-A");
-        if (run(dir, "git", "commit", "-m", "Initial commit — scaffolded by NMOX Studio") != 0) {
+        if (run(dir, "git", "commit", "-m", INITIAL_COMMIT) != 0) {
             // no committer identity configured; commit with a local fallback
             run(dir, "git", "-c", "user.name=NMOX Studio", "-c", "user.email=studio@nmox.local",
-                    "commit", "-m", "Initial commit — scaffolded by NMOX Studio");
+                    "commit", "-m", INITIAL_COMMIT);
+        }
+    }
+
+    /** The scaffold commit's subject — the fold below recognises it by this. */
+    static final String INITIAL_COMMIT = "Initial commit — scaffolded by NMOX Studio";
+
+    /** What a Node package manager writes during install, and nothing else. */
+    static final java.util.List<String> LOCKFILES =
+            java.util.List.of("package-lock.json", "pnpm-lock.yaml", "yarn.lock");
+
+    /**
+     * Folds the lockfile the wizard's own install just wrote into the
+     * scaffold commit, so a fresh project's first {@code git status} is
+     * clean the way {@code ng new}'s is. The initial commit lands BEFORE the
+     * install (the repo must exist from minute one for the chip and the
+     * tree's colors), so without this every New Project started life with
+     * {@code ?? package-lock.json} — seen on the express and vanilla walks
+     * of v2.85.0. Amending is the honest shape here, and it is guarded so
+     * it can never rewrite anything a person did: the repo must hold
+     * exactly ONE commit and it must be ours, no remote may exist (nothing
+     * can have been pushed), and the working tree must differ from that
+     * commit by the untracked lockfile(s) ALONE — an edit the user made
+     * while the install ran, a second commit, an added origin: any of these
+     * and the lockfile simply stays untracked for the user to commit.
+     * Best-effort like {@link #initGitRepo}; returns whether it amended.
+     */
+    public static boolean foldLockfileIntoInitialCommit(File dir) {
+        if (!new File(dir, ".git").isDirectory()) {
+            return false;
+        }
+        var log = capture(dir, "git", "log", "--format=%s");
+        if (log == null || !log.strip().equals(INITIAL_COMMIT)) {
+            return false; // more than our one commit, or not ours
+        }
+        var remotes = capture(dir, "git", "remote");
+        if (remotes == null || !remotes.isBlank()) {
+            return false; // could have been pushed
+        }
+        var status = capture(dir, "git", "status", "--porcelain");
+        if (status == null || status.isBlank()) {
+            return false;
+        }
+        java.util.List<String> lockfiles = new java.util.ArrayList<>();
+        for (String line : status.split("\\R")) {
+            if (line.isBlank()) {
+                continue;
+            }
+            if (!line.startsWith("?? ") || !LOCKFILES.contains(line.substring(3).strip())) {
+                return false; // something other than a fresh lockfile changed
+            }
+            lockfiles.add(line.substring(3).strip());
+        }
+        if (lockfiles.isEmpty()) {
+            return false;
+        }
+        String[] add = new String[lockfiles.size() + 2];
+        add[0] = "git";
+        add[1] = "add";
+        for (int i = 0; i < lockfiles.size(); i++) {
+            add[i + 2] = lockfiles.get(i);
+        }
+        if (run(dir, add) != 0) {
+            return false;
+        }
+        if (run(dir, "git", "commit", "--amend", "--no-edit") != 0) {
+            return run(dir, "git", "-c", "user.name=NMOX Studio", "-c", "user.email=studio@nmox.local",
+                    "commit", "--amend", "--no-edit") == 0;
+        }
+        return true;
+    }
+
+    /** Stdout of a bounded git spawn, or null when it failed or timed out. */
+    private static String capture(File dir, String... cmd) {
+        try {
+            var r = org.nmox.studio.core.process.ProcessSupport
+                    .runBounded(java.util.List.of(cmd), dir, java.time.Duration.ofSeconds(30));
+            return r.exitCode() == 0 && !r.timedOut() ? r.stdout() : null;
+        } catch (Exception ex) {
+            return null;
         }
     }
 

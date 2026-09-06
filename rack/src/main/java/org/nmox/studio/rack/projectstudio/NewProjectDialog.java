@@ -341,6 +341,11 @@ public class NewProjectDialog extends JDialog {
                                             "Install stopped — run " + pm + " install when you are ready");
                                     return;
                                 }
+                                if (code == 0) {
+                                    // the lockfile joins the scaffold commit (still on the
+                                    // pump thread — four bounded git spawns, never the EDT)
+                                    ProjectTemplates.foldLockfileIntoInitialCommit(dir);
+                                }
                                 reportInstall(pm, code);
                             });
                     LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
