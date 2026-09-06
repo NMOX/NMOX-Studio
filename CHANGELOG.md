@@ -113,6 +113,9 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
 21. **The walk script's own bug** — it read `search_text`'s answer as
     `.hits` (the schema says `matches`) and reported 0 for every query;
     the docs test now pins the field name.
+22. **The arc review's find** — past the file walk's 2000-file cap the
+    outline template's completion list is a floor, so no total is given
+    (`hasMore` says so).
 
 ## [2.84.0] - 2026-09-05
 
