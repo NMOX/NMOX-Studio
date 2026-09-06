@@ -11,6 +11,38 @@ in the shipped app before it was written down. Where the product
 refuses to do something, that refusal is deliberate, and this tutorial
 points at it proudly.
 
+<!-- contents -->
+**Contents**
+
+- [1. First launch and the Doctor](#1-first-launch-and-the-doctor)
+- [2. A project in one minute](#2-a-project-in-one-minute)
+- [3. The Workbench (⌥⌘0)](#3-the-workbench-0)
+- [4. The editor, quickly](#4-the-editor-quickly)
+- [5. The Task Rack](#5-the-task-rack)
+- [6. The programmable rack](#6-the-programmable-rack)
+- [7. Quick Search (⌘I)](#7-quick-search-i)
+- [8. The Browser (⌥⌘4), source-aware](#8-the-browser-4-source-aware)
+- [9. API Studio (⌥⌘8)](#9-api-studio-8)
+- [10. DB Studio (⌥⌘7)](#10-db-studio-7)
+- [11. Contract Studio (⌥⌘6) and the Contract Kit](#11-contract-studio-6-and-the-contract-kit)
+- [12. Block Studio (⌥⌘5)](#12-block-studio-5)
+- [13. Infra Designer (⌥⌘9)](#13-infra-designer-9)
+- [14. The Task Board (⌥⌘1)](#14-the-task-board-1)
+- [15. IRC (⌥⌘3)](#15-irc-3)
+- [16. Debugging](#16-debugging)
+- [17. The kits](#17-the-kits)
+- [18. Learning Spaces](#18-learning-spaces)
+- [19. Break it, check it, export it — the learning loop](#19-break-it-check-it-export-it--the-learning-loop)
+- [20. ORACLE — the AI surfaces](#20-oracle--the-ai-surfaces)
+- [21. Angular, first-class](#21-angular-first-class)
+- [22. The product's own website](#22-the-products-own-website)
+- [23. Ship it](#23-ship-it)
+- [24. Point an agent at it](#24-point-an-agent-at-it)
+- [25. Show it to a room](#25-show-it-to-a-room)
+- [The refusals are features](#the-refusals-are-features)
+- [Where everything lives](#where-everything-lives)
+<!-- /contents -->
+
 You need: NMOX Studio installed (`brew install --cask
 nmox/nmox-studio/nmox-studio`, or an installer from the releases
 page — every installer bundles its own Java runtime), and Node.js on
