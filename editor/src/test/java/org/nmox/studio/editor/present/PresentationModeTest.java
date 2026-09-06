@@ -38,4 +38,13 @@ class PresentationModeTest {
         assertThat(mode).contains("EditorRegistry.addPropertyChangeListener")
                 .contains("EditorRegistry.removePropertyChangeListener");
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("flipping the mode publishes the product-wide state before the editors are bumped (the Browser follows it)")
+    void publishesProductWideState() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/editor/present/PresentationMode.java"));
+        int publish = src.indexOf("Presentation.setOn(enable)");
+        org.assertj.core.api.Assertions.assertThat(publish).isPositive();
+        org.assertj.core.api.Assertions.assertThat(publish).isLessThan(src.indexOf("int delta = zoomFor(enable);"));
+    }
 }

@@ -87,6 +87,11 @@ public final class FxBrowserPanel extends JPanel {
     private WebView webView;
     /** EDT-only. */
     private double zoom = 1.0;
+    /** EDT-only: the user's own zoom before Presentation Mode multiplied it, restored on leaving. */
+    private double zoomBeforePresenting = 1.0;
+    private boolean presenting;
+    /** The product-wide presenting state (core.util.Presentation), attached in addNotify, detached in removeNotify. */
+    private final java.util.function.Consumer<Boolean> presentationHook = on -> SwingUtilities.invokeLater(() -> follow(on));
 
     /** EDT. Builds the chrome and queues engine init on the FX thread. */
     public FxBrowserPanel(TitleListener titleListener) {
@@ -281,6 +286,38 @@ public final class FxBrowserPanel extends JPanel {
                 h.go(offset);
             }
         });
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        org.nmox.studio.core.util.Presentation.addListener(presentationHook);
+        follow(org.nmox.studio.core.util.Presentation.isOn()); // a late subscriber reads the current state
+    }
+
+    @Override
+    public void removeNotify() {
+        org.nmox.studio.core.util.Presentation.removeListener(presentationHook);
+        super.removeNotify();
+    }
+
+    /**
+     * EDT. Presentation Mode reaches the page: entering multiplies the
+     * user's zoom by {@link org.nmox.studio.core.util.Presentation#BROWSER_ZOOM},
+     * leaving restores exactly the zoom they had (any +/− pressed while
+     * presenting is part of the presentation, not a new baseline).
+     */
+    void follow(boolean on) {
+        if (on == presenting) {
+            return;
+        }
+        presenting = on;
+        if (on) {
+            zoomBeforePresenting = zoom;
+            setZoom(org.nmox.studio.core.util.Presentation.browserZoom(zoom, true));
+        } else {
+            setZoom(zoomBeforePresenting);
+        }
     }
 
     /** EDT. Clamped zoom applied to the WebView on the FX thread. */

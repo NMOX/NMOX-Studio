@@ -59,6 +59,8 @@ public final class PresentationMode {
             EditorRegistry.removePropertyChangeListener(registryHook);
             registryHook = null;
         }
+        // the product-wide state: the in-app Browser (and any later window) follows it
+        org.nmox.studio.core.util.Presentation.setOn(enable);
         int delta = zoomFor(enable);
         onEdt(() -> {
             for (JTextComponent c : EditorRegistry.componentList()) {
@@ -68,7 +70,7 @@ public final class PresentationMode {
         // two literal heads: PlainStatusGateTest wants every status text to BEGIN
         // with the product's own literal, and a ternary's head is a variable
         if (enable) {
-            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors +" + DELTA_POINTS + " pt (⌥-wheel fine-tunes)");
+            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors +" + DELTA_POINTS + " pt, Browser at " + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)");
         } else {
             StatusDisplayer.getDefault().setStatusText("Presentation Mode off");
         }
