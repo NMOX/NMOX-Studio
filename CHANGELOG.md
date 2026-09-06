@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.85.0] - 2026-09-06
 
-The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid six times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard — and the F5 bet's trigger fired under the plain `typescript` package name.
+The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid eight times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard, the learning-space loop, the Experiments loop — and the F5 bet's trigger fired under the plain `typescript` package name.
 
 1. **The Agent Port's execution surface, designed** —
    docs/engineering/agent-port-execution-dossier.md: lanes not
@@ -196,6 +196,17 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     glob-detected kinds speak their name, and the last resorts say
     `(static site)`, `(learning space)`, `(no manifest yet)`; the kind
     walk runs off the EDT with the newest aim winning.
+35. **Counts in the product's own strings come from the catalog** — the
+    Experiments loop (New Experiment on its defaults → the guide opens →
+    ▶ → http-server on 8081 with 8080 held → the Workbench's RUNNING
+    row → ■ → Experiments… Discard re-aiming at ~/NMOX, CLEAN) read
+    "Guided instead? Browse 92 Learning Spaces…" on the dialog and
+    "Browse the 92 tutorials…" on the empty shelf while the catalog
+    held 93 — DocsCountGateTest's rot, one layer in, where no docs
+    gate looks. Both buttons now count the catalog (read off the EDT,
+    the label filling when it lands); UiCountLiteralGateTest reads
+    every module's string literals for a numeral beside a counted
+    noun, failing-first with both named.
 
 ## [2.84.0] - 2026-09-05
 

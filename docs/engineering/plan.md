@@ -3865,7 +3865,10 @@ claimed to hold the schema and didn't. Two smaller finds rode the
 same walk: the manager's header named itself to screen readers with
 a constant instead of its text (now a ui-wide gate), and the
 footer's "(no package.json)" beside a learning space — the
-polyglot IDE's footer measuring every aim by one manifest. One
+polyglot IDE's footer measuring every aim by one manifest. The
+Experiments loop then read "Browse 92 Learning Spaces…" beside a
+93-space catalog — the docs-count rot one layer in, now gated across
+every module's string literals. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its
