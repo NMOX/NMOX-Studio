@@ -802,8 +802,10 @@ reader, or a feed — the developer-evangelist grant:
   It rides the platform editor's own text zoom (the same ⌥-wheel zoom you
   can still use to fine-tune on top), so nothing is written to your
   settings — toggle it off, or restart, and the font is exactly what it
-  was. The menu item shows a check while the mode is on and the status
-  line says so.
+  was. The in-app Browser follows: the page zooms to 150% of your own
+  zoom while presenting and comes back exactly when you stop, so a demo
+  of the running app reads from the back row too. The menu item shows a
+  check while the mode is on and the status line says so.
 - **View ▸ Show Keystrokes.** The chord you just pressed appears large at
   the bottom of the window for a moment — ⌘S, ⌥⌘G, ⇧⌘O, or `⌘Z ×3` when
   you repeat one — so the room can follow your hands. Only chords with
