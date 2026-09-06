@@ -186,7 +186,7 @@ public final class DbStudioTopComponent extends TopComponent {
     {
         limitSpinner.getAccessibleContext().setAccessibleName("Row limit");
     }
-    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel statusLabel = new JLabel(" ");
 
     /** The project's persisted console history (newest first) — mirrors .nmoxdb.json. */
     private List<DbWorkspaceIO.HistoryEntry> persistedHistory = new ArrayList<>();
@@ -657,7 +657,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private void fillResultPanel(JPanel panel, ConnectionSpec spec, TabContent content) {
         panel.removeAll();
         QueryResult result = content.result();
-        JLabel header = PlainTables.plain(new JLabel(headerText(result)));
+        JLabel header = new JLabel(PlainText.plain(headerText(result)));
         header.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         if (result.isError()) {
             header.setForeground(FAIL_RED);
@@ -703,7 +703,7 @@ public final class DbStudioTopComponent extends TopComponent {
     /** The grid plus the edit strip: dirty-cell tint, pending chip, Apply…/Revert, exports. */
     private JComponent editableGrid(JPanel tabPanel, ConnectionSpec spec, TabContent content) {
         EditSession session = content.decision().session();
-        JLabel chip = PlainTables.plain(new JLabel("No pending edits"));
+        JLabel chip = new JLabel("No pending edits");
         chip.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         JButton applyButton = new JButton("Apply…");
         applyButton.setEnabled(false);
@@ -713,8 +713,8 @@ public final class DbStudioTopComponent extends TopComponent {
         revertButton.setToolTipText("Forget every pending edit");
         EditableResultsModel model = new EditableResultsModel(session, () -> {
             int dirty = session.dirtyCount();
-            chip.setText(dirty == 0 ? "No pending edits"
-                    : dirty + (dirty == 1 ? " edit pending" : " edits pending"));
+            chip.setText(PlainText.plain(dirty == 0 ? "No pending edits"
+                    : dirty + (dirty == 1 ? " edit pending" : " edits pending")));
             chip.setForeground(dirty == 0 ? Color.GRAY : ACCENT);
             applyButton.setEnabled(dirty > 0);
             revertButton.setEnabled(dirty > 0);
@@ -751,7 +751,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private JComponent readOnlyStrip(QueryResult result, String reason) {
         JToolBar strip = new JToolBar();
         strip.setFloatable(false);
-        JLabel why = PlainTables.plain(new JLabel(reason));
+        JLabel why = new JLabel(PlainText.plain(reason));
         why.setForeground(Color.GRAY);
         why.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         strip.add(why);
@@ -2196,7 +2196,7 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void status(String message, Color color) {
         statusLabel.setForeground(color);
-        statusLabel.setText(message);
+        statusLabel.setText(PlainText.plain(message));
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 

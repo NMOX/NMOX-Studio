@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.irc;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -561,7 +562,7 @@ public final class IrcTopComponent extends TopComponent {
         mentions.remove(activeKey); // looking at it clears the badge
         transcript.setDocument(docForKey(activeKey));
         transcript.setCaretPosition(transcript.getDocument().getLength());
-        topicLabel.setText(topics.getOrDefault(activeKey, " "));
+        topicLabel.setText(PlainText.plain(topics.getOrDefault(activeKey, " ")));
         rebuildNickModel();
         completer.reset();
         IrcConfig.getDefault().setLastSelected(ref.network());
@@ -926,7 +927,7 @@ public final class IrcTopComponent extends TopComponent {
         findBar = new JPanel(new BorderLayout(6, 0));
         findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         findField = new JTextField();
-        findCount = PlainTables.plain(new JLabel(" "));
+        findCount = new JLabel(" ");
         findBar.add(new JLabel("Find:"), BorderLayout.WEST);
         findBar.add(findField, BorderLayout.CENTER);
         findBar.add(findCount, BorderLayout.EAST);
@@ -999,7 +1000,7 @@ public final class IrcTopComponent extends TopComponent {
             }
         }
         boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
-        findCount.setText(capped ? findMatches.size() + "+ matches" : org.nmox.studio.core.util.Plural.of(findMatches.size(), "match", "matches"));
+        findCount.setText(PlainText.plain(capped ? findMatches.size() + "+ matches" : org.nmox.studio.core.util.Plural.of(findMatches.size(), "match", "matches")));
         findNext();
     }
 
@@ -1015,7 +1016,7 @@ public final class IrcTopComponent extends TopComponent {
         transcript.setCaretPosition(end);
         int idx = findMatches.indexOf(next) + 1;
         boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
-        findCount.setText(idx + " of " + findMatches.size() + (capped ? "+" : ""));
+        findCount.setText(PlainText.plain(idx + " of " + findMatches.size() + (capped ? "+" : "")));
     }
 
     private String transcriptText() {
@@ -1390,7 +1391,7 @@ public final class IrcTopComponent extends TopComponent {
                 String topicText = msg.trailing() == null ? "" : msg.trailing();
                 topics.put(k, MircFormat.stripToText(topicText));
                 if (k.equals(activeKey)) {
-                    topicLabel.setText(topics.get(k));
+                    topicLabel.setText(PlainText.plain(topics.get(k)));
                 }
                 appendStatus(k, (msg.nick() == null ? "?" : msg.nick())
                         + " set the topic: " + topicText, stamp);
@@ -1515,7 +1516,7 @@ public final class IrcTopComponent extends TopComponent {
                 String topicText = msg.trailing() == null ? "" : msg.trailing();
                 topics.put(k, MircFormat.stripToText(topicText));
                 if (k.equals(activeKey)) {
-                    topicLabel.setText(topics.get(k));
+                    topicLabel.setText(PlainText.plain(topics.get(k)));
                 }
             }
             case TOPIC_META -> {

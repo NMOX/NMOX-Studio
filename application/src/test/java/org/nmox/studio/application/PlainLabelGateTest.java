@@ -47,8 +47,7 @@ class PlainLabelGateTest {
                 int close = closingParen(body, start);
                 pos = close + 1;
                 String arg = strip(body.substring(start, close));
-                String head = body.substring(Math.max(0, k - 40), k).stripTrailing();
-                if (ours(arg) || head.endsWith("PlainTables.plain(") || exempt(body, k, close, "PLAIN-LABEL-EXEMPT:")) {
+                if (ours(arg) || exempt(body, k, close, "PLAIN-LABEL-EXEMPT:")) {
                     continue;
                 }
                 offenders.add(p.getFileName() + ":" + line(body, k) + " new JLabel(" + clip(arg, 50));
@@ -73,14 +72,11 @@ class PlainLabelGateTest {
                 }
             }
             for (String name : names) {
-                boolean disabled = Pattern.compile("PlainTables\\.plain\\(\\s*" + Pattern.quote(name) + "\\b").matcher(body).find()
-                        || Pattern.compile("\\b" + Pattern.quote(name) + "\\s*=\\s*PlainTables\\.plain\\(").matcher(body).find()
-                        || body.contains(name + ".putClientProperty(\"html.disable\"");
                 Matcher m = Pattern.compile("\\b" + Pattern.quote(name) + "\\.setText\\(").matcher(body);
                 while (m.find()) {
                     int close = closingParen(body, m.end());
                     String arg = strip(body.substring(m.end(), close));
-                    if (ours(arg) || disabled) {
+                    if (ours(arg)) {
                         continue;
                     }
                     offenders.add(p.getFileName() + ":" + line(body, m.start()) + " " + name + ".setText(" + clip(arg, 50));

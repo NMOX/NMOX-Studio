@@ -1,6 +1,6 @@
 package org.nmox.studio.ui.actions;
 
-import org.nmox.studio.core.util.PlainTables;
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -95,7 +95,7 @@ public final class ImageKitAction implements ActionListener {
         webp.setEnabled(cwebp != null);
 
         JPanel rows = new JPanel(new GridLayout(0, 1, 0, 4));
-        rows.add(PlainTables.plain(new JLabel(found.size() + " image" + (found.size() == 1 ? "" : "s")
+        rows.add(new JLabel(PlainText.plain(found.size() + " image" + (found.size() == 1 ? "" : "s")
                 + ", " + mb(totalBytes) + " — outputs are siblings; originals untouched.")));
         rows.add(jpeg);
         rows.add(new JLabel("    JPEG quality:"));

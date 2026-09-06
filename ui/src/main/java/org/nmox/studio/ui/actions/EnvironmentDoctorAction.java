@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -51,7 +52,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
         table.getColumnModel().getColumn(3).setPreferredWidth(200);
         table.getColumnModel().getColumn(4).setPreferredWidth(200);
 
-        JLabel status = PlainTables.plain(new JLabel("Probing…"));
+        JLabel status = new JLabel("Probing…");
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("Every tool the studio can drive, probed live on this machine:"),
@@ -112,7 +113,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
                     model.addRow(new Object[]{"—", "doctor.d",
                         "skipped — " + note, "", ""});
                 }
-                status.setText(found + " of " + total + " tools present");
+                status.setText(PlainText.plain(found + " of " + total + " tools present"));
             }
         });
     }

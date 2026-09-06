@@ -4,6 +4,7 @@
 // org.nmox.studio.editor.testing's bundle
 package org.nmox.studio.editor.testing.explorer;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
@@ -74,7 +75,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
             new DefaultMutableTreeNode("Tests");
     private final DefaultTreeModel model = new DefaultTreeModel(rootNode);
     private final JTree tree = new JTree(model);
-    private final JLabel status = PlainTables.plain(new JLabel(" "));
+    private final JLabel status = new JLabel(" ");
     private final ProjectAim.Listener aimListener =
             () -> java.awt.EventQueue.invokeLater(this::aimChanged);
     private volatile long refreshSeq;
@@ -212,11 +213,11 @@ public final class TestsExplorerTopComponent extends TopComponent {
         for (int i = 0; i < tree.getRowCount() && i < 40; i++) {
             tree.expandRow(i);
         }
-        status.setText(tests + (tests == 1 ? " test in " : " tests in ")
+        status.setText(PlainText.plain(tests + (tests == 1 ? " test in " : " tests in ")
                 + found.size() + (found.size() == 1 ? " file" : " files")
                 + (truncated
                 ? " — large project, first " + TestIndex.MAX_FILES + " files only"
-                : ""));
+                : "")));
     }
 
     /** A leaf that shows the test's NAME, not the record's toString —

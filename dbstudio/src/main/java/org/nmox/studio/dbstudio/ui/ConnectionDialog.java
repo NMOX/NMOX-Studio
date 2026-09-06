@@ -1,6 +1,6 @@
 package org.nmox.studio.dbstudio.ui;
 
-import org.nmox.studio.core.util.PlainTables;
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -58,7 +58,7 @@ final class ConnectionDialog extends JPanel {
     /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
     private final javax.swing.JCheckBox secureBox =
             new javax.swing.JCheckBox("Use TLS (https)");
-    private final JLabel testLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel testLabel = new JLabel(" ");
     private final JPanel cards = new JPanel(new CardLayout());
 
     private final ConnectionSpec existing;
@@ -128,7 +128,7 @@ final class ConnectionDialog extends JPanel {
         l.gridy = row;
         l.anchor = GridBagConstraints.EAST;
         l.insets = new Insets(3, 0, 3, 8);
-        panel.add(PlainTables.plain(new JLabel(label)), l);
+        panel.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
@@ -257,9 +257,9 @@ final class ConnectionDialog extends JPanel {
                 testLabel.setForeground(error == null ? OK_GREEN : FAIL_RED);
                 // a SQLite "connection" is a file, not a server — say so
                 // (v1.266.0, a DBA-persona copy nit)
-                testLabel.setText(error != null ? error
+                testLabel.setText(PlainText.plain(error != null ? error
                         : selectedEngine() == DbEngine.SQLITE
-                                ? "OK — database opens" : "OK — server reachable");
+                                ? "OK — database opens" : "OK — server reachable"));
             });
         });
     }

@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.tasks;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -117,7 +118,7 @@ public final class TasksTopComponent extends TopComponent {
 
     private final SelfWriteTracker tracker = new SelfWriteTracker();
     private final JPanel columnsPanel = new JPanel();
-    private final JLabel boardLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel boardLabel = new JLabel(" ");
     /** The v2.4.0 dashboard face; lives beside the strip in a CardLayout. */
     private final OverviewPanel overviewPanel =
             new OverviewPanel(this::editRetroDialog);
@@ -139,7 +140,7 @@ public final class TasksTopComponent extends TopComponent {
     private final javax.swing.Timer clockTicker = new javax.swing.Timer(
             30_000, e -> {
                 if (boundDir != null && board.runningCard() != null) {
-                    boardLabel.setText(headerText());
+                    boardLabel.setText(PlainText.plain(headerText()));
                 }
             });
     /**
@@ -352,7 +353,7 @@ public final class TasksTopComponent extends TopComponent {
             columnsPanel.add(Box.createHorizontalStrut(6));
         }
         columnsPanel.add(Box.createHorizontalGlue());
-        boardLabel.setText(boundDir == null ? " " : headerText());
+        boardLabel.setText(PlainText.plain(boundDir == null ? " " : headerText()));
         columnsPanel.revalidate();
         columnsPanel.repaint();
         focusCardId = null; // consumed by the panels just built
@@ -381,7 +382,7 @@ public final class TasksTopComponent extends TopComponent {
         String count = col.wipLimit() > 0
                 ? col.cards().size() + "/" + col.wipLimit()
                 : String.valueOf(col.cards().size());
-        JLabel header = PlainTables.plain(new JLabel(col.name() + "  " + count));
+        JLabel header = new JLabel(PlainText.plain(col.name() + "  " + count));
         header.setBorder(BorderFactory.createEmptyBorder(4, 6, 2, 6));
         if (col.overLimit()) {
             header.setForeground(new Color(220, 80, 80)); // over WIP limit

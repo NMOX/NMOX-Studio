@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.blockstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -110,7 +111,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         return canvas.doc();
     }
     private final JEditorPane codePane = new JEditorPane();
-    private final JLabel status = PlainTables.plain(new JLabel(" "));
+    private final JLabel status = new JLabel(" ");
     private final Deque<String> undo = new ArrayDeque<>();
     private final Timer regen = new Timer(DEBOUNCE_MS, e -> regenerate());
     private final Timer saver = new Timer(800, e -> persist());
@@ -207,7 +208,7 @@ public final class BlockStudioTopComponent extends TopComponent {
                 JLabel l = PlainTables.plain((JLabel) super.getListCellRendererComponent(
                         list, value, index, selected, focus));
                 BlockKind k = (BlockKind) value;
-                l.setText(k.display());
+                l.setText(PlainText.plain(k.display()));
                 l.setIcon(new javax.swing.Icon() {
                     @Override
                     public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
@@ -814,7 +815,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         JPanel form = new JPanel(new java.awt.GridLayout(0, 2, 8, 4));
         java.util.Map<String, JTextField> fields = new java.util.LinkedHashMap<>();
         for (BlockKind.Param p : block.kind().params()) {
-            form.add(PlainTables.plain(new JLabel(p.key())));
+            form.add(new JLabel(PlainText.plain(p.key())));
             JTextField field = new JTextField(block.param(p.key()), 18);
             field.getAccessibleContext().setAccessibleName(block.kind().display() + " " + p.key());
             fields.put(p.key(), field);
@@ -1068,7 +1069,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     }
 
     private void setStatus(String s) {
-        status.setText(s);
+        status.setText(PlainText.plain(s));
     }
 
     // ---- @ConvertAsProperties plumbing ----

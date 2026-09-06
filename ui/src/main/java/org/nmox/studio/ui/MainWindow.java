@@ -1,7 +1,6 @@
 package org.nmox.studio.ui;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -155,7 +154,7 @@ public final class MainWindow extends TopComponent {
             columns.add(gettingStarted);
             refreshRecents();
 
-            JLabel version = PlainTables.plain(new JLabel(footerText()));
+            JLabel version = new JLabel(PlainText.plain(footerText()));
             version.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
             version.setForeground(DIM);
             JButton whatsNew = textButton("What's new", DIM);
@@ -273,7 +272,7 @@ public final class MainWindow extends TopComponent {
         }
 
         private static JLabel columnHeading(String text) {
-            JLabel label = PlainTables.plain(new JLabel(text));
+            JLabel label = new JLabel(PlainText.plain(text));
             label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
             label.setForeground(HEADING);
             label.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 6, 0));

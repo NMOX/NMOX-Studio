@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.irc;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -96,7 +97,7 @@ final class ChannelListDialog {
         JPanel top = new JPanel(new BorderLayout(8, 0));
         top.add(new JLabel("Filter:"), BorderLayout.WEST);
         top.add(filter, BorderLayout.CENTER);
-        top.add(PlainTables.plain(new JLabel(count)), BorderLayout.EAST);
+        top.add(new JLabel(PlainText.plain(count)), BorderLayout.EAST);
         panel.add(top, BorderLayout.NORTH);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(720, 420));

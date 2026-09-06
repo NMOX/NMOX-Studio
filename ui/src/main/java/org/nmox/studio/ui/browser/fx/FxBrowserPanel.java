@@ -1,7 +1,6 @@
 package org.nmox.studio.ui.browser.fx;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -79,7 +78,7 @@ public final class FxBrowserPanel extends JPanel {
         urlField.getAccessibleContext().setAccessibleName("Address");
     }
     private final JProgressBar progress = new JProgressBar(0, 100);
-    private final JLabel zoomLabel = PlainTables.plain(new JLabel("100%"));
+    private final JLabel zoomLabel = new JLabel("100%");
     private final JToggleButton devToolsToggle = new JToggleButton("DevTools");
     private final TitleListener titleListener;
 
@@ -287,7 +286,7 @@ public final class FxBrowserPanel extends JPanel {
     /** EDT. Clamped zoom applied to the WebView on the FX thread. */
     private void setZoom(double z) {
         zoom = Math.max(0.25, Math.min(4.0, z));
-        zoomLabel.setText(Math.round(zoom * 100) + "%");
+        zoomLabel.setText(PlainText.plain(Math.round(zoom * 100) + "%"));
         double apply = zoom;
         onFx(() -> webView.setZoom(apply));
     }

@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.tasks;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -18,7 +19,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.nmox.studio.core.util.PlainTables;
 
 /**
  * The Task Board's OVERVIEW face (v2.4.0, David's ask): the sprint-
@@ -134,8 +134,8 @@ final class OverviewPanel extends JPanel {
                 + " and an unblock action"));
         add(Box.createVerticalStrut(4));
         if (s.blockers().isEmpty()) {
-            JLabel none = PlainTables.plain(new JLabel(
-                    "No blocked cards — nothing is waiting on anyone."));
+            JLabel none = new JLabel(
+                    "No blocked cards — nothing is waiting on anyone.");
             none.setForeground(DIM);
             add(none);
         } else {
@@ -176,8 +176,8 @@ final class OverviewPanel extends JPanel {
         add(sectionLabel("NEEDS ATTENTION — oldest unfinished cards"));
         add(Box.createVerticalStrut(4));
         if (s.oldestActive().isEmpty()) {
-            JLabel none = PlainTables.plain(new JLabel(
-                    "Nothing waiting — the board is clear."));
+            JLabel none = new JLabel(
+                    "Nothing waiting — the board is clear.");
             none.setForeground(DIM);
             none.setAlignmentX(LEFT_ALIGNMENT);
             add(none);
@@ -202,8 +202,8 @@ final class OverviewPanel extends JPanel {
         add(Box.createVerticalStrut(4));
         String retro = board.retro();
         if (retro.isEmpty()) {
-            JLabel none = PlainTables.plain(new JLabel(
-                    "No retro notes yet — Edit Retro… starts them."));
+            JLabel none = new JLabel(
+                    "No retro notes yet — Edit Retro… starts them.");
             none.setForeground(DIM);
             add(none);
         } else {
@@ -226,11 +226,11 @@ final class OverviewPanel extends JPanel {
         JPanel row = new JPanel(new BorderLayout(8, 0));
         row.setOpaque(false);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
-        JLabel title = PlainTables.plain(new JLabel(clip(b.title())));
+        JLabel title = new JLabel(PlainText.plain(clip(b.title())));
         title.setForeground(OVER);
         title.setFont(mono(Font.PLAIN, 12f));
         String owner = b.owner().isEmpty() ? "unowned" : b.owner();
-        JLabel meta = PlainTables.plain(new JLabel(
+        JLabel meta = new JLabel(PlainText.plain(
                 owner + " · " + b.sinceDays() + "d · " + clip(b.action())));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
@@ -246,13 +246,13 @@ final class OverviewPanel extends JPanel {
         JPanel row = new JPanel(new BorderLayout(8, 0));
         row.setOpaque(false);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
-        JLabel title = PlainTables.plain(new JLabel(
+        JLabel title = new JLabel(PlainText.plain(
                 (t.running() ? "\u23f1 " : "") + clip(t.title())));
         title.setForeground(t.running() ? PHOSPHOR : TEXT);
         title.setFont(mono(Font.PLAIN, 12f));
-        JLabel meta = PlainTables.plain(new JLabel(
+        JLabel meta = new JLabel(
                 "today " + BoardStats.duration(t.todayMs())
-                + " · week " + BoardStats.duration(t.weekMs())));
+                + " · week " + BoardStats.duration(t.weekMs()));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.WEST);
@@ -271,7 +271,7 @@ final class OverviewPanel extends JPanel {
         JPanel dot = new JPanel();
         dot.setBackground(labelColor(lc.label()));
         dot.setPreferredSize(new Dimension(9, 9));
-        JLabel text = PlainTables.plain(new JLabel(
+        JLabel text = new JLabel(PlainText.plain(
                 lc.label() + " — " + lc.count()));
         text.setForeground(TEXT);
         text.setFont(mono(Font.PLAIN, 11f));
@@ -293,7 +293,7 @@ final class OverviewPanel extends JPanel {
     // ---- pieces ----------------------------------------------------------
 
     private JLabel heading(String text) {
-        JLabel l = PlainTables.plain(new JLabel(text));
+        JLabel l = new JLabel(PlainText.plain(text));
         l.setForeground(PHOSPHOR);
         l.setFont(mono(Font.BOLD, 15f));
         l.setAlignmentX(LEFT_ALIGNMENT);
@@ -301,7 +301,7 @@ final class OverviewPanel extends JPanel {
     }
 
     private JLabel sectionLabel(String text) {
-        JLabel l = PlainTables.plain(new JLabel(text));
+        JLabel l = new JLabel(PlainText.plain(text));
         l.setForeground(DIM);
         l.setFont(mono(Font.BOLD, 11f));
         l.setAlignmentX(LEFT_ALIGNMENT);
@@ -314,10 +314,10 @@ final class OverviewPanel extends JPanel {
         p.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(EDGE),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-        JLabel big = PlainTables.plain(new JLabel(number));
+        JLabel big = new JLabel(PlainText.plain(number));
         big.setForeground(PHOSPHOR);
         big.setFont(mono(Font.BOLD, 26f));
-        JLabel cap = PlainTables.plain(new JLabel(caption));
+        JLabel cap = new JLabel(PlainText.plain(caption));
         cap.setForeground(DIM);
         cap.setFont(mono(Font.PLAIN, 10f));
         p.add(big, BorderLayout.CENTER);
@@ -333,11 +333,11 @@ final class OverviewPanel extends JPanel {
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
         String count = c.wipLimit() > 0
                 ? c.count() + " / " + c.wipLimit() : String.valueOf(c.count());
-        JLabel name = PlainTables.plain(new JLabel(c.name()));
+        JLabel name = new JLabel(PlainText.plain(c.name()));
         name.setForeground(c.overLimit() ? OVER : TEXT);
         name.setFont(mono(Font.PLAIN, 12f));
         name.setPreferredSize(new Dimension(160, 18));
-        JLabel n = PlainTables.plain(new JLabel(count + (c.overLimit() ? "  OVER" : "")));
+        JLabel n = new JLabel(PlainText.plain(count + (c.overLimit() ? "  OVER" : "")));
         n.setForeground(c.overLimit() ? OVER : DIM);
         n.setFont(mono(Font.PLAIN, 12f));
         n.setPreferredSize(new Dimension(90, 18));
@@ -356,12 +356,12 @@ final class OverviewPanel extends JPanel {
         row.setOpaque(false);
         row.setAlignmentX(LEFT_ALIGNMENT);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
-        JLabel title = PlainTables.plain(new JLabel(clip(a.title())));
+        JLabel title = new JLabel(PlainText.plain(clip(a.title())));
         title.setForeground(TEXT);
         title.setFont(mono(Font.PLAIN, 12f));
         String tail = a.ageDays() < 0 ? a.column()
                 : a.column() + " · " + a.ageDays() + "d";
-        JLabel meta = PlainTables.plain(new JLabel(tail));
+        JLabel meta = new JLabel(PlainText.plain(tail));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.CENTER);

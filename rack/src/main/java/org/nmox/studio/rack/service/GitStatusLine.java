@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.service;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -61,7 +60,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** One lane: branch reads and git-status runs never pile up. */
         private static final RequestProcessor RP = new RequestProcessor("Git Chip", 1);
 
-        private final JLabel chipLabel = PlainTables.plain(new JLabel());
+        private final JLabel chipLabel = new JLabel();
         private final GitChip chip = new GitChip();
         /**
          * Re-arms only while the chip is visible (see publish); a tick is
@@ -155,7 +154,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             String label = chip.label();
             File root = chip.repoRoot();
             javax.swing.SwingUtilities.invokeLater(() -> {
-                chipLabel.setText(label == null ? "" : label);
+                chipLabel.setText(PlainText.plain(label == null ? "" : label));
                 // the tooltip MEANS its <br>; the repo path is the one external piece and rides
                 // PLAIN-TOOLTIP-EXEMPT: PlainText.escape (a directory can be named <img src=…>)
                 chipLabel.setToolTipText(label == null ? null

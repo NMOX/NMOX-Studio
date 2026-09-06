@@ -179,7 +179,7 @@ public final class ApiClientTopComponent extends TopComponent {
         testsTable.getAccessibleContext().setAccessibleName("Tests");
     }
 
-    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
     /** The last delivered response — what Explain would disclose. */
     private ApiResponse lastResponse;
@@ -188,7 +188,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTextArea responseBody = new JTextArea();
     // response pack (v1.198.0)
     private final JTextField responseFind = new JTextField();
-    private final JLabel findCount = PlainTables.plain(new JLabel(" "));
+    private final JLabel findCount = new JLabel(" ");
     private final JTextArea responseHeaders = new JTextArea();
     private final JPanel testResults = new JPanel();
     private final JPanel standardsPanel = new JPanel();
@@ -425,7 +425,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private void show(TransientNotice.Shown s) {
         statusLabel.setForeground(s.color());
-        statusLabel.setText(s.text());
+        statusLabel.setText(PlainText.plain(s.text()));
     }
 
     /**
@@ -1354,9 +1354,9 @@ public final class ApiClientTopComponent extends TopComponent {
                 break; // text changed under us; the next refind heals it
             }
         }
-        findCount.setText(query.isEmpty() ? " "
+        findCount.setText(PlainText.plain(query.isEmpty() ? " "
                 : matches.size() + (matches.size() >= ResponseSearch.MAX_MATCHES ? "+" : "")
-                + " match" + (matches.size() == 1 ? "" : "es"));
+                + " match" + (matches.size() == 1 ? "" : "es")));
     }
 
     private void jumpToNextMatch() {
@@ -1499,7 +1499,7 @@ public final class ApiClientTopComponent extends TopComponent {
             testResults.add(new JLabel("  No tests on this request."));
         }
         for (TestRunner.Result res : results) {
-            JLabel line = PlainTables.plain(new JLabel((res.passed() ? "  ✓  " : "  ✗  ")
+            JLabel line = new JLabel(PlainText.plain((res.passed() ? "  ✓  " : "  ✗  ")
                     + res.description() + "   (" + res.detail() + ")"));
             line.setForeground(res.passed() ? OK_GREEN : FAIL_RED);
             testResults.add(line);
@@ -1523,7 +1523,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     case WARN -> "  !  ";
                     case MISS -> "  ✗  ";
                 };
-                JLabel line = PlainTables.plain(new JLabel(mark + check.standard() + "   — " + check.detail()));
+                JLabel line = new JLabel(PlainText.plain(mark + check.standard() + "   — " + check.detail()));
                 line.setForeground(switch (check.verdict()) {
                     case PASS -> OK_GREEN;
                     case WARN -> new Color(0xE8, 0xC4, 0x4A);

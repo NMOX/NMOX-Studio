@@ -1,6 +1,6 @@
 package org.nmox.studio.ui.actions;
 
-import org.nmox.studio.core.util.PlainTables;
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -129,7 +129,7 @@ public final class ManageExperimentsAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = PlainTables.plain(new JLabel(model.size()
+        JLabel header = new JLabel(PlainText.plain(model.size()
                 + (model.size() == 1 ? " experiment" : " experiments")
                 + " in ~/.nmox/experiments — newest first. Sizing…"));
         panel.add(header, BorderLayout.NORTH);
@@ -143,7 +143,7 @@ public final class ManageExperimentsAction implements ActionListener {
             long total = bytes;
             int count = model.size();
             SwingUtilities.invokeLater(() ->
-                    header.setText(Experiments.shelfSummary(count, total)));
+                    header.setText(PlainText.plain(Experiments.shelfSummary(count, total))));
         });
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);

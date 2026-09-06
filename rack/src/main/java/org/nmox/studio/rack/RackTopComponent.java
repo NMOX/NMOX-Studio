@@ -1,7 +1,6 @@
 package org.nmox.studio.rack;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -63,7 +62,7 @@ public final class RackTopComponent extends TopComponent {
 
     private final Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
     private RackPanel rackPanel;
-    private final JLabel projectLabel = PlainTables.plain(new JLabel());
+    private final JLabel projectLabel = new JLabel();
     private JToggleButton flipToggle;
 
     /** Single-throughput writer lane for the interactive patch save. */
@@ -246,7 +245,7 @@ public final class RackTopComponent extends TopComponent {
                         markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
                         // never appended onto itself across repeated saves
-                        projectLabel.setText(projectName + "  [saved]");
+                        projectLabel.setText(PlainText.plain(projectName + "  [saved]"));
                         javax.swing.Timer revert = new javax.swing.Timer(2000,
                                 ev -> updateProjectLabel());
                         revert.setRepeats(false);
@@ -494,7 +493,7 @@ public final class RackTopComponent extends TopComponent {
     }
 
     private void updateProjectLabel() {
-        projectLabel.setText(rack.getProjectDir().getName());
+        projectLabel.setText(PlainText.plain(rack.getProjectDir().getName()));
         projectLabel.setToolTipText(PlainText.plain(rack.getProjectDir().getAbsolutePath()));
     }
 

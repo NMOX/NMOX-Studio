@@ -1,7 +1,6 @@
 package org.nmox.studio.ui.actions;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -125,7 +124,7 @@ public final class NewLearningSpaceAction implements ActionListener {
         });
 
         // availability up front: does this machine have the space's tool?
-        JLabel availability = PlainTables.plain(new JLabel(" "));
+        JLabel availability = new JLabel(" ");
         availability.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 0, 2));
         Map<String, Boolean> probeCache = new HashMap<>(); // EDT-confined, dialog-lifetime
         list.addListSelectionListener(ev -> {

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.docker;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private final DockerClient client = DockerClient.getDefault();
     private final JLabel engineLabel = new JLabel("ENGINE: checking…");
-    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.Timer autoTimer = new javax.swing.Timer(15_000, e -> refreshAll());
     private final JCheckBox autoBox = new JCheckBox("Auto-refresh 15s", false);
 
@@ -276,7 +277,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private void status(String s) {
-        SwingUtilities.invokeLater(() -> statusLabel.setText(s));
+        SwingUtilities.invokeLater(() -> statusLabel.setText(PlainText.plain(s)));
     }
 
     /** Runs a verb, surfaces failure, refreshes the panel after. */
@@ -320,7 +321,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             g.gridy = 0;
             for (String h : new String[]{"CATEGORY", "COUNT", "ACTIVE", "SIZE", "RECLAIMABLE", ""}) {
                 g.gridx = enginePanel.getComponentCount() % 6;
-                JLabel l = PlainTables.plain(new JLabel(h));
+                JLabel l = new JLabel(PlainText.plain(h));
                 l.setForeground(DIM);
                 enginePanel.add(l, g);
             }
@@ -378,7 +379,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private static JLabel label(String s, Color c, int style) {
-        JLabel l = PlainTables.plain(new JLabel(s == null ? "" : s));
+        JLabel l = new JLabel(PlainText.plain(s == null ? "" : s));
         l.setForeground(c);
         l.setFont(l.getFont().deriveFont(style));
         return l;

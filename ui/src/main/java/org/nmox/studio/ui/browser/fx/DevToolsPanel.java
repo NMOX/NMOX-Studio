@@ -1,6 +1,6 @@
 package org.nmox.studio.ui.browser.fx;
 
-import org.nmox.studio.core.util.PlainTables;
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -76,20 +76,20 @@ public final class DevToolsPanel extends JPanel {
 
     // Network tab
     private final DefaultTableModel networkTable = readOnlyTable("Method", "URL", "Status", "OK", "ms", "Size");
-    private final JLabel networkDropped = PlainTables.plain(new JLabel());
+    private final JLabel networkDropped = new JLabel();
     private final javax.swing.Timer networkSync;
 
     // DOM tab
     private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
     private final JTextArea domDetails = readOnlyArea("DOM element details");
-    private final JLabel domStatus = PlainTables.plain(new JLabel(" "));
+    private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
     /** The DOM tab's tree — the Motion tab animates its selection. */
     private JTree domTreeView;
 
     // Motion tab (v2.12.0 — the DHTML keyframe timeline)
-    private final JLabel motionStatus = PlainTables.plain(new JLabel(" "));
+    private final JLabel motionStatus = new JLabel(" ");
     private final JTextField motionName = new JTextField("my-motion", 10);
     private final javax.swing.JSpinner motionDuration = new javax.swing.JSpinner(
             new javax.swing.SpinnerNumberModel(1500, 100, 600_000, 100));
@@ -850,7 +850,7 @@ public final class DevToolsPanel extends JPanel {
                                             spec.animationValue());
                         },
                         text -> SwingUtilities.invokeLater(
-                                () -> motionStatus.setText(text)))),
+                                () -> motionStatus.setText(PlainText.plain(text))))),
                 err -> motionStatus.setText("No page: " + err));
     }
 
@@ -947,7 +947,7 @@ public final class DevToolsPanel extends JPanel {
     }
 
     private void status(String text) {
-        SwingUtilities.invokeLater(() -> domStatus.setText(text));
+        SwingUtilities.invokeLater(() -> domStatus.setText(PlainText.plain(text)));
     }
 
     /** Opens the file in the editor at the 1-based line (EDT). */
@@ -967,12 +967,12 @@ public final class DevToolsPanel extends JPanel {
                     org.openide.text.Line l = lc.getLineSet().getOriginal(Math.max(0, line - 1));
                     l.show(org.openide.text.Line.ShowOpenType.OPEN,
                             org.openide.text.Line.ShowVisibilityType.FOCUS);
-                    domStatus.setText(file.getName() + ":" + line);
+                    domStatus.setText(PlainText.plain(file.getName() + ":" + line));
                 } else {
                     org.openide.cookies.OpenCookie oc = dobj.getLookup().lookup(org.openide.cookies.OpenCookie.class);
                     if (oc != null) {
                         oc.open();
-                        domStatus.setText(file.getName());
+                        domStatus.setText(PlainText.plain(file.getName()));
                     }
                 }
             } catch (org.openide.loaders.DataObjectNotFoundException | IndexOutOfBoundsException ex) {
@@ -1066,7 +1066,7 @@ public final class DevToolsPanel extends JPanel {
                 e.sizeBytes() < 0 ? "?" : String.valueOf(e.sizeBytes())});
         }
         long dropped = network.droppedCount();
-        networkDropped.setText(dropped + " older dropped (cap " + NetworkModel.CAP + ")");
+        networkDropped.setText(PlainText.plain(dropped + " older dropped (cap " + NetworkModel.CAP + ")"));
         networkDropped.setVisible(dropped > 0);
     }
 

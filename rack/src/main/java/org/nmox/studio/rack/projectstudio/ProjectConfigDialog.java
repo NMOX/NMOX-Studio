@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
@@ -110,7 +111,7 @@ public class ProjectConfigDialog extends JDialog {
             c.gridy = row;
             c.weightx = 0;
             c.fill = GridBagConstraints.NONE;
-            JLabel label = PlainTables.plain(new JLabel((String) pair[0]));
+            JLabel label = new JLabel(PlainText.plain((String) pair[0]));
             label.setLabelFor((Component) pair[1]); // the label names its field for assistive technology
             panel.add(label, c);
             c.gridx = 1;

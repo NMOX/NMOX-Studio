@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +52,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
 
     private final Rack rack = RackService.getDefault().getRack();
     private final FileTreePanel treePanel = new FileTreePanel();
-    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
+    private final JLabel statusLabel = new JLabel(" ");
     private final Rack.Listener rackListener = new Rack.Listener() {
         @Override
         public void projectChanged() {
@@ -215,7 +214,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
     private void syncToRack() {
         File dir = rack.getProjectDir();
         treePanel.setRootDirectory(dir);
-        statusLabel.setText(dir.getAbsolutePath());
+        statusLabel.setText(PlainText.plain(dir.getAbsolutePath()));
         // the kind walk stats the root and one level of children — off the
         // EDT (v1.33.1 law), newest aim wins; the suffix lands a beat later
         KIND_RP.post(() -> {
@@ -223,7 +222,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                     org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
             SwingUtilities.invokeLater(() -> {
                 if (dir.equals(rack.getProjectDir())) {
-                    statusLabel.setText(dir.getAbsolutePath() + aimSuffix(kind));
+                    statusLabel.setText(PlainText.plain(dir.getAbsolutePath() + aimSuffix(kind)));
                 }
             });
         });

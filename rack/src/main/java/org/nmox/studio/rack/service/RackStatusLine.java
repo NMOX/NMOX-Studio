@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.service;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.Component;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -107,9 +106,9 @@ public class RackStatusLine implements StatusLineElementProvider {
     private static final class RackStrip extends javax.swing.JPanel {
 
         private final JLabel liveLabel = new JLabel();
-        private final JLabel servingLabel = PlainTables.plain(new JLabel());
-        private final JLabel envLabel = PlainTables.plain(new JLabel());
-        private final JLabel agentLabel = PlainTables.plain(new JLabel());
+        private final JLabel servingLabel = new JLabel();
+        private final JLabel envLabel = new JLabel();
+        private final JLabel agentLabel = new JLabel();
         private final Timer poll = new Timer(2_000, e -> refresh());
         private final ServingRegistry.Listener servingListener =
                 () -> javax.swing.SwingUtilities.invokeLater(this::refresh);
@@ -182,16 +181,16 @@ public class RackStatusLine implements StatusLineElementProvider {
             }
             List<ServingRegistry.Serving> servings = ServingRegistry.getDefault().snapshot();
             String chip = chipText(servings);
-            servingLabel.setText(chip == null ? "" : chip);
+            servingLabel.setText(PlainText.plain(chip == null ? "" : chip));
             servingLabel.setForeground(new java.awt.Color(90, 170, 235));
             servingLabel.setToolTipText(PlainText.plain(chipTooltip(servings)));
             int[] listening = org.nmox.studio.rack.mcp.AgentPortAction.listening();
             String agent = agentChipText(listening);
-            agentLabel.setText(agent == null ? "" : agent);
+            agentLabel.setText(PlainText.plain(agent == null ? "" : agent));
             agentLabel.setForeground(new java.awt.Color(200, 150, 235));
             agentLabel.setToolTipText(PlainText.plain(agentChipTooltip(listening)));
             boolean envNote = RackService.getDefault().envNoteActive();
-            envLabel.setText(envNote ? "env changed — restarts pick it up" : "");
+            envLabel.setText(PlainText.plain(envNote ? "env changed — restarts pick it up" : ""));
             envLabel.setForeground(new java.awt.Color(222, 178, 80));
         }
 

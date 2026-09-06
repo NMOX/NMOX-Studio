@@ -1,7 +1,6 @@
 package org.nmox.studio.editor.lsp;
 
 import org.nmox.studio.core.util.PlainText;
-import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -37,7 +36,7 @@ public final class LanguageServersPanel extends JPanel {
     private static final Color MISSING = new Color(220, 140, 90);
 
     private final JProgressBar bar = new JProgressBar();
-    private final JLabel status = PlainTables.plain(new JLabel(" "));
+    private final JLabel status = new JLabel(" ");
     private final JButton cancelBtn = new JButton("Cancel");
     private final List<Row> rows = new ArrayList<>();
     private final Deque<Row> queue = new ArrayDeque<>();
@@ -162,7 +161,7 @@ public final class LanguageServersPanel extends JPanel {
                 row.statusLabel.setText("✗");
                 row.statusLabel.setForeground(MISSING);
                 row.button.setEnabled(true);
-                status.setText(row.server.language() + " install failed — see the Output window.");
+                status.setText(PlainText.plain(row.server.language() + " install failed — see the Output window."));
             }
             case NEEDS_TOOLCHAIN -> {
                 row.button.setEnabled(false);
@@ -172,8 +171,8 @@ public final class LanguageServersPanel extends JPanel {
             }
             case NEEDS_PROJECT -> {
                 row.button.setEnabled(true);
-                status.setText(row.server.language()
-                        + " installs into the project - open the project first, then retry.");
+                status.setText(PlainText.plain(row.server.language()
+                        + " installs into the project - open the project first, then retry."));
             }
             default -> row.button.setEnabled(true);
         }

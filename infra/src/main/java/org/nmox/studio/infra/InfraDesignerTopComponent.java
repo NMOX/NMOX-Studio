@@ -1,6 +1,6 @@
 package org.nmox.studio.infra;
 
-import org.nmox.studio.core.util.PlainTables;
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -70,8 +70,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final DigitalOceanClient client = new DigitalOceanClient();
     private final FlowCanvas canvas;
     private final PropertyPanel properties;
-    private final JLabel tokenLabel = PlainTables.plain(new JLabel());
-    private final JLabel costLabel = PlainTables.plain(new JLabel());
+    private final JLabel tokenLabel = new JLabel();
+    private final JLabel costLabel = new JLabel();
     private final JButton syncButton = new JButton("Sync from cloud");
     private final JButton refreshButton = new JButton("Refresh");
     private final JButton destroyStackButton = new JButton("Destroy stack…");
@@ -223,7 +223,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 fields[i].getAccessibleContext().setAccessibleName(
                         providers[i].displayName() + " API token");
                 String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
-                panel.add(PlainTables.plain(new JLabel(providers[i].displayName() + current)));
+                panel.add(new JLabel(PlainText.plain(providers[i].displayName() + current)));
                 panel.add(fields[i]);
             }
             DialogDescriptor dd = new DialogDescriptor(panel,
@@ -898,7 +898,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     .map(org.nmox.studio.infra.api.CloudProvider::displayName)
                     .collect(java.util.stream.Collectors.joining(", "));
             SwingUtilities.invokeLater(() -> {
-                tokenLabel.setText(label);
+                tokenLabel.setText(PlainText.plain(label));
                 tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
                 tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
                 syncButton.setToolTipText("Import existing cloud resources as live nodes — "
@@ -908,7 +908,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     private void refreshCost() {
-        costLabel.setText(String.format("≈ $%.2f/mo", graph.totalMonthlyUsd()));
+        costLabel.setText(PlainText.plain(String.format("≈ $%.2f/mo", graph.totalMonthlyUsd())));
     }
 
     void writeProperties(java.util.Properties p) {
