@@ -118,6 +118,9 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     (`hasMore` says so).
 23. **A capped walk says `hasMore`** however few it listed — a floor is
     not a count.
+24. **The walk script is machine-readable** — every step declares an
+    answer or a refusal, surprises are the exit code, WALK CLEAN closes
+    it; a CI job or the next shift can read the walk.
 
 ## [2.84.0] - 2026-09-05
 
