@@ -29,6 +29,11 @@ public final class PlainDialogs {
     public static JTextArea plain(String text, String accessibleName) {
         JTextArea area = new JTextArea(text == null ? "" : text);
         area.setEditable(false);
+        // never a focus stop: a confirmation's keyboard flow belongs to its
+        // safe-default button (the v1.98.0 law — Enter answers No), and a
+        // focusable area between the question and the buttons would take
+        // it; assistive technology still reads the text as it reads a label
+        area.setFocusable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setOpaque(false);

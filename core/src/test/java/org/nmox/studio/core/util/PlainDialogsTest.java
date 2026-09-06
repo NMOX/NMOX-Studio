@@ -17,6 +17,7 @@ class PlainDialogsTest {
         assertThat(area.isEditable()).isFalse();
         assertThat(area.getLineWrap()).isTrue();
         assertThat(area.getWrapStyleWord()).isTrue();
+        assertThat(area.isFocusable()).as("never a focus stop — the safe-default button keeps the keyboard").isFalse();
         assertThat(area.getAccessibleContext().getAccessibleName()).isEqualTo("Message");
         assertThat(area.getAccessibleContext().getAccessibleText().getCharCount()).isEqualTo(hostile.length());
     }
