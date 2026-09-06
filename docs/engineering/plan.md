@@ -3839,6 +3839,17 @@ menu on a fresh userdir after the Docker find: all honest; the one
 copy find ("1 pieces") became the plural law — `core.util.Plural`,
 seven sites, a repo-wide gate for the nouns the sweep fixed.
 
+**The wizard loop, walked (unit 27).** New Project ▸ Vite + Vue driven
+through accessibility — the template list's rows carry their text as
+their DESCRIPTION — install included, then ▶ → Vite → the Browser at
+`[::1]:5173` → ■ → `[exit 143] stopped`: the product's own path from
+nothing to a served page, clean on the pipelined bytes. One
+observation recorded, not judged: after the wizard the platform's
+Projects, Files and Services windows appear in the left column
+beside Project Studio (the OpenProjects bridge lets projectui open its
+own windows on the first project open) — whether the chrome pass
+(v1.11) should hide them is David's call.
+
 **Method notes.** A Swing JTable reads through AX as rows of AXCell
 whose VALUE is 0 and whose DESCRIPTION is the text; a JTree's rows are
 not selectable by AX hit-test; dialog buttons press by DESCRIPTION,

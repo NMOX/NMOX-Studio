@@ -127,6 +127,12 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     show serves the deferred work; a user-visible count reads right.
 26. **The tutorial walks the stream by hand** — open it with curl,
     subscribe, set the log level, watch the frames arrive.
+27. **The Vite+Vue loop, walked through the wizard** — New Project ▸
+    Vite + Vue (driven by accessibility, install included) → ▶ →
+    `VITE v6.4.3 ready in 339 ms` → the Browser at `[::1]:5173`
+    rendering the template → ■ → port closed, `[exit 143] stopped`.
+    CLEAN. Recorded for David's eye: after the wizard, the platform's
+    own Projects/Files/Services windows join the left column.
 
 ## [2.84.0] - 2026-09-05
 
