@@ -77,7 +77,10 @@ class McpCompletionsTest {
         JSONObject completion = c.complete(prompt("where_is", "name", "sym")).getJSONObject("completion");
         assertThat(completion.getJSONArray("values").length()).isEqualTo(McpCompletions.MAX_VALUES);
         assertThat(completion.getBoolean("hasMore")).isTrue();
-        assertThat(completion.getInt("total")).isEqualTo(101);
+        assertThat(completion.has("total")).as("past the cap the index gives a floor, not a total — say nothing rather than 101 (v2.85.0)").isFalse();
+        JSONObject few = c.complete(prompt("where_is", "name", "sym00")).getJSONObject("completion");
+        assertThat(few.getInt("total")).as("under the cap the count is exact").isEqualTo(10);
+        assertThat(few.getBoolean("hasMore")).isFalse();
     }
 
     @Test

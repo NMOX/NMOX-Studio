@@ -76,10 +76,17 @@ final class McpCompletions {
         for (String v : all.subList(0, Math.min(MAX_VALUES, all.size()))) {
             values.put(v);
         }
-        return new JSONObject().put("completion", new JSONObject()
+        JSONObject completion = new JSONObject()
                 .put("values", values)
-                .put("total", all.size())
-                .put("hasMore", all.size() > MAX_VALUES));
+                .put("hasMore", all.size() > MAX_VALUES);
+        // total is OPTIONAL in the spec and honest here: the file list is
+        // complete so its count is the total; the symbol index is asked for
+        // one past the cap, so past the cap its count is a floor, not a
+        // total — say hasMore and no number rather than "101" (v2.85.0)
+        if (!(all.size() > MAX_VALUES && "ref/prompt".equals(type))) {
+            completion.put("total", all.size());
+        }
+        return new JSONObject().put("completion", completion);
     }
 
     /** Distinct symbol names, the index's own order (prefix hits first). */
