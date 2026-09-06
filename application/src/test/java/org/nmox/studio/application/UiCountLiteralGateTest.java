@@ -53,6 +53,28 @@ class UiCountLiteralGateTest {
                     }
                 }
             }
+            // the same rot's other homes: hand-written bundles and the bundled
+            // website's copy (v2.40.0) are user-visible strings too
+            Path resources = Path.of("..", module, "src", "main", "resources");
+            Path site = Path.of("..", module, "src", "main", "release", "website");
+            for (Path home : new Path[]{resources, site}) {
+                if (!Files.isDirectory(home)) {
+                    continue;
+                }
+                try (Stream<Path> files = Files.walk(home)) {
+                    for (Path p : files.filter(f -> {
+                        String n = f.toString();
+                        return n.endsWith(".properties") || n.endsWith(".html") || n.endsWith(".js") || n.endsWith(".json");
+                    }).filter(f -> !f.toString().contains("learn-catalog")).toList()) {
+                        String body = Files.readString(p);
+                        Matcher c = CLAIM.matcher(body);
+                        while (c.find()) {
+                            int line = 1 + (int) body.chars().limit(c.start()).filter(ch -> ch == '\n').count();
+                            offenders.add(module + "/" + p.getFileName() + ":" + line + " " + c.group());
+                        }
+                    }
+                }
+            }
         }
         assertThat(offenders)
                 .as("a count typed into a user-visible string — derive it from what it counts")
