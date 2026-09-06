@@ -26,7 +26,22 @@ import org.openide.windows.TopComponent;
 public final class TerminalFont {
 
     static final String TERM_CLASS = "org.netbeans.lib.terminalemulator.Term";
-    static final Predicate<Component> IS_TERM = c -> TERM_CLASS.equals(c.getClass().getName());
+    static final Predicate<Component> IS_TERM = c -> isTerm(c.getClass());
+
+    /**
+     * The terminal module's component is {@code ActiveTerm extends StreamTerm
+     * extends Term} — an exact class-NAME match found nothing in the live
+     * walk (walk-40). The hierarchy is walked by name so any subclass
+     * counts, still without a module dependency.
+     */
+    static boolean isTerm(Class<?> type) {
+        for (Class<?> t = type; t != null; t = t.getSuperclass()) {
+            if (TERM_CLASS.equals(t.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private static final Map<Component, Font> BEFORE = new WeakHashMap<>();
 

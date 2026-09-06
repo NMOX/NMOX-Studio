@@ -65,4 +65,20 @@ class TerminalFontTest {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/TerminalFont.java"));
         assertThat(src.replaceAll("(?s)/\\*.*?\\*/", "")).doesNotContain("Preferences").doesNotContain("storeTo");
     }
+
+    /** The terminal module's real shape: ActiveTerm extends StreamTerm extends Term. */
+    static class StreamTermStub extends org.netbeans.lib.terminalemulator.Term {
+    }
+
+    static class ActiveTermStub extends StreamTermStub {
+    }
+
+    @Test
+    @DisplayName("a SUBCLASS of the platform Term is a terminal — the exact-name match missed ActiveTerm in the live walk")
+    void subclassesAreTerminals() {
+        assertThat(TerminalFont.isTerm(ActiveTermStub.class)).isTrue();
+        assertThat(TerminalFont.isTerm(org.netbeans.lib.terminalemulator.Term.class)).isTrue();
+        assertThat(TerminalFont.isTerm(JPanel.class)).isFalse();
+        assertThat(TerminalFont.IS_TERM.test(new ActiveTermStub())).isTrue();
+    }
 }
