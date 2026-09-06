@@ -45,6 +45,11 @@ public final class DiagnosticsBus {
         }
     }
 
+    /** The add's inverse (v2.84.0, the Agent Port's watch — listener symmetry). */
+    public static void removeListener(Listener l) {
+        LISTENERS.remove(l);
+    }
+
     /** A defensive snapshot of every tool's current findings — the
      *  Agent Port's read (v2.54.0); batches are already immutable. */
     public static Map<String, List<Problem>> all() {

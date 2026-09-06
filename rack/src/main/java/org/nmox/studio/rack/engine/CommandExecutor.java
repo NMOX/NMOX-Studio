@@ -184,6 +184,12 @@ public final class CommandExecutor {
                 "nmox-rack-errpump-" + tabName);
         errPump.start();
 
+        // a kill through this handle is a DELIBERATE end — the user's ■,
+        // a row's Stop, Stop All, a re-run's replace — and the exit line
+        // says so (v2.84.0): the flight recorder reads it as STOPPED, not a
+        // failure, so run_history stays honest and last_failure/ORACLE never
+        // treat a user's own stop as something to explain
+        java.util.concurrent.atomic.AtomicBoolean stopped = new java.util.concurrent.atomic.AtomicBoolean();
         Thread pump = Threads.daemon(() -> {
             pumpStream(process.getInputStream(), out, false, tabName, dir, onLine);
             int code;
@@ -194,10 +200,11 @@ public final class CommandExecutor {
                 Thread.currentThread().interrupt();
                 code = -1;
             }
+            String verdict = "[exit " + code + "]" + (stopped.get() ? " stopped" : "");
             if (out != null) {
-                out.println("[exit " + code + "]");
+                out.println(verdict);
             }
-            RackBus.publish(tabName, "[exit " + code + "]", code != 0);
+            RackBus.publish(tabName, verdict, code != 0 && !stopped.get());
             onExit.accept(code);
         }, "nmox-rack-pump-" + tabName);
         pump.start();
@@ -205,6 +212,7 @@ public final class CommandExecutor {
         return new Handle() {
             @Override
             public void kill() {
+                stopped.set(true);
                 process.descendants().forEach(ProcessHandle::destroy);
                 process.destroy();
                 // escalate if it ignores SIGTERM
@@ -222,6 +230,7 @@ public final class CommandExecutor {
 
             @Override
             public void killAndWait(long graceMillis) {
+                stopped.set(true);
                 java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
                 process.descendants().forEach(tree::add);
                 tree.forEach(ProcessHandle::destroy);

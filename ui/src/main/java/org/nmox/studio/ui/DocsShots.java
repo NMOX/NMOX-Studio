@@ -58,6 +58,10 @@ public class DocsShots implements Runnable {
                 "learning-spaces.png");
         DIALOG_SHOTS.put("File/org.nmox.studio.ui.actions.StandardsKitAction",
                 "wizards-and-kits.png");
+        // v2.84.0: the Agent Port dialog — the action redacts its per-start
+        // token under nmox.shots.dir, so a shot never carries a secret
+        DIALOG_SHOTS.put("Tools/org.nmox.studio.rack.mcp.AgentPortAction",
+                "agent-port.png");
     }
 
     /** ms after selecting a tab before painting — lets componentShowing-deferred work land. */

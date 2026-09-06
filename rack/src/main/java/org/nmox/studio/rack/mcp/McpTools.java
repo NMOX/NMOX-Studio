@@ -239,7 +239,7 @@ public final class McpTools {
                 .put("at", type("integer"))
                 .put("device", type("string"))
                 .put("kind", type("string").put("enum",
-                        new JSONArray().put("launched").put("ok").put("failed")))
+                        new JSONArray().put("launched").put("ok").put("failed").put("stopped")))
                 .put("text", type("string"))
                 .put("durationMs", new JSONObject().put("type", new JSONArray().put("integer").put("null")))
                 .put("exitCode", new JSONObject().put("type", new JSONArray().put("integer").put("null"))),
@@ -489,6 +489,7 @@ public final class McpTools {
                     .put("kind", switch (e.kind()) {
                         case LAUNCH -> "launched";
                         case EXIT_OK -> "ok";
+                        case STOPPED -> "stopped";
                         default -> "failed";
                     })
                     .put("text", text)
@@ -550,6 +551,14 @@ public final class McpTools {
         JSONObject out = new JSONObject().put("file", f).put("items", new JSONArray());
         if (index == null || root == null) {
             return out.put("available", false).put("refusal", "no symbol index: aim a project first");
+        }
+        // the search's secret law at the outline too (v2.84.0): .npmrc is an
+        // ini file whose outline would be its keys and values — refused
+        // before the index reads a byte
+        String base = f.replace('\\', '/');
+        base = base.substring(base.lastIndexOf('/') + 1);
+        if (TextSearch.isSecretBearing(base)) {
+            return out.put("available", false).put("refusal", "secret-bearing file, never read for an agent: " + f);
         }
         SymbolIndex.Outline o = index.outline(root, f);
         if (o.refusal() != null) {
@@ -662,7 +671,7 @@ public final class McpTools {
 
     // ---- default (live) suppliers ------------------------------------------
 
-    private static Supplier<File> defaultAim() {
+    static Supplier<File> defaultAim() {
         return () -> RackService.getDefault().getRack().getProjectDir();
     }
 

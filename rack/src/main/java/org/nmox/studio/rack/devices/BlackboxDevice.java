@@ -106,8 +106,11 @@ public class BlackboxDevice extends RackDevice {
         if (last != null) {
             String dur = last.durationMs() >= 0 ? "  " + (last.durationMs() / 1000.0) + "s" : "";
             boolean ok = last.kind() == Kind.EXIT_OK;
-            lastLcd.setTextColor(ok ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
-            lastLcd.setText("LAST: " + last.device() + " " + (ok ? "OK" : last.text().toUpperCase(java.util.Locale.ROOT)) + dur);
+            boolean stopped = last.kind() == Kind.STOPPED;
+            // a deliberate stop is neither green nor red (v2.84.0)
+            lastLcd.setTextColor(ok || stopped ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+            lastLcd.setText("LAST: " + last.device() + " "
+                    + (ok ? "OK" : stopped ? "STOPPED" : last.text().toUpperCase(java.util.Locale.ROOT)) + dur);
         }
         int errors = rec.errorsSince(System.currentTimeMillis() - 600_000).size();
         String creep = rec.slowCreep();

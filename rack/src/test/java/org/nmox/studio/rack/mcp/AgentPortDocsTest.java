@@ -93,4 +93,25 @@ class AgentPortDocsTest {
         JSONObject sanity = new JSONObject().put("ok", true);
         assertThat(sanity.getBoolean("ok")).isTrue();
     }
+
+    @Test
+    @DisplayName("the official-client walk ships in scripts/ and exercises every primitive the port declares (v2.84.0)")
+    void officialClientWalkShips() throws Exception {
+        java.io.File script = new java.io.File("../scripts/agent-port-walk.mjs");
+        assertThat(script).exists();
+        String src = java.nio.file.Files.readString(script.toPath());
+        for (String primitive : java.util.List.of("listTools(", "callTool(", "listResources(", "readResource(",
+                "subscribeResource(", "listPrompts(", "getPrompt(", "complete(", "setLoggingLevel(",
+                "ResourceUpdatedNotificationSchema", "LoggingMessageNotificationSchema")) {
+            assertThat(src).as("the walk uses " + primitive).contains(primitive);
+        }
+        assertThat(src).as("the token is never read off a command line").contains("NMOX_MCP_TOKEN").doesNotContain("process.argv[2] || process.env.NMOX_MCP_TOKEN");
+        assertThat(java.nio.file.Files.readString(new java.io.File("../docs/tutorials/agent-port.md").toPath()))
+                .as("the tutorial points at the shipped walk").contains("scripts/agent-port-walk.mjs");
+        String node = org.nmox.studio.core.process.ToolLocator.resolve("node");
+        org.junit.jupiter.api.Assumptions.assumeTrue(new java.io.File(node).isAbsolute() && new java.io.File(node).canExecute(), "node on PATH");
+        Process p = new ProcessBuilder(node, "--check", script.getAbsolutePath()).redirectErrorStream(true).start();
+        String out = new String(p.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(p.waitFor()).as("node --check: " + out).isZero();
+    }
 }

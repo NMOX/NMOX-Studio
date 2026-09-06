@@ -4,6 +4,138 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.84.0] - 2026-09-05
+
+The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-nine units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
+
+1. **The Agent Port pushes** — `resources/subscribe` on any `nmox://`
+   resource, and the Streamable HTTP GET stream (`Accept:
+   text/event-stream`, the same token, no `Origin`; a plain GET stays
+   405) carries `notifications/resources/updated` the moment the thing
+   behind it changes: a run starts and `nmox://runs` is announced, a
+   server goes live, a linter reports, the flight recorder logs an exit;
+   `nmox://context` follows all of them. Frames ride one named daemon so
+   a slow client never stalls the registry thread that noticed; a dead
+   stream is dropped once; every watch has its remove (DiagnosticsBus
+   gained `removeListener`). Proven end to end over a real socket and
+   with the official MCP SDK client; three mutants by name.
+2. **The Agent Port walked by the official client** — the
+   `@modelcontextprotocol/sdk` StreamableHTTP client, not curl:
+   handshake, all twelve tools, nine resources and two templates, the
+   three prompts, the argument refusal arriving as a typed `-32602`,
+   ping, close.
+3. **First Steps knows the port** — a sixth Welcome step, *Point an agent
+   at the IDE*, a ui-side door over the rack's action (a missing rack
+   speaks on the status line) ticked from the port's started-once
+   record; the door gate reads the layer's nested form so a door with no
+   menu item counts; two mutants by name.
+4. **The tutorial gets its picture** — a forge dialog shot of the Agent
+   Port with the token redacted under `nmox.shots.dir` (pinned by a
+   real-port test, mutant by name); the forge's tab shots regenerated.
+5. **`initialize.instructions` name every tool** — an agent reads them
+   before anything else; pinned against the roster.
+6. **The Workbench a11y contract polls for the run's own Stop** — the
+   v2.82.0 convergence law applied to its sibling.
+7. **A user's stop reads `stopped`, at the source** — the Angular
+   re-walk found `run_history` calling the user's own ■ `failed [1]`
+   (the recorder read every nonzero exit as EXIT_FAIL, so
+   `last_failure`, ORACLE and BLACKBOX would have explained a stop).
+   The executor's handle now marks a kill it performed — the exit line
+   reads `[exit N] stopped`, an ordinary line on the bus — and every
+   consumer learns the difference from that one line: the recorder's
+   new STOPPED kind (a duration, never an error, never a stat, the
+   latest verdict for `last()` so a stop after a failure leaves nothing
+   to explain), `run_history`'s `stopped`, BLACKBOX's LAST in the plain
+   LCD color. A real `sh -c 'sleep 30'` killed through the handle
+   proves it through the real recorder; two mutants by name.
+8. **The Angular loop re-walked on 2.84.0 bytes** — Angular 21 via `ng
+   new` on node 24 (the CLI refuses node 22.9, the v1.318.0 wall; npm
+   11.19 failed its own install twice with an internal null and npm 10
+   installed 329 packages): ▶ → `ng serve` → `live_servers` in two
+   seconds → the Browser at `[::1]:4200` rendering the app through FX
+   26 → the DevTools console alive → ■ → nothing running, port closed,
+   zero orphans. CLEAN, ~560 releases after v1.318.0's walk.
+9. **`completion/complete`, the spec's fourth primitive** — `where_is`'s
+   `name` from the symbol index (distinct, prefix hits first), the
+   outline template's `{file}` from the project's own bounded file list
+   (the search walk's skip list applies — `node_modules` never
+   completes), the search literal to nothing; at most 100 values with
+   the honest total and `hasMore`; unknown references `-32602`. Three
+   mutants by name; walked with the official client.
+10. **MCP logging** — every run's bus line as `notifications/message`:
+    lifecycle at `info` (a failed exit at `error`), stderr at `warning`,
+    output at `debug`; the level starts at `info` so nothing floods
+    unless asked; `logging/setLevel` with the spec's eight names. A
+    build that prints faster than a client reads never grows memory: a
+    line is pending until written, past a thousand the overflow is
+    counted and announced as one line. Three mutants by name.
+11. **The Agent Port chip** — `⌁ agent port :N` on the status line while
+    the port listens (a port that can read the IDE is never invisible),
+    the tooltip counting streaming agents, a click reopening the dialog;
+    and the dialog's disclosure sentence now says a token holder is also
+    told when things change and can hear a run's output.
+12. **The hostile find: `search_text` read `.env`** — an agent asking for
+    `API_KEY` got the value line, the way around the editor's own env
+    law (a key's name, never its value). The `.env` family,
+    package-manager rc files with auth tokens, and private keys /
+    certificates are secret-bearing: never searched, never counted,
+    never completed, and `outline` refuses them by name before the
+    index reads a byte (`.npmrc` is an ini whose outline is its keys
+    and values). Three mutants by name.
+13. **The shift review: every stream has its own writer** — one writer
+    for all streams meant a client that stopped reading stalled every
+    other agent's pushes and the keepalive that would have noticed it;
+    now a stuck stream stalls only itself (per-stream backlog and cap,
+    the keepalive skipping a known-stuck stream); and the keepalive
+    itself — a comment every fifteen seconds — drops clients that
+    vanished without closing, so the cap never counts ghosts. Two
+    mutants by name.
+14. **The story and the sink** — A Day at Meridian gains its 16:40 scene
+    (the Agent Port with the dialog shot); the Kitchen Sink station
+    learns completion, subscribe, and the stop verdict.
+15. **An attached outline follows its file** — `resources/subscribe` on
+    `nmox://outline/{file}` watches a regular file inside the aim (at
+    most thirty-two, polled every two seconds, a vanished file announced
+    once); an escape is `-32002` and never read — and the containment
+    mutant survived its first run because the fixture's escape target
+    did not exist: the missing-file law masked the containment law
+    until the test escaped to a REAL file. The mutant runs also caught
+    a flake the green runs never showed — `drop()` ran inside the
+    stream's own writer and `shutdownNow` discarded the frames queued
+    behind it; graceful shutdown now.
+16. **Walked, twice, and the second walk's find** — units 10–12 on the
+    assembled bytes with the official client (completions live, ▶ then
+    ■ read back as `stopped` with `last_failure` empty, the keepalive
+    comment on a raw SSE curl); then logging and the chip in a second
+    instance (the `info` level heard exactly `$ npm run dev` and
+    `[exit 143] stopped`; `debug` heard the server's banner too). The
+    find: the dialog's new sentence made its one-line label wider than
+    the screen clamp, so DialogFit put the whole dialog in a scroll pane
+    with the disclosure clipped mid-word — the one sentence that must
+    never be clipped. The label body is width-bounded now and WRAPS —
+    unitless, because Swing's CSS honors `width: 720` on a body and
+    ignores `width: 720px` (probed headless); pinned by a headless
+    preferred-size test, mutant by name; the tutorial's shot re-forged.
+17. **The insurance verify, and what it bought** — a full `mvn clean
+    verify` at mid-shift found two SpotBugs findings the unit tests
+    never see (a lazily published scheduler assigned before it was
+    scheduled, `DC_PARTIALLY_CONSTRUCTED`, twice) three hours before
+    the chain would have died on them; file subscriptions contain by
+    REAL path (a symlink inside pointing outside is refused); a save
+    pushes `nmox://editor` (the loaders' modified set is the unsaved
+    flags' own source); floors ratcheted from the verify's own numbers
+    (project 0.88→0.89, infra 0.85→0.87; editor and rack stay
+    windows-binding by law).
+18. **The official-client walk ships** — `scripts/agent-port-walk.mjs`
+    exercises every primitive the port declares with the refusals as
+    passes; pinned by the docs test (primitives named, `node --check`
+    when node is on PATH); the tutorial and the user guide (now three
+    paragraphs: what it reads, what gates it, the complete server)
+    point at it — and it ran green on the shift's own bytes in a third
+    instance: every primitive, the outline following a touched file,
+    the run's start and banner arriving as pushes and log messages.
+19. **Docs, plan, this entry.**
+
 ## [2.83.0] - 2026-09-05
 
 The tenth parallel batch, bundled (three batches, one gate — the queue had grown past the point where one release per batch made sense): the Agent Port arc's review, the file you are looking at, and the day's own flake explained.
@@ -17141,6 +17273,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.84.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.83.0...v2.84.0
 [2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0
 [2.81.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.80.0...v2.81.0

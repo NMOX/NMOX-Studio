@@ -80,6 +80,9 @@ class McpToolsTest {
         assertThat(ok.getBoolean("available")).isTrue();
         assertThat(ok.getJSONArray("items").getJSONObject(1).getInt("depth")).isEqualTo(1);
         assertThat(Texts.of(ok)).isEqualTo("Cart (class) :2\n  total (method) :3");
+        JSONObject secret = McpTools.outline(fake, new File("/tmp/proj"), "config/.npmrc");
+        assertThat(secret.getBoolean("available")).isFalse();
+        assertThat(secret.getString("refusal")).contains("secret-bearing").contains("config/.npmrc");
         JSONObject refused = McpTools.outline(fake, new File("/tmp/proj"), "zzz");
         assertThat(refused.getBoolean("available")).isFalse();
         assertThat(Texts.of(refused)).isEqualTo("No outline: no such file: zzz.");
@@ -115,14 +118,20 @@ class McpToolsTest {
                 new org.nmox.studio.rack.engine.FlightRecorder.Event(1_500L, "VERITAS", org.nmox.studio.rack.engine.FlightRecorder.Kind.ERROR, "boom", -1),
                 new org.nmox.studio.rack.engine.FlightRecorder.Event(3_100L, "VERITAS", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_FAIL, "[exit 1]", 2_100),
                 new org.nmox.studio.rack.engine.FlightRecorder.Event(4_000L, "FORGE", org.nmox.studio.rack.engine.FlightRecorder.Kind.LAUNCH, "npm run build", -1),
-                new org.nmox.studio.rack.engine.FlightRecorder.Event(9_000L, "FORGE", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_OK, "[exit 0]", 5_000));
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(9_000L, "FORGE", org.nmox.studio.rack.engine.FlightRecorder.Kind.EXIT_OK, "[exit 0]", 5_000),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(10_000L, "SOLDER", org.nmox.studio.rack.engine.FlightRecorder.Kind.LAUNCH, "npm run dev", -1),
+                new org.nmox.studio.rack.engine.FlightRecorder.Event(12_000L, "SOLDER", org.nmox.studio.rack.engine.FlightRecorder.Kind.STOPPED, "exit 143", 2_000));
         JSONObject h = McpTools.runHistory(tl, 20);
-        assertThat(h.getJSONArray("events").length()).as("ERROR lines are not history").isEqualTo(4);
+        assertThat(h.getJSONArray("events").length()).as("ERROR lines are not history").isEqualTo(6);
         JSONObject newest = h.getJSONArray("events").getJSONObject(0);
-        assertThat(newest.getString("kind")).isEqualTo("ok");
-        assertThat(newest.getInt("exitCode")).isEqualTo(0);
-        assertThat(newest.getLong("durationMs")).isEqualTo(5_000);
-        assertThat(h.getJSONArray("events").getJSONObject(3).isNull("exitCode")).as("a launch has no exit").isTrue();
+        assertThat(newest.getString("kind")).as("a user's stop is stopped, not failed (v2.84.0)").isEqualTo("stopped");
+        assertThat(newest.getInt("exitCode")).isEqualTo(143);
+        assertThat(Texts.of(h)).contains("SOLDER stopped [143] npm run dev (2.0 s)");
+        JSONObject ok = h.getJSONArray("events").getJSONObject(2);
+        assertThat(ok.getString("kind")).isEqualTo("ok");
+        assertThat(ok.getInt("exitCode")).isEqualTo(0);
+        assertThat(ok.getLong("durationMs")).isEqualTo(5_000);
+        assertThat(h.getJSONArray("events").getJSONObject(5).isNull("exitCode")).as("a launch has no exit").isTrue();
         assertThat(h.getBoolean("truncated")).isFalse();
         assertThat(Texts.of(h)).contains("FORGE ok [0] npm run build (5.0 s)").contains("VERITAS failed [1] npm test (2.1 s)");
         JSONObject two = McpTools.runHistory(tl, 2);
@@ -271,6 +280,17 @@ class McpToolsTest {
         assertThat(Texts.of(s)).contains("Project: proj")
                 .contains("Serving: 1 server").contains("Running: 1 command")
                 .contains("Editing: /tmp/proj/src/app.js").contains("on VERITAS");
+    }
+
+    @Test
+    @DisplayName("initialize's instructions name every tool the roster offers (v2.84.0 — an agent reads them first)")
+    void instructionsNameEveryTool() {
+        String out = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}", McpTools.production(), "2.84.0");
+        String instructions = new JSONObject(out).getJSONObject("result").getString("instructions");
+        for (McpTools.Tool t : McpTools.production().all()) {
+            assertThat(instructions).as("instructions name " + t.name()).contains(t.name());
+        }
+        assertThat(instructions).contains("Nothing here executes");
     }
 
     @Test

@@ -164,6 +164,18 @@ And when the next stack is one you don't know yet, **File ▸ New
 Learning Space…** holds 93 guided tutorials — sample code, a
 walkthrough, and a rack wired with a live REPL.
 
+## 16:40 — an agent looks over your shoulder
+
+Tools ▸ **Agent Port (MCP)…** starts a loopback-only MCP server with a
+token that exists nowhere but this dialog. Paste the config into your
+agent's `.mcp.json` and it can ask what is serving, what you have
+open, where `checkout` is declared, and what ran lately — a run you
+stopped yourself reads *stopped*, never *failed* — or subscribe and be
+told the moment a run starts. It can ask; it can never run, write, or
+stop anything, and the build fails if that ever changes:
+
+![The Agent Port dialog — the endpoint, the token (a placeholder in this shot), the config to copy](images/tabs/agent-port.png)
+
 ## 17:00 — close
 
 Count what the day used: an experiment that installed its own

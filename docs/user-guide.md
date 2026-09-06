@@ -443,33 +443,47 @@ checker may still underline them as unknown; the popup is right.
 
 **Point an agent at your IDE.** Tools ▸ Agent Port (MCP)… starts a
 local server that an AI agent (anything that speaks MCP) can connect
-to and READ your project's live state — what's aimed (and which
+to and READ your project's live state: what's aimed (and which
 toolchain and package manager it uses), what ran lately (the flight
-recorder's launches and exits with their codes and durations), what's serving,
+recorder's launches and exits with their codes and durations — a run
+you stopped yourself reads `stopped`, never `failed`), what's serving,
 what's running (every command the toolbar ■ would stop, with when it
 started), what you have open in the editor (the active file, unsaved
 tabs flagged), where a name is declared (`find_symbol` answers from
 the same Go to Symbol index as ⌥⇧⌘O), one file's structure
 (`outline`, the Navigator's own items), which lines contain a literal
 (`search_text`, bounded and every cap reported), what failed last,
-what the linters found, what's on the rack. It is
-off until you start it, listens on loopback only, and hands you a
-token the agent must present; copy the ready-made `.mcp.json` from the
-dialog. It is strictly read-only: nothing an agent asks can run a
-command or change a file. Stop it with one click; it also dies when
-the IDE quits. Agents get typed, structured
-answers (not just text) and can start with the `ide_context` tool for
-a one-call overview; every tool is annotated read-only so a well-behaved
-agent knows it can call them freely. It is a complete MCP server —
-besides tools it exposes **resources** (browsable URIs like
-`nmox://context`, `nmox://runs`, `nmox://editor` and
-`nmox://diagnostics` an agent attaches as context, plus templates —
-`nmox://outline/{file}` and `nmox://search/{query}` — for the two
-tools that take an argument) and **prompts** (ready-made templates
-like *Diagnose the last failure* that fold your IDE's live state into
-the question; *Where is a symbol declared* takes a name and folds the
-symbol hits in), so it drops into any MCP client the idiomatic way. The
-[Agent Port tutorial](tutorials/agent-port.md) walks it by hand.
+what the linters found, what's on the rack. Start with the
+`ide_context` tool for a one-call overview; every answer is typed and
+structured, not just text, and every tool is annotated read-only so a
+well-behaved agent knows it can call them freely.
+
+**What gates it.** The port is off until you start it, listens on
+loopback only, and hands you a token the agent must present — copy the
+ready-made `.mcp.json` from the dialog. While it listens the status
+line shows **⌁ agent port :N** (click it for the dialog, or to stop);
+it also dies when the IDE quits. It is strictly read-only — nothing an
+agent asks can run a command or change a file, and the build fails if
+that ever changes — and it keeps the editor's own secret law: `.env`
+files, package-manager rc files and private keys are never searched,
+never listed, never outlined.
+
+**A complete MCP server.** Besides tools it exposes **resources**
+(browsable URIs like `nmox://context`, `nmox://runs`, `nmox://editor`
+and `nmox://diagnostics` an agent attaches as context, plus templates
+`nmox://outline/{file}` and `nmox://search/{query}` for the two tools
+that take an argument, with **argument completion** for the file slot
+from the project's own files), **prompts** (ready-made templates like
+*Diagnose the last failure* that fold your IDE's live state into the
+question; *Where is a symbol declared* takes a name and folds the
+symbol hits in), and an **event stream**: an agent can **subscribe**
+so a run starting, a server going live, or an attached outline's file
+changing is pushed instead of polled for, and the same stream carries
+every run's start and end as **log messages** — its whole output once
+the agent asks for the `debug` level. It drops into any MCP client the
+idiomatic way. The [Agent Port tutorial](tutorials/agent-port.md)
+walks it by hand, and `scripts/agent-port-walk.mjs` walks it with the
+official client.
 
 ## 5. The editor
 
@@ -1465,13 +1479,15 @@ right there, streaming progress onto the REPL screen. Spaces live in
 
 ### First Steps, on the Welcome page (v2.66.0; named First Steps since v2.69.11)
 
-A fourth Welcome column lists the five first gestures — open a project,
+A fourth Welcome column lists the six first gestures — open a project,
 run something in the rack, see a server go live, ask ORACLE about code,
-try a learning space — and ticks each one from records the product
-already keeps (recent projects, the rack's flight recorder, the serving
-registry, your ORACLE consent, `~/.nmox/learn`). Hover a step for its
-gesture. A tick never un-ticks; the column disappears when all five are
-done, or when you press **Hide this list**.
+try a learning space, point an agent at the IDE — and ticks each one
+from records the product already keeps (recent projects, the rack's
+flight recorder, the serving registry, your ORACLE consent,
+`~/.nmox/learn`, the Agent Port's started-once record). Every row is a
+door: click it and the gesture's window or action opens. Hover a step
+for its gesture. A tick never un-ticks; the column disappears when all
+six are done, or when you press **Hide this list**.
 
 ### The Help menu's three answers (v2.64.0)
 

@@ -175,6 +175,27 @@ class McpPrimitivesTest {
     }
 
     @Test
+    @DisplayName("resources/subscribe tracks a catalogued URI, refuses an unknown one, needs params.uri; initialize declares subscribe (v2.84.0)")
+    void subscriptions() {
+        McpSubscriptions subs = new McpSubscriptions();
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0", subs);
+        assertThat(ok).contains("\"result\":{}").doesNotContain("error");
+        assertThat(subs.isSubscribed("nmox://context")).isTrue();
+        String unknown = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://nonesuch\"}}", fixture(), "2.84.0", subs);
+        assertThat(unknown).contains("-32002");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/subscribe\"}", fixture(), "2.84.0", subs);
+        assertThat(missing).contains("-32602").contains("params.uri");
+        String un = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"resources/unsubscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0", subs);
+        assertThat(un).contains("\"result\":{}");
+        assertThat(subs.isSubscribed("nmox://context")).isFalse();
+        String init = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"initialize\"}", fixture(), "2.84.0");
+        assertThat(new JSONObject(init).getJSONObject("result").getJSONObject("capabilities")
+                .getJSONObject("resources").getBoolean("subscribe")).isTrue();
+        // the three-arg form still answers, keeping nothing
+        assertThat(McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://context\"}}", fixture(), "2.84.0")).contains("\"result\":{}");
+    }
+
+    @Test
     @DisplayName("through the protocol: resources/templates/list answers and a where_is without its argument is -32602 (v2.80.0)")
     void protocolTemplatesAndArguments() {
         String list = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"resources/templates/list\"}", fixture(), "2.80.0");
@@ -194,7 +215,7 @@ class McpPrimitivesTest {
     // ---- capability wiring through the real protocol -----------------------
 
     @Test
-    @DisplayName("initialize declares all three read-only primitives")
+    @DisplayName("initialize declares all four read-only primitives")
     void initializeDeclaresAllPrimitives() {
         String out = McpProtocol.handle(
                 "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\"}",
@@ -204,6 +225,34 @@ class McpPrimitivesTest {
         assertThat(caps.has("tools")).isTrue();
         assertThat(caps.has("resources")).isTrue();
         assertThat(caps.has("prompts")).isTrue();
+        assertThat(caps.has("completions")).as("completion/complete (v2.84.0)").isTrue();
+        assertThat(caps.has("logging")).as("logging/setLevel (v2.84.0)").isTrue();
+    }
+
+    @Test
+    @DisplayName("logging/setLevel sets the stream's level; an unnamed level and a missing one are -32602 (v2.84.0)")
+    void loggingSetLevel() {
+        McpSubscriptions subs = new McpSubscriptions();
+        String ok = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"logging/setLevel\",\"params\":{\"level\":\"debug\"}}", fixture(), "2.84.0", subs);
+        assertThat(ok).doesNotContain("error");
+        assertThat(subs.level()).isEqualTo("debug");
+        String bad = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"logging/setLevel\",\"params\":{\"level\":\"loud\"}}", fixture(), "2.84.0", subs);
+        assertThat(bad).contains("-32602").contains("loud");
+        assertThat(subs.level()).as("a refused level leaves the old one").isEqualTo("debug");
+        String missing = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"logging/setLevel\"}", fixture(), "2.84.0", subs);
+        assertThat(missing).contains("-32602");
+        subs.close();
+    }
+
+    @Test
+    @DisplayName("a bus line's log level reads the lifecycle marks the recorder reads (v2.84.0)")
+    void busLineLevels() {
+        assertThat(AgentPort.logLevel("$ npm run build", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 0]", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 143] stopped", false)).isEqualTo("info");
+        assertThat(AgentPort.logLevel("[exit 1]", true)).isEqualTo("error");
+        assertThat(AgentPort.logLevel("warning: deprecated", true)).isEqualTo("warning");
+        assertThat(AgentPort.logLevel("compiled 3 files", false)).isEqualTo("debug");
     }
 
     /** A roster whose only tool throws — the live-state failure shape. */

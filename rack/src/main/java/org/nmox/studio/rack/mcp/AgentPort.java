@@ -11,7 +11,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.HexFormat;
+import java.util.ArrayList;
+import java.util.List;
 import org.nmox.studio.core.http.HttpBodies;
+import org.nmox.studio.core.spi.LiveRuns;
+import org.nmox.studio.core.spi.LiveServings;
 
 /**
  * The Agent Port's transport (futures-2031 F4): a loopback-witnessed
@@ -30,6 +34,9 @@ public final class AgentPort {
 
     /** Request bodies past this are refused — no MCP message is 1 MB. */
     static final int MAX_REQUEST_BYTES = 1024 * 1024;
+    /** Open GET streams past this are refused (503) — one agent needs one;
+     *  an unbounded count is an unbounded set of sockets and buffers (v2.84.0 review). */
+    static final int MAX_STREAMS = 8;
 
     // a process-lifetime CSPRNG, seeded once and reused for every port
     // start (a per-call new SecureRandom is used-only-once — sharing it
@@ -40,6 +47,11 @@ public final class AgentPort {
     private final String token;
     private final String productVersion;
     private final McpTools tools;
+    private final McpSubscriptions subs = new McpSubscriptions();
+    private final List<Runnable> unwatch = new ArrayList<>();
+    // the completion/complete resolver (v2.84.0): the symbol index and the
+    // aim, looked up lazily per request — nothing at construction
+    private final McpCompletions completions = McpCompletions.production();
 
     private AgentPort(HttpServer server, String token, McpTools tools,
             String productVersion) {
@@ -68,6 +80,7 @@ public final class AgentPort {
         }
         AgentPort port = new AgentPort(server, token, tools, productVersion);
         server.createContext("/mcp", port::handle);
+        port.watch();
         server.start();
         return port;
     }
@@ -85,10 +98,90 @@ public final class AgentPort {
     }
 
     public void stop() {
+        for (Runnable r : unwatch) {
+            r.run();
+        }
+        unwatch.clear();
+        subs.close();
         server.stop(0);
     }
 
+    /** The port's subscriptions — tests read them. */
+    /** GET streams attached right now — agents listening for pushes. */
+    public int attachedStreams() {
+        return subs.attachedCount();
+    }
+
+    McpSubscriptions subscriptions() {
+        return subs;
+    }
+
+    /**
+     * The registries whose changes become {@code resources/updated} frames
+     * (v2.84.0), each with the URIs it moves; listener symmetry — every
+     * add here has its remove in {@link #stop}. Absent registries (no
+     * rack in the session) are simply not watched.
+     */
+    private void watch() {
+        Runnable runs = () -> subs.updated("nmox://runs", "nmox://context");
+        LiveRuns.addListener(runs);
+        unwatch.add(() -> LiveRuns.removeListener(runs));
+        LiveServings servings = LiveServings.find();
+        if (servings != null) {
+            LiveServings.Listener l = () -> subs.updated("nmox://servers", "nmox://context");
+            servings.addListener(l);
+            unwatch.add(() -> servings.removeListener(l));
+        }
+        // the editor: what the user looks at (v2.84.0) — the window registry
+        // fires on the EDT; the frame write rides the push daemon, so the EDT
+        // never waits on a socket
+        java.beans.PropertyChangeListener editor = evt -> {
+            String p = evt.getPropertyName();
+            if (org.openide.windows.TopComponent.Registry.PROP_ACTIVATED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_OPENED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_TC_OPENED.equals(p)
+                    || org.openide.windows.TopComponent.Registry.PROP_TC_CLOSED.equals(p)) {
+                subs.updated("nmox://editor", "nmox://context");
+            }
+        };
+        org.openide.windows.TopComponent.getRegistry().addPropertyChangeListener(editor);
+        unwatch.add(() -> org.openide.windows.TopComponent.getRegistry().removePropertyChangeListener(editor));
+        // a save (or the first edit) changes editor_state's unsaved flags
+        // without moving a window: the loaders' modified set is that signal
+        javax.swing.event.ChangeListener saved = evt -> subs.updated("nmox://editor", "nmox://context");
+        org.openide.loaders.DataObject.getRegistry().addChangeListener(saved);
+        unwatch.add(() -> org.openide.loaders.DataObject.getRegistry().removeChangeListener(saved));
+        try {
+            // every line every run prints, as MCP log messages (v2.84.0):
+            // lifecycle at info (a failed exit at error), stderr at warning,
+            // output at debug — so the default level carries only starts and
+            // ends, and an agent that wants the firehose asks for it
+            org.nmox.studio.rack.engine.RackBus.Listener bus = (device, line, err) ->
+                    subs.log(logLevel(line, err), device, line);
+            org.nmox.studio.rack.engine.RackBus.subscribe(bus);
+            unwatch.add(() -> org.nmox.studio.rack.engine.RackBus.unsubscribe(bus));
+            org.nmox.studio.rack.engine.DiagnosticsBus.Listener d =
+                    (tool, problems) -> subs.updated("nmox://diagnostics", "nmox://context");
+            org.nmox.studio.rack.engine.DiagnosticsBus.addListener(d);
+            unwatch.add(() -> org.nmox.studio.rack.engine.DiagnosticsBus.removeListener(d));
+            Runnable rec = () -> subs.updated("nmox://history", "nmox://last-failure", "nmox://context");
+            org.nmox.studio.rack.engine.FlightRecorder.getDefault().addChangeListener(rec);
+            unwatch.add(() -> org.nmox.studio.rack.engine.FlightRecorder.getDefault().removeChangeListener(rec));
+        } catch (RuntimeException | LinkageError absent) {
+            // a session without the rack's engine: those resources never change
+        }
+    }
+
     private void handle(HttpExchange exchange) throws IOException {
+        // the GET stream stays open past this method — it must not sit
+        // inside the try-with-resources that closes every other exchange
+        if ("GET".equals(exchange.getRequestMethod())
+                && exchange.getRequestHeaders().getFirst("Origin") == null
+                && authorized(exchange)
+                && acceptsEventStream(exchange)) {
+            openStream(exchange);
+            return;
+        }
         try (exchange) {
             // a browser-originated request carries Origin; no native MCP
             // client does — refuse the whole class before anything else
@@ -101,6 +194,7 @@ public final class AgentPort {
                 return;
             }
             if (!"POST".equals(exchange.getRequestMethod())) {
+                // a plain GET is not a page (405); the SSE GET was served above
                 refuse(exchange, 405);
                 return;
             }
@@ -115,7 +209,7 @@ public final class AgentPort {
             }
             String response;
             try {
-                response = McpProtocol.handle(body, tools, productVersion);
+                response = McpProtocol.handle(body, tools, productVersion, subs, completions);
             } catch (RuntimeException ex) {
                 // defense in depth under the every-refusal-speaks law: an
                 // uncaught throw here would make httpserver DROP the
@@ -137,6 +231,44 @@ public final class AgentPort {
                 out.write(bytes);
             }
         }
+    }
+
+    /** The log level of one bus line — the flight recorder's own reading of the lifecycle marks. */
+    static String logLevel(String line, boolean err) {
+        if (line.startsWith("$ ")) {
+            return "info";
+        }
+        if (line.startsWith("[exit ")) {
+            return err ? "error" : "info";
+        }
+        return err ? "warning" : "debug";
+    }
+
+    private static boolean acceptsEventStream(HttpExchange exchange) {
+        String accept = exchange.getRequestHeaders().getFirst("Accept");
+        return accept != null && accept.contains("text/event-stream");
+    }
+
+    /**
+     * The Streamable HTTP GET stream (v2.84.0): server-to-client frames —
+     * here only {@code notifications/resources/updated} for subscribed
+     * URIs. Chunked, kept open until the client leaves or the port stops.
+     */
+    private void openStream(HttpExchange exchange) throws IOException {
+        if (subs.attachedCount() >= MAX_STREAMS) {
+            // refused out loud, with the reason a client can read
+            try (exchange) {
+                exchange.sendResponseHeaders(503, -1);
+            }
+            return;
+        }
+        exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+        exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+        exchange.sendResponseHeaders(200, 0);
+        OutputStream out = exchange.getResponseBody();
+        out.write(": connected\n\n".getBytes(StandardCharsets.UTF_8));
+        out.flush();
+        subs.attach(out, exchange::close);
     }
 
     private boolean authorized(HttpExchange exchange) {

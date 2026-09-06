@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-04, at v2.83.0, after two lenses, one
+*Currency addendum 2026-09-05, at v2.84.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3667,3 +3667,131 @@ opposite of "bundle the batches into one gate". Batches 2830, 2840 and
 2850 were already a linear chain, so they ship as ONE release, v2.83.0,
 and nothing new is built until the queue is empty. The efficiency
 problem was never CI's; it was one release per batch.
+
+## Addendum — 2026-09-05, the first eight-hour shift (v2.84.0)
+
+David's three calls at the shift's opening (15:10–15:20): a shift is
+EIGHT HOURS and gets ONE release; a release in flight is no reason to
+idle; use the clock. Everything below accumulated in one worktree and
+shipped as one gate.
+
+**The Agent Port pushes (units 6–8).** `resources/subscribe` and the
+Streamable HTTP GET stream: the port's first server-to-client channel,
+carrying only `notifications/resources/updated` frames for subscribed
+URIs — runs, servers, diagnostics, history, the last failure, the
+editor, and `nmox://context` behind all of them. The design kept two
+laws: the frame writes ride one named daemon (LiveRuns fires on the
+EDT; a socket must never be written there), and every watch has its
+remove (DiagnosticsBus gained `removeListener` to make that true).
+Proven twice — over a real socket in AgentPortStreamTest, and with the
+official SDK client: a ▶ pressed in the IDE arrived as `nmox://runs`
+within the second. The review capped streams at eight (503 beyond) and
+blessed the one thing a cap cannot fix: a subscriber that stops
+reading stalls the push daemon's writes and nothing else. One harness
+lesson cost an hour: a mutant that served the stream to a refused
+caller handed a discarding body handler a body that never ends, and
+the mutant run hung until every security request got a five-second
+leash — a test that can wait forever is a test that will.
+
+**The official client (unit 3).** The curl walks of v2.77.0 and
+v2.79.0 never exercised a real client's handshake; the
+`@modelcontextprotocol/sdk` StreamableHTTP client did, and every
+primitive answered: twelve tools, nine resources and two templates,
+three prompts, the argument refusal as a typed `-32602`.
+
+**First Steps knows the port (unit 2).** A sixth Welcome step with a
+ui-side door over the rack's action (the mcp package is not exported,
+so the started-once record is read by preference path) — and the
+door gate's blind spot: it read only actions that had menu shadows;
+a door with no menu item is registered just as well, so the gate now
+reads the layer's nested form. Seen live in the walk's capture:
+"FIRST STEPS — 2 of 6", the agent row ticked.
+
+**The walk's find, fixed at the source (unit 10).** The Angular loop
+re-walked clean on the day's bytes (Angular 21 on node 24 — the CLI's
+node floor and npm 11's own install failure both external, both
+recorded), and `run_history` called the user's ■ `failed [1]`. The
+executor knew it had killed the process and told no one; the recorder
+read the exit code. One line changed hands: the handle marks the kill,
+the exit line reads `[exit N] stopped`, and the recorder, the history
+tool, BLACKBOX and ORACLE's failure context all learn the difference
+from that line — a stop is the latest verdict and never a failure to
+explain. The lesson is the v2.69.15 faceplate law applied one layer
+down: a verdict belongs where the knowledge is, and the executor is
+the only party that knows a kill from a crash.
+
+**The rest of the server (units 12, 15).** `completion/complete` and
+logging — the two MCP capabilities the port lacked — both bounded the
+house way: completions capped at a hundred with the honest total;
+logging at `info` by default so a token holder hears runs start and
+end and nothing else, the debug firehose on request and bounded per
+stream (pending until WRITTEN, overflow counted and announced, never
+silently lost).
+
+**The hostile lens found the env file (unit 17).** `search_text` read
+every text file under its cap, `.env` included; the editor's env law
+(v2.31.0 — a key's name, never its value) had a way around it one
+tool over. Secret-bearing files are now a named class — the `.env`
+family, rc files carrying auth tokens, private keys and certificates
+— never searched, never counted, never completed, and refused by
+`outline` before the index reads a byte. The lens to keep: **every
+new read surface is a new disclosure path for every old secret law**
+— sweep the laws, not the feature.
+
+**The shift review (unit 18).** One writer daemon for all streams was
+the v2.84.0 design's blessed limit ("a subscriber that stops reading
+stalls the push daemon's writes") until logging made a slow client
+ordinary — and a stalled writer also stalls the keepalive that exists
+to notice dead clients. Per-stream writers: a stuck agent stalls only
+itself. The equivalent-mutant lesson repeated once more in this code:
+a `closed` flag checked before `execute` made the
+RejectedExecutionException catch unprovable; the flag went, the catch
+is the mechanism, and the snapshot-vs-drop race it guards is pinned
+structurally because it has no deterministic reproduction.
+
+**The second walk's find (unit 21).** The dialog's disclosure gained a
+sentence and stopped fitting: an `<html>` JLabel lays its text on one
+line, the line outgrew DialogFit's 0.8-screen clamp (v2.69.7), and
+the clamp did what it promises — a scroll pane — with the disclosure
+clipped mid-word. A width-bounded body wraps, and the probe that found
+the working shape is worth keeping: Swing's CSS honors a UNITLESS
+`width: 720` on a body and silently ignores `width: 720px` (one line,
+935 px), as it ignores the same on a `div` or a `p`; a `<table
+width>` works too. The comment at the site says so, because the
+units-bearing spelling is the one every hand would reach for.
+
+**Two lessons from one unit (unit 22).** Outline subscriptions follow
+their file (a bounded poll, containment before any read), and the
+proof protocol paid twice in ten minutes: the containment mutant
+SURVIVED because the fixture escaped to a path that did not exist —
+the missing-file law masked the containment law (test each guard with
+an input only IT refuses); and the mutant runs surfaced a flake the
+green runs had hidden — `drop()` ran inside the stream's own writer
+task and `shutdownNow` threw away the frames queued behind it, the
+test barrier included. A mutant run is also a stress run; a timeout
+under one is a finding, not noise.
+
+**The rest (units 1, 4, 5, 11, 13, 16).** A sixth Welcome step; the
+status-line chip (a port that can read the IDE is never invisible);
+the dialog's honest disclosure; the story's Agent Port scene. The Workbench a11y contract polls for
+the run's own Stop (the v2.82.0 law's sibling); `initialize`'s
+instructions name every tool, pinned; the tutorial's dialog shot with
+the token redacted under the forge property, pinned by a real-port
+test — a screenshot is a file that outlives the port.
+
+**The shift's shape (for the next one).** Twenty-nine units between
+15:15 and 18:00, one worktree, one verify, one gate — folded at
+T-5h, not T-2h, because the arc was complete, the insurance verify
+was green, and every hour after the fold builds the NEXT release in a
+pipelined branch instead of waiting on this one. What the clock
+bought: the insurance verify at 17:44 — twelve minutes that found two
+SpotBugs findings the unit tests never see (a lazily published
+scheduler, DC_PARTIALLY_CONSTRUCTED) three hours before the chain
+would have died on them. What the walks bought: three instances,
+every one with a find the tests had blessed (a stop recorded as a
+failure; a dialog that outgrew its screen clamp; a process name that
+changed under the automation). The rhythm to keep: build with tests
+→ mutants → walk on the assembled bytes every four or five units →
+an insurance verify at mid-shift → fold when the arc closes → the single chain →
+the next shift's branch forked from the shipped head while the gate
+runs.

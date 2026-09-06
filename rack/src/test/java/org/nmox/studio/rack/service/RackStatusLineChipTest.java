@@ -71,4 +71,19 @@ class RackStatusLineChipTest {
                 .contains("ARTISAN — http://127.0.0.1:8000")
                 .contains("ANVIL — http://127.0.0.1:8545");
     }
+
+    @Test
+    @DisplayName("the Agent Port chip shows while the port listens, with the stream count in its tooltip, and is absent when off (v2.84.0)")
+    void agentPortChip() throws Exception {
+        assertThat(RackStatusLine.agentChipText(null)).isNull();
+        assertThat(RackStatusLine.agentChipTooltip(null)).isNull();
+        assertThat(RackStatusLine.agentChipText(new int[]{55725, 0})).isEqualTo("⌁ agent port :55725");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0})).contains("127.0.0.1:55725").contains("no agent streaming").contains("read-only");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 1})).contains("one agent streaming");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 3})).contains("3 agents streaming");
+        // the wiring: the strip reads the action's listening() on every refresh and the chip opens the action
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/service/RackStatusLine.java"));
+        assertThat(src).contains("AgentPortAction.listening()").contains("agentChipText(listening)")
+                .contains("new org.nmox.studio.rack.mcp.AgentPortAction().actionPerformed(");
+    }
 }

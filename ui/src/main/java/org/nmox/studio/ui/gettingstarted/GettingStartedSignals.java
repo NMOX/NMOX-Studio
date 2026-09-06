@@ -74,6 +74,9 @@ public final class GettingStartedSignals {
         if (!done.contains("learn") && learningSpaceExists()) {
             tick(done, "learn");
         }
+        if (!done.contains("agent") && agentPointed()) {
+            tick(done, "agent");
+        }
         return done;
     }
 
@@ -124,6 +127,22 @@ public final class GettingStartedSignals {
             LiveServings live = LiveServings.find();
             return live != null && !live.snapshot().isEmpty();
         } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    /**
+     * The Agent Port has been started at least once — the rack records it
+     * on start (v2.84.0) in its own module node. Read by PATH, not by class:
+     * the rack's mcp package is not exported, and forModule(Class) is just
+     * root().node(package path). Absent rack, absent record, no tick.
+     */
+    static final String AGENT_PORT_NODE = "org/nmox/studio/rack/mcp";
+
+    private static boolean agentPointed() {
+        try {
+            return NbPreferences.root().node(AGENT_PORT_NODE).getBoolean("agentport.started", false);
+        } catch (RuntimeException e) {
             return false;
         }
     }

@@ -177,4 +177,36 @@ class FlightRecorderTest {
                 .as("the newest event survives rotation")
                 .isEqualTo("build-19999");
     }
+
+    @Test
+    @DisplayName("a deliberate stop records STOPPED — neither a failure for last() nor a run for the stats (v2.84.0)")
+    void stopReadsStopped() {
+        rec.line("SOLDER", "$ npm run dev", false);
+        now.addAndGet(2_000);
+        rec.line("SOLDER", "[exit 143] stopped", false);
+        var last = rec.last();
+        assertThat(last.kind()).isEqualTo(FlightRecorder.Kind.STOPPED);
+        assertThat(last.text()).isEqualTo("exit 143");
+        assertThat(last.durationMs()).isEqualTo(2_000);
+        assertThat(rec.errorsSince(0)).as("a stop is not an error").isEmpty();
+        assertThat(rec.statistics().get("SOLDER")).as("a stop is not a run for the stats").isNull();
+        // a trapped clean exit after the stop still reads STOPPED — the code does not decide
+        rec.line("SOLDER", "$ npm run dev", false);
+        rec.line("SOLDER", "[exit 0] stopped", false);
+        assertThat(rec.last().kind()).isEqualTo(FlightRecorder.Kind.STOPPED);
+    }
+
+    @Test
+    @DisplayName("a stop after a failure is the latest verdict — there is no failure left to explain (v2.84.0)")
+    void stopAfterFailureClearsTheFailureToExplain() {
+        rec.line("FORGE", "$ npm run build", false);
+        rec.line("FORGE", "boom", true);
+        rec.line("FORGE", "[exit 1]", false);
+        assertThat(OracleClient.FailureContext.fromRecorder(rec, "p")).isPresent();
+        rec.line("FORGE", "$ npm run build", false);
+        rec.line("FORGE", "[exit 143] stopped", false);
+        assertThat(rec.last().kind()).isEqualTo(FlightRecorder.Kind.STOPPED);
+        assertThat(OracleClient.FailureContext.fromRecorder(rec, "p"))
+                .as("the user's own stop is not a failure to diagnose").isEmpty();
+    }
 }

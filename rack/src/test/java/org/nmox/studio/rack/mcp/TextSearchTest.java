@@ -52,4 +52,26 @@ class TextSearchTest {
         assertThat(longLine.text()).hasSize(TextSearch.MAX_LINE + 1).endsWith("\u2026");
         assertThat(Texts.of(TextSearch.toJson("needle", three).put("available", true))).startsWith("many.txt:1 ").contains("(more matches than shown");
     }
+
+    @Test
+    @DisplayName("secret-bearing files are never searched: .env values, npmrc tokens, private keys stay out of an agent's reach (v2.84.0)")
+    void secretsNeverSearched() throws Exception {
+        java.nio.file.Files.createDirectories(root.resolve("src"));
+        java.nio.file.Files.writeString(root.resolve(".env"), "API_KEY=hunter2-secret\n");
+        java.nio.file.Files.writeString(root.resolve(".env.local"), "DB_PASSWORD=hunter2-secret\n");
+        java.nio.file.Files.writeString(root.resolve(".npmrc"), "//registry.npmjs.org/:_authToken=hunter2-secret\n");
+        java.nio.file.Files.writeString(root.resolve("server.key"), "hunter2-secret\n");
+        java.nio.file.Files.writeString(root.resolve("src/app.js"), "const marker = 'hunter2-secret';\n");
+        java.nio.file.Files.writeString(root.resolve(".env.example"), "API_KEY=hunter2-secret\n");
+        TextSearch.Answer a = TextSearch.search(root, "hunter2-secret", 50);
+        assertThat(a.hits()).extracting(TextSearch.Hit::file).containsExactly("src/app.js");
+        assertThat(a.filesScanned()).as("the skipped files are not even counted as scanned").isEqualTo(1);
+        assertThat(TextSearch.relativeFiles(root)).as("nor listed for completion").containsExactly("src/app.js");
+        assertThat(TextSearch.isSecretBearing(".ENV")).isTrue();
+        assertThat(TextSearch.isSecretBearing("id_ed25519")).isTrue();
+        assertThat(TextSearch.isSecretBearing("cert.PEM")).isTrue();
+        assertThat(TextSearch.isSecretBearing("environment.ts")).isFalse();
+        assertThat(TextSearch.isSecretBearing("keys.js")).isFalse();
+        assertThat(TextSearch.isSecretBearing("pem")).as("a bare name is not an extension").isFalse();
+    }
 }

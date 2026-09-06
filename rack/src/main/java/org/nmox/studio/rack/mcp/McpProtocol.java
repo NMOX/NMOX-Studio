@@ -32,6 +32,23 @@ public final class McpProtocol {
      */
     public static String handle(String requestJson, McpTools tools,
             String productVersion) {
+        return handle(requestJson, tools, productVersion, null);
+    }
+
+    /** As above, with the port's subscriptions (v2.84.0); null = no subscriptions are kept. */
+    public static String handle(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs) {
+        return handleWith(requestJson, tools, productVersion, subs, McpCompletions.production());
+    }
+
+    /** As above with an explicit completer (v2.84.0) — the port's, or a test's. */
+    static String handle(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs, McpCompletions completions) {
+        return handleWith(requestJson, tools, productVersion, subs, completions);
+    }
+
+    private static String handleWith(String requestJson, McpTools tools,
+            String productVersion, McpSubscriptions subs, McpCompletions completions) {
         JSONObject request;
         try {
             request = new JSONObject(requestJson == null ? "" : requestJson);
@@ -67,6 +84,35 @@ public final class McpProtocol {
                 result = McpResources.list(tools);
             case "resources/templates/list" ->
                 result = McpResources.templates(tools);
+            case "resources/subscribe", "resources/unsubscribe" -> {
+                if (notification) {
+                    return null;
+                }
+                String uri = params == null ? null : params.optString("uri", null);
+                if (uri == null) {
+                    return error(id, -32602, method + " needs params.uri").toString();
+                }
+                String outlineFile = McpResources.outlineFile(uri);
+                if (!McpResources.isCatalogued(uri, tools) && (outlineFile == null || tools.byName("outline") == null)) {
+                    return error(id, -32002, "Resource not found: " + uri).toString();
+                }
+                if (subs != null) {
+                    if (!method.equals("resources/subscribe")) {
+                        subs.unsubscribe(uri);
+                    } else if (outlineFile == null) {
+                        subs.subscribe(uri);
+                    } else {
+                        // an outline instance FOLLOWS its file (v2.84.0): inside
+                        // the aim, a regular file, at most 32 of them
+                        String refusal = subs.subscribeFile(uri, completions.root(), outlineFile);
+                        if (refusal != null) {
+                            return error(id, refusal.startsWith("capped") ? -32602 : -32002,
+                                    refusal.startsWith("capped") ? refusal : "Resource not found: " + uri).toString();
+                        }
+                    }
+                }
+                result = new JSONObject();
+            }
             case "resources/read" -> {
                 if (notification) {
                     return null;
@@ -89,6 +135,32 @@ public final class McpProtocol {
                 return read == null
                         ? error(id, -32002, "Resource not found: " + uri).toString()
                         : response(id, read).toString();
+            }
+            case "logging/setLevel" -> {
+                if (notification) {
+                    return null;
+                }
+                String level = params == null ? null : params.optString("level", null);
+                if (level == null) {
+                    return error(id, -32602, "logging/setLevel needs params.level").toString();
+                }
+                if (subs == null || !subs.setLevel(level)) {
+                    return error(id, -32602, "unknown level: " + level + " (one of "
+                            + String.join(", ", McpSubscriptions.LEVELS) + ")").toString();
+                }
+                result = new JSONObject();
+            }
+            case "completion/complete" -> {
+                if (notification) {
+                    return null;
+                }
+                try {
+                    result = completions.complete(params);
+                } catch (IllegalArgumentException bad) {
+                    return error(id, -32602, bad.getMessage()).toString();
+                } catch (RuntimeException ex) {
+                    return error(id, -32603, "Internal error: " + ex.getMessage()).toString();
+                }
             }
             case "prompts/list" ->
                 result = McpPrompts.list();
@@ -130,15 +202,26 @@ public final class McpProtocol {
                 // not just call tools (v2.56.0)
                 .put("capabilities", new JSONObject()
                         .put("tools", new JSONObject())
-                        .put("resources", new JSONObject())
-                        .put("prompts", new JSONObject()))
+                        // subscribe: an agent learns a run started or a server
+                        // went live over the GET stream, no polling (v2.84.0)
+                        .put("resources", new JSONObject().put("subscribe", true))
+                        .put("prompts", new JSONObject())
+                        .put("completions", new JSONObject())
+                        .put("logging", new JSONObject()))
                 .put("serverInfo", new JSONObject()
                         .put("name", SERVER_NAME)
                         .put("version", productVersion))
-                .put("instructions", "NMOX Studio's read-only state: what "
-                        + "project is aimed, what is serving, what failed "
-                        + "last, what the linters found, what is on the rack. "
-                        + "Nothing here executes or edits anything.");
+                // an agent reads this before any tool: name what the port
+                // answers, incl. the v2.77–v2.81 tools (v2.84.0 currency)
+                .put("instructions", "NMOX Studio's read-only state. Start with "
+                        + "ide_context. Then: project_state (toolchain, package "
+                        + "manager, branch), live_servers, live_runs (what the "
+                        + "toolbar stop would end), run_history, last_failure, "
+                        + "diagnostics, find_symbol (where a name is declared), "
+                        + "outline (one file's structure), search_text (a literal "
+                        + "across the project), editor_state (what is open), "
+                        + "rack_devices. The same answers are nmox:// resources. "
+                        + "Nothing here executes, edits, or stops anything.");
     }
 
     private static JSONObject toolsList(McpTools tools) {
