@@ -3989,9 +3989,11 @@ Two method notes. First, a persona lens turns "what should I build"
 into "what does this job need", and the answer is usually three small
 grants, not one speculative feature. Second, a popup-only action is
 outside what this automation can open (a right-click would front the
-app; Quick Search is undriveable — the v1.324.0 ceiling), so Copy as
-Markdown is proven at its pure half and byte-verified in the built
-layer, and the record says so rather than pretending a walk.
+app; Quick Search is undriveable — the v1.324.0 ceiling) — and the
+answer was not to pretend a walk but to register the action on the
+Edit menu too, for keyboard and menu users, which is also what made
+it drivable (`app_menu` + `pbpaste`) — and the walk that allowed is
+the third catch below.
 
 Two catches worth keeping. Night unit 3's own gate rejected
 Presentation Mode's first status text — `setStatusText(cond ? "…" : "…")`
@@ -4005,7 +4007,7 @@ And the third catch was the walk's own: with Copy as Markdown on the Edit
 menu the automation could finally drive it, and the first paste came out
 tagged `javascript` for a `.jsx` file — the product opens JSX under the
 JavaScript lexer's mime, so the mime vocabulary is coarser than the file's
-kind. A unit test had passed for years on a `text/x-jsx` mime no `.jsx`
-file carries. The rule: where the lexer's mime is coarser than the file,
+kind. The unit test written that morning had passed on a `text/x-jsx`
+mime no `.jsx` file carries. The rule: where the lexer's mime is coarser than the file,
 the fence reads the extension first. A test can only exercise the inputs
 you imagine; the walk hands you the real one.
