@@ -630,7 +630,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return base + " ✗";
         }
         if (result.isResultSet()) {
-            return base + " · " + result.rowCount() + (result.truncated() ? "+" : "") + " rows";
+            return base + " · " + (result.truncated() ? result.rowCount() + "+ rows" : org.nmox.studio.core.util.Plural.of(result.rowCount(), "row"));
         }
         return base + " · " + result.updateCount() + " updated";
     }

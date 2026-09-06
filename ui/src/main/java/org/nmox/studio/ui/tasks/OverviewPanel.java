@@ -278,7 +278,7 @@ final class OverviewPanel extends JPanel {
         chip.add(dot);
         chip.add(text);
         chip.getAccessibleContext().setAccessibleName(
-                "Epic " + lc.label() + ", " + lc.count() + " cards");
+                "Epic " + lc.label() + ", " + org.nmox.studio.core.util.Plural.of(lc.count(), "card"));
         return chip;
     }
 
@@ -506,7 +506,7 @@ final class OverviewPanel extends JPanel {
                 total += b;
             }
             getAccessibleContext().setAccessibleName(
-                    "Flow: " + total + " cards finished in the last "
+                    "Flow: " + org.nmox.studio.core.util.Plural.of(total, "card") + " finished in the last "
                     + bins.length + " days");
         }
 

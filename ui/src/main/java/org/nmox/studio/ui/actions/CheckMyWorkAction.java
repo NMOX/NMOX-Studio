@@ -88,8 +88,8 @@ public final class CheckMyWorkAction implements ActionListener {
                 }
             }
             String head = passed == checks.size()
-                    ? "All " + checks.size() + " checks pass — nicely done.\n\n"
-                    : passed + " of " + checks.size() + " checks pass.\n\n";
+                    ? "All " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass — nicely done.\n\n"
+                    : passed + " of " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass.\n\n";
             // the tutor half of the checkpoint loop (v2.39.5): a stuck
             // learner gets more than the hint — the failed checks and
             // their own file, explained. The option appears only when
