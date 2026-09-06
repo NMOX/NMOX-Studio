@@ -26,11 +26,26 @@ import org.openide.windows.WindowManager;
  */
 final class KeystrokeOverlay {
 
+    /** How long a chord stays on screen. */
     static final int LINGER_MS = 1600;
+
+    /**
+     * The linger actually used: {@link #LINGER_MS} unless
+     * {@code -J-Dnmox.keystrokes.linger=<ms>} says otherwise — a walk's
+     * seam (the DocsShots {@code nmox.shots.dir} precedent: property-gated,
+     * nothing changes for a user who never sets it), because a pill that
+     * lives 1.6 s cannot be listed and photographed by background
+     * automation, and "not walked" is the record a property can close.
+     * Bounded: below 200 ms or above ten minutes reads as the default.
+     */
+    static int lingerMs() {
+        int v = Integer.getInteger("nmox.keystrokes.linger", LINGER_MS);
+        return v < 200 || v > 600_000 ? LINGER_MS : v;
+    }
 
     private final JWindow window;
     private final JLabel label = new JLabel("", SwingConstants.CENTER);
-    private final Timer hide = new Timer(LINGER_MS, e -> hideNow());
+    private final Timer hide = new Timer(lingerMs(), e -> hideNow());
     private String last = "";
     private int repeats;
 
