@@ -136,9 +136,10 @@ The same walk with the **official client**, every primitive at once,
 ships in the repo: `scripts/agent-port-walk.mjs` (its header says how
 to install `@modelcontextprotocol/sdk` in a scratch directory and
 where the URL and token go — shell variables, never a command line).
-It prints one line per step; the "expect a refusal" steps print FAIL
-on purpose, because the refusal is the pass; press ▶ and ■ in the IDE
-while it listens and the log messages arrive.
+It prints one line per step and ends with WALK CLEAN or the count of
+surprises as its exit code (a refusal step counts an ANSWER as the
+surprise), so a CI job can read it; press ▶ and ■ in the IDE while it
+listens and the log messages arrive.
 
 ## 5. The refusals are features
 
