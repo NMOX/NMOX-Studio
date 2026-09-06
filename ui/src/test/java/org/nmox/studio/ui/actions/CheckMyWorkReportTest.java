@@ -29,4 +29,14 @@ class CheckMyWorkReportTest {
         assertThat(area.getAccessibleContext().getAccessibleText().getCharCount())
                 .as("the whole report is one accessible text").isEqualTo(hostile.length());
     }
+
+    @Test
+    @DisplayName("both dialog sites hand the report to the plain component, never the String (the wiring)")
+    void bothSitesUseTheComponent() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/ui/actions/CheckMyWorkAction.java"));
+        assertThat(src.split("reportComponent\\(head \\+ report\\)").length - 1)
+                .as("the all-pass Message and the Explain descriptor both wrap the report").isEqualTo(2);
+        assertThat(src).doesNotContain("Message(head + report").doesNotContain("DialogDescriptor(\n                        head + report");
+    }
 }
