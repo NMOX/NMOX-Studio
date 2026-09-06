@@ -2,7 +2,7 @@
 
 *Every surface of NMOX Studio, exercised in one sitting.*
 
-This is the long tour. One session, about twenty stations, touching all
+This is the long tour. One session, twenty-five stations, touching all
 of it: the polyglot editor, the task rack, the seven studios, the
 in-app browser with its source-aware DevTools, the kits, the learning
 spaces, the AI surfaces, and the ship gates. Each station says what to
@@ -537,6 +537,32 @@ searched. It
 is read-only by construction: an agent can ask, never run — the build
 fails if any Agent Port class so much as names a spawn, a write, or
 the run registry's stop.
+
+---
+
+## 25. Show it to a room
+
+**Do:** With a file open and a project running, View ▸ **Presentation
+Mode**; then View ▸ **Show Keystrokes** and press ⌘S; then right-click
+in the editor ▸ **Copy as Markdown with Link** and paste somewhere;
+then Tools ▸ **Copy Editor Screenshot** and paste into a chat; then
+Tools ▸ **Copy Project Tree as Markdown**.
+
+**See:** Every open editor +10 pt, the in-app Browser's page at 150%,
+the Output window's text grown with them — and all three back exactly
+where they were when you toggle off (nothing is written to your
+settings). A dark pill reading `⌘S` at the bottom of the window for a
+moment; type a word and nothing appears — only chords with ⌘, ⌃ or ⌥
+and the function keys ever show, so a password can't end up on the
+projector. The paste is a fenced block tagged ` ```jsx ` followed by
+`[src/App.jsx#L3-L14](https://github.com/you/repo/blob/main/src/App.jsx#L3-L14)`
+— the branch you have checked out, because a local commit never pushed
+would be a 404 dressed as a permalink; with unsaved changes the status
+line refuses instead ("save first, so the block matches what the link
+shows") and copies nothing. The chat gets a crisp 2x image of the
+editor tab alone — toolbar, gutter, code, minimap, no IDE chrome — and
+the tree paste is the box-drawing README tree with `node_modules/ …`
+named but never entered and the IDE's own `.nmox*.json` left out.
 
 ---
 

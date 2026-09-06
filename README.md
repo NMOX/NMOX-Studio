@@ -206,6 +206,27 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
   whole platform, the **Team** menu is the full enabled git suite with
   just a project aimed, nothing selected.
 
+### 🎤 Made to be shown
+- **View ▸ Presentation Mode**: one toggle and every open editor is
+  +10 pt, the in-app Browser's page is at 150%, and the Output window
+  follows — live, never persisted, restored exactly when you toggle off.
+  **View ▸ Show Keystrokes** puts the chord you just pressed (⌘S, ⌥⌘G,
+  `⌘Z ×3`) large at the bottom of the window; chords only — what you
+  type never reaches the projector.
+- **Edit ▸ Copy as Markdown** (or right-click): the selection or the
+  whole file as a fenced block tagged with its language (` ```jsx `,
+  ` ```bash `…), the fence lengthened when the snippet itself has
+  backticks. **Copy as Markdown with Link** adds the GitHub
+  `blob/<branch>/path#L3-L14` link to the same lines — from disk facts
+  alone, refusing rather than guessing (no origin, not GitHub, an
+  unsaved buffer).
+- **Tools ▸ Save Screenshot… / Save Editor Screenshot… / Copy Editor
+  Screenshot**: the IDE painted by Swing itself at 2x — no
+  screen-recording permission, no desktop, no crop; the editor tab
+  alone for a slide, named after the document, or straight onto the
+  clipboard. **Copy Project Tree as Markdown**: the README tree, heavy
+  directories named but never entered.
+
 ### 🧠 The rack remembers, sees, and survives
 - **BLACKBOX** records every launch, exit, duration, and error on a session
   timeline that persists across restarts — with a slow-creep alarm that
