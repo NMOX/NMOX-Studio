@@ -739,7 +739,7 @@ public final class TasksTopComponent extends TopComponent {
         // full ctor with NO as the initial value — a reflexive Enter must
         // not delete (v1.98.0)
         NotifyDescriptor d = new NotifyDescriptor(
-                "Delete card \"" + card.title() + "\"?", "Delete Card",
+                org.nmox.studio.core.util.PlainDialogs.plain("Delete card \"" + card.title() + "\"?", "Message"), "Delete Card",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                 null, NotifyDescriptor.NO_OPTION);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
@@ -944,8 +944,8 @@ public final class TasksTopComponent extends TopComponent {
         // closing archives and clears — irreversible bookkeeping, so the
         // reflexive Enter lands on No (the v1.98.0 safe default)
         NotifyDescriptor confirm = new NotifyDescriptor(
-                "Close sprint " + board.sprintName() + "? The window, done count,"
-                + " and retro notes are archived; cards stay where they are.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Close sprint " + board.sprintName() + "? The window, done count,"
+                + " and retro notes are archived; cards stay where they are.", "Message"),
                 "Close Sprint", NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -1077,8 +1077,8 @@ public final class TasksTopComponent extends TopComponent {
         remove.addActionListener(e -> {
             int n = board.column(index).cards().size();
             NotifyDescriptor d = new NotifyDescriptor(
-                    n == 0 ? "Delete this empty column?"
-                           : "Delete this column AND its " + n + " cards?",
+                    org.nmox.studio.core.util.PlainDialogs.plain(n == 0 ? "Delete this empty column?"
+                           : "Delete this column AND its " + n + " cards?", "Message"),
                     "Delete Column", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null,
                     NotifyDescriptor.NO_OPTION);

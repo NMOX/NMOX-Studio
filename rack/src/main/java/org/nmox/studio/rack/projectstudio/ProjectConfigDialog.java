@@ -218,7 +218,7 @@ public class ProjectConfigDialog extends JDialog {
             // with NO as the initial value — a reflexive Enter must not
             // remove a dependency (v1.98.0)
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                    org.nmox.studio.rack.devices.NodePackageCommands.describe(argv) + "?",
+                    org.nmox.studio.core.util.PlainDialogs.plain(org.nmox.studio.rack.devices.NodePackageCommands.describe(argv) + "?", "Message"),
                     "Remove Dependency",
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                     null, NotifyDescriptor.NO_OPTION)) == NotifyDescriptor.YES_OPTION) {

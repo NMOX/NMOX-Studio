@@ -1043,7 +1043,7 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             // full ctor so Enter lands on the SAFE option (v1.98.0 law)
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Delete saved query \"" + q.name() + "\"?",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Delete saved query \"" + q.name() + "\"?", "Message"),
                     "Delete Saved Query",
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
@@ -1932,7 +1932,7 @@ public final class DbStudioTopComponent extends TopComponent {
         // hard-codes initialValue=OK_OPTION): a reflexive Enter must not
         // delete the connection and its keychain password.
         NotifyDescriptor confirm = new NotifyDescriptor(
-                "Remove connection \"" + spec.name() + "\"? Its stored password is deleted too.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Remove connection \"" + spec.name() + "\"? Its stored password is deleted too.", "Message"),
                 "Remove Connection", NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},

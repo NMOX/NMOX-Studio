@@ -258,7 +258,7 @@ public final class ManageExperimentsAction implements ActionListener {
             // so use the full constructor with NO_OPTION as the initial value
             // (the v1.98.0 infra dialog-safety idiom).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.", "Message"),
                     "Discard Experiment", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},

@@ -202,8 +202,8 @@ public final class ManageLearningSpacesAction implements ActionListener {
             // button, so use the full constructor with NO_OPTION (the v1.98.0
             // dialog-safety idiom, as ManageExperimentsAction does).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Discard " + dir.getName() + "? Anything running there is stopped"
-                            + " and the whole space is deleted from disk.",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped"
+                            + " and the whole space is deleted from disk.", "Message"),
                     "Discard Learning Space", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},

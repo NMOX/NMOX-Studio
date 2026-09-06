@@ -145,8 +145,8 @@ final class NetworkEditorDialog {
      */
     static boolean confirmAndDelete(IrcConfig config, String network) {
         NotifyDescriptor d = new NotifyDescriptor(
-                "Delete network \"" + network + "\"? Its saved password is removed "
-                + "from the OS keychain too.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Delete network \"" + network + "\"? Its saved password is removed "
+                + "from the OS keychain too.", "Message"),
                 "Delete IRC Network",
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE,

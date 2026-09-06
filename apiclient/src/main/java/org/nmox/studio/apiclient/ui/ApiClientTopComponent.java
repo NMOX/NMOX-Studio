@@ -559,7 +559,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -605,7 +605,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -693,7 +693,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -762,7 +762,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -796,7 +796,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -852,7 +852,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -908,7 +908,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -952,7 +952,7 @@ public final class ApiClientTopComponent extends TopComponent {
         } catch (IllegalArgumentException ex) {
             org.openide.DialogDisplayer.getDefault().notify(
                     new org.openide.NotifyDescriptor.Message(
-                            ex.getMessage(), org.openide.NotifyDescriptor.ERROR_MESSAGE));
+                            org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"), org.openide.NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
         Collection c = selectedCollection();

@@ -384,7 +384,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private boolean confirm(String message) {
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(message, "Docker Panel",
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), "Docker Panel",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }

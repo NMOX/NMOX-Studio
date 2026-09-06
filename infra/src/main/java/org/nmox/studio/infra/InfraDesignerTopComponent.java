@@ -596,7 +596,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * constructor's {@code initialValue} argument (v1.98.0, ledger 53).
      */
     private boolean confirm(String message, String title) {
-        NotifyDescriptor d = new NotifyDescriptor(message, title,
+        NotifyDescriptor d = new NotifyDescriptor(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), title,
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                 NotifyDescriptor.NO_OPTION);

@@ -632,8 +632,8 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
         String tag = workspace.activeDoc().root().param("tag");
         NotifyDescriptor.Confirmation confirm = new NotifyDescriptor.Confirmation(
-                "Remove component <" + tag + "> from this workspace? A saved "
-                + "src/components/" + tag + ".js file is not touched.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Remove component <" + tag + "> from this workspace? A saved "
+                + "src/components/" + tag + ".js file is not touched.", "Message"),
                 "Delete Component", NotifyDescriptor.OK_CANCEL_OPTION);
         if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.OK_OPTION) {
             return;

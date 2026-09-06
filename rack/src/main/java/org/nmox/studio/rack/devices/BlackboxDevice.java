@@ -218,7 +218,7 @@ public class BlackboxDevice extends RackDevice {
                 south.revalidate();
             } catch (Exception ex) {
                 org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
-                        "Could not export the flight log: " + ex.getMessage(),
+                        org.nmox.studio.core.util.PlainDialogs.plain("Could not export the flight log: " + ex.getMessage(), "Message"),
                         org.openide.NotifyDescriptor.ERROR_MESSAGE));
             }
         });

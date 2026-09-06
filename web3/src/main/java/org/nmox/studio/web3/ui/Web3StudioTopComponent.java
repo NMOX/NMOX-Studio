@@ -689,8 +689,8 @@ public final class Web3StudioTopComponent extends TopComponent {
         Network network = selectedNetwork();
         String where = network == null ? "a remote endpoint" : "\"" + network.name() + "\"";
         NotifyDescriptor d = new NotifyDescriptor(
-                verb + " will broadcast a REAL transaction to " + where
-                + " — a non-local endpoint. There is no undo.",
+                org.nmox.studio.core.util.PlainDialogs.plain(verb + " will broadcast a REAL transaction to " + where
+                + " — a non-local endpoint. There is no undo.", "Message"),
                 "Broadcast transaction?",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -1280,10 +1280,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             // per the v1.98.0 law (v1.269.0 — the organize sweep's fourth
             // surface: deployments accumulated forever with no gesture)
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Forget " + record.contractName() + " at "
+                    org.nmox.studio.core.util.PlainDialogs.plain("Forget " + record.contractName() + " at "
                             + record.address() + "? Only this address-book row"
                             + " is removed \u2014 the contract on chain is"
-                            + " untouched.",
+                            + " untouched.", "Message"),
                     "Forget Deployment",
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
@@ -1784,10 +1784,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             return;
         }
         NotifyDescriptor confirm = new NotifyDescriptor(
-                "Remove network \"" + network.name() + "\"?"
+                org.nmox.studio.core.util.PlainDialogs.plain("Remove network \"" + network.name() + "\"?"
                         + (network.secretUrl()
                                 ? " Its keychain RPC URL is deleted too."
-                                : ""),
+                                : ""), "Message"),
                 "Remove Network",
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
