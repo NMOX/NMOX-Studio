@@ -716,7 +716,19 @@ public final class DockerPanelTopComponent extends TopComponent {
             dockerizePending = false;
             regenerateDockerize();
         }
+        // the first SHOW serves the deferred work (the v1.38.0 law, its
+        // missing half): a panel reached by its tab or the Welcome's door
+        // read "ENGINE: checking…" over an empty pane until Refresh All —
+        // refreshAll ran only from the open-action, the verbs and the timer
+        // (the v2.85.0 Docker walk). Once: the timer and the button own the rest
+        if (!refreshedOnShow) {
+            refreshedOnShow = true;
+            refreshAll();
+        }
     }
+
+    /** First-show refresh done — never at construction (the zero-boot-spawns law: a hidden default-open tab is not showing). */
+    private boolean refreshedOnShow;
 
     @Override
     protected void componentHidden() {
