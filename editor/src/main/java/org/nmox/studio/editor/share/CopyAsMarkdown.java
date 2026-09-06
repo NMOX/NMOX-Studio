@@ -112,4 +112,22 @@ public final class CopyAsMarkdown {
         }
         return n;
     }
+
+    /**
+     * The 1-based inclusive line range a selection covers, as
+     * {@code [start, end]}; {@code [0, 0]} for an empty selection (the
+     * whole file — no fragment). A selection that ends exactly at the
+     * start of a line (its last character is the newline) does not
+     * count that next line: what you see highlighted is what the link
+     * names.
+     */
+    public static int[] lineRange(javax.swing.text.Document doc, int selStart, int selEnd) {
+        if (selEnd <= selStart) {
+            return new int[] {0, 0};
+        }
+        javax.swing.text.Element root = doc.getDefaultRootElement();
+        int start = root.getElementIndex(selStart) + 1;
+        int end = root.getElementIndex(selEnd - 1) + 1;
+        return new int[] {start, Math.max(start, end)};
+    }
 }

@@ -138,6 +138,43 @@ public final class GitFacts {
         return null;
     }
 
+    /** Bytes read from a git config — a real one is hundreds; the cap keeps a crafted one cheap. */
+    static final int CONFIG_CAP = 64 * 1024;
+
+    /**
+     * The {@code origin} remote's URL from the repo's config, no process:
+     * the gitdir resolved the way {@link #branch} resolves it, then the
+     * COMMON dir when this is a linked worktree ({@code commondir} — a
+     * worktree's own gitdir carries no config), then a bounded read of
+     * {@code config} parsed by {@link GitLink#originUrl}. Null when any
+     * step is unreadable — the caller refuses rather than guesses.
+     */
+    public static String originUrl(File repoRoot) {
+        if (repoRoot == null) {
+            return null;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        if (gitDir == null) {
+            return null;
+        }
+        File common = gitDir;
+        String commondir = readFirstLine(new File(gitDir, "commondir"));
+        if (commondir != null) {
+            File c = new File(commondir);
+            common = insideGitDir(c.isAbsolute() ? c : new File(gitDir, commondir));
+            if (common == null) {
+                return null; // a commondir pointer aimed outside any .git dir is the ledger-43 shape again
+            }
+        }
+        File config = new File(common, "config");
+        try (java.io.InputStream in = Files.newInputStream(config.toPath())) {
+            byte[] prefix = in.readNBytes(CONFIG_CAP);
+            return GitLink.originUrl(new String(prefix, StandardCharsets.UTF_8));
+        } catch (IOException | RuntimeException ex) {
+            return null;
+        }
+    }
+
     /** Bytes read from HEAD / a gitdir pointer — a real one is tens of bytes. */
     static final int FIRST_LINE_CAP = 4_096;
 
@@ -162,6 +199,25 @@ public final class GitFacts {
         } catch (IOException | RuntimeException ex) {
             return null; // unreadable state: the caller hides rather than lies
         }
+    }
+
+    /** The canonical directory when it lies inside a {@code .git} dir (ledger 43's confinement, for the commondir hop); else null. */
+    private static File insideGitDir(File dir) {
+        File canonical;
+        try {
+            canonical = dir.getCanonicalFile();
+        } catch (IOException unresolved) {
+            return null;
+        }
+        if (!canonical.isDirectory()) {
+            return null;
+        }
+        for (File p = canonical; p != null; p = p.getParentFile()) {
+            if (".git".equals(p.getName())) {
+                return canonical;
+            }
+        }
+        return null;
     }
 
     private static boolean isCommitSha(String s) {
