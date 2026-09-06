@@ -106,9 +106,9 @@ public final class DockerPanelTopComponent extends TopComponent {
     private List<VolumeInfo> volumes = List.of();
     private List<NetworkInfo> networks = List.of();
 
-    private final JTextArea dockerfilePreview = preview();
-    private final JTextArea ignorePreview = preview();
-    private final JTextArea composePreview = preview();
+    private final JTextArea dockerfilePreview = preview("Dockerfile preview");
+    private final JTextArea ignorePreview = preview(".dockerignore preview");
+    private final JTextArea composePreview = preview("compose file preview");
     private final JLabel dockerizeInfo = new JLabel(" ");
     private Map<String, String> dockerizeFiles = Map.of();
     /**
@@ -250,8 +250,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         return t;
     }
 
-    private static JTextArea preview() {
+    private static JTextArea preview(String accessibleName) {
         JTextArea a = new JTextArea();
+        a.getAccessibleContext().setAccessibleName(accessibleName);
         a.setEditable(false);
         a.setFont(MONO);
         a.setBackground(new Color(18, 19, 21));
@@ -451,7 +452,7 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private void textDialog(String title, String text) {
         SwingUtilities.invokeLater(() -> {
-            JTextArea area = preview();
+            JTextArea area = preview(title);
             area.setText(text);
             area.setCaretPosition(0);
             JScrollPane sp = new JScrollPane(area);
