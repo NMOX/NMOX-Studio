@@ -279,6 +279,19 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     Standards, Image and Contract kit forms, DB Studio's row limit;
     InputsNamedGateTest product-wide (a name or a `labelFor` counts),
     failing-first with 42 after the first three.
+43. **Every table, list and tree speaks its name** — the sweep's third
+    leg: 26 collections a screen reader could only call "table" — the
+    device shelf, the wizard's template list, the Docker tables (their
+    factory takes the name), SONAR's ports, BLACKBOX's timeline, Project
+    Configuration's scripts and dependencies, the IRC channel list,
+    DevTools' console, DOM tree and network table, the project switcher
+    and both learning-space lists, the Doctor's probes, API Studio's
+    collections tree and its parameters/headers/tests tables, DB
+    Studio's connections tree and result rows, Contract Studio's
+    artifacts tree and its watch, size, gas and deployment tables — all
+    named from their panes; CollectionsNamedGateTest product-wide,
+    failing-first with 26. Three gates now hold the name law over the
+    whole input family.
 
 ## [2.84.0] - 2026-09-05
 

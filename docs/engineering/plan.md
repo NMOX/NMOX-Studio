@@ -3882,7 +3882,9 @@ before a drop-in catalog's `<html>` hint could render; the Task
 Board walk found four text areas with no accessible name — a gate
 now, product-wide; the same lens counted 46 inputs with neither a
 name nor a labelFor (the wizard's own fields among them) — all
-46 named from their dialogs' own labels, gated product-wide. One
+46 named from their dialogs' own labels, and 26 tables, lists and
+trees after them — three gates hold the name law over the whole
+input family now. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its
