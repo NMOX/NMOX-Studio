@@ -105,6 +105,14 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     typescript-language-server typescript@5" (a walk reads logs, not
     balloons; proven on a fresh boot).
 18. **The Doctor's tsc row** names the rule beside the version.
+19. **The rack side of the stop verdict, walked** — SOLDER's STOP read
+    STOPPED on its faceplate and "LAST: SOLDER STOPPED" in BLACKBOX's
+    plain LCD colour: the faceplate law and the record agree. The
+    Tests window and the NPM Explorer honest on first show.
+20. **The ui floor ratchets** 0.67→0.68 (measured 0.690).
+21. **The walk script's own bug** — it read `search_text`'s answer as
+    `.hits` (the schema says `matches`) and reported 0 for every query;
+    the docs test now pins the field name.
 
 ## [2.84.0] - 2026-09-05
 
