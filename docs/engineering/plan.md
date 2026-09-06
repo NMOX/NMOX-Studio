@@ -3910,3 +3910,53 @@ fresh instance — the Welcome's door buttons and the Window menu are
 the two roads. And two insurance verifies inside one shift: the first
 found two SpotBugs findings; the second proved the branch after the
 walks' fixes.
+
+## Addendum — 2026-09-05/06 night, the markup-render class closed (v2.86.0)
+
+The night shift after v2.85.0 shipped had one theme, closed end to end:
+the v1.208.0 fetch class — Swing painting any component text that
+BEGINS with `<html>` as HTML — across every sink the product feeds
+external text into. The units, in order: the plain-message sweep
+(PlainDialogs over 74 dialog sites), the dialog-constructor law
+(balanced-paren scan past the anchored-regex blind spots), the status
+line (PlainStatus, the leading-space guard), labels/buttons/tooltips
+(PlainText.plain / PlainTables.plain), the escape hardening + eight-
+escaper consolidation, and combo renderers. Then the class documented
+as a codebase-guide house law, and four sibling injection classes
+swept clean.
+
+Three lessons worth keeping:
+
+- **A passing gate can hide an ineffective fix.** The first cut wrapped
+  a label as `PlainTables.plain(new JLabel(text))` and the gate went
+  green — but `BasicHTML` installs the html view when the TEXT is set,
+  so the property landed one step too late and the label still rendered
+  markup. Only opening a project directory literally named
+  `<html>PWNED` in the running app exposed it. The property is right
+  only for a renderer (per-paint setText); a plain label/button guards
+  its TEXT, order-independent. Probe the mechanism, then WATCH it in
+  the live app — a gate proves the shape, not the effect.
+
+- **A census sees only the sinks it names.** The JLabel census missed
+  that the recent-project rows are real `JButton`s, and an
+  `AbstractButton` renders `<html>` exactly as a label does. The walk
+  found the whole second sink family the census could not. When you
+  close a class, enumerate the sink family from the platform's
+  behaviour (a probe of each component type), not from the sites you
+  happened to touch.
+
+- **A hostile-named fixture can split under you.** The first fixture,
+  a directory named `<html><b>bold</b>`, does not exist as one
+  directory: `</b>` contains a `/`, so the filesystem made
+  `<html><b>bold<` containing `b>`, and the leaf name was the harmless
+  `b>` — the walk "confirmed" nothing until the fixture was corrected
+  to `<html>PWNED` (no slash). Check what the OS actually created.
+
+The Windows lane earned its keep again on the v2.85.0 ship itself: a
+new v2.85.0 test searched source for `"\n    }\n"` (a newline AFTER the
+brace) without normalizing CRLF, and `.gitattributes text=auto` gives
+the Windows checkout native line endings, so `indexOf` returned -1 and
+`substring(start, -1)` threw — only on windows-latest, past fourteen
+green macOS insurance verifies. The fix is the CRLF normalization its
+sibling gate tests already carry; the fragile shape is specifically a
+newline required after the brace, not a search that ends at the brace.
