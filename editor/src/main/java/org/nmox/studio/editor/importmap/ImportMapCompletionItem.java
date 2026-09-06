@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.importmap;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -27,8 +28,7 @@ public class ImportMapCompletionItem implements CompletionItem {
     public ImportMapCompletionItem(String specifier, String target,
             int startOffset, int prefixLength) {
         this.specifier = specifier;
-        this.target = target == null ? "" : target
-                .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        this.target = PlainText.escape(target);
         this.startOffset = startOffset;
         this.prefixLength = prefixLength;
     }
