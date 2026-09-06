@@ -4,6 +4,108 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.85.0] - 2026-09-06
+
+The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid five times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack — and the F5 bet's trigger fired under the plain `typescript` package name.
+
+1. **The Agent Port's execution surface, designed** —
+   docs/engineering/agent-port-execution-dossier.md: lanes not
+   commands, a per-session grant armed only at the keyboard, verbs
+   present in `tools/list` only while armed with `list_changed` on
+   every flip, every existing law kept in order, the audit in the
+   flight recorder; three ways to go, David's call. It builds nothing.
+2. **The record agrees with the faceplate, in the guide** — BLACKBOX's
+   bullet and the Run/Stop passage say a stop reads STOPPED everywhere.
+3. **The chip's tooltip carries the last request** — "last request 12 s
+   ago", authorized requests only (a refused caller never counts); a
+   POST-only agent never streams, so "no agent streaming" alone was
+   true and uninformative; walked live with the keepalive dropping a
+   closed client's stream inside its period.
+4. **An honest completion total** — past the cap the symbol index answers
+   a floor, so `total` is omitted and `hasMore` says so; the file
+   list's count stays exact.
+5. **The secret-bearing class widens** — `*.env` (the `--env-file`
+   shape), `.htpasswd`, `.dockercfg`, `secrets.json/yaml/yml`,
+   `credentials.json`; walked live: planted values found by nothing,
+   outlines refused by name, completion listing none of them.
+6. **The walk script's listen window** is `NMOX_WALK_LISTEN_MS`; the
+   Kitchen Sink names the chip's tooltip.
+7. **A fixed sleep became a poll** in the stuck-stream test — a loaded
+   runner can starve a 40 ms scheduler past any single window.
+8. **The API Studio walk, ~45 releases on** — a live local server, the
+   environment resolving `{{base_url}}`, 200 in 15 ms rendered pretty;
+   the find: "curl command copied" ERASED the response verdict until
+   the next send. The strip now has a model: a notice shows for 2.5 s
+   and the verdict comes back, a newer verdict or notice wins over a
+   stale timer, every verdict site rides one method (wiring-pinned).
+9. **The Environment Doctor walk, ~60 releases on** — 101 probes read
+   through the table, 66 present, the v1.303.0 law holding (no usage
+   banner or stack path shown as a version); the find: `lua`, `odin`
+   and `instantfpc` read "found — but its version command failed"
+   because the probe's dialect was wrong (`lua -v`, `odin version`,
+   `instantfpc -h` now); pnpm and stylelint-lsp genuinely crash on
+   `--version` and keep their honest rows.
+10. **The Docker Panel walk's find** — a panel reached by its tab or the
+    Welcome's door read "ENGINE: checking…" over an empty pane until
+    Refresh All: its refresh ran only from the open-action, the verbs
+    and the off-by-default timer. The first SHOW now refreshes — never
+    construction, never open-but-hidden (the zero-boot-spawns law) —
+    source-gated, mutant by name.
+11. **The quiet boot, TM4E's half** — the Docker walk's log carried 235
+    WARNING lines per boot: "No grammar source for scope" for eleven
+    scopes vendored grammars and the platform's markdown fences include
+    and this product ships no grammar for (`source.x86_64`, `x86`,
+    `asm`, `arm`, `sql`, `sassdoc`, `glsl`, `stylus`, `dockerfile`,
+    `batchfile`, `diff`), each pruning the including rule. Eleven scope
+    STUBS — empty-patterns grammars registered only for their scope
+    names, through the embed-only idiom — resolve the includes; the
+    regions read as plain text, the rules survive, the log is quiet.
+    Not counted as vendored grammars (no `.tmLanguage` suffix, on
+    purpose); written up in the grammar NOTICE; mutant by name.
+12. **The quieter boot, the Ordering half** — the same log named two of
+    our rows without positions (the JS fold manager, the JS braces
+    matcher) beside the platform's positioned ones; positioned at their
+    current effective order (nothing moves), gated from the generated
+    layer for every fold/braces row. The fresh boot after units 11–12:
+    237 warnings → 6, zero TM4E lines, zero SEVERE.
+13. **The TypeScript wall speaks** — the same boot log carried a WARNING
+    stack trace per file open: "Could not find a valid TypeScript
+    installation". The global typescript beside the language server was
+    7.0.2 — the Go port, which ships no tsserver (the v1.237.0 ceiling,
+    the F5 watch item) — so the editor's TypeScript intelligence had
+    been silently dead on the machine the product is built on. Three
+    fixes: the catalog's install pins `typescript@5` (an unpinned
+    `npm i -g typescript` now installs 7); a pure precheck reads the
+    same candidates the server does (the workspace's
+    `node_modules/typescript`, else the global sibling) and refuses a
+    tsserver-less typescript before the spawn; a once-only balloon
+    names the version and installs typescript 5 on click. Mutant by
+    name; the insurance verify (4917 tests) green on the units before.
+    The boot after units 11–13: two warnings, both the platform's own
+    deprecation notes — from 237 that morning.
+14. **The first-show sweep** — every suite tab reached through the
+    Window menu on a fresh userdir: Contract Studio, Infra Designer,
+    Block Studio, Tasks, Workbench, DB Studio (whose Docker offer
+    balloon fired for a running container) all honest on first show;
+    the Docker Panel was the one gap. The sweep's copy find: Block
+    Studio's status said "1 pieces" — "1 piece" now, both sites through
+    one helper, mutant by name.
+15. **The plural law** — the census after "1 pieces": the Tasks board
+    header, column names, epic legend and flow line, the IRC find bar,
+    DB Studio's row count and Check My Work all concatenated a bare
+    plural; `core.util.Plural` now, with a repo-wide gate for the nouns
+    the sweep fixed.
+16. **F5's trigger fired** — `typescript@latest` on npm is 7.0.2 (the Go
+    port, stable, under the plain name; `typescript@5` is 5.9.3), so an
+    unpinned `npm i -g typescript` is a trap for every tsserver-based
+    tool; recorded against the bet with unit 13 as its first paid unit;
+    the precheck learns npm's Windows prefix layout.
+17. **The wall speaks in the log too** — "TypeScript 7.0.2 ships no
+    tsserver; the TypeScript server was not started — npm install -g
+    typescript-language-server typescript@5" (a walk reads logs, not
+    balloons; proven on a fresh boot).
+18. **The Doctor's tsc row** names the rule beside the version.
+
 ## [2.84.0] - 2026-09-05
 
 The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-nine units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
@@ -17273,6 +17375,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.85.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.84.0...v2.85.0
 [2.84.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.83.0...v2.84.0
 [2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0

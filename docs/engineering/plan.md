@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-05, at v2.84.0, after two lenses, one
+*Currency addendum 2026-09-06, at v2.85.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3795,3 +3795,56 @@ changed under the automation). The rhythm to keep: build with tests
 an insurance verify at mid-shift → fold when the arc closes → the single chain →
 the next shift's branch forked from the shipped head while the gate
 runs.
+
+## Addendum — 2026-09-05 (evening), the pipelined branch after v2.84.0 (v2.85.0)
+
+The first eight-hour shift shipped at T-5h and kept building; this is
+what the remaining hours built, in a branch forked from the shipped
+head and rebased past the squash the moment it landed.
+
+**The walks paid four times in ninety minutes.** API Studio ~45
+releases on (a live local server; the find: a copy notice ERASED the
+response verdict until the next send — a transient-notice model now,
+the verdict comes back). The Environment Doctor (101 probes read
+through the table; three real tools read as failed probes because the
+dialect was wrong — `lua -v`, `odin version`, `instantfpc -h`). The
+Docker Panel (reached by its tab: "ENGINE: checking…" over an empty
+pane until Refresh All — its refresh ran only from the open-action,
+the verbs and the off-by-default timer; the first SHOW refreshes now,
+never construction, never open-but-hidden). And the boot LOG the walks
+left behind: 237 WARNING lines, 229 of them TM4E "No grammar source
+for scope" for forty-two scopes vendored grammars and the platform's
+markdown fences include and this product never shipped — forty-two
+scope STUBS (empty grammars registered for their scope names, the
+embed idiom) plus two positions on the JS fold/braces rows took a fresh
+boot to two warnings, both the platform's own.
+
+**The wall behind the last warning.** One WARNING per file open was a
+stack trace: "Could not find a valid TypeScript installation". The
+global typescript beside the language server was 7.0.2 — the Go port,
+no tsserver — because `typescript@latest` on npm IS 7.0.2 now (the F5
+watch trigger, fired under the plain package name), and the product's
+own installer had installed it unpinned. The editor's TypeScript
+intelligence had been dead on the machine the product is built on,
+silently. Three fixes: the catalog pins `typescript@5`; a pure
+precheck reads the same candidates the server does and refuses a
+tsserver-less typescript BEFORE the spawn; a once-only balloon names
+the version and installs 5 on click. The lesson beside F5: **a
+version pin the product depends on must be a pin the product's own
+installer writes** — the ceiling in the templates never reached the
+LSP catalog.
+
+**The first-show sweep.** Every suite tab reached through the Window
+menu on a fresh userdir after the Docker find: all honest; the one
+copy find ("1 pieces") became the plural law — `core.util.Plural`,
+seven sites, a repo-wide gate for the nouns the sweep fixed.
+
+**Method notes.** A Swing JTable reads through AX as rows of AXCell
+whose VALUE is 0 and whose DESCRIPTION is the text; a JTree's rows are
+not selectable by AX hit-test; dialog buttons press by DESCRIPTION,
+never by index (the same index was Close under one dialog shape and
+Stop under another); the menu bar is sometimes not exposed to AX in a
+fresh instance — the Welcome's door buttons and the Window menu are
+the two roads. And two insurance verifies inside one shift: the first
+found two SpotBugs findings; the second proved the branch after the
+walks' fixes.
