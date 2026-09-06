@@ -132,6 +132,27 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 **See:** `checkout (function) — src/cart.js:12`, and the same as
 `structuredContent.hits[0]`.
 
+The stream, by hand: open it in one shell and subscribe from another —
+
+```bash
+curl -N -s "$URL" -H "Authorization: Bearer $TOKEN" -H "Accept: text/event-stream"
+```
+
+```bash
+curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"resources/subscribe","params":{"uri":"nmox://runs"}}'
+curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"logging/setLevel","params":{"level":"debug"}}'
+```
+
+**See:** `: connected`, then `: keepalive` every fifteen seconds; press
+▶ and the first shell prints `notifications/resources/updated` for
+`nmox://runs` and every line the run prints as `notifications/message`
+(`$ npm run dev` at `info`, the output at `debug`); press ■ and
+`[exit 143] stopped` arrives at `info`.
+
 The same walk with the **official client**, every primitive at once,
 ships in the repo: `scripts/agent-port-walk.mjs` (its header says how
 to install `@modelcontextprotocol/sdk` in a scratch directory and

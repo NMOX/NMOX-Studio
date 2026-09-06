@@ -121,6 +121,10 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
 24. **The walk script is machine-readable** — every step declares an
     answer or a refusal, surprises are the exit code, WALK CLEAN closes
     it; a CI job or the next shift can read the walk.
+25. **Four house laws written down** in the codebase guide with their
+    origins: a verdict belongs where the knowledge is; every new read
+    surface is a disclosure path for every old secret law; the first
+    show serves the deferred work; a user-visible count reads right.
 
 ## [2.84.0] - 2026-09-05
 
