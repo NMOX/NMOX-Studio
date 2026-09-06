@@ -246,6 +246,15 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     Keymaps way (the v1.38.1 precedence, so the sheet says what a
     keypress does); a memory-filesystem test, the folder-walk mutant
     dead by name.
+39. **The Check My Work report is plain text** — the report reached
+    the dialog as a String, which the platform lays out as one JLabel
+    per WRAPPED fragment (the walk read a hint in two halves), and a
+    fragment beginning with `<html>` renders — checkpoint labels and
+    hints are catalog data from anywhere (drop-ins since v1.293.0), so
+    that was the v1.306.0 html-render class one line-wrap away. One
+    read-only wrapping text area on both dialog paths now (nothing
+    interpreted, nothing fetched), named for assistive technology and
+    read whole; the wiring pinned, the String-back mutant dead by name.
 
 ## [2.84.0] - 2026-09-05
 
