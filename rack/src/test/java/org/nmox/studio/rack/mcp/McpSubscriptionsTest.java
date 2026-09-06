@@ -128,7 +128,12 @@ class McpSubscriptionsTest {
         String text = live.toString(StandardCharsets.UTF_8);
         assertThat(text).contains("line " + (McpSubscriptions.MAX_PENDING + 4)).contains("resources/updated");
         assertThat(subs.attachedCount()).as("the stuck stream is not dropped — it is alive, just slow").isEqualTo(2);
-        Thread.sleep(120);
+        // poll, never a fixed sleep: a loaded CI runner can starve a 40 ms
+        // scheduler for longer than any single window (the flake class)
+        deadline = System.currentTimeMillis() + 5_000;
+        while (!live.toString(StandardCharsets.UTF_8).contains(McpSubscriptions.KEEPALIVE) && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
         assertThat(live.toString(StandardCharsets.UTF_8)).as("keepalives reach the live stream while the other is stuck")
                 .contains(McpSubscriptions.KEEPALIVE);
         gate.countDown();
