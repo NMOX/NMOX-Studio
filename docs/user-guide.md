@@ -839,6 +839,8 @@ reader, or a feed — the developer-evangelist grant:
   no screen-recording permission to grant, no desktop in the frame and
   nothing to crop, and the text is crisp on a retina slide. The status
   line names the file and its pixel size.
+![The editor tab alone, saved by Save Editor Screenshot… at 2x](images/editor-screenshot-2x.png)
+
 - **Tools ▸ Save Editor Screenshot…** The same shot of just the editor
   area's selected tab — toolbar, gutter, code, sidebars, no IDE chrome —
   for a slide that wants the code alone, named after the document
