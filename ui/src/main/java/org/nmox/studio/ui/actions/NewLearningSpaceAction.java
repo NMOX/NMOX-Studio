@@ -99,6 +99,8 @@ public final class NewLearningSpaceAction implements ActionListener {
         });
 
         JTextField search = new JTextField();
+
+        search.getAccessibleContext().setAccessibleName("Search the learning spaces");
         search.setToolTipText("Filter by name, family, or description");
         search.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { refilter(); }

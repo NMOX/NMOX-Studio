@@ -43,6 +43,14 @@ public class NewProjectDialog extends JDialog {
 
     private final JTextField nameField = new JTextField("my-app", 20);
     private final JTextField locationField = new JTextField(28);
+    {
+        // the beginner's first two fields speak their names to assistive
+        // technology (v2.85.0 census: 46 inputs product-wide had neither a
+        // name nor a labelFor; the sweep is the next shift's, these two
+        // could not wait)
+        nameField.getAccessibleContext().setAccessibleName("Project name");
+        locationField.getAccessibleContext().setAccessibleName("Project location");
+    }
     // built-ins first, then any ~/.nmox/templates.d drop-ins (v1.293.0) —
     // both kinds render name+description and generate the same way, so the
     // list holds the union and the OK path dispatches on the element type
