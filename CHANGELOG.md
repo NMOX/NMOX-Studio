@@ -10,6 +10,7 @@ The reader's side of the evangelist's audience.
 
 1. **The long documents carry a contents block that cannot rot** — the user guide (1,600 lines, thirteen chapters) and the Kitchen Sink (twenty-five stations) had no table of contents; each now opens with one, DERIVED from its own chapter headings and held there by `DocsContentsGateTest`: the block between `<!-- contents -->` markers must equal the one regenerated from every `## ` heading outside a code fence, GitHub's slug rule pinned (`3. The Workbench (⌥⌘0)` anchors as `#3-the-workbench-0`), and a stale block fails the build printing the whole expected block so the fix is a paste. Proven failing-first on both marker-less documents; a renamed heading dies by name.
 2. **The docs index lists every document beside it** — `docs/README.md` named three of the eleven documents in its own directory: the Kitchen Sink, A Day at Meridian, the visual tour, the beginners' guide to smart contracts, the community learning catalog, your own project templates, and both ways to write a rack device were unlisted — invisible to anyone who arrived at the docs folder rather than the README. All eight are listed in the page's own voice, and `DocsIndexGateTest` derives the rule from the directory (every Markdown file beside an index is linked from it, by file name — the tutorials index too), proven failing-first on the eight.
+3. **The visual tour shows the presenting family** — a "Made to be shown" frame under The editor, with the real editor shot the product saved during its own walk.
 
 ## [2.89.0] - 2026-09-06
 
