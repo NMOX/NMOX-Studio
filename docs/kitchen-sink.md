@@ -436,7 +436,9 @@ Then, in a learning space, File ▸ **Check My Work**.
 failing line and an Action Items row, exactly like a lint finding —
 the mistake appears where you made it, and a reload clears the old
 page's errors. Check My Work grades your file against the space's
-real checkpoints and, on a failure, offers **Explain with ORACLE…**
+real checkpoints — on an untouched space every "You …" line is ✗,
+because a task checkpoint exists to tell your work from the sample —
+and, on a failure, offers **Explain with ORACLE…**
 (its consent names exactly what leaves: the failed checks and your
 checked file, nothing more). When your experiment grows up, File ▸
 **Export as Learning Space…** turns the aimed project into a drop-in
