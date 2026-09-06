@@ -4,6 +4,295 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.85.0] - 2026-09-06
+
+The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid nine times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard, the learning-space loop, the Experiments loop, the Help menu — and the F5 bet's trigger fired under the plain `typescript` package name.
+
+1. **The Agent Port's execution surface, designed** —
+   docs/engineering/agent-port-execution-dossier.md: lanes not
+   commands, a per-session grant armed only at the keyboard, verbs
+   present in `tools/list` only while armed with `list_changed` on
+   every flip, every existing law kept in order, the audit in the
+   flight recorder; three ways to go, David's call. It builds nothing.
+2. **The record agrees with the faceplate, in the guide** — BLACKBOX's
+   bullet and the Run/Stop passage say a stop reads STOPPED everywhere.
+3. **The chip's tooltip carries the last request** — "last request 12 s
+   ago", authorized requests only (a refused caller never counts); a
+   POST-only agent never streams, so "no agent streaming" alone was
+   true and uninformative; walked live with the keepalive dropping a
+   closed client's stream inside its period.
+4. **An honest completion total** — past the cap the symbol index answers
+   a floor, so `total` is omitted and `hasMore` says so; the file
+   list's count stays exact.
+5. **The secret-bearing class widens** — `*.env` (the `--env-file`
+   shape), `.htpasswd`, `.dockercfg`, `secrets.json/yaml/yml`,
+   `credentials.json`; walked live: planted values found by nothing,
+   outlines refused by name, completion listing none of them.
+6. **The walk script's listen window** is `NMOX_WALK_LISTEN_MS`; the
+   Kitchen Sink names the chip's tooltip.
+7. **A fixed sleep became a poll** in the stuck-stream test — a loaded
+   runner can starve a 40 ms scheduler past any single window.
+8. **The API Studio walk, ~45 releases on** — a live local server, the
+   environment resolving `{{base_url}}`, 200 in 15 ms rendered pretty;
+   the find: "curl command copied" ERASED the response verdict until
+   the next send. The strip now has a model: a notice shows for 2.5 s
+   and the verdict comes back, a newer verdict or notice wins over a
+   stale timer, every verdict site rides one method (wiring-pinned).
+9. **The Environment Doctor walk, ~60 releases on** — 101 probes read
+   through the table, 66 present, the v1.303.0 law holding (no usage
+   banner or stack path shown as a version); the find: `lua`, `odin`
+   and `instantfpc` read "found — but its version command failed"
+   because the probe's dialect was wrong (`lua -v`, `odin version`,
+   `instantfpc -h` now); pnpm and stylelint-lsp genuinely crash on
+   `--version` and keep their honest rows.
+10. **The Docker Panel walk's find** — a panel reached by its tab or the
+    Welcome's door read "ENGINE: checking…" over an empty pane until
+    Refresh All: its refresh ran only from the open-action, the verbs
+    and the off-by-default timer. The first SHOW now refreshes — never
+    construction, never open-but-hidden (the zero-boot-spawns law) —
+    source-gated, mutant by name.
+11. **The quiet boot, TM4E's half** — the Docker walk's log carried 235
+    WARNING lines per boot: "No grammar source for scope" for eleven
+    scopes vendored grammars and the platform's markdown fences include
+    and this product ships no grammar for (`source.x86_64`, `x86`,
+    `asm`, `arm`, `sql`, `sassdoc`, `glsl`, `stylus`, `dockerfile`,
+    `batchfile`, `diff`), each pruning the including rule. Eleven scope
+    STUBS — empty-patterns grammars registered only for their scope
+    names, through the embed-only idiom — resolve the includes; the
+    regions read as plain text, the rules survive, the log is quiet.
+    Not counted as vendored grammars (no `.tmLanguage` suffix, on
+    purpose); written up in the grammar NOTICE; mutant by name.
+12. **The quieter boot, the Ordering half** — the same log named two of
+    our rows without positions (the JS fold manager, the JS braces
+    matcher) beside the platform's positioned ones; positioned at their
+    current effective order (nothing moves), gated from the generated
+    layer for every fold/braces row. The fresh boot after units 11–12:
+    237 warnings → 6, zero TM4E lines, zero SEVERE.
+13. **The TypeScript wall speaks** — the same boot log carried a WARNING
+    stack trace per file open: "Could not find a valid TypeScript
+    installation". The global typescript beside the language server was
+    7.0.2 — the Go port, which ships no tsserver (the v1.237.0 ceiling,
+    the F5 watch item) — so the editor's TypeScript intelligence had
+    been silently dead on the machine the product is built on. Three
+    fixes: the catalog's install pins `typescript@5` (an unpinned
+    `npm i -g typescript` now installs 7); a pure precheck reads the
+    same candidates the server does (the workspace's
+    `node_modules/typescript`, else the global sibling) and refuses a
+    tsserver-less typescript before the spawn; a once-only balloon
+    names the version and installs typescript 5 on click. Mutant by
+    name; the insurance verify (4917 tests) green on the units before.
+    The boot after units 11–13: two warnings, both the platform's own
+    deprecation notes — from 237 that morning.
+14. **The first-show sweep** — every suite tab reached through the
+    Window menu on a fresh userdir: Contract Studio, Infra Designer,
+    Block Studio, Tasks, Workbench, DB Studio (whose Docker offer
+    balloon fired for a running container) all honest on first show;
+    the Docker Panel was the one gap. The sweep's copy find: Block
+    Studio's status said "1 pieces" — "1 piece" now, both sites through
+    one helper, mutant by name.
+15. **The plural law** — the census after "1 pieces": the Tasks board
+    header, column names, epic legend and flow line, the IRC find bar,
+    DB Studio's row count and Check My Work all concatenated a bare
+    plural; `core.util.Plural` now, with a repo-wide gate for the nouns
+    the sweep fixed.
+16. **F5's trigger fired** — `typescript@latest` on npm is 7.0.2 (the Go
+    port, stable, under the plain name; `typescript@5` is 5.9.3), so an
+    unpinned `npm i -g typescript` is a trap for every tsserver-based
+    tool; recorded against the bet with unit 13 as its first paid unit;
+    the precheck learns npm's Windows prefix layout.
+17. **The wall speaks in the log too** — "TypeScript 7.0.2 ships no
+    tsserver; the TypeScript server was not started — npm install -g
+    typescript-language-server typescript@5" (a walk reads logs, not
+    balloons; proven on a fresh boot).
+18. **The Doctor's tsc row** names the rule beside the version.
+19. **The rack side of the stop verdict, walked** — SOLDER's STOP read
+    STOPPED on its faceplate and "LAST: SOLDER STOPPED" in BLACKBOX's
+    plain LCD colour: the faceplate law and the record agree. The
+    Tests window and the NPM Explorer honest on first show.
+20. **The ui floor ratchets** 0.67→0.68 (measured 0.690).
+21. **The walk script's own bug** — it read `search_text`'s answer as
+    `.hits` (the schema says `matches`) and reported 0 for every query;
+    the docs test now pins the field name.
+22. **The arc review's find** — past the file walk's 2000-file cap the
+    outline template's completion list is a floor, so no total is given
+    (`hasMore` says so).
+23. **A capped walk says `hasMore`** however few it listed — a floor is
+    not a count.
+24. **The walk script is machine-readable** — every step declares an
+    answer or a refusal, surprises are the exit code, WALK CLEAN closes
+    it; a CI job or the next shift can read the walk.
+25. **Four house laws written down** in the codebase guide with their
+    origins: a verdict belongs where the knowledge is; every new read
+    surface is a disclosure path for every old secret law; the first
+    show serves the deferred work; a user-visible count reads right.
+26. **The tutorial walks the stream by hand** — open it with curl,
+    subscribe, set the log level, watch the frames arrive.
+27. **The Vite+Vue loop, walked through the wizard** — New Project ▸
+    Vite + Vue (driven by accessibility, install included) → ▶ →
+    `VITE v6.4.3 ready in 339 ms` → the Browser at `[::1]:5173`
+    rendering the template → ■ → port closed, `[exit 143] stopped`.
+    CLEAN. Recorded for David's eye: after the wizard, the platform's
+    own Projects/Files/Services windows join the left column.
+28. **The Vite+Svelte loop, the same way** — the Svelte 5 template
+    through the wizard, install, ▶ (`ready in 517 ms`), the Browser
+    rendering `App.svelte`'s page, ■. CLEAN.
+29. **The Vite+Solid loop, the third wizard walk** — the Solid template
+    through the wizard, install (`solid-js ^1.9.0`), ▶ (`ready in
+    399 ms`), the Browser rendering the counter, ■ (`[exit 143]
+    stopped`, the ⇄ chip gone). CLEAN — three framework loops through
+    the one New Project surface, none with a find.
+30. **The Express API and Vanilla Web loops, and the lockfile find** —
+    both through the wizard in one instance: Express (`nodemon`,
+    `/health`, the Browser at `localhost:3000`) and Vanilla with port
+    8080 HELD by another program — http-server bound 8081 and the ⇄
+    chip read the banner's port (the v1.320.0 law live). The find, on
+    both: a fresh project's first `git status` said `?? package-lock.json`
+    — the scaffold commit lands BEFORE the install the wizard then runs.
+    The lockfile now joins the scaffold commit the way `ng new`'s does,
+    by a guarded amend that can never touch a person's work: exactly one
+    commit and it must be ours, no remote, and the tree must differ by
+    the untracked lockfile alone (an edit made while the install ran, a
+    second commit, an added origin: the lockfile simply stays untracked).
+    Three refusal mutants dead by name.
+31. **The builder ledger reads a line-broken call** — the spawn-site
+    ledger's second enumeration matched the SUBSTRING
+    `ProcessSupport.runBounded(`, and two files had always spelled it
+    across a line break: ProjectTemplates (every scaffold's git spawns,
+    and unit 30's new site would have evaded the same way) and
+    LanguageServers (the rust-analyzer liveness probe) — unclassified
+    since the scan widened in v2.39.1. A whitespace-tolerant matcher
+    now; both sites blessed in writing; the substring mutant fails the
+    gate by name.
+32. **Check My Work said "nicely done" to a learner who had done nothing**
+    — the learning-space walk (picker → WIT space → RUN prints the
+    package → the tutorial's refusal at `world.wit:15:10` → Learning
+    Spaces… Discard re-aiming at ~/NMOX, all CLEAN) ran Check My Work
+    on the UNTOUCHED seed and got 3 of 3. Two seeded task checkpoints
+    could never fail: the WIT space's `absent` clause carried a
+    double-escaped newline no file contains, and the first web page's
+    "third list item" asked for a substring the two-item seed already
+    had — since v2.39.1, the release that shipped them, and through a
+    walk that verified the happy path after doing the work. Both
+    fixed; file checkpoints gain `atLeast` (a count on `contains`);
+    CheckpointParityTest gains the OUTCOME law — a "You …" task must
+    FAIL on the space's own seed and a guard must PASS on it, evaluated
+    through the real runner on the real seed bytes (failing-first named
+    both); the learning-spaces page gains the checkpoint schema it
+    claimed to hold ("exactly this page's schema" pointed at nothing);
+    the count mutant dies in the unit test AND the gate.
+33. **The shelf header speaks its text to screen readers** — the
+    Learning Spaces manager's header carried a constant accessible
+    name ("Learning spaces shelf summary"), which is what assistive
+    technology hears INSTEAD of the count, disk cost and lifecycle
+    sentence it paints (read through accessibility on the walk). The
+    role moved to the description; the name follows the text;
+    LabelNamesAreTheirTextGateTest bans a constant name on any
+    text-bearing JLabel in ui, failing-first.
+34. **The footer names the toolchain it found** — Project Studio's
+    footer said "(no package.json)" beside EVERY non-Node aim (a Cargo
+    project, a Go module, a learning space) — a polyglot IDE still
+    measuring projects by one manifest. Now: Node stays bare, the
+    detected manifest names itself (`(Cargo.toml)`, `(go.mod)`), the
+    glob-detected kinds speak their name, and the last resorts say
+    `(static site)`, `(learning space)`, `(no manifest yet)`; the kind
+    walk runs off the EDT with the newest aim winning.
+35. **Counts in the product's own strings come from the catalog** — the
+    Experiments loop (New Experiment on its defaults → the guide opens →
+    ▶ → http-server on 8081 with 8080 held → the Workbench's RUNNING
+    row → ■ → Experiments… Discard re-aiming at ~/NMOX, CLEAN) read
+    "Guided instead? Browse 92 Learning Spaces…" on the dialog and
+    "Browse the 92 tutorials…" on the empty shelf while the catalog
+    held 93 — DocsCountGateTest's rot, one layer in, where no docs
+    gate looks. Both buttons now count the catalog (read off the EDT,
+    the label filling when it lands); UiCountLiteralGateTest reads
+    every module's string literals for a numeral beside a counted
+    noun, failing-first with both named.
+36. **The review: every stream frame rides one bounded backlog** — the
+    per-stream writer rewrite (unit 5) capped LOG lines per client and
+    announced the overflow, but resource updates and keepalives went
+    around that accounting: a client whose socket blocked while it
+    received only those (every save fires `nmox://editor`, every
+    recorder event `nmox://history`) never read as stuck, its keepalive
+    was never skipped, and its writer queue grew one task per event
+    with no cap — slowly, and without bound. One enqueue path now:
+    every frame kind counts, past the cap it is dropped and announced
+    once as "N frames dropped — the stream fell behind"; a stream
+    attaching after the port's close is refused at once (the stop order
+    closes the streams before the server). Two mutants dead by name;
+    the structural catch count follows the one path. Verified CLEAN:
+    real-path file containment, the vanished-file announce, the
+    subscribe path's refusal codes, the fold's guards on the pump
+    thread, the off-EDT catalog reads; a non-numeric `atLeast` now
+    skips with its reason (`optInt` read "many" as 0); SpotBugs caught
+    the runtime-built option compared by identity on the sixth
+    insurance verify (equals now).
+37. **The precheck reads a bounded prefix** — the same review's last
+    lens: TsServerPrecheck read a project-controlled `package.json`
+    (under a cloned repo's node_modules) with an unbounded
+    `Files.readString` — the v2.61.1 class, in day-old code. A 64 KB
+    prefix now; a version past the cap reads as unknown; the mutant
+    restoring the whole-file read dies by name. And the strict
+    official-SDK walk ran on the reviewed bytes: `WALK CLEAN — 19
+    steps, 0 surprises`, the outline subscription FOLLOW-PROVEN
+    through the one enqueue path.
+38. **The shortcut sheet lists the doors** — the Help-menu walk
+    (Keyboard Shortcuts…, Report a Problem…, What's New…, About, all
+    read through accessibility: the report's body carries no home path
+    and no user name, nothing is sent; What's New shows the head entry)
+    found the sheet saying "15 NMOX shortcuts" without the Welcome's own
+    ⇧⌘E / ⇧⌘N / ⇧⌘L: those doors register in the platform's global
+    `Shortcuts/` folder and the sheet read only the profile's
+    `Keymaps/`. Both folders now, a chord bound in both listed once the
+    Keymaps way (the v1.38.1 precedence, so the sheet says what a
+    keypress does); a memory-filesystem test, the folder-walk mutant
+    dead by name.
+39. **The Check My Work report is plain text** — the report reached
+    the dialog as a String, which the platform lays out as one JLabel
+    per WRAPPED fragment (the walk read a hint in two halves), and a
+    fragment beginning with `<html>` renders — checkpoint labels and
+    hints are catalog data from anywhere (drop-ins since v1.293.0), so
+    that was the v1.306.0 html-render class one line-wrap away. One
+    read-only wrapping text area on both dialog paths now (nothing
+    interpreted, nothing fetched), named for assistive technology and
+    read whole; the wiring pinned, the String-back mutant dead by name.
+40. **Every text area in ui has a name** — the Task Board walk on a
+    fresh wizard project (New Card…, the board file born on the first
+    mutation, "react-walk — 1 card", the Standup's plain-text report)
+    heard the Standup through accessibility as "text entry area" — the
+    role, not the thing. The Standup and Sprint reports, the DevTools
+    DOM and Svelte details panes (through their shared factory) and the
+    Image Kit report are named now, and the Docker Panel's three previews
+    and its text dialogs through their factory; TextAreasNamedGateTest
+    reads every text area's construction in every module for a name
+    anywhere in its file (API Studio names its bodies in a later block),
+    failing-first with five.
+42. **Every input speaks its name** — the same lens counted 46 inputs
+    product-wide with neither an accessible name nor a `labelFor` label
+    (a screen reader hears "text field" for the New Project wizard's own
+    name field). All named from their dialogs' own label text — the
+    wizard's name and location, the picker's search, the Docker run
+    form and pull field, the ORACLE question, Project Configuration's
+    fields (whose labels now also `setLabelFor` them), the IRC network
+    editor's seven including the password field, the channel filter,
+    the DevTools console input and Edit Style value, the Browser's
+    address, the project switcher's filter, the schematic, PWA,
+    Standards, Image and Contract kit forms, DB Studio's row limit;
+    InputsNamedGateTest product-wide (a name or a `labelFor` counts),
+    failing-first with 42 after the first three.
+43. **Every table, list and tree speaks its name** — the sweep's third
+    leg: 26 collections a screen reader could only call "table" — the
+    device shelf, the wizard's template list, the Docker tables (their
+    factory takes the name), SONAR's ports, BLACKBOX's timeline, Project
+    Configuration's scripts and dependencies, the IRC channel list,
+    DevTools' console, DOM tree and network table, the project switcher
+    and both learning-space lists, the Doctor's probes, API Studio's
+    collections tree and its parameters/headers/tests tables, DB
+    Studio's connections tree and result rows, Contract Studio's
+    artifacts tree and its watch, size, gas and deployment tables — all
+    named from their panes; CollectionsNamedGateTest product-wide,
+    failing-first with 26. Three gates now hold the name law over the
+    whole input family.
+
 ## [2.84.0] - 2026-09-05
 
 The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-nine units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
@@ -17273,6 +17562,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.85.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.84.0...v2.85.0
 [2.84.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.83.0...v2.84.0
 [2.83.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.82.0...v2.83.0
 [2.82.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.81.0...v2.82.0

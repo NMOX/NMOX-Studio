@@ -77,6 +77,31 @@ class CheckpointsTest {
     }
 
     @Test
+    @DisplayName("atLeast counts occurrences: a seed that already has two </li> fails a third-item task")
+    void atLeastCountsOccurrences(@TempDir Path work) throws IOException {
+        List<String> notes = new ArrayList<>();
+        List<Checkpoints.Checkpoint> cps = parse("""
+            [{"label": "You added a third list item", "hint": "add one",
+              "file": {"path": "index.html", "contains": "</li>", "atLeast": 3}},
+             {"label": "bad count", "file": {"path": "index.html", "contains": "x", "atLeast": -1}},
+             {"label": "count without contains", "file": {"path": "index.html", "absent": "x", "atLeast": 2}},
+             {"label": "words for a count", "file": {"path": "index.html", "contains": "x", "atLeast": "many"}}]
+            """, notes);
+        assertThat(cps).hasSize(1);
+        assertThat(notes).hasSize(3)
+                .anyMatch(n -> n.contains("atLeast must be a number"))
+                .filteredOn(n -> !n.contains("must be a number")).allMatch(n -> n.contains("atLeast needs a contains"));
+        File dir = work.toFile();
+        Files.writeString(work.resolve("index.html"), "<ul><li>a</li><li>b</li></ul>");
+        assertThat(Checkpoints.run(dir, cps.get(0), null).passed())
+                .as("two items: the seed, not the work").isFalse();
+        Files.writeString(work.resolve("index.html"), "<ul><li>a</li><li>b</li><li>c</li></ul>");
+        assertThat(Checkpoints.run(dir, cps.get(0), null).passed())
+                .as("three items: the work").isTrue();
+        assertThat(Checkpoints.occurrences("aaaa", "aa")).as("non-overlapping").isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("a traversal path never reads outside the space; a missing file is a failed check")
     void containment(@TempDir Path work) throws IOException {
         File dir = new File(work.toFile(), "space");

@@ -1,0 +1,6 @@
+{
+  "name": "text.tex.latex (NMOX stub)",
+  "scopeName": "text.tex.latex",
+  "comment": "An in-house STUB, not a vendored grammar (v2.85.0): registers the scope so TM4E resolves the include instead of pruning the including rule and warning on every boot; the embedded region tokenizes as plain text.",
+  "patterns": []
+}

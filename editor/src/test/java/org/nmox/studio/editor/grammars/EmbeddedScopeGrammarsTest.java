@@ -33,7 +33,21 @@ class EmbeddedScopeGrammarsTest {
             // v1.195.1: the 1.195.0 smoke test's "No grammar source for
             // scope" pair — text.xml (http/ruby/php/perl heredoc embeds)
             // and source.js.jsx (vue/graphql embeds)
-            "text.xml", "source.js.jsx");
+            "text.xml", "source.js.jsx",
+            // v2.85.0: the scope STUBS — includes we ship no grammar for,
+            // resolved to empty grammars so the log stops warning and the
+            // including rules stop being pruned
+            "source.x86_64", "source.x86", "source.asm", "source.arm", "source.sql",
+            "source.sassdoc", "source.glsl", "source.stylus", "source.dockerfile",
+            "source.batchfile", "source.diff",
+            // the second batch (the boot proof's remaining 132 lines)
+            "source.js.regexp", "source.js.jquery", "source.c++", "text.html.elixir", "text.elixir",
+            "source.regexp.python", "source.postscript", "source.less", "source.cpp.embedded.macro",
+            "text.xml.xsl", "text.tex.latex", "text.log", "text.git-rebase", "text.git-commit",
+            "text.bibtex", "source.twig", "source.powershell", "source.perl.6", "source.objc",
+            "source.json.comments", "source.go", "source.asp.vb.net", "source.css.postcss",
+            "text.html.javadoc", "source.toml", "source.postcss", "source.openesql",
+            "source.ocaml.ocamldoc", "source.ocaml.interface", "source.json5", "regexp");
 
     @Test
     @DisplayName("The generated layer registers a grammar for every markdown-embedded scope")
@@ -113,6 +127,31 @@ class EmbeddedScopeGrammarsTest {
     }
 
     @Test
+    @DisplayName("every scope is registered by exactly one grammar — a stub must go the day a real grammar arrives for its scope (v2.85.0)")
+    void scopesRegisteredOnce() throws Exception {
+        java.util.Map<String, Integer> seen = new java.util.HashMap<>();
+        try (InputStream layer = EmbeddedScopeGrammars.class.getResourceAsStream("/META-INF/generated-layer.xml")) {
+            String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("grammar\\.json\\.tmLanguage|stub-[A-Za-z0-9.+-]+\\.json|[A-Za-z0-9-]+\\.tmLanguage\\.json").matcher(xml);
+            // scope → count, read from every registered grammar FILE's own scopeName
+            for (String file : registeredGrammars().values().stream().map(v -> v.substring(v.indexOf('|') + 1)).toList()) {
+                try (InputStream in = EmbeddedScopeGrammars.class.getClassLoader().getResourceAsStream(file)) {
+                    if (in == null) {
+                        continue;
+                    }
+                    java.util.regex.Matcher scope = Pattern.compile("\"scopeName\"\\s*:\\s*\"([^\"]+)\"")
+                            .matcher(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+                    if (scope.find()) {
+                        seen.merge(scope.group(1), 1, Integer::sum);
+                    }
+                }
+            }
+        }
+        assertThat(seen).as("scopes registered more than once").allSatisfy((scope, n) -> assertThat(n).as(scope).isEqualTo(1));
+        assertThat(seen).containsKeys("source.go", "source.less", "source.js.regexp");
+    }
+
+    @Test
     @DisplayName("Embed-only mimes never gain a real editor binding (no loader, no CSL)")
     void embedMimesStayEditorless() throws Exception {
         // the failure mode this pins: someone binds an editor to a
@@ -128,7 +167,8 @@ class EmbeddedScopeGrammarsTest {
         // (xml for text.xml, jsx for source.js.jsx) + ng-expression
         // (v1.217.0: expression.ng is include-only — injecting it stomped
         // host HTML, so it rides the embed idiom like the others)
-        assertThat(embedFolders).hasSize(8);
+        // + the forty-two v2.85.0 scope stubs (11 + 31)
+        assertThat(embedFolders).hasSize(50);
         try (InputStream layer = EmbeddedScopeGrammars.class
                 .getResourceAsStream("/META-INF/generated-layer.xml")) {
             String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);

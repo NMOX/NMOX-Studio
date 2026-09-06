@@ -133,6 +133,49 @@ availability line probing for `zig` on your PATH.
   (they're case-sensitive). `LearningCatalog` slugs are all lower-case;
   see the picker's search field — it matches slugs literally.
 
+## Checkpoints — Check My Work
+
+A space may carry a `checkpoints` array; **File ▸ Check My Work** runs
+them against the learner's space and answers ✓ or ✗ with the entry's
+own `hint`. Two kinds, chosen by what the claim needs:
+
+```json
+"checkpoints": [
+  {"label": "You changed the heading",
+   "hint": "index.html still has the sample's exact heading — edit the text between <h1> and </h1>.",
+   "file": {"path": "index.html", "contains": "<h1>", "absent": "<h1>Hello, web!</h1>"}},
+  {"label": "You added a third list item",
+   "hint": "The list needs a third <li>…</li> line — copy an existing one.",
+   "file": {"path": "index.html", "contains": "</li>", "atLeast": 3}},
+  {"label": "The stylesheet is still linked",
+   "hint": "Put the <link rel=\"stylesheet\" href=\"style.css\"> line back.",
+   "file": {"path": "index.html", "contains": "style.css"}},
+  {"label": "The tests pass",
+   "hint": "cargo test names the failing assertion — read it, fix it, run again.",
+   "command": ["cargo", "test"], "expect": "test result: ok"}
+]
+```
+
+- **file** — pure-Java, toolchain-free: the file at a relative `path`
+  (inside the space; `..` refuses) must contain the `contains`
+  substring — at least `atLeast` times when given — and/or be free of
+  the `absent` one. One of `contains`/`absent` is required; `atLeast`
+  needs a `contains`.
+- **command** — an argv (never a shell) whose tool is a BARE name the
+  space already declares (its driver or install hint); it runs in the
+  space and must exit 0, with `expect` appearing in its output when
+  given. A malformed entry is skipped whole with its reason.
+
+**Write a task so it fails on your own seed.** A checkpoint whose label
+starts with "You …" is a task: the learner has to do something before
+it passes, so on the untouched sample it must fail — that is what
+`absent` (the sample's original text must be gone) and `atLeast` (the
+sample already contains the substring twice) are for. A label like
+"The stylesheet is still linked" is a guard: it passes on the seed and
+exists to say "still true". The built-in seeds are gated exactly this
+way; before you share a drop-in, run Check My Work on the untouched
+space — every "You …" line should be ✗ with your hint.
+
 ## Authoring without writing JSON — the exporter
 
 Since v2.39.3 you don't hand-write any of this: build the exercise as

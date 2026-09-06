@@ -118,4 +118,20 @@ class AgentPortSecurityTest {
                 HttpResponse.BodyHandlers.discarding());
         assertThat(r.statusCode()).isEqualTo(413);
     }
+
+    @Test
+    @DisplayName("the last-request clock counts AUTHORIZED requests only — a refused caller never reads as a live agent (v2.85.0)")
+    void lastRequestClockCountsAuthorizedOnly() throws Exception {
+        assertThat(port.sinceLastRequestMillis()).as("nothing yet").isEqualTo(-1);
+        http.send(req().POST(HttpRequest.BodyPublishers.ofString(PING)).build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+        http.send(req().header("Authorization", "Bearer wrong")
+                .POST(HttpRequest.BodyPublishers.ofString(PING)).build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(port.sinceLastRequestMillis()).as("a 401 is not a request the chip should count").isEqualTo(-1);
+        http.send(req().header("Authorization", "Bearer " + port.token())
+                .POST(HttpRequest.BodyPublishers.ofString(PING)).build(),
+                java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(port.sinceLastRequestMillis()).isBetween(0L, 5_000L);
+    }
 }

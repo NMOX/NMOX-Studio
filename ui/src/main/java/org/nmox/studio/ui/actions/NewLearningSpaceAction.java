@@ -83,6 +83,7 @@ public final class NewLearningSpaceAction implements ActionListener {
         DefaultListModel<LearningCatalog.Space> model = new DefaultListModel<>();
         all.forEach(model::addElement);
         JList<LearningCatalog.Space> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Learning spaces");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {
@@ -99,6 +100,8 @@ public final class NewLearningSpaceAction implements ActionListener {
         });
 
         JTextField search = new JTextField();
+
+        search.getAccessibleContext().setAccessibleName("Search the learning spaces");
         search.setToolTipText("Filter by name, family, or description");
         search.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { refilter(); }

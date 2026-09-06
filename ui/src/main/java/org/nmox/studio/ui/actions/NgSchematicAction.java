@@ -68,10 +68,13 @@ public final class NgSchematicAction implements ActionListener {
         }
 
         JComboBox<String> type = new JComboBox<>(NgSchematic.SCHEMATICS);
+        type.getAccessibleContext().setAccessibleName("Schematic");
         JTextField name = new JTextField("widget", 24);
+        name.getAccessibleContext().setAccessibleName("Name");
         // ng resolves against its cwd, so the folder field IS the target
         JTextField folder = new JTextField(
                 new File(root, "src/app").isDirectory() ? "src/app" : "", 24);
+        folder.getAccessibleContext().setAccessibleName("In folder (under the workspace)");
         JPanel panel = new JPanel(new GridLayout(0, 2, 8, 6));
         panel.add(new JLabel("Schematic:"));
         panel.add(type);

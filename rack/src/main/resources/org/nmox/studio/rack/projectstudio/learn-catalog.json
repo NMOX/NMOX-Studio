@@ -48,7 +48,8 @@
           "hint": "The list needs a third <li>…</li> line — copy an existing one and change its text.",
           "file": {
             "path": "index.html",
-            "contains": "</li>"
+            "contains": "</li>",
+            "atLeast": 3
           }
         },
         {
@@ -3333,7 +3334,7 @@
           "file": {
             "path": "wit/world.wit",
             "contains": "func",
-            "absent": "  hello: func(who: person) -> list<string>;\\n}"
+            "absent": "  hello: func(who: person) -> list<string>;\n}"
           }
         },
         {

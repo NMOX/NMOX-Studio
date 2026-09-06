@@ -40,6 +40,7 @@ final class ChannelListDialog {
             int totalSeen, Consumer<String> join) {
         Model model = new Model(rows);
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
+        table.getAccessibleContext().setAccessibleName("Channels");
         TableRowSorter<Model> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
         table.getColumnModel().getColumn(0).setPreferredWidth(180);
@@ -56,6 +57,7 @@ final class ChannelListDialog {
         });
 
         JTextField filter = new JTextField();
+        filter.getAccessibleContext().setAccessibleName("Filter channels");
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String q = filter.getText().trim().toLowerCase(Locale.ROOT);

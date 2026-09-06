@@ -213,8 +213,46 @@ public final class ProjectStudioTopComponent extends TopComponent {
     private void syncToRack() {
         File dir = rack.getProjectDir();
         treePanel.setRootDirectory(dir);
-        boolean isWebProject = new File(dir, "package.json").isFile();
-        statusLabel.setText(dir.getAbsolutePath() + (isWebProject ? "" : "  (no package.json)"));
+        statusLabel.setText(dir.getAbsolutePath());
+        // the kind walk stats the root and one level of children — off the
+        // EDT (v1.33.1 law), newest aim wins; the suffix lands a beat later
+        KIND_RP.post(() -> {
+            org.nmox.studio.rack.devices.ProjectInspector.ProjectKind kind =
+                    org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
+            SwingUtilities.invokeLater(() -> {
+                if (dir.equals(rack.getProjectDir())) {
+                    statusLabel.setText(dir.getAbsolutePath() + aimSuffix(kind));
+                }
+            });
+        });
+    }
+
+    private static final org.openide.util.RequestProcessor KIND_RP =
+            new org.openide.util.RequestProcessor("nmox-projectstudio-kind", 1, true);
+
+    /**
+     * What the footer says after the aimed path. It said "(no
+     * package.json)" for EVERY non-Node aim since v0.x — a Cargo project,
+     * a Go module, a learning space — as if the polyglot IDE still
+     * measured projects by one manifest (v2.85.0). Node stays bare (the
+     * common case, no noise); the detected manifest names itself; the
+     * two last resorts and the learning kind speak plainly.
+     */
+    static String aimSuffix(org.nmox.studio.rack.devices.ProjectInspector.ProjectKind kind) {
+        switch (kind) {
+            case NODE:
+                return "";
+            case NONE:
+                return "  (no manifest yet)";
+            case STATIC:
+                return "  (static site)";
+            case LEARN:
+                return "  (learning space)";
+            default:
+                String manifest = kind.manifest();
+                return "  (" + (manifest.isEmpty()
+                        ? kind.name().toLowerCase(java.util.Locale.ROOT) : manifest) + ")";
+        }
     }
 
     @Override

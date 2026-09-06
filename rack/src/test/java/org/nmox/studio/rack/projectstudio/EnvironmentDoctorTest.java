@@ -21,6 +21,7 @@ class EnvironmentDoctorTest {
         List<String[]> checks = EnvironmentDoctor.checklist();
         List<String> tools = checks.stream().map(c -> c[0]).toList();
         assertThat(tools).contains("git", "node", "npm", "docker", "mvn");
+        assertThat(tools).as("the TypeScript wall is visible in the Doctor (v2.85.0)").contains("tsc");
         assertThat(tools).as("the LAMP stack is swept")
                 .contains("composer", "mysql", "nginx", "apachectl");
         assertThat(tools).as("learning-space interpreters are swept")
@@ -160,5 +161,14 @@ class EnvironmentDoctorTest {
                 .as("the family's provenance marker — the table must say"
                         + " which rows came from ~/.nmox/doctor.d")
                 .endsWith(" · yours");
+    }
+
+    @Test
+    @DisplayName("lua, odin and instantfpc speak their own version dialects (the v2.85.0 Doctor walk: three honest 'failed' rows that were really the probe's fault)")
+    void luaOdinInstantfpcDialects() {
+        assertThat(EnvironmentDoctor.versionCommand("lua")).containsExactly("lua", "-v");
+        assertThat(EnvironmentDoctor.versionCommand("odin")).containsExactly("odin", "version");
+        assertThat(EnvironmentDoctor.versionCommand("instantfpc")).containsExactly("instantfpc", "-h");
+        assertThat(EnvironmentDoctor.versionCommand("pnpm")).as("a tool whose --version genuinely crashes keeps the default; its row stays honest").containsExactly("pnpm", "--version");
     }
 }

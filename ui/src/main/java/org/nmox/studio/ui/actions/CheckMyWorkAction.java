@@ -88,8 +88,8 @@ public final class CheckMyWorkAction implements ActionListener {
                 }
             }
             String head = passed == checks.size()
-                    ? "All " + checks.size() + " checks pass — nicely done.\n\n"
-                    : passed + " of " + checks.size() + " checks pass.\n\n";
+                    ? "All " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass — nicely done.\n\n"
+                    : passed + " of " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass.\n\n";
             // the tutor half of the checkpoint loop (v2.39.5): a stuck
             // learner gets more than the hint — the failed checks and
             // their own file, explained. The option appears only when
@@ -101,13 +101,13 @@ public final class CheckMyWorkAction implements ActionListener {
             SwingUtilities.invokeLater(() -> {
                 if (failed.isEmpty() || oracle == null) {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(head + report,
+                            new NotifyDescriptor.Message(reportComponent(head + report),
                                     NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 }
                 Object explain = "Explain with ORACLE…";
                 org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                        head + report, "Check My Work — " + dir.getName(), true,
+                        reportComponent(head + report), "Check My Work — " + dir.getName(), true,
                         new Object[] {explain, NotifyDescriptor.OK_OPTION},
                         NotifyDescriptor.OK_OPTION,
                         org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -128,5 +128,26 @@ public final class CheckMyWorkAction implements ActionListener {
                 }
             });
         });
+    }
+
+    /**
+     * The report as ONE plain, wrapping, read-only text area (v2.85.0):
+     * a String message is laid out by the platform as a JLabel per
+     * wrapped fragment, and a fragment that starts with {@code <html>}
+     * RENDERS — checkpoint labels and hints are catalog data from
+     * anywhere (drop-ins, v1.293+), so that is the v1.306.0 html-render
+     * class one wrap away. A JTextArea never interprets markup, and a
+     * screen reader reads the report whole instead of a hint in halves.
+     */
+    static javax.swing.JTextArea reportComponent(String text) {
+        javax.swing.JTextArea area = new javax.swing.JTextArea(text);
+        area.setEditable(false);
+        area.setLineWrap(true);
+        area.setWrapStyleWord(true);
+        area.setOpaque(false);
+        area.setColumns(64);
+        area.setFont(javax.swing.UIManager.getFont("Label.font"));
+        area.getAccessibleContext().setAccessibleName("Check My Work report");
+        return area;
     }
 }

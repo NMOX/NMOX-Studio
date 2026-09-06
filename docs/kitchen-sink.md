@@ -436,7 +436,9 @@ Then, in a learning space, File ▸ **Check My Work**.
 failing line and an Action Items row, exactly like a lint finding —
 the mistake appears where you made it, and a reload clears the old
 page's errors. Check My Work grades your file against the space's
-real checkpoints and, on a failure, offers **Explain with ORACLE…**
+real checkpoints — on an untouched space every "You …" line is ✗,
+because a task checkpoint exists to tell your work from the sample —
+and, on a failure, offers **Explain with ORACLE…**
 (its consent names exactly what leaves: the failed checks and your
 checked file, nothing more). When your experiment grows up, File ▸
 **Export as Learning Space…** turns the aimed project into a drop-in
@@ -527,7 +529,8 @@ from the project's own files. Subscribe to `nmox://runs` and the port's
 event stream says when a run starts (subscribe to an outline and it
 follows the file); set the log level and every run's lines arrive as
 log messages — lifecycle only until you ask for `debug`; the status
-line shows `⌁ agent port :N` the whole time; stop a run yourself and
+line shows `⌁ agent port :N` the whole time (its tooltip: how many
+agents stream, and when the last request came); stop a run yourself and
 `run_history` reads `stopped`, never `failed`; search for a value that
 lives in `.env` and get nothing — secret-bearing files are never
 searched. It

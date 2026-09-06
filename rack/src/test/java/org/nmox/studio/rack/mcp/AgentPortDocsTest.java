@@ -105,6 +105,11 @@ class AgentPortDocsTest {
                 "ResourceUpdatedNotificationSchema", "LoggingMessageNotificationSchema")) {
             assertThat(src).as("the walk uses " + primitive).contains(primitive);
         }
+        // the script reads the search answer by the schema's own field names —
+        // the first live run read ".hits" and reported 0 for every query (v2.85.0)
+        assertThat(src).as("search_text's structured answer is `matches`, not `hits`").contains("structuredContent?.matches").doesNotContain("structuredContent?.hits");
+        assertThat(src).as("the walk is machine-readable: surprises become the exit code (v2.85.0)")
+                .contains("process.exitCode = surprises").contains("WALK CLEAN");
         assertThat(src).as("the token is never read off a command line").contains("NMOX_MCP_TOKEN").doesNotContain("process.argv[2] || process.env.NMOX_MCP_TOKEN");
         assertThat(java.nio.file.Files.readString(new java.io.File("../docs/tutorials/agent-port.md").toPath()))
                 .as("the tutorial points at the shipped walk").contains("scripts/agent-port-walk.mjs");

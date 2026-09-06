@@ -93,22 +93,22 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private final JPanel enginePanel = new JPanel(new GridBagLayout());
     private final DefaultTableModel containersModel = model("", "NAME", "IMAGE", "STATUS", "PORTS", "CPU", "MEM");
-    private final JTable containersTable = table(containersModel);
+    private final JTable containersTable = table(containersModel, "Containers");
     private final DefaultTableModel imagesModel = model("REFERENCE", "ID", "SIZE", "CREATED", "");
-    private final JTable imagesTable = table(imagesModel);
+    private final JTable imagesTable = table(imagesModel, "Images");
     private final DefaultTableModel volumesModel = model("NAME", "DRIVER");
-    private final JTable volumesTable = table(volumesModel);
+    private final JTable volumesTable = table(volumesModel, "Volumes");
     private final DefaultTableModel networksModel = model("NAME", "DRIVER", "SCOPE", "ID");
-    private final JTable networksTable = table(networksModel);
+    private final JTable networksTable = table(networksModel, "Networks");
 
     private List<ContainerInfo> containers = List.of();
     private List<ImageInfo> images = List.of();
     private List<VolumeInfo> volumes = List.of();
     private List<NetworkInfo> networks = List.of();
 
-    private final JTextArea dockerfilePreview = preview();
-    private final JTextArea ignorePreview = preview();
-    private final JTextArea composePreview = preview();
+    private final JTextArea dockerfilePreview = preview("Dockerfile preview");
+    private final JTextArea ignorePreview = preview(".dockerignore preview");
+    private final JTextArea composePreview = preview("compose file preview");
     private final JLabel dockerizeInfo = new JLabel(" ");
     private Map<String, String> dockerizeFiles = Map.of();
     /**
@@ -220,8 +220,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         };
     }
 
-    private static JTable table(DefaultTableModel m) {
+    private static JTable table(DefaultTableModel m, String accessibleName) {
         JTable t = new JTable(m);
+        t.getAccessibleContext().setAccessibleName(accessibleName);
         t.setBackground(BG);
         t.setForeground(TEXT);
         t.setGridColor(new Color(45, 46, 50));
@@ -250,8 +251,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         return t;
     }
 
-    private static JTextArea preview() {
+    private static JTextArea preview(String accessibleName) {
         JTextArea a = new JTextArea();
+        a.getAccessibleContext().setAccessibleName(accessibleName);
         a.setEditable(false);
         a.setFont(MONO);
         a.setBackground(new Color(18, 19, 21));
@@ -451,7 +453,7 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private void textDialog(String title, String text) {
         SwingUtilities.invokeLater(() -> {
-            JTextArea area = preview();
+            JTextArea area = preview(title);
             area.setText(text);
             area.setCaretPosition(0);
             JScrollPane sp = new JScrollPane(area);
@@ -489,6 +491,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
         JTextField pullField = new JTextField(22);
+        pullField.getAccessibleContext().setAccessibleName("Image reference to pull");
         pullField.setToolTipText("image reference, e.g. nginx:alpine");
         actions.add(pullField);
         actions.add(btn("Pull", () -> {
@@ -531,8 +534,11 @@ public final class DockerPanelTopComponent extends TopComponent {
     /** A run dialog with the three things you always need: name, ports, env. */
     private void quickRun(ImageInfo img) {
         JTextField name = new JTextField(16);
+        name.getAccessibleContext().setAccessibleName("Container name (blank = auto)");
         JTextField ports = new JTextField("8080:80", 16);
+        ports.getAccessibleContext().setAccessibleName("Ports host:container (space-separated)");
         JTextField env = new JTextField(16);
+        env.getAccessibleContext().setAccessibleName("Env KEY=VAL (space-separated)");
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -716,7 +722,19 @@ public final class DockerPanelTopComponent extends TopComponent {
             dockerizePending = false;
             regenerateDockerize();
         }
+        // the first SHOW serves the deferred work (the v1.38.0 law, its
+        // missing half): a panel reached by its tab or the Welcome's door
+        // read "ENGINE: checking…" over an empty pane until Refresh All —
+        // refreshAll ran only from the open-action, the verbs and the timer
+        // (the v2.85.0 Docker walk). Once: the timer and the button own the rest
+        if (!refreshedOnShow) {
+            refreshedOnShow = true;
+            refreshAll();
+        }
     }
+
+    /** First-show refresh done — never at construction (the zero-boot-spawns law: a hidden default-open tab is not showing). */
+    private boolean refreshedOnShow;
 
     @Override
     protected void componentHidden() {

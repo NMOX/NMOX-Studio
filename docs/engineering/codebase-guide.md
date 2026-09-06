@@ -292,6 +292,36 @@ daemon). `DaemonThreadGateTest` reads every module's sources and fails
 the build on any other `new Thread(`. Origin: the senior-RCP census found
 eight non-daemon pumps and drains among twenty-two raw threads.
 
+**A verdict belongs where the knowledge is** (v2.84.0). The executor is
+the only party that knows a kill from a crash, so its handle marks its
+own kill and the exit line reads `[exit N] stopped`; every consumer —
+the flight recorder, `run_history`, BLACKBOX, ORACLE's failure context —
+learns the difference from that one line instead of guessing from the
+code. Origin: the Angular re-walk found the user's own ■ recorded as
+`failed [1]`.
+
+**Every new read surface is a disclosure path for every old secret
+law** (v2.84.0). The editor's env-key completion had refused to show
+`.env` VALUES since v2.31.0; `search_text` read the same file whole one
+tool over. Secret-bearing files are a named class
+(`TextSearch.isSecretBearing`: the `.env` family, rc files carrying
+auth tokens, private keys and certificates, the `--env-file` shape) —
+never searched, never counted, never completed, refused by `outline`
+by name. When a tool grows, sweep the laws, not the feature.
+
+**The first SHOW serves the deferred work** (v2.85.0, the other half of
+zero boot cost). A default-open tab that defers its refresh must also
+RUN it on `componentShowing()` — once — or a tab reached by its own
+tab or a Welcome door shows its placeholder forever. Origin: the Docker
+Panel read "ENGINE: checking…" over an empty pane until Refresh All.
+`DockerPanelFirstShowTest` pins the shape.
+
+**A user-visible count reads right** (v2.85.0). "1 card", "0 cards",
+"1 match": `core.util.Plural` at every count site; `PluralCopyGateTest`
+fails on a bare `+ " cards"` shape returning for the nouns the sweep
+fixed. Origin: the first-show sweep read "1 pieces" on a fresh Block
+Studio canvas, and a census found the same shape seven times.
+
 ## 5. Where to go next
 
 - **Every important package now carries a `package-info.java`**

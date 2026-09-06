@@ -43,10 +43,21 @@ public class NewProjectDialog extends JDialog {
 
     private final JTextField nameField = new JTextField("my-app", 20);
     private final JTextField locationField = new JTextField(28);
+    {
+        // the beginner's first two fields speak their names to assistive
+        // technology (v2.85.0 census: 46 inputs product-wide had neither a
+        // name nor a labelFor; the sweep is the next shift's, these two
+        // could not wait)
+        nameField.getAccessibleContext().setAccessibleName("Project name");
+        locationField.getAccessibleContext().setAccessibleName("Project location");
+    }
     // built-ins first, then any ~/.nmox/templates.d drop-ins (v1.293.0) —
     // both kinds render name+description and generate the same way, so the
     // list holds the union and the OK path dispatches on the element type
     private final JList<Object> templateList = new JList<>(templateModel());
+    {
+        templateList.getAccessibleContext().setAccessibleName("Project template");
+    }
     private final JCheckBox installBox = new JCheckBox("Run npm install after creating", true);
     private final JLabel previewLabel = new JLabel(" ");
     private final JButton createButton = new JButton("Create Project");
@@ -340,6 +351,11 @@ public class NewProjectDialog extends JDialog {
                                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
                                             "Install stopped — run " + pm + " install when you are ready");
                                     return;
+                                }
+                                if (code == 0) {
+                                    // the lockfile joins the scaffold commit (still on the
+                                    // pump thread — four bounded git spawns, never the EDT)
+                                    ProjectTemplates.foldLockfileIntoInitialCommit(dir);
                                 }
                                 reportInstall(pm, code);
                             });

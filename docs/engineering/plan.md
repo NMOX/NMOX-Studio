@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-05, at v2.84.0, after two lenses, one
+*Currency addendum 2026-09-06, at v2.85.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -3795,3 +3795,118 @@ changed under the automation). The rhythm to keep: build with tests
 an insurance verify at mid-shift → fold when the arc closes → the single chain →
 the next shift's branch forked from the shipped head while the gate
 runs.
+
+## Addendum — 2026-09-05 (evening), the pipelined branch after v2.84.0 (v2.85.0)
+
+The first eight-hour shift shipped at T-5h and kept building; this is
+what the remaining hours built, in a branch forked from the shipped
+head and rebased past the squash the moment it landed.
+
+**The walks paid four times in ninety minutes.** API Studio ~45
+releases on (a live local server; the find: a copy notice ERASED the
+response verdict until the next send — a transient-notice model now,
+the verdict comes back). The Environment Doctor (101 probes read
+through the table; three real tools read as failed probes because the
+dialect was wrong — `lua -v`, `odin version`, `instantfpc -h`). The
+Docker Panel (reached by its tab: "ENGINE: checking…" over an empty
+pane until Refresh All — its refresh ran only from the open-action,
+the verbs and the off-by-default timer; the first SHOW refreshes now,
+never construction, never open-but-hidden). And the boot LOG the walks
+left behind: 237 WARNING lines, 229 of them TM4E "No grammar source
+for scope" for forty-two scopes vendored grammars and the platform's
+markdown fences include and this product never shipped — forty-two
+scope STUBS (empty grammars registered for their scope names, the
+embed idiom) plus two positions on the JS fold/braces rows took a fresh
+boot to two warnings, both the platform's own.
+
+**The wall behind the last warning.** One WARNING per file open was a
+stack trace: "Could not find a valid TypeScript installation". The
+global typescript beside the language server was 7.0.2 — the Go port,
+no tsserver — because `typescript@latest` on npm IS 7.0.2 now (the F5
+watch trigger, fired under the plain package name), and the product's
+own installer had installed it unpinned. The editor's TypeScript
+intelligence had been dead on the machine the product is built on,
+silently. Three fixes: the catalog pins `typescript@5`; a pure
+precheck reads the same candidates the server does and refuses a
+tsserver-less typescript BEFORE the spawn; a once-only balloon names
+the version and installs 5 on click. The lesson beside F5: **a
+version pin the product depends on must be a pin the product's own
+installer writes** — the ceiling in the templates never reached the
+LSP catalog.
+
+**The first-show sweep.** Every suite tab reached through the Window
+menu on a fresh userdir after the Docker find: all honest; the one
+copy find ("1 pieces") became the plural law — `core.util.Plural`,
+seven sites, a repo-wide gate for the nouns the sweep fixed.
+
+**The wizard loops, walked (units 27–29).** New Project ▸ Vite + Vue driven
+through accessibility — the template list's rows carry their text as
+their DESCRIPTION — install included, then ▶ → Vite → the Browser at
+`[::1]:5173` → ■ → `[exit 143] stopped`: the product's own path from
+nothing to a served page, clean on the pipelined bytes — and then
+Svelte 5 and Solid the same way, three framework loops through the
+one New Project surface without a find; then Express and Vanilla
+(8080 held, http-server on 8081, the chip reading the banner's port)
+with the find both shared: `?? package-lock.json` on a fresh
+scaffold, because the initial commit precedes the install — now a
+guarded amend folds the lockfile in (one commit, ours, no remote,
+lockfile-only diff, else it stays untracked). And the spawn-site
+ledger's builder scan matched a substring that a line break defeats:
+two files had evaded it since v2.39.1, both blessed now under a
+whitespace-tolerant matcher. And the learning-space loop walked
+clean end to end — until Check My Work passed 3 of 3 on the
+untouched seed: two task checkpoints that could never fail (a
+double-escaped `\\n` in an absent clause; a contains the seed
+already satisfied), shipped in v2.39.1 and blessed by a walk that
+checked the work after doing it. The law that came out: a task
+checkpoint must fail on its own seed, a guard must pass on it —
+gated through the real runner, and written on the page that
+claimed to hold the schema and didn't. Two smaller finds rode the
+same walk: the manager's header named itself to screen readers with
+a constant instead of its text (now a ui-wide gate), and the
+footer's "(no package.json)" beside a learning space — the
+polyglot IDE's footer measuring every aim by one manifest. The
+Experiments loop then read "Browse 92 Learning Spaces…" beside a
+93-space catalog — the docs-count rot one layer in, now gated across
+every module's string literals. The review of the fresh code found
+the branch's one real bug in its riskiest unit: resource updates and
+keepalives bypassed the per-stream backlog cap the log lines
+honored — one enqueue path now, every frame kind bounded and the
+overflow announced — and the precheck's unbounded read of a
+project-controlled package.json, bounded. The Help menu walked
+last: the shortcut sheet had never listed the Welcome's own doors
+(they live in the global Shortcuts folder, not the profile's
+Keymaps) — it reads both now; and the Check My Work report, a String
+laid out as a JLabel per wrapped fragment, became a plain text area
+before a drop-in catalog's `<html>` hint could render; the Task
+Board walk found four text areas with no accessible name — a gate
+now, product-wide; the same lens counted 46 inputs with neither a
+name nor a labelFor (the wizard's own fields among them) — all
+46 named from their dialogs' own labels, and 26 tables, lists and
+trees after them — three gates hold the name law over the whole
+input family now. One
+observation recorded, not judged: after the wizard the platform's
+Projects, Files and Services windows appear in the left column
+beside Project Studio (the OpenProjects bridge lets projectui open its
+own windows on the first project open) — whether the chrome pass
+(v1.11) should hide them is David's call.
+
+**When the fold came.** The branch closed at 21:35 MT on 2026-09-05
+with forty-four units, twenty walks and fourteen insurance verifies
+(one red — SpotBugs on a runtime-built option compared by identity —
+fixed before the next), the day shift's second branch built entirely
+while v2.84.0 flew; it ships as v2.85.0 at the night shift's start
+(one gate per shift, the pipelined branch riding the next), and the
+night's first unit — the plain-message sweep over the 66 dialog sites
+that still hand external text to a String message — begins in the
+next worktree before that gate opens.
+
+**Method notes.** A Swing JTable reads through AX as rows of AXCell
+whose VALUE is 0 and whose DESCRIPTION is the text; a JTree's rows are
+not selectable by AX hit-test; dialog buttons press by DESCRIPTION,
+never by index (the same index was Close under one dialog shape and
+Stop under another); the menu bar is sometimes not exposed to AX in a
+fresh instance — the Welcome's door buttons and the Window menu are
+the two roads. And two insurance verifies inside one shift: the first
+found two SpotBugs findings; the second proved the branch after the
+walks' fixes.

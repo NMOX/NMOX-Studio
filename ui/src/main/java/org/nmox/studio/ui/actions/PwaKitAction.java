@@ -57,13 +57,19 @@ public final class PwaKitAction implements ActionListener {
 
         String projectName = project.getName();
         JTextField name = new JTextField(projectName);
+        name.getAccessibleContext().setAccessibleName("App name");
         JTextField shortName = new JTextField(projectName.length() > 12
                 ? projectName.substring(0, 12) : projectName);
+        shortName.getAccessibleContext().setAccessibleName("Short name");
         JTextField theme = new JTextField("#1a1a1e");
+        theme.getAccessibleContext().setAccessibleName("Theme color");
         JTextField background = new JTextField("#1a1a1e");
+        background.getAccessibleContext().setAccessibleName("Background color");
         JTextField monogram = new JTextField(projectName.isEmpty() ? "A"
                 : projectName.substring(0, 1).toUpperCase(Locale.ROOT));
+        monogram.getAccessibleContext().setAccessibleName("Icon monogram");
         JTextField artwork = new JTextField();
+        artwork.getAccessibleContext().setAccessibleName("Icon artwork path");
         JButton browse = new JButton("Browse…");
         browse.addActionListener(ev -> {
             JFileChooser chooser = new JFileChooser(project);
@@ -76,6 +82,7 @@ public final class PwaKitAction implements ActionListener {
             "App shell — cache first, instant loads, offline-ready",
             "Network first — always-fresh content, cache fallback"
         });
+        strategy.getAccessibleContext().setAccessibleName("Caching strategy");
         JCheckBox icons = new JCheckBox(
                 "Icons — icon-192/512, maskable pair, apple-touch-icon", true);
         JCheckBox manifest = new JCheckBox(

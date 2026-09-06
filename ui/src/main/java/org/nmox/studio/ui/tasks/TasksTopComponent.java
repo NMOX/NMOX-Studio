@@ -362,7 +362,7 @@ public final class TasksTopComponent extends TopComponent {
      *  30s ticker can refresh it WITHOUT rebuilding the strip (a rebuild
      *  would drop the list selection every tick). */
     private String headerText() {
-        String base = boundDir.getName() + " — " + board.cardCount() + " cards";
+        String base = boundDir.getName() + " — " + org.nmox.studio.core.util.Plural.of(board.cardCount(), "card");
         TaskBoard.Card running = board.runningCard();
         if (running == null) {
             return base;
@@ -387,7 +387,7 @@ public final class TasksTopComponent extends TopComponent {
             header.setForeground(new Color(220, 80, 80)); // over WIP limit
         }
         header.getAccessibleContext().setAccessibleName(
-                "Column " + col.name() + ", " + count + " cards"
+                "Column " + col.name() + ", " + count + (col.cards().size() == 1 ? " card" : " cards")
                 + (col.overLimit() ? ", over limit" : ""));
         header.setComponentPopupMenu(columnMenu(index));
         panel.add(header, BorderLayout.NORTH);
@@ -799,6 +799,7 @@ public final class TasksTopComponent extends TopComponent {
                         System.currentTimeMillis(),
                         java.time.ZoneId.systemDefault());
                 JTextArea text = new JTextArea(md, 18, 52);
+        text.getAccessibleContext().setAccessibleName("Standup report");
                 text.setEditable(false);
                 text.setCaretPosition(0);
                 JScrollPane scroll = new JScrollPane(text);
@@ -919,6 +920,7 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         JTextArea text = new JTextArea(md, 18, 52);
+        text.getAccessibleContext().setAccessibleName("Sprint report");
         text.setEditable(false);
         text.setCaretPosition(0);
         JScrollPane scroll = new JScrollPane(text);

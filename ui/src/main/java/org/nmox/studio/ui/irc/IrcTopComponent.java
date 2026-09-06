@@ -998,7 +998,7 @@ public final class IrcTopComponent extends TopComponent {
             }
         }
         boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
-        findCount.setText(findMatches.size() + (capped ? "+" : "") + " matches");
+        findCount.setText(capped ? findMatches.size() + "+ matches" : org.nmox.studio.core.util.Plural.of(findMatches.size(), "match", "matches"));
         findNext();
     }
 

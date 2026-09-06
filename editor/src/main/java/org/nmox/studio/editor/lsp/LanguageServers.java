@@ -135,6 +135,19 @@ public final class LanguageServers {
         cmd.add(useLocal ? local.getAbsolutePath() : bin);
         cmd.addAll(List.of(args));
         // report the package name, not the resolved node_modules path
+        if ("typescript-language-server".equals(bin)) {
+            // the TypeScript wall, spoken before the spawn (v2.85.0): a
+            // typescript 7 where the server looks means an initialize that
+            // fails on every file open; refuse with the door instead
+            String resolved = useLocal ? local.getAbsolutePath() : ToolLocator.resolve(bin);
+            File serverBin = resolved == null ? null : new File(resolved);
+            TsServerPrecheck.Verdict v = TsServerPrecheck.check(dir,
+                    serverBin != null && serverBin.isAbsolute() ? serverBin : null);
+            if (v.kind() == TsServerPrecheck.Kind.NO_TSSERVER) {
+                LanguageServerHealth.reportNoTsserver(v.version());
+                return null;
+            }
+        }
         return reported(launch(lookup, cmd), bin);
     }
 

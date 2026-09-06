@@ -12,9 +12,12 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
  * the platform's character matcher does the searching, we just declare
  * the pairs for our MIME types.
  */
+// positioned (v2.85.0): 300 keeps today's effective order behind the
+// platform's LegacyEssMatcher@100 and DefaultMatcher@200 — the Ordering
+// warning goes, the matcher chain does not move
 @MimeRegistrations({
-    @MimeRegistration(mimeType = "text/javascript", service = BracesMatcherFactory.class),
-    @MimeRegistration(mimeType = "text/typescript", service = BracesMatcherFactory.class)
+    @MimeRegistration(mimeType = "text/javascript", service = BracesMatcherFactory.class, position = 300),
+    @MimeRegistration(mimeType = "text/typescript", service = BracesMatcherFactory.class, position = 300)
 })
 public class JsBracesMatcherFactory implements BracesMatcherFactory {
 

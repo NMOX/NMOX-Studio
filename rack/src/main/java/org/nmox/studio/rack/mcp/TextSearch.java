@@ -37,9 +37,11 @@ final class TextSearch {
     /** Files that exist to hold secrets: never searched, never listed (v2.84.0). */
     static final Set<String> SECRET_NAMES = Set.of(
             ".npmrc", ".yarnrc", ".yarnrc.yml", ".netrc", ".git-credentials", ".pypirc",
+            ".htpasswd", ".dockercfg", "secrets.json", "secrets.yaml", "secrets.yml", "credentials.json",
             "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519");
+    // "env" covers app.env / production.env (docker --env-file's shape) beside the dotenv family
     static final Set<String> SECRET_EXTENSIONS = Set.of(
-            "pem", "key", "p12", "pfx", "jks", "keystore", "ppk");
+            "env", "pem", "key", "p12", "pfx", "jks", "keystore", "ppk");
 
     private TextSearch() {
     }
@@ -110,13 +112,21 @@ final class TextSearch {
 
     /** The project's files relative to root, forward-slashed, the same walk and caps search uses (v2.84.0). */
     static List<String> relativeFiles(Path root) {
+        return relativeFilesBounded(root).files();
+    }
+
+    /** The file list and whether the walk's cap cut it short (v2.85.0): a capped list is a floor, not a total. */
+    record Listing(List<String> files, boolean truncated) {
+    }
+
+    static Listing relativeFilesBounded(Path root) {
         List<Path> files = new java.util.ArrayList<>();
-        collect(root, files);
+        boolean truncated = collect(root, files);
         List<String> rel = new java.util.ArrayList<>(files.size());
         for (Path f : files) {
             rel.add(root.relativize(f).toString().replace(java.io.File.separatorChar, '/'));
         }
-        return rel;
+        return new Listing(rel, truncated);
     }
 
     /** Files under root in walk order; true when the file cap stopped the walk. */

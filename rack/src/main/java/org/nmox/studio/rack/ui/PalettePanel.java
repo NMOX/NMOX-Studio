@@ -100,6 +100,7 @@ public class PalettePanel extends JPanel {
             }
         });
         JList<Object> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Device shelf");
         list.setBackground(RackStyle.RACK_BG);
         list.setCellRenderer(new DeviceRenderer());
         // setDragEnabled throws HeadlessException by spec; headless JVMs

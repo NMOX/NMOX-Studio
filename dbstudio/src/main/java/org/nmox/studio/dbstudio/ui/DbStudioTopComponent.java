@@ -162,6 +162,9 @@ public final class DbStudioTopComponent extends TopComponent {
     private final ConsoleHistory history = new ConsoleHistory();
 
     private final JTree tree = new JTree();
+    {
+        tree.getAccessibleContext().setAccessibleName("Connections and schema");
+    }
     private final JButton editButton = new JButton("Edit");
     private final JButton removeButton = new JButton("Remove");
     private final JButton testButton = new JButton("Test");
@@ -178,6 +181,9 @@ public final class DbStudioTopComponent extends TopComponent {
     /** Guards the saved-combo's action listener during programmatic refills. */
     private boolean savedComboRefreshing;
     private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(200, 1, 1_000_000, 100));
+    {
+        limitSpinner.getAccessibleContext().setAccessibleName("Row limit");
+    }
     private final JLabel statusLabel = new JLabel(" ");
 
     /** The project's persisted console history (newest first) — mirrors .nmoxdb.json. */
@@ -630,7 +636,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return base + " ✗";
         }
         if (result.isResultSet()) {
-            return base + " · " + result.rowCount() + (result.truncated() ? "+" : "") + " rows";
+            return base + " · " + (result.truncated() ? result.rowCount() + "+ rows" : org.nmox.studio.core.util.Plural.of(result.rowCount(), "row"));
         }
         return base + " · " + result.updateCount() + " updated";
     }
@@ -713,6 +719,7 @@ public final class DbStudioTopComponent extends TopComponent {
         });
         JTable table = new JTable(model);
         table.setFont(MONO);
+        table.getAccessibleContext().setAccessibleName("Result rows");
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         // editable grid shows external DB cell values — keep markup literal

@@ -42,6 +42,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
             }
         };
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
+        table.getAccessibleContext().setAccessibleName("Environment Doctor probes");
         table.setRowHeight(22);
         table.getColumnModel().getColumn(0).setMaxWidth(28);
         table.getColumnModel().getColumn(1).setPreferredWidth(90);

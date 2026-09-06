@@ -50,6 +50,7 @@ public final class AskOracleAction implements ActionListener {
                 fileName(doc), language(doc), selection, "");
 
         JTextField question = new JTextField();
+        question.getAccessibleContext().setAccessibleName("Question about the selection");
         javax.swing.JComboBox<String> model =
                 new javax.swing.JComboBox<>(AskOracleModel.LABELS);
         model.setSelectedIndex(AskOracleModel.chosenIndex());

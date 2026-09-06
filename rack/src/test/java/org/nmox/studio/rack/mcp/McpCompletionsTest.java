@@ -77,7 +77,10 @@ class McpCompletionsTest {
         JSONObject completion = c.complete(prompt("where_is", "name", "sym")).getJSONObject("completion");
         assertThat(completion.getJSONArray("values").length()).isEqualTo(McpCompletions.MAX_VALUES);
         assertThat(completion.getBoolean("hasMore")).isTrue();
-        assertThat(completion.getInt("total")).isEqualTo(101);
+        assertThat(completion.has("total")).as("past the cap the index gives a floor, not a total — say nothing rather than 101 (v2.85.0)").isFalse();
+        JSONObject few = c.complete(prompt("where_is", "name", "sym00")).getJSONObject("completion");
+        assertThat(few.getInt("total")).as("under the cap the count is exact").isEqualTo(10);
+        assertThat(few.getBoolean("hasMore")).isFalse();
     }
 
     @Test
@@ -161,5 +164,23 @@ class McpCompletionsTest {
         String search = McpProtocol.handle("{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"resources/subscribe\",\"params\":{\"uri\":\"nmox://search/todo\"}}", tools, "2.84.0", subs, c);
         assertThat(search).as("a search instance has nothing on disk to follow").contains("-32002");
         subs.close();
+    }
+
+    @Test
+    @DisplayName("past the file walk's cap the file list is a floor: hasMore says so and no total is given (v2.85.0)")
+    void fileListPastTheCapIsAFloor(@TempDir Path root) throws Exception {
+        Files.createDirectories(root.resolve("src"));
+        for (int i = 0; i < TextSearch.MAX_FILES + 5; i++) {
+            Files.writeString(root.resolve("src/f" + i + ".js"), "");
+        }
+        McpCompletions c = new McpCompletions(index(List.of(), false), McpCompletions.rootOf(root));
+        JSONObject completion = c.complete(resource("nmox://outline/{file}", "file", "src/")).getJSONObject("completion");
+        assertThat(completion.getJSONArray("values").length()).isEqualTo(McpCompletions.MAX_VALUES);
+        assertThat(completion.getBoolean("hasMore")).isTrue();
+        assertThat(completion.has("total")).as("a capped walk cannot count").isFalse();
+        JSONObject narrow = c.complete(resource("nmox://outline/{file}", "file", "src/f1999")).getJSONObject("completion");
+        assertThat(narrow.getJSONArray("values").length()).isLessThan(McpCompletions.MAX_VALUES);
+        assertThat(narrow.getBoolean("hasMore")).as("few listed, but the walk was cut: more may exist").isTrue();
+        assertThat(narrow.has("total")).isFalse();
     }
 }

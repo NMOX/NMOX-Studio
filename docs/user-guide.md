@@ -123,7 +123,9 @@ classic web is first-class, not an error.
 (Vite + Svelte 5, runes syntax), Angular, Vanilla JS, Elixir/Phoenix,
 PHP Web (LEMP, with compose file and front controller), and Classic Web
 (jQuery). Each template arrives with lint/format/test configs wired and
-a git repo initialized.
+a git repo initialized — one scaffold commit that, when the wizard runs
+the install for you, also holds the lockfile, so your first `git status`
+is clean.
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.
@@ -189,7 +191,11 @@ double-clicked in the **NPM Explorer** or run from a package.json line
 (Run Script), a Focused Test or a Tests-window run, and — since
 v2.74.0 — every rack device's run too (a device stopped this way reads
 STOPPED on its faceplate, as if you had pressed its own STOP, and so
-does the rack's own **Stop All** since v2.75.0); the Workbench's
+does the rack's own **Stop All** since v2.75.0 — and since v2.84.0 the
+RECORD agrees: the Output tab's last line reads `[exit N] stopped`,
+the flight recorder files a STOPPED, `run_history` says `stopped`,
+and neither BLACKBOX nor ORACLE mistakes your own stop for a
+failure); the Workbench's
 RUNNING section and ⌘I list them all. A script the
 NPM Explorer started prints a local address the same way the ▶ does
 (the ⇄ chip lights, Live Servers sees it), shows **● running since
@@ -799,7 +805,11 @@ native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.) The same name law covers every
 window the product opens — the Workbench, the studios, the explorers,
 the Welcome, IRC, the Tests window: every button they paint carries an
-accessible name, and a window added without one fails the build.
+accessible name, and a window added without one fails the build. Since
+v2.85.0 the law reaches the rest of the input family too — every text
+area, text field, combo, spinner, table, list and tree in the product
+speaks its own name (taken from the label beside it), three build gates
+holding it.
 
 ![Keyboard focus on the rack: a focus ring on DYNAMO's GO button after tabbing from the RUNNER knob](images/a11y-knob-focus.png)
 
@@ -1414,7 +1424,9 @@ keymaps never costs you the studio chords.
   they resist, descendants included.
 - **BLACKBOX** (add it to your rack) is a flight recorder: every launch
   and exit, durations, trends, and "what changed since the last green
-  build" when something breaks.
+  build" when something breaks. A run you stopped yourself reads
+  STOPPED — neither a green nor a failure, and never the thing ORACLE
+  is asked to explain.
 - **SONAR** shows who owns your ports, cross-referenced with Docker, with
   a one-click kill for the squatter on 3000.
 - **Never-clobber files.** All four studio workspace files
@@ -1440,7 +1452,8 @@ Some spaces **check your work**: pick a space with checkpoints (Your
 First Web Page, Go, Rust, Playwright today) and **File ▸ Check My
 Work** verifies the exercises for real — file claims checked
 pure-Java (including *absent* checks, which is how "you changed the
-heading" is verifiable: the sample's original text must be gone), and
+heading" is verifiable: the sample's original text must be gone, and
+*atLeast* counts, which is how "you added a third item" is), and
 command claims through the space's own toolchain (`cargo test` is the
 honest verifier of a Rust exercise). Every ✗ answers with the space's
 own hint. Any catalog entry — including your drop-ins below — can
@@ -1504,9 +1517,10 @@ six are done, or when you press **Hide this list**.
   it, then **Open on GitHub** pre-fills a new issue that you submit, or
   **Copy** it. The product never sends anything itself.
 - **Keyboard Shortcuts…** — every NMOX chord in your active keymap
-  profile, read from the running keymap through the platform, so it
-  cannot drift from what the menus do. Editor-kit chords (Emmet ⌥⌘E,
-  template Go to Declaration ⌘B) are documented in chapter 5.
+  profile plus the global ones (the Welcome's ⇧⌘E / ⇧⌘N / ⇧⌘L doors),
+  read from the running keymap through the platform, so it cannot drift
+  from what the menus do. Editor-kit chords (Emmet ⌥⌘E, template Go to
+  Declaration ⌘B) are documented in chapter 5.
 
 ## 12. When something's wrong
 
@@ -1514,7 +1528,11 @@ six are done, or when you press **Hide this list**.
   node, npm, docker, forge, composer, gopls, … — showing found versions
   and the install command for anything missing.
 - **Missing language server / missing tool**: the IDE tells you the
-  command to run (or offers to run it), never a bare failure.
+  command to run (or offers to run it), never a bare failure. One
+  wall has its own door: TypeScript 7 (the Go port) ships no tsserver,
+  so if the typescript the language server finds is 7, the editor says
+  so once and offers `npm install -g typescript@5` — the install the
+  IDE runs for you pins 5 for the same reason.
 - **Port already in use**: the error names the process squatting on it
   (SONAR will kill it).
 - **A device's GO does nothing**: check its LCD — devices explain

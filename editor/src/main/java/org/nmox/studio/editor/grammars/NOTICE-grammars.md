@@ -154,3 +154,28 @@ YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
 bundled as *editors*: the NetBeans ide cluster ships native editor
 support for those mimes, and a second registration would duplicate
 editors. (The embed-only YAML grammar above does not bind an editor.)
+
+## Scope stubs (in-house, not vendored)
+
+`stub-source.*.json` (v2.85.0) are empty-patterns grammars registered
+only for their scope names — `source.x86_64`, `source.x86`,
+`source.asm`, `source.arm`, `source.sql`, `source.sassdoc`,
+`source.glsl`, `source.stylus`, `source.dockerfile`, `source.batchfile`,
+`source.diff`, and a second batch of thirty-one (`source.js.regexp`,
+`source.js.jquery`, `source.c++`, `text.elixir`, `text.html.elixir`,
+`source.regexp.python`, `source.postscript`, `source.less`,
+`source.cpp.embedded.macro`, `text.xml.xsl`, `text.tex.latex`,
+`text.log`, `text.git-rebase`, `text.git-commit`, `text.bibtex`,
+`source.twig`, `source.powershell`, `source.perl.6`, `source.objc`,
+`source.json.comments`, `source.go`, `source.asp.vb.net`,
+`source.css.postcss`, `text.html.javadoc`, `source.toml`,
+`source.postcss`, `source.openesql`, `source.ocaml.ocamldoc`,
+`source.ocaml.interface`, `source.json5`, `regexp`) — the scopes
+vendored grammars (and the platform's own markdown fences) include and
+this product ships no grammar for. A stub must go the day a real
+grammar arrives for its scope; the embed test fails on a scope
+registered twice. Without
+them TM4E logged "No grammar source for scope" 235 times per boot and
+pruned every including rule; with them the include resolves, the region
+reads as plain text, and the log is quiet. They are written here, carry
+no license, and are not counted among the vendored grammars.

@@ -56,6 +56,7 @@ public final class SwitchProjectAction implements ActionListener {
         DefaultListModel<File> model = new DefaultListModel<>();
         recents.forEach(model::addElement);
         JList<File> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Recent projects");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setVisibleRowCount(Math.min(10, recents.size()));
@@ -71,6 +72,7 @@ public final class SwitchProjectAction implements ActionListener {
         });
 
         JTextField filter = new JTextField();
+        filter.getAccessibleContext().setAccessibleName("Filter projects");
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String needle = filter.getText().toLowerCase(java.util.Locale.ROOT);

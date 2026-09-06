@@ -80,7 +80,7 @@ public final class DevToolsPanel extends JPanel {
 
     // DOM tab
     private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea domDetails = readOnlyArea();
+    private final JTextArea domDetails = readOnlyArea("DOM element details");
     private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
@@ -111,7 +111,7 @@ public final class DevToolsPanel extends JPanel {
 
     // Svelte tab
     private final DefaultTreeModel svelteTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea svelteDetails = readOnlyArea();
+    private final JTextArea svelteDetails = readOnlyArea("Svelte component details");
     private final JLabel svelteStatus = new JLabel(" ");
 
     // Angular tab
@@ -157,12 +157,14 @@ public final class DevToolsPanel extends JPanel {
     private JPanel consoleTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JList<ConsoleModel.Entry> list = new JList<>(consoleList);
+        list.getAccessibleContext().setAccessibleName("Console output");
         list.setCellRenderer(new ConsoleRenderer());
         panel.add(consoleDropped, BorderLayout.NORTH);
         consoleDropped.setVisible(false);
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel south = new JPanel(new BorderLayout(4, 0));
         JTextField repl = new JTextField();
+        repl.getAccessibleContext().setAccessibleName("Console input");
         repl.putClientProperty("JTextField.placeholderText", "Run JavaScript in the page…");
         repl.addActionListener(e -> {
             String expr = repl.getText();
@@ -282,6 +284,7 @@ public final class DevToolsPanel extends JPanel {
         // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
         // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
         JTree tree = new JTree(model);
+        tree.getAccessibleContext().setAccessibleName("DOM tree");
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);
         }
@@ -294,6 +297,7 @@ public final class DevToolsPanel extends JPanel {
         // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
         // (v1.206.0). The safety is identical (html.disable on the renderer).
         JTable table = new JTable(model);
+        table.getAccessibleContext().setAccessibleName("Network requests");
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
         table.setDefaultRenderer(Object.class, plain);
@@ -435,6 +439,7 @@ public final class DevToolsPanel extends JPanel {
                 StyleSummary.KEYS.toArray(String[]::new));
         prop.setEditable(true);
         JTextField value = new JTextField(18);
+        value.getAccessibleContext().setAccessibleName("Value");
         JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         form.add(new JLabel("Property:"));
         form.add(prop);
@@ -1370,8 +1375,9 @@ public final class DevToolsPanel extends JPanel {
         };
     }
 
-    private static JTextArea readOnlyArea() {
+    private static JTextArea readOnlyArea(String accessibleName) {
         JTextArea area = new JTextArea();
+        area.getAccessibleContext().setAccessibleName(accessibleName);
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         area.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));

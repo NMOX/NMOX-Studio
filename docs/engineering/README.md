@@ -19,6 +19,14 @@ NMOX Studio actually works.
   items with their deferral reasons, closed items by version.
 - **[nbm-signing.md](./nbm-signing.md)** — how the secret-gated NBM
   signing pipeline is wired, and how to turn it on.
+- **[futures-2031.md](./futures-2031.md)** and
+  **[competitive-lens.md](./competitive-lens.md)** — the two living
+  backlogs: the bets argued from trajectories, and the rival's relief
+  list.
+- **[agent-port-execution-dossier.md](./agent-port-execution-dossier.md)**
+  — the design (not the decision) for the Agent Port's execution
+  verbs: a per-session grant armed at the keyboard, lanes not
+  commands, tools that appear only while armed.
 
 Outside this directory, [CLAUDE.md](../../CLAUDE.md) is the deep
 architecture reference and [the docs index](../README.md) is the way in

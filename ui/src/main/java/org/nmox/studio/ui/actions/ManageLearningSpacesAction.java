@@ -62,15 +62,18 @@ public final class ManageLearningSpacesAction implements ActionListener {
         // (the v1.33.1 lesson: a network-mounted home must not freeze a click)
         SPACES_RP.post(() -> {
             java.util.List<File> spaces = LearningSpace.list();
-            SwingUtilities.invokeLater(() -> showDialog(spaces));
+            int catalogSize = org.nmox.studio.rack.projectstudio.LearningCatalog.all().size();
+            SwingUtilities.invokeLater(() -> showDialog(spaces, catalogSize));
         });
     }
 
-    private void showDialog(java.util.List<File> spaces) {
+    private void showDialog(java.util.List<File> spaces, int catalogSize) {
         if (spaces.isEmpty()) {
             // the empty shelf OFFERS the door, default button acts
             // (the experiments manager's v2.36.1 sentence, mirrored)
-            Object browse = "Browse the 92 tutorials…";
+            // the catalog counts itself; the read stays off the EDT with the
+            // shelf scan that brought us here (v2.85.0)
+            Object browse = "Browse the " + catalogSize + " tutorials…";
             NotifyDescriptor d = new NotifyDescriptor(
                     "No learning spaces yet — pick a language, framework, or"
                     + " library and it arrives with sample code, a walkthrough,"
@@ -78,7 +81,11 @@ public final class ManageLearningSpacesAction implements ActionListener {
                     "Learning Spaces", NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{browse, NotifyDescriptor.CANCEL_OPTION}, browse);
-            if (DialogDisplayer.getDefault().notify(d) == browse) {
+            // equals, not ==: the option is built at runtime now (SpotBugs
+            // ES_COMPARING_STRINGS_WITH_EQ caught the identity compare on the
+            // sixth insurance verify); the descriptor hands back this very
+            // object, so equals is exact
+            if (browse.equals(DialogDisplayer.getDefault().notify(d))) {
                 javax.swing.Action pick = org.openide.awt.Actions.forID("File",
                         "org.nmox.studio.ui.actions.NewLearningSpaceAction");
                 if (pick != null) {
@@ -91,6 +98,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
         spaces.forEach(model::addElement);
 
         JList<File> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Learning spaces shelf");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {
@@ -120,7 +128,11 @@ public final class ManageLearningSpacesAction implements ActionListener {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JLabel header = new JLabel("Sizing…");
-        header.getAccessibleContext().setAccessibleName("Learning spaces shelf summary");
+        // the NAME follows the text (count, disk cost, lifecycle) — a
+        // constant name here was what a screen reader heard instead of it
+        // (v2.85.0); the role goes in the description
+        header.getAccessibleContext().setAccessibleDescription(
+                "Learning spaces shelf summary: how many, their disk cost, and the lifecycle");
         panel.add(header, BorderLayout.NORTH);
         SPACES_RP.post(() -> {
             long bytes = 0;

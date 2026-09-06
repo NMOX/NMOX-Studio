@@ -101,7 +101,9 @@ answers `where_is`'s `name` from the symbol index (the same hits
 `find_symbol` returns, distinct, prefix hits first) and `{file}` from
 the project's own files (prefix hits, then contains; the search walk's
 skip list applies, so `node_modules` never completes) — at most 100
-values, with the honest `total` and `hasMore`. The search template's
+values, `hasMore` when the cap cut them, and `total` only when the
+count is exact (a file list always is; past the cap the symbol index
+answers a floor, so no number is given rather than a wrong one). The search template's
 literal is anything, so it completes to nothing; an unknown prompt,
 template or argument name is refused as `-32602`.
 
@@ -130,13 +132,35 @@ curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
 **See:** `checkout (function) — src/cart.js:12`, and the same as
 `structuredContent.hits[0]`.
 
+The stream, by hand: open it in one shell and subscribe from another —
+
+```bash
+curl -N -s "$URL" -H "Authorization: Bearer $TOKEN" -H "Accept: text/event-stream"
+```
+
+```bash
+curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","id":2,"method":"resources/subscribe","params":{"uri":"nmox://runs"}}'
+curl -s -X POST "$URL" -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"logging/setLevel","params":{"level":"debug"}}'
+```
+
+**See:** `: connected`, then `: keepalive` every fifteen seconds; press
+▶ and the first shell prints `notifications/resources/updated` for
+`nmox://runs` and every line the run prints as `notifications/message`
+(`$ npm run dev` at `info`, the output at `debug`); press ■ and
+`[exit 143] stopped` arrives at `info`.
+
 The same walk with the **official client**, every primitive at once,
 ships in the repo: `scripts/agent-port-walk.mjs` (its header says how
 to install `@modelcontextprotocol/sdk` in a scratch directory and
 where the URL and token go — shell variables, never a command line).
-It prints one line per step; the "expect a refusal" steps print FAIL
-on purpose, because the refusal is the pass; press ▶ and ■ in the IDE
-while it listens and the log messages arrive.
+It prints one line per step and ends with WALK CLEAN or the count of
+surprises as its exit code (a refusal step counts an ANSWER as the
+surprise), so a CI job can read it; press ▶ and ■ in the IDE while it
+listens and the log messages arrive.
 
 ## 5. The refusals are features
 
@@ -150,7 +174,7 @@ while it listens and the log messages arrive.
 | Read `nmox://nonesuch` | JSON-RPC `-32002` (resource not found) |
 | Ask `where_is` without `name` | `-32602`, naming the missing argument |
 | Ask for a file outside the project (`../../.zshrc`) | `outline` refuses — *outside the aimed project* — and never reads it |
-| Search for a value that lives in `.env`, `.npmrc`, or a `.pem` — or ask for their outline | nothing — those files are never searched, never counted, never completed, and `outline` refuses them by name; the IDE's own env law (a key's name, never its value) holds for agents too |
+| Search for a value that lives in `.env` (or `app.env`), `.npmrc`, `.htpasswd`, `secrets.yaml`, `credentials.json`, or a `.pem` — or ask for their outline | nothing — those files are never searched, never counted, never completed, and `outline` refuses them by name; the IDE's own env law (a key's name, never its value) holds for agents too |
 | Set the log level to `loud` | `-32602`, naming the eight levels |
 | Ask it to run, write, or stop anything | there is no such tool; the ledger test keeps it that way |
 

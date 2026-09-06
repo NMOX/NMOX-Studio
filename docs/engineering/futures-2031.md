@@ -105,6 +105,12 @@ WorkspaceTrust; it needs a consent model of its own (a per-session
 grant the user arms at the keyboard, scoped to named verbs). The
 read-only ledger is what makes that a DELIBERATE future step instead
 of an accident waiting in a pull request.
+**Designed 2026-09-05 (the v2.84.0 shift's close):**
+[agent-port-execution-dossier.md](./agent-port-execution-dossier.md)
+— lanes not commands, a per-session grant armed only at the keyboard,
+verbs that appear in `tools/list` only while armed, every existing law
+kept in order, the audit in the flight recorder. Three ways to go,
+David's call.
 
 ### F5 — TypeScript's native port replaces tsserver. — RECORDED (watch item)
 
@@ -121,6 +127,21 @@ gains native-TS support, the ceiling moves as its own gauntleted arc.
 is `7.0.0-dev.20260707.2` (still a dev tag, no stable 7.0), shipping one
 binary, `tsgo`; no `tsserverlibrary.js`, so the ngserver pin (TS 5)
 still binds. Watch stays RECORDED; re-measure when a non-dev tag lands.
+**The trigger fired the same evening (v2.85.0):** `typescript@latest`
+on npm is `7.0.2` — the Go port, stable, under the plain package name
+(`rc` 7.0.1-rc, `next` 7.1.0-dev; `typescript@5` resolves 5.9.3) — and
+this machine already had it: a global `typescript` 7.0.2 beside
+`typescript-language-server` 5.3.0, so every initialize failed
+("Could not find a valid TypeScript installation") and the editor's
+TypeScript intelligence had been silently dead behind a WARNING stack
+trace per file open. The product's answer is the bet's first paid
+unit: the catalog's install pins `typescript@5`, a pure precheck
+names a tsserver-less typescript BEFORE the spawn, and a once-only
+balloon offers the 5 install. The arc ahead is what the bet always
+said — the day typescript-language-server (and ngserver) speak the
+native server, the pin moves as its own gauntleted arc; until then an
+unpinned `npm i -g typescript` is a trap, and the Doctor's F5 note
+("tsgo 7.0.0-dev") was this same fact seen from the other side.
 
 ### F7 — TypeScript runs without a build. — DELIVERED (v2.69.0, the run lane)
 

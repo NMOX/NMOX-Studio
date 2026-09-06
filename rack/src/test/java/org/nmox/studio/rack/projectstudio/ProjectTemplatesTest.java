@@ -343,6 +343,89 @@ class ProjectTemplatesTest {
                 .as("the first commit").contains("Initial commit");
     }
 
+    @Test
+    @org.junit.jupiter.api.DisplayName("The install's lockfile joins the scaffold commit: one commit, clean tree")
+    void lockfileJoinsTheInitialCommit() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(gitAvailable(), "git not installed");
+        java.io.File dir = scaffoldedRepo("locked-app");
+        Files.writeString(dir.toPath().resolve("package-lock.json"), "{\"lockfileVersion\": 3}");
+        org.assertj.core.api.Assertions.assertThat(git(dir, "status", "--porcelain"))
+                .as("the walk's find: the lockfile starts untracked").contains("?? package-lock.json");
+
+        org.assertj.core.api.Assertions.assertThat(ProjectTemplates.foldLockfileIntoInitialCommit(dir))
+                .as("amended").isTrue();
+
+        org.assertj.core.api.Assertions.assertThat(git(dir, "status", "--porcelain"))
+                .as("first git status is clean").isBlank();
+        org.assertj.core.api.Assertions.assertThat(git(dir, "log", "--format=%s").strip())
+                .as("still exactly one commit, ours").isEqualTo(ProjectTemplates.INITIAL_COMMIT);
+        org.assertj.core.api.Assertions.assertThat(git(dir, "ls-tree", "--name-only", "HEAD"))
+                .as("the lockfile is in the commit").contains("package-lock.json");
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("The fold refuses when anything but a fresh lockfile changed")
+    void foldRefusesWhenTheUserTouchedTheTree() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(gitAvailable(), "git not installed");
+        java.io.File dir = scaffoldedRepo("edited-app");
+        String head = git(dir, "rev-parse", "HEAD");
+        Files.writeString(dir.toPath().resolve("package-lock.json"), "{}");
+        Files.writeString(dir.toPath().resolve("README.md"), "# mine now\n");
+
+        org.assertj.core.api.Assertions.assertThat(ProjectTemplates.foldLockfileIntoInitialCommit(dir))
+                .as("an edit the user made while the install ran is never swept into our commit")
+                .isFalse();
+
+        org.assertj.core.api.Assertions.assertThat(git(dir, "rev-parse", "HEAD")).isEqualTo(head);
+        org.assertj.core.api.Assertions.assertThat(git(dir, "status", "--porcelain"))
+                .contains("?? package-lock.json").contains("M README.md");
+    }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("The fold refuses past the scaffold commit, with a remote, and without a lockfile")
+    void foldRefusesOutsideItsExactShape() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(gitAvailable(), "git not installed");
+        // no lockfile at all: nothing to fold
+        java.io.File bare = scaffoldedRepo("bare-app");
+        org.assertj.core.api.Assertions.assertThat(ProjectTemplates.foldLockfileIntoInitialCommit(bare)).isFalse();
+
+        // a second commit: history is the user's now
+        java.io.File committed = scaffoldedRepo("committed-app");
+        Files.writeString(committed.toPath().resolve("notes.txt"), "x");
+        git(committed, "add", "notes.txt");
+        git(committed, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-m", "user work");
+        Files.writeString(committed.toPath().resolve("package-lock.json"), "{}");
+        String head = git(committed, "rev-parse", "HEAD");
+        org.assertj.core.api.Assertions.assertThat(ProjectTemplates.foldLockfileIntoInitialCommit(committed)).isFalse();
+        org.assertj.core.api.Assertions.assertThat(git(committed, "rev-parse", "HEAD")).isEqualTo(head);
+
+        // a remote: the commit may have left the machine
+        java.io.File pushed = scaffoldedRepo("pushed-app");
+        git(pushed, "remote", "add", "origin", parent.resolve("nowhere.git").toString());
+        Files.writeString(pushed.toPath().resolve("package-lock.json"), "{}");
+        head = git(pushed, "rev-parse", "HEAD");
+        org.assertj.core.api.Assertions.assertThat(ProjectTemplates.foldLockfileIntoInitialCommit(pushed)).isFalse();
+        org.assertj.core.api.Assertions.assertThat(git(pushed, "rev-parse", "HEAD")).isEqualTo(head);
+        org.assertj.core.api.Assertions.assertThat(git(pushed, "status", "--porcelain")).contains("?? package-lock.json");
+    }
+
+    /** A generated project with its scaffold commit — the wizard's state before the install. */
+    private java.io.File scaffoldedRepo(String name) throws Exception {
+        java.io.File dir = parent.resolve(name).toFile();
+        ProjectTemplates.VANILLA.generate(dir, name);
+        ProjectTemplates.initGitRepo(dir);
+        return dir;
+    }
+
+    private static String git(java.io.File dir, String... args) throws Exception {
+        java.util.List<String> cmd = new java.util.ArrayList<>(java.util.List.of("git", "-C", dir.getAbsolutePath()));
+        cmd.addAll(java.util.List.of(args));
+        Process p = new ProcessBuilder(cmd).redirectErrorStream(true).start();
+        String out = new String(p.getInputStream().readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+        p.waitFor();
+        return out.strip();
+    }
+
     /** The ordered device-type roster of a serialized patch. */
     private static java.util.List<String> deviceTypes(JSONObject patch) {
         java.util.List<String> types = new java.util.ArrayList<>();

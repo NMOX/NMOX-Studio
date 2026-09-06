@@ -134,9 +134,13 @@ public class JsFoldManager implements FoldManager {
         managed.clear();
     }
 
+    // positioned (v2.85.0, the quieter-boot law's fold/braces half): an
+    // unpositioned row beside the platform's positioned ones warned on
+    // every boot; 2000 keeps today's effective order (unpositioned rows
+    // sort AFTER the platform's 950 and 1950) — the warning goes, nothing moves
     @MimeRegistrations({
-        @MimeRegistration(mimeType = "text/javascript", service = FoldManagerFactory.class),
-        @MimeRegistration(mimeType = "text/typescript", service = FoldManagerFactory.class)
+        @MimeRegistration(mimeType = "text/javascript", service = FoldManagerFactory.class, position = 2000),
+        @MimeRegistration(mimeType = "text/typescript", service = FoldManagerFactory.class, position = 2000)
     })
     public static class Factory implements FoldManagerFactory {
         @Override

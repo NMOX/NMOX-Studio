@@ -170,6 +170,12 @@ public final class ApiClientTopComponent extends TopComponent {
     // committable .nmoxapi.json — it lives in the OS keychain.
     private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
     private final JTable testsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
+    {
+        tree.getAccessibleContext().setAccessibleName("Collections and requests");
+        paramsTable.getAccessibleContext().setAccessibleName("Query parameters");
+        headersTable.getAccessibleContext().setAccessibleName("Headers");
+        testsTable.getAccessibleContext().setAccessibleName("Tests");
+    }
 
     private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
@@ -396,9 +402,28 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    // the strip's verdict/notice model (v2.85.0): a copy notice shows for a
+    // moment and the send's verdict comes back — the walk found "curl
+    // command copied" erasing "200 · 15ms · 60 B" until the next send
+    private final TransientNotice strip = new TransientNotice();
+    static final int NOTICE_MILLIS = 2_500;
+
     private void status(String text) {
-        statusLabel.setForeground(Color.GRAY);
-        statusLabel.setText(text);
+        long gen = strip.notice(text);
+        show(strip.shown());
+        javax.swing.Timer t = new javax.swing.Timer(NOTICE_MILLIS, e -> show(strip.expire(gen)));
+        t.setRepeats(false);
+        t.start();
+    }
+
+    /** Every verdict rides here so the strip remembers what a notice must restore. */
+    private void verdict(String text, Color color) {
+        show(strip.verdict(text, color));
+    }
+
+    private void show(TransientNotice.Shown s) {
+        statusLabel.setForeground(s.color());
+        statusLabel.setText(s.text());
     }
 
     /**
@@ -413,7 +438,7 @@ public final class ApiClientTopComponent extends TopComponent {
         explainButton.setEnabled(false);
         responseBody.setText("");
         responseHeaders.setText("");
-        statusLabel.setText(" ");
+        show(strip.clear());
         testResults.removeAll();
         standardsPanel.removeAll();
         // the find bar counts matches in the body just wiped — leaving
@@ -1389,8 +1414,7 @@ public final class ApiClientTopComponent extends TopComponent {
             if (inFlight.cancel()) {
                 inFlight = null;
                 sendButton.setText("Send");
-                statusLabel.setForeground(Color.GRAY);
-                statusLabel.setText("Cancelled");
+                verdict("Cancelled", Color.GRAY);
             }
             return;
         }
@@ -1398,8 +1422,7 @@ public final class ApiClientTopComponent extends TopComponent {
             return;
         }
         sendButton.setText("Cancel");
-        statusLabel.setForeground(Color.GRAY);
-        statusLabel.setText("Sending…");
+        verdict("Sending…", Color.GRAY);
         Environment env = workspace.active();
         Map<String, String> vars = env != null ? env.variables : Map.of();
         Request request = current;
@@ -1436,8 +1459,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     SwingUtilities.invokeLater(() -> {
                         recordHistory(request, 0, 0);
                         sendButton.setText("Send");
-                        statusLabel.setForeground(FAIL_RED);
-                        statusLabel.setText(message);
+                        verdict(message, FAIL_RED);
                     });
                 }
             }
@@ -1454,15 +1476,13 @@ public final class ApiClientTopComponent extends TopComponent {
         explainButton.setEnabled(true);
         if (!r.reached()) {
             boolean cancelled = "cancelled".equals(r.error());
-            statusLabel.setForeground(cancelled ? Color.GRAY : FAIL_RED);
-            statusLabel.setText(cancelled ? "Cancelled  ·  " + r.millis() + "ms"
-                    : "No route — " + r.error() + "  ·  " + r.millis() + "ms");
+            verdict(cancelled ? "Cancelled  ·  " + r.millis() + "ms"
+                    : "No route — " + r.error() + "  ·  " + r.millis() + "ms", cancelled ? Color.GRAY : FAIL_RED);
             responseBody.setText(cancelled ? "" : r.error());
             refindInBody();
         } else {
-            statusLabel.setForeground(r.ok() ? OK_GREEN : FAIL_RED);
-            statusLabel.setText(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes())
-                    + (r.truncated() ? "  ·  body truncated at " + humanBytes(r.bytes()) : ""));
+            verdict(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes())
+                    + (r.truncated() ? "  ·  body truncated at " + humanBytes(r.bytes()) : ""), r.ok() ? OK_GREEN : FAIL_RED);
             responseBody.setText(display == null ? r.body() : display);
             refindInBody();
             responseBody.setCaretPosition(0);
