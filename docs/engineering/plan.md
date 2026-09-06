@@ -4011,3 +4011,69 @@ kind. The unit test written that morning had passed on a `text/x-jsx`
 mime no `.jsx` file carries. The rule: where the lexer's mime is coarser than the file,
 the fence reads the extension first. A test can only exercise the inputs
 you imagine; the walk hands you the real one.
+
+### The rest of the morning (units 7–14, v2.87.0 shipped at 09:28 MT as PR #700)
+
+The persona kept paying. After the three grants, seven more units in
+the same shift — each a daily motion of the same job, each reusing a
+mechanism the platform already had:
+
+- **Save Editor Screenshot… / Copy Editor Screenshot** — a slide wants
+  the code, not the IDE: the editor area's selected tab alone at 2x
+  (the v2.83.0 activated-if-editor-else-selection rule as a pure
+  function), named after the document; the clipboard variant is an
+  image-ONLY transferable. Walked: 1828×1404 = exactly 2x the tab,
+  both to disk and to the clipboard (`osascript 'clipboard info'`).
+- **Copy as Markdown with Link** — the block plus the GitHub
+  `blob/<branch>/path#L3-L14` link from disk facts alone
+  (`core.util.GitLink` pure over every remote form, GitHub-only by
+  design; `GitFacts.originUrl` bounded, worktree-aware, the `commondir`
+  pointer confined like ledger 43's `gitdir:`). The branch, not the
+  sha: a local sha never pushed is a 404 dressed as a permalink.
+  Every un-vouchable rung refuses and copies nothing. Walked both legs.
+  The arc review added a rung: an UNSAVED buffer refuses (the block
+  would be the buffer while the link names the committed file).
+- **Show Keystrokes** — the presenter's chord pill via the toolkit's own
+  AWTEventListener, chords-and-function-keys ONLY so typed text never
+  reaches a projector; `core.util.Chords` promoted from the v2.64.0
+  sheet as the one vocabulary. NOT walkable in background mode (a chord
+  arrives as an AX action, not a key event; the pill is a 1.6 s separate
+  window) — recorded as such.
+- **Presentation Mode reaches the Browser and the Output window** — one
+  product-wide state (`core.util.Presentation`, symmetric listeners);
+  the page at 150% of the user's zoom, restored exactly; the Output
+  font +10 pt through the platform's own push
+  (`Controller.updateOptions(copy)`, decompiled) — because the first cut
+  set the DEFAULT singleton and reached NO tab: every OutputTab listens
+  to its IO's own options copy. The walk (run vite, present, photograph)
+  found it; the same walk showed the follow's refusal being overwritten
+  by the mode's own status a moment later.
+- **Copy Project Tree as Markdown** (v2.88.0) — the README motion;
+  `HeavyDirs` and the fence rule promoted to core on their second
+  reader; the walk found the IDE's own workspace files listed as noise.
+
+**The insurance verifies earned their keep — four of eleven were red**,
+each a class worth naming: a scp-like remote regex was the ReDoS shape
+(replaced by an index walk); a `double` field written from a listener
+hop was `AT_NONATOMIC_64BIT_PRIMITIVE` (volatile, EDT-only by contract);
+a lazily-built static overlay was `LI_LAZY_INIT_STATIC` (built under a
+synchronized `setOn`, the PresentationMode idiom); and the night's own
+PlainLabelGateTest refused `label.setText(text)` on a chord — the law is
+the outcome. Two module floors tripped on pure-Swing shells and were
+answered by named exclusions with reasons, never by lowering a floor.
+
+**Walk laws recorded:** `pbpaste` transcodes to MacRoman in a non-UTF-8
+shell (read with `LC_ALL=en_US.UTF-8`; ASCII files hid it for two
+walks); the status line is seen by an `app_screenshot` taken right
+after the gesture, never by an AX static-text probe; a painted tab
+strip refuses AX clicks (the Window menu selects the tab); AX
+`set value` never reaches a Swing chooser's model (raw-input typing +
+a click-by-description does); a JVM's `-p`-less `ps` needs the full
+command line to find the walk instance.
+
+**David's refinement (09:30 MT):** "Stop stopping and waiting for
+hours for the next shift" — the boundary is not the point, the ONE
+gate is. A verified fold ships the moment it is green; the next branch
+forks and keeps building while the chain flies. The 15:05 timer was
+deleted and v2.87.0 shipped at 09:28.
+

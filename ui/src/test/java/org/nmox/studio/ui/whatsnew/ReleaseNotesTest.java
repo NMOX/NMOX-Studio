@@ -66,4 +66,25 @@ class ReleaseNotesTest {
         assertThat(ReleaseNotes.decide("2.64.0", "2.64.0", true)).isEqualTo(Decision.NONE);
         assertThat(ReleaseNotes.decide("2.64.0", "2.63.0", true)).isEqualTo(Decision.SHOW);
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("the Markdown rendering keeps the Keep-a-Changelog heading and the body as written, and notes what was omitted")
+    void rendersMarkdown() {
+        java.util.List<ReleaseNotes.Entry> es = java.util.List.of(
+                new ReleaseNotes.Entry("2.87.0", "2026-09-06", "Lead.\n\n1. **A** — a.\n"),
+                new ReleaseNotes.Entry("2.86.0", "", "Older.\n"));
+        String md = ReleaseNotes.renderMarkdown(es, 3);
+        org.assertj.core.api.Assertions.assertThat(md).isEqualTo(
+                "## [2.87.0] - 2026-09-06\n\nLead.\n\n1. **A** — a.\n\n\n## [2.86.0]\n\nOlder.\n\n_…and 3 earlier releases not shown._\n");
+        org.assertj.core.api.Assertions.assertThat(ReleaseNotes.renderMarkdown(es.subList(0, 1), 0)).doesNotContain("not shown");
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("the dialog offers Copy as Markdown only when entries are shown, and the copy is the Markdown rendering")
+    void copyOptionWiring() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/ui/whatsnew/WhatsNew.java"));
+        org.assertj.core.api.Assertions.assertThat(src).contains("ReleaseNotes.renderMarkdown(shown, omitted)")
+                .contains("markdown == null ? new Object[]{github, close} : new Object[]{copy, github, close}")
+                .contains("new java.awt.datatransfer.StringSelection(markdown)");
+    }
 }

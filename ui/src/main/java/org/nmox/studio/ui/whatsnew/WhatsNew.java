@@ -84,27 +84,35 @@ public final class WhatsNew {
         RP.post(() -> {
             List<ReleaseNotes.Entry> all = ReleaseNotes.parse(bundledChangelog());
             String text;
+            List<ReleaseNotes.Entry> shown = List.of();
+            int omitted = 0;
             if (all.isEmpty()) {
                 text = "The release notes are missing from this install.";
             } else if (running == null) {
-                text = ReleaseNotes.render(List.of(ReleaseNotes.head(all)), 0);
+                shown = List.of(ReleaseNotes.head(all));
+                text = ReleaseNotes.render(shown, 0);
             } else if (lastSeen == null) {
                 ReleaseNotes.Entry e = ReleaseNotes.entryFor(all, running);
-                text = ReleaseNotes.render(List.of(e == null ? ReleaseNotes.head(all) : e), 0);
+                shown = List.of(e == null ? ReleaseNotes.head(all) : e);
+                text = ReleaseNotes.render(shown, 0);
             } else {
                 List<ReleaseNotes.Entry> unseen = ReleaseNotes.since(all, lastSeen, running);
+                shown = unseen;
+                omitted = ReleaseNotes.omitted(all, lastSeen, running);
                 text = unseen.isEmpty()
                         ? "No release notes between " + lastSeen + " and " + running + "."
-                        : ReleaseNotes.render(unseen, ReleaseNotes.omitted(all, lastSeen, running));
+                        : ReleaseNotes.render(unseen, omitted);
             }
             String finalText = text;
+            String markdown = shown.isEmpty() ? null : ReleaseNotes.renderMarkdown(shown, omitted);
             SwingUtilities.invokeLater(firstBoot
-                    ? () -> MainWindowUp.whenUp(() -> dialog(title, finalText))
-                    : () -> dialog(title, finalText));
+                    ? () -> MainWindowUp.whenUp(() -> dialog(title, finalText, markdown))
+                    : () -> dialog(title, finalText, markdown));
         });
     }
 
-    private static void dialog(String title, String text) {
+    /** {@code markdown} is the shown entries as Markdown for the Copy option, or null when nothing is shown. */
+    private static void dialog(String title, String text, String markdown) {
         JTextArea area = new JTextArea(text, 28, 88);
         area.setEditable(false);
         area.setLineWrap(true);
@@ -112,11 +120,21 @@ public final class WhatsNew {
         area.setCaretPosition(0);
         area.getAccessibleContext().setAccessibleName("Release notes");
         JScrollPane scroll = org.nmox.studio.ui.util.DialogFit.toScreen(new JScrollPane(area));
+        Object copy = "Copy as Markdown";
         Object github = "Full notes on GitHub";
         Object close = "Close";
+        Object[] options = markdown == null ? new Object[]{github, close} : new Object[]{copy, github, close};
         NotifyDescriptor nd = new NotifyDescriptor(scroll, title, NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE, new Object[]{github, close}, close);
-        if (DialogDisplayer.getDefault().notify(nd) == github) {
+                NotifyDescriptor.PLAIN_MESSAGE, options, close);
+        Object answer = DialogDisplayer.getDefault().notify(nd);
+        if (answer == copy) {
+            // the release post starts from exactly these notes (v2.88.0, the evangelist's motion)
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                    new java.awt.datatransfer.StringSelection(markdown), null);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText("Release notes copied as Markdown.");
+            return;
+        }
+        if (answer == github) {
             try {
                 java.awt.Desktop.getDesktop().browse(java.net.URI.create(
                         "https://github.com/NMOX/NMOX-Studio/releases"));

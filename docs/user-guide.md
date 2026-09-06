@@ -839,6 +839,8 @@ reader, or a feed — the developer-evangelist grant:
   no screen-recording permission to grant, no desktop in the frame and
   nothing to crop, and the text is crisp on a retina slide. The status
   line names the file and its pixel size.
+![The editor tab alone, saved by Save Editor Screenshot… at 2x](images/editor-screenshot-2x.png)
+
 - **Tools ▸ Save Editor Screenshot…** The same shot of just the editor
   area's selected tab — toolbar, gutter, code, sidebars, no IDE chrome —
   for a slide that wants the code alone, named after the document
@@ -849,6 +851,13 @@ reader, or a feed — the developer-evangelist grant:
 - **Tools ▸ Copy Editor Screenshot.** The same editor shot straight onto
   the clipboard, ready to paste into Slack, an issue or a slide — no
   chooser, no file.
+- **Help ▸ What's New… ▸ Copy as Markdown** (v2.88.0). The release notes
+  on screen, as Markdown under their changelog headings — a release post
+  starts here.
+- **Tools ▸ Copy Project Tree as Markdown** (v2.88.0). The aimed
+  project's layout as the box-drawing tree a README shows, fenced and
+  ready to paste — directories first, `node_modules/ …` named but not
+  expanded, deep or huge trees capped with the remainder counted.
 
 ## 6. The studios
 
