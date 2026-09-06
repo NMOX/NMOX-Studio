@@ -112,13 +112,21 @@ final class TextSearch {
 
     /** The project's files relative to root, forward-slashed, the same walk and caps search uses (v2.84.0). */
     static List<String> relativeFiles(Path root) {
+        return relativeFilesBounded(root).files();
+    }
+
+    /** The file list and whether the walk's cap cut it short (v2.85.0): a capped list is a floor, not a total. */
+    record Listing(List<String> files, boolean truncated) {
+    }
+
+    static Listing relativeFilesBounded(Path root) {
         List<Path> files = new java.util.ArrayList<>();
-        collect(root, files);
+        boolean truncated = collect(root, files);
         List<String> rel = new java.util.ArrayList<>(files.size());
         for (Path f : files) {
             rel.add(root.relativize(f).toString().replace(java.io.File.separatorChar, '/'));
         }
-        return rel;
+        return new Listing(rel, truncated);
     }
 
     /** Files under root in walk order; true when the file cap stopped the walk. */

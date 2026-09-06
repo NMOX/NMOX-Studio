@@ -54,6 +54,7 @@ final class McpCompletions {
         String value = argument.optString("value", "");
         String type = ref.optString("type", "");
         List<String> all;
+        boolean floor = false;
         switch (type) {
             case "ref/prompt" -> {
                 String name = ref.optString("name", "");
@@ -68,7 +69,18 @@ final class McpCompletions {
                 if (slot == null || !slot.equals(argName)) {
                     throw new IllegalArgumentException("no resource template " + uri + " with argument " + argName);
                 }
-                all = "file".equals(slot) ? files(value) : List.of();
+                if ("file".equals(slot)) {
+                    File dir = root.get();
+                    if (dir == null) {
+                        all = List.of();
+                    } else {
+                        TextSearch.Listing listed = TextSearch.relativeFilesBounded(dir.toPath());
+                        floor = listed.truncated();
+                        all = filesFrom(listed.files(), value);
+                    }
+                } else {
+                    all = List.of();
+                }
             }
             default -> throw new IllegalArgumentException("ref.type must be ref/prompt or ref/resource");
         }
@@ -83,7 +95,7 @@ final class McpCompletions {
         // complete so its count is the total; the symbol index is asked for
         // one past the cap, so past the cap its count is a floor, not a
         // total — say hasMore and no number rather than "101" (v2.85.0)
-        if (!(all.size() > MAX_VALUES && "ref/prompt".equals(type))) {
+        if (!(all.size() > MAX_VALUES && "ref/prompt".equals(type)) && !floor) {
             completion.put("total", all.size());
         }
         return new JSONObject().put("completion", completion);
@@ -103,15 +115,11 @@ final class McpCompletions {
     }
 
     /** Project files whose relative path starts with, then contains, the value (case-folded). */
-    private List<String> files(String value) {
-        File dir = root.get();
-        if (dir == null) {
-            return List.of();
-        }
+    private static List<String> filesFrom(List<String> listed, String value) {
         String needle = value.toLowerCase(Locale.ROOT);
         List<String> prefix = new ArrayList<>();
         List<String> inside = new ArrayList<>();
-        for (String rel : TextSearch.relativeFiles(dir.toPath())) {
+        for (String rel : listed) {
             String folded = rel.toLowerCase(Locale.ROOT);
             if (folded.startsWith(needle)) {
                 prefix.add(rel);

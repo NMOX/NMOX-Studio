@@ -165,4 +165,18 @@ class McpCompletionsTest {
         assertThat(search).as("a search instance has nothing on disk to follow").contains("-32002");
         subs.close();
     }
+
+    @Test
+    @DisplayName("past the file walk's cap the file list is a floor: hasMore says so and no total is given (v2.85.0)")
+    void fileListPastTheCapIsAFloor(@TempDir Path root) throws Exception {
+        Files.createDirectories(root.resolve("src"));
+        for (int i = 0; i < TextSearch.MAX_FILES + 5; i++) {
+            Files.writeString(root.resolve("src/f" + i + ".js"), "");
+        }
+        McpCompletions c = new McpCompletions(index(List.of(), false), McpCompletions.rootOf(root));
+        JSONObject completion = c.complete(resource("nmox://outline/{file}", "file", "src/")).getJSONObject("completion");
+        assertThat(completion.getJSONArray("values").length()).isEqualTo(McpCompletions.MAX_VALUES);
+        assertThat(completion.getBoolean("hasMore")).isTrue();
+        assertThat(completion.has("total")).as("a capped walk cannot count").isFalse();
+    }
 }
