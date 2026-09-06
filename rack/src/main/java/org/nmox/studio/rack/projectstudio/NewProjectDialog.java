@@ -97,7 +97,7 @@ public class NewProjectDialog extends JDialog {
     }
 
     private static String escape(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 
     public NewProjectDialog(Component parent) {

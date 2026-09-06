@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.GraphicsEnvironment;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -259,6 +260,6 @@ public final class OracleConsent {
         if (s == null || s.isBlank()) {
             return "(unknown)";
         }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 }

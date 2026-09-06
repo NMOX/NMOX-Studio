@@ -2429,7 +2429,7 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     private static String esc(String s) {
-        return s == null ? "" : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 
     /**

@@ -51,7 +51,7 @@ public class RackStatusLine implements StatusLineElementProvider {
     /** Tooltip: every serving, one per line. */
     /** HTML-escapes an external string for the tooltip that means its markup. */
     static String esc(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+        return PlainText.escape(s);
     }
 
     /** Agent Port chip: "⌁ agent port :N" while it listens (v2.84.0) — a port that can read the IDE is never invisible; null when off. */
