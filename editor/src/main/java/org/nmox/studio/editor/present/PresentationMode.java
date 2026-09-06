@@ -72,7 +72,7 @@ public final class PresentationMode {
             // overwritten (the walk's find); PlainStatus.text because the note is runtime text
             if (enable) {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                        "Presentation Mode on — editors and Output +" + DELTA_POINTS + " pt, Browser at "
+                        "Presentation Mode on — editors, Output and Terminal +" + DELTA_POINTS + " pt, Browser at "
                         + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)"
                         + (outputNote == null ? "" : "; " + outputNote)));
             } else {
