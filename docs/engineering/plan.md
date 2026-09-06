@@ -4038,7 +4038,10 @@ mechanism the platform already had:
   reaches a projector; `core.util.Chords` promoted from the v2.64.0
   sheet as the one vocabulary. NOT walkable in background mode (a chord
   arrives as an AX action, not a key event; the pill is a 1.6 s separate
-  window) — recorded as such.
+  window) — recorded as such, until a walk seam closed it the same
+  morning (v2.89.0): `-Dnmox.keystrokes.linger` holds the pill, a raw
+  Escape reaches the listener, and the second window photographs as
+  `Esc`. A record that says "not walked" is an invitation, not a verdict.
 - **Presentation Mode reaches the Browser and the Output window** — one
   product-wide state (`core.util.Presentation`, symmetric listeners);
   the page at 150% of the user's zoom, restored exactly; the Output
