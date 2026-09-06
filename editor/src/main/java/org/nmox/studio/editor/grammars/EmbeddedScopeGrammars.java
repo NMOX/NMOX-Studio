@@ -89,4 +89,104 @@ public final class EmbeddedScopeGrammars {
         private JavaScriptReact() {
         }
     }
+
+    // ---- scope STUBS (v2.85.0) ------------------------------------------
+    // Vendored grammars include scopes this product ships no grammar for
+    // (C/C++ inline asm → source.x86_64/x86/asm/arm; php/julia/… → source.sql;
+    // scss → source.sassdoc; cpp/nim → source.glsl; pug/astro → source.stylus;
+    // the platform's markdown fences → source.dockerfile/batchfile/diff).
+    // TM4E warns "No grammar source for scope" for each — 235 WARNING lines
+    // per boot in the v2.85.0 Docker walk — and prunes the including rule.
+    // A stub is an empty-patterns grammar registered for the scope: the
+    // include resolves, the rule survives, the region reads as plain text,
+    // the log is quiet. Stubs are not vendored grammars and are NOT counted
+    // as such (their files carry no .tmLanguage suffix on purpose).
+
+    /** source.x86_64 — stub. */
+    @GrammarRegistration(grammar = "stub-source.x86_64.json", mimeType = "text/x-nmox-embed-stub-x86_64")
+    public static final class StubX8664 {
+
+        private StubX8664() {
+        }
+    }
+
+    /** source.x86 — stub. */
+    @GrammarRegistration(grammar = "stub-source.x86.json", mimeType = "text/x-nmox-embed-stub-x86")
+    public static final class StubX86 {
+
+        private StubX86() {
+        }
+    }
+
+    /** source.asm — stub. */
+    @GrammarRegistration(grammar = "stub-source.asm.json", mimeType = "text/x-nmox-embed-stub-asm")
+    public static final class StubAsm {
+
+        private StubAsm() {
+        }
+    }
+
+    /** source.arm — stub. */
+    @GrammarRegistration(grammar = "stub-source.arm.json", mimeType = "text/x-nmox-embed-stub-arm")
+    public static final class StubArm {
+
+        private StubArm() {
+        }
+    }
+
+    /** source.sql — stub. */
+    @GrammarRegistration(grammar = "stub-source.sql.json", mimeType = "text/x-nmox-embed-stub-sql")
+    public static final class StubSql {
+
+        private StubSql() {
+        }
+    }
+
+    /** source.sassdoc — stub. */
+    @GrammarRegistration(grammar = "stub-source.sassdoc.json", mimeType = "text/x-nmox-embed-stub-sassdoc")
+    public static final class StubSassdoc {
+
+        private StubSassdoc() {
+        }
+    }
+
+    /** source.glsl — stub. */
+    @GrammarRegistration(grammar = "stub-source.glsl.json", mimeType = "text/x-nmox-embed-stub-glsl")
+    public static final class StubGlsl {
+
+        private StubGlsl() {
+        }
+    }
+
+    /** source.stylus — stub. */
+    @GrammarRegistration(grammar = "stub-source.stylus.json", mimeType = "text/x-nmox-embed-stub-stylus")
+    public static final class StubStylus {
+
+        private StubStylus() {
+        }
+    }
+
+    /** source.dockerfile — stub. */
+    @GrammarRegistration(grammar = "stub-source.dockerfile.json", mimeType = "text/x-nmox-embed-stub-dockerfile")
+    public static final class StubDockerfile {
+
+        private StubDockerfile() {
+        }
+    }
+
+    /** source.batchfile — stub. */
+    @GrammarRegistration(grammar = "stub-source.batchfile.json", mimeType = "text/x-nmox-embed-stub-batchfile")
+    public static final class StubBatchfile {
+
+        private StubBatchfile() {
+        }
+    }
+
+    /** source.diff — stub. */
+    @GrammarRegistration(grammar = "stub-source.diff.json", mimeType = "text/x-nmox-embed-stub-diff")
+    public static final class StubDiff {
+
+        private StubDiff() {
+        }
+    }
 }

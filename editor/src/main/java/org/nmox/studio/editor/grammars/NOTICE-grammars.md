@@ -154,3 +154,16 @@ YAML, TOML, Markdown, Dockerfile, SQL and diff are intentionally NOT
 bundled as *editors*: the NetBeans ide cluster ships native editor
 support for those mimes, and a second registration would duplicate
 editors. (The embed-only YAML grammar above does not bind an editor.)
+
+## Scope stubs (in-house, not vendored)
+
+`stub-source.*.json` (v2.85.0) are empty-patterns grammars registered
+only for their scope names — `source.x86_64`, `source.x86`,
+`source.asm`, `source.arm`, `source.sql`, `source.sassdoc`,
+`source.glsl`, `source.stylus`, `source.dockerfile`, `source.batchfile`,
+`source.diff` — the scopes vendored grammars (and the platform's own
+markdown fences) include and this product ships no grammar for. Without
+them TM4E logged "No grammar source for scope" 235 times per boot and
+pruned every including rule; with them the include resolves, the region
+reads as plain text, and the log is quiet. They are written here, carry
+no license, and are not counted among the vendored grammars.

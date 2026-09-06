@@ -33,7 +33,13 @@ class EmbeddedScopeGrammarsTest {
             // v1.195.1: the 1.195.0 smoke test's "No grammar source for
             // scope" pair — text.xml (http/ruby/php/perl heredoc embeds)
             // and source.js.jsx (vue/graphql embeds)
-            "text.xml", "source.js.jsx");
+            "text.xml", "source.js.jsx",
+            // v2.85.0: the scope STUBS — includes we ship no grammar for,
+            // resolved to empty grammars so the log stops warning and the
+            // including rules stop being pruned
+            "source.x86_64", "source.x86", "source.asm", "source.arm", "source.sql",
+            "source.sassdoc", "source.glsl", "source.stylus", "source.dockerfile",
+            "source.batchfile", "source.diff");
 
     @Test
     @DisplayName("The generated layer registers a grammar for every markdown-embedded scope")
@@ -128,7 +134,8 @@ class EmbeddedScopeGrammarsTest {
         // (xml for text.xml, jsx for source.js.jsx) + ng-expression
         // (v1.217.0: expression.ng is include-only — injecting it stomped
         // host HTML, so it rides the embed idiom like the others)
-        assertThat(embedFolders).hasSize(8);
+        // + the eleven v2.85.0 scope stubs
+        assertThat(embedFolders).hasSize(19);
         try (InputStream layer = EmbeddedScopeGrammars.class
                 .getResourceAsStream("/META-INF/generated-layer.xml")) {
             String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);
