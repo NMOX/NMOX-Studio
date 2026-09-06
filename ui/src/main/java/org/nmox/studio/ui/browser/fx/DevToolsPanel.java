@@ -157,6 +157,7 @@ public final class DevToolsPanel extends JPanel {
     private JPanel consoleTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JList<ConsoleModel.Entry> list = new JList<>(consoleList);
+        list.getAccessibleContext().setAccessibleName("Console output");
         list.setCellRenderer(new ConsoleRenderer());
         panel.add(consoleDropped, BorderLayout.NORTH);
         consoleDropped.setVisible(false);
@@ -283,6 +284,7 @@ public final class DevToolsPanel extends JPanel {
         // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
         // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
         JTree tree = new JTree(model);
+        tree.getAccessibleContext().setAccessibleName("DOM tree");
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);
         }
@@ -295,6 +297,7 @@ public final class DevToolsPanel extends JPanel {
         // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
         // (v1.206.0). The safety is identical (html.disable on the renderer).
         JTable table = new JTable(model);
+        table.getAccessibleContext().setAccessibleName("Network requests");
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
         table.setDefaultRenderer(Object.class, plain);

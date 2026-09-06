@@ -93,13 +93,13 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private final JPanel enginePanel = new JPanel(new GridBagLayout());
     private final DefaultTableModel containersModel = model("", "NAME", "IMAGE", "STATUS", "PORTS", "CPU", "MEM");
-    private final JTable containersTable = table(containersModel);
+    private final JTable containersTable = table(containersModel, "Containers");
     private final DefaultTableModel imagesModel = model("REFERENCE", "ID", "SIZE", "CREATED", "");
-    private final JTable imagesTable = table(imagesModel);
+    private final JTable imagesTable = table(imagesModel, "Images");
     private final DefaultTableModel volumesModel = model("NAME", "DRIVER");
-    private final JTable volumesTable = table(volumesModel);
+    private final JTable volumesTable = table(volumesModel, "Volumes");
     private final DefaultTableModel networksModel = model("NAME", "DRIVER", "SCOPE", "ID");
-    private final JTable networksTable = table(networksModel);
+    private final JTable networksTable = table(networksModel, "Networks");
 
     private List<ContainerInfo> containers = List.of();
     private List<ImageInfo> images = List.of();
@@ -220,8 +220,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         };
     }
 
-    private static JTable table(DefaultTableModel m) {
+    private static JTable table(DefaultTableModel m, String accessibleName) {
         JTable t = new JTable(m);
+        t.getAccessibleContext().setAccessibleName(accessibleName);
         t.setBackground(BG);
         t.setForeground(TEXT);
         t.setGridColor(new Color(45, 46, 50));

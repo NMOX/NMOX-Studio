@@ -170,6 +170,12 @@ public final class ApiClientTopComponent extends TopComponent {
     // committable .nmoxapi.json — it lives in the OS keychain.
     private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
     private final JTable testsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
+    {
+        tree.getAccessibleContext().setAccessibleName("Collections and requests");
+        paramsTable.getAccessibleContext().setAccessibleName("Query parameters");
+        headersTable.getAccessibleContext().setAccessibleName("Headers");
+        testsTable.getAccessibleContext().setAccessibleName("Tests");
+    }
 
     private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");

@@ -158,6 +158,7 @@ public class BlackboxDevice extends RackDevice {
             }
         };
         JTable table = new JTable(model);
+        table.getAccessibleContext().setAccessibleName("Flight recorder timeline");
         table.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
         table.setRowHeight(22);
         // the flight table shows recorded COMMANDS from any project — plain text

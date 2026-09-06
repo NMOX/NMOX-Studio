@@ -98,6 +98,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
         spaces.forEach(model::addElement);
 
         JList<File> list = new JList<>(model);
+        list.getAccessibleContext().setAccessibleName("Learning spaces shelf");
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {

@@ -55,6 +55,9 @@ public class NewProjectDialog extends JDialog {
     // both kinds render name+description and generate the same way, so the
     // list holds the union and the OK path dispatches on the element type
     private final JList<Object> templateList = new JList<>(templateModel());
+    {
+        templateList.getAccessibleContext().setAccessibleName("Project template");
+    }
     private final JCheckBox installBox = new JCheckBox("Run npm install after creating", true);
     private final JLabel previewLabel = new JLabel(" ");
     private final JButton createButton = new JButton("Create Project");

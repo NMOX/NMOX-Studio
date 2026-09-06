@@ -201,6 +201,9 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final JLabel statusLabel = new JLabel(" ");
 
     private final JTree tree = new JTree();
+    {
+        tree.getAccessibleContext().setAccessibleName("Contract artifacts and networks");
+    }
     private final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("");
     private final DefaultMutableTreeNode networksNode =
             new DefaultMutableTreeNode(Branch.NETWORKS);
@@ -1049,6 +1052,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(watchModel));
         table.setFont(MONO);
+        table.getAccessibleContext().setAccessibleName("Watched blocks and events");
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
         table.getColumnModel().getColumn(1).setPreferredWidth(120);
@@ -1214,6 +1218,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         JPanel panel = new JPanel(new java.awt.GridLayout(3, 1));
 
         JTable sizeTable = new JTable(sizeModel);
+        sizeTable.getAccessibleContext().setAccessibleName("Contract sizes");
         sizeTable.setFont(MONO);
         sizeTable.setDefaultRenderer(Object.class,
                 org.nmox.studio.core.util.PlainTables.plain(new SizeCellRenderer()));
@@ -1231,12 +1236,14 @@ public final class Web3StudioTopComponent extends TopComponent {
         gasBar.add(gasButton);
         gasPanel.add(gasBar, BorderLayout.NORTH);
         JTable gasTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(gasModel));
+        gasTable.getAccessibleContext().setAccessibleName("Gas report");
         gasTable.setFont(MONO);
         gasPanel.add(new JScrollPane(gasTable), BorderLayout.CENTER);
         gasPanel.setBorder(BorderFactory.createTitledBorder("Gas report"));
         panel.add(gasPanel);
 
         JTable deployTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(deploymentsModel));
+        deployTable.getAccessibleContext().setAccessibleName("Deployment address book");
         deployTable.setFont(MONO);
         deployTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override

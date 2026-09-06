@@ -40,6 +40,7 @@ final class ChannelListDialog {
             int totalSeen, Consumer<String> join) {
         Model model = new Model(rows);
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
+        table.getAccessibleContext().setAccessibleName("Channels");
         TableRowSorter<Model> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
         table.getColumnModel().getColumn(0).setPreferredWidth(180);
