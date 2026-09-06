@@ -209,7 +209,8 @@ QUORUM into LAUNCHPAD: nothing slow, thin, heavy, or expiring ships.
 ### 🎤 Made to be shown
 - **View ▸ Presentation Mode**: one toggle and every open editor is
   +10 pt, the in-app Browser's page is at 150%, and the Output window
-  follows — live, never persisted, restored exactly when you toggle off.
+  and every open Terminal follow — live, never persisted, restored
+  exactly when you toggle off.
   **View ▸ Show Keystrokes** puts the chord you just pressed (⌘S, ⌥⌘G,
   `⌘Z ×3`) large at the bottom of the window; chords only — what you
   type never reaches the projector.
