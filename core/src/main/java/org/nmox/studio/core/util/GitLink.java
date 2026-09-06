@@ -2,8 +2,6 @@ package org.nmox.studio.core.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The pure half of Copy as Markdown with Link (v2.87.0, the developer
@@ -22,8 +20,6 @@ public final class GitLink {
             return owner + "/" + repo;
         }
     }
-
-    private static final Pattern SCP_LIKE = Pattern.compile("^(?:[^@/]+@)?([^:/]+):(.+)$");
 
     private GitLink() {
     }
@@ -81,12 +77,20 @@ public final class GitLink {
                 return null;
             }
         } else {
-            Matcher m = SCP_LIKE.matcher(u);
-            if (!m.matches()) {
+            // scp-like: [user@]host:path — an index walk, not a regex (a
+            // backtracking pattern over remote text is a ReDoS surface;
+            // SpotBugs named it on the first verify)
+            int colon = u.indexOf(':');
+            if (colon <= 0 || colon == u.length() - 1) {
                 return null;
             }
-            host = m.group(1);
-            path = "/" + m.group(2);
+            String authority = u.substring(0, colon);
+            int at = authority.lastIndexOf('@');
+            host = at >= 0 ? authority.substring(at + 1) : authority;
+            if (host.isEmpty() || host.indexOf('/') >= 0 || authority.indexOf('/') >= 0) {
+                return null;
+            }
+            path = "/" + u.substring(colon + 1);
         }
         if (host == null || !host.equalsIgnoreCase("github.com") || path == null) {
             return null;
