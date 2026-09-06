@@ -266,13 +266,19 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     reads every text area's construction in every module for a name
     anywhere in its file (API Studio names its bodies in a later block),
     failing-first with five.
-42. **The front door's fields speak their names** — the same lens
-    counted 46 inputs product-wide with neither an accessible name nor
-    a `labelFor` label (a screen reader hears "text field"). The New
-    Project wizard's name and location fields and the learning-space
-    picker's search — the beginner's first three — are named now; the
-    sweep with its gate is the next shift's first unit, the census in
-    the plan.
+42. **Every input speaks its name** — the same lens counted 46 inputs
+    product-wide with neither an accessible name nor a `labelFor` label
+    (a screen reader hears "text field" for the New Project wizard's own
+    name field). All named from their dialogs' own label text — the
+    wizard's name and location, the picker's search, the Docker run
+    form and pull field, the ORACLE question, Project Configuration's
+    fields (whose labels now also `setLabelFor` them), the IRC network
+    editor's seven including the password field, the channel filter,
+    the DevTools console input and Edit Style value, the Browser's
+    address, the project switcher's filter, the schematic, PWA,
+    Standards, Image and Contract kit forms, DB Studio's row limit;
+    InputsNamedGateTest product-wide (a name or a `labelFor` counts),
+    failing-first with 42 after the first three.
 
 ## [2.84.0] - 2026-09-05
 
