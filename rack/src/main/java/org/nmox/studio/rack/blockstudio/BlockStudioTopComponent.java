@@ -739,7 +739,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         String suffix = workspace != null && workspace.components().size() > 1
                 ? " · component " + (workspace.active() + 1) + "/" + workspace.components().size()
                 : "";
-        setStatus(doc.preorder().size() + " pieces → " + doc.root().param("tag") + ".js" + suffix);
+        setStatus(pieces(doc.preorder().size()) + " → " + doc.root().param("tag") + ".js" + suffix);
         // a tag rename (F2 on the root) must rename the switcher row too
         if (workspace != null) {
             String label = "<" + doc.root().param("tag") + ">";
@@ -1048,7 +1048,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         refreshComponentCombo();
         regenerate();
         persist();
-        setStatus("Opened " + sourceName + " — " + parsed.preorder().size() + " pieces"
+        setStatus("Opened " + sourceName + " — " + pieces(parsed.preorder().size())
                 + (existing >= 0 ? " (replaced <" + tag + ">)" : " (new component)"));
     }
 
@@ -1059,6 +1059,11 @@ public final class BlockStudioTopComponent extends TopComponent {
             }
             undo.push(doc.toJson().toString());
         }
+    }
+
+    /** "1 piece", "2 pieces" — the first-show sweep read "1 pieces" on a fresh canvas (v2.85.0). */
+    static String pieces(int n) {
+        return n + (n == 1 ? " piece" : " pieces");
     }
 
     private void setStatus(String s) {
