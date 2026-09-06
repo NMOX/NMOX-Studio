@@ -101,7 +101,9 @@ answers `where_is`'s `name` from the symbol index (the same hits
 `find_symbol` returns, distinct, prefix hits first) and `{file}` from
 the project's own files (prefix hits, then contains; the search walk's
 skip list applies, so `node_modules` never completes) — at most 100
-values, with the honest `total` and `hasMore`. The search template's
+values, `hasMore` when the cap cut them, and `total` only when the
+count is exact (a file list always is; past the cap the symbol index
+answers a floor, so no number is given rather than a wrong one). The search template's
 literal is anything, so it completes to nothing; an unknown prompt,
 template or argument name is refused as `-32602`.
 
