@@ -70,7 +70,7 @@ v1.51.
 
 Grab **[the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)** — DMG (macOS), installer (Windows), tar.gz/deb (Linux), or portable zip. The DMG, installer, tar.gz and deb ship with their own Java runtime — nothing to install. (The portable zip alone expects a Java 21+ on the machine.)
 
-Once it's running, **[the User Guide](docs/user-guide.md)** walks every feature — the rack, the studios, the wizards, and the safety nets.
+Once it's running, **[the User Guide](docs/user-guide.md)** walks every feature — the rack, the studios, the wizards, and the safety nets. **[The docs index](docs/README.md)** lists every document — the visual tour, the Kitchen Sink, the story, the guides — and **[the tutorials](docs/tutorials/README.md)** are one-sitting walkthroughs, one per system.
 
 > **macOS note:** the app is not yet notarized. If Gatekeeper objects, right-click the app and choose *Open*, or run `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`.
 
