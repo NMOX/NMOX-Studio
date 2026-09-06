@@ -16,7 +16,8 @@
 // variables, never onto a command line you would paste anywhere. The
 // optional file (relative to the aimed project, default shop.js) is
 // APPENDED a comment line to prove the outline subscription follows it;
-// press ▶ and ■ in the IDE while it listens to see the log messages.
+// press ▶ and ■ in the IDE while it listens to see the log messages
+// (NMOX_WALK_LISTEN_MS, default 20000, sets how long it listens).
 import { createRequire } from "node:module";
 const require = createRequire(process.env.NODE_PATH ? process.env.NODE_PATH + "/" : import.meta.url);
 const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
@@ -66,7 +67,8 @@ if (projectDir && existsSync(projectDir + "/" + touchRel)) {
 } else {
   console.log("     (project_state names no directory holding " + touchRel + " — the file-follow leg skipped)");
 }
-console.log("     listening 20 s for pushes and log messages — press ▶ then ■ in the IDE");
-await sleep(20000);
+const listenMs = Number(process.env.NMOX_WALK_LISTEN_MS || 20000);
+console.log("     listening " + Math.round(listenMs / 1000) + " s for pushes and log messages — press ▶ then ■ in the IDE (NMOX_WALK_LISTEN_MS to change)");
+await sleep(listenMs);
 console.log("     pushes: " + updated.join(" ") + " | log messages: " + logs.length + " (levels " + [...new Set(logs.map(l => l.level))].join(",") + ")");
 await step("close", async () => { await client.close(); return "closed"; });
