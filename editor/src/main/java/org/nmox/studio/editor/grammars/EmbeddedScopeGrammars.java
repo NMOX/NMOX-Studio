@@ -189,4 +189,261 @@ public final class EmbeddedScopeGrammars {
         private StubDiff() {
         }
     }
+
+    // ---- the second stub batch (v2.85.0): the boot proof of the first
+    // eleven left 132 warnings over thirty-one more scopes — markdown fences
+    // (go, less, toml, json5, powershell, latex, bibtex, git-commit…),
+    // grammar-internal aliases (source.c++, source.cpp.embedded.macro,
+    // source.js.regexp — unresolvable upstream-wide, see the NOTICE) and
+    // sub-grammars we never vendored (elixir, postscript, twig, objc…).
+    // Every one an empty grammar for its scope: the region reads as plain
+    // text, exactly as it did while pruned, and the log says nothing.
+
+    /** source.js.regexp — stub. */
+    @GrammarRegistration(grammar = "stub-source.js.regexp.json", mimeType = "text/x-nmox-embed-stub-source-js-regexp")
+    public static final class StubSourceJsRegexp {
+
+        private StubSourceJsRegexp() {
+        }
+    }
+
+    /** source.js.jquery — stub. */
+    @GrammarRegistration(grammar = "stub-source.js.jquery.json", mimeType = "text/x-nmox-embed-stub-source-js-jquery")
+    public static final class StubSourceJsJquery {
+
+        private StubSourceJsJquery() {
+        }
+    }
+
+    /** source.c++ — stub. */
+    @GrammarRegistration(grammar = "stub-source.c++.json", mimeType = "text/x-nmox-embed-stub-source-cplusplus")
+    public static final class StubSourceCPlusPlus {
+
+        private StubSourceCPlusPlus() {
+        }
+    }
+
+    /** text.html.elixir — stub. */
+    @GrammarRegistration(grammar = "stub-text.html.elixir.json", mimeType = "text/x-nmox-embed-stub-text-html-elixir")
+    public static final class StubTextHtmlElixir {
+
+        private StubTextHtmlElixir() {
+        }
+    }
+
+    /** text.elixir — stub. */
+    @GrammarRegistration(grammar = "stub-text.elixir.json", mimeType = "text/x-nmox-embed-stub-text-elixir")
+    public static final class StubTextElixir {
+
+        private StubTextElixir() {
+        }
+    }
+
+    /** source.regexp.python — stub. */
+    @GrammarRegistration(grammar = "stub-source.regexp.python.json", mimeType = "text/x-nmox-embed-stub-source-regexp-python")
+    public static final class StubSourceRegexpPython {
+
+        private StubSourceRegexpPython() {
+        }
+    }
+
+    /** source.postscript — stub. */
+    @GrammarRegistration(grammar = "stub-source.postscript.json", mimeType = "text/x-nmox-embed-stub-source-postscript")
+    public static final class StubSourcePostscript {
+
+        private StubSourcePostscript() {
+        }
+    }
+
+    /** source.less — stub. */
+    @GrammarRegistration(grammar = "stub-source.less.json", mimeType = "text/x-nmox-embed-stub-source-less")
+    public static final class StubSourceLess {
+
+        private StubSourceLess() {
+        }
+    }
+
+    /** source.cpp.embedded.macro — stub. */
+    @GrammarRegistration(grammar = "stub-source.cpp.embedded.macro.json", mimeType = "text/x-nmox-embed-stub-source-cpp-embedded-macro")
+    public static final class StubSourceCppEmbeddedMacro {
+
+        private StubSourceCppEmbeddedMacro() {
+        }
+    }
+
+    /** text.xml.xsl — stub. */
+    @GrammarRegistration(grammar = "stub-text.xml.xsl.json", mimeType = "text/x-nmox-embed-stub-text-xml-xsl")
+    public static final class StubTextXmlXsl {
+
+        private StubTextXmlXsl() {
+        }
+    }
+
+    /** text.tex.latex — stub. */
+    @GrammarRegistration(grammar = "stub-text.tex.latex.json", mimeType = "text/x-nmox-embed-stub-text-tex-latex")
+    public static final class StubTextTexLatex {
+
+        private StubTextTexLatex() {
+        }
+    }
+
+    /** text.log — stub. */
+    @GrammarRegistration(grammar = "stub-text.log.json", mimeType = "text/x-nmox-embed-stub-text-log")
+    public static final class StubTextLog {
+
+        private StubTextLog() {
+        }
+    }
+
+    /** text.git-rebase — stub. */
+    @GrammarRegistration(grammar = "stub-text.git-rebase.json", mimeType = "text/x-nmox-embed-stub-text-git-rebase")
+    public static final class StubTextGitRebase {
+
+        private StubTextGitRebase() {
+        }
+    }
+
+    /** text.git-commit — stub. */
+    @GrammarRegistration(grammar = "stub-text.git-commit.json", mimeType = "text/x-nmox-embed-stub-text-git-commit")
+    public static final class StubTextGitCommit {
+
+        private StubTextGitCommit() {
+        }
+    }
+
+    /** text.bibtex — stub. */
+    @GrammarRegistration(grammar = "stub-text.bibtex.json", mimeType = "text/x-nmox-embed-stub-text-bibtex")
+    public static final class StubTextBibtex {
+
+        private StubTextBibtex() {
+        }
+    }
+
+    /** source.twig — stub. */
+    @GrammarRegistration(grammar = "stub-source.twig.json", mimeType = "text/x-nmox-embed-stub-source-twig")
+    public static final class StubSourceTwig {
+
+        private StubSourceTwig() {
+        }
+    }
+
+    /** source.powershell — stub. */
+    @GrammarRegistration(grammar = "stub-source.powershell.json", mimeType = "text/x-nmox-embed-stub-source-powershell")
+    public static final class StubSourcePowershell {
+
+        private StubSourcePowershell() {
+        }
+    }
+
+    /** source.perl.6 — stub. */
+    @GrammarRegistration(grammar = "stub-source.perl.6.json", mimeType = "text/x-nmox-embed-stub-source-perl-6")
+    public static final class StubSourcePerl6 {
+
+        private StubSourcePerl6() {
+        }
+    }
+
+    /** source.objc — stub. */
+    @GrammarRegistration(grammar = "stub-source.objc.json", mimeType = "text/x-nmox-embed-stub-source-objc")
+    public static final class StubSourceObjc {
+
+        private StubSourceObjc() {
+        }
+    }
+
+    /** source.json.comments — stub. */
+    @GrammarRegistration(grammar = "stub-source.json.comments.json", mimeType = "text/x-nmox-embed-stub-source-json-comments")
+    public static final class StubSourceJsonComments {
+
+        private StubSourceJsonComments() {
+        }
+    }
+
+    /** source.go — stub. */
+    @GrammarRegistration(grammar = "stub-source.go.json", mimeType = "text/x-nmox-embed-stub-source-go")
+    public static final class StubSourceGo {
+
+        private StubSourceGo() {
+        }
+    }
+
+    /** source.asp.vb.net — stub. */
+    @GrammarRegistration(grammar = "stub-source.asp.vb.net.json", mimeType = "text/x-nmox-embed-stub-source-asp-vb-net")
+    public static final class StubSourceAspVbNet {
+
+        private StubSourceAspVbNet() {
+        }
+    }
+
+    /** source.css.postcss — stub. */
+    @GrammarRegistration(grammar = "stub-source.css.postcss.json", mimeType = "text/x-nmox-embed-stub-source-css-postcss")
+    public static final class StubSourceCssPostcss {
+
+        private StubSourceCssPostcss() {
+        }
+    }
+
+    /** text.html.javadoc — stub. */
+    @GrammarRegistration(grammar = "stub-text.html.javadoc.json", mimeType = "text/x-nmox-embed-stub-text-html-javadoc")
+    public static final class StubTextHtmlJavadoc {
+
+        private StubTextHtmlJavadoc() {
+        }
+    }
+
+    /** source.toml — stub. */
+    @GrammarRegistration(grammar = "stub-source.toml.json", mimeType = "text/x-nmox-embed-stub-source-toml")
+    public static final class StubSourceToml {
+
+        private StubSourceToml() {
+        }
+    }
+
+    /** source.postcss — stub. */
+    @GrammarRegistration(grammar = "stub-source.postcss.json", mimeType = "text/x-nmox-embed-stub-source-postcss")
+    public static final class StubSourcePostcss {
+
+        private StubSourcePostcss() {
+        }
+    }
+
+    /** source.openesql — stub. */
+    @GrammarRegistration(grammar = "stub-source.openesql.json", mimeType = "text/x-nmox-embed-stub-source-openesql")
+    public static final class StubSourceOpenesql {
+
+        private StubSourceOpenesql() {
+        }
+    }
+
+    /** source.ocaml.ocamldoc — stub. */
+    @GrammarRegistration(grammar = "stub-source.ocaml.ocamldoc.json", mimeType = "text/x-nmox-embed-stub-source-ocaml-ocamldoc")
+    public static final class StubSourceOcamlOcamldoc {
+
+        private StubSourceOcamlOcamldoc() {
+        }
+    }
+
+    /** source.ocaml.interface — stub. */
+    @GrammarRegistration(grammar = "stub-source.ocaml.interface.json", mimeType = "text/x-nmox-embed-stub-source-ocaml-interface")
+    public static final class StubSourceOcamlInterface {
+
+        private StubSourceOcamlInterface() {
+        }
+    }
+
+    /** source.json5 — stub. */
+    @GrammarRegistration(grammar = "stub-source.json5.json", mimeType = "text/x-nmox-embed-stub-source-json5")
+    public static final class StubSourceJson5 {
+
+        private StubSourceJson5() {
+        }
+    }
+
+    /** regexp — stub. */
+    @GrammarRegistration(grammar = "stub-regexp.json", mimeType = "text/x-nmox-embed-stub-regexp")
+    public static final class StubRegexp {
+
+        private StubRegexp() {
+        }
+    }
 }
