@@ -58,6 +58,9 @@ public final class LanguageServerHealth {
         }
         Server s = LanguageServerCatalog.forBinary("typescript-language-server");
         String install = s != null ? s.install() : "npm install -g typescript@5";
+        // the refusal speaks in the log too (a walk reads logs, not balloons)
+        java.util.logging.Logger.getLogger(LanguageServerHealth.class.getName()).info(
+                "TypeScript " + version + " ships no tsserver; the TypeScript server was not started — " + install);
         NotificationDisplayer.getDefault().notify("TypeScript intelligence unavailable", ICON,
                 "TypeScript " + version + " is installed, and TypeScript 7 (the Go port) ships no tsserver — "
                 + "the editor's TypeScript server needs typescript 5. "

@@ -62,6 +62,7 @@ class TsServerPrecheckTest {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"));
         assertThat(src).contains("TsServerPrecheck.check(").contains("LanguageServerHealth.reportNoTsserver(");
         String health = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServerHealth.java"));
-        assertThat(health).contains("typescript-language-server:no-tsserver").contains("ships no tsserver");
+        assertThat(health).contains("typescript-language-server:no-tsserver").contains("ships no tsserver")
+                .as("the refusal speaks in the log too").contains("was not started");
     }
 }
