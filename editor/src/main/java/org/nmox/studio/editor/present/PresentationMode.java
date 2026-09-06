@@ -65,9 +65,13 @@ public final class PresentationMode {
                 apply(c, delta);
             }
         });
-        StatusDisplayer.getDefault().setStatusText(enable
-                ? "Presentation Mode on — editors +" + DELTA_POINTS + " pt (⌥-wheel fine-tunes)"
-                : "Presentation Mode off");
+        // two literal heads: PlainStatusGateTest wants every status text to BEGIN
+        // with the product's own literal, and a ternary's head is a variable
+        if (enable) {
+            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors +" + DELTA_POINTS + " pt (⌥-wheel fine-tunes)");
+        } else {
+            StatusDisplayer.getDefault().setStatusText("Presentation Mode off");
+        }
     }
 
     private static void apply(JTextComponent c, int delta) {
