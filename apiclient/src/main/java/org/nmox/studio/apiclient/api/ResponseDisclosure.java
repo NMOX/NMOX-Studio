@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Assembles what API Studio is willing to send ORACLE about a response —
+ * Assembles what API Studio is willing to send KVASIR about a response —
  * and, more importantly, what it strips first.
  *
  * <p>Pure and side-effect free, because this text IS the disclosure the

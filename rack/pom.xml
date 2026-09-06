@@ -133,7 +133,7 @@
             <version>${orgjson.version}</version>
         </dependency>
 
-        <!-- OS keychain for the ORACLE API key: the RpcSecrets/Passwords
+        <!-- OS keychain for the KVASIR API key: the RpcSecrets/Passwords
              idiom — the key never touches prefs or the workspace file. -->
         <dependency>
             <groupId>org.netbeans.api</groupId>

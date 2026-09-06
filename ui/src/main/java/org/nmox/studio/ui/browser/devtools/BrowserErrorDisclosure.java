@@ -12,7 +12,7 @@ import java.util.List;
  * plus — when the error resolved to a project file (v2.39.0) — a
  * SMALL source excerpt around the failing line, because "what does
  * ReferenceError mean" is answerable from the message alone but "why
- * HERE" needs the line. The disclosure discipline of every ORACLE
+ * HERE" needs the line. The disclosure discipline of every KVASIR
  * flow (v1.171.0): assembled and capped HERE, where the data lives,
  * so the consent dialog's one-line summary is the literal truth; the
  * seam sends exactly what it is given and nothing can widen it.

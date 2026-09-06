@@ -73,7 +73,7 @@ class HttpBodiesTest {
                 "../apiclient/src/main/java/org/nmox/studio/apiclient/api/ApiClient.java",
                 "../web3/src/main/java/org/nmox/studio/web3/engine/JsonRpcClient.java",
                 "../dbstudio/src/main/java/org/nmox/studio/dbstudio/engine/CouchBackend.java",
-                "../rack/src/main/java/org/nmox/studio/rack/engine/OracleClient.java",
+                "../rack/src/main/java/org/nmox/studio/rack/engine/KvasirClient.java",
                 "../rack/src/main/java/org/nmox/studio/rack/devices/HttpDevice.java",
                 "../infra/src/main/java/org/nmox/studio/infra/api/DigitalOceanClient.java",
                 "../ui/src/main/java/org/nmox/studio/ui/UpdateCheck.java");

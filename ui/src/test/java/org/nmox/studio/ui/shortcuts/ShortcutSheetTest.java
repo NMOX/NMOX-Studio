@@ -29,9 +29,9 @@ class ShortcutSheetTest {
     @DisplayName("The sheet sorts by action, escapes pipes, and names the profile")
     void render() {
         String md = ShortcutSheet.renderMarkdown(List.of(
-                new Row("⌘I", "Quick Search"), new Row("⌥⌘G", "Complete with ORACLE"),
+                new Row("⌘I", "Quick Search"), new Row("⌥⌘G", "Complete with KVASIR"),
                 new Row("⌥⌘2", "Tests | window")), "NetBeans");
-        assertThat(md).startsWith("| Shortcut | Action |\n|---|---|\n| `⌥⌘G` | Complete with ORACLE |\n| `⌘I` | Quick Search |\n| `⌥⌘2` | Tests \\| window |\n");
+        assertThat(md).startsWith("| Shortcut | Action |\n|---|---|\n| `⌥⌘G` | Complete with KVASIR |\n| `⌘I` | Quick Search |\n| `⌥⌘2` | Tests \\| window |\n");
         assertThat(md).endsWith("keymap profile: NetBeans_\n");
     }
 }

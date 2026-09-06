@@ -178,8 +178,8 @@ most contract work is today — then graduate to
   (**File ▸ New Learning Space…**, search "contract").
 - **[The device reference](devices.md)** — STELLAR, ANCHOR, ANVIL, and
   GOVERNOR, the rack's chain consoles and gates.
-- **Ask ORACLE** — select any contract code you don't understand,
-  right-click, *Ask ORACLE About Selection…*, and keep asking
+- **Ask KVASIR** — select any contract code you don't understand,
+  right-click, *Ask KVASIR About Selection…*, and keep asking
   follow-ups. It only ever sees the selection you chose.
 
 One honest closing note: this guide gets you to *understanding* and

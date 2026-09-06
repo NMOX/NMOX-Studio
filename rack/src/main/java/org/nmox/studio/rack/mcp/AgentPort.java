@@ -289,7 +289,7 @@ public final class AgentPort {
         if (header == null || !header.startsWith("Bearer ")) {
             return false;
         }
-        // constant-time: a timing oracle on a secret is still an oracle
+        // constant-time: a timing kvasir on a secret is still an kvasir
         return MessageDigest.isEqual(
                 header.substring("Bearer ".length()).getBytes(StandardCharsets.UTF_8),
                 token.getBytes(StandardCharsets.UTF_8));

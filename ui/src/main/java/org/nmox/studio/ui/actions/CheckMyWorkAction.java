@@ -93,27 +93,27 @@ public final class CheckMyWorkAction implements ActionListener {
             // the tutor half of the checkpoint loop (v2.39.5): a stuck
             // learner gets more than the hint — the failed checks and
             // their own file, explained. The option appears only when
-            // there IS a failure and ORACLE is present; the disclosure
+            // there IS a failure and KVASIR is present; the disclosure
             // is assembled by the pure CheckDisclosure so the consent
             // line is the literal truth.
-            org.nmox.studio.core.spi.OracleAsk oracle =
-                    org.nmox.studio.core.spi.OracleAsk.find();
+            org.nmox.studio.core.spi.KvasirAsk kvasir =
+                    org.nmox.studio.core.spi.KvasirAsk.find();
             SwingUtilities.invokeLater(() -> {
-                if (failed.isEmpty() || oracle == null) {
+                if (failed.isEmpty() || kvasir == null) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"),
                                     NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 }
-                Object explain = "Explain with ORACLE…";
+                Object explain = "Explain with KVASIR…";
                 org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
                         org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"), "Check My Work — " + dir.getName(), true,
                         new Object[] {explain, NotifyDescriptor.OK_OPTION},
                         NotifyDescriptor.OK_OPTION,
                         org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
                 if (DialogDisplayer.getDefault().notify(dd) == explain) {
-                    boolean started = oracle.explain(
-                            new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+                    boolean started = kvasir.explain(
+                            new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                                     "space.check",
                                     "Failed checks — " + dir.getName(),
                                     org.nmox.studio.rack.projectstudio.CheckDisclosure

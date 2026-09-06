@@ -23,7 +23,7 @@ import org.openide.util.RequestProcessor;
 /**
  * The Angular component ↔ template switcher's UI half (v1.219.0):
  * two context-menu actions riding the same focused-editor idiom as
- * Ask ORACLE (a global always-enabled action reading
+ * Ask KVASIR (a global always-enabled action reading
  * {@link EditorRegistry} — the one popup registration shape proven to
  * render and fire on every editor pane in this product). Resolution
  * lives in the pure {@link NgSwitch}; misses end in an honest status

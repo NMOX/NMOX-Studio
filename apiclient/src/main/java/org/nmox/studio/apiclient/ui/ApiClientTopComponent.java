@@ -456,28 +456,28 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     /**
-     * Hands ORACLE a REDACTED summary of the response on screen. The
+     * Hands KVASIR a REDACTED summary of the response on screen. The
      * disclosure is assembled here, in the studio that owns the data —
      * the seam carries text only, so the rack can never widen it — and
      * the flow earns its own consent (a response body can carry customer
-     * data that no other ORACLE grant ever described).
+     * data that no other KVASIR grant ever described).
      */
     private void explainResponse() {
-        org.nmox.studio.core.spi.OracleAsk oracle = org.nmox.studio.core.spi.OracleAsk.find();
-        if (oracle == null || lastResponse == null) {
+        org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
+        if (kvasir == null || lastResponse == null) {
             status("Nothing to explain yet — send a request first.");
             return;
         }
         String title = (lastMethod == null ? "GET" : lastMethod) + " · "
                 + (lastResponse.reached() ? String.valueOf(lastResponse.status()) : "no route");
-        boolean started = oracle.explain(new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+        boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                 "api.response", title,
                 org.nmox.studio.apiclient.api.ResponseDisclosure.what(lastResponse),
                 org.nmox.studio.apiclient.api.ResponseDisclosure.body(
                         lastMethod, lastUrl, lastResponse),
                 "What does this response mean, and what should I check first?"));
         if (!started) {
-            status("ORACLE did not run — needs an API key and your consent.");
+            status("KVASIR did not run — needs an API key and your consent.");
         }
     }
 
@@ -1269,10 +1269,10 @@ public final class ApiClientTopComponent extends TopComponent {
         statusLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         JPanel north = new JPanel(new BorderLayout());
         north.add(statusLabel, BorderLayout.CENTER);
-        // ORACLE is a SOFT dependency (ledger 30): with no rack in the
+        // KVASIR is a SOFT dependency (ledger 30): with no rack in the
         // platform the lookup misses and the button simply never appears
-        if (org.nmox.studio.core.spi.OracleAsk.find() != null) {
-            explainButton.setToolTipText("Ask ORACLE what this response means"
+        if (org.nmox.studio.core.spi.KvasirAsk.find() != null) {
+            explainButton.setToolTipText("Ask KVASIR what this response means"
                     + " (sends a redacted summary — you confirm first)");
             explainButton.setEnabled(false);
             explainButton.addActionListener(e -> explainResponse());

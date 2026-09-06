@@ -21,7 +21,7 @@ serves to you from inside the app (Help ▸ NMOX Studio Website (local)).
 
 Your toolchain as hardware: VERITAS runs tests with a coverage floor,
 IGNITION serves anything, ANVIL is a local EVM chain, SPECTER drives
-Playwright, ORACLE explains failures. Wire a cable from a FAIL jack to
+Playwright, KVASIR explains failures. Wire a cable from a FAIL jack to
 a trigger and lanes coordinate themselves. Patches save as JSON, export
 to GitHub Actions CI, and resurrect after a `kill -9`. The fleet is not
 fixed: drop a JSON file in `~/.nmox/devices.d/` and a real device is on
@@ -59,14 +59,14 @@ your yes.
 ### The AI faces
 `ASK · EDIT · COMPLETE · DRAFT COMMIT · EXPLAIN`
 
-Select code in any editor and **Ask ORACLE** about it — follow-ups carry
+Select code in any editor and **Ask KVASIR** about it — follow-ups carry
 the full history, so "that syntax" means what it meant one answer ago.
-**Edit with ORACLE** turns an instruction into a before/after preview
-you approve, applied as one undo. **Complete with ORACLE** (⌥⌘G) sends
+**Edit with KVASIR** turns an instruction into a before/after preview
+you approve, applied as one undo. **Complete with KVASIR** (⌥⌘G) sends
 the code around the caret once and paints the answer as ghost text —
 Tab inserts, any edit dismisses; no always-on stream, the gesture is the
 gate. **Draft Commit Message** on the git chip writes from your staged
-diff and never commits. And the rack's ORACLE device does the same for
+diff and never commits. And the rack's KVASIR device does the same for
 a failed run: press **EXPLAIN**, then keep asking — the same face
 reaches API Studio responses, DB Studio errors, the Browser's page
 errors and a failed Check My Work. Each flow has its own one-time
@@ -76,16 +76,16 @@ model was told. Fast (Haiku) or Deep (Sonnet), remembered.
 
 ```text
 You: What does UFCS mean here, and when should I prefer it?
-ORACLE: UFCS is Uniform Function Call Syntax — `"nim".greet()`
+KVASIR: UFCS is Uniform Function Call Syntax — `"nim".greet()`
         and `greet("nim")` are the same call…
 You: Show me one more idiomatic example of it.
-ORACLE: # UFCS style — reads naturally as a pipeline
+KVASIR: # UFCS style — reads naturally as a pipeline
         echo numbers.filter(proc(x: int): bool = x > 2)
 
 — live session transcript, real Anthropic API
 ```
 
-![ORACLE device explaining a real failed run](images/oracle-explain.png)
+![KVASIR device explaining a real failed run](images/kvasir-explain.png)
 
 ### Debugging, out of the box
 `JS/TS · CHROME · PYTHON · GO`
@@ -269,7 +269,7 @@ against its real toolchain before it shipped, with an INSTALL button
 when the interpreter is missing. No terminal needed. Spaces with
 checkpoints **check your work** for real — file claims verified
 pure-Java, command claims through the space's own toolchain — every ✗
-answering with the space's own hint and offering the ORACLE tutor; and
+answering with the space's own hint and offering the KVASIR tutor; and
 **Export as Learning Space…** turns any project into a drop-in your
 students can load. Experiments teach the same way: every one is born
 with a walkthrough that opens on aim.

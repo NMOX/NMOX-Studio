@@ -7,14 +7,14 @@ import java.nio.file.Files;
 import java.util.List;
 
 /**
- * What "Explain with ORACLE" sends when checks fail (v2.39.5, the
+ * What "Explain with KVASIR" sends when checks fail (v2.39.5, the
  * checkpoint loop's tutor half): the failed checkpoints — label,
  * hint, detail — and, for a FILE-kind checkpoint, the learner's own
  * checked file, capped, because "why does this check fail" is only
  * answerable next to what they actually wrote. Command-kind failures
  * send the exit detail alone: a test run's output can be huge and the
  * detail already carries the verdict. The disclosure discipline of
- * every ORACLE flow (v1.171.0): assembled and capped where the data
+ * every KVASIR flow (v1.171.0): assembled and capped where the data
  * lives, so the consent line is the literal truth. Pure so every cap
  * is a unit test.
  */

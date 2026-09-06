@@ -48,8 +48,8 @@ public final class GettingStarted {
                     Target.window("RackTopComponent")),
             new Step("serve", "See a server go live", "a serve device lights the ⇄ chip",
                     Target.window("RackTopComponent")),
-            new Step("oracle", "Ask ORACLE about code", "select code → right-click → Ask ORACLE",
-                    Target.guide("#oracle--explain-the-last-failure")),
+            new Step("kvasir", "Ask KVASIR about code", "select code → right-click → Ask KVASIR",
+                    Target.guide("#kvasir--explain-the-last-failure")),
             new Step("learn", "Try a learning space", "New Learning Space…  ⇧⌘L",
                     Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")),
             // v2.84.0: the Agent Port had eight releases and no place on the

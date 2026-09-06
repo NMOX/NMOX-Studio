@@ -690,9 +690,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 message.setForeground(FAIL_RED);
             }
             panel.add(new JScrollPane(message), BorderLayout.CENTER);
-            // ORACLE is a SOFT dependency (ledger 30): no rack in the
+            // KVASIR is a SOFT dependency (ledger 30): no rack in the
             // platform means the lookup misses and no button appears
-            if (result.isError() && org.nmox.studio.core.spi.OracleAsk.find() != null) {
+            if (result.isError() && org.nmox.studio.core.spi.KvasirAsk.find() != null) {
                 panel.add(explainStrip(spec, result), BorderLayout.SOUTH);
             }
         }
@@ -2161,7 +2161,7 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     /**
-     * The failed-statement strip: one button that hands ORACLE a
+     * The failed-statement strip: one button that hands KVASIR a
      * REDACTED account of the failure. The disclosure is assembled here,
      * in the studio that owns the data, and carries only the SQL, the
      * driver's message and the engine kind — a failed statement produced
@@ -2171,23 +2171,23 @@ public final class DbStudioTopComponent extends TopComponent {
     private JComponent explainStrip(ConnectionSpec spec, QueryResult result) {
         JPanel strip = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 4));
         JButton explain = new JButton("Explain…");
-        explain.setToolTipText("Ask ORACLE what this database error means"
+        explain.setToolTipText("Ask KVASIR what this database error means"
                 + " (sends the statement and the error — you confirm first)");
         explain.addActionListener(e -> {
-            org.nmox.studio.core.spi.OracleAsk oracle = org.nmox.studio.core.spi.OracleAsk.find();
-            if (oracle == null) {
+            org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
+            if (kvasir == null) {
                 return;
             }
             String engine = spec == null || spec.engine() == null
                     ? "unknown" : spec.engine().name().toLowerCase(java.util.Locale.ROOT);
-            boolean started = oracle.explain(new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+            boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                     "db.error", engine + " error",
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.what(engine),
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.body(
                             engine, result.statement(), result.error()),
                     "What does this error mean, and how do I fix the statement?"));
             if (!started) {
-                status("ORACLE did not run — needs an API key and your consent.", Color.GRAY);
+                status("KVASIR did not run — needs an API key and your consent.", Color.GRAY);
             }
         });
         strip.add(explain);

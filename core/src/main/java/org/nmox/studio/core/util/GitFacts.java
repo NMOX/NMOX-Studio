@@ -121,7 +121,7 @@ public final class GitFacts {
         // <super>/.git/modules/<name>. A crafted .git FILE could otherwise
         // aim this at any directory (/etc, ~/.ssh) and turn the branch chip
         // into a narrow "does this dir's HEAD start with ref: refs/heads/"
-        // oracle. Canonicalize (killing ../ and symlink games), then require
+        // kvasir. Canonicalize (killing ../ and symlink games), then require
         // a ".git" element on the resolved path; anything else is not a git
         // dir and is refused.
         File canonical;

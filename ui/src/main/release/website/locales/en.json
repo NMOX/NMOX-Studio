@@ -3,7 +3,7 @@
   "site.hero.note": "One line. The runtime is bundled. This page is being served to you by the app itself — look for the ⇄ chip on its status line.",
   "site.hero.note.web": "One line. The runtime is bundled. Open this same page from inside the app — Help ▸ NMOX Studio Website (local) — and it is served to you by the product itself, with the ⇄ chip to prove it.",
   "site.loop.h": "The loop that teaches is the loop that closes",
-  "site.loop.p": "Edit, save, look — and when the page breaks, the error lands in your editor at the failing line, ORACLE explains it with your own source in front of it, and the tutorial checks your work. Doing, learning, and experimenting are the same motion here.",
+  "site.loop.p": "Edit, save, look — and when the page breaks, the error lands in your editor at the failing line, KVASIR explains it with your own source in front of it, and the tutorial checks your work. Doing, learning, and experimenting are the same motion here.",
   "site.rack.h": "A rack, not a run button",
   "site.rack.p": "53 devices — servers, test runners, gates, watchers, an AI error-explainer — mount on a rack and wire together with patch cables. A failing test can trigger its own explanation. A green build can gate a ship. Your own devices are one JSON file away.",
   "site.learn.h": "93 ways in",

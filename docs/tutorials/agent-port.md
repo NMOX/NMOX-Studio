@@ -181,7 +181,7 @@ listens and the log messages arrive.
 That last row is the design. An agent that can run your server can also
 stop it, and an agent that can write can also delete; the Agent Port
 stays a way to ASK. If a future version adds an execution surface it
-will arrive with its own consent design, the way ORACLE's outward data
+will arrive with its own consent design, the way KVASIR's outward data
 flow did.
 
 See also: the Kitchen Sink's station 24 and the user guide's Agent

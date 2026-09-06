@@ -453,7 +453,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         }
 
         /**
-         * Draft Commit Message with ORACLE: the STAGED diff (fixed-argv
+         * Draft Commit Message with KVASIR: the STAGED diff (fixed-argv
          * read-only git spawn, the GitFacts family — no project code
          * executes, so no trust gate) goes to the API behind the key
          * gate and its OWN consent kind (a diff is a new disclosure
@@ -498,20 +498,20 @@ public class GitStatusLine implements StatusLineElementProvider {
                     status("Nothing staged — stage changes first (git add), then draft.");
                     return;
                 }
-                org.nmox.studio.rack.engine.OracleCommitEngine engine =
-                        new org.nmox.studio.rack.engine.OracleCommitEngine(
-                                new org.nmox.studio.rack.engine.OracleClient(),
-                                OracleKeys::read,
-                                project -> OracleConsent.requestKindConsent("git.diff",
+                org.nmox.studio.rack.engine.KvasirCommitEngine engine =
+                        new org.nmox.studio.rack.engine.KvasirCommitEngine(
+                                new org.nmox.studio.rack.engine.KvasirClient(),
+                                KvasirKeys::read,
+                                project -> KvasirConsent.requestKindConsent("git.diff",
                                         "the STAGED diff of " + project + " (up to "
                                         + org.nmox.studio.rack.engine
-                                                .OracleCommitMessage.MAX_DIFF_CHARS
+                                                .KvasirCommitMessage.MAX_DIFF_CHARS
                                         + " characters) and its changed-file list"));
-                org.nmox.studio.rack.engine.OracleCommitEngine.Draft drafted =
+                org.nmox.studio.rack.engine.KvasirCommitEngine.Draft drafted =
                         engine.draft(dir.getName(), stat.stdout(), rawDiff,
-                                AskOracleModel.chosen());
+                                AskKvasirModel.chosen());
                 if (drafted.status() != org.nmox.studio.rack.engine
-                        .OracleCommitEngine.Status.DRAFTED) {
+                        .KvasirCommitEngine.Status.DRAFTED) {
                     status(drafted.message());
                     return;
                 }
@@ -553,7 +553,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             Object copy = "Copy";
             Object close = "Close";
             org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(panel,
-                    "ORACLE commit message \u2014 draft",
+                    "KVASIR commit message \u2014 draft",
                     org.openide.NotifyDescriptor.DEFAULT_OPTION,
                     org.openide.NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{copy, close}, copy);
@@ -601,7 +601,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             pulls.addActionListener(e -> showPullRequests());
             menu.add(pulls);
             menu.addSeparator();
-            JMenuItem draft = new JMenuItem("Draft Commit Message with ORACLE\u2026");
+            JMenuItem draft = new JMenuItem("Draft Commit Message with KVASIR\u2026");
             draft.addActionListener(e -> draftCommitMessage());
             menu.add(draft);
             menu.addSeparator();

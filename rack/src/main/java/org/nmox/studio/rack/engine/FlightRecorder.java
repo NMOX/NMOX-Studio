@@ -198,7 +198,7 @@ public final class FlightRecorder implements RackBus.Listener {
     /**
      * The latest run's verdict: OK, FAIL, or STOPPED (v2.84.0 — a stop after
      * a failure means the newest run was the stop, so last_failure and
-     * ORACLE stop explaining a failure the user already moved past).
+     * KVASIR stop explaining a failure the user already moved past).
      */
     public synchronized Event last() {
         for (var it = events.descendingIterator(); it.hasNext();) {

@@ -8,7 +8,7 @@ import org.netbeans.junit.MockServices;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The soft-dependency seam's two states (v1.199.0, the OracleAsk
+ * The soft-dependency seam's two states (v1.199.0, the KvasirAsk
  * idiom): with no provider installed {@link EmbeddedBrowser#find()}
  * must be null — the caller's cue to use the system browser — and with
  * a provider registered the lookup must return it and route the URL.

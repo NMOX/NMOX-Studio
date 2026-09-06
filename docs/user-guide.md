@@ -214,7 +214,7 @@ STOPPED on its faceplate, as if you had pressed its own STOP, and so
 does the rack's own **Stop All** since v2.75.0 — and since v2.84.0 the
 RECORD agrees: the Output tab's last line reads `[exit N] stopped`,
 the flight recorder files a STOPPED, `run_history` says `stopped`,
-and neither BLACKBOX nor ORACLE mistakes your own stop for a
+and neither BLACKBOX nor KVASIR mistakes your own stop for a
 failure); the Workbench's
 RUNNING section and ⌘I list them all. A script the
 NPM Explorer started prints a local address the same way the ▶ does
@@ -332,13 +332,13 @@ script knob updates in place. Edit a `Gruntfile` and DYNAMO re-parses its
 tasks. Add a dependency and CRATE's display refreshes. No re-aiming, no
 refresh buttons.
 
-### ORACLE — explain the last failure
+### KVASIR — explain the last failure
 
-![ORACLE explaining a real failed run: the consent-gated diagnosis on the faceplate and the full fix steps in the viewer](images/oracle-explain.png)
+![KVASIR explaining a real failed run: the consent-gated diagnosis on the faceplate and the full fix steps in the viewer](images/kvasir-explain.png)
 
-**ORACLE** is AI assistance the rack way: a device that explains the error
+**KVASIR** is AI assistance the rack way: a device that explains the error
 currently on the MONITOR bus, not a chat sidebar. When a run fails, press
-**EXPLAIN** and ORACLE asks Anthropic's API what went wrong and the
+**EXPLAIN** and KVASIR asks Anthropic's API what went wrong and the
 concrete next step to fix it. A short verdict lands on the display; **VIEW**
 opens the full answer. **MODEL** dials **HAIKU** (cheap, fast — the default)
 or **SONNET** (stronger). EXPLAIN is blue: it reads and asks, it never
@@ -346,12 +346,12 @@ touches your project.
 
 **Set your key** with **KEY…** — it is stored in your OS keychain (macOS
 Keychain, GNOME Keyring, Windows Credential Vault), never on disk and never
-in any project file. Alternatively, ORACLE reads the environment variable
+in any project file. Alternatively, KVASIR reads the environment variable
 **`ANTHROPIC_API_KEY`**, or **`CLAUDE_API_KEY`** if the first is unset (a
-stored key wins over both). No key, no call — ORACLE just says so.
+stored key wins over both). No key, no call — KVASIR just says so.
 
-**What ORACLE sends, and the whole of it.** The first time you press
-EXPLAIN, ORACLE asks for a one-time consent, because sending your build
+**What KVASIR sends, and the whole of it.** The first time you press
+EXPLAIN, KVASIR asks for a one-time consent, because sending your build
 output to an external service is a choice only you can make. It sends
 **only**:
 
@@ -366,19 +366,19 @@ It does **not** send your source files, your environment variables, your
 part of the message. The consent is remembered; everything is off until you
 press the button.
 
-If the network is down, the key is wrong, or the model declines, ORACLE
+If the network is down, the key is wrong, or the model declines, KVASIR
 says so plainly on its display — it never fails silently and never crashes.
 
 **Keep asking.** After a successful EXPLAIN, the **VIEW** button opens
 the diagnosis as a conversation: ask follow-ups about the same failure
 ("which file first?", "what does that flag do?") and each turn carries
 the full history, so the answers stay anchored to your actual error.
-Same bounds and gates as the editor's Ask ORACLE; the transcript shows
+Same bounds and gates as the editor's Ask KVASIR; the transcript shows
 exactly what the model was told, starting with the disclosed failure
 context itself.
 
-**Ask ORACLE about your code.** The same assistant reaches the editor:
-select any code, in any language, right-click, and choose **Ask ORACLE
+**Ask KVASIR about your code.** The same assistant reaches the editor:
+select any code, in any language, right-click, and choose **Ask KVASIR
 About Selection…**. Type a question (or leave it empty for a plain
 explanation), pick a depth — Fast (Haiku, the default) or Deep
 (Sonnet), remembered for next time — and a conversation window opens — keep asking follow-ups
@@ -391,8 +391,8 @@ the file's name and language, and your question — never the rest of the
 file, other files, or your environment. Same key, same honesty: no key
 or no consent and it says so; nothing is ever sent without your click.
 
-**Let ORACLE edit your code.** Right-click a selection and choose
-**Edit with ORACLE…**: say what to change ("use const", "add error
+**Let KVASIR edit your code.** Right-click a selection and choose
+**Edit with KVASIR…**: say what to change ("use const", "add error
 handling", "convert to async/await") and the proposed replacement
 arrives as a BEFORE/AFTER preview — nothing touches your file until
 you press **Apply**, which replaces exactly the selection as one undo
@@ -401,14 +401,14 @@ selection over the 8,000-character cap is refused outright rather than
 truncated (a rewrite of a shortened selection would silently delete
 the tail), a reply that isn't exactly one code block is refused rather
 than guessed at (the model's prose "I can't do that from the selection
-alone" is shown as itself), and if the file changed while ORACLE was
+alone" is shown as itself), and if the file changed while KVASIR was
 thinking, Apply refuses and asks you to re-select — your buffer is
 never patched blind. Same consent, same key, same disclosure as Ask
-ORACLE: only the selection, the file's name, its language, and your
+KVASIR: only the selection, the file's name, its language, and your
 instruction ever leave the machine.
 
-**Let ORACLE complete at the caret.** Press **⌥⌘G** (or right-click ▸
-**Complete with ORACLE**) and the code around the caret is sent once
+**Let KVASIR complete at the caret.** Press **⌥⌘G** (or right-click ▸
+**Complete with KVASIR**) and the code around the caret is sent once
 — 6,000 characters before it, 1,500 after, clipped from the far ends
 — after the same consent Ask and Edit use. The reply appears as gray
 ghost text at the caret: **Tab** inserts it (one undo unit); typing,
@@ -420,8 +420,8 @@ inserts all of it. Nothing touches your file until Tab. There is no
 always-on stream: no keystroke ever leaves the machine on its own, and
 each press is one bounded send you asked for.
 
-**Let ORACLE draft your commit message.** Click the git branch chip on
-the status line and choose **Draft Commit Message with ORACLE…**: the
+**Let KVASIR draft your commit message.** Click the git branch chip on
+the status line and choose **Draft Commit Message with KVASIR…**: the
 STAGED diff (and only the staged diff — up to 12,000 characters, with
 truncation confessed) goes up behind its own one-time consent, and the
 drafted subject-and-body lands in an editable dialog with a **Copy**
@@ -1094,7 +1094,7 @@ requests alike, and **Delete** (also the Delete key; deleting a
 non-empty collection asks first, with No as the default).
 
 When a response is wrong and you don't know why, **Explain with
-ORACLE…** sends a redacted picture of it — method, URL with query
+KVASIR…** sends a redacted picture of it — method, URL with query
 values masked, status, headers with credential headers dropped and
 counted, capped body — to the same AI that explains rack failures,
 after a consent dialog that quotes exactly that list. It opens as a
@@ -1118,11 +1118,11 @@ plus named saved queries. **Edit rows in the grid** — single-table,
 primary-keyed results only (the grid tells you *why* when it's
 read-only), and Apply shows you the exact UPDATE statements before
 touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
-NetBeans Database Explorer connections (Oracle, Derby, anything with a
+NetBeans Database Explorer connections (Kvasir, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
 A failed statement grows an **Explain…** button under its error
-message: ORACLE gets the SQL you ran (including its literal values —
+message: KVASIR gets the SQL you ran (including its literal values —
 the consent line says so, because the error is usually *about* a
 literal), the error message, and the engine kind. Never the
 connection details, the password (keychain-only, out of reach by
@@ -1308,7 +1308,7 @@ Open-in-Browser action route here too.
   project also lands in the editor itself: a squiggle at the failing
   line and an Action Items row with click-to-navigate, cleared on the
   next reload — the console shows every error, the editor only ever
-  carries your files. And **Explain error…** beside Clear asks ORACLE
+  carries your files. And **Explain error…** beside Clear asks KVASIR
   about the page's last located error, sending the message plus a few
   capped source lines around the failing line under its own consent
   that states literally what leaves (v2.39.2).
@@ -1317,7 +1317,7 @@ Open-in-Browser action route here too.
 
   ![The consent names the literal disclosure; Keep Local is the default](images/explain-error-consent.png)
 
-  ![ORACLE's answer to the actual mistake, follow-ups welcome](images/explain-error-answer.png)
+  ![KVASIR's answer to the actual mistake, follow-ups welcome](images/explain-error-answer.png)
 - **DOM** — press Refresh for a tree of the live document (bounded:
   depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
   a node outlines it in the page and shows its attributes plus a
@@ -1513,7 +1513,7 @@ keymaps never costs you the studio chords.
 - **BLACKBOX** (add it to your rack) is a flight recorder: every launch
   and exit, durations, trends, and "what changed since the last green
   build" when something breaks. A run you stopped yourself reads
-  STOPPED — neither a green nor a failure, and never the thing ORACLE
+  STOPPED — neither a green nor a failure, and never the thing KVASIR
   is asked to explain.
 - **SONAR** shows who owns your ports, cross-referenced with Docker, with
   a one-click kill for the squatter on 3000.
@@ -1549,7 +1549,7 @@ declare its own `checkpoints`.
 
 ![Check My Work — the ✗ answers with the space's own hint](images/check-my-work.png)
 
-When checks fail, the report offers **Explain with ORACLE…** — the
+When checks fail, the report offers **Explain with KVASIR…** — the
 failed checkpoints and (for a file check) your own checked file,
 capped, under its own consent that names exactly what leaves. The
 answer reads like a tutor: what to change, and "re-run the checks."
@@ -1581,10 +1581,10 @@ right there, streaming progress onto the REPL screen. Spaces live in
 ### First Steps, on the Welcome page (v2.66.0; named First Steps since v2.69.11)
 
 A fourth Welcome column lists the six first gestures — open a project,
-run something in the rack, see a server go live, ask ORACLE about code,
+run something in the rack, see a server go live, ask KVASIR about code,
 try a learning space, point an agent at the IDE — and ticks each one
 from records the product already keeps (recent projects, the rack's
-flight recorder, the serving registry, your ORACLE consent,
+flight recorder, the serving registry, your KVASIR consent,
 `~/.nmox/learn`, the Agent Port's started-once record). Every row is a
 door: click it and the gesture's window or action opens. Hover a step
 for its gesture. A tick never un-ticks; the column disappears when all

@@ -15,8 +15,8 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.nmox.studio.rack.engine.OracleClient;
-import org.nmox.studio.rack.engine.OracleClient.FailureContext;
+import org.nmox.studio.rack.engine.KvasirClient;
+import org.nmox.studio.rack.engine.KvasirClient.FailureContext;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
@@ -348,9 +348,9 @@ class DeviceSecondReachTest {
     }
 
     @Test
-    @DisplayName("ORACLE's EXPLAIN cable consults hands-free through every gate")
-    void oracleCablePath() throws Exception {
-        class SpyTransport implements OracleClient.Transport {
+    @DisplayName("KVASIR's EXPLAIN cable consults hands-free through every gate")
+    void kvasirCablePath() throws Exception {
+        class SpyTransport implements KvasirClient.Transport {
 
             final AtomicInteger posts = new AtomicInteger();
 
@@ -367,15 +367,15 @@ class DeviceSecondReachTest {
         rack.setProjectDir(freshDir().toFile());
         try {
             SpyTransport spy = new SpyTransport();
-            OracleDevice oracle = new OracleDevice();
-            oracle.client = new OracleClient(spy);
-            oracle.failureSource = () -> Optional.of(new FailureContext(
+            KvasirDevice kvasir = new KvasirDevice();
+            kvasir.client = new KvasirClient(spy);
+            kvasir.failureSource = () -> Optional.of(new FailureContext(
                     "VERITAS", "npm test", 1, List.of("FAIL"), "app", 100));
-            oracle.keySource = () -> "sk-test".toCharArray();
-            oracle.consentCheck = () -> true; // granted earlier by a human press
-            rack.addDevice(oracle);
+            kvasir.keySource = () -> "sk-test".toCharArray();
+            kvasir.consentCheck = () -> true; // granted earlier by a human press
+            rack.addDevice(kvasir);
 
-            oracle.receive(oracle.getPort("explain"), Signal.trigger(true));
+            kvasir.receive(kvasir.getPort("explain"), Signal.trigger(true));
             long deadline = System.currentTimeMillis() + 15_000;
             while (spy.posts.get() == 0 && System.currentTimeMillis() < deadline) {
                 RackDevice.awaitDeviceBgIdle();
@@ -386,7 +386,7 @@ class DeviceSecondReachTest {
                     .as("the cable path consults once through the spy").isEqualTo(1);
 
             // inside the cooldown window a second trigger must not re-consult
-            oracle.receive(oracle.getPort("explain"), Signal.trigger(true));
+            kvasir.receive(kvasir.getPort("explain"), Signal.trigger(true));
             RackDevice.awaitDeviceBgIdle();
             settle(rack);
             assertThat(spy.posts.get()).isEqualTo(1);

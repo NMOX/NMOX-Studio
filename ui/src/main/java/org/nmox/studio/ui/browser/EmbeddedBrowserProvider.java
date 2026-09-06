@@ -12,7 +12,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * The {@link EmbeddedBrowser} facade implementation (the OracleAsk
+ * The {@link EmbeddedBrowser} facade implementation (the KvasirAsk
  * idiom): the rack's SCOPE device and the serving chip route here
  * without depending on the ui module. Also owns the one lookup for
  * the platform's embedded WebKit factory.
