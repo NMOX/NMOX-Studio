@@ -184,6 +184,11 @@ public final class EnvironmentDoctor {
             // rendered as the tool's version, v1.303.0)
             case "cwebp" -> List.of("cwebp", "-version");
             case "apachectl" -> List.of("apachectl", "-v"); // --version unsupported
+            // the v2.85.0 Doctor walk: three real tools read "found — but its
+            // version command failed" because their dialect is not --version
+            case "lua" -> List.of("lua", "-v"); // "unrecognized option '--version'"
+            case "odin" -> List.of("odin", "version"); // --version prints the tool's usage
+            case "instantfpc" -> List.of("instantfpc", "-h"); // --version: "Missing source file"; -h prints "instantfpc 1.3"
             default -> List.of(tool, "--version");
         };
     }

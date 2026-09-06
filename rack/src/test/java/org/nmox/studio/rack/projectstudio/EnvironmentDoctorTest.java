@@ -161,4 +161,13 @@ class EnvironmentDoctorTest {
                         + " which rows came from ~/.nmox/doctor.d")
                 .endsWith(" · yours");
     }
+
+    @Test
+    @DisplayName("lua, odin and instantfpc speak their own version dialects (the v2.85.0 Doctor walk: three honest 'failed' rows that were really the probe's fault)")
+    void luaOdinInstantfpcDialects() {
+        assertThat(EnvironmentDoctor.versionCommand("lua")).containsExactly("lua", "-v");
+        assertThat(EnvironmentDoctor.versionCommand("odin")).containsExactly("odin", "version");
+        assertThat(EnvironmentDoctor.versionCommand("instantfpc")).containsExactly("instantfpc", "-h");
+        assertThat(EnvironmentDoctor.versionCommand("pnpm")).as("a tool whose --version genuinely crashes keeps the default; its row stays honest").containsExactly("pnpm", "--version");
+    }
 }
