@@ -1520,7 +1520,11 @@ six are done, or when you press **Hide this list**.
   node, npm, docker, forge, composer, gopls, … — showing found versions
   and the install command for anything missing.
 - **Missing language server / missing tool**: the IDE tells you the
-  command to run (or offers to run it), never a bare failure.
+  command to run (or offers to run it), never a bare failure. One
+  wall has its own door: TypeScript 7 (the Go port) ships no tsserver,
+  so if the typescript the language server finds is 7, the editor says
+  so once and offers `npm install -g typescript@5` — the install the
+  IDE runs for you pins 5 for the same reason.
 - **Port already in use**: the error names the process squatting on it
   (SONAR will kill it).
 - **A device's GO does nothing**: check its LCD — devices explain
