@@ -70,4 +70,20 @@ class TreeTextTest {
         TreeText.Result r = TreeText.render(root, 6, 500);
         assertThat(r.text()).contains("── loop\n").doesNotContain("loop/");
     }
+
+    @Test
+    @DisplayName("one directory's listing is bounded: past the cap the rest are counted, never held")
+    void listingIsBounded(@TempDir Path tmp) throws Exception {
+        Path big = tmp.resolve("big");
+        Files.createDirectories(big);
+        for (int i = 0; i < TreeText.LIST_CAP + 7; i++) {
+            Files.writeString(big.resolve("f" + i + ".txt"), "");
+        }
+        TreeText.Listing l = TreeText.children(big);
+        assertThat(l.entries()).hasSize(TreeText.LIST_CAP);
+        assertThat(l.beyondCap()).isEqualTo(7);
+        TreeText.Result r = TreeText.render(big, 2, 10);
+        assertThat(r.elided()).isEqualTo(TreeText.LIST_CAP + 7 - 10);
+        assertThat(r.text()).endsWith("not shown)\n");
+    }
 }

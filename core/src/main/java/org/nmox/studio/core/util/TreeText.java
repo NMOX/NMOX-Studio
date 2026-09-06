@@ -28,6 +28,9 @@ public final class TreeText {
     public record Result(String text, int elided) {
     }
 
+    /** The most entries one directory contributes before the rest are counted, not listed (the bounded-read law). */
+    static final int LIST_CAP = 2000;
+
     private TreeText() {
     }
 
@@ -44,7 +47,9 @@ public final class TreeText {
     }
 
     private static void walk(Path dir, String prefix, int depth, int maxDepth, int[] budget, int[] elided, StringBuilder sb) {
-        List<Path> entries = children(dir);
+        Listing listing = children(dir);
+        List<Path> entries = listing.entries();
+        elided[0] += listing.beyondCap();
         for (int i = 0; i < entries.size(); i++) {
             Path p = entries.get(i);
             boolean last = i == entries.size() - 1;
@@ -71,18 +76,34 @@ public final class TreeText {
         }
     }
 
-    /** Directories first, then files, each case-folded; unreadable dirs read as empty. */
-    static List<Path> children(Path dir) {
+    /** One directory's listing: at most {@link #LIST_CAP} entries kept, the rest counted. */
+    record Listing(List<Path> entries, int beyondCap) {
+    }
+
+    /**
+     * Directories first, then files, each case-folded; unreadable dirs read
+     * as empty. The listing is bounded: past {@link #LIST_CAP} entries the
+     * rest are only counted (names iterated, never held or stat'ed), so a
+     * directory of a hundred thousand files costs a bounded list.
+     */
+    static Listing children(Path dir) {
         List<Path> out = new ArrayList<>();
+        int[] beyond = {0};
         try (Stream<Path> s = Files.list(dir)) {
             // the IDE's own workspace files (.nmoxrack.json and its siblings) are the product's,
             // not the project's — README noise the walk found; left out, not counted as elided
-            s.filter(p -> !IdeWorkspaceFiles.isOwn(p.getFileName().toString())).forEach(out::add);
+            s.filter(p -> !IdeWorkspaceFiles.isOwn(p.getFileName().toString())).forEach(p -> {
+                if (out.size() < LIST_CAP) {
+                    out.add(p);
+                } else {
+                    beyond[0]++;
+                }
+            });
         } catch (IOException | RuntimeException ex) {
-            return out;
+            return new Listing(out, beyond[0]);
         }
         Comparator<Path> byName = Comparator.comparing(p -> p.getFileName().toString().toLowerCase(Locale.ROOT));
         out.sort(Comparator.<Path, Boolean>comparing(p -> !(Files.isDirectory(p) && !Files.isSymbolicLink(p))).thenComparing(byName));
-        return out;
+        return new Listing(out, beyond[0]);
     }
 }
