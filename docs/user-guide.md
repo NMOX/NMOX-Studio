@@ -842,6 +842,9 @@ reader, or a feed — the developer-evangelist grant:
   even when the focus is in the Navigator or a tool window; with nothing
   open in the editor area the status line says so instead of saving a
   blank.
+- **Tools ▸ Copy Editor Screenshot.** The same editor shot straight onto
+  the clipboard, ready to paste into Slack, an issue or a slide — no
+  chooser, no file.
 
 ## 6. The studios
 
