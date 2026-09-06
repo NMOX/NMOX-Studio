@@ -805,7 +805,11 @@ native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.) The same name law covers every
 window the product opens — the Workbench, the studios, the explorers,
 the Welcome, IRC, the Tests window: every button they paint carries an
-accessible name, and a window added without one fails the build.
+accessible name, and a window added without one fails the build. Since
+v2.85.0 the law reaches the rest of the input family too — every text
+area, text field, combo, spinner, table, list and tree in the product
+speaks its own name (taken from the label beside it), three build gates
+holding it.
 
 ![Keyboard focus on the rack: a focus ring on DYNAMO's GO button after tabbing from the RUNNER knob](images/a11y-knob-focus.png)
 
