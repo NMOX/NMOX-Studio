@@ -791,6 +791,65 @@ the page itself). A page whose core logic lives in a worker will appear
 stuck while debugging; debug it with the worker code inlined or via
 INSPECTOR + chrome://inspect instead.
 
+### Presenting and sharing (v2.87.0)
+
+Three gestures for the person who shows NMOX Studio to a room, a
+reader, or a feed — the developer-evangelist grant:
+
+- **View ▸ Presentation Mode.** One toggle makes every open editor
+  legible from the back of a room: the editor font grows by ten points,
+  live, in every editor that is open now or opened while the mode is on.
+  It rides the platform editor's own text zoom (the same ⌥-wheel zoom you
+  can still use to fine-tune on top), so nothing is written to your
+  settings — toggle it off, or restart, and the font is exactly what it
+  was. The in-app Browser follows: the page zooms to 150% of your own
+  zoom while presenting and comes back exactly when you stop, so a demo
+  of the running app reads from the back row too — and so does the
+  Output window, so the run you just started can be read along with the
+  code that started it. The menu item shows a
+  check while the mode is on and the status line says so.
+- **View ▸ Show Keystrokes.** The chord you just pressed appears large at
+  the bottom of the window for a moment — ⌘S, ⌥⌘G, ⇧⌘O, or `⌘Z ×3` when
+  you repeat one — so the room can follow your hands. Only chords with
+  ⌘, ⌃ or ⌥ and the function keys are shown; what you type never is, so a
+  password or a token can't end up on the projector. Toggle it off, or
+  restart, and it's gone.
+- **Edit ▸ Copy as Markdown** (or right-click). The selection — or, with nothing
+  selected, the whole file — lands on the clipboard as a fenced code
+  block tagged with the file's language (` ```jsx `, ` ```typescript `,
+  ` ```bash `…), ready to paste into a README, a GitHub issue, a blog
+  post or a chat. Two things a hand-typed fence gets wrong are handled
+  for you: the block always ends the code in one clean newline, and a
+  snippet that itself contains three backticks gets a longer fence so it
+  renders whole instead of ending early. The status line says how many
+  lines were copied and which tag they carry.
+- **Edit ▸ Copy as Markdown with Link** (or right-click). The same block,
+  followed by a link to those exact lines on GitHub —
+  `[src/App.jsx#L3-L14](https://github.com/you/repo/blob/main/src/App.jsx#L3-L14)`
+  — for an issue, a review comment or a post that should say where the
+  code lives. It links the branch you have checked out (a detached HEAD
+  links by commit), so what you paste is what a reader can open. It only
+  vouches for what it can read: a file outside a git repository, a
+  repository without an `origin`, or an origin that is not GitHub is a
+  spoken refusal on the status line, and nothing is copied.
+- **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
+  2x, saved as a PNG where you choose (Pictures by default, named by
+  the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
+  IDE painting itself rather than the OS capturing the screen, there is
+  no screen-recording permission to grant, no desktop in the frame and
+  nothing to crop, and the text is crisp on a retina slide. The status
+  line names the file and its pixel size.
+- **Tools ▸ Save Editor Screenshot…** The same shot of just the editor
+  area's selected tab — toolbar, gutter, code, sidebars, no IDE chrome —
+  for a slide that wants the code alone, named after the document
+  (`App.jsx-2026-09-06-081530.png`). It takes the tab you are looking at
+  even when the focus is in the Navigator or a tool window; with nothing
+  open in the editor area the status line says so instead of saving a
+  blank.
+- **Tools ▸ Copy Editor Screenshot.** The same editor shot straight onto
+  the clipboard, ready to paste into Slack, an issue or a slide — no
+  chooser, no file.
+
 ## 6. The studios
 
 ### Keyboard and screen-reader access

@@ -259,6 +259,22 @@
                         <exclude>**/whatsnew/WhatsNew$*.class</exclude>
                         <exclude>**/WhatsNewAction*.class</exclude>
                         <exclude>**/ReportProblemAction*.class</exclude>
+                        <!-- v2.87.0 screenshot gestures: a save chooser, the EDT paint and the
+                             clipboard — pure Swing; the pure halves (Screenshot, ImageTransferable,
+                             the tab rule) stay measured -->
+                        <exclude>**/shots/ShotSaver*.class</exclude>
+                        <exclude>**/shots/SaveScreenshotAction*.class</exclude>
+                        <exclude>**/shots/SaveEditorScreenshotAction*.class</exclude>
+                        <exclude>**/shots/CopyEditorScreenshotAction*.class</exclude>
+                        <!-- v2.87.0 presenting: the keystroke pill is a Swing window, the two View
+                             toggles are menu presenters, the two Copy-as-Markdown actions are
+                             editor/clipboard glue; KeystrokeHud, OutputFont, CopyAsMarkdown, GitLink
+                             and PresentationMode's arithmetic stay measured -->
+                        <exclude>**/present/KeystrokeOverlay*.class</exclude>
+                        <exclude>**/present/ShowKeystrokesAction*.class</exclude>
+                        <exclude>**/present/PresentationModeAction*.class</exclude>
+                        <exclude>**/share/CopyAsMarkdownAction*.class</exclude>
+                        <exclude>**/share/CopyAsMarkdownWithLinkAction*.class</exclude>
                         <!-- v2.69.10: the toolbar ■ is a Swing action shell (listener + StatusDisplayer); LiveRuns and IdeRunItem hold the logic and are tested -->
                         <exclude>**/StopRunAction*.class</exclude>
                         <exclude>**/KeyboardShortcutsAction*.class</exclude>

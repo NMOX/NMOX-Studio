@@ -85,8 +85,19 @@ public final class FxBrowserPanel extends JPanel {
     /** FX-thread-only after init. */
     private WebEngine engine;
     private WebView webView;
-    /** EDT-only. */
-    private double zoom = 1.0;
+    /**
+     * EDT-only by contract (every writer is a Swing handler or the
+     * presentation hook's invokeLater hop); volatile because a 64-bit
+     * write is not atomic on every JVM and SpotBugs cannot see the hop —
+     * an atomic write costs nothing here and the checker names the risk
+     * honestly (AT_NONATOMIC_64BIT_PRIMITIVE, insurance verify #8).
+     */
+    private volatile double zoom = 1.0;
+    /** EDT-only by contract, volatile for the same reason: the user's own zoom before Presentation Mode multiplied it. */
+    private volatile double zoomBeforePresenting = 1.0;
+    private boolean presenting;
+    /** The product-wide presenting state (core.util.Presentation), attached in addNotify, detached in removeNotify. */
+    private final java.util.function.Consumer<Boolean> presentationHook = on -> SwingUtilities.invokeLater(() -> follow(on));
 
     /** EDT. Builds the chrome and queues engine init on the FX thread. */
     public FxBrowserPanel(TitleListener titleListener) {
@@ -281,6 +292,38 @@ public final class FxBrowserPanel extends JPanel {
                 h.go(offset);
             }
         });
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        org.nmox.studio.core.util.Presentation.addListener(presentationHook);
+        follow(org.nmox.studio.core.util.Presentation.isOn()); // a late subscriber reads the current state
+    }
+
+    @Override
+    public void removeNotify() {
+        org.nmox.studio.core.util.Presentation.removeListener(presentationHook);
+        super.removeNotify();
+    }
+
+    /**
+     * EDT. Presentation Mode reaches the page: entering multiplies the
+     * user's zoom by {@link org.nmox.studio.core.util.Presentation#BROWSER_ZOOM},
+     * leaving restores exactly the zoom they had (any +/− pressed while
+     * presenting is part of the presentation, not a new baseline).
+     */
+    void follow(boolean on) {
+        if (on == presenting) {
+            return;
+        }
+        presenting = on;
+        if (on) {
+            zoomBeforePresenting = zoom;
+            setZoom(org.nmox.studio.core.util.Presentation.browserZoom(zoom, true));
+        } else {
+            setZoom(zoomBeforePresenting);
+        }
     }
 
     /** EDT. Clamped zoom applied to the WebView on the FX thread. */

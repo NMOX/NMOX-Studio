@@ -109,4 +109,13 @@ class StandardsKitTest {
         assertThat(dir.resolve("sitemap.xml")).exists();
         assertThat(dir.resolve("humans.txt")).exists();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a site URL with & or < produces a well-formed sitemap")
+    void hostileUrlStaysValidXml() throws Exception {
+        String xml = StandardsKit.sitemap("https://x.example/a?b=1&c=2", java.time.LocalDate.of(2026, 9, 6));
+        assertThat(xml).contains("&amp;").doesNotContain("=2</loc>".replace("2", "2&"));
+        javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .parse(new org.xml.sax.InputSource(new java.io.StringReader(xml)));
+    }
 }

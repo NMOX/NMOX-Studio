@@ -3960,3 +3960,54 @@ the Windows checkout native line endings, so `indexOf` returned -1 and
 green macOS insurance verifies. The fix is the CRLF normalization its
 sibling gate tests already carry; the fragile shape is specifically a
 newline required after the brace, not a search that ends at the brace.
+
+## Addendum — 2026-09-06 morning, the developer-evangelist lens (v2.87.0)
+
+David's ask, verbatim in spirit: put on the hat of a very senior
+Developer Evangelist, decide what that persona needs to do the job, and
+grant it. The job, enumerated before a line was written: live-code the
+product on a projector, paste its code into a README at noon and a slide
+at three, make screenshots for docs and posts, demo on a venue's wifi.
+The grants that fell out are small and coherent because each names one
+motion of that job and reuses a mechanism the platform already had:
+
+- **Presentation Mode** — the room can READ it. The platform editor's
+  `text-zoom` client property (the ⌥-wheel zoom) applied across
+  `EditorRegistry` with a focus hook; live, non-persistent, restorable.
+  Decompiled, not guessed — `DocumentViewOp.updateTextZoom` reads that
+  exact key — and walked: `App.jsx` doubled on one menu press and
+  restored exactly on the next.
+- **Copy as Markdown** — the code can be SHARED. The one mime→language
+  vocabulary (`LspLanguageIds`) as the fence tag, a small table where an
+  LSP id is not a name GitHub renders, the trailing-newline law, and the
+  CommonMark longer-fence rule a hand-typed fence gets wrong.
+- **Save Screenshot…** — the screen can be SHOWN. The docs forge's own
+  2x Swing painting as a user gesture: no capture permission, no desktop,
+  no crop. Walked: a 2646×1658 PNG, exactly twice the window.
+
+Two method notes. First, a persona lens turns "what should I build"
+into "what does this job need", and the answer is usually three small
+grants, not one speculative feature. Second, a popup-only action is
+outside what this automation can open (a right-click would front the
+app; Quick Search is undriveable — the v1.324.0 ceiling) — and the
+answer was not to pretend a walk but to register the action on the
+Edit menu too, for keyboard and menu users, which is also what made
+it drivable (`app_menu` + `pbpaste`) — and the walk that allowed is
+the third catch below.
+
+Two catches worth keeping. Night unit 3's own gate rejected
+Presentation Mode's first status text — `setStatusText(cond ? "…" : "…")`
+has a variable at its head even when both branches are ours; lead with
+the literal. And the kit wizards take FREE TEXT where the New Project
+scaffold slugifies: the I18n Kit wrote malformed JSON for a name with a
+quote and the Standards Kit malformed XML for a URL with an ampersand,
+both found by extending the night's injection audit into the generators.
+
+And the third catch was the walk's own: with Copy as Markdown on the Edit
+menu the automation could finally drive it, and the first paste came out
+tagged `javascript` for a `.jsx` file — the product opens JSX under the
+JavaScript lexer's mime, so the mime vocabulary is coarser than the file's
+kind. The unit test written that morning had passed on a `text/x-jsx`
+mime no `.jsx` file carries. The rule: where the lexer's mime is coarser than the file,
+the fence reads the extension first. A test can only exercise the inputs
+you imagine; the walk hands you the real one.
