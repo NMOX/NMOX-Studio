@@ -28,14 +28,14 @@ Do all of this before the audience is watching. Two minutes, once.
       stop it with the ■ (⌥⌘.). This pre-answers the Workspace Trust
       question for a wizard project (it is pre-trusted anyway — you
       just created it) and proves the port is free.
-- [ ] **ORACLE has a key and its consent.** In the Task Rack (⌘9),
-      mount ORACLE and press **KEY…** on its faceplate (keychain-only),
+- [ ] **KVASIR has a key and its consent.** In the Task Rack (⌘9),
+      mount KVASIR and press **KEY…** on its faceplate (keychain-only),
       or have `ANTHROPIC_API_KEY` in the environment the app was
       launched from. Then press **EXPLAIN** once and answer the consent
-      dialog with **Send to ORACLE** — a cable-triggered consult never
+      dialog with **Send to KVASIR** — a cable-triggered consult never
       prompts, so beat 4 needs that grant to exist already. Do **not**
-      pre-answer the editor's *Ask ORACLE About Selection…* consent —
-      each ORACLE flow earns its own, and that dialog is part of beat
+      pre-answer the editor's *Ask KVASIR About Selection…* consent —
+      each KVASIR flow earns its own, and that dialog is part of beat
       3's story.
 - [ ] **View ▸ Presentation Mode** is on. Every open editor +10 pt, the
       in-app Browser's page at 150%, the Output window and every open
@@ -50,7 +50,7 @@ Do all of this before the audience is watching. Two minutes, once.
 - [ ] **The Welcome tab is frontmost** — that is beat 1's opening shot.
 - [ ] **Wifi:** everything runs on localhost — the dev server, the
       Browser, the rack, the Task Board, the Agent Port. The one
-      exception is ORACLE, which is a real call to the Anthropic API:
+      exception is KVASIR, which is a real call to the Anthropic API:
       beats 3 and 4 need a network. If the room has none, both degrade
       honestly (see *When something goes wrong*) and the rest of the
       demo is untouched.
@@ -95,7 +95,7 @@ have is exactly what the Angular Language Service type-checks, and
 |---|---|---|---|---|
 | 0:00 | 1 · Welcome and First Steps | The Welcome tab | START, FIRST STEPS, TOOLING columns; an empty checklist | "This is an IDE that keeps records — and grades itself on them." |
 | 0:30 | 2 · Run it | ▶ (F6) | The ⇄ chip lights; the in-app Browser opens on the page | "One button, a real dev server, and the product knows it's serving." |
-| 1:15 | 3 · Break it | Edit the template, ⌘S, **Ask ORACLE About Selection…** | The Angular compiler's own squiggle in your template; ORACLE's answer | "The template is type-checked against the class — and the product asks before it sends a line." |
+| 1:15 | 3 · Break it | Edit the template, ⌘S, **Ask KVASIR About Selection…** | The Angular compiler's own squiggle in your template; KVASIR's answer | "The template is type-checked against the class — and the product asks before it sends a line." |
 | 2:15 | 4 · Wire it | Tab, click FAIL, click EXPLAIN, TEST | A cable; a failing test explains itself hands-free | "Failure is a signal. Signals go down cables." |
 | 3:15 | 5 · Stand up | ⌥⌘1, **Standup…** | Today's report, written from the board's own records | "One click, and the standup is already written." |
 | 3:45 | 6 · Point an agent at it | Tools ▸ **Agent Port (MCP)…**, one curl | Live IDE state as JSON; the ⌁ chip | "Read-only by construction — the build fails otherwise." |
@@ -110,7 +110,7 @@ The rest of this document is the same seven beats, spelled out.
 **See:** three columns. **START** leads with *New Experiment… ⇧⌘E*,
 then *New Project…*, *New Learning Space…*, *Open Folder…*. **FIRST
 STEPS** is a checklist that ticks itself from records the product keeps
-— a recent project, a run, a server going live, an ORACLE consent, a
+— a recent project, a run, a server going live, an KVASIR consent, a
 learning space — and every row is a door: click it and the thing
 happens. **TOOLING** opens each window with its real chord. The footer
 carries the version.
@@ -143,11 +143,11 @@ If the audience is technical, hover the ▶ or click the chip once: the
 chip's menu offers Open and, for a run the ▶ started, a Stop of its own.
 Do not stop it — beat 3 needs the page.
 
-### 1:15 — Beat 3: break the template, the compiler's squiggle, Ask ORACLE
+### 1:15 — Beat 3: break the template, the compiler's squiggle, Ask KVASIR
 
 **Click:** in `src/app/app.html`, change `{{ title() }}` to
 `{{ titel() }}` and press ⌘S. Then select that line, right-click it,
-and choose **Ask ORACLE About Selection…**.
+and choose **Ask KVASIR About Selection…**.
 
 **See:** a squiggle under `titel` before you save — the Angular
 Language Service type-checks the template against `App` and reports
@@ -156,7 +156,7 @@ the compiler's own message: *Property 'titel' does not exist on type
 Output tab carries the same error in red. The Ask dialog's consent
 names literally what leaves the machine: the selected line, the file
 name, the language and your question — never the rest of the file;
-the default is **Keep Local** — press **Send to ORACLE**. ORACLE
+the default is **Keep Local** — press **Send to KVASIR**. KVASIR
 answers in a conversation window and names the misspelling; a follow-up
 in the same window carries the history.
 
@@ -170,12 +170,12 @@ reload on the rebuild. If the room is technical, press the Browser's
 tree of the dev build, `App` with its `title` signal, click-to-highlight
 on the page — the product reads it through Angular's own debug API.
 
-### 2:15 — Beat 4: the rack — wire a FAIL jack to ORACLE's EXPLAIN
+### 2:15 — Beat 4: the rack — wire a FAIL jack to KVASIR's EXPLAIN
 
 **Click:** the Task Rack tab (⌘9). From the palette, drag **VERITAS**
-(the test runner) and **ORACLE** onto the rack if they are not already
+(the test runner) and **KVASIR** onto the rack if they are not already
 mounted. Press **Tab** to flip the rack to its rear. Click VERITAS's
-**FAIL** out-jack, then click ORACLE's **EXPLAIN** in-jack — a cable
+**FAIL** out-jack, then click KVASIR's **EXPLAIN** in-jack — a cable
 connects them (click-to-click; dragging works too). Press Tab to flip
 back. Hover VERITAS's **TEST** button — the tooltip shows the exact
 command it will run — then press it. (Make the project's test fail
@@ -185,8 +185,8 @@ is a fine thing to have planted before the demo.)
 **See:** VERITAS runs the suite; its tally LCD turns red — `P:1 F:1`
 — and **FAILURES** lists the failing test by name. The FAIL trigger
 goes down the cable, and
-ORACLE's LCD reads **CONSULTING ORACLE…** and then the verdict — with
-no click on ORACLE at all. **VIEW** on ORACLE opens the diagnosis as a
+KVASIR's LCD reads **CONSULTING KVASIR…** and then the verdict — with
+no click on KVASIR at all. **VIEW** on KVASIR opens the diagnosis as a
 conversation you can follow up in. The cable path never prompts: a
 consult by cable rides the consent you granted in the checklist, and
 rate-limits itself to one every thirty seconds.
@@ -268,14 +268,14 @@ where they were.
 
 ## When something goes wrong
 
-**No API key, no network, no consent.** ORACLE degrades honestly on its
+**No API key, no network, no consent.** KVASIR degrades honestly on its
 LCD instead of failing quietly: `NO API KEY — PRESS KEY… TO SET ONE`,
 `EXPLAIN NEEDS YOUR OK — PRESS AGAIN`, `OFFLINE — COULD NOT REACH
-ORACLE`, `NOTHING TO EXPLAIN — NO FAILED RUN`, and for the cable path
+KVASIR`, `NOTHING TO EXPLAIN — NO FAILED RUN`, and for the cable path
 `AUTO-EXPLAIN NEEDS CONSENT — PRESS EXPLAIN ONCE` or `AUTO-EXPLAIN
 COOLING DOWN — 30s BETWEEN CONSULTS`. Read the LCD out loud — a refusal
 that speaks is one of the house laws, and the room will get it. The
-editor's **Ask ORACLE About Selection…** likewise asks for consent
+editor's **Ask KVASIR About Selection…** likewise asks for consent
 before it opens anything and does nothing on Keep Local. Skip the
 answer, keep the beat: the squiggle, the rebuild and the cable all work
 without the API.

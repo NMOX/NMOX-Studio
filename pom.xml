@@ -249,9 +249,9 @@
                         <exclude>**/StickyScrollSideBar*.class</exclude>
                         <exclude>**/StickyScrollSideBarFactory*.class</exclude>
                         <exclude>**/ToggleStickyScrollAction*.class</exclude>
-                        <!-- v2.61.0 ghost text: Swing/editor-view wiring + the action; OracleComplete/Engine stay on the surface -->
+                        <!-- v2.61.0 ghost text: Swing/editor-view wiring + the action; KvasirComplete/Engine stay on the surface -->
                         <exclude>**/GhostText*.class</exclude>
-                        <exclude>**/CompleteWithOracleAction*.class</exclude>
+                        <exclude>**/CompleteWithKvasirAction*.class</exclude>
                         <!-- v2.64.0 the PM wishes: three Help-menu dialogs (Swing + prefs +
                              clipboard + Desktop.browse); their pure halves — ReleaseNotes,
                              ProblemReport, ShortcutSheet — stay on the measured surface -->

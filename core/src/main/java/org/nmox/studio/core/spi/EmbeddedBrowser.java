@@ -4,7 +4,7 @@ import org.openide.util.Lookup;
 
 /**
  * Soft-dependency seam to the in-app web browser (v1.199.0) — the
- * OracleAsk idiom: consumers (the rack's SCOPE device, the serving
+ * KvasirAsk idiom: consumers (the rack's SCOPE device, the serving
  * status chip) look this up and fall back to the system browser when
  * no provider is installed or the embedded engine is unavailable.
  * The ui module publishes the implementation; no module gains a hard

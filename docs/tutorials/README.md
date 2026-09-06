@@ -27,8 +27,8 @@ For the wide reference (install, every menu, every safety net) see the
 | [The Docker panel](docker-panel.md) | Inspect containers and dockerize a project | Docker tab |
 | [The Task Board and sprints](task-board.md) | Run a kanban with a time clock, a one-click standup, and a sprint burndown from one checked-in file | ⌥⌘1 |
 | [Show it to a room](show-it-to-a-room.md) | Present, share, and screenshot from inside the IDE — Presentation Mode through Copy Project Tree as Markdown | View ▸ Presentation Mode |
-| [ORACLE](oracle.md) | Ask the AI why a run failed | Rack → ORACLE |
-| [Explain anything](explain-anything.md) | Use ORACLE's four faces: runs, code, API responses, DB errors | anywhere something fails |
+| [KVASIR](kvasir.md) | Ask the AI why a run failed | Rack → KVASIR |
+| [Explain anything](explain-anything.md) | Use KVASIR's four faces: runs, code, API responses, DB errors | anywhere something fails |
 | [Migrating from Postman](migrating-from-postman.md) | Import your collections, HAR captures, and more — secrets go keychain-side | ⌥⌘8 → Import… |
 | [Image Kit (Web)](image-kit.md) | Press a project's images: smaller JPEGs, WebP siblings, honest report | File ▸ Image Kit (Web)… |
 | [Learning Spaces](learning-spaces.md) | Spin up a guided sandbox with a live REPL | New Learning Space… |

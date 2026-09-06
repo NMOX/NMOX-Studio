@@ -33,7 +33,7 @@ points at it proudly.
 - [17. The kits](#17-the-kits)
 - [18. Learning Spaces](#18-learning-spaces)
 - [19. Break it, check it, export it — the learning loop](#19-break-it-check-it-export-it--the-learning-loop)
-- [20. ORACLE — the AI surfaces](#20-oracle--the-ai-surfaces)
+- [20. KVASIR — the AI surfaces](#20-kvasir--the-ai-surfaces)
 - [21. Angular, first-class](#21-angular-first-class)
 - [22. The product's own website](#22-the-products-own-website)
 - [23. Ship it](#23-ship-it)
@@ -195,7 +195,7 @@ its output (stderr in its own color). Now the fun parts:
 
 - **Cables** — flip a device (rear view), then *click* an out-jack and
   *click* a compatible in-jack: connected. Wire VERITAS's FAIL out to
-  ORACLE's EXPLAIN in and a failing test explains itself, hands-free.
+  KVASIR's EXPLAIN in and a failing test explains itself, hands-free.
 - **Presets** — the Presets menu ships wired patches (Ship Gate, E2E
   Loop, Monorepo Lanes…). Loading one asks first if your rack has
   unsaved changes — ⌘Z cannot cross a patch load, so the confirm is
@@ -238,7 +238,7 @@ plugin build, no restart — this is why v2.0.0 was the major version.
 
 ## 7. Quick Search (⌘I)
 
-**Do:** ⌘I, then try: your project's name, a device name (`oracle`),
+**Do:** ⌘I, then try: your project's name, a device name (`kvasir`),
 `live servers`, an epic label from your task board, `blocked`.
 
 **See:** One search reaching projects, rack devices, live servers, API
@@ -283,7 +283,7 @@ Postman collection, or a HAR capture.
 environments; auth tokens live in the **OS keychain only** — the
 committable `.nmoxapi.json` never carries a secret, and every importer
 lifts captured credentials keychain-side or drops-and-counts them.
-**Explain…** on a response opens an ORACLE conversation about exactly
+**Explain…** on a response opens an KVASIR conversation about exactly
 what is on screen, redacted where the data lives. Copy curl emits the
 exact command Send would run.
 
@@ -470,7 +470,7 @@ the mistake appears where you made it, and a reload clears the old
 page's errors. Check My Work grades your file against the space's
 real checkpoints — on an untouched space every "You …" line is ✗,
 because a task checkpoint exists to tell your work from the sample —
-and, on a failure, offers **Explain with ORACLE…**
+and, on a failure, offers **Explain with KVASIR…**
 (its consent names exactly what leaves: the failed checks and your
 checked file, nothing more). When your experiment grows up, File ▸
 **Export as Learning Space…** turns the aimed project into a drop-in
@@ -479,10 +479,10 @@ round-trips the student picker's own parser. And Manage
 Experiments… can **Duplicate** one so you can try the other way
 without losing the first.
 
-## 20. ORACLE — the AI surfaces
+## 20. KVASIR — the AI surfaces
 
-**Do:** Select some code ▸ right-click ▸ **Ask ORACLE About
-Selection…**. Or mount ORACLE in the rack and press EXPLAIN after a
+**Do:** Select some code ▸ right-click ▸ **Ask KVASIR About
+Selection…**. Or mount KVASIR in the rack and press EXPLAIN after a
 failed run.
 
 **See:** Claude explains your selection or your failure — as a

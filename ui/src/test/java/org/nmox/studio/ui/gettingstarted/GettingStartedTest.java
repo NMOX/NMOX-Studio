@@ -14,7 +14,7 @@ class GettingStartedTest {
     @DisplayName("Six steps with stable keys, counted and phrased as 'n of 6'")
     void arithmetic() {
         assertThat(GettingStarted.STEPS).extracting(GettingStarted.Step::key)
-                .containsExactly("project", "run", "serve", "oracle", "learn", "agent");
+                .containsExactly("project", "run", "serve", "kvasir", "learn", "agent");
         assertThat(GettingStarted.progress(Set.of())).isEqualTo("0 of 6");
         assertThat(GettingStarted.progress(Set.of("project", "learn"))).isEqualTo("2 of 6");
         // an unknown key never counts
@@ -26,8 +26,8 @@ class GettingStartedTest {
     void next() {
         assertThat(GettingStarted.next(Set.of()).key()).isEqualTo("project");
         assertThat(GettingStarted.next(Set.of("project", "serve")).key()).isEqualTo("run");
-        assertThat(GettingStarted.next(Set.of("project", "run", "serve", "oracle", "learn", "agent"))).isNull();
-        assertThat(GettingStarted.allDone(Set.of("project", "run", "serve", "oracle", "learn", "agent"))).isTrue();
+        assertThat(GettingStarted.next(Set.of("project", "run", "serve", "kvasir", "learn", "agent"))).isNull();
+        assertThat(GettingStarted.allDone(Set.of("project", "run", "serve", "kvasir", "learn", "agent"))).isTrue();
     }
 
     @Test
@@ -35,7 +35,7 @@ class GettingStartedTest {
     void visibility() {
         assertThat(GettingStarted.visible(Set.of(), false)).isTrue();
         assertThat(GettingStarted.visible(Set.of(), true)).isFalse();
-        assertThat(GettingStarted.visible(Set.of("project", "run", "serve", "oracle", "learn", "agent"), false)).isFalse();
+        assertThat(GettingStarted.visible(Set.of("project", "run", "serve", "kvasir", "learn", "agent"), false)).isFalse();
     }
 
     @Test

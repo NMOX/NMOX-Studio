@@ -26,7 +26,7 @@ class RackSoftDependencyTest {
         assertThat(LiveServings.find()).isNull();
         // v1.171.0: the Explain button follows the same law — no rack,
         // no provider, no button (never a caught LinkageError)
-        assertThat(org.nmox.studio.core.spi.OracleAsk.find()).isNull();
+        assertThat(org.nmox.studio.core.spi.KvasirAsk.find()).isNull();
     }
 
     @Test

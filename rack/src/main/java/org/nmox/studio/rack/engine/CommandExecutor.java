@@ -187,7 +187,7 @@ public final class CommandExecutor {
         // a kill through this handle is a DELIBERATE end — the user's ■,
         // a row's Stop, Stop All, a re-run's replace — and the exit line
         // says so (v2.84.0): the flight recorder reads it as STOPPED, not a
-        // failure, so run_history stays honest and last_failure/ORACLE never
+        // failure, so run_history stays honest and last_failure/KVASIR never
         // treat a user's own stop as something to explain
         java.util.concurrent.atomic.AtomicBoolean stopped = new java.util.concurrent.atomic.AtomicBoolean();
         Thread pump = Threads.daemon(() -> {

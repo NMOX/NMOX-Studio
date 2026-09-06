@@ -105,10 +105,20 @@ public final class DeviceCatalog {
         return entries;
     }
 
+    /**
+     * Type ids a saved patch may still carry from a device that was
+     * renamed: the ORACLE device became KVASIR in v2.95.0 (the Oracle
+     * trademark collision), and a {@code .nmoxrack.json} written before
+     * that must load as the same device, not as a MissingDevice — the
+     * next save writes the current id.
+     */
+    static final java.util.Map<String, String> LEGACY_IDS = java.util.Map.of("oracle", "kvasir");
+
     /** Resolves a patch-file type id; empty for a kind not installed here. */
     public static Optional<Entry> byId(String id) {
+        String resolved = LEGACY_IDS.getOrDefault(id, id);
         for (Entry e : all()) {
-            if (e.id().equals(id)) {
+            if (e.id().equals(resolved)) {
                 return Optional.of(e);
             }
         }

@@ -1,7 +1,7 @@
 package org.nmox.studio.dbstudio.engine;
 
 /**
- * Assembles what DB Studio is willing to send ORACLE about a failed
+ * Assembles what DB Studio is willing to send KVASIR about a failed
  * statement — and what it will not.
  *
  * <p>This disclosure is tighter than any other in the product, because

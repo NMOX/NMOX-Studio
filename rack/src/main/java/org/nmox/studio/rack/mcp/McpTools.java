@@ -12,7 +12,7 @@ import org.nmox.studio.core.spi.SymbolIndex;
 import org.nmox.studio.core.util.GitFacts;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
 import org.nmox.studio.rack.engine.FlightRecorder;
-import org.nmox.studio.rack.engine.OracleClient.FailureContext;
+import org.nmox.studio.rack.engine.KvasirClient.FailureContext;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.service.RackService;
 import org.nmox.studio.rack.service.ServingRegistry;

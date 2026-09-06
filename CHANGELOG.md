@@ -4,6 +4,62 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.95.0] - 2026-09-06
+
+**ORACLE is now KVASIR.** David's call: the AI device's name collided
+with the Oracle trademark; the Norse counterpart to a Greek oracle is
+Kvasir, the being made wise enough to answer every question put to him
+— which is exactly what the device does. A complete rename, with three
+compatibility shims so nothing a user already has is lost.
+
+1. **The rename** — the device (`KVASIR`, id `kvasir`), every class
+   (`KvasirDevice`, `KvasirClient`, `KvasirKeys`, `KvasirConsent`,
+   `KvasirConversation`, the Ask/Edit/Complete/Commit engines, the
+   `core.spi.KvasirAsk` seam and its `RackKvasirAsk` adapter, the
+   editor's `CompleteWithKvasirAction`), every menu label (Ask KVASIR
+   About Selection…, Edit with KVASIR…, Complete with KVASIR, Draft
+   Commit Message with KVASIR, Explain with KVASIR…), the faceplate,
+   the LCD strings, the consent dialogs, the First Steps row, the
+   user guide's section (its anchor follows), the tutorial
+   (`docs/tutorials/kvasir.md`), the image (`kvasir-explain.png`), the
+   Kitchen Sink station, the tour, the README, the demo script, and
+   `docs/devices.md` regenerated from the catalog. Thirty-eight files
+   moved, ninety-seven rewritten. DB Studio's mentions of the Oracle
+   *database* (Derby, Oracle, H2 through the Services window) are
+   untouched — they name a vendor, not the device.
+2. **A saved patch still loads** — `DeviceCatalog.byId` carries a
+   legacy-id map (`oracle` → `kvasir`), so a `.nmoxrack.json` written
+   before today mounts a KVASIR device rather than a MissingDevice
+   placeholder, cables intact, and the next save writes the current
+   id; `LegacyDeviceIdTest`, mutant (the map emptied) dies by name.
+3. **A stored key still answers** — the keychain entry moved from
+   `nmox.oracle.apikey` to `nmox.kvasir.apikey`; a key under the old
+   name is read as a fallback and moved under the new one on first use
+   (keychain and in-memory paths alike), and `delete()` clears both;
+   `KvasirKeysTest.legacyKeyMigrates`, mutant (the fallback removed)
+   dies by name. The `ANTHROPIC_API_KEY` / `CLAUDE_API_KEY` environment
+   fallbacks are unchanged.
+4. **A consent already given is not asked again** — every `oracle.*`
+   preference (the external-flow grant, the code-flow grant, the
+   per-kind grants, the remembered depth) renames to `kvasir.*` once at
+   startup, an existing `kvasir.*` value winning; the JVM-global →
+   userdir migration from v2.63.0 runs first and feeds the same hop;
+   `KvasirPrefsMigrationTest` ×2, mutant (the hop removed) dies by
+   name.
+5. **Findability** — ⌘I and the palette search still answer to
+   "oracle": the device vocabulary lists it as a synonym.
+6. **History keeps the old name** — earlier changelog entries, the
+   plan's dated addenda and CLAUDE.md's version history are records of
+   what shipped under which name and are not rewritten.
+7. **Walked in the built app** — a fixture whose `.nmoxrack.json` still
+   said `oracle` mounted a KVASIR device on the shelf beside VERITAS and
+   MONITOR (no placeholder); TEST failed the fixture's suite (`FAIL [1]`),
+   the LCD read `READY — LAST RUN FAILED, PRESS EXPLAIN`, EXPLAIN raised
+   the renamed consent (*KVASIR — send failure for explanation?*, Send
+   to KVASIR / Keep Local) and the real Anthropic API answered onto the
+   faceplate ("# Diagnosis — the test suite ran but at least one test
+   failed"); that frame is the new `kvasir-explain.png`.
+
 ## [2.94.0] - 2026-09-06
 
 The developer-evangelist docs pass (David's ask: the documentation and
@@ -17705,6 +17761,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.95.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.94.0...v2.95.0
 [2.94.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.93.0...v2.94.0
 [2.93.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.92.0...v2.93.0
 [2.92.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.91.0...v2.92.0

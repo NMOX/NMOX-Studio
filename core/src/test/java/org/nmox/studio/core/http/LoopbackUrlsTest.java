@@ -105,7 +105,7 @@ class LoopbackUrlsTest {
         // HTTP console and BEACON (user-pointed URLs), CouchDB (the
         // stock install is localhost:5984) and JSON-RPC (localhost
         // devnets). Deliberately OUT, endpoints fixed remote by
-        // construction: OracleClient (api.anthropic.com), UpdateCheck
+        // construction: KvasirClient (api.anthropic.com), UpdateCheck
         // (github.com), DigitalOceanClient (api.digitalocean.com).
         java.util.List<String> sites = java.util.List.of(
                 "../ui/src/main/java/org/nmox/studio/ui/browser/fx/FxBrowserPanel.java",

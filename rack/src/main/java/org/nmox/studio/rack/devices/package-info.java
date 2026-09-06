@@ -1,6 +1,6 @@
 /**
  * The device fleet — one class per faceplate (IGNITION, CRATE,
- * VERITAS, MONITOR, ORACLE …), each a
+ * VERITAS, MONITOR, KVASIR …), each a
  * {@link org.nmox.studio.rack.model.RackDevice} subclass that declares
  * its knobs/buttons/LEDs/LCD and reacts to signals. If you are new,
  * open one small device (e.g. {@code TempoDevice}) next to the product

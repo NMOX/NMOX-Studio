@@ -41,12 +41,12 @@ sprints, a **source-aware Browser** whose DevTools open the element's
 source line, and a **Tests window** that lists every test before
 anything runs.
 
-**AI with a consent gate, not a keylogger.** **Ask ORACLE** holds a
-conversation about any selection in any language; **Edit with ORACLE**
+**AI with a consent gate, not a keylogger.** **Ask KVASIR** holds a
+conversation about any selection in any language; **Edit with KVASIR**
 turns an instruction into a before/after preview you approve; **Complete
-with ORACLE** (⌥⌘G) paints a completion as ghost text, Tab inserts;
+with KVASIR** (⌥⌘G) paints a completion as ghost text, Tab inserts;
 **Draft Commit Message** writes from your staged diff; and the rack's
-ORACLE device explains a failed run, API response, SQL error or page
+KVASIR device explains a failed run, API response, SQL error or page
 error. Every flow earns its own consent naming exactly what leaves;
 nothing is sent without a gesture; keys live in the OS keychain.
 
@@ -71,8 +71,8 @@ itself across every release since v1.51.
 
 | | |
 |---|---|
-| ![Ask ORACLE](docs/images/oracle-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
-| ***Ask ORACLE*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
+| ![Ask KVASIR](docs/images/kvasir-explain.png) | ![Contract Studio](docs/images/contract-studio.png) |
+| ***Ask KVASIR*** *— right-click any selection, or press EXPLAIN on a failed run, and keep asking follow-ups* | ***Contract Studio + Kit*** *(⌥⌘6) — eleven chains, ABI-driven Interact, live watch, no keys ever* |
 | ![Block Studio](docs/images/tabs/block-studio.png) | ![DB Studio](docs/images/tabs/db-studio.png) |
 | ***Block Studio*** *(⌥⌘5) — compose real Web Components from typed blocks; generate(parse(code)) is byte-exact* | ***DB Studio*** *(⌥⌘7) — six engines, bundled drivers, in-grid editing with previewed UPDATEs · **Task Board** (⌥⌘1) — per-project kanban: columns, drag/keyboard moves, WIP limits, `.nmoxtasks.json` beside the project* |
 
@@ -188,7 +188,7 @@ load bench, file watcher, the QUORUM lane-join barrier, SOLDER (any
 command as a unit), TAIL (follow log files), HELM (run commands on your
 servers over ssh), an in-rack REPL, the ANVIL local EVM chain, the
 STELLAR (Soroban) and ANCHOR (Solana) smart-contract consoles, the
-DYNAMO Grunt/Gulp runner, the ORACLE AI error explainer, the WAYPOINT
+DYNAMO Grunt/Gulp runner, the KVASIR AI error explainer, the WAYPOINT
 monorepo-workspace selector, and framework consoles for Angular,
 Phoenix, Next.js, Vite, Astro, SvelteKit, Nuxt, and Laravel (ARTISAN),
 and more. Patches persist per project, ship as presets, and export to
@@ -238,7 +238,7 @@ closes the deploy gate exactly like a slow one.
   `ng generate`), naming them in its tooltip; a Run pressed while the
   project's own dependency install is still going is refused out loud.
 - **The Welcome page's First Steps** column ticks its first gestures —
-  open a project, run something, see a server live, ask ORACLE, try a
+  open a project, run something, see a server live, ask KVASIR, try a
   learning space, point an agent at the IDE — from records the product
   already keeps; no survey, no telemetry, and it disappears when done.
 - **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
@@ -403,13 +403,13 @@ CHECK verdict that reads gofmt's file list, since gofmt itself exits 0
 even when files need formatting.
 
 ### 🤖 The AI faces
-**Ask ORACLE** — select code in any editor, right-click, and hold a
+**Ask KVASIR** — select code in any editor, right-click, and hold a
 conversation about it; follow-ups carry the full history. **Edit with
-ORACLE** — say what to change and approve the rewrite in a before/after
-preview, applied as one undo. **Complete with ORACLE** (⌥⌘G) — a
+KVASIR** — say what to change and approve the rewrite in a before/after
+preview, applied as one undo. **Complete with KVASIR** (⌥⌘G) — a
 completion at the caret shown as ghost text; Tab inserts, any edit
 dismisses. **Draft Commit Message** on the git chip — your staged diff,
-drafted; it never commits. And the rack's **ORACLE** device explains
+drafted; it never commits. And the rack's **KVASIR** device explains
 the last failed run (command, exit code, the error lines), then keeps
 answering — EXPLAIN also reaches API Studio responses, DB Studio
 errors, the Browser's page errors and a failed Check My Work. Each flow
@@ -500,7 +500,7 @@ in-app Browser's DevTools DOM tab:
 With save-to-reload already watching, the loop closes: pick → tweak →
 source updated → page reloads from that source. A runtime error on a
 page served from your project lands in the editor too — a squiggle at
-the line and an Action Items row — and **Explain error…** asks ORACLE
+the line and an Action Items row — and **Explain error…** asks KVASIR
 about it. The walkthrough:
 [Browser to Source](docs/tutorials/browser-to-source.md).
 
@@ -547,7 +547,7 @@ Phoenix, Laravel Tinker) wire that console; the rest wire a run
 command. The whole catalog is data (`learn-catalog.json`) — and every
 space is honest: if a tool isn't installed, it says so and hands you
 the install line. Some spaces **check your work** (File ▸ Check My
-Work) against real checkpoints and offer the ORACLE tutor when a check
+Work) against real checkpoints and offer the KVASIR tutor when a check
 fails; **Export as Learning Space…** turns any project into a drop-in
 your students can load.
 
@@ -606,7 +606,7 @@ in `.nmoxdb.json`; **passwords live only in the OS keychain** via the
 platform Keyring. ⌘I finds your connections and tables like everything
 else. And it speaks platform: connections configured in the NetBeans
 **Services** window appear under a Services branch and run in the same
-console — any database with a registered driver, Java DB and Oracle
+console — any database with a registered driver, Java DB and Kvasir
 included, with NetBeans owning drivers and credentials.
 
 The grids work for a living, too. Run a simple single-table SELECT (or

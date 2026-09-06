@@ -54,8 +54,8 @@ class DeviceVocabularyTest {
         EXPECTED.put("vulnerabilities", "SENTRY");
         EXPECTED.put("cron", "TEMPO");
         EXPECTED.put("schedule", "TEMPO");
-        EXPECTED.put("claude", "ORACLE");
-        EXPECTED.put("llm", "ORACLE");
+        EXPECTED.put("claude", "KVASIR");
+        EXPECTED.put("llm", "KVASIR");
         EXPECTED.put("port in use", "SONAR");
         EXPECTED.put("containers", "HARBOR");
         EXPECTED.put("end to end", "SPECTER");
@@ -145,7 +145,7 @@ class DeviceVocabularyTest {
     @DisplayName("a codename still finds its own device")
     void codenamesStillWork() {
         assertThat(find("veritas")).contains("VERITAS");
-        assertThat(find("oracle")).contains("ORACLE");
+        assertThat(find("kvasir")).contains("KVASIR");
         assertThat(find("npm-9000")).contains("NPM-9000");
     }
 }

@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-06, at v2.94.0, after two lenses, one
+*Currency addendum 2026-09-06, at v2.95.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -4185,4 +4185,31 @@ on a bundle resolving to a source file had to become the Language
 Service's squiggle, which is the better Angular story anyway. (3) When
 the writers cannot be messaged mid-flight, the merge is where the
 direction lands — budget for it.
+
+## Addendum — 2026-09-06 afternoon, ORACLE → KVASIR (v2.95.0)
+
+David: "I'm concerned by the name conflict with the brand Oracle, and
+wonder if there's a viking version of that greek name?" — then "do a
+complete rename of ORACLE to KVASIR". The name: Kvasir, in the Norse
+myths, was made from the truce of the two god-clans and was wise enough
+to answer any question — the device's job in one word, and no dev-tool
+product carries it (Mímir is Grafana's, Huginn is an agent framework,
+Odin and Vala are languages).
+
+**What a "complete rename" is.** Thirty-eight file moves and a
+case-preserving substitution over ninety-seven files — code, tests,
+labels, docs, images — with DB Studio handled by hand because "Oracle"
+there is the database vendor. The interesting half is the three things
+a user already HAS that the old name owns: a `.nmoxrack.json` with
+`"type": "oracle"`, a keychain entry under `nmox.oracle.apikey`, and
+`oracle.*` consent preferences. Each got a shim (a legacy-id alias in
+the catalog, a keychain fallback-and-move, a preference key hop that
+rides the existing userdir migration) and each shim a test whose
+mutant dies by name. The rule: a rename that loses a saved grant, a
+stored secret, or a mounted device is a data-loss bug wearing a
+cosmetic hat.
+
+**What stays.** History is not rewritten — changelog entries, dated
+addenda and the version list keep the name that shipped. ⌘I answers
+to "oracle" through the vocabulary synonym so muscle memory lands.
 

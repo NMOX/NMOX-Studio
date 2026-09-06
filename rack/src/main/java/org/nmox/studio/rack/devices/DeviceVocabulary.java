@@ -87,7 +87,7 @@ public final class DeviceVocabulary {
             Map.entry("tail", "logs follow watch file log file"),
             Map.entry("blackbox", "history timeline what happened past runs durations slow"),
             Map.entry("sonar", "port in use eaddrinuse kill process listening 3000 8080"),
-            Map.entry("oracle", "ai claude llm assistant why did this fail help diagnose explain"),
+            Map.entry("kvasir", "oracle ai claude llm assistant why did this fail help diagnose explain"),
             Map.entry("repl", "interactive playground scratch irb ghci node repl prompt"),
 
             // --- Ship & data ---

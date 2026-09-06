@@ -59,7 +59,7 @@ public final class ReportProblemAction implements ActionListener {
 
     /**
      * The rack's last failed run this session, through the same bounded
-     * FailureContext ORACLE explains (command, exit code, at most five
+     * FailureContext KVASIR explains (command, exit code, at most five
      * error lines, duration) — redacted like the log tail, since a
      * command line can carry a path or a token. Null when nothing failed.
      */
@@ -68,7 +68,7 @@ public final class ReportProblemAction implements ActionListener {
             org.nmox.studio.rack.service.RackService rs = org.nmox.studio.rack.service.RackService.getDefault();
             File dir = rs == null ? null : rs.getRack().getProjectDir();
             String project = dir == null ? "" : dir.getName();
-            return org.nmox.studio.rack.engine.OracleClient.FailureContext
+            return org.nmox.studio.rack.engine.KvasirClient.FailureContext
                     .fromRecorder(org.nmox.studio.rack.engine.FlightRecorder.getDefault(), project)
                     .map(f -> new ProblemReport.LastFailure(f.device(),
                             ProblemReport.redact(f.command(), System.getProperty("user.home"),

@@ -20,7 +20,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.awt.StatusDisplayer;
 
 /**
- * The ghost: an ORACLE completion shown as virtual gray text at the caret
+ * The ghost: an KVASIR completion shown as virtual gray text at the caret
  * until Tab inserts it or any edit, caret move or click dismisses it.
  *
  * <p>Rendering rides the platform's own virtual-text mechanism, decompiled
@@ -117,7 +117,7 @@ public final class GhostText {
             insertNow(at, text);
             component.select(at, at + text.length());
             StatusDisplayer.getDefault().setStatusText(
-                    "ORACLE completion inserted at the end of the file — ⌘Z removes it.");
+                    "KVASIR completion inserted at the end of the file — ⌘Z removes it.");
             return;
         }
         this.insertion = text;
@@ -135,7 +135,7 @@ public final class GhostText {
         component.addCaretListener(caret);
         doc.addDocumentListener(edits);
         StatusDisplayer.getDefault().setStatusText(
-                "ORACLE completion — Tab inserts" + (more > 0 ? " all " + (more + 1) + " lines" : "")
+                "KVASIR completion — Tab inserts" + (more > 0 ? " all " + (more + 1) + " lines" : "")
                 + "; typing or moving the caret dismisses.");
     }
 
@@ -150,7 +150,7 @@ public final class GhostText {
         detach();
         if (text != null && at >= 0) {
             insertNow(at, text);
-            StatusDisplayer.getDefault().setStatusText("ORACLE completion inserted — ⌘Z removes it.");
+            StatusDisplayer.getDefault().setStatusText("KVASIR completion inserted — ⌘Z removes it.");
         }
     }
 

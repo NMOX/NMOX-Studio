@@ -431,7 +431,7 @@ These warnings indicate menu item position conflicts between NetBeans default mo
 - [NetBeans Platform Developer Guide](https://netbeans.apache.org/tutorials/nbm-quick-start.html)
 - [NBM Maven Plugin Documentation](https://bits.netbeans.org/mavenutilities/nbm-maven-plugin/)
 - [Java Platform Module System (JPMS)](https://openjdk.org/projects/jigsaw/spec/)
-- [Understanding Java --add-opens](https://docs.oracle.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-7BB28E4D-99B3-4078-BDC4-FC24180CE82B)
+- [Understanding Java --add-opens](https://docs.kvasir.com/en/java/javase/17/migrate/migrating-jdk-8-later-jdk-releases.html#GUID-7BB28E4D-99B3-4078-BDC4-FC24180CE82B)
 
 ## Summary
 

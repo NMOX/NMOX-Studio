@@ -18,7 +18,7 @@ front to back or dipped into by section.
 
 - **[🧭 Tutorials](tutorials/README.md)** — short, do-it-yourself
   walkthroughs, one per unique system: the Task Rack, the four studios,
-  Block Studio, Infra Designer, polyglot debugging, Docker, ORACLE,
+  Block Studio, Infra Designer, polyglot debugging, Docker, KVASIR,
   Learning Spaces, and the wizards. Each is a single sitting.
 - **[⛓️ Making a Smart Contract](making-a-smart-contract.md)** — a worked
   tutorial: build a real escrow contract the Contract Studio way, with

@@ -1,6 +1,6 @@
-# Tutorial: Explain anything with ORACLE
+# Tutorial: Explain anything with KVASIR
 
-ORACLE started as a rack device that explains failed runs. It now
+KVASIR started as a rack device that explains failed runs. It now
 reaches four places — the rack, the editor, API Studio, and DB Studio —
 and every face follows the same three laws: **you see exactly what
 would leave your machine before anything does**, **each surface earns
@@ -9,31 +9,31 @@ code or SQL), and **secrets can't ride along by construction** (the
 disclosure is assembled by the studio that owns the data, with
 credential headers dropped and passwords never in reach).
 
-![ORACLE explaining a real failed run](../images/oracle-explain.png)
+![KVASIR explaining a real failed run](../images/kvasir-explain.png)
 
 ## Before you start
 
 One Anthropic API key covers all four faces: set it with **KEY…** on
-the ORACLE faceplate (it goes to your OS keychain), or export
+the KVASIR faceplate (it goes to your OS keychain), or export
 `ANTHROPIC_API_KEY`. No key, no call — every face says so honestly.
 
 ## The four faces
 
-1. **A failed run (the rack).** Mount ORACLE, run something that
+1. **A failed run (the rack).** Mount KVASIR, run something that
    fails, press **EXPLAIN**. What's sent: the command, exit code, and
-   up to five sampled error lines. See [the ORACLE
-   tutorial](oracle.md) for the full walk, including the cable that
+   up to five sampled error lines. See [the KVASIR
+   tutorial](kvasir.md) for the full walk, including the cable that
    auto-explains a VERITAS failure hands-free.
 
 2. **Your code (the editor).** Select code in any language →
-   right-click → **Ask ORACLE About Selection…** and type a question.
+   right-click → **Ask KVASIR About Selection…** and type a question.
    What's sent: the capped selection, file name, and language —
    nothing else from your project. This face has its *own* consent
    gate, because the failure-flow consent explicitly promises source
    never leaves the machine.
 
 3. **An API response (API Studio).** After a send, press **Explain
-   with ORACLE…**. What's sent: method, URL with query values masked,
+   with KVASIR…**. What's sent: method, URL with query values masked,
    status, headers with credentials dropped-and-counted, and a capped
    body. Useful the moment a 401 or an odd CORS header shows up.
 

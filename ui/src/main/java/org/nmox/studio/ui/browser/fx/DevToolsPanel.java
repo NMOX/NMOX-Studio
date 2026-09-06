@@ -194,10 +194,10 @@ public final class DevToolsPanel extends JPanel {
         JButton clear = new JButton("Clear");
         clear.addActionListener(e -> console.clear());
         // the learning multiplier (v2.39.2): the located error the page
-        // just threw, explained — through the OracleAsk seam with its
+        // just threw, explained — through the KvasirAsk seam with its
         // own consent kind; a beginner's broken page becomes a lesson
         JButton explain = new JButton("Explain error…");
-        explain.setToolTipText("Ask ORACLE about the page's last runtime error"
+        explain.setToolTipText("Ask KVASIR about the page's last runtime error"
                 + " — sends the message and, when it resolved to your project,"
                 + " a few source lines around the failing line");
         explain.getAccessibleContext().setAccessibleName("Explain the last runtime error");
@@ -212,13 +212,13 @@ public final class DevToolsPanel extends JPanel {
         return panel;
     }
 
-    /** Explain error… — the OracleAsk flow for the last located error;
+    /** Explain error… — the KvasirAsk flow for the last located error;
      *  refusals are honest status lines (the LCD rule). */
     private void explainLastError() {
-        org.nmox.studio.core.spi.OracleAsk oracle = org.nmox.studio.core.spi.OracleAsk.find();
-        if (oracle == null) {
+        org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
+        if (kvasir == null) {
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("ORACLE is not available (rack module absent).");
+                    .setStatusText("KVASIR is not available (rack module absent).");
             return;
         }
         java.util.List<String> consoleErrors = new java.util.ArrayList<>();
@@ -238,7 +238,7 @@ public final class DevToolsPanel extends JPanel {
         String message = target.message();
         java.io.File file = target.file();
         int line = target.line();
-        boolean started = oracle.explain(new org.nmox.studio.core.spi.OracleAsk.Disclosure(
+        boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                 "browser.error",
                 "Runtime error — " + (file == null ? "page" : file.getName() + ":" + line),
                 BrowserErrorDisclosure.what(file, line),

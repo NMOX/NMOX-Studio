@@ -10,7 +10,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.rack.engine.DiagnosticsBus;
-import org.nmox.studio.rack.engine.OracleClient.FailureContext;
+import org.nmox.studio.rack.engine.KvasirClient.FailureContext;
 import org.nmox.studio.rack.service.ServingRegistry;
 
 import static org.assertj.core.api.Assertions.assertThat;

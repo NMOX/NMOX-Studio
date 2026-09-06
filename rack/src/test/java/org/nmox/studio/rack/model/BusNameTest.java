@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * run on the name the device's exec() publishes under. When that name
  * was the bare title, two SOLDERs in one rack merged their launch/exit
  * pairings and duration stats into one phantom device — BLACKBOX's
- * slow-creep alarm and ORACLE's failure context read a fiction. These
+ * slow-creep alarm and KVASIR's failure context read a fiction. These
  * tests fail on the title-keyed code.
  */
 class BusNameTest {

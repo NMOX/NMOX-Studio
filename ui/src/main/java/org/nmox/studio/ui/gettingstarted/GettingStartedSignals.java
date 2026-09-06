@@ -68,8 +68,8 @@ public final class GettingStartedSignals {
         if (!done.contains("serve") && serverLive()) {
             tick(done, "serve");
         }
-        if (!done.contains("oracle") && oracleAsked()) {
-            tick(done, "oracle");
+        if (!done.contains("kvasir") && kvasirAsked()) {
+            tick(done, "kvasir");
         }
         if (!done.contains("learn") && learningSpaceExists()) {
             tick(done, "learn");
@@ -147,14 +147,14 @@ public final class GettingStartedSignals {
         }
     }
 
-    private static boolean oracleAsked() {
+    private static boolean kvasirAsked() {
         try {
-            if (org.nmox.studio.rack.service.OracleConsent.isGranted()) {
+            if (org.nmox.studio.rack.service.KvasirConsent.isGranted()) {
                 return true;
             }
             // the CODE consent (Ask/Edit/Complete) is its own grant, same store
-            return NbPreferences.forModule(org.nmox.studio.rack.service.OracleConsent.class)
-                    .getBoolean("oracle.code.consent", false);
+            return NbPreferences.forModule(org.nmox.studio.rack.service.KvasirConsent.class)
+                    .getBoolean("kvasir.code.consent", false);
         } catch (RuntimeException | LinkageError e) {
             return false;
         }

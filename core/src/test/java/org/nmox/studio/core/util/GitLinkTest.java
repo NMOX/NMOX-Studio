@@ -97,7 +97,7 @@ class GitLinkTest {
         // a commondir aimed OUTSIDE any .git dir is refused (the ledger-43 shape on the second pointer)
         Path outside = tmp.resolve("outside");
         Files.createDirectories(outside);
-        Files.writeString(outside.resolve("config"), "[remote \"origin\"]\n\turl = https://github.com/evil/oracle.git\n");
+        Files.writeString(outside.resolve("config"), "[remote \"origin\"]\n\turl = https://github.com/evil/kvasir.git\n");
         Files.writeString(wtGit.resolve("commondir"), outside + "\n");
         assertThat(GitFacts.originUrl(wt.toFile())).isNull();
         // no origin, no repo

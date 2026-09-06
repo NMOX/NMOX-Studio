@@ -202,11 +202,11 @@ class FlightRecorderTest {
         rec.line("FORGE", "$ npm run build", false);
         rec.line("FORGE", "boom", true);
         rec.line("FORGE", "[exit 1]", false);
-        assertThat(OracleClient.FailureContext.fromRecorder(rec, "p")).isPresent();
+        assertThat(KvasirClient.FailureContext.fromRecorder(rec, "p")).isPresent();
         rec.line("FORGE", "$ npm run build", false);
         rec.line("FORGE", "[exit 143] stopped", false);
         assertThat(rec.last().kind()).isEqualTo(FlightRecorder.Kind.STOPPED);
-        assertThat(OracleClient.FailureContext.fromRecorder(rec, "p"))
+        assertThat(KvasirClient.FailureContext.fromRecorder(rec, "p"))
                 .as("the user's own stop is not a failure to diagnose").isEmpty();
     }
 }

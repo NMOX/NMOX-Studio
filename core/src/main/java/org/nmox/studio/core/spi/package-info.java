@@ -16,7 +16,7 @@
  * <p>The seams: {@code ProjectAim} (the aimed project + change
  * listeners), {@code LiveServings} (dev servers currently running),
  * {@code TrustGate} (workspace-trust checks for modules that spawn
- * project-controlled code), and {@code OracleAsk} (text-only questions
+ * project-controlled code), and {@code KvasirAsk} (text-only questions
  * to the AI device). One resident is not a seam but a shared registry:
  * {@code LiveRuns} (the IDE's own running commands, so the toolbar ■ can
  * stop a run spawned by any module — a pure class with no module to

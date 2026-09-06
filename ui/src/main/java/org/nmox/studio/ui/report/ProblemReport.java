@@ -72,7 +72,7 @@ public final class ProblemReport {
 
     /**
      * The rack's last failed run, as the report carries it: what ran, how
-     * it ended, and its last error lines — the same bounded record ORACLE
+     * it ended, and its last error lines — the same bounded record KVASIR
      * explains (FailureContext), never the whole transcript. Null when
      * nothing failed this session.
      */
