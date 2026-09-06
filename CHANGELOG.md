@@ -125,6 +125,8 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     origins: a verdict belongs where the knowledge is; every new read
     surface is a disclosure path for every old secret law; the first
     show serves the deferred work; a user-visible count reads right.
+26. **The tutorial walks the stream by hand** — open it with curl,
+    subscribe, set the log level, watch the frames arrive.
 
 ## [2.84.0] - 2026-09-05
 
