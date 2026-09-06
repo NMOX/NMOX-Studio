@@ -57,7 +57,7 @@ public final class StandardsKit {
                     <lastmod>%s</lastmod>
                   </url>
                 </urlset>
-                """.formatted(trimSlash(siteUrl), lastmod.format(DateTimeFormatter.ISO_LOCAL_DATE));
+                """.formatted(xmlEscape(trimSlash(siteUrl)), lastmod.format(DateTimeFormatter.ISO_LOCAL_DATE));
     }
 
     /**
@@ -134,6 +134,11 @@ public final class StandardsKit {
                 Standards: HTML5, CSS3, ES2024
                 Built with: NMOX Studio
                 """.formatted(siteName, contactEmail);
+    }
+
+    /** A site URL in the sitemap is XML text; & and < would break the document. */
+    static String xmlEscape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     private static String trimSlash(String url) {

@@ -87,4 +87,14 @@ class I18nKitTest {
         assertThat(out.get(0).written()).isFalse();
         assertThat(out.get(0).note()).contains("no index.html found");
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a project name with a quote or backslash still produces valid JSON")
+    void hostileNameStaysValidJson() {
+        String hostile = "Ac\"me \\ & Co";
+        JSONObject en = new JSONObject(I18nKit.enCatalog(hostile));
+        JSONObject es = new JSONObject(I18nKit.esCatalog(hostile));
+        assertThat(en.getString("app.title")).isEqualTo(hostile);
+        assertThat(es.getString("app.title")).isEqualTo(hostile);
+    }
 }

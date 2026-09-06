@@ -43,21 +43,21 @@ public final class I18nKit {
     public static String enCatalog(String projectName) {
         return """
             {
-              "app.title": "%s",
+              "app.title": %s,
               "app.greeting": "Hello!",
               "app.language": "Language"
             }
-            """.formatted(projectName);
+            """.formatted(org.json.JSONObject.quote(projectName));
     }
 
     public static String esCatalog(String projectName) {
         return """
             {
-              "app.title": "%s",
+              "app.title": %s,
               "app.greeting": "¡Hola!",
               "app.language": "Idioma"
             }
-            """.formatted(projectName);
+            """.formatted(org.json.JSONObject.quote(projectName));
     }
 
     // ---- the helper -------------------------------------------------------
