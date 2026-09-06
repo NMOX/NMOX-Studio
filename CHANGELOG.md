@@ -261,8 +261,11 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     heard the Standup through accessibility as "text entry area" — the
     role, not the thing. The Standup and Sprint reports, the DevTools
     DOM and Svelte details panes (through their shared factory) and the
-    Image Kit report are named now; TextAreasNamedGateTest reads every
-    ui text area's construction for its name, failing-first with four.
+    Image Kit report are named now, and the Docker Panel's three previews
+    and its text dialogs through their factory; TextAreasNamedGateTest
+    reads every text area's construction in every module for a name
+    anywhere in its file (API Studio names its bodies in a later block),
+    failing-first with five.
 
 ## [2.84.0] - 2026-09-05
 
