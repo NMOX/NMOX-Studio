@@ -120,7 +120,11 @@ public final class ManageLearningSpacesAction implements ActionListener {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JLabel header = new JLabel("Sizing…");
-        header.getAccessibleContext().setAccessibleName("Learning spaces shelf summary");
+        // the NAME follows the text (count, disk cost, lifecycle) — a
+        // constant name here was what a screen reader heard instead of it
+        // (v2.85.0); the role goes in the description
+        header.getAccessibleContext().setAccessibleDescription(
+                "Learning spaces shelf summary: how many, their disk cost, and the lifecycle");
         panel.add(header, BorderLayout.NORTH);
         SPACES_RP.post(() -> {
             long bytes = 0;
