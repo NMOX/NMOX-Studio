@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -93,7 +94,7 @@ public final class EditWithOracleAction implements ActionListener {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("<html>What should ORACLE change in the selection ("
-                + selection.length() + " chars of <b>" + fileName + "</b>)?</html>"),
+                + selection.length() + " chars of <b>" + PlainText.escape(fileName) + "</b>)?</html>"),
                 BorderLayout.NORTH);
         panel.add(instruction, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
@@ -152,7 +153,7 @@ public final class EditWithOracleAction implements ActionListener {
         diff.add(titled("ORACLE proposes", replacement));
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("<html>Apply replaces the selection in <b>" + fileName
+        panel.add(new JLabel("<html>Apply replaces the selection in <b>" + PlainText.escape(fileName)
                 + "</b> as one undo unit (" + original.length() + " → "
                 + replacement.length() + " chars, "
                 + countLines(original) + " → " + countLines(replacement)
