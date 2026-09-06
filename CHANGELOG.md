@@ -4,6 +4,12 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.88.0] - 2026-09-06
+
+The developer evangelist's afternoon, built while v2.87.0 flew: the README motion.
+
+1. **Copy Project Tree as Markdown** — Tools ▸ Copy Project Tree as Markdown puts the aimed project's layout on the clipboard as the fenced box-drawing tree a README or a post shows: directories first in case-folded order, `node_modules/ …` and its siblings named but never entered (the one `core.util.HeavyDirs` home, promoted from Project Studio's file tree so the tree and the walk elide the same names), a depth cap that marks its floor (`components/ …`) and an entry cap that COUNTS what it left out (`… (12 more entries not shown)`) rather than dropping it; a symlinked directory is listed as a file and never followed (a loop would be an unbounded read). The walk is disk and rides a named RequestProcessor; the clipboard and the status line land on the EDT; no aimed project is a spoken refusal. The fence rule every Copy-as-Markdown gesture shares moved to `core.util.Markdown` (the editor delegates). Three mutants by name (a heavy dir entered, the cap silent, a symlink followed).
+
 ## [2.87.0] - 2026-09-06
 
 The morning after the markup-render night: one real bug from extending its audit into the kit generators, then a persona. David asked for the product through a very senior developer evangelist's eyes — the person who live-codes it on a projector, pastes it into a README at noon and a slide at three — and three grants answer what that job needs: the room can READ it (Presentation Mode), the code can be SHARED (Copy as Markdown), the screen can be SHOWN (Save Screenshot…). Each rides a mechanism the platform already had (the editor's text zoom, the one mime→language vocabulary, the docs forge's own painting) rather than a bolt-on, and all three were walked live — the third only after it also joined the Edit menu, because a right-click popup is the one gesture this automation cannot open, and the walk that registration allowed found a real bug (item 3). Along the way night unit 3's own gate rejected Presentation Mode's first status text — a ternary's head is not a literal — which is exactly what that gate is for.
@@ -17584,6 +17590,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.88.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.87.0...v2.88.0
 [2.87.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.86.0...v2.87.0
 [2.86.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.85.0...v2.86.0
 [2.85.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.84.0...v2.85.0
