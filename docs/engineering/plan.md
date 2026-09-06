@@ -3779,8 +3779,11 @@ instructions name every tool, pinned; the tutorial's dialog shot with
 the token redacted under the forge property, pinned by a real-port
 test — a screenshot is a file that outlives the port.
 
-**The shift's shape (for the next one).** Twenty-eight units between
-15:15 and the fold, one worktree, one verify, one gate. What the clock
+**The shift's shape (for the next one).** Twenty-nine units between
+15:15 and 18:00, one worktree, one verify, one gate — folded at
+T-5h, not T-2h, because the arc was complete, the insurance verify
+was green, and every hour after the fold builds the NEXT release in a
+pipelined branch instead of waiting on this one. What the clock
 bought: the insurance verify at 17:44 — twelve minutes that found two
 SpotBugs findings the unit tests never see (a lazily published
 scheduler, DC_PARTIALLY_CONSTRUCTED) three hours before the chain
@@ -3789,6 +3792,6 @@ every one with a find the tests had blessed (a stop recorded as a
 failure; a dialog that outgrew its screen clamp; a process name that
 changed under the automation). The rhythm to keep: build with tests
 → mutants → walk on the assembled bytes every four or five units →
-an insurance verify at mid-shift → fold at T-2h → the single chain →
+an insurance verify at mid-shift → fold when the arc closes → the single chain →
 the next shift's branch forked from the shipped head while the gate
 runs.

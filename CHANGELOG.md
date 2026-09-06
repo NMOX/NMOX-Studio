@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.84.0] - 2026-09-05
 
-The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-eight units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
+The first eight-hour shift (David: a shift is eight hours and gets ONE release; a release in flight is no reason to idle; use the clock) — twenty-nine units in one worktree, one gate: the Agent Port becomes a complete MCP server (subscriptions and the event stream, completion, logging), a user's stop reads `stopped` at the source, the hostile lens found `.env` one tool over, and two walks on the assembled bytes paid twice.
 
 1. **The Agent Port pushes** — `resources/subscribe` on any `nmox://`
    resource, and the Streamable HTTP GET stream (`Accept:
@@ -131,7 +131,9 @@ The first eight-hour shift (David: a shift is eight hours and gets ONE release; 
     passes; pinned by the docs test (primitives named, `node --check`
     when node is on PATH); the tutorial and the user guide (now three
     paragraphs: what it reads, what gates it, the complete server)
-    point at it.
+    point at it — and it ran green on the shift's own bytes in a third
+    instance: every primitive, the outline following a touched file,
+    the run's start and banner arriving as pushes and log messages.
 19. **Docs, plan, this entry.**
 
 ## [2.83.0] - 2026-09-05
