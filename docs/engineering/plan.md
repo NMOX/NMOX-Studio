@@ -3891,6 +3891,16 @@ beside Project Studio (the OpenProjects bridge lets projectui open its
 own windows on the first project open) — whether the chrome pass
 (v1.11) should hide them is David's call.
 
+**When the fold came.** The branch closed at 21:35 MT on 2026-09-05
+with forty-four units, twenty walks and fourteen insurance verifies
+(one red — SpotBugs on a runtime-built option compared by identity —
+fixed before the next), the day shift's second branch built entirely
+while v2.84.0 flew; it ships as v2.85.0 at the night shift's start
+(one gate per shift, the pipelined branch riding the next), and the
+night's first unit — the plain-message sweep over the 66 dialog sites
+that still hand external text to a String message — begins in the
+next worktree before that gate opens.
+
 **Method notes.** A Swing JTable reads through AX as rows of AXCell
 whose VALUE is 0 and whose DESCRIPTION is the text; a JTree's rows are
 not selectable by AX hit-test; dialog buttons press by DESCRIPTION,
