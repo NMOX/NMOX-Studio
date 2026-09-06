@@ -164,7 +164,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 new ProjectConfigDialog(this, rack.getProjectDir()).setVisible(true);
             } catch (IOException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Could not open the configuration: " + ex.getMessage(),
+                        org.nmox.studio.core.util.PlainDialogs.plain("Could not open the configuration: " + ex.getMessage(), "Message"),
                         NotifyDescriptor.WARNING_MESSAGE));
             }
         });

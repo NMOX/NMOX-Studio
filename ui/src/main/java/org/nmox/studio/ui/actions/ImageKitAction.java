@@ -65,8 +65,8 @@ public final class ImageKitAction implements ActionListener {
     private void showDialog(File project, List<ImagePress.Candidate> found, File cwebp) {
         if (found.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No .jpg/.jpeg/.png images found in " + project.getName()
-                    + " (node_modules and build outputs are skipped)."));
+                    org.nmox.studio.core.util.PlainDialogs.plain("No .jpg/.jpeg/.png images found in " + project.getName()
+                    + " (node_modules and build outputs are skipped).", "Message")));
             return;
         }
         long totalBytes = found.stream().mapToLong(ImagePress.Candidate::bytes).sum();

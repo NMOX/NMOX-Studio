@@ -100,7 +100,7 @@ public final class AgentPortAction implements ActionListener {
                     .putBoolean("agentport.started", true);
         } catch (IOException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "The Agent Port could not start: " + ex.getMessage()));
+                    org.nmox.studio.core.util.PlainDialogs.plain("The Agent Port could not start: " + ex.getMessage(), "Message")));
             return;
         }
         RUNNING.set(port);

@@ -391,7 +391,7 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     // ---- containers ----

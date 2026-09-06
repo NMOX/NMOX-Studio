@@ -227,9 +227,9 @@ public class SonarDevice extends RackDevice {
             Object via = model.getValueAt(row, 3);
             if (via != null && via.toString().startsWith("docker:")) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Port " + model.getValueAt(row, 0) + " belongs to container "
+                        org.nmox.studio.core.util.PlainDialogs.plain("Port " + model.getValueAt(row, 0) + " belongs to container "
                         + via.toString().substring(8).trim()
-                        + " — stop it from HARBOR's Docker Panel instead of killing the daemon.",
+                        + " — stop it from HARBOR's Docker Panel instead of killing the daemon.", "Message"),
                         NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }

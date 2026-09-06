@@ -172,14 +172,14 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                dir.getName() + " graduated: " + promoted.getAbsolutePath()
-                                + "\n(marker removed, git initialized)",
+                                org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: " + promoted.getAbsolutePath()
+                                + "\n(marker removed, git initialized)", "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
                     String message = "Could not promote: " + ex.getMessage();
                     SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
                 }
             });
         });
@@ -241,7 +241,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         open.setEnabled(true);
                         discard.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

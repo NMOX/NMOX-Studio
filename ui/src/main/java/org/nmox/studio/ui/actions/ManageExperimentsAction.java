@@ -201,7 +201,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         duplicate.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                "Could not duplicate: " + ex.getMessage(),
+                                org.nmox.studio.core.util.PlainDialogs.plain("Could not duplicate: " + ex.getMessage(), "Message"),
                                 NotifyDescriptor.ERROR_MESSAGE));
                     });
                 }
@@ -231,8 +231,8 @@ public final class ManageExperimentsAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(dir.getName() + " graduated: "
-                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)",
+                                new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: "
+                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)", "Message"),
                                         NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
@@ -240,7 +240,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();
@@ -291,7 +291,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

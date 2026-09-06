@@ -99,8 +99,8 @@ public final class NgSchematicAction implements ActionListener {
         File target = NgSchematic.targetFolder(root, folder.getText());
         if (target == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "That folder doesn't exist inside the workspace — pick a "
-                    + "directory under " + root.getName() + '.'));
+                    org.nmox.studio.core.util.PlainDialogs.plain("That folder doesn't exist inside the workspace — pick a "
+                    + "directory under " + root.getName() + '.', "Message")));
             return;
         }
 

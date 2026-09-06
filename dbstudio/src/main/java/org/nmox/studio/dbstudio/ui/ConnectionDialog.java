@@ -352,7 +352,7 @@ final class ConnectionDialog extends JPanel {
                 return panel.commit();
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    problem, NotifyDescriptor.WARNING_MESSAGE));
+                    org.nmox.studio.core.util.PlainDialogs.plain(problem, "Message"), NotifyDescriptor.WARNING_MESSAGE));
         }
     }
 

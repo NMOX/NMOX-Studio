@@ -105,11 +105,11 @@ public final class ExportLearningSpaceAction implements ActionListener {
                     }
                 }
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg.toString(),
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(msg.toString(), "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Not exported: " + ex.getMessage(),
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Not exported: " + ex.getMessage(), "Message"),
                                 NotifyDescriptor.ERROR_MESSAGE)));
             }
         });

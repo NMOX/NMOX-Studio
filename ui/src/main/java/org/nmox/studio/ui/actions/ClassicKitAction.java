@@ -149,7 +149,7 @@ public final class ClassicKitAction implements ActionListener {
         List<String> problems = ClassicKit.validate(opts, project);
         if (!problems.isEmpty()) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(String.join("\n", problems),
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(String.join("\n", problems), "Message"),
                             NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
@@ -160,12 +160,12 @@ public final class ClassicKitAction implements ActionListener {
                 List<ClassicKit.Outcome> outcomes = ClassicKit.write(project, opts);
                 String report = renderReport(outcomes);
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Classic Kit:\n\n" + report,
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Classic Kit:\n\n" + report, "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not write: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

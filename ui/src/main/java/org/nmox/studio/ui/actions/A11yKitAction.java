@@ -83,12 +83,12 @@ public final class A11yKitAction implements ActionListener {
                     }
                 }
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("A11y Kit:\n\n" + report,
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("A11y Kit:\n\n" + report, "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not write: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

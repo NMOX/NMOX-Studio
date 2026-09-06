@@ -441,8 +441,8 @@ public class RackPanel extends JPanel implements Rack.Listener {
                 JMenuItem howTo = new JMenuItem("How to use " + device.getTitle() + "…");
                 howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                                entry.title() + " — " + entry.description() + "\n\n"
-                                        + entry.usage().replace("\n", "\n\n"),
+                                org.nmox.studio.core.util.PlainDialogs.plain(entry.title() + " — " + entry.description() + "\n\n"
+                                        + entry.usage().replace("\n", "\n\n"), "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
                 menu.add(howTo);
                 menu.addSeparator();

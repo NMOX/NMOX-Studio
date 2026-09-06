@@ -178,7 +178,7 @@ public final class NewExperimentAction implements ActionListener {
                 // deferred a dispatch: shown while the wizard is still disposing,
                 // the error can stack behind the main window and soft-lock the app
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             } finally {
                 handle.finish();
             }

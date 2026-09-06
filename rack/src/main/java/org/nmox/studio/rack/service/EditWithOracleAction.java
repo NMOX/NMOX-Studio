@@ -67,9 +67,9 @@ public final class EditWithOracleAction implements ActionListener {
             // refuse, never truncate: a rewrite of a truncated selection
             // would delete the un-sent tail on Apply (the OracleEdit law)
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Selection too large for an ORACLE edit ("
+                    org.nmox.studio.core.util.PlainDialogs.plain("Selection too large for an ORACLE edit ("
                     + selection.length() + " chars, cap "
-                    + OracleEdit.MAX_CODE_CHARS + ") — nothing was sent."));
+                    + OracleEdit.MAX_CODE_CHARS + ") — nothing was sent.", "Message")));
             return;
         }
         Document doc = editor.getDocument();
@@ -132,7 +132,7 @@ public final class EditWithOracleAction implements ActionListener {
         if (proposal.status() != OracleEditEngine.Status.PROPOSED) {
             StatusDisplayer.getDefault().setStatusText("");
             DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(proposal.message()));
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(proposal.message(), "Message")));
             return;
         }
         StatusDisplayer.getDefault().setStatusText("");

@@ -140,14 +140,8 @@ public final class CheckMyWorkAction implements ActionListener {
      * screen reader reads the report whole instead of a hint in halves.
      */
     static javax.swing.JTextArea reportComponent(String text) {
-        javax.swing.JTextArea area = new javax.swing.JTextArea(text);
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setOpaque(false);
-        area.setColumns(64);
-        area.setFont(javax.swing.UIManager.getFont("Label.font"));
-        area.getAccessibleContext().setAccessibleName("Check My Work report");
-        return area;
+        // one shape, one home (v2.86.0): the plain-message helper every
+        // external-text dialog rides now
+        return org.nmox.studio.core.util.PlainDialogs.plain(text, "Check My Work report");
     }
 }

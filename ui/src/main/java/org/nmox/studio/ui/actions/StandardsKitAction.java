@@ -97,7 +97,7 @@ public final class StandardsKitAction implements ActionListener {
                 contact.getText().trim(), security.isSelected());
         if (problem != null) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(problem, NotifyDescriptor.WARNING_MESSAGE)));
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(problem, "Message"), NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
         StandardsKit.Options opts = new StandardsKit.Options(
@@ -118,12 +118,12 @@ public final class StandardsKitAction implements ActionListener {
                     }
                 }
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Standards Kit:\n\n" + report,
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Standards Kit:\n\n" + report, "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not write: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }
