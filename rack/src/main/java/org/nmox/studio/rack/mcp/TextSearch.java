@@ -37,9 +37,11 @@ final class TextSearch {
     /** Files that exist to hold secrets: never searched, never listed (v2.84.0). */
     static final Set<String> SECRET_NAMES = Set.of(
             ".npmrc", ".yarnrc", ".yarnrc.yml", ".netrc", ".git-credentials", ".pypirc",
+            ".htpasswd", ".dockercfg", "secrets.json", "secrets.yaml", "secrets.yml", "credentials.json",
             "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519");
+    // "env" covers app.env / production.env (docker --env-file's shape) beside the dotenv family
     static final Set<String> SECRET_EXTENSIONS = Set.of(
-            "pem", "key", "p12", "pfx", "jks", "keystore", "ppk");
+            "env", "pem", "key", "p12", "pfx", "jks", "keystore", "ppk");
 
     private TextSearch() {
     }

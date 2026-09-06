@@ -73,5 +73,11 @@ class TextSearchTest {
         assertThat(TextSearch.isSecretBearing("environment.ts")).isFalse();
         assertThat(TextSearch.isSecretBearing("keys.js")).isFalse();
         assertThat(TextSearch.isSecretBearing("pem")).as("a bare name is not an extension").isFalse();
+        // v2.85.0: the docker --env-file shape, htpasswd, and the secrets/credentials JSON conventions
+        assertThat(TextSearch.isSecretBearing("production.env")).isTrue();
+        assertThat(TextSearch.isSecretBearing(".htpasswd")).isTrue();
+        assertThat(TextSearch.isSecretBearing("secrets.yaml")).isTrue();
+        assertThat(TextSearch.isSecretBearing("credentials.json")).isTrue();
+        assertThat(TextSearch.isSecretBearing("environment.json")).as("a name that merely contains env").isFalse();
     }
 }
