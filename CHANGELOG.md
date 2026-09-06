@@ -116,6 +116,8 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
 22. **The arc review's find** — past the file walk's 2000-file cap the
     outline template's completion list is a floor, so no total is given
     (`hasMore` says so).
+23. **A capped walk says `hasMore`** however few it listed — a floor is
+    not a count.
 
 ## [2.84.0] - 2026-09-05
 
