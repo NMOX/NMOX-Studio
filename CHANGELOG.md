@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.85.0] - 2026-09-06
 
-The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid five times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack — and the F5 bet's trigger fired under the plain `typescript` package name.
+The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid six times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard — and the F5 bet's trigger fired under the plain `typescript` package name.
 
 1. **The Agent Port's execution surface, designed** —
    docs/engineering/agent-port-execution-dossier.md: lanes not
@@ -141,6 +141,28 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     399 ms`), the Browser rendering the counter, ■ (`[exit 143]
     stopped`, the ⇄ chip gone). CLEAN — three framework loops through
     the one New Project surface, none with a find.
+30. **The Express API and Vanilla Web loops, and the lockfile find** —
+    both through the wizard in one instance: Express (`nodemon`,
+    `/health`, the Browser at `localhost:3000`) and Vanilla with port
+    8080 HELD by another program — http-server bound 8081 and the ⇄
+    chip read the banner's port (the v1.320.0 law live). The find, on
+    both: a fresh project's first `git status` said `?? package-lock.json`
+    — the scaffold commit lands BEFORE the install the wizard then runs.
+    The lockfile now joins the scaffold commit the way `ng new`'s does,
+    by a guarded amend that can never touch a person's work: exactly one
+    commit and it must be ours, no remote, and the tree must differ by
+    the untracked lockfile alone (an edit made while the install ran, a
+    second commit, an added origin: the lockfile simply stays untracked).
+    Three refusal mutants dead by name.
+31. **The builder ledger reads a line-broken call** — the spawn-site
+    ledger's second enumeration matched the SUBSTRING
+    `ProcessSupport.runBounded(`, and two files had always spelled it
+    across a line break: ProjectTemplates (every scaffold's git spawns,
+    and unit 30's new site would have evaded the same way) and
+    LanguageServers (the rust-analyzer liveness probe) — unclassified
+    since the scan widened in v2.39.1. A whitespace-tolerant matcher
+    now; both sites blessed in writing; the substring mutant fails the
+    gate by name.
 
 ## [2.84.0] - 2026-09-05
 

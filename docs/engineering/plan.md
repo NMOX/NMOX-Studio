@@ -3845,7 +3845,15 @@ their DESCRIPTION — install included, then ▶ → Vite → the Browser at
 `[::1]:5173` → ■ → `[exit 143] stopped`: the product's own path from
 nothing to a served page, clean on the pipelined bytes — and then
 Svelte 5 and Solid the same way, three framework loops through the
-one New Project surface without a find. One
+one New Project surface without a find; then Express and Vanilla
+(8080 held, http-server on 8081, the chip reading the banner's port)
+with the find both shared: `?? package-lock.json` on a fresh
+scaffold, because the initial commit precedes the install — now a
+guarded amend folds the lockfile in (one commit, ours, no remote,
+lockfile-only diff, else it stays untracked). And the spawn-site
+ledger's builder scan matched a substring that a line break defeats:
+two files had evaded it since v2.39.1, both blessed now under a
+whitespace-tolerant matcher. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its
