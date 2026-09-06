@@ -66,11 +66,12 @@ public final class PresentationMode {
             for (JTextComponent c : EditorRegistry.componentList()) {
                 apply(c, delta);
             }
+            OutputFont.follow(enable); // the Output window reads from the back row too
         });
         // two literal heads: PlainStatusGateTest wants every status text to BEGIN
         // with the product's own literal, and a ternary's head is a variable
         if (enable) {
-            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors +" + DELTA_POINTS + " pt, Browser at " + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)");
+            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors and Output +" + DELTA_POINTS + " pt, Browser at " + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)");
         } else {
             StatusDisplayer.getDefault().setStatusText("Presentation Mode off");
         }

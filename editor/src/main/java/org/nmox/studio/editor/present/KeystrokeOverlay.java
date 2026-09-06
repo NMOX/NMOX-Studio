@@ -88,4 +88,10 @@ final class KeystrokeOverlay {
         last = "";
         repeats = 0;
     }
+
+    /** Off: hidden and its native peer released; a fresh one is built when the mode returns. */
+    void dispose() {
+        hideNow();
+        window.dispose();
+    }
 }

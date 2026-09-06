@@ -37,8 +37,8 @@ public final class KeystrokeHud {
         return on;
     }
 
-    /** EDT-safe: installs or removes the toolkit listener and says so on the status line. */
-    public static void setOn(boolean enable) {
+    /** EDT-safe (hops if needed); synchronized so the static overlay write is guarded, the PresentationMode idiom. */
+    public static synchronized void setOn(boolean enable) {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(() -> setOn(enable));
             return;
@@ -48,12 +48,14 @@ public final class KeystrokeHud {
         }
         on = enable;
         if (enable) {
+            overlay = new KeystrokeOverlay(); // built here on the EDT, never lazily on the event path (SpotBugs LI_LAZY_INIT_STATIC, verify #9)
             Toolkit.getDefaultToolkit().addAWTEventListener(LISTENER, AWTEvent.KEY_EVENT_MASK);
             StatusDisplayer.getDefault().setStatusText("Show Keystrokes on — chords with ⌘, ⌃ or ⌥ and function keys appear at the bottom of the window; plain typing never does");
         } else {
             Toolkit.getDefaultToolkit().removeAWTEventListener(LISTENER);
             if (overlay != null) {
-                overlay.hideNow();
+                overlay.dispose();
+                overlay = null;
             }
             StatusDisplayer.getDefault().setStatusText("Show Keystrokes off");
         }
@@ -68,7 +70,7 @@ public final class KeystrokeHud {
         }
         String text = label(ke.getModifiersEx(), ke.getKeyCode(), Utilities.isMac());
         if (overlay == null) {
-            overlay = new KeystrokeOverlay();
+            return; // switched off between the event and its dispatch
         }
         overlay.show(text);
     }
