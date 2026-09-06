@@ -80,7 +80,7 @@ public final class DevToolsPanel extends JPanel {
 
     // DOM tab
     private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea domDetails = readOnlyArea();
+    private final JTextArea domDetails = readOnlyArea("DOM element details");
     private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
@@ -111,7 +111,7 @@ public final class DevToolsPanel extends JPanel {
 
     // Svelte tab
     private final DefaultTreeModel svelteTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea svelteDetails = readOnlyArea();
+    private final JTextArea svelteDetails = readOnlyArea("Svelte component details");
     private final JLabel svelteStatus = new JLabel(" ");
 
     // Angular tab
@@ -1370,8 +1370,9 @@ public final class DevToolsPanel extends JPanel {
         };
     }
 
-    private static JTextArea readOnlyArea() {
+    private static JTextArea readOnlyArea(String accessibleName) {
         JTextArea area = new JTextArea();
+        area.getAccessibleContext().setAccessibleName(accessibleName);
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         area.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));

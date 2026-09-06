@@ -153,6 +153,7 @@ public final class ImageKitAction implements ActionListener {
             String body = summary + report;
             java.awt.EventQueue.invokeLater(() -> {
                 JTextArea area = new JTextArea(body, 24, 78);
+                area.getAccessibleContext().setAccessibleName("Image Kit report");
                 area.setEditable(false);
                 area.setCaretPosition(0);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
