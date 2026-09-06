@@ -136,6 +136,11 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
 28. **The Vite+Svelte loop, the same way** — the Svelte 5 template
     through the wizard, install, ▶ (`ready in 517 ms`), the Browser
     rendering `App.svelte`'s page, ■. CLEAN.
+29. **The Vite+Solid loop, the third wizard walk** — the Solid template
+    through the wizard, install (`solid-js ^1.9.0`), ▶ (`ready in
+    399 ms`), the Browser rendering the counter, ■ (`[exit 143]
+    stopped`, the ⇄ chip gone). CLEAN — three framework loops through
+    the one New Project surface, none with a find.
 
 ## [2.84.0] - 2026-09-05
 

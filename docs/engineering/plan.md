@@ -3839,11 +3839,13 @@ menu on a fresh userdir after the Docker find: all honest; the one
 copy find ("1 pieces") became the plural law — `core.util.Plural`,
 seven sites, a repo-wide gate for the nouns the sweep fixed.
 
-**The wizard loop, walked (unit 27).** New Project ▸ Vite + Vue driven
+**The wizard loops, walked (units 27–29).** New Project ▸ Vite + Vue driven
 through accessibility — the template list's rows carry their text as
 their DESCRIPTION — install included, then ▶ → Vite → the Browser at
 `[::1]:5173` → ■ → `[exit 143] stopped`: the product's own path from
-nothing to a served page, clean on the pipelined bytes. One
+nothing to a served page, clean on the pipelined bytes — and then
+Svelte 5 and Solid the same way, three framework loops through the
+one New Project surface without a find. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its
