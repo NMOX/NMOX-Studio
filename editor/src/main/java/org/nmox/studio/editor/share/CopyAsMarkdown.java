@@ -23,7 +23,37 @@ public final class CopyAsMarkdown {
             "shellscript", "bash",
             "plaintext", "text");
 
+    /**
+     * Where the LEXER's mime is coarser than the file's kind: the product
+     * opens {@code .jsx} under {@code text/javascript} and {@code .tsx}
+     * under {@code text/typescript} (one lexer pipeline serves both), so the
+     * mime alone would tag a React component {@code javascript} — and a
+     * renderer given {@code javascript} flags the markup. The walk found it:
+     * the fence must read the extension first. Keys are lower-case extensions.
+     */
+    static final Map<String, String> EXTENSION_TAGS = Map.of(
+            "jsx", "jsx",
+            "tsx", "tsx",
+            "vue", "vue",
+            "svelte", "svelte",
+            "astro", "astro");
+
     private CopyAsMarkdown() {
+    }
+
+    /** The fence info string for a file: its extension where the lexer mime is coarser, else the mime's tag. */
+    public static String fence(String mime, String fileName) {
+        if (fileName != null) {
+            int dot = fileName.lastIndexOf('.');
+            if (dot >= 0 && dot < fileName.length() - 1) {
+                String ext = fileName.substring(dot + 1).toLowerCase(java.util.Locale.ROOT);
+                String byExt = EXTENSION_TAGS.get(ext);
+                if (byExt != null) {
+                    return byExt;
+                }
+            }
+        }
+        return fence(mime);
     }
 
     /** The fence info string for a mime; {@code text} when nothing better is known. */
@@ -35,15 +65,24 @@ public final class CopyAsMarkdown {
         return FENCE_EXCEPTIONS.getOrDefault(id, id);
     }
 
+    /** The fenced block for a file: see {@link #fence(String, String)}. */
+    public static String block(String code, String mime, String fileName) {
+        return blockWithTag(code, fence(mime, fileName));
+    }
+
     /** The fenced block: a fence longer than any backtick run inside, the tag, the code, one trailing newline. */
     public static String block(String code, String mime) {
+        return blockWithTag(code, fence(mime));
+    }
+
+    private static String blockWithTag(String code, String tag) {
         String body = code == null ? "" : code;
         body = body.replace("\r\n", "\n");
         while (body.endsWith("\n")) {
             body = body.substring(0, body.length() - 1);
         }
         String fence = "`".repeat(Math.max(3, longestBacktickRun(body) + 1));
-        return fence + fence(mime) + "\n" + body + "\n" + fence + "\n";
+        return fence + tag + "\n" + body + "\n" + fence + "\n";
     }
 
     static int longestBacktickRun(String s) {

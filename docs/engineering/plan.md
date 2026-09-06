@@ -4000,3 +4000,12 @@ the literal. And the kit wizards take FREE TEXT where the New Project
 scaffold slugifies: the I18n Kit wrote malformed JSON for a name with a
 quote and the Standards Kit malformed XML for a URL with an ampersand,
 both found by extending the night's injection audit into the generators.
+
+And the third catch was the walk's own: with Copy as Markdown on the Edit
+menu the automation could finally drive it, and the first paste came out
+tagged `javascript` for a `.jsx` file — the product opens JSX under the
+JavaScript lexer's mime, so the mime vocabulary is coarser than the file's
+kind. A unit test had passed for years on a `text/x-jsx` mime no `.jsx`
+file carries. The rule: where the lexer's mime is coarser than the file,
+the fence reads the extension first. A test can only exercise the inputs
+you imagine; the walk hands you the real one.

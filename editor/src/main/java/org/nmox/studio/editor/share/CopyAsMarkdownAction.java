@@ -57,11 +57,12 @@ public final class CopyAsMarkdownAction implements ActionListener {
             return;
         }
         String mime = mimeOf(doc);
-        String block = CopyAsMarkdown.block(code, mime);
+        String name = fileName(doc);
+        String block = CopyAsMarkdown.block(code, mime, name);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(block), null);
-        StatusDisplayer.getDefault().setStatusText("Copied " + (whole ? "the whole of " + fileName(doc) : "the selection")
+        StatusDisplayer.getDefault().setStatusText("Copied " + (whole ? "the whole of " + name : "the selection")
                 + " as Markdown — " + Plural.of(CopyAsMarkdown.lineCount(code), "line")
-                + " in a ```" + CopyAsMarkdown.fence(mime) + " block");
+                + " in a ```" + CopyAsMarkdown.fence(mime, name) + " block");
     }
 
     static JTextComponent focusedEditor() {

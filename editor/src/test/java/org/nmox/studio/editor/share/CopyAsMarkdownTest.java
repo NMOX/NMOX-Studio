@@ -22,6 +22,17 @@ class CopyAsMarkdownTest {
     }
 
     @Test
+    @DisplayName("the walk's find: a .jsx opened under text/javascript is tagged jsx, not javascript")
+    void extensionBeatsACoarserLexerMime() {
+        assertThat(CopyAsMarkdown.fence("text/javascript", "App.jsx")).isEqualTo("jsx");
+        assertThat(CopyAsMarkdown.fence("text/typescript", "App.tsx")).isEqualTo("tsx");
+        assertThat(CopyAsMarkdown.fence("text/javascript", "main.js")).isEqualTo("javascript");
+        assertThat(CopyAsMarkdown.fence("text/javascript", null)).isEqualTo("javascript");
+        assertThat(CopyAsMarkdown.fence("text/javascript", "noext")).isEqualTo("javascript");
+        assertThat(CopyAsMarkdown.block("x", "text/javascript", "App.jsx")).startsWith("```jsx\n");
+    }
+
+    @Test
     @DisplayName("a block ends the code in exactly one newline before the closing fence, CRLF folded")
     void trailingNewlineLaw() {
         assertThat(CopyAsMarkdown.block("a\n", "text/javascript")).isEqualTo("```javascript\na\n```\n");
@@ -58,6 +69,6 @@ class CopyAsMarkdownTest {
                 .contains("getSelectedText()")
                 .contains("doc.getText(0, doc.getLength())")
                 .contains("getSystemClipboard().setContents")
-                .contains("CopyAsMarkdown.block(");
+                .contains("CopyAsMarkdown.block(code, mime, name)");
     }
 }
