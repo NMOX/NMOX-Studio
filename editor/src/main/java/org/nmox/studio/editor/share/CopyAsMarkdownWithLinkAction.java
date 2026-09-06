@@ -35,7 +35,10 @@ import org.openide.util.RequestProcessor;
  * remote (worktree-aware), HEAD. Every step that cannot vouch for a link
  * refuses out loud — not in a repo, no origin, an origin that is not
  * GitHub, an unsaved buffer — and copies nothing, because a block
- * without its promised link is the wrong clipboard.
+ * without its promised link is the wrong clipboard. Written limit:
+ * {@code url.<base>.insteadOf} rewrites in the git config are not
+ * applied, so an aliased origin ({@code gh:o/r}) refuses as "not a
+ * GitHub remote" rather than guessing the alias.
  */
 @ActionID(category = "Edit", id = "org.nmox.studio.editor.share.CopyAsMarkdownWithLinkAction")
 @ActionRegistration(displayName = "#CTL_CopyAsMarkdownWithLink", lazy = true)
@@ -60,6 +63,14 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
         File file = sd instanceof DataObject dob ? FileUtil.toFile(dob.getPrimaryFile()) : null;
         if (file == null) {
             StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: the buffer has no file on disk to link");
+            return;
+        }
+        if (unsaved(sd)) {
+            // the block would be the BUFFER while the link names the file as committed: a block
+            // that does not match its link is a lie, so the gesture waits for a save (the
+            // review's find; the disk-vs-remote gap it cannot see is named in the status)
+            StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: " + file.getName()
+                    + " has unsaved changes — save first, so the block matches what the link shows");
             return;
         }
         int selStart = editor.getSelectionStart();
@@ -88,9 +99,14 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
                 StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copied "
                         + (lines[0] == 0 ? "the whole of " + name : "the selection") + " as Markdown with a GitHub link — "
                         + Plural.of(CopyAsMarkdown.lineCount(code), "line") + " in a ```" + CopyAsMarkdown.fence(mime, name)
-                        + " block, " + out.slug + "@" + out.ref));
+                        + " block, " + out.slug + "@" + out.ref + " (the link shows the branch as pushed)"));
             });
         });
+    }
+
+    /** The buffer-vs-disk gap the product can see: a modified DataObject means the block would not match the link. */
+    static boolean unsaved(Object streamDescription) {
+        return streamDescription instanceof DataObject dob && dob.isModified();
     }
 
     /** What the link needs, or the one reason it cannot be made. */

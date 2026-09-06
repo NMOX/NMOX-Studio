@@ -89,4 +89,15 @@ class CopyAsMarkdownWithLinkTest {
         assertThat(src.indexOf("setContents(")).isGreaterThan(src.indexOf("resolve(file"));
         assertThat(src).doesNotContain("ProcessBuilder").doesNotContain("Runtime.getRuntime");
     }
+
+    @Test
+    @DisplayName("an unsaved buffer refuses — the block would be the buffer while the link names the committed file")
+    void unsavedBufferRefuses() throws Exception {
+        assertThat(CopyAsMarkdownWithLinkAction.unsaved("not a DataObject")).isFalse();
+        assertThat(CopyAsMarkdownWithLinkAction.unsaved(null)).isFalse();
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/share/CopyAsMarkdownWithLinkAction.java"));
+        // the refusal sits BEFORE any clipboard write and reads the DataObject's own modified flag
+        assertThat(src).contains("dob.isModified()").contains("has unsaved changes");
+        assertThat(src.indexOf("if (unsaved(sd))")).isLessThan(src.indexOf("RP.post("));
+    }
 }
