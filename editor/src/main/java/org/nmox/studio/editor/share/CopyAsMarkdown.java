@@ -81,7 +81,7 @@ public final class CopyAsMarkdown {
         while (body.endsWith("\n")) {
             body = body.substring(0, body.length() - 1);
         }
-        String fence = "`".repeat(Math.max(3, longestBacktickRun(body) + 1));
+        String fence = org.nmox.studio.core.util.Markdown.fenceFor(body); // one fence rule, in core since v2.87.0
         return fence + tag + "\n" + body + "\n" + fence + "\n";
     }
 

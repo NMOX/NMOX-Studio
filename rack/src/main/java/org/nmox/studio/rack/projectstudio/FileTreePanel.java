@@ -45,8 +45,7 @@ import org.openide.nodes.Node;
 public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
     /** Directories that stay dark: huge, generated, or plumbing. */
-    private static final java.util.Set<String> HEAVY_DIRS =
-            java.util.Set.of("node_modules", ".git", "dist", "build", "coverage");
+    private static final java.util.Set<String> HEAVY_DIRS = org.nmox.studio.core.util.HeavyDirs.NAMES; // one home since v2.87.0
 
     /**
      * Test seam for the off-EDT law: resolves a directory to the node
