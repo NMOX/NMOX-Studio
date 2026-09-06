@@ -117,7 +117,7 @@ public final class TasksTopComponent extends TopComponent {
 
     private final SelfWriteTracker tracker = new SelfWriteTracker();
     private final JPanel columnsPanel = new JPanel();
-    private final JLabel boardLabel = new JLabel(" ");
+    private final JLabel boardLabel = PlainTables.plain(new JLabel(" "));
     /** The v2.4.0 dashboard face; lives beside the strip in a CardLayout. */
     private final OverviewPanel overviewPanel =
             new OverviewPanel(this::editRetroDialog);

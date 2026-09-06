@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.browser.fx;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -75,20 +76,20 @@ public final class DevToolsPanel extends JPanel {
 
     // Network tab
     private final DefaultTableModel networkTable = readOnlyTable("Method", "URL", "Status", "OK", "ms", "Size");
-    private final JLabel networkDropped = new JLabel();
+    private final JLabel networkDropped = PlainTables.plain(new JLabel());
     private final javax.swing.Timer networkSync;
 
     // DOM tab
     private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
     private final JTextArea domDetails = readOnlyArea("DOM element details");
-    private final JLabel domStatus = new JLabel(" ");
+    private final JLabel domStatus = PlainTables.plain(new JLabel(" "));
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
     /** The DOM tab's tree — the Motion tab animates its selection. */
     private JTree domTreeView;
 
     // Motion tab (v2.12.0 — the DHTML keyframe timeline)
-    private final JLabel motionStatus = new JLabel(" ");
+    private final JLabel motionStatus = PlainTables.plain(new JLabel(" "));
     private final JTextField motionName = new JTextField("my-motion", 10);
     private final javax.swing.JSpinner motionDuration = new javax.swing.JSpinner(
             new javax.swing.SpinnerNumberModel(1500, 100, 600_000, 100));

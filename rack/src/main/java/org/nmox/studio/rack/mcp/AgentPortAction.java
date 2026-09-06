@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.mcp;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -132,7 +133,9 @@ public final class AgentPortAction implements ActionListener {
                 }""".formatted(port.url(), shownToken(port));
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production()))),
+        // PLAIN-LABEL-EXEMPT: the disclosure MEANS its markup (the v2.84.0 width-bounded body); every
+        // piece of it is the product's own text plus the port number — nothing external is spliced in
+        panel.add(PlainTables.plain(new JLabel(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production())))),
                 BorderLayout.NORTH);
         JTextArea config = new JTextArea(snippet);
         config.setEditable(false);

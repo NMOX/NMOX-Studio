@@ -1,5 +1,7 @@
 package org.nmox.studio.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -153,7 +155,7 @@ public final class MainWindow extends TopComponent {
             columns.add(gettingStarted);
             refreshRecents();
 
-            JLabel version = new JLabel(footerText());
+            JLabel version = PlainTables.plain(new JLabel(footerText()));
             version.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
             version.setForeground(DIM);
             JButton whatsNew = textButton("What's new", DIM);
@@ -212,7 +214,7 @@ public final class MainWindow extends TopComponent {
             } else {
                 for (File dir : recents.subList(0, Math.min(6, recents.size()))) {
                     JButton link = textButton(dir.getName(), LINK);
-                    link.setToolTipText(dir.getAbsolutePath());
+                    link.setToolTipText(PlainText.plain(dir.getAbsolutePath()));
                     link.addActionListener(e ->
                             org.nmox.studio.rack.service.RackService.getDefault().openProject(dir));
                     recentColumn.add(link);
@@ -271,7 +273,7 @@ public final class MainWindow extends TopComponent {
         }
 
         private static JLabel columnHeading(String text) {
-            JLabel label = new JLabel(text);
+            JLabel label = PlainTables.plain(new JLabel(text));
             label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
             label.setForeground(HEADING);
             label.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 6, 0));
@@ -316,7 +318,7 @@ public final class MainWindow extends TopComponent {
                 boolean ticked) {
             JButton row = textButton((ticked ? "✓  " : "○  ") + step.label(),
                     ticked ? DIM : new Color(225, 226, 230));
-            row.setToolTipText(step.gesture());
+            row.setToolTipText(PlainText.plain(step.gesture()));
             row.getAccessibleContext().setAccessibleName(
                     (ticked ? "done: " : "to do: ") + step.label() + " — " + step.gesture());
             org.nmox.studio.ui.gettingstarted.GettingStarted.Target t = step.target();

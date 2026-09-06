@@ -1,5 +1,7 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -123,7 +125,7 @@ public final class NewLearningSpaceAction implements ActionListener {
         });
 
         // availability up front: does this machine have the space's tool?
-        JLabel availability = new JLabel(" ");
+        JLabel availability = PlainTables.plain(new JLabel(" "));
         availability.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 0, 2));
         Map<String, Boolean> probeCache = new HashMap<>(); // EDT-confined, dialog-lifetime
         list.addListSelectionListener(ev -> {
@@ -228,7 +230,7 @@ public final class NewLearningSpaceAction implements ActionListener {
     private static void renderAvailability(JLabel label, String tool, boolean found,
             String installHint) {
         label.setForeground(found ? TOOL_OK : TOOL_MISSING);
-        label.setText(availabilityText(tool, found, installHint));
+        label.setText(PlainText.plain(availabilityText(tool, found, installHint)));
     }
 
     /** The availability line, pure: the ✓/✗ verdict plus the OS-appropriate install command. */

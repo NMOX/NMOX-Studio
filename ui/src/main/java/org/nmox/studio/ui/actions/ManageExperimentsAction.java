@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -128,9 +129,9 @@ public final class ManageExperimentsAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = new JLabel(model.size()
+        JLabel header = PlainTables.plain(new JLabel(model.size()
                 + (model.size() == 1 ? " experiment" : " experiments")
-                + " in ~/.nmox/experiments — newest first. Sizing…");
+                + " in ~/.nmox/experiments — newest first. Sizing…"));
         panel.add(header, BorderLayout.NORTH);
         // the disk cost lands when the walk finishes — node_modules
         // trees make this seconds, never an EDT freeze (v1.33.1 law)

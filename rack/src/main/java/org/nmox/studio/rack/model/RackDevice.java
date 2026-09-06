@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.model;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.Color;
 import java.awt.Component;
@@ -294,7 +295,7 @@ public abstract class RackDevice extends JPanel {
             Port p = portAt(e.getPoint());
             if (p != null) {
                 boolean in = p.getDirection() == Port.Direction.IN;
-                return "<html><b>" + p.getLabel() + "</b> &mdash; " + p.getType()
+                return "<html><b>" + PlainText.escape(p.getLabel()) + "</b> &mdash; " + p.getType()
                         + (in ? " input" : " output")
                         + "<br>Drag a cable to a matching " + (in ? "output" : "input")
                         + " jack; right-click to unplug</html>";

@@ -1,5 +1,6 @@
 package org.nmox.studio.infra.ui;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -66,8 +67,8 @@ public class PropertyPanel extends JPanel {
     }
 
     private final JPanel form = new ViewportWidthForm();
-    private final JLabel header = new JLabel("No selection");
-    private final JLabel costLabel = new JLabel(" ");
+    private final JLabel header = PlainTables.plain(new JLabel("No selection"));
+    private final JLabel costLabel = PlainTables.plain(new JLabel(" "));
     private InfraNode current;
 
     public PropertyPanel(InfraGraph graph) {
@@ -127,7 +128,7 @@ public class PropertyPanel extends JPanel {
     }
 
     private void addRow(GridBagConstraints gc, String label, javax.swing.JComponent editor) {
-        JLabel l = new JLabel(label);
+        JLabel l = PlainTables.plain(new JLabel(label));
         l.setForeground(new Color(0x9A, 0x9D, 0xA4));
         gc.gridx = 0;
         gc.weightx = 0;

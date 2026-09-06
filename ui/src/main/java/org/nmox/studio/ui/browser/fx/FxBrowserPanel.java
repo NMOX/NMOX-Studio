@@ -1,5 +1,7 @@
 package org.nmox.studio.ui.browser.fx;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -77,7 +79,7 @@ public final class FxBrowserPanel extends JPanel {
         urlField.getAccessibleContext().setAccessibleName("Address");
     }
     private final JProgressBar progress = new JProgressBar(0, 100);
-    private final JLabel zoomLabel = new JLabel("100%");
+    private final JLabel zoomLabel = PlainTables.plain(new JLabel("100%"));
     private final JToggleButton devToolsToggle = new JToggleButton("DevTools");
     private final TitleListener titleListener;
 
@@ -157,7 +159,7 @@ public final class FxBrowserPanel extends JPanel {
 
     private static JButton navButton(String text, String tip, Runnable action) {
         JButton b = new JButton(text);
-        b.setToolTipText(tip);
+        b.setToolTipText(PlainText.plain(tip));
         b.addActionListener(e -> action.run());
         return b;
     }

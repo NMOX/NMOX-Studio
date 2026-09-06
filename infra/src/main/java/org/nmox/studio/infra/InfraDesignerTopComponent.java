@@ -1,5 +1,6 @@
 package org.nmox.studio.infra;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -69,8 +70,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final DigitalOceanClient client = new DigitalOceanClient();
     private final FlowCanvas canvas;
     private final PropertyPanel properties;
-    private final JLabel tokenLabel = new JLabel();
-    private final JLabel costLabel = new JLabel();
+    private final JLabel tokenLabel = PlainTables.plain(new JLabel());
+    private final JLabel costLabel = PlainTables.plain(new JLabel());
     private final JButton syncButton = new JButton("Sync from cloud");
     private final JButton refreshButton = new JButton("Refresh");
     private final JButton destroyStackButton = new JButton("Destroy stack…");
@@ -222,7 +223,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 fields[i].getAccessibleContext().setAccessibleName(
                         providers[i].displayName() + " API token");
                 String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
-                panel.add(new JLabel(providers[i].displayName() + current));
+                panel.add(PlainTables.plain(new JLabel(providers[i].displayName() + current)));
                 panel.add(fields[i]);
             }
             DialogDescriptor dd = new DialogDescriptor(panel,

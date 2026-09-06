@@ -1,5 +1,6 @@
 package org.nmox.studio.web3.ui;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -54,7 +55,7 @@ final class NetworkDialog extends JPanel {
     private final JButton detectButton = new JButton("Detect");
     private final JCheckBox secretCheck =
             new JCheckBox("URL contains a secret (store in Keyring)");
-    private final JLabel noteLabel = new JLabel(" ");
+    private final JLabel noteLabel = PlainTables.plain(new JLabel(" "));
 
     /**
      * Public-gateway presets (v2.45.0, the definitive-engagement arc):
@@ -245,7 +246,7 @@ final class NetworkDialog extends JPanel {
         l.gridy = row;
         l.anchor = GridBagConstraints.EAST;
         l.insets = new Insets(3, 0, 3, 8);
-        panel.add(new JLabel(label), l);
+        panel.add(PlainTables.plain(new JLabel(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;

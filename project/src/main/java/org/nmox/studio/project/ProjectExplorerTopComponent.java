@@ -1,5 +1,7 @@
 package org.nmox.studio.project;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -303,7 +305,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         header.removeAll();
         File dir = projectDir();
 
-        JLabel name = new JLabel(dir.getName());
+        JLabel name = PlainTables.plain(new JLabel(dir.getName()));
         name.setFont(NAME_FONT);
         name.setForeground(TEXT);
         name.setAlignmentX(LEFT_ALIGNMENT);
@@ -320,7 +322,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // fill the chips when it returns.
         fillChipsAsync(chips, dir);
 
-        JLabel path = new JLabel(dir.getAbsolutePath());
+        JLabel path = PlainTables.plain(new JLabel(dir.getAbsolutePath()));
         path.setFont(TINY);
         path.setForeground(TEXT_DIM);
         path.setAlignmentX(LEFT_ALIGNMENT);
@@ -448,7 +450,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         b.setFont(TINY);
         b.setFocusable(true);
         b.setMargin(new java.awt.Insets(0, 6, 0, 6));
-        b.setToolTipText(accessibleName);
+        b.setToolTipText(PlainText.plain(accessibleName));
         b.getAccessibleContext().setAccessibleName(accessibleName);
         return b;
     }
@@ -684,7 +686,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     // ---- widgets ----
 
     private void section(String title) {
-        JLabel label = new JLabel(title);
+        JLabel label = PlainTables.plain(new JLabel(title));
         label.setFont(TINY);
         label.setForeground(SECTION);
         label.setBorder(BorderFactory.createEmptyBorder(10, 12, 3, 12));
@@ -693,7 +695,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private JLabel chip(String text, Color color) {
-        JLabel label = new JLabel(text);
+        JLabel label = PlainTables.plain(new JLabel(text));
         label.setFont(CHIP_FONT);
         label.setForeground(color);
         label.setBackground(CHIP_BG);
@@ -703,7 +705,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private void emptyRow(String hint) {
-        JLabel label = new JLabel(hint);
+        JLabel label = PlainTables.plain(new JLabel(hint));
         label.setFont(ROW_FONT);
         label.setForeground(TEXT_DIM);
         label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
@@ -742,7 +744,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.setAlignmentX(LEFT_ALIGNMENT);
         rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         rowPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        rowPanel.setToolTipText(tooltip);
+        rowPanel.setToolTipText(PlainText.plain(tooltip));
 
         if (dot != null) {
             JLabel dotLabel = new JLabel("●");
@@ -769,7 +771,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.add(titleButton);
         JLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            sub = new JLabel(shorten(subtitle, 38));
+            sub = PlainTables.plain(new JLabel(shorten(subtitle, 38)));
             sub.setFont(TINY);
             sub.setForeground(TEXT_DIM);
             sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));

@@ -1,5 +1,7 @@
 package org.nmox.studio.editor.lsp;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -35,7 +37,7 @@ public final class LanguageServersPanel extends JPanel {
     private static final Color MISSING = new Color(220, 140, 90);
 
     private final JProgressBar bar = new JProgressBar();
-    private final JLabel status = new JLabel(" ");
+    private final JLabel status = PlainTables.plain(new JLabel(" "));
     private final JButton cancelBtn = new JButton("Cancel");
     private final List<Row> rows = new ArrayList<>();
     private final Deque<Row> queue = new ArrayDeque<>();
@@ -239,11 +241,11 @@ public final class LanguageServersPanel extends JPanel {
                 statusLabel.setForeground(MISSING);
                 if (server.autoInstallable()) {
                     button.setText("Install");
-                    button.setToolTipText(String.join(" ", server.command()));
+                    button.setToolTipText(PlainText.plain(String.join(" ", server.command())));
                     button.setEnabled(true);
                 } else {
                     button.setText("Manual");
-                    button.setToolTipText(server.install());
+                    button.setToolTipText(PlainText.plain(server.install()));
                     button.setEnabled(false);
                 }
             }

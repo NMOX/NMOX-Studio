@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -103,7 +104,7 @@ public final class ClassicKitAction implements ActionListener {
                 JCheckBox box = libraryBoxes.get(lib.id());
                 boolean enabled = enabledFor(lib, npmMode);
                 box.setEnabled(enabled);
-                box.setToolTipText(enabled ? null : ClassicKit.PROTOTYPE_NPM_NOTE);
+                box.setToolTipText(PlainText.plain(enabled ? null : ClassicKit.PROTOTYPE_NPM_NOTE));
             }
         };
         vendored.addActionListener(ev -> syncMode.run());

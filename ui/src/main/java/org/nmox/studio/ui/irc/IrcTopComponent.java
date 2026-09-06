@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.irc;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -925,7 +926,7 @@ public final class IrcTopComponent extends TopComponent {
         findBar = new JPanel(new BorderLayout(6, 0));
         findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         findField = new JTextField();
-        findCount = new JLabel(" ");
+        findCount = PlainTables.plain(new JLabel(" "));
         findBar.add(new JLabel("Find:"), BorderLayout.WEST);
         findBar.add(findField, BorderLayout.CENTER);
         findBar.add(findCount, BorderLayout.EAST);

@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +53,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
 
     private final Rack rack = RackService.getDefault().getRack();
     private final FileTreePanel treePanel = new FileTreePanel();
-    private final JLabel statusLabel = new JLabel(" ");
+    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
     private final Rack.Listener rackListener = new Rack.Listener() {
         @Override
         public void projectChanged() {
@@ -148,7 +150,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
             }
             for (File dir : projects) {
                 JMenuItem item = new JMenuItem(dir.getName());
-                item.setToolTipText(dir.getAbsolutePath());
+                item.setToolTipText(PlainText.plain(dir.getAbsolutePath()));
                 item.addActionListener(a -> RackService.getDefault().openProject(dir));
                 menu.add(item);
             }

@@ -1,5 +1,6 @@
 package org.nmox.studio.dbstudio.ui;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.util.List;
@@ -34,10 +35,10 @@ final class ApplyPreviewDialog {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
 
-        JLabel summary = new JLabel(statements.size()
+        JLabel summary = PlainTables.plain(new JLabel(statements.size()
                 + (statements.size() == 1 ? " UPDATE statement" : " UPDATE statements")
                 + " · " + rowCount + (rowCount == 1 ? " row" : " rows")
-                + " of " + tableName);
+                + " of " + tableName));
         summary.setFont(summary.getFont().deriveFont(Font.BOLD));
         panel.add(summary, BorderLayout.NORTH);
 

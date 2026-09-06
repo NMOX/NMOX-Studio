@@ -1,5 +1,7 @@
 package org.nmox.studio.apiclient.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -177,7 +179,7 @@ public final class ApiClientTopComponent extends TopComponent {
         testsTable.getAccessibleContext().setAccessibleName("Tests");
     }
 
-    private final JLabel statusLabel = new JLabel(" ");
+    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
     private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
     /** The last delivered response — what Explain would disclose. */
     private ApiResponse lastResponse;
@@ -186,7 +188,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JTextArea responseBody = new JTextArea();
     // response pack (v1.198.0)
     private final JTextField responseFind = new JTextField();
-    private final JLabel findCount = new JLabel(" ");
+    private final JLabel findCount = PlainTables.plain(new JLabel(" "));
     private final JTextArea responseHeaders = new JTextArea();
     private final JPanel testResults = new JPanel();
     private final JPanel standardsPanel = new JPanel();
@@ -519,7 +521,7 @@ public final class ApiClientTopComponent extends TopComponent {
             for (org.nmox.studio.apiclient.api.HttpLibrary.Entry entry : library) {
                 javax.swing.JMenuItem item =
                         new javax.swing.JMenuItem(entry.name() + " · library");
-                item.setToolTipText(entry.file().getAbsolutePath());
+                item.setToolTipText(PlainText.plain(entry.file().getAbsolutePath()));
                 item.addActionListener(a -> importHttpFrom(entry.file()));
                 menu.add(item);
             }
@@ -1497,8 +1499,8 @@ public final class ApiClientTopComponent extends TopComponent {
             testResults.add(new JLabel("  No tests on this request."));
         }
         for (TestRunner.Result res : results) {
-            JLabel line = new JLabel((res.passed() ? "  ✓  " : "  ✗  ")
-                    + res.description() + "   (" + res.detail() + ")");
+            JLabel line = PlainTables.plain(new JLabel((res.passed() ? "  ✓  " : "  ✗  ")
+                    + res.description() + "   (" + res.detail() + ")"));
             line.setForeground(res.passed() ? OK_GREEN : FAIL_RED);
             testResults.add(line);
         }
@@ -1521,7 +1523,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     case WARN -> "  !  ";
                     case MISS -> "  ✗  ";
                 };
-                JLabel line = new JLabel(mark + check.standard() + "   — " + check.detail());
+                JLabel line = PlainTables.plain(new JLabel(mark + check.standard() + "   — " + check.detail()));
                 line.setForeground(switch (check.verdict()) {
                     case PASS -> OK_GREEN;
                     case WARN -> new Color(0xE8, 0xC4, 0x4A);

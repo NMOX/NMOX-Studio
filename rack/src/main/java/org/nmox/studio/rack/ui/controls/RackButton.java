@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.ui.controls;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,7 +41,7 @@ public class RackButton extends JComponent implements javax.accessibility.Access
         this.ledColor = ledColor;
         setPreferredSize(new Dimension(58, 40));
         setSize(getPreferredSize());
-        setToolTipText(label);
+        setToolTipText(PlainText.plain(label));
         MouseAdapter ma = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -119,7 +120,7 @@ public class RackButton extends JComponent implements javax.accessibility.Access
      */
     public void setCommandPreview(java.util.function.Supplier<String> preview) {
         this.commandPreview = preview;
-        setToolTipText(label); // ensure tooltip machinery is registered
+        setToolTipText(PlainText.plain(label)); // ensure tooltip machinery is registered
     }
 
     @Override

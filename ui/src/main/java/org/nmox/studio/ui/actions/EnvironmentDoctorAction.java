@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -50,7 +51,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
         table.getColumnModel().getColumn(3).setPreferredWidth(200);
         table.getColumnModel().getColumn(4).setPreferredWidth(200);
 
-        JLabel status = new JLabel("Probing…");
+        JLabel status = PlainTables.plain(new JLabel("Probing…"));
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("Every tool the studio can drive, probed live on this machine:"),

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -107,7 +108,7 @@ public class TunnelDevice extends CommandDevice {
             onEdt(() -> {
                 urlLcd.setTextColor(RackStyle.LCD_TEXT);
                 urlLcd.setText(url.replaceFirst("https://", ""));
-                urlLcd.setToolTipText(url);
+                urlLcd.setToolTipText(PlainText.plain(url));
                 liveLed.setBlinking(false);
                 liveLed.setOn(true);
             });

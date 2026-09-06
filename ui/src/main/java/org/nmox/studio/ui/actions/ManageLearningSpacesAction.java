@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -127,7 +128,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = new JLabel("Sizing…");
+        JLabel header = PlainTables.plain(new JLabel("Sizing…"));
         // the NAME follows the text (count, disk cost, lifecycle) — a
         // constant name here was what a screen reader heard instead of it
         // (v2.85.0); the role goes in the description

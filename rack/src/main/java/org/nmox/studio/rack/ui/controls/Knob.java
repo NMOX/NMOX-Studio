@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.ui.controls;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -53,7 +54,7 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         setSize(getPreferredSize());
         installMouse();
         installKeyboard();
-        setToolTipText(label);
+        setToolTipText(PlainText.plain(label));
     }
 
     /** Continuous knob 0..1. */
@@ -65,7 +66,7 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         setSize(getPreferredSize());
         installMouse();
         installKeyboard();
-        setToolTipText(label);
+        setToolTipText(PlainText.plain(label));
     }
 
     private void installKeyboard() {
@@ -275,7 +276,7 @@ public class Knob extends JComponent implements javax.accessibility.Accessible {
         if (clamped != selectedIndex) {
             int old = selectedIndex;
             selectedIndex = clamped;
-            setToolTipText(label + ": " + options[selectedIndex]);
+            setToolTipText(PlainText.plain(label + ": " + options[selectedIndex]));
             repaint();
             fireChanged();
             fireAccessibleValue(old, clamped);

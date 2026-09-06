@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.irc;
 
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -164,7 +165,7 @@ final class NetworkEditorDialog {
             String label, javax.swing.JComponent field) {
         gc.gridx = 0;
         gc.gridy = row;
-        form.add(new JLabel(label), gc);
+        form.add(PlainTables.plain(new JLabel(label)), gc);
         gc.gridx = 1;
         form.add(field, gc);
         return row + 1;

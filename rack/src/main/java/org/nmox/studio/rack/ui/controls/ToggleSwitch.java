@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.ui.controls;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -43,7 +44,7 @@ public class ToggleSwitch extends JComponent implements javax.accessibility.Acce
         this.offText = offText;
         setPreferredSize(new Dimension(66, 74));
         setSize(getPreferredSize());
-        setToolTipText(label);
+        setToolTipText(PlainText.plain(label));
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {

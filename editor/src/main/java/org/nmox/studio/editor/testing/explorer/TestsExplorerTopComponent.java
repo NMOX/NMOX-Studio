@@ -4,6 +4,7 @@
 // org.nmox.studio.editor.testing's bundle
 package org.nmox.studio.editor.testing.explorer;
 
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.io.File;
@@ -73,7 +74,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
             new DefaultMutableTreeNode("Tests");
     private final DefaultTreeModel model = new DefaultTreeModel(rootNode);
     private final JTree tree = new JTree(model);
-    private final JLabel status = new JLabel(" ");
+    private final JLabel status = PlainTables.plain(new JLabel(" "));
     private final ProjectAim.Listener aimListener =
             () -> java.awt.EventQueue.invokeLater(this::aimChanged);
     private volatile long refreshSeq;

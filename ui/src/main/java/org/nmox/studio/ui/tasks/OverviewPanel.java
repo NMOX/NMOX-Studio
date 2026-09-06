@@ -314,10 +314,10 @@ final class OverviewPanel extends JPanel {
         p.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(EDGE),
                 BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-        JLabel big = new JLabel(number);
+        JLabel big = PlainTables.plain(new JLabel(number));
         big.setForeground(PHOSPHOR);
         big.setFont(mono(Font.BOLD, 26f));
-        JLabel cap = new JLabel(caption);
+        JLabel cap = PlainTables.plain(new JLabel(caption));
         cap.setForeground(DIM);
         cap.setFont(mono(Font.PLAIN, 10f));
         p.add(big, BorderLayout.CENTER);
@@ -337,7 +337,7 @@ final class OverviewPanel extends JPanel {
         name.setForeground(c.overLimit() ? OVER : TEXT);
         name.setFont(mono(Font.PLAIN, 12f));
         name.setPreferredSize(new Dimension(160, 18));
-        JLabel n = new JLabel(count + (c.overLimit() ? "  OVER" : ""));
+        JLabel n = PlainTables.plain(new JLabel(count + (c.overLimit() ? "  OVER" : "")));
         n.setForeground(c.overLimit() ? OVER : DIM);
         n.setFont(mono(Font.PLAIN, 12f));
         n.setPreferredSize(new Dimension(90, 18));

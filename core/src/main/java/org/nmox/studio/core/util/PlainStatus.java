@@ -10,7 +10,8 @@ package org.nmox.studio.core.util;
  * fetch. Swing's check reads the first six characters only, so a
  * leading space defeats it invisibly; every status text whose head is
  * not our own literal rides {@link #text}, and PlainStatusGateTest
- * refuses the rest.
+ * refuses the rest. The rule itself lives in {@link PlainText}, which
+ * the tooltip sites share.
  */
 public final class PlainStatus {
 
@@ -19,17 +20,6 @@ public final class PlainStatus {
 
     /** The text, with a leading space added when its head would read as markup. */
     public static String text(String status) {
-        if (status == null) {
-            return "";
-        }
-        String s = status;
-        int i = 0;
-        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
-            i++;
-        }
-        if (s.regionMatches(true, i, "<html", 0, 5)) {
-            return " " + s.substring(i);
-        }
-        return s;
+        return status == null ? "" : PlainText.plain(status);
     }
 }

@@ -1,5 +1,7 @@
 package org.nmox.studio.web3.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.util.Threads;
 
 import java.awt.BorderLayout;
@@ -195,10 +197,10 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private final JComboBox<Network> networkCombo = new JComboBox<>();
     private boolean networkComboRefreshing;
-    private final JLabel chipLabel = new JLabel(NOT_CONNECTED);
+    private final JLabel chipLabel = PlainTables.plain(new JLabel(NOT_CONNECTED));
     private final JButton compileButton = new JButton("Compile");
     private final JButton rescanButton = new JButton("Rescan");
-    private final JLabel statusLabel = new JLabel(" ");
+    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
 
     private final JTree tree = new JTree();
     {
@@ -454,7 +456,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void showInteractHint(String text) {
         interactPanel.removeAll();
-        JLabel hint = new JLabel(text);
+        JLabel hint = PlainTables.plain(new JLabel(text));
         hint.setForeground(Color.GRAY);
         hint.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         interactPanel.add(hint, BorderLayout.NORTH);
@@ -498,7 +500,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         addFormRow(form, row++, title);
         if (!s.artifact().sourcePath().isEmpty()) {
-            JLabel source = new JLabel(s.artifact().sourcePath());
+            JLabel source = PlainTables.plain(new JLabel(s.artifact().sourcePath()));
             source.setForeground(Color.GRAY);
             addFormRow(form, row++, source);
         }
@@ -519,7 +521,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             addLabeledRow(form, row++, paramLabel(param), field);
         }
         if (s.constructorHint() != null) {
-            JLabel hint = new JLabel(s.constructorHint());
+            JLabel hint = PlainTables.plain(new JLabel(s.constructorHint()));
             hint.setForeground(Color.GRAY);
             addFormRow(form, row++, hint);
         }
@@ -538,9 +540,9 @@ public final class Web3StudioTopComponent extends TopComponent {
         JButton deployButton = new JButton("Deploy");
         deployButton.setForeground(ACCENT);
         deployButton.setEnabled(reason == null && connected);
-        deployButton.setToolTipText(reason != null ? reason
+        deployButton.setToolTipText(PlainText.plain(reason != null ? reason
                 : connected ? "eth_sendTransaction with the node's unlocked account"
-                        : NOT_CONNECTED);
+                        : NOT_CONNECTED));
         JButton attachButton = new JButton("Attach to address…");
         attachButton.setToolTipText("Interact with an already-deployed instance");
         JLabel result = new JLabel(" ");
@@ -565,8 +567,8 @@ public final class Web3StudioTopComponent extends TopComponent {
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        JLabel title = new JLabel(s.artifact().name() + " @ "
-                + DisplayValues.shortAddress(s.address()));
+        JLabel title = PlainTables.plain(new JLabel(s.artifact().name() + " @ "
+                + DisplayValues.shortAddress(s.address())));
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         list.add(leftAligned(title));
 
@@ -617,14 +619,14 @@ public final class Web3StudioTopComponent extends TopComponent {
     private JPanel functionRow(InteractSession s, AbiEntry function, String sendReason) {
         boolean read = function.readOnly();
         JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
-        JLabel name = new JLabel((read ? "ƒ " : "✎ ") + function.name());
+        JLabel name = PlainTables.plain(new JLabel((read ? "ƒ " : "✎ ") + function.name()));
         name.setFont(MONO.deriveFont(Font.BOLD));
-        name.setToolTipText(function.signature() + " · " + function.stateMutability());
+        name.setToolTipText(PlainText.plain(function.signature() + " · " + function.stateMutability()));
         rowPanel.add(name);
 
         List<JTextField> argFields = new ArrayList<>();
         for (AbiParam param : function.inputs()) {
-            JLabel label = new JLabel(paramLabel(param));
+            JLabel label = PlainTables.plain(new JLabel(paramLabel(param)));
             label.setForeground(Color.GRAY);
             rowPanel.add(label);
             JTextField field = new JTextField(10);
@@ -652,9 +654,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             action.addActionListener(e -> call(s, function, argFields, result));
         } else {
             action.setEnabled(sendReason == null && connected);
-            action.setToolTipText(sendReason != null ? sendReason
+            action.setToolTipText(PlainText.plain(sendReason != null ? sendReason
                     : connected ? "eth_sendTransaction with the node's unlocked account"
-                            : NOT_CONNECTED);
+                            : NOT_CONNECTED));
             JTextField valueRef = valueField;
             action.addActionListener(e -> send(s, function, argFields, valueRef, result));
         }
@@ -1699,9 +1701,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             fromCombo.addItem(account);
         }
         fromCombo.setEnabled(!accounts.isEmpty());
-        fromCombo.setToolTipText(accounts.isEmpty()
+        fromCombo.setToolTipText(PlainText.plain(accounts.isEmpty()
                 ? InteractSession.READ_ONLY_REASON
-                : "The node's unlocked accounts (eth_accounts) — it signs, the IDE never can");
+                : "The node's unlocked accounts (eth_accounts) — it signs, the IDE never can"));
     }
 
     /** Re-arms or disables the write surface after an accounts refresh. */
@@ -2295,7 +2297,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private static void setResult(JLabel label, String text, Color color) {
         label.setForeground(color);
         label.setText(text);
-        label.setToolTipText(text);
+        label.setToolTipText(PlainText.plain(text));
     }
 
     private static String messageOf(Exception e) {
@@ -2319,9 +2321,9 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (standard == null) {
             return null;
         }
-        JLabel strip = new JLabel("\u2b21 " + standard.label()
+        JLabel strip = PlainTables.plain(new JLabel("\u2b21 " + standard.label()
                 + (standard == ErcStandards.Standard.ERC20
-                        ? " — reading token metadata\u2026" : " token"));
+                        ? " — reading token metadata\u2026" : " token")));
         strip.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
         strip.setForeground(ACCENT);
         strip.getAccessibleContext().setAccessibleName(
@@ -2384,7 +2386,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                     b.append("  \u00b7 name/symbol not in ABI");
                 }
                 strip.setText(b.toString());
-                strip.setToolTipText(b.toString());
+                strip.setToolTipText(PlainText.plain(b.toString()));
             });
         });
     }
@@ -2469,7 +2471,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 strip.setText(line);
                 // a narrow pane ellipsizes the label — the full line
                 // survives as the tooltip (the v1.282.0 truncation law)
-                strip.setToolTipText(line);
+                strip.setToolTipText(PlainText.plain(line));
             });
         });
     }
@@ -2788,7 +2790,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         l.gridy = row;
         l.anchor = GridBagConstraints.EAST;
         l.insets = new Insets(3, 0, 3, 8);
-        form.add(new JLabel(label), l);
+        form.add(PlainTables.plain(new JLabel(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;

@@ -1,5 +1,7 @@
 package org.nmox.studio.dbstudio.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -184,7 +186,7 @@ public final class DbStudioTopComponent extends TopComponent {
     {
         limitSpinner.getAccessibleContext().setAccessibleName("Row limit");
     }
-    private final JLabel statusLabel = new JLabel(" ");
+    private final JLabel statusLabel = PlainTables.plain(new JLabel(" "));
 
     /** The project's persisted console history (newest first) — mirrors .nmoxdb.json. */
     private List<DbWorkspaceIO.HistoryEntry> persistedHistory = new ArrayList<>();
@@ -655,7 +657,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private void fillResultPanel(JPanel panel, ConnectionSpec spec, TabContent content) {
         panel.removeAll();
         QueryResult result = content.result();
-        JLabel header = new JLabel(headerText(result));
+        JLabel header = PlainTables.plain(new JLabel(headerText(result)));
         header.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         if (result.isError()) {
             header.setForeground(FAIL_RED);
@@ -671,7 +673,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
                 String reason = decision == null ? "Read-only" : decision.reason();
-                table.setToolTipText(reason);
+                table.setToolTipText(PlainText.plain(reason));
                 panel.add(new JScrollPane(table), BorderLayout.CENTER);
                 panel.add(readOnlyStrip(result, reason), BorderLayout.SOUTH);
             }
@@ -701,7 +703,7 @@ public final class DbStudioTopComponent extends TopComponent {
     /** The grid plus the edit strip: dirty-cell tint, pending chip, Apply…/Revert, exports. */
     private JComponent editableGrid(JPanel tabPanel, ConnectionSpec spec, TabContent content) {
         EditSession session = content.decision().session();
-        JLabel chip = new JLabel("No pending edits");
+        JLabel chip = PlainTables.plain(new JLabel("No pending edits"));
         chip.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         JButton applyButton = new JButton("Apply…");
         applyButton.setEnabled(false);
@@ -749,7 +751,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private JComponent readOnlyStrip(QueryResult result, String reason) {
         JToolBar strip = new JToolBar();
         strip.setFloatable(false);
-        JLabel why = new JLabel(reason);
+        JLabel why = PlainTables.plain(new JLabel(reason));
         why.setForeground(Color.GRAY);
         why.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         strip.add(why);
@@ -762,13 +764,13 @@ public final class DbStudioTopComponent extends TopComponent {
         boolean hasRows = result.rowCount() > 0;
         JButton csvButton = new JButton("CSV");
         csvButton.setEnabled(hasRows);
-        csvButton.setToolTipText(hasRows ? "Export this grid as CSV (UTF-8)"
-                : "No rows to export");
+        csvButton.setToolTipText(PlainText.plain(hasRows ? "Export this grid as CSV (UTF-8)"
+                : "No rows to export"));
         csvButton.addActionListener(e -> exportResult(result, true));
         JButton jsonButton = new JButton("JSON");
         jsonButton.setEnabled(hasRows);
-        jsonButton.setToolTipText(hasRows ? "Export this grid as JSON (UTF-8)"
-                : "No rows to export");
+        jsonButton.setToolTipText(PlainText.plain(hasRows ? "Export this grid as JSON (UTF-8)"
+                : "No rows to export"));
         jsonButton.addActionListener(e -> exportResult(result, false));
         strip.add(csvButton);
         strip.add(jsonButton);
@@ -1820,25 +1822,25 @@ public final class DbStudioTopComponent extends TopComponent {
         removeButton.setEnabled(selected && !services);
         testButton.setEnabled(selected && !services);
         String managedElsewhere = services ? "Managed in the Services window" : null;
-        editButton.setToolTipText(managedElsewhere);
-        removeButton.setToolTipText(managedElsewhere);
-        testButton.setToolTipText(managedElsewhere);
+        editButton.setToolTipText(PlainText.plain(managedElsewhere));
+        removeButton.setToolTipText(PlainText.plain(managedElsewhere));
+        testButton.setToolTipText(PlainText.plain(managedElsewhere));
         connectButton.setEnabled(selected);
         DbBackend backend = selected ? backends.get(spec.id()) : null;
         // Services connections never show Disconnect: NetBeans owns the lifecycle
         connectButton.setText(!services && backend != null && backend.isOpen()
                 ? "Disconnect" : "Connect");
-        connectButton.setToolTipText(services
+        connectButton.setToolTipText(PlainText.plain(services
                 ? "Connect through NetBeans (drivers and credentials live in the Services window)"
-                : null);
+                : null));
         // RUN gates on having a target: an always-armed button that silently
         // no-ops reads as broken. The tooltip says why it's off.
         ConnectionSpec active = activeSpec();
         boolean runnable = !running && active != null;
         runButton.setEnabled(runnable);
-        runButton.setToolTipText(runnable
+        runButton.setToolTipText(PlainText.plain(runnable
                 ? "Execute the console against the active connection"
-                : running ? "A run is in flight" : "Select a connection first");
+                : running ? "A run is in flight" : "Select a connection first"));
         refreshExplain(active);
     }
 
@@ -2397,7 +2399,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         + (query.engine().isEmpty() ? ""
                                 : " <font color='#8a8a8a'>[" + esc(query.engine()) + "]</font>")
                         + "</html>");
-                setToolTipText(query.text());
+                setToolTipText(PlainText.plain(query.text()));
             }
             return this;
         }

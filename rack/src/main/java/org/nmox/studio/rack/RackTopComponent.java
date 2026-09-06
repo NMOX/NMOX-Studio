@@ -1,5 +1,7 @@
 package org.nmox.studio.rack;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -61,7 +63,7 @@ public final class RackTopComponent extends TopComponent {
 
     private final Rack rack = org.nmox.studio.rack.service.RackService.getDefault().getRack();
     private RackPanel rackPanel;
-    private final JLabel projectLabel = new JLabel();
+    private final JLabel projectLabel = PlainTables.plain(new JLabel());
     private JToggleButton flipToggle;
 
     /** Single-throughput writer lane for the interactive patch save. */
@@ -423,7 +425,7 @@ public final class RackTopComponent extends TopComponent {
         for (org.nmox.studio.rack.projectstudio.RackPresets preset
                 : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
             javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
-            item.setToolTipText(preset.getDescription());
+            item.setToolTipText(PlainText.plain(preset.getDescription()));
             item.addActionListener(a -> {
                 if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
                     return;
@@ -441,7 +443,7 @@ public final class RackTopComponent extends TopComponent {
             menu.addSeparator();
             for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
                 javax.swing.JMenuItem item = new javax.swing.JMenuItem(custom.name() + " · yours");
-                item.setToolTipText(custom.file().getAbsolutePath());
+                item.setToolTipText(PlainText.plain(custom.file().getAbsolutePath()));
                 item.addActionListener(a -> {
                     if (!confirmReplace("the " + custom.name() + " preset")) {
                         return;
@@ -493,7 +495,7 @@ public final class RackTopComponent extends TopComponent {
 
     private void updateProjectLabel() {
         projectLabel.setText(rack.getProjectDir().getName());
-        projectLabel.setToolTipText(rack.getProjectDir().getAbsolutePath());
+        projectLabel.setToolTipText(PlainText.plain(rack.getProjectDir().getAbsolutePath()));
     }
 
     @Override
