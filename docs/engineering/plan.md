@@ -3872,7 +3872,8 @@ every module's string literals. The review of the fresh code found
 the branch's one real bug in its riskiest unit: resource updates and
 keepalives bypassed the per-stream backlog cap the log lines
 honored — one enqueue path now, every frame kind bounded and the
-overflow announced. One
+overflow announced — and the precheck's unbounded read of a
+project-controlled package.json, bounded. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its

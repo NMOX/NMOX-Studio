@@ -226,6 +226,15 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     skips with its reason (`optInt` read "many" as 0); SpotBugs caught
     the runtime-built option compared by identity on the sixth
     insurance verify (equals now).
+37. **The precheck reads a bounded prefix** — the same review's last
+    lens: TsServerPrecheck read a project-controlled `package.json`
+    (under a cloned repo's node_modules) with an unbounded
+    `Files.readString` — the v2.61.1 class, in day-old code. A 64 KB
+    prefix now; a version past the cap reads as unknown; the mutant
+    restoring the whole-file read dies by name. And the strict
+    official-SDK walk ran on the reviewed bytes: `WALK CLEAN — 19
+    steps, 0 surprises`, the outline subscription FOLLOW-PROVEN
+    through the one enqueue path.
 
 ## [2.84.0] - 2026-09-05
 
