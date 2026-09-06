@@ -133,6 +133,9 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     rendering the template → ■ → port closed, `[exit 143] stopped`.
     CLEAN. Recorded for David's eye: after the wizard, the platform's
     own Projects/Files/Services windows join the left column.
+28. **The Vite+Svelte loop, the same way** — the Svelte 5 template
+    through the wizard, install, ▶ (`ready in 517 ms`), the Browser
+    rendering `App.svelte`'s page, ■. CLEAN.
 
 ## [2.84.0] - 2026-09-05
 
