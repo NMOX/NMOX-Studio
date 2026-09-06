@@ -45,6 +45,34 @@ public final class LanguageServerHealth {
     private LanguageServerHealth() {
     }
 
+    /**
+     * The TypeScript wall spoken once (v2.85.0): a typescript is installed
+     * where the server looks, but it is 7+ — the Go port, no tsserver — so
+     * the server would fail its initialize on every file open. The balloon
+     * names the version, and its click runs the catalog's install (which
+     * pins typescript@5) through the same trust-gated installer.
+     */
+    public static void reportNoTsserver(String version) {
+        if (!REPORTED.add("typescript-language-server:no-tsserver")) {
+            return;
+        }
+        Server s = LanguageServerCatalog.forBinary("typescript-language-server");
+        String install = s != null ? s.install() : "npm install -g typescript@5";
+        NotificationDisplayer.getDefault().notify("TypeScript intelligence unavailable", ICON,
+                "TypeScript " + version + " is installed, and TypeScript 7 (the Go port) ships no tsserver — "
+                + "the editor's TypeScript server needs typescript 5. "
+                + (clickInstalls(s) ? "Click to install it — runs: " + install : "Run: " + install),
+                e -> {
+                    if (clickInstalls(s)) {
+                        runInstall(s);
+                    } else {
+                        Toolkit.getDefaultToolkit().getSystemClipboard()
+                                .setContents(new StringSelection(install), null);
+                        StatusDisplayer.getDefault().setStatusText("Copied: " + install);
+                    }
+                });
+    }
+
     /** Called when a server binary failed to launch; notifies at most once per binary. */
     public static void reportMissing(String binary) {
         if (binary == null || QUIET_BINARIES.contains(binary)

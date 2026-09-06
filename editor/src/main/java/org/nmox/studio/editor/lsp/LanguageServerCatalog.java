@@ -56,8 +56,12 @@ public final class LanguageServerCatalog {
 
     static {
         add("TypeScript / JavaScript", "typescript-language-server",
-                "npm install -g typescript-language-server typescript",
-                List.of("npm", "install", "-g", "typescript-language-server", "typescript"));
+                // typescript@5 (v2.85.0): npm's latest is TypeScript 7, the Go port,
+                // which ships no tsserver — the language server cannot use it
+                // (the v1.237.0 ceiling); an unpinned install left the editor's
+                // TypeScript intelligence silently dead on this very machine
+                "npm install -g typescript-language-server typescript@5",
+                List.of("npm", "install", "-g", "typescript-language-server", "typescript@5"));
         // in Deno workspaces (deno.json/deno.jsonc) the runtime's own
         // server replaces tsserver — see LanguageServers.DenoServer
         add("TypeScript / JavaScript (Deno workspaces)", "deno",

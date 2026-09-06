@@ -19,7 +19,8 @@ class LanguageServerCatalogTest {
         assertThat(LanguageServerCatalog.forBinary("gopls").install()).contains("gopls");
         assertThat(LanguageServerCatalog.forBinary("rust-analyzer").install()).contains("rustup");
         assertThat(LanguageServerCatalog.forBinary("typescript-language-server").install())
-                .contains("npm install");
+                .contains("npm install").as("TypeScript 7 ships no tsserver (v2.85.0)").contains("typescript@5");
+        assertThat(LanguageServerCatalog.forBinary("typescript-language-server").command()).contains("typescript@5");
         assertThat(LanguageServerCatalog.forBinary("pyright-langserver")).isNotNull();
     }
 
