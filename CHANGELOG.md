@@ -9,6 +9,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 Docs truth for the late morning.
 
 1. **plan.md carries the pipeline under the ship-when-green rule** — the three pipelined releases (v2.88.0–v2.90.0), the two update-gauntlet passes, and two process lessons written where they will be read: the fold law biting back the day after it was written (a one-unit branch folded into the open PR with a fresh full verify), and a guard being a freeze (a chain front armed behind a merge fired while its worktree was being amended; docs-only delta, gate-checked, recorded).
+2. **The product's own website says it** — the bundled site (served by Help ▸ NMOX Studio Website and published to Pages) gains a "Made to be shown" section in both catalogs (EN/ES, key parity gated by `SiteShipsTest`), and its "Ninety-two ways in" heading — stale since space #93 shipped in v2.58.0, a word the numeral gate could not see — now counts to ninety-three in both languages.
 
 ## [2.90.0] - 2026-09-06
 
