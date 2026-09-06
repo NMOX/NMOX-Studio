@@ -53,14 +53,31 @@ public final class KeyboardShortcutsAction implements ActionListener {
         return current instanceof String s && !s.isBlank() ? s : "NetBeans";
     }
 
-    /** Every NMOX-owned shadow in the profile, resolved to the action the platform builds. */
+    /**
+     * Every NMOX-owned shadow the running keymap honors: the profile's
+     * {@code Keymaps/} folder AND the global {@code Shortcuts/} folder
+     * (v2.85.0 — the Welcome's own doors, ⇧⌘E / ⇧⌘N / ⇧⌘L, live there
+     * and the sheet never listed them). A chord bound in both folders
+     * lists once, with the Keymaps action: that is the platform's own
+     * precedence (the v1.38.1 law — a Keymaps shadow beats a Shortcuts
+     * one), so the sheet says what a keypress does.
+     */
     static List<ShortcutSheet.Row> rows(String profile) {
-        List<ShortcutSheet.Row> rows = new ArrayList<>();
-        FileObject folder = FileUtil.getConfigFile("Keymaps/" + profile);
+        return rows(FileUtil.getConfigFile("Keymaps/" + profile), FileUtil.getConfigFile("Shortcuts"), Utilities.isMac());
+    }
+
+    /** The pure walk over the two folders (either may be null); Keymaps rows win a duplicated chord. */
+    static List<ShortcutSheet.Row> rows(FileObject keymapsProfile, FileObject shortcuts, boolean mac) {
+        java.util.Map<String, ShortcutSheet.Row> byChord = new java.util.LinkedHashMap<>();
+        collect(keymapsProfile, mac, byChord);
+        collect(shortcuts, mac, byChord);
+        return ShortcutSheet.sorted(new ArrayList<>(byChord.values()));
+    }
+
+    private static void collect(FileObject folder, boolean mac, java.util.Map<String, ShortcutSheet.Row> byChord) {
         if (folder == null) {
-            return rows;
+            return;
         }
-        boolean mac = Utilities.isMac();
         for (FileObject shadow : folder.getChildren()) {
             if (!"shadow".equals(shadow.getExt())) {
                 continue;
@@ -69,12 +86,15 @@ public final class KeyboardShortcutsAction implements ActionListener {
             if (!(original instanceof String path) || !path.contains("org-nmox-")) {
                 continue;
             }
+            String chord = ShortcutSheet.humanChord(shadow.getName(), mac);
+            if (byChord.containsKey(chord)) {
+                continue; // the earlier folder (Keymaps) already owns this chord
+            }
             Action a = FileUtil.getConfigObject(path, Action.class);
             Object name = a == null ? null : a.getValue(Action.NAME);
             String label = name == null ? path.substring(path.lastIndexOf('/') + 1) : name.toString().replace("&", "");
-            rows.add(new ShortcutSheet.Row(ShortcutSheet.humanChord(shadow.getName(), mac), label));
+            byChord.put(chord, new ShortcutSheet.Row(chord, label));
         }
-        return ShortcutSheet.sorted(rows);
     }
 
     private static void dialog(String profile, List<ShortcutSheet.Row> rows) {
@@ -93,7 +113,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
         table.getColumnModel().getColumn(1).setPreferredWidth(420);
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
-        panel.add(new JLabel(rows.size() + " NMOX shortcuts in the " + profile + " keymap profile. "
+        panel.add(new JLabel(rows.size() + " NMOX shortcuts in the " + profile + " keymap profile and the global Shortcuts folder. "
                 + "Editor-kit chords (Emmet ⌥⌘E, template Go to Declaration ⌘B) are in the user guide."),
                 java.awt.BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(table);
