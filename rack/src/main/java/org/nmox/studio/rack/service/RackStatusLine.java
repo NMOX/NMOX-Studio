@@ -63,9 +63,22 @@ public class RackStatusLine implements StatusLineElementProvider {
             return null;
         }
         int n = listening[1];
+        int since = listening.length > 2 ? listening[2] : -1;
         return "The Agent Port is listening on 127.0.0.1:" + listening[0] + " (read-only) — "
                 + (n == 0 ? "no agent streaming" : n == 1 ? "one agent streaming" : n + " agents streaming")
+                + (since < 0 ? "; no request yet" : since < 2 ? "; a request just now" : "; last request " + sinceText(since) + " ago")
                 + ". Click for the config, or to stop it.";
+    }
+
+    /** "12 s", "3 min", "2 h" — the coarse clock a tooltip wants. */
+    static String sinceText(int seconds) {
+        if (seconds < 90) {
+            return seconds + " s";
+        }
+        if (seconds < 5_400) {
+            return Math.round(seconds / 60.0) + " min";
+        }
+        return Math.round(seconds / 3600.0) + " h";
     }
 
     static String chipTooltip(List<ServingRegistry.Serving> servings) {

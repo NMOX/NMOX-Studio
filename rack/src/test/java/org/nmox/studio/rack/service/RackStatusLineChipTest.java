@@ -81,6 +81,12 @@ class RackStatusLineChipTest {
         assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0})).contains("127.0.0.1:55725").contains("no agent streaming").contains("read-only");
         assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 1})).contains("one agent streaming");
         assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 3})).contains("3 agents streaming");
+        // v2.85.0: a POST-only agent never streams — the last request is the liveness a user can read
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0, -1})).contains("no request yet");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0, 1})).contains("a request just now");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0, 12})).contains("last request 12 s ago");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0, 200})).contains("last request 3 min ago");
+        assertThat(RackStatusLine.agentChipTooltip(new int[]{55725, 0, 7_500})).contains("last request 2 h ago");
         // the wiring: the strip reads the action's listening() on every refresh and the chip opens the action
         String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/service/RackStatusLine.java"));
         assertThat(src).contains("AgentPortAction.listening()").contains("agentChipText(listening)")

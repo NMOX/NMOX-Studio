@@ -112,6 +112,17 @@ public final class AgentPort {
         return subs.attachedCount();
     }
 
+    // the last AUTHORIZED request's clock (v2.85.0): a POST-only agent
+    // never streams, so the chip's "no agent streaming" was true and
+    // uninformative — "last request 3 s ago" is the liveness a user can read
+    private volatile long lastRequestAt = -1;
+
+    /** Millis since the last authorized request, or -1 when none yet. */
+    public long sinceLastRequestMillis() {
+        long at = lastRequestAt;
+        return at < 0 ? -1 : Math.max(0, System.currentTimeMillis() - at);
+    }
+
     McpSubscriptions subscriptions() {
         return subs;
     }
@@ -179,6 +190,7 @@ public final class AgentPort {
                 && exchange.getRequestHeaders().getFirst("Origin") == null
                 && authorized(exchange)
                 && acceptsEventStream(exchange)) {
+            lastRequestAt = System.currentTimeMillis();
             openStream(exchange);
             return;
         }
@@ -198,6 +210,7 @@ public final class AgentPort {
                 refuse(exchange, 405);
                 return;
             }
+            lastRequestAt = System.currentTimeMillis();
             String body;
             try (InputStream in = exchange.getRequestBody()) {
                 HttpBodies.Capped capped = HttpBodies.readUtf8(in, MAX_REQUEST_BYTES);
