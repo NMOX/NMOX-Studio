@@ -677,6 +677,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         north.setBackground(BG);
         north.add(dockerizeInfo, BorderLayout.CENTER);
         recipeCombo.setToolTipText("Detected toolchain, or a recipe from ~/.nmox/dockerize.d");
+        // a drop-in recipe's name is external; a list renderer would paint an
+        // <html>-led one as markup, so the combo html-disables its renderer
+        recipeCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
         recipeCombo.addActionListener(e -> regenerateDockerize());
         JPanel comboHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
         comboHolder.setBackground(BG);

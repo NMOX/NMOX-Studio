@@ -266,6 +266,10 @@ public final class Web3StudioTopComponent extends TopComponent {
     public Web3StudioTopComponent() {
         networkCombo.getAccessibleContext().setAccessibleName("Network");
         fromCombo.getAccessibleContext().setAccessibleName("From account");
+        // a list renderer paints <html>-led item text as markup; a plain
+        // default renderer html-disables it (accounts are hex today, but the
+        // guard costs nothing and holds if the model ever carries a name)
+        fromCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
         watchFilterCombo.getAccessibleContext().setAccessibleName("Watch filter");
         logArea.getAccessibleContext().setAccessibleName("Event log");
         setName(Bundle.CTL_Web3StudioTopComponent());
@@ -2886,8 +2890,10 @@ public final class Web3StudioTopComponent extends TopComponent {
                 int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof DeploymentRecord record) {
-                setText(record.contractName() + " @ "
-                        + DisplayValues.shortAddress(record.address()));
+                // the contract name is external (a cloned workspace's ABI); a
+                // list renderer paints <html>-led text as markup, so guard it
+                setText(PlainText.plain(record.contractName() + " @ "
+                        + DisplayValues.shortAddress(record.address())));
             }
             return this;
         }
