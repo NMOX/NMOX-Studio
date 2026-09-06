@@ -88,9 +88,11 @@ final class McpCompletions {
         for (String v : all.subList(0, Math.min(MAX_VALUES, all.size()))) {
             values.put(v);
         }
+        // a capped walk may hold more matches past the cap however few it
+        // listed — hasMore is true for a floor too (v2.85.0)
         JSONObject completion = new JSONObject()
                 .put("values", values)
-                .put("hasMore", all.size() > MAX_VALUES);
+                .put("hasMore", all.size() > MAX_VALUES || floor);
         // total is OPTIONAL in the spec and honest here: the file list is
         // complete so its count is the total; the symbol index is asked for
         // one past the cap, so past the cap its count is a floor, not a

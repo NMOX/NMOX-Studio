@@ -178,5 +178,9 @@ class McpCompletionsTest {
         assertThat(completion.getJSONArray("values").length()).isEqualTo(McpCompletions.MAX_VALUES);
         assertThat(completion.getBoolean("hasMore")).isTrue();
         assertThat(completion.has("total")).as("a capped walk cannot count").isFalse();
+        JSONObject narrow = c.complete(resource("nmox://outline/{file}", "file", "src/f1999")).getJSONObject("completion");
+        assertThat(narrow.getJSONArray("values").length()).isLessThan(McpCompletions.MAX_VALUES);
+        assertThat(narrow.getBoolean("hasMore")).as("few listed, but the walk was cut: more may exist").isTrue();
+        assertThat(narrow.has("total")).isFalse();
     }
 }
