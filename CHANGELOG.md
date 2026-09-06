@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.85.0] - 2026-09-06
 
-The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid eight times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard, the learning-space loop, the Experiments loop — and the F5 bet's trigger fired under the plain `typescript` package name.
+The pipelined branch after the first eight-hour shift (built from 18:01 while v2.84.0 flew, in a branch forked from its head and rebased past the squash): the walks paid nine times — API Studio, the Environment Doctor, the Docker Panel, the boot log, the rack, the New Project wizard, the learning-space loop, the Experiments loop, the Help menu — and the F5 bet's trigger fired under the plain `typescript` package name.
 
 1. **The Agent Port's execution surface, designed** —
    docs/engineering/agent-port-execution-dossier.md: lanes not
