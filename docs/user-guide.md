@@ -1414,7 +1414,9 @@ keymaps never costs you the studio chords.
   they resist, descendants included.
 - **BLACKBOX** (add it to your rack) is a flight recorder: every launch
   and exit, durations, trends, and "what changed since the last green
-  build" when something breaks.
+  build" when something breaks. A run you stopped yourself reads
+  STOPPED — neither a green nor a failure, and never the thing ORACLE
+  is asked to explain.
 - **SONAR** shows who owns your ports, cross-referenced with Docker, with
   a one-click kill for the squatter on 3000.
 - **Never-clobber files.** All four studio workspace files
