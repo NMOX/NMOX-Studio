@@ -47,4 +47,32 @@ public final class Screenshot {
     public static String defaultFileName(LocalDateTime at) {
         return "nmox-studio-" + STAMP.format(at) + ".png";
     }
+
+    /** Longest document name kept in an editor shot's file name (a bounded name for any tab title). */
+    static final int NAME_CAP = 80;
+
+    /**
+     * An editor shot's file name: the document it shows, then the stamp —
+     * {@code App.jsx-2026-09-06-081530.png}. The name is a tab title or a
+     * file name, which is external text: anything outside {@code [A-Za-z0-9._-]}
+     * becomes a dash (no separators, no shell metacharacters), a blank name
+     * reads {@code editor}, and the name is capped at {@link #NAME_CAP}.
+     */
+    public static String editorFileName(String documentName, LocalDateTime at) {
+        String name = documentName == null ? "" : documentName;
+        StringBuilder sb = new StringBuilder();
+        name.codePoints().limit(NAME_CAP).forEach(cp -> {
+            boolean keep = (cp >= 'A' && cp <= 'Z') || (cp >= 'a' && cp <= 'z') || (cp >= '0' && cp <= '9')
+                    || cp == '.' || cp == '_' || cp == '-';
+            sb.append(keep ? (char) cp : '-');
+        });
+        String safe = sb.toString();
+        while (safe.startsWith("-") || safe.startsWith(".")) {
+            safe = safe.substring(1);
+        }
+        if (safe.isEmpty()) {
+            safe = "editor";
+        }
+        return safe + "-" + STAMP.format(at) + ".png";
+    }
 }
