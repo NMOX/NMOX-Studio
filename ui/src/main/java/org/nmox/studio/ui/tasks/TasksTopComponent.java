@@ -799,6 +799,7 @@ public final class TasksTopComponent extends TopComponent {
                         System.currentTimeMillis(),
                         java.time.ZoneId.systemDefault());
                 JTextArea text = new JTextArea(md, 18, 52);
+        text.getAccessibleContext().setAccessibleName("Standup report");
                 text.setEditable(false);
                 text.setCaretPosition(0);
                 JScrollPane scroll = new JScrollPane(text);
@@ -919,6 +920,7 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         JTextArea text = new JTextArea(md, 18, 52);
+        text.getAccessibleContext().setAccessibleName("Sprint report");
         text.setEditable(false);
         text.setCaretPosition(0);
         JScrollPane scroll = new JScrollPane(text);
