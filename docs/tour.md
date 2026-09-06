@@ -83,6 +83,20 @@ processes.
 
 ![JavaScript breakpoint hit in the IDE](images/debug-javascript.png)
 
+### Made to be shown
+`PRESENTATION MODE · SHOW KEYSTROKES · COPY AS MARKDOWN · SCREENSHOTS`
+
+One toggle (View ▸ Presentation Mode) and every open editor is +10 pt,
+the in-app Browser's page is at 150%, the Output window and every open
+Terminal follow — live, never persisted, back exactly when you toggle
+off. Show Keystrokes puts the chord you pressed at the bottom of the
+window (chords only; what you type never reaches the projector). Copy as
+Markdown — plain, or with the GitHub link to the same lines — and the
+screenshot trio (the window, the editor tab alone, or straight onto the
+clipboard) are the same persona's other daily motions.
+
+![The editor tab alone, as saved by Save Editor Screenshot… — crisp at 2x, no IDE chrome](images/editor-screenshot-2x.png)
+
 ---
 
 ## Web3, honestly

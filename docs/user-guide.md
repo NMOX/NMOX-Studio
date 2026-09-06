@@ -10,6 +10,26 @@ current). For contributor/build docs, see the README and CLAUDE.md.
 
 ---
 
+<!-- contents -->
+**Contents**
+
+- [1. Install](#1-install)
+- [2. First launch](#2-first-launch)
+- [3. Projects](#3-projects)
+- [4. The Task Rack](#4-the-task-rack)
+- [5. The editor](#5-the-editor)
+- [6. The studios](#6-the-studios)
+- [7. Docker](#7-docker)
+- [8. Wizards and kits](#8-wizards-and-kits)
+- [9. Quick Search, status line, and staying oriented](#9-quick-search-status-line-and-staying-oriented)
+- [10. The safety nets (things you don't have to do anything for)](#10-the-safety-nets-things-you-dont-have-to-do-anything-for)
+- [11. Learning Spaces](#11-learning-spaces)
+- [12. When something's wrong](#12-when-somethings-wrong)
+- [Appendix: the files NMOX Studio writes (and what to commit)](#appendix-the-files-nmox-studio-writes-and-what-to-commit)
+<!-- /contents -->
+
+---
+
 ## 1. Install
 
 **macOS (recommended):**
