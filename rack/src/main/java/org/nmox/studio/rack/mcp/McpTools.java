@@ -284,17 +284,19 @@ public final class McpTools {
                 .put("activeFile", nullableString())
                 .put("lastFailureDevice", nullableString())
                 .put("lastFailure", failureObject())
-                .put("diagnosticCount", type("integer")),
+                .put("diagnosticCount", type("integer"))
+                .put("presenting", type("boolean")),
                 req("project", "directory", "gitBranch", "kind", "packageManager",
                         "serverCount", "servers", "runCount", "runs", "activeFile",
-                        "lastFailureDevice", "lastFailure", "diagnosticCount"));
+                        "lastFailureDevice", "lastFailure", "diagnosticCount", "presenting"));
         return new McpTools(List.of(
                 new Tool("ide_context",
                         "IDE context",
                         "The whole orienting snapshot in one call: the aimed "
                         + "project, everything serving, everything running, the "
-                        + "file being edited, the last failure, and a diagnostic "
-                        + "summary. Start here.",
+                        + "file being edited, the last failure, a diagnostic "
+                        + "summary, and whether Presentation Mode is on (an agent "
+                        + "helping a live demo should keep quiet then). Start here.",
                         noArgs(),
                         ideContextSchema,
                         args -> renderIdeContext()),
@@ -666,7 +668,9 @@ public final class McpTools {
                 .put("lastFailureDevice",
                         failObj.optBoolean("failed") ? failObj.get("device") : JSONObject.NULL)
                 .put("lastFailure", failObj)
-                .put("diagnosticCount", diagnostics.getInt("totalFindings"));
+                .put("diagnosticCount", diagnostics.getInt("totalFindings"))
+                // v2.89.0: the product-wide presenting state (core.util.Presentation) — read-only, like everything here
+                .put("presenting", org.nmox.studio.core.util.Presentation.isOn());
     }
 
     // ---- default (live) suppliers ------------------------------------------

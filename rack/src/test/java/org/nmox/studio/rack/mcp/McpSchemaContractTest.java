@@ -273,4 +273,23 @@ class McpSchemaContractTest {
         assertThat(validate(new JSONObject().put("type", "array"), new JSONArray(), "y"))
                 .isEmpty();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("ide_context says whether the IDE is presenting, and the text says so only when it is")
+    void presentingFlag() {
+        org.nmox.studio.core.util.Presentation.setOn(false);
+        try {
+            org.json.JSONObject off = McpTools.ideContext(() -> null, java.util.List.of(), java.util.List.of(), null,
+                    java.util.Optional.empty(), java.util.Map.of());
+            org.assertj.core.api.Assertions.assertThat(off.getBoolean("presenting")).isFalse();
+            org.assertj.core.api.Assertions.assertThat(Texts.of(off)).doesNotContain("Presentation Mode");
+            org.nmox.studio.core.util.Presentation.setOn(true);
+            org.json.JSONObject on = McpTools.ideContext(() -> null, java.util.List.of(), java.util.List.of(), null,
+                    java.util.Optional.empty(), java.util.Map.of());
+            org.assertj.core.api.Assertions.assertThat(on.getBoolean("presenting")).isTrue();
+            org.assertj.core.api.Assertions.assertThat(Texts.of(on)).contains("Presentation Mode is ON");
+        } finally {
+            org.nmox.studio.core.util.Presentation.setOn(false);
+        }
+    }
 }
