@@ -123,7 +123,9 @@ classic web is first-class, not an error.
 (Vite + Svelte 5, runes syntax), Angular, Vanilla JS, Elixir/Phoenix,
 PHP Web (LEMP, with compose file and front controller), and Classic Web
 (jQuery). Each template arrives with lint/format/test configs wired and
-a git repo initialized.
+a git repo initialized — one scaffold commit that, when the wizard runs
+the install for you, also holds the lockfile, so your first `git status`
+is clean.
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.
@@ -1511,9 +1513,10 @@ six are done, or when you press **Hide this list**.
   it, then **Open on GitHub** pre-fills a new issue that you submit, or
   **Copy** it. The product never sends anything itself.
 - **Keyboard Shortcuts…** — every NMOX chord in your active keymap
-  profile, read from the running keymap through the platform, so it
-  cannot drift from what the menus do. Editor-kit chords (Emmet ⌥⌘E,
-  template Go to Declaration ⌘B) are documented in chapter 5.
+  profile plus the global ones (the Welcome's ⇧⌘E / ⇧⌘N / ⇧⌘L doors),
+  read from the running keymap through the platform, so it cannot drift
+  from what the menus do. Editor-kit chords (Emmet ⌥⌘E, template Go to
+  Declaration ⌘B) are documented in chapter 5.
 
 ## 12. When something's wrong
 
