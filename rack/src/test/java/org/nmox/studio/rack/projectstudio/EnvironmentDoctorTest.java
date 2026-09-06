@@ -21,6 +21,7 @@ class EnvironmentDoctorTest {
         List<String[]> checks = EnvironmentDoctor.checklist();
         List<String> tools = checks.stream().map(c -> c[0]).toList();
         assertThat(tools).contains("git", "node", "npm", "docker", "mvn");
+        assertThat(tools).as("the TypeScript wall is visible in the Doctor (v2.85.0)").contains("tsc");
         assertThat(tools).as("the LAMP stack is swept")
                 .contains("composer", "mysql", "nginx", "apachectl");
         assertThat(tools).as("learning-space interpreters are swept")
