@@ -27,13 +27,21 @@ class OutputFontTest {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/OutputFont.java"));
         assertThat(src).contains("lookup(ClassLoader.class)")
                 .contains("\"org.netbeans.core.output2.options.OutputOptions\"")
+                .contains("\"org.netbeans.core.output2.Controller\"")
+                .contains("getMethod(\"makeCopy\")")
+                .contains("getMethod(\"updateOptions\", options).invoke(ctl, copy)")
                 .contains("getMethod(\"setFont\", Font.class)")
                 .contains("before = current;")
                 .contains("next = before != null ? before : current;");
+        // the push to every open tab's own copy comes BEFORE the in-memory default (the walk: the singleton alone reaches no tab)
+        assertThat(src.indexOf("updateOptions")).isLessThan(src.indexOf("invoke(defaults, next)"));
         String code = src.replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("//[^\\n]*", ""); // the javadoc names the verb to forbid it
-        assertThat(code).as("the Options panel's persistence verb is never called").doesNotContain("saveTo");
+        assertThat(code).as("the Options panel's persistence verbs are never called").doesNotContain("saveTo").doesNotContain("storeDefault");
         assertThat(code).doesNotContain("Preferences");
         String mode = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/PresentationMode.java"));
-        assertThat(mode).contains("OutputFont.follow(enable)");
+        assertThat(mode).contains("String outputNote = OutputFont.follow(enable)");
+        // the mode's status is composed after the follow, so a refusal rides along instead of being overwritten
+        assertThat(mode.indexOf("OutputFont.follow(enable)")).isLessThan(mode.indexOf("\"Presentation Mode on"));
+        assertThat(mode).contains("(outputNote == null ? \"\" : \"; \" + outputNote)");
     }
 }

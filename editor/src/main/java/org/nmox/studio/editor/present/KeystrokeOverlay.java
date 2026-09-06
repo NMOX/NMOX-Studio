@@ -70,7 +70,7 @@ final class KeystrokeOverlay {
         String text = KeystrokeHud.coalesce(last, repeats, chord);
         repeats = chord.equals(last) ? repeats + 1 : 1;
         last = chord;
-        label.setText(text);
+        label.setText(org.nmox.studio.core.util.PlainText.plain(text)); // a chord is never markup; the law is the outcome (PlainLabelGateTest)
         window.pack();
         Frame main = WindowManager.getDefault().getMainWindow();
         Point at = main.getLocationOnScreen();

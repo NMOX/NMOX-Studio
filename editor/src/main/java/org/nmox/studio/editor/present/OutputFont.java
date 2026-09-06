@@ -35,13 +35,26 @@ public final class OutputFont {
         return base.deriveFont(base.getSize2D() + delta);
     }
 
-    /** EDT. Bumps the Output window's font while presenting; restores exactly the font it had on leaving. */
-    static void follow(boolean on) {
+    /**
+     * EDT. Bumps the Output window's font while presenting and restores
+     * exactly the font it had on leaving. The push is the one the Options
+     * panel makes (decompiled {@code OutputSettingsPanel.store}):
+     * {@code Controller.updateOptions(copy)} assigns the copy into EVERY
+     * open IO's own options — the object each {@code OutputTab} actually
+     * listens to; the default singleton is set in memory too so a tab
+     * created while presenting copies the presenting font — and
+     * {@code storeDefault} is never called. Returns null when it followed,
+     * else the reason (the caller puts it on the status line; a refusal
+     * set here would be overwritten by the mode's own status a moment
+     * later — the walk's find).
+     */
+    static String follow(boolean on) {
         try {
             ClassLoader system = Lookup.getDefault().lookup(ClassLoader.class);
             Class<?> options = Class.forName("org.netbeans.core.output2.options.OutputOptions", true, system);
-            Object instance = options.getMethod("getDefault").invoke(null);
-            Font current = (Font) options.getMethod("getFont").invoke(instance);
+            Class<?> controller = Class.forName("org.netbeans.core.output2.Controller", true, system);
+            Object defaults = options.getMethod("getDefault").invoke(null);
+            Font current = (Font) options.getMethod("getFont").invoke(defaults);
             Font next;
             if (on) {
                 before = current;
@@ -50,9 +63,14 @@ public final class OutputFont {
                 next = before != null ? before : current;
                 before = null;
             }
-            options.getMethod("setFont", Font.class).invoke(instance, next);
+            Object copy = options.getMethod("makeCopy").invoke(defaults);
+            options.getMethod("setFont", Font.class).invoke(copy, next);
+            Object ctl = controller.getMethod("getDefault").invoke(null);
+            controller.getMethod("updateOptions", options).invoke(ctl, copy); // every open tab's own copy
+            options.getMethod("setFont", Font.class).invoke(defaults, next);   // tabs opened while presenting; in memory only
+            return null;
         } catch (ReflectiveOperationException | RuntimeException ex) {
-            StatusDisplayer.getDefault().setStatusText("Presentation Mode: the Output window font could not follow — " + ex.getMessage());
+            return "the Output window could not follow (" + ex.getClass().getSimpleName() + ")";
         }
     }
 }

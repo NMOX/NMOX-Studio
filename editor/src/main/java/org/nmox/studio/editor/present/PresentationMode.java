@@ -66,15 +66,19 @@ public final class PresentationMode {
             for (JTextComponent c : EditorRegistry.componentList()) {
                 apply(c, delta);
             }
-            OutputFont.follow(enable); // the Output window reads from the back row too
+            String outputNote = OutputFont.follow(enable); // the Output window reads from the back row too
+            // the status is composed AFTER the follow so a refusal rides along instead of being
+            // overwritten (the walk's find); PlainStatus.text because the note is runtime text
+            if (enable) {
+                StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
+                        "Presentation Mode on — editors and Output +" + DELTA_POINTS + " pt, Browser at "
+                        + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)"
+                        + (outputNote == null ? "" : "; " + outputNote)));
+            } else {
+                StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
+                        "Presentation Mode off" + (outputNote == null ? "" : " — " + outputNote)));
+            }
         });
-        // two literal heads: PlainStatusGateTest wants every status text to BEGIN
-        // with the product's own literal, and a ternary's head is a variable
-        if (enable) {
-            StatusDisplayer.getDefault().setStatusText("Presentation Mode on — editors and Output +" + DELTA_POINTS + " pt, Browser at " + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)");
-        } else {
-            StatusDisplayer.getDefault().setStatusText("Presentation Mode off");
-        }
     }
 
     private static void apply(JTextComponent c, int delta) {
