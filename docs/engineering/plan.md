@@ -4075,5 +4075,12 @@ command line to find the walk instance.
 hours for the next shift" — the boundary is not the point, the ONE
 gate is. A verified fold ships the moment it is green; the next branch
 forks and keeps building while the chain flies. The 15:05 timer was
-deleted and v2.87.0 shipped at 09:28.
+deleted and v2.87.0 shipped at 09:28. The update gauntlet then proved
+it the close way — a stock 2.86.0 portable updated itself to 2.87.0
+in-app, 11 of 11, zero SEVERE — while v2.88.0 (the README motion) sat
+in its gate and v2.89.0 (the Terminal follows Presentation Mode — its
+first cut matched the class NAME and reached no terminal, because the
+terminal module's component is `ActiveTerm extends StreamTerm extends
+Term`; the walk found it, the hierarchy is walked by name now) was
+being built one worktree over.
 
