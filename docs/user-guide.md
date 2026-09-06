@@ -1446,7 +1446,8 @@ Some spaces **check your work**: pick a space with checkpoints (Your
 First Web Page, Go, Rust, Playwright today) and **File ▸ Check My
 Work** verifies the exercises for real — file claims checked
 pure-Java (including *absent* checks, which is how "you changed the
-heading" is verifiable: the sample's original text must be gone), and
+heading" is verifiable: the sample's original text must be gone, and
+*atLeast* counts, which is how "you added a third item" is), and
 command claims through the space's own toolchain (`cargo test` is the
 honest verifier of a Rust exercise). Every ✗ answers with the space's
 own hint. Any catalog entry — including your drop-ins below — can

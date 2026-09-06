@@ -20,9 +20,14 @@ import org.json.JSONObject;
  * <ul>
  *   <li><b>file</b> — pure-Java, toolchain-free, the beginner-space
  *       kind: the file at a relative path must {@code contains} a
- *       substring and/or be {@code absent} of one. The absent check
- *       is how "you changed the heading" is verifiable: the SAMPLE's
- *       original text must be gone.</li>
+ *       substring (at least {@code atLeast} times, when given) and/or
+ *       be {@code absent} of one. The absent check is how "you changed
+ *       the heading" is verifiable: the SAMPLE's original text must be
+ *       gone; the count is how "you added a third item" is — the seed
+ *       already contains the substring twice. A task checkpoint must
+ *       FAIL on the untouched seed (CheckpointParityTest): the v2.39.1
+ *       seeds shipped two that could not, and Check My Work said
+ *       "nicely done" to a learner who had done nothing.</li>
  *   <li><b>command</b> — the toolchain-space kind: an argv (never a
  *       shell) runs in the space and must exit 0, optionally with
  *       {@code expect} appearing in its output. A rust space's
@@ -46,7 +51,13 @@ public final class Checkpoints {
 
     /** One verifiable claim from the catalog. */
     public record Checkpoint(String label, String hint, String filePath,
-            String contains, String absent, List<String> command, String expect) {
+            String contains, String absent, int atLeast, List<String> command, String expect) {
+
+        /** The v2.39.1 shape — no count. */
+        public Checkpoint(String label, String hint, String filePath,
+                String contains, String absent, List<String> command, String expect) {
+            this(label, hint, filePath, contains, absent, 0, command, expect);
+        }
 
         public boolean isFileKind() {
             return filePath != null;
@@ -97,7 +108,12 @@ public final class Checkpoints {
                     notes.add(label + ": file check needs path and contains/absent — skipped");
                     continue;
                 }
-                out.add(new Checkpoint(label, hint, path, contains, absent, null, null));
+                int atLeast = file.optInt("atLeast", 0);
+                if (atLeast < 0 || (atLeast > 0 && contains == null)) {
+                    notes.add(label + ": atLeast needs a contains and a count of 1 or more — skipped");
+                    continue;
+                }
+                out.add(new Checkpoint(label, hint, path, contains, absent, atLeast, null, null));
             } else if (cmd != null && cmd.length() > 0) {
                 List<String> argv = new ArrayList<>();
                 boolean bad = false;
@@ -139,6 +155,9 @@ public final class Checkpoints {
                 if (c.contains() != null && !text.contains(c.contains())) {
                     return new Result(c.label(), false, c.hint());
                 }
+                if (c.atLeast() > 1 && occurrences(text, c.contains()) < c.atLeast()) {
+                    return new Result(c.label(), false, c.hint());
+                }
                 if (c.absent() != null && text.contains(c.absent())) {
                     return new Result(c.label(), false, c.hint());
                 }
@@ -158,5 +177,14 @@ public final class Checkpoints {
             return new Result(c.label(), false,
                     broken.getMessage() + ". " + c.hint());
         }
+    }
+
+    /** Non-overlapping occurrences of {@code needle} in {@code text}. */
+    static int occurrences(String text, String needle) {
+        int n = 0;
+        for (int at = text.indexOf(needle); at >= 0; at = text.indexOf(needle, at + needle.length())) {
+            n++;
+        }
+        return n;
     }
 }
