@@ -29,6 +29,15 @@ class PlainTextTest {
     }
 
     @Test
+    @DisplayName("escape neutralizes every character that could open a tag or break an attribute")
+    void escapeCoversTagAndAttributeBreakers() {
+        assertThat(PlainText.escape("<img src=\"x\" onerror='y'>&"))
+                .isEqualTo("&lt;img src=&quot;x&quot; onerror=&#39;y&#39;&gt;&amp;");
+        assertThat(PlainText.escape(null)).isEmpty();
+        assertThat(PlainText.escape("plain")).isEqualTo("plain");
+    }
+
+    @Test
     @DisplayName("the premise the tooltip half rests on: html.disable on the component never reaches its tooltip")
     void componentPropertyDoesNotReachTheTooltip() throws Exception {
         boolean[] rendered = new boolean[2];

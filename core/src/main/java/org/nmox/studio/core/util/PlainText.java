@@ -40,11 +40,17 @@ public final class PlainText {
         return text;
     }
 
-    /** The four characters that could open or close a tag or an attribute, as entities. */
+    /**
+     * The characters that could open or close a tag, or break out of a
+     * double- OR single-quoted attribute, as entities — so a spliced
+     * external string can never become markup wherever an authored
+     * {@code <html>} places it.
+     */
     public static String escape(String s) {
         if (s == null) {
             return "";
         }
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
     }
 }
