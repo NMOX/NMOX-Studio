@@ -114,8 +114,15 @@ public final class TreeText {
         } catch (IOException | RuntimeException ex) {
             return new Listing(out, beyond[0]);
         }
+        // one stat per entry, never one per comparison: a comparator that calls
+        // Files.isDirectory sorts a 2,000-entry directory with ~22,000 stats,
+        // which on a network mount is the bounded-read spirit unmet
+        java.util.Map<Path, Boolean> isDir = new java.util.HashMap<>();
+        for (Path p : out) {
+            isDir.put(p, Files.isDirectory(p) && !Files.isSymbolicLink(p));
+        }
         Comparator<Path> byName = Comparator.comparing(p -> p.getFileName().toString().toLowerCase(Locale.ROOT));
-        out.sort(Comparator.<Path, Boolean>comparing(p -> !(Files.isDirectory(p) && !Files.isSymbolicLink(p))).thenComparing(byName));
+        out.sort(Comparator.<Path, Boolean>comparing(p -> !isDir.get(p)).thenComparing(byName));
         return new Listing(out, beyond[0]);
     }
 }
