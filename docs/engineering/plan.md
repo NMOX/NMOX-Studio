@@ -3878,7 +3878,9 @@ last: the shortcut sheet had never listed the Welcome's own doors
 (they live in the global Shortcuts folder, not the profile's
 Keymaps) — it reads both now; and the Check My Work report, a String
 laid out as a JLabel per wrapped fragment, became a plain text area
-before a drop-in catalog's `<html>` hint could render. One
+before a drop-in catalog's `<html>` hint could render; the Task
+Board walk found four text areas with no accessible name — a gate
+now. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its

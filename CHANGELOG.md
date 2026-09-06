@@ -255,6 +255,14 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     read-only wrapping text area on both dialog paths now (nothing
     interpreted, nothing fetched), named for assistive technology and
     read whole; the wiring pinned, the String-back mutant dead by name.
+40. **Every text area in ui has a name** — the Task Board walk on a
+    fresh wizard project (New Card…, the board file born on the first
+    mutation, "react-walk — 1 card", the Standup's plain-text report)
+    heard the Standup through accessibility as "text entry area" — the
+    role, not the thing. The Standup and Sprint reports, the DevTools
+    DOM and Svelte details panes (through their shared factory) and the
+    Image Kit report are named now; TextAreasNamedGateTest reads every
+    ui text area's construction for its name, failing-first with four.
 
 ## [2.84.0] - 2026-09-05
 
