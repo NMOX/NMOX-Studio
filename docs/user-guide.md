@@ -804,6 +804,12 @@ reader, or a feed — the developer-evangelist grant:
   settings — toggle it off, or restart, and the font is exactly what it
   was. The menu item shows a check while the mode is on and the status
   line says so.
+- **View ▸ Show Keystrokes.** The chord you just pressed appears large at
+  the bottom of the window for a moment — ⌘S, ⌥⌘G, ⇧⌘O, or `⌘Z ×3` when
+  you repeat one — so the room can follow your hands. Only chords with
+  ⌘, ⌃ or ⌥ and the function keys are shown; what you type never is, so a
+  password or a token can't end up on the projector. Toggle it off, or
+  restart, and it's gone.
 - **Edit ▸ Copy as Markdown** (or right-click). The selection — or, with nothing
   selected, the whole file — lands on the clipboard as a fenced code
   block tagged with the file's language (` ```jsx `, ` ```typescript `,
