@@ -42,4 +42,33 @@ class DocsIndexGateTest {
         }
         assertThat(unlisted).as(dir + "/" + index + " omits documents beside it").isEmpty();
     }
+
+    /**
+     * The engineering directory keeps early-era documents for archaeology,
+     * each carrying a "Historical document" banner and deliberately
+     * unlisted; every LIVE document there must be linked from its index
+     * (v2.92.0: two measured dossiers, the Angular parity scorecard, and a
+     * dated night brief without its banner were invisible).
+     */
+    @org.junit.jupiter.api.Test
+    @DisplayName("every live engineering document is linked from the engineering index; historical ones carry their banner")
+    void liveEngineeringDocsAreListed() throws IOException {
+        Path root = Path.of("..", "docs", "engineering");
+        String index = Files.readString(root.resolve("README.md")).replace("\r\n", "\n");
+        List<String> unlisted = new ArrayList<>();
+        try (Stream<Path> s = Files.list(root)) {
+            for (Path p : s.filter(f -> f.getFileName().toString().endsWith(".md")).sorted().toList()) {
+                String n = p.getFileName().toString();
+                if (n.equals("README.md")) {
+                    continue;
+                }
+                String body = Files.readString(p);
+                boolean historical = body.toLowerCase(java.util.Locale.ROOT).contains("historical document");
+                if (!historical && !index.contains("(./" + n + ")") && !index.contains("(" + n + ")")) {
+                    unlisted.add(n);
+                }
+            }
+        }
+        assertThat(unlisted).as("docs/engineering/README.md omits live documents beside it").isEmpty();
+    }
 }
