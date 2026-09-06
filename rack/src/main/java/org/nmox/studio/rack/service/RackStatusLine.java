@@ -203,7 +203,7 @@ public class RackStatusLine implements StatusLineElementProvider {
             JPopupMenu menu = new JPopupMenu();
             java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live = org.nmox.studio.core.spi.LiveRuns.live();
             for (ServingRegistry.Serving s : servings) {
-                JMenuItem item = new JMenuItem(s.deviceTitle() + " — " + s.url());
+                JMenuItem item = new JMenuItem(PlainText.plain(s.deviceTitle() + " — " + s.url()));
                 item.addActionListener(e -> ServingLinks.open(s.url()));
                 menu.add(item);
                 // a serving a run owns gets its Stop beside its Open (v2.73.0):

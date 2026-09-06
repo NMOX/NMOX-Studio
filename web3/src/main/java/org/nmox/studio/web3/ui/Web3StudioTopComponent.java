@@ -647,7 +647,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             rowPanel.add(valueField);
         }
 
-        JButton action = new JButton(read ? "CALL" : "SEND");
+        JButton action = new JButton(PlainText.plain(read ? "CALL" : "SEND"));
         JLabel result = new JLabel(" ");
         if (read) {
             action.setToolTipText("eth_call — free, read-only");

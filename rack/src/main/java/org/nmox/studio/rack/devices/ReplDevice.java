@@ -375,7 +375,7 @@ public class ReplDevice extends RackDevice {
             menu.add(none);
         } else {
             for (String snippet : snippets) {
-                JMenuItem item = new JMenuItem(snippet);
+                JMenuItem item = new JMenuItem(PlainText.plain(snippet));
                 item.addActionListener(e -> {
                     input.setText(snippet);
                     input.requestFocusInWindow();

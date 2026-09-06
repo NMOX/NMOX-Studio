@@ -1636,7 +1636,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         IrcClient client = SESSIONS.get(activeNetwork());
         boolean live = client != null && client.state() != IrcClient.State.CLOSED;
-        connectButton.setText(live ? "Disconnect" : "Connect");
+        connectButton.setText(PlainText.plain(live ? "Disconnect" : "Connect"));
     }
 
     private void onInput() {

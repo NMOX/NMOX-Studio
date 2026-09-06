@@ -1828,8 +1828,8 @@ public final class DbStudioTopComponent extends TopComponent {
         connectButton.setEnabled(selected);
         DbBackend backend = selected ? backends.get(spec.id()) : null;
         // Services connections never show Disconnect: NetBeans owns the lifecycle
-        connectButton.setText(!services && backend != null && backend.isOpen()
-                ? "Disconnect" : "Connect");
+        connectButton.setText(PlainText.plain(!services && backend != null && backend.isOpen()
+                ? "Disconnect" : "Connect"));
         connectButton.setToolTipText(PlainText.plain(services
                 ? "Connect through NetBeans (drivers and credentials live in the Services window)"
                 : null));

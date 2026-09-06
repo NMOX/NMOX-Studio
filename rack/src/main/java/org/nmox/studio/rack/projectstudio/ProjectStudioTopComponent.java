@@ -148,7 +148,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 menu.add(none);
             }
             for (File dir : projects) {
-                JMenuItem item = new JMenuItem(dir.getName());
+                JMenuItem item = new JMenuItem(PlainText.plain(dir.getName()));
                 item.setToolTipText(PlainText.plain(dir.getAbsolutePath()));
                 item.addActionListener(a -> RackService.getDefault().openProject(dir));
                 menu.add(item);

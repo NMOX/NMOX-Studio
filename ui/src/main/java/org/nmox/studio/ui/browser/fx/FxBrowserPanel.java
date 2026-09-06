@@ -157,7 +157,7 @@ public final class FxBrowserPanel extends JPanel {
     }
 
     private static JButton navButton(String text, String tip, Runnable action) {
-        JButton b = new JButton(text);
+        JButton b = new JButton(PlainText.plain(text));
         b.setToolTipText(PlainText.plain(tip));
         b.addActionListener(e -> action.run());
         return b;

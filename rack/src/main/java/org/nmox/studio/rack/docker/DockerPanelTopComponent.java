@@ -271,7 +271,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private JButton btn(String label, Runnable action) {
-        JButton b = new JButton(label);
+        JButton b = new JButton(PlainText.plain(label));
         b.addActionListener(e -> action.run());
         return b;
     }

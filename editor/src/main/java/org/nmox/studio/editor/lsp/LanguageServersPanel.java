@@ -165,7 +165,7 @@ public final class LanguageServersPanel extends JPanel {
             }
             case NEEDS_TOOLCHAIN -> {
                 row.button.setEnabled(false);
-                row.button.setText(row.server.installer() + " not found");
+                row.button.setText(PlainText.plain(row.server.installer() + " not found"));
                 status.setText("Install " + row.server.installer()
                         + " first, then retry " + row.server.language() + ".");
             }

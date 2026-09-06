@@ -520,7 +520,7 @@ public final class ApiClientTopComponent extends TopComponent {
             menu.addSeparator();
             for (org.nmox.studio.apiclient.api.HttpLibrary.Entry entry : library) {
                 javax.swing.JMenuItem item =
-                        new javax.swing.JMenuItem(entry.name() + " · library");
+                        new javax.swing.JMenuItem(PlainText.plain(entry.name() + " · library"));
                 item.setToolTipText(PlainText.plain(entry.file().getAbsolutePath()));
                 item.addActionListener(a -> importHttpFrom(entry.file()));
                 menu.add(item);

@@ -224,7 +224,7 @@ public final class RackTopComponent extends TopComponent {
         flipToggle.setFocusable(false);
         flipToggle.addActionListener(e -> {
             rackPanel.setFront(!flipToggle.isSelected());
-            flipToggle.setText(flipToggle.isSelected() ? "Front (Tab)" : "Rear (Tab)");
+            flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? "Front (Tab)" : "Rear (Tab)"));
         });
         bar.add(flipToggle);
         bar.addSeparator();
@@ -423,7 +423,7 @@ public final class RackTopComponent extends TopComponent {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
         for (org.nmox.studio.rack.projectstudio.RackPresets preset
                 : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(preset.getDisplayName()));
             item.setToolTipText(PlainText.plain(preset.getDescription()));
             item.addActionListener(a -> {
                 if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
@@ -441,7 +441,7 @@ public final class RackTopComponent extends TopComponent {
         if (!yours.isEmpty()) {
             menu.addSeparator();
             for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
-                javax.swing.JMenuItem item = new javax.swing.JMenuItem(custom.name() + " · yours");
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(custom.name() + " · yours"));
                 item.setToolTipText(PlainText.plain(custom.file().getAbsolutePath()));
                 item.addActionListener(a -> {
                     if (!confirmReplace("the " + custom.name() + " preset")) {

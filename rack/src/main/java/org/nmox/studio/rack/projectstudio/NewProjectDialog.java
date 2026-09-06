@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -401,7 +402,7 @@ public class NewProjectDialog extends JDialog {
     /** Locks the form while creation runs; the button says why. */
     private void setBusy(boolean busy) {
         createButton.setEnabled(!busy);
-        createButton.setText(busy ? "Creating…" : "Create Project");
+        createButton.setText(PlainText.plain(busy ? "Creating…" : "Create Project"));
         cancelButton.setEnabled(!busy);
         nameField.setEnabled(!busy);
         locationField.setEnabled(!busy);

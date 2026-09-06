@@ -88,7 +88,7 @@ public final class ClassicKitAction implements ActionListener {
 
         Map<String, JCheckBox> libraryBoxes = new LinkedHashMap<>();
         for (ClassicKit.Lib lib : ClassicKit.libraries()) {
-            libraryBoxes.put(lib.id(), new JCheckBox(libraryLabel(lib),
+            libraryBoxes.put(lib.id(), new JCheckBox(PlainText.plain(libraryLabel(lib)),
                     "jquery".equals(lib.id())));
         }
         JRadioButton vendored = new JRadioButton(
@@ -112,7 +112,7 @@ public final class ClassicKitAction implements ActionListener {
 
         Map<String, JCheckBox> generatorBoxes = new LinkedHashMap<>();
         generatorLabels().forEach((id, label)
-                -> generatorBoxes.put(id, new JCheckBox(label)));
+                -> generatorBoxes.put(id, new JCheckBox(PlainText.plain(label))));
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 0, 4));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));

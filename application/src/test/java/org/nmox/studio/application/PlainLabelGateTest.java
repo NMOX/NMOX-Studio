@@ -18,14 +18,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code JLabel} renders a text that BEGINS with {@code <html>}, and
  * the product sets label text from directory names, git branch names,
  * artifact and function names, server errors and drop-in catalogs. The
- * cure is the v1.307.0 one — {@code html.disable} at CONSTRUCTION via
- * {@code PlainTables.plain(new JLabel(…))} — or, where the label
- * reaches the text through a parameter alias the gate cannot follow,
- * the text guard {@code PlainText.plain}. Balanced-parenthesis scan over
- * every {@code new JLabel(} and every {@code <label>.setText(} whose
- * argument's head is not the product's own literal. A label that MEANS
- * its markup carries a {@code PLAIN-LABEL-EXEMPT:} comment stating why
- * nothing external is spliced in.
+ * cure is the order-independent text guard {@code PlainText.plain} on
+ * the argument, at construction ({@code new JLabel(PlainText.plain(x))})
+ * and at every {@code setText}. The component property {@code html.disable}
+ * is NOT used for a plain label: {@code BasicHTML} installs the html view
+ * when the text is SET, so {@code PlainTables.plain(new JLabel(text))}
+ * sets the property one step too LATE and the label still renders markup
+ * (the v1.307.0 ordering trap, caught live on a project directory named
+ * {@code <html><b>bold</b>}). The property is right only for a renderer,
+ * whose {@code setText} runs per paint AFTER it. Balanced-parenthesis scan
+ * over every {@code new JLabel(} and every {@code <label>.setText(} whose
+ * argument's head is not the product's own literal. A label that MEANS its
+ * markup carries a {@code PLAIN-LABEL-EXEMPT:} comment stating why nothing
+ * external is spliced in.
  */
 class PlainLabelGateTest {
 

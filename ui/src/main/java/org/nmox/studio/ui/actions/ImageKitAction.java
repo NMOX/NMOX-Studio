@@ -88,9 +88,9 @@ public final class ImageKitAction implements ActionListener {
             "Max 800 px wide (thumbnails)"
         });
         maxWidth.getAccessibleContext().setAccessibleName("Downscale");
-        JCheckBox webp = new JCheckBox(cwebp != null
+        JCheckBox webp = new JCheckBox(PlainText.plain(cwebp != null
                 ? "WebP siblings via cwebp (found at " + cwebp.getName() + ")"
-                : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled",
+                : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled"),
                 cwebp != null);
         webp.setEnabled(cwebp != null);
 

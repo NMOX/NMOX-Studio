@@ -445,7 +445,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     /** A small focusable button for a row's gesture, named for assistive technology. */
     private static javax.swing.JButton flatButton(String text, String accessibleName) {
-        javax.swing.JButton b = new javax.swing.JButton(text);
+        javax.swing.JButton b = new javax.swing.JButton(PlainText.plain(text));
         b.setFont(TINY);
         b.setFocusable(true);
         b.setMargin(new java.awt.Insets(0, 6, 0, 6));
@@ -756,7 +756,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // over: a painted row with a mouse listener is a door only a mouse
         // can open; Tab reaches this, Enter/Space open it, a screen reader
         // reads it by name). The panel's own click stays for the mouse.
-        javax.swing.JButton titleButton = new javax.swing.JButton(title);
+        javax.swing.JButton titleButton = new javax.swing.JButton(PlainText.plain(title));
         titleButton.setFont(bold ? ROW_BOLD : ROW_FONT);
         titleButton.setForeground(TEXT);
         titleButton.setContentAreaFilled(false);
@@ -785,7 +785,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // wins property the v1.270.0 gate enforces holds by construction
             // and Popups.selectOnTrigger has nothing to select.
             javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(forgetLabel);
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(forgetLabel));
             item.addActionListener(e -> onForget.run());
             menu.add(item);
             rowPanel.setComponentPopupMenu(menu);

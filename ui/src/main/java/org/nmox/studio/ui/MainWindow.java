@@ -285,7 +285,7 @@ public final class MainWindow extends TopComponent {
                 "https://github.com/NMOX/NMOX-Studio/blob/main/docs/user-guide.md";
 
         private static JButton textButton(String text, Color color) {
-            JButton button = new JButton(text);
+            JButton button = new JButton(PlainText.plain(text));
             button.setForeground(color);
             button.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
             button.setContentAreaFilled(false);

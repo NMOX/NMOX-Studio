@@ -827,8 +827,8 @@ public final class TasksTopComponent extends TopComponent {
 
     private void showSprintMenu(java.awt.Component owner) {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-        javax.swing.JMenuItem set = new javax.swing.JMenuItem(
-                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…");
+        javax.swing.JMenuItem set = new javax.swing.JMenuItem(PlainText.plain(
+                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…"));
         set.addActionListener(e -> editSprint());
         menu.add(set);
         javax.swing.JMenuItem report = new javax.swing.JMenuItem("Sprint Report…");
