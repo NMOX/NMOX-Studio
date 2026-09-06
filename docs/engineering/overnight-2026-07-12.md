@@ -1,5 +1,7 @@
 # Overnight brief — 2026-07-12
 
+> **Historical document** — a dated night brief from the v1.0x era, kept for archaeology; it describes that night's plan, not the shipping product.
+
 A morning summary of the autonomous run that shipped v1.44.0 → v1.50.0.
 Factual and skimmable; the full record is in CHANGELOG.md and tech-debt.md.
 

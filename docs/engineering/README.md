@@ -23,6 +23,15 @@ NMOX Studio actually works.
   **[competitive-lens.md](./competitive-lens.md)** — the two living
   backlogs: the bets argued from trajectories, and the rival's relief
   list.
+- **[jdk25-fx26-dossier.md](./jdk25-fx26-dossier.md)** — the bundled-JDK
+  decision, measured: JDK 25 LTS + OpenJFX 26 probed live (jlink, boot,
+  the Browser's WebKit) before the baseline moved in v1.253.0.
+- **[release310-dossier.md](./release310-dossier.md)** — the platform
+  upgrade's measured facts (RELEASE300→310): every decompiled assumption
+  re-checked, the slf4j placement root cause, the GO call's remainder.
+- **[angular-parity.md](./angular-parity.md)** — the Angular parity
+  scorecard against the reference tooling, kept current as the framework
+  bet's honest ledger.
 - **[agent-port-execution-dossier.md](./agent-port-execution-dossier.md)**
   — the design (not the decision) for the Agent Port's execution
   verbs: a per-session grant armed at the keyboard, lanes not
