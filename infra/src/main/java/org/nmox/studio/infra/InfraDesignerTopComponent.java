@@ -1,5 +1,6 @@
 package org.nmox.studio.infra;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -222,7 +223,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 fields[i].getAccessibleContext().setAccessibleName(
                         providers[i].displayName() + " API token");
                 String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
-                panel.add(new JLabel(providers[i].displayName() + current));
+                panel.add(new JLabel(PlainText.plain(providers[i].displayName() + current)));
                 panel.add(fields[i]);
             }
             DialogDescriptor dd = new DialogDescriptor(panel,
@@ -578,12 +579,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     private void info(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.INFORMATION_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.INFORMATION_MESSAGE));
     }
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     /**
@@ -596,7 +597,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * constructor's {@code initialValue} argument (v1.98.0, ledger 53).
      */
     private boolean confirm(String message, String title) {
-        NotifyDescriptor d = new NotifyDescriptor(message, title,
+        NotifyDescriptor d = new NotifyDescriptor(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), title,
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                 NotifyDescriptor.NO_OPTION);
@@ -897,7 +898,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     .map(org.nmox.studio.infra.api.CloudProvider::displayName)
                     .collect(java.util.stream.Collectors.joining(", "));
             SwingUtilities.invokeLater(() -> {
-                tokenLabel.setText(label);
+                tokenLabel.setText(PlainText.plain(label));
                 tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
                 tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
                 syncButton.setToolTipText("Import existing cloud resources as live nodes — "
@@ -907,7 +908,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     private void refreshCost() {
-        costLabel.setText(String.format("≈ $%.2f/mo", graph.totalMonthlyUsd()));
+        costLabel.setText(PlainText.plain(String.format("≈ $%.2f/mo", graph.totalMonthlyUsd())));
     }
 
     void writeProperties(java.util.Properties p) {

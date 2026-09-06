@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.blockstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -369,7 +370,7 @@ final class BlockCanvas extends JComponent {
         }
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu("Add piece");
         for (BlockKind k : kinds) {
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(k.display());
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(k.display()));
             item.getAccessibleContext().setAccessibleName("Add " + k.display());
             item.addActionListener(ev -> insertKind(k, parent, index));
             menu.add(item);

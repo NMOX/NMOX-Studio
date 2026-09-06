@@ -227,9 +227,9 @@ public class SonarDevice extends RackDevice {
             Object via = model.getValueAt(row, 3);
             if (via != null && via.toString().startsWith("docker:")) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Port " + model.getValueAt(row, 0) + " belongs to container "
+                        org.nmox.studio.core.util.PlainDialogs.plain("Port " + model.getValueAt(row, 0) + " belongs to container "
                         + via.toString().substring(8).trim()
-                        + " — stop it from HARBOR's Docker Panel instead of killing the daemon.",
+                        + " — stop it from HARBOR's Docker Panel instead of killing the daemon.", "Message"),
                         NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
@@ -238,8 +238,8 @@ public class SonarDevice extends RackDevice {
             // full ctor with NO as the initial value — a reflexive Enter
             // must not kill a process (v1.98.0)
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                    "Kill " + owner + " (pid " + pid + ") holding port "
-                    + model.getValueAt(row, 0) + "?", "SONAR",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Kill " + owner + " (pid " + pid + ") holding port "
+                    + model.getValueAt(row, 0) + "?", "Message"), "SONAR",
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                     null, NotifyDescriptor.NO_OPTION))
                     == NotifyDescriptor.YES_OPTION) {

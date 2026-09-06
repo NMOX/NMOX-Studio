@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.lsp;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -160,18 +161,18 @@ public final class LanguageServersPanel extends JPanel {
                 row.statusLabel.setText("✗");
                 row.statusLabel.setForeground(MISSING);
                 row.button.setEnabled(true);
-                status.setText(row.server.language() + " install failed — see the Output window.");
+                status.setText(PlainText.plain(row.server.language() + " install failed — see the Output window."));
             }
             case NEEDS_TOOLCHAIN -> {
                 row.button.setEnabled(false);
-                row.button.setText(row.server.installer() + " not found");
+                row.button.setText(PlainText.plain(row.server.installer() + " not found"));
                 status.setText("Install " + row.server.installer()
                         + " first, then retry " + row.server.language() + ".");
             }
             case NEEDS_PROJECT -> {
                 row.button.setEnabled(true);
-                status.setText(row.server.language()
-                        + " installs into the project - open the project first, then retry.");
+                status.setText(PlainText.plain(row.server.language()
+                        + " installs into the project - open the project first, then retry."));
             }
             default -> row.button.setEnabled(true);
         }
@@ -239,11 +240,11 @@ public final class LanguageServersPanel extends JPanel {
                 statusLabel.setForeground(MISSING);
                 if (server.autoInstallable()) {
                     button.setText("Install");
-                    button.setToolTipText(String.join(" ", server.command()));
+                    button.setToolTipText(PlainText.plain(String.join(" ", server.command())));
                     button.setEnabled(true);
                 } else {
                     button.setText("Manual");
-                    button.setToolTipText(server.install());
+                    button.setToolTipText(PlainText.plain(server.install()));
                     button.setEnabled(false);
                 }
             }

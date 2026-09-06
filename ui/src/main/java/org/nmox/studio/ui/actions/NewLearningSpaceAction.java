@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -161,7 +162,7 @@ public final class NewLearningSpaceAction implements ActionListener {
             } catch (Exception ex) {
                 String message = "Could not create the learning space: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }
@@ -228,7 +229,7 @@ public final class NewLearningSpaceAction implements ActionListener {
     private static void renderAvailability(JLabel label, String tool, boolean found,
             String installHint) {
         label.setForeground(found ? TOOL_OK : TOOL_MISSING);
-        label.setText(availabilityText(tool, found, installHint));
+        label.setText(PlainText.plain(availabilityText(tool, found, installHint)));
     }
 
     /** The availability line, pure: the ✓/✗ verdict plus the OS-appropriate install command. */
@@ -273,6 +274,6 @@ public final class NewLearningSpaceAction implements ActionListener {
     }
 
     static String escape(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 }

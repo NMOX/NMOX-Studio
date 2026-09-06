@@ -101,13 +101,13 @@ public final class CheckMyWorkAction implements ActionListener {
             SwingUtilities.invokeLater(() -> {
                 if (failed.isEmpty() || oracle == null) {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(reportComponent(head + report),
+                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"),
                                     NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 }
                 Object explain = "Explain with ORACLE…";
                 org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                        reportComponent(head + report), "Check My Work — " + dir.getName(), true,
+                        org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"), "Check My Work — " + dir.getName(), true,
                         new Object[] {explain, NotifyDescriptor.OK_OPTION},
                         NotifyDescriptor.OK_OPTION,
                         org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -139,15 +139,5 @@ public final class CheckMyWorkAction implements ActionListener {
      * class one wrap away. A JTextArea never interprets markup, and a
      * screen reader reads the report whole instead of a hint in halves.
      */
-    static javax.swing.JTextArea reportComponent(String text) {
-        javax.swing.JTextArea area = new javax.swing.JTextArea(text);
-        area.setEditable(false);
-        area.setLineWrap(true);
-        area.setWrapStyleWord(true);
-        area.setOpaque(false);
-        area.setColumns(64);
-        area.setFont(javax.swing.UIManager.getFont("Label.font"));
-        area.getAccessibleContext().setAccessibleName("Check My Work report");
-        return area;
-    }
+
 }

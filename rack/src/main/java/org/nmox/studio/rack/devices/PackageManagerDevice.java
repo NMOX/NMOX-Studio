@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
@@ -351,11 +352,11 @@ public class PackageManagerDevice extends CommandDevice {
                     : kinds.size() > 1 ? kinds.size() + " TOOLCHAINS"
                     : !kinds.isEmpty() ? kinds.keySet().iterator().next().manifest()
                     : "NO PROJECT");
-            depsLcd.setToolTipText(broken
+            depsLcd.setToolTipText(PlainText.plain(broken
                     ? "package.json exists but does not parse — fix the JSON"
                     : counts == null
                     ? "No package.json in the project"
-                    : counts[0] + " dependencies, " + counts[1] + " devDependencies");
+                    : counts[0] + " dependencies, " + counts[1] + " devDependencies"));
             });
         });
     }

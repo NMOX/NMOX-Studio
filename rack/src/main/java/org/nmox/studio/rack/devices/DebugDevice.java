@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
@@ -199,7 +200,7 @@ public class DebugDevice extends CommandDevice {
             onEdt(() -> {
                 endpointLcd.setTextColor(RackStyle.LCD_TEXT);
                 endpointLcd.setText(ws.replaceFirst("ws://", ""));
-                endpointLcd.setToolTipText(ws + " — open chrome://inspect");
+                endpointLcd.setToolTipText(PlainText.plain(ws + " — open chrome://inspect"));
                 armedLed.setBlinking(false);
                 armedLed.setOn(true);
             });

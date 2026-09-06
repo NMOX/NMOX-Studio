@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -92,7 +93,7 @@ public class ReplDevice extends RackDevice {
         installBtn = place(new RackButton("INSTALL", RackStyle.MUTATE), left + 560, 40);
         installBtn.setToolTipText("Install the interpreter with the catalog's seeded command");
         installBtn.setCommandPreview(() -> installLcd.getText().isBlank() ? null
-                : "<html><code>$ " + installLcd.getText() + "</code></html>");
+                : "<html><code>$ " + PlainText.escape(installLcd.getText()) + "</code></html>");
         runLed = place(new Led("LIVE", RackStyle.GO), left + 648, 46);
 
         screen = new JTextArea();
@@ -374,7 +375,7 @@ public class ReplDevice extends RackDevice {
             menu.add(none);
         } else {
             for (String snippet : snippets) {
-                JMenuItem item = new JMenuItem(snippet);
+                JMenuItem item = new JMenuItem(PlainText.plain(snippet));
                 item.addActionListener(e -> {
                     input.setText(snippet);
                     input.requestFocusInWindow();

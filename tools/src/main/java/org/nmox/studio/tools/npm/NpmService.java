@@ -172,14 +172,14 @@ public class NpmService {
         // concern, now knowable through the ■'s registry, v2.72.0)
         if (announcesServer(command) && InstallGuard.installing(workingDir)) {
             String wall = InstallGuard.message(workingDir);
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(wall));
             return CompletableFuture.completedFuture(wall);
         }
         // the third wall (v2.73.0): declared dependencies, no node_modules —
         // a script run now only ends in "Cannot find module"
         if (announcesServer(command) && InstallGuard.needsInstall(workingDir)) {
             String wall = InstallGuard.needsInstallMessage(workingDir);
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(wall);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(wall));
             InstallDoor.offer(workingDir);
             return CompletableFuture.completedFuture(wall);
         }

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.util.HashSet;
@@ -193,10 +194,13 @@ public final class WorkspaceTrust {
         String message = "<html><b>Do you trust the files in this folder?</b><br><br>"
                 + "Running this project's tasks — npm installs, watchers, database<br>"
                 + "scripts, compilers — executes its code on your machine.<br><br>"
-                + "Project: <code>" + dir.getAbsolutePath() + "</code></html>";
+                // the message MEANS its markup; the project path is external (a
+                // directory can be named <img src=…>) and rides PlainText.escape
+                + "Project: <code>" + PlainText.escape(dir.getAbsolutePath()) + "</code></html>";
         Object trustOption = "Trust Workspace";
         NotifyDescriptor nd = new NotifyDescriptor(
-                // a JLabel renders the HTML; a bare String is shown as raw text
+                // a JLabel renders <html> text (the v1.208.0 fetch class); the
+                // path above is escaped so it can only ever paint as characters
                 new javax.swing.JLabel(message),
                 "Workspace Trust",
                 NotifyDescriptor.DEFAULT_OPTION,

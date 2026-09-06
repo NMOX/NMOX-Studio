@@ -96,7 +96,7 @@ public final class ContractKitAction implements ActionListener {
         String invalid = ContractKit.validate(contractName);
         if (invalid != null) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(invalid, NotifyDescriptor.WARNING_MESSAGE)));
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(invalid, "Message"), NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
         // disk I/O has no place in an event dispatch; the report then hops
@@ -110,13 +110,13 @@ public final class ContractKitAction implements ActionListener {
                         : "\n\nHeads up: `" + chain.tool + "` isn't on your PATH yet — "
                           + "CONTRACT-NOTES.md has the install line.";
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Contract Kit (" + chain.label + "):\n\n"
-                                + report + "\nCONTRACT-NOTES.md has the next steps." + hint,
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Contract Kit (" + chain.label + "):\n\n"
+                                + report + "\nCONTRACT-NOTES.md has the next steps." + hint, "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not scaffold: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

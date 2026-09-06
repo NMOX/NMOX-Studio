@@ -95,9 +95,9 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
                         files.add(u.file().getName());
                     }
                     StatusDisplayer.getDefault().setStatusText(
-                            usages.size() + " usages in " + files.size()
+                            org.nmox.studio.core.util.PlainStatus.text(usages.size() + " usages in " + files.size()
                             + " file(s) — opened the first"
-                            + (usages.size() >= USAGE_CAP ? " (list capped)" : ""));
+                            + (usages.size() >= USAGE_CAP ? " (list capped)" : "")));
                 }
             });
         });

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -153,9 +154,11 @@ public class GitStatusLine implements StatusLineElementProvider {
             String label = chip.label();
             File root = chip.repoRoot();
             javax.swing.SwingUtilities.invokeLater(() -> {
-                chipLabel.setText(label == null ? "" : label);
+                chipLabel.setText(PlainText.plain(label == null ? "" : label));
+                // the tooltip MEANS its <br>; the repo path is the one external piece and rides
+                // PLAIN-TOOLTIP-EXEMPT: PlainText.escape (a directory can be named <img src=…>)
                 chipLabel.setToolTipText(label == null ? null
-                        : "<html>git — " + root
+                        : "<html>git — " + PlainText.escape(String.valueOf(root))
                         + "<br>click for Show Changes / Diff / Annotate / History</html>");
                 if (label != null && isDisplayable()) {
                     if (!poll.isRunning()) {
@@ -531,7 +534,7 @@ public class GitStatusLine implements StatusLineElementProvider {
 
         private static void status(String message) {
             java.awt.EventQueue.invokeLater(() -> org.openide.awt
-                    .StatusDisplayer.getDefault().setStatusText(message));
+                    .StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message)));
         }
 
         /** The editable draft — Copy puts it on the clipboard; never commits. */
@@ -680,7 +683,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** The honest refusal: name where the verb still works, never a dead click. */
         private static void teamMenuFallback(String verb, String why) {
             StatusDisplayer.getDefault().setStatusText(
-                    verb + " unavailable (" + why + ") — use the Team menu");
+                    org.nmox.studio.core.util.PlainStatus.text(verb + " unavailable (" + why + ") — use the Team menu"));
         }
 
         /**

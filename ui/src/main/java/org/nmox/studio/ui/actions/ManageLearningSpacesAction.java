@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -141,7 +142,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
             }
             long total = bytes;
             SwingUtilities.invokeLater(() ->
-                    header.setText(LearningSpace.shelfSummary(spaces.size(), total)));
+                    header.setText(PlainText.plain(LearningSpace.shelfSummary(spaces.size(), total))));
         });
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);
@@ -172,14 +173,14 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                dir.getName() + " graduated: " + promoted.getAbsolutePath()
-                                + "\n(marker removed, git initialized)",
+                                org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: " + promoted.getAbsolutePath()
+                                + "\n(marker removed, git initialized)", "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
                     String message = "Could not promote: " + ex.getMessage();
                     SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
                 }
             });
         });
@@ -202,8 +203,8 @@ public final class ManageLearningSpacesAction implements ActionListener {
             // button, so use the full constructor with NO_OPTION (the v1.98.0
             // dialog-safety idiom, as ManageExperimentsAction does).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Discard " + dir.getName() + "? Anything running there is stopped"
-                            + " and the whole space is deleted from disk.",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped"
+                            + " and the whole space is deleted from disk.", "Message"),
                     "Discard Learning Space", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -241,7 +242,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         open.setEnabled(true);
                         discard.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

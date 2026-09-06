@@ -1,5 +1,7 @@
 package org.nmox.studio.apiclient.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -423,7 +425,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private void show(TransientNotice.Shown s) {
         statusLabel.setForeground(s.color());
-        statusLabel.setText(s.text());
+        statusLabel.setText(PlainText.plain(s.text()));
     }
 
     /**
@@ -518,8 +520,8 @@ public final class ApiClientTopComponent extends TopComponent {
             menu.addSeparator();
             for (org.nmox.studio.apiclient.api.HttpLibrary.Entry entry : library) {
                 javax.swing.JMenuItem item =
-                        new javax.swing.JMenuItem(entry.name() + " · library");
-                item.setToolTipText(entry.file().getAbsolutePath());
+                        new javax.swing.JMenuItem(PlainText.plain(entry.name() + " · library"));
+                item.setToolTipText(PlainText.plain(entry.file().getAbsolutePath()));
                 item.addActionListener(a -> importHttpFrom(entry.file()));
                 menu.add(item);
             }
@@ -559,7 +561,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -605,7 +607,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -693,7 +695,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -762,7 +764,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -796,7 +798,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -852,7 +854,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -908,7 +910,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(ex.getMessage(),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -952,7 +954,7 @@ public final class ApiClientTopComponent extends TopComponent {
         } catch (IllegalArgumentException ex) {
             org.openide.DialogDisplayer.getDefault().notify(
                     new org.openide.NotifyDescriptor.Message(
-                            ex.getMessage(), org.openide.NotifyDescriptor.ERROR_MESSAGE));
+                            org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"), org.openide.NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
         Collection c = selectedCollection();
@@ -1154,9 +1156,9 @@ public final class ApiClientTopComponent extends TopComponent {
         selectRequest(target.name, restored.name);
         touch();
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                entry.authType == AuthType.NONE
+                org.nmox.studio.core.util.PlainStatus.text(entry.authType == AuthType.NONE
                 ? "Restored from history."
-                : "Restored from history — re-enter the auth token (secrets never ride history).");
+                : "Restored from history — re-enter the auth token (secrets never ride history)."));
     }
 
     private void clearHistory() {
@@ -1352,9 +1354,9 @@ public final class ApiClientTopComponent extends TopComponent {
                 break; // text changed under us; the next refind heals it
             }
         }
-        findCount.setText(query.isEmpty() ? " "
+        findCount.setText(PlainText.plain(query.isEmpty() ? " "
                 : matches.size() + (matches.size() >= ResponseSearch.MAX_MATCHES ? "+" : "")
-                + " match" + (matches.size() == 1 ? "" : "es"));
+                + " match" + (matches.size() == 1 ? "" : "es")));
     }
 
     private void jumpToNextMatch() {
@@ -1395,7 +1397,7 @@ public final class ApiClientTopComponent extends TopComponent {
                         ? "Saved (response was truncated at the capture cap)."
                         : "Saved " + file.getName() + ".";
                 java.awt.EventQueue.invokeLater(() ->
-                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(note));
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(note)));
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
@@ -1497,8 +1499,8 @@ public final class ApiClientTopComponent extends TopComponent {
             testResults.add(new JLabel("  No tests on this request."));
         }
         for (TestRunner.Result res : results) {
-            JLabel line = new JLabel((res.passed() ? "  ✓  " : "  ✗  ")
-                    + res.description() + "   (" + res.detail() + ")");
+            JLabel line = new JLabel(PlainText.plain((res.passed() ? "  ✓  " : "  ✗  ")
+                    + res.description() + "   (" + res.detail() + ")"));
             line.setForeground(res.passed() ? OK_GREEN : FAIL_RED);
             testResults.add(line);
         }
@@ -1521,7 +1523,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     case WARN -> "  !  ";
                     case MISS -> "  ✗  ";
                 };
-                JLabel line = new JLabel(mark + check.standard() + "   — " + check.detail());
+                JLabel line = new JLabel(PlainText.plain(mark + check.standard() + "   — " + check.detail()));
                 line.setForeground(switch (check.verdict()) {
                     case PASS -> OK_GREEN;
                     case WARN -> new Color(0xE8, 0xC4, 0x4A);

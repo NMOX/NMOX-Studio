@@ -322,6 +322,30 @@ fails on a bare `+ " cards"` shape returning for the nouns the sweep
 fixed. Origin: the first-show sweep read "1 pieces" on a fresh Block
 Studio canvas, and a census found the same shape seven times.
 
+**No external text renders as markup** (v2.86.0). Swing paints any
+component text that BEGINS with `<html>` as HTML, so a directory name,
+a git branch, a cloned ABI or script name, or a drop-in catalog string
+that starts with `<html><img src=…>` would make the IDE's own JVM fetch
+a URL at paint time (the v1.208.0 fetch class). The whole sink family is
+closed: labels, buttons, menu items, tooltips, table/tree/list and combo
+cell renderers, option-pane String messages, and the status line. The
+two homes are `core.util.PlainText` (`plain` prepends a space when the
+head reads as markup — a superset of Swing's trigger, so it never
+misses; `escape` entities `& < > " '`) and `core.util.PlainTables`
+(`plain` sets `html.disable` on a *renderer*, whose text is set per
+paint). The trap the live walk exposed: `PlainTables.plain(new
+JLabel(text))` is too LATE — `BasicHTML` installs the view when the text
+is set, so a plain label/button guards its TEXT instead
+(`new JLabel(PlainText.plain(x))`), order-independent; the component
+property is right only for a renderer. A tooltip is special — Swing
+builds a fresh `JToolTip` per hover and never reads the property on the
+component carrying the text, so its text is always guarded. Authored
+markup that splices external text escapes each piece. Five failing-first
+gates (`PlainMessageGateTest`, `PlainStatusGateTest`, `PlainLabelGateTest`,
+`PlainButtonGateTest`, `PlainTooltipGateTest`) hold it. Origin: a project
+opened from a directory named `<html>PWNED` rendered its name as markup
+in the Project Studio header and the recent-projects row.
+
 ## 5. Where to go next
 
 - **Every important package now carries a `package-info.java`**

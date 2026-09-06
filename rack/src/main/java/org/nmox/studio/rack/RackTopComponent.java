@@ -1,5 +1,6 @@
 package org.nmox.studio.rack;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
@@ -223,7 +224,7 @@ public final class RackTopComponent extends TopComponent {
         flipToggle.setFocusable(false);
         flipToggle.addActionListener(e -> {
             rackPanel.setFront(!flipToggle.isSelected());
-            flipToggle.setText(flipToggle.isSelected() ? "Front (Tab)" : "Rear (Tab)");
+            flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? "Front (Tab)" : "Rear (Tab)"));
         });
         bar.add(flipToggle);
         bar.addSeparator();
@@ -244,7 +245,7 @@ public final class RackTopComponent extends TopComponent {
                         markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
                         // never appended onto itself across repeated saves
-                        projectLabel.setText(projectName + "  [saved]");
+                        projectLabel.setText(PlainText.plain(projectName + "  [saved]"));
                         javax.swing.Timer revert = new javax.swing.Timer(2000,
                                 ev -> updateProjectLabel());
                         revert.setRepeats(false);
@@ -422,8 +423,8 @@ public final class RackTopComponent extends TopComponent {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
         for (org.nmox.studio.rack.projectstudio.RackPresets preset
                 : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(preset.getDisplayName());
-            item.setToolTipText(preset.getDescription());
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(preset.getDisplayName()));
+            item.setToolTipText(PlainText.plain(preset.getDescription()));
             item.addActionListener(a -> {
                 if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
                     return;
@@ -440,8 +441,8 @@ public final class RackTopComponent extends TopComponent {
         if (!yours.isEmpty()) {
             menu.addSeparator();
             for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
-                javax.swing.JMenuItem item = new javax.swing.JMenuItem(custom.name() + " · yours");
-                item.setToolTipText(custom.file().getAbsolutePath());
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(custom.name() + " · yours"));
+                item.setToolTipText(PlainText.plain(custom.file().getAbsolutePath()));
                 item.addActionListener(a -> {
                     if (!confirmReplace("the " + custom.name() + " preset")) {
                         return;
@@ -483,17 +484,17 @@ public final class RackTopComponent extends TopComponent {
 
     private void info(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.INFORMATION_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.INFORMATION_MESSAGE));
     }
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private void updateProjectLabel() {
-        projectLabel.setText(rack.getProjectDir().getName());
-        projectLabel.setToolTipText(rack.getProjectDir().getAbsolutePath());
+        projectLabel.setText(PlainText.plain(rack.getProjectDir().getName()));
+        projectLabel.setToolTipText(PlainText.plain(rack.getProjectDir().getAbsolutePath()));
     }
 
     @Override

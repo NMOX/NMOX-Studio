@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -218,7 +220,7 @@ public class BlackboxDevice extends RackDevice {
                 south.revalidate();
             } catch (Exception ex) {
                 org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message(
-                        "Could not export the flight log: " + ex.getMessage(),
+                        org.nmox.studio.core.util.PlainDialogs.plain("Could not export the flight log: " + ex.getMessage(), "Message"),
                         org.openide.NotifyDescriptor.ERROR_MESSAGE));
             }
         });
@@ -226,9 +228,9 @@ public class BlackboxDevice extends RackDevice {
         JPanel stats = new JPanel(new FlowLayout(FlowLayout.LEFT));
         for (Map.Entry<String, FlightRecorder.Stats> e
                 : FlightRecorder.getDefault().statistics().entrySet()) {
-            JLabel l = new JLabel(e.getKey() + " avg " + (e.getValue().averageMs() / 1000.0)
+            JLabel l = new JLabel(PlainText.plain(e.getKey() + " avg " + (e.getValue().averageMs() / 1000.0)
                     + "s · last " + (e.getValue().lastMs() / 1000.0) + "s"
-                    + (e.getValue().creeping() ? " ▲" : "") + "   ");
+                    + (e.getValue().creeping() ? " ▲" : "") + "   "));
             if (e.getValue().creeping()) {
                 l.setForeground(new Color(230, 150, 40));
             }
@@ -259,7 +261,7 @@ public class BlackboxDevice extends RackDevice {
                     if (changed.size() > 6) {
                         names.append("  (+").append(changed.size() - 6).append(" more)");
                     }
-                    JLabel list = new JLabel(names.toString());
+                    JLabel list = new JLabel(PlainText.plain(names.toString()));
                     list.setToolTipText("newest first, dependency directories skipped");
                     blame.add(list);
                     JPanel north = new JPanel(new BorderLayout());

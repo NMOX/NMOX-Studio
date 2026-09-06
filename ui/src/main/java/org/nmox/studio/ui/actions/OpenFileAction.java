@@ -56,8 +56,8 @@ public final class OpenFileAction implements ActionListener {
             for (File file : chooser.getSelectedFiles()) {
                 if (file != null && file.exists() && file.isFile() && !openFile(file)) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            "Could not open " + file.getName()
-                            + " — no editor is registered for this file.",
+                            org.nmox.studio.core.util.PlainDialogs.plain("Could not open " + file.getName()
+                            + " — no editor is registered for this file.", "Message"),
                             NotifyDescriptor.WARNING_MESSAGE));
                 }
             }

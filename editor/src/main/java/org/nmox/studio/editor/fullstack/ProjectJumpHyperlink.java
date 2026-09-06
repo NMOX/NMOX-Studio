@@ -104,7 +104,7 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
 
     protected static void status(String message) {
         java.awt.EventQueue.invokeLater(
-                () -> StatusDisplayer.getDefault().setStatusText(message));
+                () -> StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message)));
     }
 
     // ---- document text, edit-version cached -------------------------------

@@ -1,5 +1,7 @@
 package org.nmox.studio.web3.ui;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.util.Threads;
 
 import java.awt.BorderLayout;
@@ -195,7 +197,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private final JComboBox<Network> networkCombo = new JComboBox<>();
     private boolean networkComboRefreshing;
-    private final JLabel chipLabel = new JLabel(NOT_CONNECTED);
+    private final JLabel chipLabel = new JLabel(PlainText.plain(NOT_CONNECTED));
     private final JButton compileButton = new JButton("Compile");
     private final JButton rescanButton = new JButton("Rescan");
     private final JLabel statusLabel = new JLabel(" ");
@@ -264,6 +266,10 @@ public final class Web3StudioTopComponent extends TopComponent {
     public Web3StudioTopComponent() {
         networkCombo.getAccessibleContext().setAccessibleName("Network");
         fromCombo.getAccessibleContext().setAccessibleName("From account");
+        // a list renderer paints <html>-led item text as markup; a plain
+        // default renderer html-disables it (accounts are hex today, but the
+        // guard costs nothing and holds if the model ever carries a name)
+        fromCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
         watchFilterCombo.getAccessibleContext().setAccessibleName("Watch filter");
         logArea.getAccessibleContext().setAccessibleName("Event log");
         setName(Bundle.CTL_Web3StudioTopComponent());
@@ -454,7 +460,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void showInteractHint(String text) {
         interactPanel.removeAll();
-        JLabel hint = new JLabel(text);
+        JLabel hint = new JLabel(PlainText.plain(text));
         hint.setForeground(Color.GRAY);
         hint.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
         interactPanel.add(hint, BorderLayout.NORTH);
@@ -498,7 +504,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         addFormRow(form, row++, title);
         if (!s.artifact().sourcePath().isEmpty()) {
-            JLabel source = new JLabel(s.artifact().sourcePath());
+            JLabel source = new JLabel(PlainText.plain(s.artifact().sourcePath()));
             source.setForeground(Color.GRAY);
             addFormRow(form, row++, source);
         }
@@ -519,7 +525,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             addLabeledRow(form, row++, paramLabel(param), field);
         }
         if (s.constructorHint() != null) {
-            JLabel hint = new JLabel(s.constructorHint());
+            JLabel hint = new JLabel(PlainText.plain(s.constructorHint()));
             hint.setForeground(Color.GRAY);
             addFormRow(form, row++, hint);
         }
@@ -538,9 +544,9 @@ public final class Web3StudioTopComponent extends TopComponent {
         JButton deployButton = new JButton("Deploy");
         deployButton.setForeground(ACCENT);
         deployButton.setEnabled(reason == null && connected);
-        deployButton.setToolTipText(reason != null ? reason
+        deployButton.setToolTipText(PlainText.plain(reason != null ? reason
                 : connected ? "eth_sendTransaction with the node's unlocked account"
-                        : NOT_CONNECTED);
+                        : NOT_CONNECTED));
         JButton attachButton = new JButton("Attach to address…");
         attachButton.setToolTipText("Interact with an already-deployed instance");
         JLabel result = new JLabel(" ");
@@ -565,8 +571,8 @@ public final class Web3StudioTopComponent extends TopComponent {
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
         list.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-        JLabel title = new JLabel(s.artifact().name() + " @ "
-                + DisplayValues.shortAddress(s.address()));
+        JLabel title = new JLabel(PlainText.plain(s.artifact().name() + " @ "
+                + DisplayValues.shortAddress(s.address())));
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         list.add(leftAligned(title));
 
@@ -617,14 +623,14 @@ public final class Web3StudioTopComponent extends TopComponent {
     private JPanel functionRow(InteractSession s, AbiEntry function, String sendReason) {
         boolean read = function.readOnly();
         JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
-        JLabel name = new JLabel((read ? "ƒ " : "✎ ") + function.name());
+        JLabel name = new JLabel(PlainText.plain((read ? "ƒ " : "✎ ") + function.name()));
         name.setFont(MONO.deriveFont(Font.BOLD));
-        name.setToolTipText(function.signature() + " · " + function.stateMutability());
+        name.setToolTipText(PlainText.plain(function.signature() + " · " + function.stateMutability()));
         rowPanel.add(name);
 
         List<JTextField> argFields = new ArrayList<>();
         for (AbiParam param : function.inputs()) {
-            JLabel label = new JLabel(paramLabel(param));
+            JLabel label = new JLabel(PlainText.plain(paramLabel(param)));
             label.setForeground(Color.GRAY);
             rowPanel.add(label);
             JTextField field = new JTextField(10);
@@ -645,16 +651,16 @@ public final class Web3StudioTopComponent extends TopComponent {
             rowPanel.add(valueField);
         }
 
-        JButton action = new JButton(read ? "CALL" : "SEND");
+        JButton action = new JButton(PlainText.plain(read ? "CALL" : "SEND"));
         JLabel result = new JLabel(" ");
         if (read) {
             action.setToolTipText("eth_call — free, read-only");
             action.addActionListener(e -> call(s, function, argFields, result));
         } else {
             action.setEnabled(sendReason == null && connected);
-            action.setToolTipText(sendReason != null ? sendReason
+            action.setToolTipText(PlainText.plain(sendReason != null ? sendReason
                     : connected ? "eth_sendTransaction with the node's unlocked account"
-                            : NOT_CONNECTED);
+                            : NOT_CONNECTED));
             JTextField valueRef = valueField;
             action.addActionListener(e -> send(s, function, argFields, valueRef, result));
         }
@@ -689,8 +695,8 @@ public final class Web3StudioTopComponent extends TopComponent {
         Network network = selectedNetwork();
         String where = network == null ? "a remote endpoint" : "\"" + network.name() + "\"";
         NotifyDescriptor d = new NotifyDescriptor(
-                verb + " will broadcast a REAL transaction to " + where
-                + " — a non-local endpoint. There is no undo.",
+                org.nmox.studio.core.util.PlainDialogs.plain(verb + " will broadcast a REAL transaction to " + where
+                + " — a non-local endpoint. There is no undo.", "Message"),
                 "Broadcast transaction?",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -1280,10 +1286,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             // per the v1.98.0 law (v1.269.0 — the organize sweep's fourth
             // surface: deployments accumulated forever with no gesture)
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Forget " + record.contractName() + " at "
+                    org.nmox.studio.core.util.PlainDialogs.plain("Forget " + record.contractName() + " at "
                             + record.address() + "? Only this address-book row"
                             + " is removed \u2014 the contract on chain is"
-                            + " untouched.",
+                            + " untouched.", "Message"),
                     "Forget Deployment",
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
@@ -1699,9 +1705,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             fromCombo.addItem(account);
         }
         fromCombo.setEnabled(!accounts.isEmpty());
-        fromCombo.setToolTipText(accounts.isEmpty()
+        fromCombo.setToolTipText(PlainText.plain(accounts.isEmpty()
                 ? InteractSession.READ_ONLY_REASON
-                : "The node's unlocked accounts (eth_accounts) — it signs, the IDE never can");
+                : "The node's unlocked accounts (eth_accounts) — it signs, the IDE never can"));
     }
 
     /** Re-arms or disables the write surface after an accounts refresh. */
@@ -1720,7 +1726,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void chip(String text, Color color) {
         chipLabel.setForeground(color);
-        chipLabel.setText(text);
+        chipLabel.setText(PlainText.plain(text));
     }
 
     /**
@@ -1784,10 +1790,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             return;
         }
         NotifyDescriptor confirm = new NotifyDescriptor(
-                "Remove network \"" + network.name() + "\"?"
+                org.nmox.studio.core.util.PlainDialogs.plain("Remove network \"" + network.name() + "\"?"
                         + (network.secretUrl()
                                 ? " Its keychain RPC URL is deleted too."
-                                : ""),
+                                : ""), "Message"),
                 "Remove Network",
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
@@ -2294,8 +2300,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private static void setResult(JLabel label, String text, Color color) {
         label.setForeground(color);
-        label.setText(text);
-        label.setToolTipText(text);
+        label.setText(PlainText.plain(text));
+        label.setToolTipText(PlainText.plain(text));
     }
 
     private static String messageOf(Exception e) {
@@ -2383,8 +2389,8 @@ public final class Web3StudioTopComponent extends TopComponent {
                 if (name == null && symbol == null) {
                     b.append("  \u00b7 name/symbol not in ABI");
                 }
-                strip.setText(b.toString());
-                strip.setToolTipText(b.toString());
+                strip.setText(PlainText.plain(b.toString()));
+                strip.setToolTipText(PlainText.plain(b.toString()));
             });
         });
     }
@@ -2466,10 +2472,10 @@ public final class Web3StudioTopComponent extends TopComponent {
                 }
                 tokenDecimals = meta.decimals();
                 String line = tokenStripText(meta);
-                strip.setText(line);
+                strip.setText(PlainText.plain(line));
                 // a narrow pane ellipsizes the label — the full line
                 // survives as the tooltip (the v1.282.0 truncation law)
-                strip.setToolTipText(line);
+                strip.setToolTipText(PlainText.plain(line));
             });
         });
     }
@@ -2742,8 +2748,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void status(String message, Color color) {
         statusLabel.setForeground(color);
-        statusLabel.setText(message);
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(message);
+        statusLabel.setText(PlainText.plain(message));
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 
     /** Async outcomes land as balloons too — the DB Studio feedback idiom. */
@@ -2788,7 +2794,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         l.gridy = row;
         l.anchor = GridBagConstraints.EAST;
         l.insets = new Insets(3, 0, 3, 8);
-        form.add(new JLabel(label), l);
+        form.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
@@ -2798,8 +2804,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private static String esc(String s) {
-        return s == null ? ""
-                : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 
     /** The three fixed branches of the tree. */
@@ -2884,8 +2889,10 @@ public final class Web3StudioTopComponent extends TopComponent {
                 int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof DeploymentRecord record) {
-                setText(record.contractName() + " @ "
-                        + DisplayValues.shortAddress(record.address()));
+                // the contract name is external (a cloned workspace's ABI); a
+                // list renderer paints <html>-led text as markup, so guard it
+                setText(PlainText.plain(record.contractName() + " @ "
+                        + DisplayValues.shortAddress(record.address())));
             }
             return this;
         }

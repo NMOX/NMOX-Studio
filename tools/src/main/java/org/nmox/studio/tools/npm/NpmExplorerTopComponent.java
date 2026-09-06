@@ -238,7 +238,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
             if (node != null && node.getUserObject() instanceof ScriptInfo s && currentProjectDir != null) {
                 boolean stopped = NpmService.stopScript(currentProjectDir, s.name);
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        stopped ? "Stopped " + s.name : s.name + " is not running");
+                        org.nmox.studio.core.util.PlainStatus.text(stopped ? "Stopped " + s.name : s.name + " is not running"));
             }
         });
         popup.add(stopItem);
@@ -480,7 +480,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
                 // a second copy of a running dev server only fights for
                 // the port — refuse out loud and name the way to stop it
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        script.name + " is already running — Stop Script (right-click) or the toolbar ■ stops it");
+                        org.nmox.studio.core.util.PlainStatus.text(script.name + " is already running — Stop Script (right-click) or the toolbar ■ stops it"));
                 return;
             }
             runNpmCommand("run " + script.name);

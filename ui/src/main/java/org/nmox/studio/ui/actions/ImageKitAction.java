@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -65,8 +66,8 @@ public final class ImageKitAction implements ActionListener {
     private void showDialog(File project, List<ImagePress.Candidate> found, File cwebp) {
         if (found.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No .jpg/.jpeg/.png images found in " + project.getName()
-                    + " (node_modules and build outputs are skipped)."));
+                    org.nmox.studio.core.util.PlainDialogs.plain("No .jpg/.jpeg/.png images found in " + project.getName()
+                    + " (node_modules and build outputs are skipped).", "Message")));
             return;
         }
         long totalBytes = found.stream().mapToLong(ImagePress.Candidate::bytes).sum();
@@ -87,15 +88,15 @@ public final class ImageKitAction implements ActionListener {
             "Max 800 px wide (thumbnails)"
         });
         maxWidth.getAccessibleContext().setAccessibleName("Downscale");
-        JCheckBox webp = new JCheckBox(cwebp != null
+        JCheckBox webp = new JCheckBox(PlainText.plain(cwebp != null
                 ? "WebP siblings via cwebp (found at " + cwebp.getName() + ")"
-                : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled",
+                : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled"),
                 cwebp != null);
         webp.setEnabled(cwebp != null);
 
         JPanel rows = new JPanel(new GridLayout(0, 1, 0, 4));
-        rows.add(new JLabel(found.size() + " image" + (found.size() == 1 ? "" : "s")
-                + ", " + mb(totalBytes) + " — outputs are siblings; originals untouched."));
+        rows.add(new JLabel(PlainText.plain(found.size() + " image" + (found.size() == 1 ? "" : "s")
+                + ", " + mb(totalBytes) + " — outputs are siblings; originals untouched.")));
         rows.add(jpeg);
         rows.add(new JLabel("    JPEG quality:"));
         rows.add(quality);

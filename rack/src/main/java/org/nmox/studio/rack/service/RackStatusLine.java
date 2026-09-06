@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Component;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -50,7 +51,7 @@ public class RackStatusLine implements StatusLineElementProvider {
     /** Tooltip: every serving, one per line. */
     /** HTML-escapes an external string for the tooltip that means its markup. */
     static String esc(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+        return PlainText.escape(s);
     }
 
     /** Agent Port chip: "⌁ agent port :N" while it listens (v2.84.0) — a port that can read the IDE is never invisible; null when off. */
@@ -176,20 +177,20 @@ public class RackStatusLine implements StatusLineElementProvider {
             } else {
                 liveLabel.setText("● " + live + " running");
                 liveLabel.setForeground(new java.awt.Color(80, 200, 110));
-                liveLabel.setToolTipText(names.toString());
+                liveLabel.setToolTipText(PlainText.plain(names.toString()));
             }
             List<ServingRegistry.Serving> servings = ServingRegistry.getDefault().snapshot();
             String chip = chipText(servings);
-            servingLabel.setText(chip == null ? "" : chip);
+            servingLabel.setText(PlainText.plain(chip == null ? "" : chip));
             servingLabel.setForeground(new java.awt.Color(90, 170, 235));
-            servingLabel.setToolTipText(chipTooltip(servings));
+            servingLabel.setToolTipText(PlainText.plain(chipTooltip(servings)));
             int[] listening = org.nmox.studio.rack.mcp.AgentPortAction.listening();
             String agent = agentChipText(listening);
-            agentLabel.setText(agent == null ? "" : agent);
+            agentLabel.setText(PlainText.plain(agent == null ? "" : agent));
             agentLabel.setForeground(new java.awt.Color(200, 150, 235));
-            agentLabel.setToolTipText(agentChipTooltip(listening));
+            agentLabel.setToolTipText(PlainText.plain(agentChipTooltip(listening)));
             boolean envNote = RackService.getDefault().envNoteActive();
-            envLabel.setText(envNote ? "env changed — restarts pick it up" : "");
+            envLabel.setText(PlainText.plain(envNote ? "env changed — restarts pick it up" : ""));
             envLabel.setForeground(new java.awt.Color(222, 178, 80));
         }
 
@@ -202,7 +203,7 @@ public class RackStatusLine implements StatusLineElementProvider {
             JPopupMenu menu = new JPopupMenu();
             java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live = org.nmox.studio.core.spi.LiveRuns.live();
             for (ServingRegistry.Serving s : servings) {
-                JMenuItem item = new JMenuItem(s.deviceTitle() + " — " + s.url());
+                JMenuItem item = new JMenuItem(PlainText.plain(s.deviceTitle() + " — " + s.url()));
                 item.addActionListener(e -> ServingLinks.open(s.url()));
                 menu.add(item);
                 // a serving a run owns gets its Stop beside its Open (v2.73.0):
@@ -212,7 +213,7 @@ public class RackStatusLine implements StatusLineElementProvider {
                     stop.addActionListener(e -> {
                         org.nmox.studio.core.spi.LiveRuns.Run r = org.nmox.studio.core.spi.LiveRuns.stop(s.deviceId());
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle());
+                                org.nmox.studio.core.util.PlainStatus.text(r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle()));
                     });
                     menu.add(stop);
                 }

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.mcp;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,7 +101,7 @@ public final class AgentPortAction implements ActionListener {
                     .putBoolean("agentport.started", true);
         } catch (IOException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "The Agent Port could not start: " + ex.getMessage()));
+                    org.nmox.studio.core.util.PlainDialogs.plain("The Agent Port could not start: " + ex.getMessage(), "Message")));
             return;
         }
         RUNNING.set(port);
@@ -132,7 +133,9 @@ public final class AgentPortAction implements ActionListener {
                 }""".formatted(port.url(), shownToken(port));
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production()))),
+        // PLAIN-LABEL-EXEMPT: the disclosure MEANS its markup (the v2.84.0 width-bounded body); every
+        // piece of it is the product's own text plus the port number — nothing external is spliced in
+        panel.add(new JLabel(PlainText.plain(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production())))),
                 BorderLayout.NORTH);
         JTextArea config = new JTextArea(snippet);
         config.setEditable(false);

@@ -1,5 +1,6 @@
 package org.nmox.studio.web3.ui;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -146,7 +147,7 @@ final class NetworkDialog extends JPanel {
                 return panel.commit();
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    problem, NotifyDescriptor.WARNING_MESSAGE));
+                    org.nmox.studio.core.util.PlainDialogs.plain(problem, "Message"), NotifyDescriptor.WARNING_MESSAGE));
         }
     }
 
@@ -182,7 +183,7 @@ final class NetworkDialog extends JPanel {
 
     private void note(String text, Color color) {
         noteLabel.setForeground(color);
-        noteLabel.setText(text);
+        noteLabel.setText(PlainText.plain(text));
     }
 
     // ---- validate + commit ------------------------------------------------
@@ -245,7 +246,7 @@ final class NetworkDialog extends JPanel {
         l.gridy = row;
         l.anchor = GridBagConstraints.EAST;
         l.insets = new Insets(3, 0, 3, 8);
-        panel.add(new JLabel(label), l);
+        panel.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;

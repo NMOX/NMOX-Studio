@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -96,7 +97,7 @@ public class NewProjectDialog extends JDialog {
     }
 
     private static String escape(String s) {
-        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        return PlainText.escape(s);
     }
 
     public NewProjectDialog(Component parent) {
@@ -383,7 +384,7 @@ public class NewProjectDialog extends JDialog {
             return;
         }
         org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText(pm + " install failed (exit " + code + ")");
+                .setStatusText(org.nmox.studio.core.util.PlainStatus.text(pm + " install failed (exit " + code + ")"));
         org.openide.NotifyDescriptor d = new org.openide.NotifyDescriptor.Message(
                 "<html><b>" + pm + " install didn't finish.</b><br><br>"
                 + "Your project files were created fine — only the dependency<br>"
@@ -401,7 +402,7 @@ public class NewProjectDialog extends JDialog {
     /** Locks the form while creation runs; the button says why. */
     private void setBusy(boolean busy) {
         createButton.setEnabled(!busy);
-        createButton.setText(busy ? "Creating…" : "Create Project");
+        createButton.setText(PlainText.plain(busy ? "Creating…" : "Create Project"));
         cancelButton.setEnabled(!busy);
         nameField.setEnabled(!busy);
         locationField.setEnabled(!busy);
@@ -414,11 +415,11 @@ public class NewProjectDialog extends JDialog {
 
     private void warn(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.WARNING_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.WARNING_MESSAGE));
     }
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
     }
 }

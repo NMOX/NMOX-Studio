@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.irc;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -145,8 +146,8 @@ final class NetworkEditorDialog {
      */
     static boolean confirmAndDelete(IrcConfig config, String network) {
         NotifyDescriptor d = new NotifyDescriptor(
-                "Delete network \"" + network + "\"? Its saved password is removed "
-                + "from the OS keychain too.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Delete network \"" + network + "\"? Its saved password is removed "
+                + "from the OS keychain too.", "Message"),
                 "Delete IRC Network",
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE,
@@ -164,7 +165,7 @@ final class NetworkEditorDialog {
             String label, javax.swing.JComponent field) {
         gc.gridx = 0;
         gc.gridy = row;
-        form.add(new JLabel(label), gc);
+        form.add(new JLabel(PlainText.plain(label)), gc);
         gc.gridx = 1;
         form.add(field, gc);
         return row + 1;

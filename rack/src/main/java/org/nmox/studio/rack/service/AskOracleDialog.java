@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import javax.swing.JButton;
@@ -125,6 +126,6 @@ public final class AskOracleDialog {
     private void busy(boolean b) {
         input.setEnabled(!b);
         ask.setEnabled(!b);
-        ask.setText(b ? "Thinking…" : "Ask");
+        ask.setText(PlainText.plain(b ? "Thinking…" : "Ask"));
     }
 }

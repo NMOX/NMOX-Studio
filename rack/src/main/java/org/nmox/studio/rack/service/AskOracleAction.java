@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -65,7 +66,7 @@ public final class AskOracleAction implements ActionListener {
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(new JLabel("<html>Question about the selection ("
                 + preview.code().length() + " chars of <b>"
-                + preview.fileName() + "</b>) — empty asks for an explanation:</html>"),
+                + PlainText.escape(preview.fileName()) + "</b>) — empty asks for an explanation:</html>"),
                 BorderLayout.NORTH);
         panel.add(question, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);

@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.browser.fx;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.http.LoopbackUrls;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -156,8 +157,8 @@ public final class FxBrowserPanel extends JPanel {
     }
 
     private static JButton navButton(String text, String tip, Runnable action) {
-        JButton b = new JButton(text);
-        b.setToolTipText(tip);
+        JButton b = new JButton(PlainText.plain(text));
+        b.setToolTipText(PlainText.plain(tip));
         b.addActionListener(e -> action.run());
         return b;
     }
@@ -285,7 +286,7 @@ public final class FxBrowserPanel extends JPanel {
     /** EDT. Clamped zoom applied to the WebView on the FX thread. */
     private void setZoom(double z) {
         zoom = Math.max(0.25, Math.min(4.0, z));
-        zoomLabel.setText(Math.round(zoom * 100) + "%");
+        zoomLabel.setText(PlainText.plain(Math.round(zoom * 100) + "%"));
         double apply = zoom;
         onFx(() -> webView.setZoom(apply));
     }

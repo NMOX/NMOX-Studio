@@ -1,5 +1,7 @@
 package org.nmox.studio.rack.docker;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import java.awt.Color;
@@ -269,13 +271,13 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private JButton btn(String label, Runnable action) {
-        JButton b = new JButton(label);
+        JButton b = new JButton(PlainText.plain(label));
         b.addActionListener(e -> action.run());
         return b;
     }
 
     private void status(String s) {
-        SwingUtilities.invokeLater(() -> statusLabel.setText(s));
+        SwingUtilities.invokeLater(() -> statusLabel.setText(PlainText.plain(s)));
     }
 
     /** Runs a verb, surfaces failure, refreshes the panel after. */
@@ -319,7 +321,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             g.gridy = 0;
             for (String h : new String[]{"CATEGORY", "COUNT", "ACTIVE", "SIZE", "RECLAIMABLE", ""}) {
                 g.gridx = enginePanel.getComponentCount() % 6;
-                JLabel l = new JLabel(h);
+                JLabel l = new JLabel(PlainText.plain(h));
                 l.setForeground(DIM);
                 enginePanel.add(l, g);
             }
@@ -377,21 +379,21 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private static JLabel label(String s, Color c, int style) {
-        JLabel l = new JLabel(s == null ? "" : s);
+        JLabel l = new JLabel(PlainText.plain(s == null ? "" : s));
         l.setForeground(c);
         l.setFont(l.getFont().deriveFont(style));
         return l;
     }
 
     private boolean confirm(String message) {
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(message, "Docker Panel",
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), "Docker Panel",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                message, NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     // ---- containers ----
@@ -675,6 +677,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         north.setBackground(BG);
         north.add(dockerizeInfo, BorderLayout.CENTER);
         recipeCombo.setToolTipText("Detected toolchain, or a recipe from ~/.nmox/dockerize.d");
+        // a drop-in recipe's name is external; a list renderer would paint an
+        // <html>-led one as markup, so the combo html-disables its renderer
+        recipeCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
         recipeCombo.addActionListener(e -> regenerateDockerize());
         JPanel comboHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
         comboHolder.setBackground(BG);

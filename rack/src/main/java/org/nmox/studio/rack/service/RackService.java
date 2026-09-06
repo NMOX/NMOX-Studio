@@ -580,7 +580,7 @@ public class RackService {
     /** Best-effort status line; unavailable in plain unit tests. */
     private static void status(String text) {
         try {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(text);
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
         } catch (RuntimeException | LinkageError ignored) {
             // status line unavailable (tests, stripped platform)
         }

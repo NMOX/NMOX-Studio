@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.tasks;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -139,7 +140,7 @@ public final class TasksTopComponent extends TopComponent {
     private final javax.swing.Timer clockTicker = new javax.swing.Timer(
             30_000, e -> {
                 if (boundDir != null && board.runningCard() != null) {
-                    boardLabel.setText(headerText());
+                    boardLabel.setText(PlainText.plain(headerText()));
                 }
             });
     /**
@@ -278,7 +279,7 @@ public final class TasksTopComponent extends TopComponent {
      *  destructive-by-side-effect gesture on this board says what
      *  happened (the blockDialog precedent, made the house rule). */
     private static void status(String text) {
-        org.openide.awt.StatusDisplayer.getDefault().setStatusText(text);
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
     }
 
     // ---- UI --------------------------------------------------------------
@@ -352,7 +353,7 @@ public final class TasksTopComponent extends TopComponent {
             columnsPanel.add(Box.createHorizontalStrut(6));
         }
         columnsPanel.add(Box.createHorizontalGlue());
-        boardLabel.setText(boundDir == null ? " " : headerText());
+        boardLabel.setText(PlainText.plain(boundDir == null ? " " : headerText()));
         columnsPanel.revalidate();
         columnsPanel.repaint();
         focusCardId = null; // consumed by the panels just built
@@ -381,7 +382,7 @@ public final class TasksTopComponent extends TopComponent {
         String count = col.wipLimit() > 0
                 ? col.cards().size() + "/" + col.wipLimit()
                 : String.valueOf(col.cards().size());
-        JLabel header = PlainTables.plain(new JLabel(col.name() + "  " + count));
+        JLabel header = new JLabel(PlainText.plain(col.name() + "  " + count));
         header.setBorder(BorderFactory.createEmptyBorder(4, 6, 2, 6));
         if (col.overLimit()) {
             header.setForeground(new Color(220, 80, 80)); // over WIP limit
@@ -739,7 +740,7 @@ public final class TasksTopComponent extends TopComponent {
         // full ctor with NO as the initial value — a reflexive Enter must
         // not delete (v1.98.0)
         NotifyDescriptor d = new NotifyDescriptor(
-                "Delete card \"" + card.title() + "\"?", "Delete Card",
+                org.nmox.studio.core.util.PlainDialogs.plain("Delete card \"" + card.title() + "\"?", "Message"), "Delete Card",
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                 null, NotifyDescriptor.NO_OPTION);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
@@ -826,8 +827,8 @@ public final class TasksTopComponent extends TopComponent {
 
     private void showSprintMenu(java.awt.Component owner) {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-        javax.swing.JMenuItem set = new javax.swing.JMenuItem(
-                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…");
+        javax.swing.JMenuItem set = new javax.swing.JMenuItem(PlainText.plain(
+                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…"));
         set.addActionListener(e -> editSprint());
         menu.add(set);
         javax.swing.JMenuItem report = new javax.swing.JMenuItem("Sprint Report…");
@@ -944,8 +945,8 @@ public final class TasksTopComponent extends TopComponent {
         // closing archives and clears — irreversible bookkeeping, so the
         // reflexive Enter lands on No (the v1.98.0 safe default)
         NotifyDescriptor confirm = new NotifyDescriptor(
-                "Close sprint " + board.sprintName() + "? The window, done count,"
-                + " and retro notes are archived; cards stay where they are.",
+                org.nmox.studio.core.util.PlainDialogs.plain("Close sprint " + board.sprintName() + "? The window, done count,"
+                + " and retro notes are archived; cards stay where they are.", "Message"),
                 "Close Sprint", NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -1077,8 +1078,8 @@ public final class TasksTopComponent extends TopComponent {
         remove.addActionListener(e -> {
             int n = board.column(index).cards().size();
             NotifyDescriptor d = new NotifyDescriptor(
-                    n == 0 ? "Delete this empty column?"
-                           : "Delete this column AND its " + n + " cards?",
+                    org.nmox.studio.core.util.PlainDialogs.plain(n == 0 ? "Delete this empty column?"
+                           : "Delete this column AND its " + n + " cards?", "Message"),
                     "Delete Column", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null,
                     NotifyDescriptor.NO_OPTION);

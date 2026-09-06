@@ -20,7 +20,7 @@ class CheckMyWorkReportTest {
     void reportIsPlainText() {
         String hostile = "2 of 3 checks pass.\n\n  ✗ You added <html><img src=\"http://evil/x\"> a thing\n      "
                 + "the hint <html><b>bold</b> " + "long ".repeat(40) + "\n";
-        JTextArea area = CheckMyWorkAction.reportComponent(hostile);
+        JTextArea area = org.nmox.studio.core.util.PlainDialogs.plain(hostile, "Check My Work report");
         assertThat(area.getText()).as("verbatim — nothing interpreted, nothing fetched").isEqualTo(hostile);
         assertThat(area.isEditable()).isFalse();
         assertThat(area.getLineWrap()).as("wraps instead of fragmenting").isTrue();
@@ -35,8 +35,8 @@ class CheckMyWorkReportTest {
     void bothSitesUseTheComponent() throws Exception {
         String src = java.nio.file.Files.readString(java.nio.file.Path.of(
                 "src/main/java/org/nmox/studio/ui/actions/CheckMyWorkAction.java"));
-        assertThat(src.split("reportComponent\\(head \\+ report\\)").length - 1)
-                .as("the all-pass Message and the Explain descriptor both wrap the report").isEqualTo(2);
+        assertThat(src.split("PlainDialogs\\.plain\\(head \\+ report, \"Check My Work report\"\\)").length - 1)
+                .as("the all-pass Message and the Explain descriptor both wrap the report (v2.86.0: through the one helper)").isEqualTo(2);
         assertThat(src).doesNotContain("Message(head + report").doesNotContain("DialogDescriptor(\n                        head + report");
     }
 }

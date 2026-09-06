@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
@@ -147,8 +148,8 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 menu.add(none);
             }
             for (File dir : projects) {
-                JMenuItem item = new JMenuItem(dir.getName());
-                item.setToolTipText(dir.getAbsolutePath());
+                JMenuItem item = new JMenuItem(PlainText.plain(dir.getName()));
+                item.setToolTipText(PlainText.plain(dir.getAbsolutePath()));
                 item.addActionListener(a -> RackService.getDefault().openProject(dir));
                 menu.add(item);
             }
@@ -164,7 +165,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                 new ProjectConfigDialog(this, rack.getProjectDir()).setVisible(true);
             } catch (IOException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        "Could not open the configuration: " + ex.getMessage(),
+                        org.nmox.studio.core.util.PlainDialogs.plain("Could not open the configuration: " + ex.getMessage(), "Message"),
                         NotifyDescriptor.WARNING_MESSAGE));
             }
         });
@@ -213,7 +214,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
     private void syncToRack() {
         File dir = rack.getProjectDir();
         treePanel.setRootDirectory(dir);
-        statusLabel.setText(dir.getAbsolutePath());
+        statusLabel.setText(PlainText.plain(dir.getAbsolutePath()));
         // the kind walk stats the root and one level of children — off the
         // EDT (v1.33.1 law), newest aim wins; the suffix lands a beat later
         KIND_RP.post(() -> {
@@ -221,7 +222,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                     org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
             SwingUtilities.invokeLater(() -> {
                 if (dir.equals(rack.getProjectDir())) {
-                    statusLabel.setText(dir.getAbsolutePath() + aimSuffix(kind));
+                    statusLabel.setText(PlainText.plain(dir.getAbsolutePath() + aimSuffix(kind)));
                 }
             });
         });

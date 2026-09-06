@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -128,9 +129,9 @@ public final class ManageExperimentsAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = new JLabel(model.size()
+        JLabel header = new JLabel(PlainText.plain(model.size()
                 + (model.size() == 1 ? " experiment" : " experiments")
-                + " in ~/.nmox/experiments — newest first. Sizing…");
+                + " in ~/.nmox/experiments — newest first. Sizing…"));
         panel.add(header, BorderLayout.NORTH);
         // the disk cost lands when the walk finishes — node_modules
         // trees make this seconds, never an EDT freeze (v1.33.1 law)
@@ -142,7 +143,7 @@ public final class ManageExperimentsAction implements ActionListener {
             long total = bytes;
             int count = model.size();
             SwingUtilities.invokeLater(() ->
-                    header.setText(Experiments.shelfSummary(count, total)));
+                    header.setText(PlainText.plain(Experiments.shelfSummary(count, total))));
         });
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(buttons, BorderLayout.SOUTH);
@@ -201,7 +202,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         duplicate.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                "Could not duplicate: " + ex.getMessage(),
+                                org.nmox.studio.core.util.PlainDialogs.plain("Could not duplicate: " + ex.getMessage(), "Message"),
                                 NotifyDescriptor.ERROR_MESSAGE));
                     });
                 }
@@ -231,8 +232,8 @@ public final class ManageExperimentsAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(dir.getName() + " graduated: "
-                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)",
+                                new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: "
+                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)", "Message"),
                                         NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
@@ -240,7 +241,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();
@@ -258,7 +259,7 @@ public final class ManageExperimentsAction implements ActionListener {
             // so use the full constructor with NO_OPTION as the initial value
             // (the v1.98.0 infra dialog-safety idiom).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    "Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.",
+                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.", "Message"),
                     "Discard Experiment", NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
@@ -291,7 +292,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                message, NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

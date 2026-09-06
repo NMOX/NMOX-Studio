@@ -99,8 +99,8 @@ public final class NgSchematicAction implements ActionListener {
         File target = NgSchematic.targetFolder(root, folder.getText());
         if (target == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "That folder doesn't exist inside the workspace — pick a "
-                    + "directory under " + root.getName() + '.'));
+                    org.nmox.studio.core.util.PlainDialogs.plain("That folder doesn't exist inside the workspace — pick a "
+                    + "directory under " + root.getName() + '.', "Message")));
             return;
         }
 
@@ -146,12 +146,12 @@ public final class NgSchematicAction implements ActionListener {
                         }
                         boolean opened = createdFile != null
                                 && openInEditor(createdFile);
-                        StatusDisplayer.getDefault().setStatusText(exit == 0
+                        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(exit == 0
                                 ? "ng generate " + schematic + " " + rawName.trim()
                                         + (opened
                                                 ? " — opened " + new File(created).getName()
                                                 : " — done.")
-                                : "ng generate failed (exit " + exit + ") — see Output.");
+                                : "ng generate failed (exit " + exit + ") — see Output."));
                     }));
             LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         });

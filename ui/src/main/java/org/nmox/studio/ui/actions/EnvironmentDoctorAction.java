@@ -1,5 +1,7 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -111,7 +113,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
                     model.addRow(new Object[]{"—", "doctor.d",
                         "skipped — " + note, "", ""});
                 }
-                status.setText(found + " of " + total + " tools present");
+                status.setText(PlainText.plain(found + " of " + total + " tools present"));
             }
         });
     }

@@ -178,7 +178,7 @@ public final class NewExperimentAction implements ActionListener {
                 // deferred a dispatch: shown while the wizard is still disposing,
                 // the error can stack behind the main window and soft-lock the app
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             } finally {
                 handle.finish();
             }
@@ -192,9 +192,9 @@ public final class NewExperimentAction implements ActionListener {
      */
     private static void reportInstall(String pm, int code) {
         SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(
-                code == 0
+                org.nmox.studio.core.util.PlainStatus.text(code == 0
                 ? "Dependencies installed — press F6 and follow EXPERIMENT.md"
-                : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help"));
+                : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help")));
     }
 
     /** The manager's Open re-uses the same guide-opening path (v2.36.1). */

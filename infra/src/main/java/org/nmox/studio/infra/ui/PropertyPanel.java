@@ -1,5 +1,6 @@
 package org.nmox.studio.infra.ui;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -102,7 +103,7 @@ public class PropertyPanel extends JPanel {
             header.setText("No selection");
             costLabel.setText(" ");
         } else {
-            header.setText(node.kind.getDisplayName());
+            header.setText(PlainText.plain(node.kind.getDisplayName()));
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridx = 0;
             gc.gridy = 0;
@@ -127,7 +128,7 @@ public class PropertyPanel extends JPanel {
     }
 
     private void addRow(GridBagConstraints gc, String label, javax.swing.JComponent editor) {
-        JLabel l = new JLabel(label);
+        JLabel l = new JLabel(PlainText.plain(label));
         l.setForeground(new Color(0x9A, 0x9D, 0xA4));
         gc.gridx = 0;
         gc.weightx = 0;
@@ -187,8 +188,8 @@ public class PropertyPanel extends JPanel {
 
     private void refreshCost() {
         if (current != null) {
-            costLabel.setText(String.format("≈ $%.2f/mo   (design: $%.2f/mo)",
-                    current.monthlyUsd(), graph.totalMonthlyUsd()));
+            costLabel.setText(PlainText.plain(String.format("≈ $%.2f/mo   (design: $%.2f/mo)",
+                    current.monthlyUsd(), graph.totalMonthlyUsd())));
         }
     }
 

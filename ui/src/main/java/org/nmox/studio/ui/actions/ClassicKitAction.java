@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -87,7 +88,7 @@ public final class ClassicKitAction implements ActionListener {
 
         Map<String, JCheckBox> libraryBoxes = new LinkedHashMap<>();
         for (ClassicKit.Lib lib : ClassicKit.libraries()) {
-            libraryBoxes.put(lib.id(), new JCheckBox(libraryLabel(lib),
+            libraryBoxes.put(lib.id(), new JCheckBox(PlainText.plain(libraryLabel(lib)),
                     "jquery".equals(lib.id())));
         }
         JRadioButton vendored = new JRadioButton(
@@ -103,7 +104,7 @@ public final class ClassicKitAction implements ActionListener {
                 JCheckBox box = libraryBoxes.get(lib.id());
                 boolean enabled = enabledFor(lib, npmMode);
                 box.setEnabled(enabled);
-                box.setToolTipText(enabled ? null : ClassicKit.PROTOTYPE_NPM_NOTE);
+                box.setToolTipText(PlainText.plain(enabled ? null : ClassicKit.PROTOTYPE_NPM_NOTE));
             }
         };
         vendored.addActionListener(ev -> syncMode.run());
@@ -111,7 +112,7 @@ public final class ClassicKitAction implements ActionListener {
 
         Map<String, JCheckBox> generatorBoxes = new LinkedHashMap<>();
         generatorLabels().forEach((id, label)
-                -> generatorBoxes.put(id, new JCheckBox(label)));
+                -> generatorBoxes.put(id, new JCheckBox(PlainText.plain(label))));
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 0, 4));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -149,7 +150,7 @@ public final class ClassicKitAction implements ActionListener {
         List<String> problems = ClassicKit.validate(opts, project);
         if (!problems.isEmpty()) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(String.join("\n", problems),
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(String.join("\n", problems), "Message"),
                             NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
@@ -160,12 +161,12 @@ public final class ClassicKitAction implements ActionListener {
                 List<ClassicKit.Outcome> outcomes = ClassicKit.write(project, opts);
                 String report = renderReport(outcomes);
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message("Classic Kit:\n\n" + report,
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Classic Kit:\n\n" + report, "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
                 String message = "Could not write: " + ex.getMessage();
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

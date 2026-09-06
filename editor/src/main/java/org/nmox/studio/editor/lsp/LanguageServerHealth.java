@@ -153,7 +153,7 @@ public final class LanguageServerHealth {
 
             private void status(String text) {
                 java.awt.EventQueue.invokeLater(() ->
-                        StatusDisplayer.getDefault().setStatusText(text));
+                        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text)));
             }
         });
     }

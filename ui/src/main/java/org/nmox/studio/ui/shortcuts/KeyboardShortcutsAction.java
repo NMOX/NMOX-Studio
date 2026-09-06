@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.shortcuts;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -113,8 +114,8 @@ public final class KeyboardShortcutsAction implements ActionListener {
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
         table.getColumnModel().getColumn(1).setPreferredWidth(420);
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
-        panel.add(new JLabel(rows.size() + " NMOX shortcuts in the " + profile + " keymap profile and the global Shortcuts folder. "
-                + "Editor-kit chords (Emmet ⌥⌘E, template Go to Declaration ⌘B) are in the user guide."),
+        panel.add(new JLabel(PlainText.plain(rows.size() + " NMOX shortcuts in the " + profile + " keymap profile and the global Shortcuts folder. "
+                + "Editor-kit chords (Emmet ⌥⌘E, template Go to Declaration ⌘B) are in the user guide.")),
                 java.awt.BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new java.awt.Dimension(560, 380));

@@ -102,7 +102,7 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
             java.awt.EventQueue.invokeLater(() -> {
                 if (found == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            name + " is not declared in this project's stylesheets");
+                            org.nmox.studio.core.util.PlainStatus.text(name + " is not declared in this project's stylesheets"));
                 } else {
                     openAt(found.file(), found.offset());
                 }

@@ -4,6 +4,8 @@
 // org.nmox.studio.editor.testing's bundle
 package org.nmox.studio.editor.testing.explorer;
 
+import org.nmox.studio.core.util.PlainText;
+import org.nmox.studio.core.util.PlainTables;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.io.File;
@@ -105,8 +107,8 @@ public final class TestsExplorerTopComponent extends TopComponent {
         // the window shows
         stop.addActionListener(e -> {
             int stopped = TestRunsStop.stopAll();
-            StatusDisplayer.getDefault().setStatusText(stopped == 0
-                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s"));
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(stopped == 0
+                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s")));
         });
         stop.getAccessibleContext().setAccessibleName("Stop running test");
         stop.setEnabled(false);
@@ -211,11 +213,11 @@ public final class TestsExplorerTopComponent extends TopComponent {
         for (int i = 0; i < tree.getRowCount() && i < 40; i++) {
             tree.expandRow(i);
         }
-        status.setText(tests + (tests == 1 ? " test in " : " tests in ")
+        status.setText(PlainText.plain(tests + (tests == 1 ? " test in " : " tests in ")
                 + found.size() + (found.size() == 1 ? " file" : " files")
                 + (truncated
                 ? " — large project, first " + TestIndex.MAX_FILES + " files only"
-                : ""));
+                : "")));
     }
 
     /** A leaf that shows the test's NAME, not the record's toString —

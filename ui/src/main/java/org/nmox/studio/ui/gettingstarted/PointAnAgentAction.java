@@ -49,7 +49,7 @@ public final class PointAnAgentAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Action port = resolver.resolve(RACK_CATEGORY, RACK_ACTION_ID);
         if (port == null) {
-            StatusDisplayer.getDefault().setStatusText(Bundle.MSG_PointAnAgent_NoRack());
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(Bundle.MSG_PointAnAgent_NoRack()));
             return;
         }
         port.actionPerformed(e);

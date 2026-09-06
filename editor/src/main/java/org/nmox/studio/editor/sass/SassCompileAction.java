@@ -124,7 +124,7 @@ public final class SassCompileAction implements ActionListener {
     }
 
     private static void status(String message) {
-        StatusDisplayer.getDefault().setStatusText(message);
+        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
     }
 
     /** The armed half: every save of the watched file recompiles it. */

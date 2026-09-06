@@ -1,5 +1,6 @@
 package org.nmox.studio.editor.outline;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -366,7 +367,7 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
         }
 
         private static String escape(String s) {
-            return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+            return PlainText.escape(s);
         }
     }
 

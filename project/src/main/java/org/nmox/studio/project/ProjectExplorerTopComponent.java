@@ -1,5 +1,6 @@
 package org.nmox.studio.project;
 
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -303,7 +304,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         header.removeAll();
         File dir = projectDir();
 
-        JLabel name = new JLabel(dir.getName());
+        JLabel name = new JLabel(PlainText.plain(dir.getName()));
         name.setFont(NAME_FONT);
         name.setForeground(TEXT);
         name.setAlignmentX(LEFT_ALIGNMENT);
@@ -320,7 +321,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // fill the chips when it returns.
         fillChipsAsync(chips, dir);
 
-        JLabel path = new JLabel(dir.getAbsolutePath());
+        JLabel path = new JLabel(PlainText.plain(dir.getAbsolutePath()));
         path.setFont(TINY);
         path.setForeground(TEXT_DIM);
         path.setAlignmentX(LEFT_ALIGNMENT);
@@ -444,11 +445,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     /** A small focusable button for a row's gesture, named for assistive technology. */
     private static javax.swing.JButton flatButton(String text, String accessibleName) {
-        javax.swing.JButton b = new javax.swing.JButton(text);
+        javax.swing.JButton b = new javax.swing.JButton(PlainText.plain(text));
         b.setFont(TINY);
         b.setFocusable(true);
         b.setMargin(new java.awt.Insets(0, 6, 0, 6));
-        b.setToolTipText(accessibleName);
+        b.setToolTipText(PlainText.plain(accessibleName));
         b.getAccessibleContext().setAccessibleName(accessibleName);
         return b;
     }
@@ -579,7 +580,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     // when the subtitle already shows this value
                     if (!kinds.isEmpty() && sub.getParent() != null
                             && !kinds.equals(sub.getText())) {
-                        sub.setText(kinds);
+                        sub.setText(PlainText.plain(kinds));
                     }
                 });
             }
@@ -684,7 +685,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     // ---- widgets ----
 
     private void section(String title) {
-        JLabel label = new JLabel(title);
+        JLabel label = new JLabel(PlainText.plain(title));
         label.setFont(TINY);
         label.setForeground(SECTION);
         label.setBorder(BorderFactory.createEmptyBorder(10, 12, 3, 12));
@@ -693,7 +694,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private JLabel chip(String text, Color color) {
-        JLabel label = new JLabel(text);
+        JLabel label = new JLabel(PlainText.plain(text));
         label.setFont(CHIP_FONT);
         label.setForeground(color);
         label.setBackground(CHIP_BG);
@@ -703,7 +704,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private void emptyRow(String hint) {
-        JLabel label = new JLabel(hint);
+        JLabel label = new JLabel(PlainText.plain(hint));
         label.setFont(ROW_FONT);
         label.setForeground(TEXT_DIM);
         label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
@@ -742,7 +743,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.setAlignmentX(LEFT_ALIGNMENT);
         rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         rowPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        rowPanel.setToolTipText(tooltip);
+        rowPanel.setToolTipText(PlainText.plain(tooltip));
 
         if (dot != null) {
             JLabel dotLabel = new JLabel("●");
@@ -755,7 +756,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // over: a painted row with a mouse listener is a door only a mouse
         // can open; Tab reaches this, Enter/Space open it, a screen reader
         // reads it by name). The panel's own click stays for the mouse.
-        javax.swing.JButton titleButton = new javax.swing.JButton(title);
+        javax.swing.JButton titleButton = new javax.swing.JButton(PlainText.plain(title));
         titleButton.setFont(bold ? ROW_BOLD : ROW_FONT);
         titleButton.setForeground(TEXT);
         titleButton.setContentAreaFilled(false);
@@ -769,7 +770,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.add(titleButton);
         JLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            sub = new JLabel(shorten(subtitle, 38));
+            sub = new JLabel(PlainText.plain(shorten(subtitle, 38)));
             sub.setFont(TINY);
             sub.setForeground(TEXT_DIM);
             sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
@@ -784,7 +785,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // wins property the v1.270.0 gate enforces holds by construction
             // and Popups.selectOnTrigger has nothing to select.
             javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(forgetLabel);
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(forgetLabel));
             item.addActionListener(e -> onForget.run());
             menu.add(item);
             rowPanel.setComponentPopupMenu(menu);

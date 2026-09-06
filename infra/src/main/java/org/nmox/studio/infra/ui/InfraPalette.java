@@ -1,5 +1,6 @@
 package org.nmox.studio.infra.ui;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -99,8 +100,8 @@ public class InfraPalette extends JPanel {
             this.entry = value;
             this.selected = isSelected;
             setPreferredSize(new Dimension(180, value.kind() == null ? 26 : 34));
-            setToolTipText(value.kind() == null ? null
-                    : value.kind().getDisplayName() + " — drag onto the canvas");
+            setToolTipText(PlainText.plain(value.kind() == null ? null
+                    : value.kind().getDisplayName() + " — drag onto the canvas"));
             return this;
         }
 

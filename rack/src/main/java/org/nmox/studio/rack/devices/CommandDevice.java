@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.devices;
 
+import org.nmox.studio.core.util.PlainText;
 import java.awt.Color;
 import java.util.List;
 import java.util.Map;
@@ -195,8 +196,10 @@ public abstract class CommandDevice extends RackDevice {
             if (cmd == null || cmd.isEmpty()) {
                 return null;
             }
-            return "<html><code>$ " + String.join(" ", cmd)
-                    + "</code><br>in " + commandDir().getAbsolutePath() + "</html>";
+            // the preview MEANS its markup; the argv (a package.json script name, a typed
+            // SOLDER command) and the directory are external and ride PlainText.escape
+            return "<html><code>$ " + PlainText.escape(String.join(" ", cmd))
+                    + "</code><br>in " + PlainText.escape(commandDir().getAbsolutePath()) + "</html>";
         } catch (RuntimeException ex) {
             return null;
         }

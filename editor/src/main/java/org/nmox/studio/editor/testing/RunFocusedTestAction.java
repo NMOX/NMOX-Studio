@@ -129,9 +129,9 @@ public class RunFocusedTestAction extends BaseAction {
                 focused.command(), l -> { }, code -> {
                     LiveRuns.remove(runId);
                     // STOP reads STOPPED (v2.69.15), one registry over
-                    StatusDisplayer.getDefault().setStatusText(LiveRuns.wasStoppedByUser(runId)
+                    StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(LiveRuns.wasStoppedByUser(runId)
                             ? "Focused test stopped"
-                            : code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]");
+                            : code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]"));
                 });
         LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         return true;

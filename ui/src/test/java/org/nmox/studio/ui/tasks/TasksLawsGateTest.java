@@ -27,9 +27,13 @@ class TasksLawsGateTest {
         assertThat(tc())
                 .as("the card renderer and the column header both show text"
                         + " from a file a clone can carry; <html> titles must"
-                        + " paint as characters, never fetch (v1.311.0)")
+                        + " paint as characters, never fetch (v1.311.0). The"
+                        + " renderer sets its text per paint, so the property"
+                        + " on `this` is right; the column header is a one-shot"
+                        + " JLabel, where the property lands too late (v2.86.0)"
+                        + " — its text rides PlainText.plain instead.")
                 .contains("PlainTables.plain(this)")
-                .contains("PlainTables.plain(new JLabel(");
+                .contains("new JLabel(PlainText.plain(");
     }
 
     @Test
