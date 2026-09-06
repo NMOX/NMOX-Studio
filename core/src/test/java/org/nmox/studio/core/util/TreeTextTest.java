@@ -86,4 +86,23 @@ class TreeTextTest {
         assertThat(r.elided()).isEqualTo(TreeText.LIST_CAP + 7 - 10);
         assertThat(r.text()).endsWith("not shown)\n");
     }
+
+    @Test
+    @DisplayName("a file name is external text: a newline or a control character cannot forge a tree line")
+    void hostileNamesCannotForgeLines(@TempDir Path tmp) throws Exception {
+        assertThat(TreeText.safeName("a\nb")).isEqualTo("a?b");
+        assertThat(TreeText.safeName("tab\there")).isEqualTo("tab?here");
+        assertThat(TreeText.safeName("plain-ü.md")).isEqualTo("plain-ü.md");
+        Path root = tmp.resolve("p");
+        Files.createDirectories(root);
+        Path forged;
+        try {
+            forged = Files.writeString(root.resolve("x\n└── forged.js"), "");
+        } catch (java.io.IOException | java.nio.file.InvalidPathException noNewlines) {
+            return; // a filesystem that refuses the name has nothing to prove
+        }
+        TreeText.Result r = TreeText.render(root, 3, 50);
+        assertThat(r.text().lines().count()).isEqualTo(2);
+        assertThat(r.text()).contains("└── x?└── forged.js");
+    }
 }

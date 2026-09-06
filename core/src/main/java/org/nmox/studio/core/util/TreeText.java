@@ -54,7 +54,7 @@ public final class TreeText {
             Path p = entries.get(i);
             boolean last = i == entries.size() - 1;
             boolean isDir = Files.isDirectory(p) && !Files.isSymbolicLink(p);
-            String name = p.getFileName().toString();
+            String name = safeName(p.getFileName().toString());
             if (budget[0] <= 0) {
                 elided[0] += entries.size() - i;
                 return;
@@ -74,6 +74,18 @@ public final class TreeText {
                 sb.append('\n');
             }
         }
+    }
+
+    /**
+     * A file name is external text and a tree is line-structured: a name
+     * carrying a newline (legal on every Unix filesystem) would forge
+     * extra tree lines, and other control characters would corrupt the
+     * box drawing — each becomes {@code ?}. The hostile-input lens.
+     */
+    static String safeName(String name) {
+        StringBuilder sb = new StringBuilder(name.length());
+        name.codePoints().forEach(cp -> sb.appendCodePoint(Character.isISOControl(cp) ? '?' : cp));
+        return sb.toString();
     }
 
     /** One directory's listing: at most {@link #LIST_CAP} entries kept, the rest counted. */
