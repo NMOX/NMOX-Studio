@@ -124,6 +124,32 @@ public final class ReleaseNotes {
         return running.equals(lastSeen) ? Decision.NONE : Decision.SHOW;
     }
 
+    /**
+     * The same entries as Markdown for a release post (v2.88.0, the
+     * developer evangelist's "what shipped" motion): each entry under its
+     * Keep-a-Changelog heading, {@code ## [2.87.0] - 2026-09-06}, the body
+     * exactly as written in CHANGELOG.md — it IS Markdown there — with
+     * the omitted-count line, when any, as a trailing note.
+     */
+    public static String renderMarkdown(List<Entry> entries, int omitted) {
+        StringBuilder sb = new StringBuilder();
+        for (Entry e : entries) {
+            if (sb.length() > 0) {
+                sb.append("\n\n");
+            }
+            sb.append("## [").append(e.version()).append(']');
+            if (!e.date().isBlank()) {
+                sb.append(" - ").append(e.date());
+            }
+            sb.append("\n\n").append(e.body().strip()).append('\n');
+        }
+        if (omitted > 0) {
+            sb.append("\n_…and ").append(omitted).append(" earlier release").append(omitted == 1 ? "" : "s")
+                    .append(" not shown._\n");
+        }
+        return sb.toString();
+    }
+
     /** Plain text for a text area: version + date headings, bodies as written. */
     public static String render(List<Entry> entries, int omitted) {
         StringBuilder sb = new StringBuilder();
