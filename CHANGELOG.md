@@ -266,6 +266,13 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     reads every text area's construction in every module for a name
     anywhere in its file (API Studio names its bodies in a later block),
     failing-first with five.
+42. **The front door's fields speak their names** — the same lens
+    counted 46 inputs product-wide with neither an accessible name nor
+    a `labelFor` label (a screen reader hears "text field"). The New
+    Project wizard's name and location fields and the learning-space
+    picker's search — the beginner's first three — are named now; the
+    sweep with its gate is the next shift's first unit, the census in
+    the plan.
 
 ## [2.84.0] - 2026-09-05
 
