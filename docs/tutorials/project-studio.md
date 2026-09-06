@@ -14,7 +14,7 @@ opening a terminal.
 ## Steps
 
 1. **Scaffold a project.** `File ▸ New Project…` → pick a template
-   (React, Vue, Vanilla JS, Angular, Elixir/Phoenix, PHP LEMP, and more).
+   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, and more).
    Choose a location (defaults to `~/NMOX`) and finish. The project opens
    and the rack aims at it.
 

@@ -1,6 +1,6 @@
 # The Plan
 
-*Currency addendum 2026-09-06, at v2.85.0, after two lenses, one
+*Currency addendum 2026-09-06, at v2.94.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -4132,4 +4132,57 @@ first cut matched the class NAME and reached no terminal, because the
 terminal module's component is `ActiveTerm extends StreamTerm extends
 Term`; the walk found it, the hierarchy is walked by name now) was
 being built one worktree over.
+
+## Addendum — 2026-09-06 afternoon, the developer-evangelist docs pass (v2.94.0)
+
+David, after the finish line: put on the senior Developer Relations
+hat and make the docs and website package all it can be — current,
+interesting, illustrated, demo material, tours, walkthroughs. Then, on
+the first screenshot: "I really hate react; can we do Angular?" — so
+every new picture and the demo script are Angular, the framework bet.
+And on the AI device's name: ORACLE collides with a company; the
+Norse answer is KVASIR (the being who answered every question), and a
+complete rename is the next unit after this one.
+
+**The survey said** (before any writing): the website had zero
+screenshots; the README was a wall that interleaved the Homebrew block
+with feature paragraphs; the front-page hero shots and the visual tour
+were from July, before v2.0, and the tour still said 78 grammars and
+88 spaces; four tutorials were bare; nothing walked the Task Board or
+the presenting kit; there was no demo script. The coverage grid over
+guide/README/tour/sink/tutorials made the gaps visible in one table —
+worth doing again before the next docs pass.
+
+**How it was built.** Three writers in parallel on disjoint files in
+one worktree (tutorials; README + tour + index; website + demo script)
+while the capture walk ran on the shipped 2.93.0. The walk's cost was
+aiming: the Open Folder chooser refused every background route (raw
+type, AX set-value, row select, row AXPress); the platform's own
+`--open <dir>` handshake to the running instance opened the folder as
+a project and the open hook aimed the rack. Two traps behind that:
+`--open` on an already-open project fires no hook (the rack kept its
+first in-memory patch through three "re-aims" until Close All Projects
+cleared the way), and Close All Projects also closes the Welcome, Rack
+and Browser tabs. The rack hero needed the React fixture's patch
+re-dialed for Angular (SURGE `auto` → the project's `ng serve`, port
+4200, SCOPE at the address) — a rack shot showing `vite / 5173` on an
+Angular project would have been a lie in a picture.
+
+**What could not be pictured.** The Show Keystrokes pill: from the
+background, Escape arrives as an accessibility cancel, not a key
+event, and the overlay window never appeared (CoreGraphics census: one
+window). It was photographed in the v2.89.0 walk; this release
+describes it in text and the alt reads what the frame shows. Bringing
+the app to the front would have produced the picture and broken
+David's no-takeover rule; the rule won.
+
+**Lessons.** (1) A docs pass starts with a coverage grid and an image
+inventory by date — the two measurements that turned "make it better"
+into a list. (2) The demo project is a product decision, not a
+writer's default: the first draft reached for Vite + React because the
+fixtures did; the framework bet says Angular, and a beat that depended
+on a bundle resolving to a source file had to become the Language
+Service's squiggle, which is the better Angular story anyway. (3) When
+the writers cannot be messaged mid-flight, the merge is where the
+direction lands — budget for it.
 
