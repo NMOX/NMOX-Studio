@@ -54,6 +54,7 @@ class CopyAsMarkdownTest {
         String src = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/editor/share/CopyAsMarkdownAction.java"));
         assertThat(src).contains("path = \"Editors/Popup\"")
+                .contains("path = \"Menu/Edit\", position = 1370")
                 .contains("getSelectedText()")
                 .contains("doc.getText(0, doc.getLength())")
                 .contains("getSystemClipboard().setContents")

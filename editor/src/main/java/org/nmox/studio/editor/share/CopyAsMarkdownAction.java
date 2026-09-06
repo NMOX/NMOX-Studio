@@ -11,22 +11,31 @@ import javax.swing.text.JTextComponent;
 import org.nmox.studio.core.util.Plural;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
- * Right-click ▸ Copy as Markdown (v2.87.0): the selection — or, with
+ * Edit ▸ Copy as Markdown, and right-click ▸ Copy as Markdown (v2.87.0): the
+ * selection — or, with
  * nothing selected, the whole file — lands on the clipboard as a fenced
  * block tagged with the file's language, ready to paste into a README, a
  * GitHub issue, a blog post or a chat. Born for the developer evangelist
  * who does exactly that a dozen times a day and hand-types the fence every
- * time. The status line says what was copied and which tag it carries.
+ * time. The status line says what was copied and which tag it carries. It
+ * lives on the Edit menu beside the clipboard verbs (position 1370, after
+ * the platform's clipboard-lines at 1360, before Delete at 1400) as well as
+ * the popup, so a keyboard user and a menu reader find it without a
+ * right-click.
  */
 @ActionID(category = "Edit", id = "org.nmox.studio.editor.share.CopyAsMarkdownAction")
 @ActionRegistration(displayName = "#CTL_CopyAsMarkdown", lazy = true)
-@ActionReference(path = "Editors/Popup", position = 1960)
+@ActionReferences({
+    @ActionReference(path = "Editors/Popup", position = 1960),
+    @ActionReference(path = "Menu/Edit", position = 1370)
+})
 @Messages("CTL_CopyAsMarkdown=Copy as Markdown")
 public final class CopyAsMarkdownAction implements ActionListener {
 

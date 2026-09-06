@@ -804,7 +804,7 @@ reader, or a feed — the developer-evangelist grant:
   settings — toggle it off, or restart, and the font is exactly what it
   was. The menu item shows a check while the mode is on and the status
   line says so.
-- **Right-click ▸ Copy as Markdown.** The selection — or, with nothing
+- **Edit ▸ Copy as Markdown** (or right-click). The selection — or, with nothing
   selected, the whole file — lands on the clipboard as a fenced code
   block tagged with the file's language (` ```jsx `, ` ```typescript `,
   ` ```bash `…), ready to paste into a README, a GitHub issue, a blog
