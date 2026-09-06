@@ -198,10 +198,68 @@ class McpSubscriptionsTest {
         subs.awaitIdle();
         String text = out.toString(StandardCharsets.UTF_8);
         int lines = text.split("notifications/message").length - 1;
-        assertThat(text).contains("250 log lines dropped");
+        assertThat(text).contains("250 frames dropped");
         assertThat(lines).as("the cap's worth of lines plus the one notice").isEqualTo(McpSubscriptions.MAX_PENDING + 1);
         assertThat(text).contains("line 0").contains("line " + (McpSubscriptions.MAX_PENDING - 1)).doesNotContain("line " + McpSubscriptions.MAX_PENDING + "\"");
         subs.close();
+    }
+
+    @Test
+    @DisplayName("resource updates past the pending cap are bounded and announced like log lines — every frame kind rides one backlog (the v2.85.0 review)")
+    void updatesPastTheCapAreBoundedToo() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions();
+        java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        OutputStream slow = new OutputStream() {
+            boolean first = true;
+            @Override
+            public void write(int b) throws IOException {
+                if (first) {
+                    first = false;
+                    try {
+                        gate.await();
+                    } catch (InterruptedException e) {
+                        throw new IOException(e);
+                    }
+                }
+                out.write(b);
+            }
+        };
+        subs.attach(slow, () -> { });
+        subs.subscribe("nmox://runs");
+        int total = McpSubscriptions.MAX_PENDING + 250;
+        for (int i = 0; i < total; i++) {
+            subs.updated("nmox://runs");
+        }
+        gate.countDown();
+        subs.awaitIdle();
+        String text = out.toString(StandardCharsets.UTF_8);
+        int updates = text.split("resources/updated").length - 1;
+        assertThat(updates).as("the cap's worth of updates, not the flood").isEqualTo(McpSubscriptions.MAX_PENDING);
+        assertThat(text).contains("250 frames dropped");
+        subs.close();
+    }
+
+    @Test
+    @DisplayName("a stream attaching after close is refused at once — nothing would keep it alive")
+    void attachAfterCloseRefuses() throws Exception {
+        McpSubscriptions subs = new McpSubscriptions();
+        subs.close();
+        boolean[] closedHook = {false};
+        java.util.concurrent.atomic.AtomicBoolean streamClosed = new java.util.concurrent.atomic.AtomicBoolean();
+        OutputStream out = new OutputStream() {
+            @Override
+            public void write(int b) {
+            }
+            @Override
+            public void close() {
+                streamClosed.set(true);
+            }
+        };
+        subs.attach(out, () -> closedHook[0] = true);
+        assertThat(subs.attachedCount()).isZero();
+        assertThat(streamClosed.get()).as("the socket is closed").isTrue();
+        assertThat(closedHook[0]).as("the close hook ran").isTrue();
     }
 
     @Test
@@ -209,7 +267,7 @@ class McpSubscriptionsTest {
     void droppedSinkSubmitIsCaught() throws Exception {
         String src = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/java/org/nmox/studio/rack/mcp/McpSubscriptions.java"));
         assertThat(src.split("catch \\(java.util.concurrent.RejectedExecutionException").length - 1)
-                .as("submit and log both catch the shut-down writer; awaitIdle too").isEqualTo(3);
+                .as("the one enqueue path catches the shut-down writer; awaitIdle too (v2.85.0: log rides submit)").isEqualTo(2);
     }
 
     @Test

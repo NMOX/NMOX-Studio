@@ -77,22 +77,44 @@ final class McpSubscriptions {
             this.onClose = onClose;
         }
 
-        /** Queues one write; a sink whose writer is already shut down (dropped under a snapshot iteration) is left alone. */
+        /**
+         * Queues one write behind the same backlog accounting for EVERY
+         * frame kind (v2.85.0 review: resource updates and keepalives
+         * used to bypass it, so a client whose socket blocked while it
+         * received only those never read as stuck and its queue grew one
+         * task per event without a cap). A frame past {@link #MAX_PENDING}
+         * is counted and announced as ONE line when the stream moves
+         * again. A sink whose writer is already shut down (dropped under
+         * a snapshot iteration) is left alone.
+         */
         void submit(byte[] frames) {
+            if (pending.get() >= MAX_PENDING) {
+                dropped.incrementAndGet();
+                return;
+            }
+            pending.incrementAndGet();
             try {
                 writer.execute(() -> {
                     try {
+                        int lost = dropped.getAndSet(0);
+                        if (lost > 0) {
+                            out.write(logFrame("warning", "agent-port",
+                                    lost + " frames dropped — the stream fell behind").getBytes(StandardCharsets.UTF_8));
+                        }
                         out.write(frames);
                         out.flush();
                     } catch (IOException gone) {
                         drop(this);
+                    } finally {
+                        pending.decrementAndGet();
                     }
                 });
-            } catch (java.util.concurrent.RejectedExecutionException dropped) {
+            } catch (java.util.concurrent.RejectedExecutionException alreadyDropped) {
                 // this sink was dropped between the sinks snapshot and the
                 // submit — it is already closed; the frame dies with it.
                 // The only guard: a flag check before execute would leave
                 // the same window open, so the catch IS the mechanism
+                pending.decrementAndGet();
             }
         }
     }
@@ -244,8 +266,17 @@ final class McpSubscriptions {
         return "event: message\ndata: " + msg + "\n\n";
     }
 
-    /** Attaches a client stream; {@code onClose} runs once when it is dropped. */
+    /** Attaches a client stream; {@code onClose} runs once when it is dropped. After {@link #close()} a stream is refused at once — the port is stopping and nothing would ever keep it alive. */
     void attach(OutputStream out, Runnable onClose) {
+        if (closed) {
+            try {
+                out.close();
+            } catch (IOException ignored) {
+                // already gone
+            }
+            onClose.run();
+            return;
+        }
         sinks.add(new Sink(out, onClose));
         if (keepalive == null) {
             synchronized (this) {
@@ -303,30 +334,7 @@ final class McpSubscriptions {
         }
         byte[] line = logFrame(level, logger, data).getBytes(StandardCharsets.UTF_8);
         for (Sink s : sinks) {
-            if (s.pending.get() >= MAX_PENDING) {
-                s.dropped.incrementAndGet();
-                continue;
-            }
-            s.pending.incrementAndGet();
-            try {
-                s.writer.execute(() -> {
-                    try {
-                        int lost = s.dropped.getAndSet(0);
-                        if (lost > 0) {
-                            s.out.write(logFrame("warning", "agent-port",
-                                    lost + " log lines dropped — the stream fell behind").getBytes(StandardCharsets.UTF_8));
-                        }
-                        s.out.write(line);
-                        s.out.flush();
-                    } catch (IOException gone) {
-                        drop(s);
-                    } finally {
-                        s.pending.decrementAndGet();
-                    }
-                });
-            } catch (java.util.concurrent.RejectedExecutionException alreadyDropped) {
-                s.pending.decrementAndGet();
-            }
+            s.submit(line);
         }
     }
 
