@@ -67,6 +67,7 @@ public final class PresentationMode {
                 apply(c, delta);
             }
             String outputNote = OutputFont.follow(enable); // the Output window reads from the back row too
+            TerminalFont.follow(enable); // and the terminal you type into
             // the status is composed AFTER the follow so a refusal rides along instead of being
             // overwritten (the walk's find); PlainStatus.text because the note is runtime text
             if (enable) {
