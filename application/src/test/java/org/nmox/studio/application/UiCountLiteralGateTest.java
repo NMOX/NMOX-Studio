@@ -68,7 +68,19 @@ class UiCountLiteralGateTest {
                     }).filter(f -> !f.toString().contains("learn-catalog")).toList()) {
                         String body = Files.readString(p);
                         Matcher c = CLAIM.matcher(body);
+                        // separator-normalized: on Windows the path reads release\website and the
+                        // exemption never matched — the #704 windows lane found it (the CRLF trap's sibling)
+                        boolean website = p.toString().replace('\\', '/').contains("release/website");
                         while (c.find()) {
+                            // the website is static bytes with no runtime to derive from; its
+                            // numerals are allowed ONLY where SiteShipsTest.countsAreTrue binds
+                            // them to the catalogs at build time (v2.91.0) — the count still
+                            // comes from the thing it counts, enforced instead of derived. The
+                            // words that hid there before ("Fifty-three") were this gate's
+                            // blind spot and rotted for thirty releases.
+                            if (website && c.group().endsWith(" devices")) {
+                                continue;
+                            }
                             int line = 1 + (int) body.chars().limit(c.start()).filter(ch -> ch == '\n').count();
                             offenders.add(module + "/" + p.getFileName() + ":" + line + " " + c.group());
                         }

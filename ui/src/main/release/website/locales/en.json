@@ -5,8 +5,8 @@
   "site.loop.h": "The loop that teaches is the loop that closes",
   "site.loop.p": "Edit, save, look — and when the page breaks, the error lands in your editor at the failing line, ORACLE explains it with your own source in front of it, and the tutorial checks your work. Doing, learning, and experimenting are the same motion here.",
   "site.rack.h": "A rack, not a run button",
-  "site.rack.p": "Fifty-three devices — servers, test runners, gates, watchers, an AI error-explainer — mount on a rack and wire together with patch cables. A failing test can trigger its own explanation. A green build can gate a ship. Your own devices are one JSON file away.",
-  "site.learn.h": "Ninety-two ways in",
+  "site.rack.p": "53 devices — servers, test runners, gates, watchers, an AI error-explainer — mount on a rack and wire together with patch cables. A failing test can trigger its own explanation. A green build can gate a ship. Your own devices are one JSON file away.",
+  "site.learn.h": "93 ways in",
   "site.learn.p": "Learning spaces for languages, frameworks, and libraries — each with sample code, a walked tutorial, a live REPL, and checkpoints that verify what you built. Teachers export their own spaces as one file; students drop it in and press Check.",
   "site.studios.h": "Seven studios, one address",
   "site.laws.h": "House laws",
@@ -15,5 +15,7 @@
   "site.laws.l3": "Nothing runs a stranger's code without asking you first.",
   "site.laws.l4": "Kits never clobber; wiring never doubles.",
   "site.laws.l5": "Force-quit orphans nothing.",
-  "site.colophon": "Built in NMOX Studio, checked by its own kits, served by its own rack. Apache-2.0."
+  "site.colophon": "Built in NMOX Studio, checked by its own kits, served by its own rack. Apache-2.0.",
+  "site.shown.h": "Made to be shown",
+  "site.shown.p": "One toggle and every editor, the page in the in-app Browser, the Output window and the Terminal read from the back row — and come back exactly when you stop. The chord you press shows on screen; what you type never does. Code copies as a fenced block, or with the GitHub link to the same lines; the editor tab saves or copies as a crisp 2x image; the project tree pastes as a README."
 }

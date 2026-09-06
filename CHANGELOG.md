@@ -4,6 +4,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.91.0] - 2026-09-06
+
+Docs truth for the late morning.
+
+1. **plan.md carries the pipeline under the ship-when-green rule** — the three pipelined releases (v2.88.0–v2.90.0), the two update-gauntlet passes, and two process lessons written where they will be read: the fold law biting back the day after it was written (a one-unit branch folded into the open PR with a fresh full verify), and a guard being a freeze (a chain front armed behind a merge fired while its worktree was being amended; docs-only delta, gate-checked, recorded).
+2. **The product's own website says it** — the bundled site (served by Help ▸ NMOX Studio Website and published to Pages) gains a "Made to be shown" section in both catalogs (EN/ES, key parity gated by `SiteShipsTest`), and its "Ninety-two ways in" heading — stale since space #93 shipped in v2.58.0, a word the numeral gate could not see — is now bound to the truth the way the docs are: the site says its device and space counts in numerals (`53 devices`, `93 ways in`, both languages), and `SiteShipsTest` reads them against the learning catalog and the generated device reference exactly as `DocsCountGateTest` does, proven failing-first on the words. The night's own `UiCountLiteralGateTest` — which scans the website's copy on purpose — then refused the numeral, as it should: the static site has no runtime to derive a count from, so the gate now allows a website numeral ONLY where `countsAreTrue` binds it (the count still comes from the thing it counts, enforced at build time instead of derived at run time); a wrong number in the site fails the build by name. The exemption's first cut matched `release/website` as a string and never matched on Windows, where the path reads `release\website` — the PR's windows lane found it (the CRLF trap's sibling); separator-normalized now.
+
 ## [2.90.0] - 2026-09-06
 
 The reader's side of the evangelist's audience.
@@ -17609,6 +17616,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.91.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.90.0...v2.91.0
 [2.90.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.89.0...v2.90.0
 [2.89.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.88.0...v2.89.0
 [2.88.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.87.0...v2.88.0

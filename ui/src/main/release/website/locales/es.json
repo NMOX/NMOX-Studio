@@ -5,8 +5,8 @@
   "site.loop.h": "El ciclo que enseña es el ciclo que se cierra",
   "site.loop.p": "Edita, guarda, mira — y cuando la página falla, el error aterriza en tu editor en la línea exacta, ORACLE lo explica con tu propio código delante, y el tutorial verifica tu trabajo. Hacer, aprender y experimentar son el mismo movimiento aquí.",
   "site.rack.h": "Un rack, no un botón de ejecutar",
-  "site.rack.p": "Cincuenta y tres dispositivos — servidores, runners de pruebas, compuertas, vigilantes, un explicador de errores con IA — se montan en un rack y se conectan con cables de patch. Una prueba que falla puede disparar su propia explicación. Un build en verde puede custodiar un lanzamiento. Tus propios dispositivos están a un archivo JSON de distancia.",
-  "site.learn.h": "Noventa y dos puertas de entrada",
+  "site.rack.p": "53 dispositivos — servidores, runners de pruebas, compuertas, vigilantes, un explicador de errores con IA — se montan en un rack y se conectan con cables de patch. Una prueba que falla puede disparar su propia explicación. Un build en verde puede custodiar un lanzamiento. Tus propios dispositivos están a un archivo JSON de distancia.",
+  "site.learn.h": "93 puertas de entrada",
   "site.learn.p": "Espacios de aprendizaje para lenguajes, frameworks y bibliotecas — cada uno con código de ejemplo, un tutorial guiado, un REPL en vivo y checkpoints que verifican lo que construiste. Los profesores exportan sus propios espacios como un archivo; los estudiantes lo sueltan y pulsan Check.",
   "site.studios.h": "Siete estudios, una dirección",
   "site.laws.h": "Leyes de la casa",
@@ -15,5 +15,7 @@
   "site.laws.l3": "Nada ejecuta código ajeno sin preguntarte primero.",
   "site.laws.l4": "Los kits nunca sobrescriben; el cableado nunca se duplica.",
   "site.laws.l5": "Forzar el cierre no deja huérfanos.",
-  "site.colophon": "Construido en NMOX Studio, verificado por sus propios kits, servido por su propio rack. Apache-2.0."
+  "site.colophon": "Construido en NMOX Studio, verificado por sus propios kits, servido por su propio rack. Apache-2.0.",
+  "site.shown.h": "Hecho para mostrarse",
+  "site.shown.p": "Un solo interruptor y cada editor, la página del navegador integrado, la ventana de salida y la terminal se leen desde la última fila — y vuelven exactamente a su tamaño cuando terminas. El atajo que pulsas se muestra en pantalla; lo que escribes, nunca. El código se copia como bloque con cerca, o con el enlace de GitHub a esas mismas líneas; la pestaña del editor se guarda o copia como imagen nítida a 2x; el árbol del proyecto se pega como un README."
 }

@@ -4042,6 +4042,36 @@ mechanism the platform already had:
   morning (v2.89.0): `-Dnmox.keystrokes.linger` holds the pill, a raw
   Escape reaches the listener, and the second window photographs as
   `Esc`. A record that says "not walked" is an invitation, not a verdict.
+
+## Addendum — 2026-09-06 late morning, the pipeline under the ship-when-green rule (v2.88.0–v2.90.0)
+
+Three releases in ninety minutes, each a pipelined branch forked from
+the previous one's head and rebased `--onto main` past its squash by
+`ship-branch.sh`: **v2.88.0** (the README motion: Copy Project Tree as
+Markdown, bounded three ways, hardened by its own walk — the IDE's
+`.nmox*.json` were listed as noise — and two lenses; the presenting
+family on the front page and in the Kitchen Sink), **v2.89.0**
+(Presentation Mode reaches the Terminal — the walk found the exact
+class-name match reaching nothing, `ActiveTerm extends StreamTerm
+extends Term`; the Agent Port reports `presenting`; the keystroke pill
+finally walked through a `-Dnmox.keystrokes.linger` seam: a raw Escape,
+a second 112×63 window, photographed reading `Esc`), and **v2.90.0**
+(the reader's side: derived, gate-held contents blocks for the two long
+documents; a docs index that had omitted eight of the eleven documents
+beside it, now gated from the directory; the tour's presenting frame).
+Two update gauntlets passed on the way (2.86.0→2.87.0, 2.87.0→2.88.0,
+11/11, zero SEVERE).
+
+Two process lessons. **The fold law bit back the day after it was
+written**: a one-unit branch had made the queue three deep — the exact
+shape called out on 09-05 — and was folded into the open PR (cherry-pick,
+one item, a fresh full verify of the folded head). **A guard is a
+freeze**: a chain front armed behind "start after PR N merges" fired on
+the merge line while its worktree was being amended a minute later; the
+delta was docs-only and gate-checked by hand, but the verified sha and
+the shipped sha differed — so the next units go to ANOTHER worktree from
+the moment a guard is armed, and a fold happens only before the gate is
+armed, with its own full verify. Recorded in memory, not just here.
 - **Presentation Mode reaches the Browser and the Output window** — one
   product-wide state (`core.util.Presentation`, symmetric listeners);
   the page at 150% of the user's zoom, restored exactly; the Output

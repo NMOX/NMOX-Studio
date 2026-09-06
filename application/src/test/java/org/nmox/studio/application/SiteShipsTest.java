@@ -51,4 +51,33 @@ class SiteShipsTest {
         // and the page carries the a11y kit's structural bits
         assertThat(html).contains("skip-link").contains("lang=\"en\"").contains("id=\"main\"");
     }
+
+    /**
+     * The website's counts are bound to the same ground truth the docs
+     * are (v2.91.0): "Ninety-two ways in" sat a space stale for thirty
+     * releases because a word is invisible to a numeral gate — so the
+     * site says its counts in numerals, in both catalogs, and this reads
+     * them against the learning catalog and the generated device
+     * reference exactly the way DocsCountGateTest does.
+     */
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("the site's device and space counts, in both languages, equal the catalogs")
+    void countsAreTrue() throws Exception {
+        String catalog = java.nio.file.Files.readString(java.nio.file.Path.of("..", "rack", "src", "main", "resources",
+                "org", "nmox", "studio", "rack", "projectstudio", "learn-catalog.json"));
+        long spaces = java.util.regex.Pattern.compile("\"slug\"\\s*:").matcher(catalog).results().count();
+        long devices = java.nio.file.Files.readAllLines(java.nio.file.Path.of("..", "docs", "devices.md")).stream()
+                .filter(l -> l.startsWith("### ")).count();
+        for (String locale : new String[] {"en", "es"}) {
+            String text = java.nio.file.Files.readString(SITE.resolve("locales/" + locale + ".json"));
+            java.util.regex.Matcher d = java.util.regex.Pattern.compile("(\\d+) (?:devices|dispositivos)").matcher(text);
+            org.assertj.core.api.Assertions.assertThat(d.find()).as(locale + " names a device count").isTrue();
+            org.assertj.core.api.Assertions.assertThat(Long.parseLong(d.group(1))).as(locale + " device count").isEqualTo(devices);
+            java.util.regex.Matcher w = java.util.regex.Pattern.compile("(\\d+) (?:ways in|puertas de entrada)").matcher(text);
+            org.assertj.core.api.Assertions.assertThat(w.find()).as(locale + " names a space count").isTrue();
+            org.assertj.core.api.Assertions.assertThat(Long.parseLong(w.group(1))).as(locale + " space count").isEqualTo(spaces);
+        }
+        String html = java.nio.file.Files.readString(SITE.resolve("index.html"));
+        org.assertj.core.api.Assertions.assertThat(html).contains(devices + " devices").contains(spaces + " ways in");
+    }
 }
