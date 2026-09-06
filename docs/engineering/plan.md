@@ -3853,7 +3853,19 @@ guarded amend folds the lockfile in (one commit, ours, no remote,
 lockfile-only diff, else it stays untracked). And the spawn-site
 ledger's builder scan matched a substring that a line break defeats:
 two files had evaded it since v2.39.1, both blessed now under a
-whitespace-tolerant matcher. One
+whitespace-tolerant matcher. And the learning-space loop walked
+clean end to end — until Check My Work passed 3 of 3 on the
+untouched seed: two task checkpoints that could never fail (a
+double-escaped `\\n` in an absent clause; a contains the seed
+already satisfied), shipped in v2.39.1 and blessed by a walk that
+checked the work after doing it. The law that came out: a task
+checkpoint must fail on its own seed, a guard must pass on it —
+gated through the real runner, and written on the page that
+claimed to hold the schema and didn't. Two smaller finds rode the
+same walk: the manager's header named itself to screen readers with
+a constant instead of its text (now a ui-wide gate), and the
+footer's "(no package.json)" beside a learning space — the
+polyglot IDE's footer measuring every aim by one manifest. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its

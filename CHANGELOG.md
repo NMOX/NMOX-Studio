@@ -163,6 +163,39 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     since the scan widened in v2.39.1. A whitespace-tolerant matcher
     now; both sites blessed in writing; the substring mutant fails the
     gate by name.
+32. **Check My Work said "nicely done" to a learner who had done nothing**
+    — the learning-space walk (picker → WIT space → RUN prints the
+    package → the tutorial's refusal at `world.wit:15:10` → Learning
+    Spaces… Discard re-aiming at ~/NMOX, all CLEAN) ran Check My Work
+    on the UNTOUCHED seed and got 3 of 3. Two seeded task checkpoints
+    could never fail: the WIT space's `absent` clause carried a
+    double-escaped newline no file contains, and the first web page's
+    "third list item" asked for a substring the two-item seed already
+    had — since v2.39.1, the release that shipped them, and through a
+    walk that verified the happy path after doing the work. Both
+    fixed; file checkpoints gain `atLeast` (a count on `contains`);
+    CheckpointParityTest gains the OUTCOME law — a "You …" task must
+    FAIL on the space's own seed and a guard must PASS on it, evaluated
+    through the real runner on the real seed bytes (failing-first named
+    both); the learning-spaces page gains the checkpoint schema it
+    claimed to hold ("exactly this page's schema" pointed at nothing);
+    the count mutant dies in the unit test AND the gate.
+33. **The shelf header speaks its text to screen readers** — the
+    Learning Spaces manager's header carried a constant accessible
+    name ("Learning spaces shelf summary"), which is what assistive
+    technology hears INSTEAD of the count, disk cost and lifecycle
+    sentence it paints (read through accessibility on the walk). The
+    role moved to the description; the name follows the text;
+    LabelNamesAreTheirTextGateTest bans a constant name on any
+    text-bearing JLabel in ui, failing-first.
+34. **The footer names the toolchain it found** — Project Studio's
+    footer said "(no package.json)" beside EVERY non-Node aim (a Cargo
+    project, a Go module, a learning space) — a polyglot IDE still
+    measuring projects by one manifest. Now: Node stays bare, the
+    detected manifest names itself (`(Cargo.toml)`, `(go.mod)`), the
+    glob-detected kinds speak their name, and the last resorts say
+    `(static site)`, `(learning space)`, `(no manifest yet)`; the kind
+    walk runs off the EDT with the newest aim winning.
 
 ## [2.84.0] - 2026-09-05
 
