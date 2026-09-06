@@ -3868,7 +3868,11 @@ footer's "(no package.json)" beside a learning space — the
 polyglot IDE's footer measuring every aim by one manifest. The
 Experiments loop then read "Browse 92 Learning Spaces…" beside a
 93-space catalog — the docs-count rot one layer in, now gated across
-every module's string literals. One
+every module's string literals. The review of the fresh code found
+the branch's one real bug in its riskiest unit: resource updates and
+keepalives bypassed the per-stream backlog cap the log lines
+honored — one enqueue path now, every frame kind bounded and the
+overflow announced. One
 observation recorded, not judged: after the wizard the platform's
 Projects, Files and Services windows appear in the left column
 beside Project Studio (the OpenProjects bridge lets projectui open its

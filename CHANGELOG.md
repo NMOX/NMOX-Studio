@@ -207,6 +207,25 @@ The pipelined branch after the first eight-hour shift (built from 18:01 while v2
     the label filling when it lands); UiCountLiteralGateTest reads
     every module's string literals for a numeral beside a counted
     noun, failing-first with both named.
+36. **The review: every stream frame rides one bounded backlog** — the
+    per-stream writer rewrite (unit 5) capped LOG lines per client and
+    announced the overflow, but resource updates and keepalives went
+    around that accounting: a client whose socket blocked while it
+    received only those (every save fires `nmox://editor`, every
+    recorder event `nmox://history`) never read as stuck, its keepalive
+    was never skipped, and its writer queue grew one task per event
+    with no cap — slowly, and without bound. One enqueue path now:
+    every frame kind counts, past the cap it is dropped and announced
+    once as "N frames dropped — the stream fell behind"; a stream
+    attaching after the port's close is refused at once (the stop order
+    closes the streams before the server). Two mutants dead by name;
+    the structural catch count follows the one path. Verified CLEAN:
+    real-path file containment, the vanished-file announce, the
+    subscribe path's refusal codes, the fold's guards on the pump
+    thread, the off-EDT catalog reads; a non-numeric `atLeast` now
+    skips with its reason (`optInt` read "many" as 0); SpotBugs caught
+    the runtime-built option compared by identity on the sixth
+    insurance verify (equals now).
 
 ## [2.84.0] - 2026-09-05
 
