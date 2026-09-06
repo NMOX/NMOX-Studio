@@ -4,6 +4,13 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.92.0] - 2026-09-06
+
+The reader's side, continued.
+
+1. **The engineering index lists every live document beside it** — `docs/engineering/README.md` promises that unlisted documents carry a "Historical document" banner; two measured dossiers (JDK 25 + FX 26, RELEASE310), the Angular parity scorecard and a dated night brief carried no banner and no link — invisible. The three references are listed in the index's own voice, the brief gets its banner, and `DocsIndexGateTest` gains a banner-aware case: every live document there is linked, proven failing-first on the four.
+2. **The Markdown tree stats each entry once** — `TreeText`'s sort had called `isDirectory` inside the comparator (a 2,000-entry directory sorted with ~22,000 stats; on a network mount the bounded-read spirit unmet); one stat per entry now, the tests unchanged.
+
 ## [2.91.0] - 2026-09-06
 
 Docs truth for the late morning.
@@ -17616,6 +17623,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.92.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.91.0...v2.92.0
 [2.91.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.90.0...v2.91.0
 [2.90.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.89.0...v2.90.0
 [2.89.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.88.0...v2.89.0
