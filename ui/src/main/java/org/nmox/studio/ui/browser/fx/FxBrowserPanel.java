@@ -85,10 +85,16 @@ public final class FxBrowserPanel extends JPanel {
     /** FX-thread-only after init. */
     private WebEngine engine;
     private WebView webView;
-    /** EDT-only. */
-    private double zoom = 1.0;
-    /** EDT-only: the user's own zoom before Presentation Mode multiplied it, restored on leaving. */
-    private double zoomBeforePresenting = 1.0;
+    /**
+     * EDT-only by contract (every writer is a Swing handler or the
+     * presentation hook's invokeLater hop); volatile because a 64-bit
+     * write is not atomic on every JVM and SpotBugs cannot see the hop —
+     * an atomic write costs nothing here and the checker names the risk
+     * honestly (AT_NONATOMIC_64BIT_PRIMITIVE, insurance verify #8).
+     */
+    private volatile double zoom = 1.0;
+    /** EDT-only by contract, volatile for the same reason: the user's own zoom before Presentation Mode multiplied it. */
+    private volatile double zoomBeforePresenting = 1.0;
     private boolean presenting;
     /** The product-wide presenting state (core.util.Presentation), attached in addNotify, detached in removeNotify. */
     private final java.util.function.Consumer<Boolean> presentationHook = on -> SwingUtilities.invokeLater(() -> follow(on));
