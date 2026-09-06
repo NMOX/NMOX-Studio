@@ -791,6 +791,36 @@ the page itself). A page whose core logic lives in a worker will appear
 stuck while debugging; debug it with the worker code inlined or via
 INSPECTOR + chrome://inspect instead.
 
+### Presenting and sharing (v2.87.0)
+
+Three gestures for the person who shows NMOX Studio to a room, a
+reader, or a feed — the developer-evangelist grant:
+
+- **View ▸ Presentation Mode.** One toggle makes every open editor
+  legible from the back of a room: the editor font grows by ten points,
+  live, in every editor that is open now or opened while the mode is on.
+  It rides the platform editor's own text zoom (the same ⌥-wheel zoom you
+  can still use to fine-tune on top), so nothing is written to your
+  settings — toggle it off, or restart, and the font is exactly what it
+  was. The menu item shows a check while the mode is on and the status
+  line says so.
+- **Right-click ▸ Copy as Markdown.** The selection — or, with nothing
+  selected, the whole file — lands on the clipboard as a fenced code
+  block tagged with the file's language (` ```jsx `, ` ```typescript `,
+  ` ```bash `…), ready to paste into a README, a GitHub issue, a blog
+  post or a chat. Two things a hand-typed fence gets wrong are handled
+  for you: the block always ends the code in one clean newline, and a
+  snippet that itself contains three backticks gets a longer fence so it
+  renders whole instead of ending early. The status line says how many
+  lines were copied and which tag they carry.
+- **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
+  2x, saved as a PNG where you choose (Pictures by default, named by
+  the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
+  IDE painting itself rather than the OS capturing the screen, there is
+  no screen-recording permission to grant, no desktop in the frame and
+  nothing to crop, and the text is crisp on a retina slide. The status
+  line names the file and its pixel size.
+
 ## 6. The studios
 
 ### Keyboard and screen-reader access
