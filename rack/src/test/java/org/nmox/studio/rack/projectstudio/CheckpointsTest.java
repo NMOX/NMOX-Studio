@@ -84,10 +84,13 @@ class CheckpointsTest {
             [{"label": "You added a third list item", "hint": "add one",
               "file": {"path": "index.html", "contains": "</li>", "atLeast": 3}},
              {"label": "bad count", "file": {"path": "index.html", "contains": "x", "atLeast": -1}},
-             {"label": "count without contains", "file": {"path": "index.html", "absent": "x", "atLeast": 2}}]
+             {"label": "count without contains", "file": {"path": "index.html", "absent": "x", "atLeast": 2}},
+             {"label": "words for a count", "file": {"path": "index.html", "contains": "x", "atLeast": "many"}}]
             """, notes);
         assertThat(cps).hasSize(1);
-        assertThat(notes).hasSize(2).allMatch(n -> n.contains("atLeast needs a contains"));
+        assertThat(notes).hasSize(3)
+                .anyMatch(n -> n.contains("atLeast must be a number"))
+                .filteredOn(n -> !n.contains("must be a number")).allMatch(n -> n.contains("atLeast needs a contains"));
         File dir = work.toFile();
         Files.writeString(work.resolve("index.html"), "<ul><li>a</li><li>b</li></ul>");
         assertThat(Checkpoints.run(dir, cps.get(0), null).passed())

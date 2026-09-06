@@ -108,6 +108,12 @@ public final class Checkpoints {
                     notes.add(label + ": file check needs path and contains/absent — skipped");
                     continue;
                 }
+                // a non-number here is a broken rule, not a zero: optInt would
+                // read "many" as 0 and quietly drop the count (v2.85.0 review)
+                if (file.has("atLeast") && !(file.get("atLeast") instanceof Number)) {
+                    notes.add(label + ": atLeast must be a number — skipped");
+                    continue;
+                }
                 int atLeast = file.optInt("atLeast", 0);
                 if (atLeast < 0 || (atLeast > 0 && contains == null)) {
                     notes.add(label + ": atLeast needs a contains and a count of 1 or more — skipped");
