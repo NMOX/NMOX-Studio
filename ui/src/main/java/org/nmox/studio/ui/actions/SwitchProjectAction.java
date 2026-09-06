@@ -71,6 +71,7 @@ public final class SwitchProjectAction implements ActionListener {
         });
 
         JTextField filter = new JTextField();
+        filter.getAccessibleContext().setAccessibleName("Filter projects");
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String needle = filter.getText().toLowerCase(java.util.Locale.ROOT);

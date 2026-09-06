@@ -61,8 +61,11 @@ public final class StandardsKitAction implements ActionListener {
         }
 
         JTextField url = new JTextField("https://example.com");
+        url.getAccessibleContext().setAccessibleName("Site URL");
         JTextField name = new JTextField(project.getName());
+        name.getAccessibleContext().setAccessibleName("Site name");
         JTextField contact = new JTextField("security@example.com");
+        contact.getAccessibleContext().setAccessibleName("Security contact");
         JCheckBox robots = new JCheckBox("robots.txt — Robots Exclusion Protocol (RFC 9309)", true);
         JCheckBox sitemap = new JCheckBox("sitemap.xml — sitemaps.org protocol", true);
         JCheckBox manifest = new JCheckBox("site.webmanifest — W3C Web App Manifest", true);

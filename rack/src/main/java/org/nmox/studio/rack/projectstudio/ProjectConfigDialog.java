@@ -44,6 +44,15 @@ public class ProjectConfigDialog extends JDialog {
     private final JTextField descriptionField = new JTextField(32);
     private final JTextField licenseField = new JTextField(10);
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[]{"commonjs", "module"});
+    {
+        // the form's labels also setLabelFor these (below); the explicit
+        // names keep the law readable to the gate that enforces it (v2.85.0)
+        nameField.getAccessibleContext().setAccessibleName("Name");
+        versionField.getAccessibleContext().setAccessibleName("Version");
+        descriptionField.getAccessibleContext().setAccessibleName("Description");
+        licenseField.getAccessibleContext().setAccessibleName("License");
+        typeCombo.getAccessibleContext().setAccessibleName("Module type");
+    }
     private final DefaultTableModel scriptsModel = new DefaultTableModel(new Object[]{"Script", "Command"}, 0);
     private JTable scriptsTable;
     private final DefaultTableModel depsModel = new DefaultTableModel(new Object[]{"Package", "Version", "Scope"}, 0) {
@@ -100,7 +109,9 @@ public class ProjectConfigDialog extends JDialog {
             c.gridy = row;
             c.weightx = 0;
             c.fill = GridBagConstraints.NONE;
-            panel.add(new JLabel((String) pair[0]), c);
+            JLabel label = new JLabel((String) pair[0]);
+            label.setLabelFor((Component) pair[1]); // the label names its field for assistive technology
+            panel.add(label, c);
             c.gridx = 1;
             c.weightx = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
@@ -153,7 +164,9 @@ public class ProjectConfigDialog extends JDialog {
         addBtn.setToolTipText("npm install <package> (Alt: choose dev scope in the prompt)");
         addBtn.addActionListener(e -> {
             JTextField pkgField = new JTextField(20);
+            pkgField.getAccessibleContext().setAccessibleName("Package");
             JComboBox<String> scope = new JComboBox<>(new String[]{"dependency", "devDependency"});
+            scope.getAccessibleContext().setAccessibleName("Scope");
             JPanel form = new JPanel(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(2, 4, 2, 4);

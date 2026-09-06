@@ -490,6 +490,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
         JTextField pullField = new JTextField(22);
+        pullField.getAccessibleContext().setAccessibleName("Image reference to pull");
         pullField.setToolTipText("image reference, e.g. nginx:alpine");
         actions.add(pullField);
         actions.add(btn("Pull", () -> {
@@ -532,8 +533,11 @@ public final class DockerPanelTopComponent extends TopComponent {
     /** A run dialog with the three things you always need: name, ports, env. */
     private void quickRun(ImageInfo img) {
         JTextField name = new JTextField(16);
+        name.getAccessibleContext().setAccessibleName("Container name (blank = auto)");
         JTextField ports = new JTextField("8080:80", 16);
+        ports.getAccessibleContext().setAccessibleName("Ports host:container (space-separated)");
         JTextField env = new JTextField(16);
+        env.getAccessibleContext().setAccessibleName("Env KEY=VAL (space-separated)");
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new java.awt.Insets(4, 4, 4, 4);

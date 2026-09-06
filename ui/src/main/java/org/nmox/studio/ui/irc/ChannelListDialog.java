@@ -56,6 +56,7 @@ final class ChannelListDialog {
         });
 
         JTextField filter = new JTextField();
+        filter.getAccessibleContext().setAccessibleName("Filter channels");
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String q = filter.getText().trim().toLowerCase(Locale.ROOT);

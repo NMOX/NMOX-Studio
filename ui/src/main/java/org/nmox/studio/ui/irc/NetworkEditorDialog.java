@@ -47,14 +47,20 @@ final class NetworkEditorDialog {
      */
     static String show(IrcConfig config, IrcConfig.Network existing) {
         JTextField name = new JTextField(existing == null ? "" : existing.name(), 18);
+        name.getAccessibleContext().setAccessibleName("Network name");
         name.setEditable(existing == null); // the name is the store key
         JTextField host = new JTextField(existing == null ? "" : existing.host(), 18);
+        host.getAccessibleContext().setAccessibleName("Server host");
         JTextField port = new JTextField(
                 existing == null ? "6697" : Integer.toString(existing.port()), 6);
+        port.getAccessibleContext().setAccessibleName("Port");
         JCheckBox tls = new JCheckBox("TLS", existing == null || existing.tls());
         JTextField nick = new JTextField(existing == null ? "nmox-user" : existing.nick(), 18);
+        nick.getAccessibleContext().setAccessibleName("Nickname");
         JTextField sasl = new JTextField(existing == null ? "" : existing.saslAccount(), 18);
+        sasl.getAccessibleContext().setAccessibleName("SASL account");
         JPasswordField password = new JPasswordField(18);
+        password.getAccessibleContext().setAccessibleName("Password");
         if (existing != null) {
             // the keyring may block on OS calls — probe it OFF the EDT and
             // mask the field once known (the modal dialog's nested event
@@ -72,6 +78,7 @@ final class NetworkEditorDialog {
         }
         JTextField autojoin = new JTextField(existing == null
                 ? "" : String.join(", ", existing.autojoin()), 18);
+        autojoin.getAccessibleContext().setAccessibleName("Auto-join channels");
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));

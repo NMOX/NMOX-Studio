@@ -178,6 +178,9 @@ public final class DbStudioTopComponent extends TopComponent {
     /** Guards the saved-combo's action listener during programmatic refills. */
     private boolean savedComboRefreshing;
     private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(200, 1, 1_000_000, 100));
+    {
+        limitSpinner.getAccessibleContext().setAccessibleName("Row limit");
+    }
     private final JLabel statusLabel = new JLabel(" ");
 
     /** The project's persisted console history (newest first) — mirrors .nmoxdb.json. */

@@ -78,6 +78,7 @@ public final class ImageKitAction implements ActionListener {
             "80 — the web default",
             "70 — aggressive, check the results"
         });
+        quality.getAccessibleContext().setAccessibleName("JPEG quality");
         quality.setSelectedIndex(1);
         JComboBox<String> maxWidth = new JComboBox<>(new String[]{
             "No resize",
@@ -85,6 +86,7 @@ public final class ImageKitAction implements ActionListener {
             "Max 1600 px wide (content images)",
             "Max 800 px wide (thumbnails)"
         });
+        maxWidth.getAccessibleContext().setAccessibleName("Downscale");
         JCheckBox webp = new JCheckBox(cwebp != null
                 ? "WebP siblings via cwebp (found at " + cwebp.getName() + ")"
                 : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled",

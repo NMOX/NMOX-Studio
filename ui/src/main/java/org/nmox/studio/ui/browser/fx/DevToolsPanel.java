@@ -163,6 +163,7 @@ public final class DevToolsPanel extends JPanel {
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel south = new JPanel(new BorderLayout(4, 0));
         JTextField repl = new JTextField();
+        repl.getAccessibleContext().setAccessibleName("Console input");
         repl.putClientProperty("JTextField.placeholderText", "Run JavaScript in the page…");
         repl.addActionListener(e -> {
             String expr = repl.getText();
@@ -435,6 +436,7 @@ public final class DevToolsPanel extends JPanel {
                 StyleSummary.KEYS.toArray(String[]::new));
         prop.setEditable(true);
         JTextField value = new JTextField(18);
+        value.getAccessibleContext().setAccessibleName("Value");
         JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         form.add(new JLabel("Property:"));
         form.add(prop);

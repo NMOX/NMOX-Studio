@@ -73,6 +73,9 @@ public final class FxBrowserPanel extends JPanel {
     private final DevToolsPanel devTools;
     private final JSplitPane split;
     private final JTextField urlField = new JTextField();
+    {
+        urlField.getAccessibleContext().setAccessibleName("Address");
+    }
     private final JProgressBar progress = new JProgressBar(0, 100);
     private final JLabel zoomLabel = new JLabel("100%");
     private final JToggleButton devToolsToggle = new JToggleButton("DevTools");

@@ -62,6 +62,7 @@ public final class ContractKitAction implements ActionListener {
         }
 
         JComboBox<ContractKit.Chain> chains = new JComboBox<>(ContractKit.Chain.values());
+        chains.getAccessibleContext().setAccessibleName("Chain");
         chains.setRenderer(new javax.swing.DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> l,
@@ -71,6 +72,7 @@ public final class ContractKitAction implements ActionListener {
             }
         });
         JTextField name = new JTextField("MyContract");
+        name.getAccessibleContext().setAccessibleName("Contract name");
         name.selectAll();
 
         JPanel panel = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
