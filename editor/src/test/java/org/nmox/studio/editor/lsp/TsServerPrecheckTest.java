@@ -49,6 +49,14 @@ class TsServerPrecheckTest {
     }
 
     @Test
+    @DisplayName("npm's Windows prefix layout — the typescript beside the .cmd shim, no lib/ level — is a candidate too")
+    void windowsPrefix(@TempDir Path project, @TempDir Path prefix) throws Exception {
+        File bin = prefix.resolve("typescript-language-server.cmd").toFile();
+        typescript(prefix.resolve("node_modules/typescript"), "7.0.2", false);
+        assertThat(TsServerPrecheck.check(project.toFile(), bin).kind()).isEqualTo(TsServerPrecheck.Kind.NO_TSSERVER);
+    }
+
+    @Test
     @DisplayName("launchNpm consults the precheck for the TypeScript server and refuses with the door (wiring)")
     void wiring() throws Exception {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java"));

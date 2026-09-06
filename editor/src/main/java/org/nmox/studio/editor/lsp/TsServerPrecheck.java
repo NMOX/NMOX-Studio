@@ -60,6 +60,12 @@ final class TsServerPrecheck {
                 if (new File(sibling, "package.json").isFile()) {
                     return verdict(sibling);
                 }
+                // npm's WINDOWS prefix: <prefix>/typescript-language-server.cmd
+                // beside <prefix>/node_modules/typescript (no lib/ level)
+                File windows = new File(bin, "node_modules/typescript");
+                if (new File(windows, "package.json").isFile()) {
+                    return verdict(windows);
+                }
             }
         }
         return new Verdict(Kind.NOT_FOUND, null, null);
