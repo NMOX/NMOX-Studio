@@ -17,5 +17,14 @@
   "site.laws.l5": "Force-quit orphans nothing.",
   "site.colophon": "Built in NMOX Studio, checked by its own kits, served by its own rack. Apache-2.0.",
   "site.shown.h": "Made to be shown",
-  "site.shown.p": "One toggle and every editor, the page in the in-app Browser, the Output window and the Terminal read from the back row — and come back exactly when you stop. The chord you press shows on screen; what you type never does. Code copies as a fenced block, or with the GitHub link to the same lines; the editor tab saves or copies as a crisp 2x image; the project tree pastes as a README."
+  "site.shown.p": "One toggle and every editor, the page in the in-app Browser, the Output window and the Terminal read from the back row — and come back exactly when you stop. The chord you press shows on screen; what you type never does. Code copies as a fenced block, or with the GitHub link to the same lines; the editor tab saves or copies as a crisp 2x image; the project tree pastes as a README.",
+  "site.see.h": "See it",
+  "site.see.p": "Every picture is the shipped product. No mockups.",
+  "site.see.rack": "The Task Rack — every tool a device, every signal a cable",
+  "site.see.editor": "The editor — minimap, sticky scroll, color swatches, ghost-text completion on demand",
+  "site.see.browser": "The source-aware Browser — pick an element, open its source line, restyle it in place",
+  "site.see.board": "The Task Board — sprints, a clock, and a one-click standup",
+  "site.see.learn": "A learning space — sample code, a walked tutorial, a live REPL, checkpoints that grade your work",
+  "site.see.contract": "Contract Studio — decoded calls and events, gas verdicts, never a private key",
+  "site.readon.h": "Read on"
 }

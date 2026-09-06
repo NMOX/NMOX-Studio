@@ -10,6 +10,8 @@ editor knows *where the code lives*, and you carry information between
 them by hand. NMOX Studio's Browser closes that split. This tutorial
 walks the whole loop on a page you'll make in two minutes.
 
+![DevTools' DOM pane with an h1 picked in the page: Pick element, Open Source, and Edit Style… beside the live tree](../images/story-06-devtools-pick.png)
+
 ## 1. Make a page
 
 Create a folder with two files (Project Studio's New File works, or

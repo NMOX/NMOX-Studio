@@ -8,6 +8,8 @@ New in 2.0.0. The rack shipped with fifty-three devices and, until now,
 one way to add a fifty-fourth: author a NetBeans plugin. This is the
 other way.
 
+![The Task Rack: the device shelf on the left is where a device from ~/.nmox/devices.d appears, beside the built-in ones](../images/tabs/the-task-rack.png)
+
 ## 1. Make the folder
 
 ```bash

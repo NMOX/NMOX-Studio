@@ -56,6 +56,21 @@ footer a:hover, footer a:focus-visible { text-decoration: underline; }
 .lang-switch button { background: none; border: 1px solid var(--rule); border-radius: 4px;
   color: var(--dim); font: inherit; font-size: .75rem; padding: .1rem .5rem; cursor: pointer; margin: 0 .2rem; }
 .lang-switch button:hover, .lang-switch button:focus-visible { color: var(--phosphor); border-color: var(--phosphor); }
+/* See it — six shots of the shipped product (v2.94.0). Two columns
+   when the page is wide enough for two readable thumbnails, one
+   otherwise; width/height attributes reserve the space so lazy loads
+   never shift the text. */
+.gallery { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
+@media (min-width: 40rem) { .gallery { grid-template-columns: 1fr 1fr; } }
+.gallery figure { margin: 0; background: var(--panel); border: 1px solid var(--rule);
+  border-radius: 6px; overflow: hidden; }
+.gallery img { display: block; width: 100%; max-width: 100%; height: auto; border-bottom: 1px solid var(--rule); }
+.gallery figcaption { color: var(--dim); font-size: .8rem; line-height: 1.45; padding: .6rem .8rem; }
+.readon-list { list-style: none; padding: 0; margin: .6rem 0 0; }
+.readon-list li { padding: .3rem 0 .3rem 1.4rem; position: relative; }
+.readon-list li::before { content: "→"; position: absolute; left: 0; color: var(--phosphor); opacity: .8; }
+.readon-list a { color: var(--phosphor); text-decoration: none; }
+.readon-list a:hover, .readon-list a:focus-visible { text-decoration: underline; }
 @media (prefers-reduced-motion: no-preference) {
   h1 { animation: warm-up 1.2s ease-out; }
   @keyframes warm-up { from { opacity: 0; text-shadow: none; } }

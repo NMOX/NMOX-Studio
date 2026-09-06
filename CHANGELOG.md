@@ -4,6 +4,82 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.94.0] - 2026-09-06
+
+The developer-evangelist docs pass (David's ask: the documentation and
+website package, current, interesting, illustrated, with demo material).
+Docs and the bundled website only — no product code changed.
+
+1. **The website shows the product** — the bundled site (and its GitHub
+   Pages twin) had zero screenshots; it gains a *See it* gallery of six
+   shots of the shipped 2.93.0 (the rack, the editor, the source-aware
+   Browser, the Task Board, a learning space, Contract Studio) at
+   1200 px with captions in both locales, and a *Read on* block naming
+   the user guide, the tutorials, the tour, the Kitchen Sink, the Agent
+   Port tutorial, the story, the demo script and the changelog. The
+   shots ship in the `ui` module (about 1.3 MB) and are served by the
+   in-app site server like every other site file.
+2. **The README is a front page again** — the pitch in six paragraphs
+   (the rack, the laws, the studios, the AI faces, the editor, the
+   learning loop), *See it* with the four-frame table and the former
+   Screenshots table folded in, Download in one scroll, then a docs
+   map, then the features. Version call-outs left the marketing prose;
+   every count still reads from the source; every gate-pinned literal
+   is where it was.
+3. **The visual tour rebuilt for 2.93.0** — it had said 78 grammars and
+   88 spaces and led with July shots; it now walks the rack, the
+   editor (minimap, sticky scroll, swatches), the AI faces, debugging,
+   **Angular, first-class** (new frame), the source-aware Browser, the
+   Task Board and sprints, the presenting kit, Contract Kit + Studio,
+   the five studios, the learning loop, the Agent Port, Quick Search and
+   the chips. `docs/tour.html` is retired: the phosphor-styled version
+   of the tour is the website.
+4. **Fresh hero shots from the shipped app, on an Angular workspace** —
+   `welcome.png`, `task-rack.png` and `editor.png` were two months and
+   two hundred releases old; all three are recaptured from 2.93.0 aimed
+   at an Angular 21 project (SURGE dialed to the project's own `ng
+   serve` on 4200, SCOPE at the served address), plus two new frames:
+   `angular-serving.png` (▶ → `ng serve` → the ⇄ chip → the page in the
+   in-app Browser at `[::1]:4200`) and `presentation-mode.png` (the
+   template and the Output window at +10 pt). Every frame is the
+   product's own window painted at 2x. The keystroke pill is described,
+   not pictured: from the background harness Escape arrives as an
+   accessibility cancel, not a key event, so the overlay never showed
+   (it was photographed reading `Esc` in the v2.89.0 walk).
+5. **Two tutorials the systems never had** — *The Task Board and
+   sprints* (cards, the clock, blockers and labels, the Overview,
+   sprints and the burndown, the Standup, Sprint Report and Close
+   Sprint) and *Show it to a room* (Presentation Mode across editors,
+   Browser, Output and Terminal; Show Keystrokes; Copy as Markdown with
+   and without the GitHub link; the screenshot trio; Copy Project Tree);
+   both illustrated, both in the tutorials index. Three bare tutorials
+   (Browser to Source, Migrating from Postman, Write your own device)
+   gained an honest existing illustration each.
+6. **The five-minute demo** — `docs/demo-script.md`, a timed beat sheet
+   for showing the product to a room or a call: the Welcome and First
+   Steps, ▶ on an Angular workspace with the chip and the Browser, a
+   misspelled template property caught by the Angular Language Service
+   and asked of ORACLE, a FAIL jack wired to ORACLE's EXPLAIN, the
+   Standup in one click, the Agent Port with one curl, Copy Editor
+   Screenshot into the chat — with a before-you-start checklist and a
+   *when something goes wrong* section whose refusals are the product's
+   own LCD strings. Angular throughout, on David's call.
+7. **Docs truth riders** — the docs index lists the demo script and
+   drops the tour.html mention; the user guide's pictures line points at
+   the website instead of tour.html; the README's editor caption names
+   what the new shot shows.
+
+Walk laws from the capture session (the shipped 2.93.0, throwaway
+userdir, background harness): the Open Folder chooser is undrivable
+from the background in every direction (raw type, AX set-value, row
+select, row press) — the working aim is the platform's own handshake,
+`nmoxstudio --userdir <same> --open <dir>`, which opens the folder as a
+project and fires the open hook that aims the rack; a `--open` on a
+project already open fires no hook (close it first); *Close All
+Projects* also closes the Welcome, Rack and Browser tabs; a window
+capture with `screencapture -x -o -l <id>` is exactly 2× the window
+with no shadow and no takeover.
+
 ## [2.93.0] - 2026-09-06
 
 1. **The front page points at the indexes** — the README linked the User Guide and nothing else in `docs/`: the docs index (made true in v2.90.0) and the tutorials index were reachable only by browsing the repository tree. One sentence in the User Guide's own line now points at both, and `DocsIndexGateTest` keeps it there (failing-first).
@@ -17629,6 +17705,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.94.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.93.0...v2.94.0
 [2.93.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.92.0...v2.93.0
 [2.92.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.91.0...v2.92.0
 [2.91.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.90.0...v2.91.0

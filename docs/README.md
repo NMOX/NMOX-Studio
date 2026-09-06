@@ -27,8 +27,10 @@ front to back or dipped into by section.
 - **[🎛️ The Device Reference](devices.md)** — every device in the rack,
   its knobs and its jacks. Generated from the source, so it never drifts.
 - **[🖼️ The visual tour](tour.md)** — every major feature on one page,
-  with real screenshots; [tour.html](tour.html) is the phosphor-styled
-  browser version.
+  with real screenshots; the phosphor-styled version is the website,
+  <https://nmox.github.io/NMOX-Studio/>.
+- **[🎬 The demo script](demo-script.md)** — the five-minute demo —
+  beats, clicks, and what to say.
 - **[🧪 The Kitchen Sink](kitchen-sink.md)** — every surface of the
   product exercised in one sitting: twenty-five do/see stations, each
   claim matched to a proof.
@@ -55,9 +57,10 @@ front to back or dipped into by section.
 Grab a build from the
 **[latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)** —
 macOS `.dmg`, Windows installer, Debian/Ubuntu `.deb`, or generic Linux
-`.tar.gz`, each bundling its own Java runtime. macOS users on Homebrew install with a tap, a one-time `brew trust`, and
-`brew install --cask nmox-studio` — see the
-[User Guide](user-guide.md#1-install) for the full three-line block. The
+`.tar.gz`, each bundling its own Java runtime. macOS users on Homebrew install with a one-time
+`brew trust --cask nmox/nmox-studio/nmox-studio` and then
+`brew install nmox/nmox-studio/nmox-studio` — see the
+[User Guide](user-guide.md#1-install) for the notes on Gatekeeper. The
 `-portable.zip` is the one bring-your-own-Java build.
 
 ## Building from source, or contributing

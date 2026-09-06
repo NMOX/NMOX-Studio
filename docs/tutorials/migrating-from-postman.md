@@ -8,6 +8,8 @@ This walk takes a real Postman export end to end — and shows the one
 thing NMOX Studio does differently on purpose: **secrets land in your
 OS keychain, never in a committable file.**
 
+![API Studio, where imports land: the collection tree, a sent request, and its security-headers grade](../images/api-studio.png)
+
 ## Before you start
 
 Export your collection from Postman: collection ▸ … ▸ Export ▸

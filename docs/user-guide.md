@@ -1,6 +1,6 @@
 # NMOX Studio — User Guide
 
-> Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots ([tour.html](tour.html) is the phosphor-styled version for a browser). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting. Prefer a story? **[A Day at Meridian](a-day-at-meridian.md)** builds one real thing through every area, screenshots from a live session.
+> Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots (the same story in the product's own styling is the website, <https://nmox.github.io/NMOX-Studio/>). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting. Prefer a story? **[A Day at Meridian](a-day-at-meridian.md)** builds one real thing through every area, screenshots from a live session.
 
 How to actually use the thing. This guide walks the features in the order
 you'll meet them: install, first launch, projects, the rack, the studios,
@@ -139,8 +139,8 @@ repo (`Clarinet.toml`) opens with its real lanes (`aiken check`,
 with script tags and **no** manifest opens too, as a STATIC project — the
 classic web is first-class, not an error.
 
-**Creating:** *New Project…* offers real scaffolds — React, Vue, Svelte
-(Vite + Svelte 5, runes syntax), Angular, Vanilla JS, Elixir/Phoenix,
+**Creating:** *New Project…* offers real scaffolds — Angular, Vue, Svelte
+(Vite + Svelte 5, runes syntax), Vanilla JS, Elixir/Phoenix,
 PHP Web (LEMP, with compose file and front controller), and Classic Web
 (jQuery). Each template arrives with lint/format/test configs wired and
 a git repo initialized — one scaffold commit that, when the wizard runs

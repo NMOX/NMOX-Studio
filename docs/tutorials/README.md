@@ -25,6 +25,8 @@ For the wide reference (install, every menu, every safety net) see the
 | [Browser to Source](browser-to-source.md) | Click an element in the page, land in its source, restyle it from DevTools | ⌥⌘4 → DevTools → DOM |
 | [The Agent Port (MCP)](agent-port.md) | Point an AI agent at the IDE's live state — read-only by construction | Tools ▸ Agent Port (MCP)… |
 | [The Docker panel](docker-panel.md) | Inspect containers and dockerize a project | Docker tab |
+| [The Task Board and sprints](task-board.md) | Run a kanban with a time clock, a one-click standup, and a sprint burndown from one checked-in file | ⌥⌘1 |
+| [Show it to a room](show-it-to-a-room.md) | Present, share, and screenshot from inside the IDE — Presentation Mode through Copy Project Tree as Markdown | View ▸ Presentation Mode |
 | [ORACLE](oracle.md) | Ask the AI why a run failed | Rack → ORACLE |
 | [Explain anything](explain-anything.md) | Use ORACLE's four faces: runs, code, API responses, DB errors | anywhere something fails |
 | [Migrating from Postman](migrating-from-postman.md) | Import your collections, HAR captures, and more — secrets go keychain-side | ⌥⌘8 → Import… |

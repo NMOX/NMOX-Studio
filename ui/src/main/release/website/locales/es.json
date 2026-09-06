@@ -17,5 +17,14 @@
   "site.laws.l5": "Forzar el cierre no deja huérfanos.",
   "site.colophon": "Construido en NMOX Studio, verificado por sus propios kits, servido por su propio rack. Apache-2.0.",
   "site.shown.h": "Hecho para mostrarse",
-  "site.shown.p": "Un solo interruptor y cada editor, la página del navegador integrado, la ventana de salida y la terminal se leen desde la última fila — y vuelven exactamente a su tamaño cuando terminas. El atajo que pulsas se muestra en pantalla; lo que escribes, nunca. El código se copia como bloque con cerca, o con el enlace de GitHub a esas mismas líneas; la pestaña del editor se guarda o copia como imagen nítida a 2x; el árbol del proyecto se pega como un README."
+  "site.shown.p": "Un solo interruptor y cada editor, la página del navegador integrado, la ventana de salida y la terminal se leen desde la última fila — y vuelven exactamente a su tamaño cuando terminas. El atajo que pulsas se muestra en pantalla; lo que escribes, nunca. El código se copia como bloque con cerca, o con el enlace de GitHub a esas mismas líneas; la pestaña del editor se guarda o copia como imagen nítida a 2x; el árbol del proyecto se pega como un README.",
+  "site.see.h": "Míralo",
+  "site.see.p": "Cada imagen es el producto tal como se distribuye. Sin maquetas.",
+  "site.see.rack": "El Task Rack — cada herramienta es un dispositivo, cada señal un cable",
+  "site.see.editor": "El editor — minimapa, scroll fijo, muestras de color y completado fantasma a petición",
+  "site.see.browser": "El navegador consciente del código fuente — elige un elemento, abre su línea de origen, cambia su estilo en el sitio",
+  "site.see.board": "El Task Board — sprints, un reloj y un standup con un solo clic",
+  "site.see.learn": "Un espacio de aprendizaje — código de ejemplo, un tutorial guiado, un REPL en vivo y checkpoints que califican tu trabajo",
+  "site.see.contract": "Contract Studio — llamadas y eventos decodificados, veredictos de gas, nunca una clave privada",
+  "site.readon.h": "Sigue leyendo"
 }
