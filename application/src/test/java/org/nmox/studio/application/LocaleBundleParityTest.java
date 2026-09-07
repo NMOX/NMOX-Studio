@@ -106,6 +106,16 @@ class LocaleBundleParityTest {
                         problems.add(where + ": localized bundles with no English Bundle.properties");
                         continue;
                     }
+                    // Module descriptors (OpenIDE-Module-Name and friends) name the
+                    // MODULE in the Plugin Manager, not the chrome; nine of the ten
+                    // modules declare theirs in a manifest this arc does not localize,
+                    // so requiring them here would be a rule only core could break.
+                    english.stringPropertyNames().stream()
+                            .filter(k -> k.startsWith("OpenIDE-Module-"))
+                            .forEach(english::remove);
+                    if (english.isEmpty()) {
+                        continue;
+                    }
                     for (String locale : LOCALES) {
                         Properties t = pkg.getValue().get(locale);
                         if (t == null) {
